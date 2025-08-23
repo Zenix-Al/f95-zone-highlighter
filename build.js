@@ -4,7 +4,7 @@ const fs = require("fs");
 const now = new Date().toISOString();
 const banner = `// Built on ${now} — AUTO-GENERATED, edit from /src and rebuild`;
 const header = `// ==UserScript==
-// @name         F95Zone Latest Highlighter new gen
+// @name         F95Zone Latest Highlighter
 // @icon         https://external-content.duckduckgo.com/iu/?u=https://f95zone.to/data/avatars/l/1963/1963870.jpg?1744969685
 // @namespace    https://f95zone.to/threads/f95zone-latest.250836/
 // @homepage     https://f95zone.to/threads/f95zone-latest.250836/
@@ -15,7 +15,7 @@ const header = `// ==UserScript==
 // @grant        GM.setValue
 // @grant        GM.getValues
 // @run-at       document-idle
-// @version      2.4.2
+// @version      3.0.0
 // @description  Highlight thread cards on the Latest Updates Page and adds colorful thread tags!
 // ==/UserScript==
 // ------------------------------------------------------------
