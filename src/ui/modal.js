@@ -10,6 +10,7 @@ import { processAllTiles } from "../cores/latest";
 import { processThreadTags } from "../cores/thread";
 import { renderLatest } from "../renderer/latestSettings";
 import { injectListener } from "./listeners";
+import { checkTags } from "../cores/safety";
 export function injectButton() {
   const button = document.createElement("button");
   button.textContent = "⚙️";
@@ -55,6 +56,7 @@ export function openModal() {
   renderPreferred();
   renderExcluded();
   updateTags();
+  checkTags();
 }
 export function closeModal() {
   document.getElementById("tag-config-modal").style.display = "none";
