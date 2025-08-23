@@ -1,0 +1,98 @@
+<div id="toast"></div>
+<div class="modal-content">
+  <h2 style="text-align: center">CONFIG</h2>
+
+  <!-- General -->
+  <div class="modal-settings-spacing">
+    <details class="config-list-details">
+      <summary>General</summary>
+      <div class="settings-wrapper">
+        <div class="config-row">
+          <label for="config-visibility">Config Visibility</label>
+          <input type="checkbox" id="config-visibility" />
+        </div>
+      </div>
+    </details>
+  </div>
+  <hr class="thick-line" />
+  <!-- Latest page settings -->
+  <div class="modal-settings-spacing">
+    <details class="config-list-details">
+      <summary>Latest page settings</summary>
+      <div class="settings-wrapper">
+        <div id="latest-settings-warning"></div>
+        <div class="config-row">
+          <label for="settings-auto-refresh">Auto Refresh</label
+          ><input type="checkbox" id="settings-auto-refresh" />
+        </div>
+        <div class="config-row">
+          <label for="settings-web-notif">web notification</label
+          ><input type="checkbox" id="settings-web-notif" />
+        </div>
+        <div class="config-row">
+          <label for="settings-script-notif">Script notification</label
+          ><input type="checkbox" id="settings-script-notif" />
+        </div>
+        <div class="config-row">
+          <label for="min-version">Min Version:</label>
+          <input id="min-version" type="number" step="0.1" min="0" placeholder="e.g., 0.5" />
+        </div>
+        <div id="overlay-settings-container"></div>
+      </div>
+    </details>
+  </div>
+  <hr class="thick-line" />
+  <!-- Thread settings -->
+  <div class="modal-settings-spacing">
+    <details class="config-list-details">
+      <summary>Thread settings</summary>
+      <div class="settings-wrapper">
+        <div id="thread-settings-container"></div>
+      </div>
+    </details>
+  </div>
+  <hr class="thick-line" />
+  <!-- TAGS -->
+  <div class="modal-settings-spacing">
+    <details class="config-list-details">
+      <summary>Tags</summary>
+      <div class="settings-wrapper">
+        <div id="tags-container">
+          <div
+            id="search-container"
+            style="position: relative; display: inline-block; min-height: 250px; width: 100%"
+          >
+            <input
+              type="text"
+              id="tags-search"
+              placeholder="Search prefixes..."
+              autocomplete="off"
+            />
+            <ul id="search-results"></ul>
+            <div id="preffered-tags-list"></div>
+            <div id="excluded-tags-list"></div>
+          </div>
+        </div>
+      </div>
+    </details>
+  </div>
+  <hr class="thick-line" />
+  <!-- COLORS -->
+  <div class="modal-settings-spacing">
+    <details class="config-list-details">
+      <summary>Color</summary>
+      <div class="settings-wrapper">
+        <div id="color-container"></div>
+      </div>
+      <div class="centered-item">
+        <button id="rese-color" class="modal-btn">Reset color</button>
+      </div>
+    </details>
+  </div>
+  <hr class="thick-line" />
+
+  <!-- Close -->
+  <div class="centered-item">
+    <button id="close-modal" class="modal-btn">🗙 Close</button>
+  </div>
+</div>

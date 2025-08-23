@@ -1,0 +1,423 @@
+:root {
+  --completed-color: #388e3c;
+  --onhold-color: #1976d2;
+  --abandoned-color: #c9a300;
+  --highVersion-color: #2e7d32;
+  --invalidVersion-color: #a38400;
+  --tileInfo-color: #9398a0;
+  --tileHeader-color: #d9d9d9;
+  --preferred-color: #7b1fa2;
+  --preferred-text-color: #ffffff;
+  --excluded-color: #b71c1c;
+  --excluded-text-color: #ffffff;
+  --neutral-color: #37383a;
+  --neutral-text-color: #9398a0;
+
+  /* optional shadow toggles */
+  --preferred-shadow: 0 0 2px 1px white;
+  --excluded-shadow: 0 0 2px 1px white;
+}
+
+.preferred {
+  background-color: var(--preferred-color);
+  font-weight: bold;
+  color: var(--preferred-text-color);
+  box-shadow: var(--preferred-shadow);
+}
+
+.excluded {
+  background-color: var(--excluded-color);
+  font-weight: bold;
+  color: var(--excluded-text-color);
+  box-shadow: var(--excluded-shadow);
+}
+
+.neutral {
+  background-color: var(--neutral-color);
+  font-weight: bold;
+  color: var(--neutral-text-color);
+}
+.custom-overlay-reason {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 2px 6px;
+  font-size: 12px;
+  border-radius: 4px;
+  z-index: 2;
+  pointer-events: none;
+}
+.centered-item {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+}
+.settings-wrapper {
+  padding: 10px;
+  color: #ccc;
+  font-size: 14px;
+  line-height: 1.6;
+}
+div#latest-page_items-wrap_inner
+  div.resource-tile
+  a.resource-tile_link
+  div.resource-tile_info
+  div.resource-tile_info-meta {
+  color: var(--tileInfo-color);
+  font-weight: 600;
+}
+
+div#latest-page_items-wrap_inner div.resource-tile a.resource-tile_link {
+  color: var(--tileHeader-color);
+}
+.tag-btn {
+  border: none;
+  padding: 5px;
+  margin: 0 2px;
+  cursor: pointer;
+  font-size: 14px;
+  color: white;
+  font-weight: bold;
+  transition: background-color 0.2s ease;
+}
+
+.tag-btn.excluded {
+  background-color: var(--excluded-color);
+  color: var(--excludedText-color);
+}
+
+.tag-btn.preferred {
+  background-color: var(--preferred-color);
+  color: var(--preferredText-color);
+}
+
+.tag-btn:hover {
+  filter: brightness(1.1);
+}
+#toast {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px;
+  background-color: #333;
+  color: #fff;
+  border-radius: 8px;
+  z-index: 10000; /* above modal */
+  opacity: 0;
+  transition:
+    opacity 0.3s ease,
+    top 0.3s ease;
+  pointer-events: none; /* doesn’t block clicks */
+}
+#toast.show {
+  opacity: 1;
+}
+#tag-config-modal {
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+/* Preferred tags container */
+#preffered-tags-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+/* Preferred tag item */
+.preferred-tag-item {
+  display: inline-flex;
+  align-items: center;
+  background-color: var(--preferred-color);
+  color: var(--preferredText-color);
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.preferred-tag-item span {
+  margin-right: 6px;
+  margin-left: 6px;
+}
+
+.preferred-tag-remove {
+  background-color: #c15858;
+  color: #fff;
+  border: none;
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+
+  padding: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+/* Excluded tags container */
+#excluded-tags-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+/* Excluded tag item */
+.excluded-tag-item {
+  display: inline-flex;
+  align-items: center;
+  background-color: var(--excluded-color);
+  color: var(--excludedText-color);
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.excluded-tag-item span {
+  margin-right: 6px;
+}
+
+.excluded-tag-remove {
+  background-color: #c15858;
+  color: #fff;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.ignored-tag-remove:hover {
+  background-color: #a34040;
+}
+
+/* Individual list items */
+#search-results li {
+  padding: 6px 8px;
+  cursor: pointer;
+  color: #fff;
+  background-color: #222;
+}
+
+#search-results li:hover {
+  background-color: #333; /* slightly lighter on hover */
+}
+#tags-search {
+  background-color: #222;
+  color: #fff;
+  border: 1px solid #555;
+  border-radius: 4px;
+  padding: 6px 8px;
+  width: 100%;
+}
+
+#tags-search:focus {
+  outline: none;
+  border: 1px solid #c15858;
+}
+#search-results {
+  position: absolute;
+  left: 0;
+  right: 0;
+  max-height: 200px;
+  overflow-y: auto;
+  background-color: #222; /* same as inputs */
+  border: 1px solid #555; /* same border as input */
+  border-radius: 4px;
+  margin: 2px 0 0 0; /* small gap below input */
+  padding: 0;
+  list-style: none;
+  display: none;
+  z-index: 1000;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); /* subtle shadow */
+}
+/* All text inputs, textareas, selects */
+#tag-config-modal input,
+#tag-config-modal textarea,
+#tag-config-modal select {
+  background-color: #222;
+  color: #fff;
+  border: 1px solid #555;
+  border-radius: 4px;
+}
+#tag-config-modal input:focus,
+#tag-config-modal textarea:focus,
+#tag-config-modal select:focus {
+  outline: none;
+  border: 1px solid #c15858;
+}
+
+/* Checkboxes and radios */
+#tag-config-modal input[type="checkbox"],
+#tag-config-modal input[type="radio"] {
+  accent-color: #c15858;
+  background-color: #222;
+  border: 1px solid #555;
+}
+#tag-config-modal .config-color-input {
+  border: 2px solid #3f4043;
+  border-radius: 5px;
+  padding: 2px;
+  width: 40px;
+  height: 28px;
+  cursor: pointer;
+  background-color: #181a1d;
+}
+
+#tag-config-modal .config-color-input::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+#tag-config-modal .config-color-input::-webkit-color-swatch {
+  border-radius: 4px;
+  border: none;
+}
+
+.modal-btn {
+  background-color: #893839;
+  color: white;
+  border: 2px solid #893839;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease;
+  box-shadow: 0 4px 8px rgba(137, 56, 56, 0.5);
+}
+
+.modal-btn:hover {
+  background-color: #b94f4f;
+  border-color: #b94f4f;
+}
+
+.modal-btn:active {
+  background-color: #6e2b2b;
+  border-color: #6e2b2b;
+  box-shadow: none;
+}
+.config-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 8px;
+  margin-top: 10px;
+}
+
+.config-row label {
+  flex-shrink: 0;
+  width: 140px; /* fixed width for all labels */
+  text-align: left;
+  user-select: none;
+}
+
+.config-row input[type="checkbox"],
+.config-row input[type="color"],
+.config-row input[type="number"] {
+  flex-grow: 1;
+  width: 10px;
+}
+
+#tag-config-button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  left: 20px;
+  padding: 8px 12px;
+  font-size: 20px;
+  z-index: 7;
+  cursor: pointer;
+  border: 2px inset #461616;
+  background: #cc3131;
+  color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  max-width: 70px;
+  width: auto;
+  opacity: 0.75;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+  @media (width < 480px) {
+    bottom: 60px;
+  }
+}
+
+/* Hover effect */
+#tag-config-button:hover {
+  opacity: 1;
+}
+#tag-config-button:active {
+  transform: scale(0.9);
+}
+#tag-config-button.hidden {
+  opacity: 0;
+  pointer-events: auto;
+  transition: opacity 0.3s ease;
+}
+
+#tag-config-button.hidden:hover {
+  opacity: 0.75;
+}
+
+#tag-config-modal .modal-content {
+  background: black;
+  border-radius: 10px;
+  min-width: 300px;
+  max-height: 80vh;
+  overflow-y: scroll; /* always show vertical scrollbar */
+  background: #191b1e;
+  max-width: 400px;
+  margin: 100px auto;
+}
+
+#tag-config-modal.show {
+  display: flex;
+}
+
+.config-list-details {
+  overflow: hidden;
+  transition:
+    border-width 1s,
+    max-height 1s ease;
+  max-height: 40px;
+}
+
+.config-list-details[open] {
+  border-width: 2px;
+  max-height: 1300px;
+}
+.thick-line {
+  border: none;
+  height: 1px;
+  background-color: #3f4043;
+}
+.config-list-details summary {
+  text-align: center;
+  background: #353535;
+  border-radius: 8px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  cursor: pointer;
+}
+
+.config-tag-item {
+  margin-left: 5px;
+  cursor: pointer;
+}
+
+.modal-settings-spacing {
+  padding: 10px;
+}
