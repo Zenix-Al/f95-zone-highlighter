@@ -73,15 +73,15 @@ export function processTile(tile, reset = false) {
   // === Version overlays ===
   if (
     (config.overlaySettings.highVersion &&
-      config.versionNumber !== null &&
-      config.versionNumber >= config.minVersion) ||
+      versionNumber !== null &&
+      versionNumber >= config.minVersion) ||
     isValidKeyword
   ) {
     isOverlayApplied = addOverlayLabel(tile, "High Version", isOverlayApplied);
     colors.push(config.color.highVersion);
   } else if (
-    config.versionNumber !== null &&
-    config.versionNumber < config.minVersion &&
+    versionNumber !== null &&
+    versionNumber < config.minVersion &&
     config.overlaySettings.invalidVersion
   ) {
     isOverlayApplied = addOverlayLabel(tile, "Invalid Version", isOverlayApplied);
