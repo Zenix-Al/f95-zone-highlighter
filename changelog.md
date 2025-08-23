@@ -1,4 +1,3 @@
----
 
 ### New Features
 
@@ -29,5 +28,3 @@
 ### General Improvements
 * Unified rendering flow → reduces UI desync issues.
 * More dev-friendly codebase (cleaner structure, easier to extend/debug).
-
----
