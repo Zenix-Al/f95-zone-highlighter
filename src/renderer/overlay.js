@@ -1,4 +1,4 @@
-import { config } from "../constants";
+import { config, state } from "../constants";
 import { saveConfigKeys } from "../storage/save";
 import { showToast } from "../ui/modal";
 
@@ -23,10 +23,10 @@ export function renderOverlaySettings() {
     input.addEventListener("change", (e) => {
       config.overlaySettings[key] = e.target.checked;
       const label = key.charAt(0).toUpperCase() + key.slice(1);
-      const state = e.target.checked ? "enabled" : "disabled";
+      const st = e.target.checked ? "enabled" : "disabled";
       saveConfigKeys({ overlaySettings: config.overlaySettings });
       state.reapplyOverlay = true;
-      showToast(`${label} ${state}`);
+      showToast(`${label} ${st}`);
     });
 
     row.appendChild(label);
