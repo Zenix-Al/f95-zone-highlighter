@@ -17,7 +17,17 @@
   --preferred-shadow: 0 0 2px 1px white;
   --excluded-shadow: 0 0 2px 1px white;
 }
-
+#tag-error-notif {
+  display: none; /* hidden by default */
+  background-color: #ffe5e5; /* soft red/pink */
+  color: #b00020; /* dark red text */
+  border: 1px solid #b00020;
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  font-size: 14px;
+  font-weight: 500;
+}
 .preferred {
   background-color: var(--preferred-color);
   font-weight: bold;
