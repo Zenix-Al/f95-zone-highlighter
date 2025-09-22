@@ -1,19 +1,20 @@
 import { config, debug } from "../constants";
 
 export function watchAndUpdateTiles() {
+  const latestUpdateWrapper = document.getElementById("latest-page_items-wrap");
+  if (!latestUpdateWrapper) return;
+
+  // Process any existing tiles first
+  processAllTiles();
+
   const mutationObserver = new MutationObserver(() => {
     processAllTiles();
   });
 
-  const latestUpdateWrapper = document.getElementById("latest-page_items-wrap");
-  if (!latestUpdateWrapper) return;
-
-  const options = {
-    childList: true,
-  };
-
+  const options = { childList: true, subtree: true }; // subtree ensures nested additions trigger
   mutationObserver.observe(latestUpdateWrapper, options);
 }
+
 export function processAllTiles(reset = false) {
   const tiles = document.getElementsByClassName("resource-tile");
 
