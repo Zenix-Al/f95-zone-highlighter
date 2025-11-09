@@ -8,6 +8,7 @@ export const state = {
   reapplyOverlay: false,
   isThread: false,
   isLatest: false,
+  firstLoad: true,
 };
 export const validVersions = ["full", "final"];
 
@@ -43,11 +44,21 @@ export const defaultThreadSetting = {
   preferredShadow: true,
   excluded: true,
   excludedShadow: true,
+  imgRetry: false,
 };
 export const defaultLatestSettings = {
   autoRefresh: false,
   webNotif: false,
   scriptNotif: false,
+};
+export const metrics = {
+  retried: 0,
+  succeeded: 0,
+  failed: 0,
+  avgCache: 0,
+  highest: 0,
+  lowest: Infinity,
+  mean: 0,
 };
 export const config = {
   tags: [],
@@ -59,6 +70,7 @@ export const config = {
   configVisibility: true,
   minVersion: 0.5,
   latestSettings: [],
+  metrics: metrics,
 };
 
 export const STATUS = Object.freeze({

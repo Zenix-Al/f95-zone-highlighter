@@ -2,24 +2,39 @@ import js from "@eslint/js";
 import globals from "globals";
 import { defineConfig } from "eslint/config";
 
+const gmGlobals = [
+  "GM_getValue",
+  "GM_setValue",
+  "GM_addStyle",
+  "GM_deleteValue",
+  "GM_getValues",
+  "GM_setValues",
+  "GM_registerMenuCommand",
+  "GM_notification",
+  "GM_openInTab",
+  "GM_xmlhttpRequest",
+  "GM_download",
+  "unsafeWindow",
+].reduce((acc, name) => ((acc[name] = "readonly"), acc), {});
+
 export default defineConfig([
   {
-    files: ["**/*.{js,mjs,cjs}"],
+    files: ["src/**/*.{js,mjs,cjs,user.js}"],
     languageOptions: {
       globals: {
-        ...globals.browser, // if you want browser globals too
-        GM_getValue: "readonly",
-        GM_setValue: "readonly",
-        GM_addStyle: "readonly",
-        GM_deleteValue: "readonly",
+        ...globals.browser,
+        ...gmGlobals,
       },
-    },
-    plugins: {
-      js,
     },
     rules: {
       "no-undef": "error",
       "no-unused-vars": "warn",
+    },
+  },
+  {
+    files: ["build.js"],
+    languageOptions: {
+      globals: globals.node,
     },
   },
 ]);

@@ -11,6 +11,7 @@ import { processThreadTags } from "../cores/thread";
 import { renderLatest } from "../renderer/latestSettings";
 import { injectListener } from "./listeners";
 import { checkTags } from "../cores/safety";
+import { injectImageRepair } from "../cores/imageHandler";
 export function injectButton() {
   const button = document.createElement("button");
   button.textContent = "⚙️";
@@ -63,6 +64,7 @@ export function closeModal() {
   if (state.reapplyOverlay) {
     if (state.isThread) {
       processThreadTags();
+      injectImageRepair();
     } else if (state.isLatest) {
       processAllTiles(true);
     }

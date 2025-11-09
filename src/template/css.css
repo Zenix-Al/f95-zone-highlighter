@@ -431,3 +431,48 @@ div#latest-page_items-wrap_inner div.resource-tile a.resource-tile_link {
 .modal-settings-spacing {
   padding: 10px;
 }
+
+/* Toast container */
+.img-retry-toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  padding: 10px 15px;
+  border-radius: 8px;
+  font-family: sans-serif;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 99999;
+  pointer-events: none;
+}
+
+/* Spinner inside toast */
+.img-retry-toast .img-retry-spinner {
+  border: 2px solid #fff;
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  width: 14px;
+  height: 14px;
+  display: inline-block;
+  animation: img-retry-spin 1s linear infinite;
+}
+
+/* Spinner animation */
+@keyframes img-retry-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Stats inside toast */
+.img-retry-toast .img-retry-stats {
+  margin-left: 10px;
+  opacity: 0.8;
+}

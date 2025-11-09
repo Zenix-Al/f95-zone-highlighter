@@ -5,12 +5,39 @@ import {
   defaultLatestSettings,
   defaultOverlaySettings,
   defaultThreadSetting,
+  metrics,
 } from "../constants";
 
 export async function saveConfigKeys(data) {
   const promises = Object.entries(data).map(([key, value]) => GM.setValue(key, value));
   await Promise.all(promises);
   if (debug) console.log("Config saved (keys)", data);
+}
+
+// Deep merge helper
+function deepMerge(defaults, loaded) {
+  const result = Array.isArray(defaults) ? [...defaults] : { ...defaults };
+
+  if (!loaded || typeof loaded !== "object") return result;
+
+  for (const key in defaults) {
+    if (loaded[key] === undefined) {
+      // Use default if missing
+      result[key] = defaults[key];
+    } else if (
+      typeof defaults[key] === "object" &&
+      defaults[key] !== null &&
+      !Array.isArray(defaults[key])
+    ) {
+      // Recursively merge nested objects
+      result[key] = deepMerge(defaults[key], loaded[key]);
+    } else {
+      // Use loaded value
+      result[key] = loaded[key];
+    }
+  }
+
+  return result;
 }
 
 export async function loadData() {
@@ -26,21 +53,13 @@ export async function loadData() {
     tags: Array.isArray(parsed.tags) ? parsed.tags : [],
     preferredTags: Array.isArray(parsed.preferredTags) ? parsed.preferredTags : [],
     excludedTags: Array.isArray(parsed.excludedTags) ? parsed.excludedTags : [],
-    color: parsed.color && typeof parsed.color === "object" ? parsed.color : { ...defaultColors },
-    overlaySettings:
-      parsed.overlaySettings && typeof parsed.overlaySettings === "object"
-        ? parsed.overlaySettings
-        : { ...defaultOverlaySettings },
-    threadSettings:
-      parsed.threadSettings && typeof parsed.threadSettings === "object"
-        ? parsed.threadSettings
-        : { ...defaultThreadSetting },
+    color: deepMerge(defaultColors, parsed.color),
+    overlaySettings: deepMerge(defaultOverlaySettings, parsed.overlaySettings),
+    threadSettings: deepMerge(defaultThreadSetting, parsed.threadSettings),
     configVisibility: parsed.configVisibility ?? true,
     minVersion: parsed.minVersion ?? 0.5,
-    latestSettings:
-      parsed.latestSettings && typeof parsed.latestSettings === "object"
-        ? parsed.latestSettings
-        : { ...defaultLatestSettings },
+    latestSettings: deepMerge(defaultLatestSettings, parsed.latestSettings),
+    metrics: deepMerge(metrics, parsed.metrics),
   };
 
   debug && console.log("loadData result:", result);

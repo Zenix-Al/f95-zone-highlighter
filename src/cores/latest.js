@@ -1,4 +1,6 @@
 import { config, debug } from "../constants";
+import { verifyTilesAfterLoad } from "../helper/tileVerifier";
+import { autoRefreshClick, webNotifClick } from "./thread";
 
 export function watchAndUpdateTiles() {
   const latestUpdateWrapper = document.getElementById("latest-page_items-wrap");
@@ -9,10 +11,16 @@ export function watchAndUpdateTiles() {
 
   const mutationObserver = new MutationObserver(() => {
     processAllTiles();
+    setTimeout(() => {
+      autoRefreshClick();
+      webNotifClick();
+    }, 100);
+    verifyTilesAfterLoad();
   });
 
   const options = { childList: true, subtree: true }; // subtree ensures nested additions trigger
   mutationObserver.observe(latestUpdateWrapper, options);
+  verifyTilesAfterLoad();
 }
 
 export function processAllTiles(reset = false) {

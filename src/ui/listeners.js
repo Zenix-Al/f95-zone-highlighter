@@ -129,4 +129,5 @@ export function updateWebNotif(event) {
   webNotifClick();
 }
 
+export function updateImgRefresh() {}
 export function updateScriptNotif() {}
