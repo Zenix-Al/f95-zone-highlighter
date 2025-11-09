@@ -18,6 +18,8 @@ A userscript that highlights specific content on [F95 Zone](https://f95zone.to) 
    git clone git@github.com-zenix:Zenix-Al/f95-zone-highlighter.git
    cd f95-zone-highlighter
 
+   ```
+
 2. Install dependencies:
 
    ```sh
@@ -42,15 +44,14 @@ A userscript that highlights specific content on [F95 Zone](https://f95zone.to) 
 
 ## 🔨 Development
 
-* Run a rebuild on file changes:
+- Run a rebuild on file changes:
 
   ```sh
   npm run dev
   ```
 
-* Lint the code:
+- Lint the code:
 
   ```sh
   npm run lint
   ```
-
