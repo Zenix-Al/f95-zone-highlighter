@@ -2,8 +2,10 @@ import { config, state } from "./constants";
 import { watchAndUpdateTiles } from "./cores/latest";
 import { processThreadTags } from "./cores/thread";
 import { updateColorStyle } from "./renderer/updateColorStyle";
+import { migrateLatestSettings } from "./storage/migrate";
 import { loadData } from "./storage/save";
 import { injectButton, injectCSS, updateButtonVisibility } from "./ui/modal";
+import { wideForum } from "./ui/wideForum";
 import { detectPage, waitFor } from "./utils/waitFor";
 
 // IMAGE RETRY IMPORTS
@@ -24,7 +26,7 @@ waitForBody(async () => {
   injectButton();
   updateColorStyle();
   updateButtonVisibility();
-
+  migrateLatestSettings();
   if (state.isLatest) {
     waitFor(() => document.getElementById("latest-page_items-wrap"))
       .then(() => {
@@ -38,6 +40,7 @@ waitForBody(async () => {
   // === THREAD LOGIC + IMAGE RETRY ===
   if (state.isThread) {
     processThreadTags();
+    wideForum();
     injectImageRepair();
   }
 });

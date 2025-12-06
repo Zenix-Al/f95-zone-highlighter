@@ -1,34 +1,54 @@
 import { config, state } from "../constants";
 import { saveConfigKeys } from "../storage/save";
 import { showToast } from "../ui/modal";
+import { overlaySettingsText, overlaySettingsTooltip } from "../constants";
 
 export function renderOverlaySettings() {
   const container = document.getElementById("overlay-settings-container");
-  container.innerHTML = ""; // clear old content
+  if (!container) return;
+
+  container.innerHTML = ""; // Clear previous content
 
   Object.keys(config.overlaySettings).forEach((key) => {
+    const enabled = config.overlaySettings[key];
+
     const row = document.createElement("div");
     row.className = "config-row";
 
-    const label = document.createElement("label");
-    label.setAttribute("for", `tag-settings-${key}`);
-    label.textContent = key.charAt(0).toUpperCase() + key.slice(1);
-
+    // Checkbox input
     const input = document.createElement("input");
     input.type = "checkbox";
-    input.id = `tag-settings-${key}`;
-    input.checked = config.overlaySettings[key]; // set initial state
+    input.id = `overlay-setting-${key}`;
+    input.checked = enabled;
+    input.className = "config-checkbox";
 
-    // optional: update config when toggled
+    // Label with human-readable text
+    const label = document.createElement("label");
+    label.setAttribute("for", input.id);
+    label.textContent = overlaySettingsText[key] || key; // fallback if missing
+    label.className = "config-label";
+
+    // Add tooltip if available
+    const tooltip = overlaySettingsTooltip?.[key];
+    if (tooltip) {
+      label.title = tooltip;
+    }
+
+    // Change handler
     input.addEventListener("change", (e) => {
-      config.overlaySettings[key] = e.target.checked;
-      const label = key.charAt(0).toUpperCase() + key.slice(1);
-      const st = e.target.checked ? "enabled" : "disabled";
+      const newValue = e.target.checked;
+      config.overlaySettings[key] = newValue;
+
+      const displayName = overlaySettingsText[key] || key;
+      const status = newValue ? "enabled" : "disabled";
+
       saveConfigKeys({ overlaySettings: config.overlaySettings });
       state.reapplyOverlay = true;
-      showToast(`${label} ${st}`);
+
+      showToast(`${displayName} ${status}`);
     });
 
+    // Append in nice order: checkbox first (for better click area), then label
     row.appendChild(label);
     row.appendChild(input);
     container.appendChild(row);

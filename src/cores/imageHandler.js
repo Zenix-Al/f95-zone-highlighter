@@ -6,8 +6,15 @@ import { config } from "../constants.js";
 import { injectUI } from "../ui/imgRetryUi.js";
 import { observeDom } from "./observer.js";
 
+let domObserver = null;
 export function injectImageRepair() {
-  if (!config.threadSettings.imgRetry) return;
+  if (!config.threadSettings.imgRetry) {
+    destroyImageRepair();
+    return;
+  }
+  if (config.isImgRetryInjected) return;
+  config.isImgRetryInjected = true;
+
   const retryingImages = new Set();
 
   function initImageRetry() {
@@ -17,8 +24,11 @@ export function injectImageRepair() {
 
   injectUI();
   initImageRetry();
-  observeDom(initImageRetry);
+
+  // store observer reference
+  domObserver = observeDom(initImageRetry);
 }
+
 export function handleImage(img, retryingImages) {
   if (!img.src.startsWith("https://attachments.f95zone.to/")) return;
   if (img.dataset.retryAttached) return;
@@ -52,5 +62,14 @@ export function handleImage(img, retryingImages) {
   } else {
     img.addEventListener("load", handleSuccess, { once: true });
     img.addEventListener("error", handleError, { once: true });
+  }
+}
+
+export function destroyImageRepair() {
+  if (!config.isImgRetryInjected) return;
+  config.isImgRetryInjected = false;
+  if (domObserver) {
+    domObserver.disconnect();
+    domObserver = null;
   }
 }
