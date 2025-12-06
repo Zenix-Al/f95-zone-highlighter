@@ -48,11 +48,13 @@ const header = `// ==UserScript==
 // @homepage     https://f95zone.to/threads/f95zone-latest.250836/
 // @homepageURL  https://f95zone.to/threads/f95zone-latest.250836/
 // @author       X Death on F95zone
+// @author       Edexal
 // @match        https://f95zone.to/sam/latest_alpha/*
 // @match        https://f95zone.to/threads/*
 // @grant        GM.setValue
 // @grant        GM.getValues
 // @run-at       document-idle
+// @license      GPL-3.0-or-later
 // @version      ${versionString}
 // @description  Highlight thread cards on the Latest Updates Page and adds colorful thread tags!
 // ==/UserScript==
@@ -68,11 +70,13 @@ const headerUglified = `// ==UserScript==
 // @homepage     https://f95zone.to/threads/f95zone-latest.250836/
 // @homepageURL  https://f95zone.to/threads/f95zone-latest.250836/
 // @author       X Death on F95zone
+// @author       Edexal
 // @match        https://f95zone.to/sam/latest_alpha/*
 // @match        https://f95zone.to/threads/*
 // @grant        GM.setValue
 // @grant        GM.getValues
 // @run-at       document-idle
+// @license      GPL-3.0-or-later
 // @version      ${versionString}
 // @description  Highlight thread cards on the Latest Updates Page and adds colorful thread tags!
 // ==/UserScript==
