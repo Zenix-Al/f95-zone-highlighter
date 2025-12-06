@@ -1,4 +1,4 @@
-import { config, STATUS } from "../constants";
+import { config, state, STATUS } from "../constants";
 
 export function processThreadTags() {
   const tagList = document.querySelector(".js-tagList");
@@ -38,7 +38,7 @@ export function processThreadTag(tagElement) {
 export function autoRefreshClick() {
   const autoRefreshBtn = document.getElementById("controls_auto-refresh");
   if (!autoRefreshBtn) return;
-
+  state.refreshNotification = true;
   const selected = autoRefreshBtn.classList.contains("selected");
 
   if (
@@ -52,7 +52,7 @@ export function autoRefreshClick() {
 export function webNotifClick() {
   const webNotifBtn = document.getElementById("controls_notify");
   if (!webNotifBtn) return;
-
+  state.refreshNotification = true;
   const selected = webNotifBtn.classList.contains("selected");
 
   if (!selected && config.latestSettings.webNotif) {

@@ -1,5 +1,4 @@
 import { config, defaultColors, state } from "../constants";
-import { autoRefreshClick, webNotifClick } from "../cores/thread";
 import { renderColorConfig } from "../renderer/color";
 import { renderList } from "../renderer/searchTags";
 import { updateColorStyle } from "../renderer/updateColorStyle";
@@ -12,10 +11,7 @@ export function injectListener() {
   setEventById("tags-search", showAllTags, "focus");
   setEventById("config-visibility", updateConfigVisibility);
   setEventById("rese-color", resetColor);
-  setEventById("min-version", updateMinVersion, "change");
-  setEventById("settings-auto-refresh", updateAutoRefresh);
-  setEventById("settings-web-notif", updateWebNotif);
-  setEventById("settings-script-notif", updateScriptNotif());
+  //setEventById("settings-script-notif", updateScriptNotif());
   document.addEventListener("click", (e) => {
     const input = document.getElementById("tags-search");
     const results = document.getElementById("search-results");
@@ -96,38 +92,4 @@ export function resetColor() {
   }
 }
 
-export function updateAutoRefresh(event) {
-  config.latestSettings.autoRefresh = event.target.checked;
-  if (!event.target.checked) {
-    config.latestSettings.webNotif = false;
-    const notif = document.getElementById("settings-web-notif");
-    if (notif) notif.checked = false;
-  }
-
-  saveConfigKeys({ latestSettings: config.latestSettings });
-  const message = event.target.checked ? "Auto refresh enabled" : "Auto refresh disabled";
-
-  showToast(message);
-  autoRefreshClick();
-}
-
-export function updateWebNotif(event) {
-  const autoRefresh = document.getElementById("settings-auto-refresh");
-  if (!autoRefresh.checked) {
-    showToast("auto refresh is disabled");
-    event.target.checked = false;
-    return;
-  }
-  config.latestSettings.webNotif = event.target.checked;
-  saveConfigKeys({ latestSettings: config.latestSettings });
-
-  const message = event.target.checked
-    ? "Browser notifications enabled"
-    : "Browser notifications disabled";
-
-  showToast(message);
-  webNotifClick();
-}
-
-export function updateImgRefresh() {}
 export function updateScriptNotif() {}

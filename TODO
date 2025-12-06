@@ -1,0 +1,6 @@
+1. Make ui renderer better
+   So far for now the ui mass generated with the setting key, function to handle rich input needed.
+   Step :
+   - make the function to handle rich input
+   - make new variable to store type of input
+   - (optional) add custom function when executed

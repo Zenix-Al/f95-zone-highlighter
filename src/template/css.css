@@ -321,23 +321,36 @@ div#latest-page_items-wrap_inner div.resource-tile a.resource-tile_link {
 }
 .config-row {
   display: flex;
-  gap: 10px;
-  margin-bottom: 8px;
-  margin-top: 10px;
-}
-
-.config-row label {
-  flex-shrink: 0;
-  width: 140px; /* fixed width for all labels */
-  text-align: left;
+  align-items: center; /* vertically center everything */
+  gap: 12px;
+  margin: 8px 0;
+  line-height: 1.4;
   user-select: none;
 }
 
-.config-row input[type="checkbox"],
-.config-row input[type="color"],
-.config-row input[type="number"] {
-  flex-grow: 1;
-  width: 10px;
+/* Fixed-width label column (all labels perfectly aligned) */
+.config-row label {
+  flex: 0 0 180px; /* adjust 180px to your longest label */
+  text-align: left;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap; /* prevent label wrap */
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Checkbox stays small and on the right */
+.config-row input[type="checkbox"] {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  cursor: pointer;
+  accent-color: #6e42d6; /* optional: nice purple accent */
+}
+
+.config-row:hover {
+  background: rgba(110, 66, 214, 0.05);
 }
 
 #tag-config-button {
@@ -430,6 +443,13 @@ div#latest-page_items-wrap_inner div.resource-tile a.resource-tile_link {
 
 .modal-settings-spacing {
   padding: 10px;
+}
+.no-max-width {
+  max-width: none !important; /* or just max-width: unset; */
+}
+.config-label:hover {
+  text-decoration: underline;
+  text-decoration-style: dotted;
 }
 
 /* Toast container */

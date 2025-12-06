@@ -1,4 +1,5 @@
 import { config, debug } from "../constants";
+import { getTextColorForGradient } from "../helper/handleTextColor";
 import { verifyTilesAfterLoad } from "../helper/tileVerifier";
 import { autoRefreshClick, webNotifClick } from "./thread";
 
@@ -93,7 +94,7 @@ export function processTile(tile, reset = false) {
     versionNumber < config.minVersion &&
     config.overlaySettings.invalidVersion
   ) {
-    isOverlayApplied = addOverlayLabel(tile, "Invalid Version", isOverlayApplied);
+    addOverlayLabel(tile, "Invalid Version", isOverlayApplied);
     colors.push(config.color.invalidVersion);
   }
 
@@ -101,8 +102,20 @@ export function processTile(tile, reset = false) {
   body.style.background = "";
 
   if (colors.length > 0) {
-    body.style.background = createSegmentedGradient(colors, "45deg");
+    const gradient = createSegmentedGradient(colors, "45deg");
+    body.style.background = gradient;
+
+    // auto text color
+    const textColor = getTextColorForGradient(gradient);
+    body.style.color = textColor;
+    const metas = body.querySelectorAll(".resource-tile_info-meta");
+
+    metas.forEach((meta) => {
+      meta.style.color = textColor;
+      meta.style.fontWeight = "bold";
+    });
   }
+
   tile.dataset.modified = "true";
 }
 
