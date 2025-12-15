@@ -60,7 +60,7 @@ export function updateButtonVisibility() {
   const button = document.getElementById("tag-config-button");
   if (!button) return;
 
-  if (config.configVisibility === false) {
+  if (config.globalSettings.configVisibility === false) {
     // Blink 3 times
     let blinkCount = 0;
     const maxBlinks = 3;

@@ -1,15 +1,16 @@
 import { config, defaultColors, state } from "../constants";
-import { renderColorConfig } from "../renderer/color";
+import { colorSettingsMeta } from "../meta/colorSettings";
+import { reRenderSettingsSection } from "../renderer/reRenderSetting";
 import { renderList } from "../renderer/searchTags";
 import { updateColorStyle } from "../renderer/updateColorStyle";
 import { saveConfigKeys } from "../storage/save";
 import { openModal, closeModal, showToast, updateButtonVisibility } from "./modal";
+
 export function injectListener() {
   setEventById("tag-config-button", openModal);
   setEventById("close-modal", closeModal);
   setEventById("tags-search", updateSearch, "input");
   setEventById("tags-search", showAllTags, "focus");
-  setEventById("config-visibility", updateConfigVisibility);
   setEventById("rese-color", resetColor);
   //setEventById("settings-script-notif", updateScriptNotif());
   document.addEventListener("click", (e) => {
@@ -60,12 +61,6 @@ export function updateColor(event, key) {
   state.reapplyOverlay = true;
 }
 
-export function updateConfigVisibility(event) {
-  config.configVisibility = event.target.checked;
-  saveConfigKeys({ configVisibility: config.configVisibility });
-  showToast("config visibility saved!");
-  updateButtonVisibility();
-}
 export function updateMinVersion(event) {
   const valueStr = event.target?.value ?? event.value;
   const value = parseFloat(valueStr);
@@ -85,7 +80,7 @@ export function resetColor() {
   if (confirm("Are you sure you want to reset all colors to default?")) {
     config.color = { ...defaultColors };
     updateColorStyle();
-    renderColorConfig();
+    reRenderSettingsSection("color-container", colorSettingsMeta);
     saveConfigKeys({ color: config.color });
     showToast("Colors have been reset to default");
     state.reapplyOverlay = true;

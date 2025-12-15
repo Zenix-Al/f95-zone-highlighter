@@ -1,5 +1,5 @@
 import { config, state } from "./constants";
-import { watchAndUpdateTiles } from "./cores/latest";
+import { toggleWideLatestPage, watchAndUpdateTiles } from "./cores/latest";
 import { processThreadTags } from "./cores/thread";
 import { updateColorStyle } from "./renderer/updateColorStyle";
 import { migrateLatestSettings } from "./storage/migrate";
@@ -10,6 +10,7 @@ import { detectPage, waitFor } from "./utils/waitFor";
 
 // IMAGE RETRY IMPORTS
 import { injectImageRepair } from "./cores/imageHandler.js";
+import { initCrossTabSync } from "./storage/crossTabSync.js";
 
 function waitForBody(callback) {
   if (document.body) {
@@ -27,9 +28,11 @@ waitForBody(async () => {
   updateColorStyle();
   updateButtonVisibility();
   migrateLatestSettings();
+  config.globalSettings.enableCrossTabSync && initCrossTabSync();
   if (state.isLatest) {
     waitFor(() => document.getElementById("latest-page_items-wrap"))
       .then(() => {
+        toggleWideLatestPage();
         watchAndUpdateTiles();
       })
       .catch(() => {
