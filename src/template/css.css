@@ -496,3 +496,30 @@ div#latest-page_items-wrap_inner div.resource-tile a.resource-tile_link {
   margin-left: 10px;
   opacity: 0.8;
 }
+
+html.latest-wide .p-body-inner {
+  max-width: none !important;
+}
+
+html.latest-wide main#latest-page_main-wrap {
+  width: 100% !important;
+  max-width: none !important;
+}
+.config-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin: 14px 0 10px;
+  padding: 6px 0;
+
+  font-size: 0.95em;
+  font-weight: 600;
+  text-align: center;
+
+  color: #b0b3b8; /* subtle, non-dominant */
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+
+  user-select: none;
+}

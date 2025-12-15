@@ -1,4 +1,4 @@
-import { config, debug } from "../constants";
+import { config, debug, state } from "../constants";
 import { getTextColorForGradient } from "../helper/handleTextColor";
 import { verifyTilesAfterLoad } from "../helper/tileVerifier";
 import { autoRefreshClick, webNotifClick } from "./thread";
@@ -190,4 +190,16 @@ function processTag(tile, tags) {
 export function getVersionText(tile) {
   const versionEl = tile.querySelector(".resource-tile_label-version");
   return versionEl?.innerHTML?.toLowerCase().trim() || "";
+}
+
+export function toggleWideLatestPage() {
+  const root = document.documentElement;
+
+  if (config.latestSettings.wideLatest) {
+    root.classList.add("latest-wide");
+  } else {
+    root.classList.remove("latest-wide");
+  }
+
+  state.refreshLayout = true;
 }

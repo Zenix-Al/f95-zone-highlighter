@@ -1,10 +1,12 @@
 import { state } from "../constants";
 import { updateTags } from "../data/tags";
-import { renderColorConfig } from "../renderer/color";
-import { renderLatestSettings } from "../renderer/latestRenderer";
-import { renderOverlaySettings } from "../renderer/overlay";
+import { colorSettingsMeta } from "../meta/colorSettings";
+import { globalSettingsMeta } from "../meta/globalSettings";
+import { latestSettingsMeta } from "../meta/latestSettings";
+import { overlaySettingsMeta } from "../meta/overlaySettings";
+import { threadSettingsMeta } from "../meta/threadSettings";
 import { renderExcluded, renderPreferred } from "../renderer/searchTags";
-import { renderThreadSettings } from "../renderer/threadSettings";
+import { renderSettingsSection } from "../renderer/settingsSection";
 import { injectListener } from "../ui/listeners";
 import { injectModal } from "../ui/modal";
 import { wideForum } from "../ui/wideForum";
@@ -19,18 +21,22 @@ export function initModalUi() {
     injectModal();
     injectListener();
   }
+  if (!state.globalSettingsRendered) {
+    state.globalSettingsRendered = true;
+    renderSettingsSection("global-settings-container", globalSettingsMeta);
+  }
   if (!state.colorRendered) {
     state.colorRendered = true;
-    renderColorConfig();
+    renderSettingsSection("color-container", colorSettingsMeta);
   }
   if (!state.overlayRendered) {
     state.overlayRendered = true;
-    renderLatestSettings();
-    renderOverlaySettings();
+    renderSettingsSection("latest-settings-container", latestSettingsMeta);
+    renderSettingsSection("overlay-settings-container", overlaySettingsMeta);
   }
   if (!state.threadSettingsRendered) {
     state.threadSettingsRendered = true;
-    renderThreadSettings();
+    renderSettingsSection("thread-settings-container", threadSettingsMeta);
   }
 
   renderPreferred();
@@ -44,7 +50,7 @@ export function checkForUpdates() {
     autoRefreshClick();
     webNotifClick();
   }
-  if (state.refreshThread) {
+  if (state.refreshLayout) {
     wideForum();
   }
   if (state.reapplyOverlay) {

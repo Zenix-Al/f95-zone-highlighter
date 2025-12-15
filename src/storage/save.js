@@ -2,6 +2,7 @@ import {
   config,
   debug,
   defaultColors,
+  defaultGlobalSettings,
   defaultLatestSettings,
   defaultOverlaySettings,
   defaultThreadSetting,
@@ -74,8 +75,7 @@ export async function loadData() {
     threadSettings: mergeWithDefault(parsed.threadSettings, defaultThreadSetting),
 
     latestSettings: mergeWithDefault(parsed.latestSettings, defaultLatestSettings),
-
-    configVisibility: parsed.configVisibility ?? true,
+    globalSettings: mergeWithDefault(parsed.globalSettings, defaultGlobalSettings),
 
     // Backward compat: old flat minVersion → migrate to latestSettings
     // (safe even if latestSettings already exists)

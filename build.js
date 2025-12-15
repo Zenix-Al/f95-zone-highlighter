@@ -16,7 +16,7 @@ if (fs.existsSync(VERSION_FILE)) {
   }
 }
 
-// Detect bump type from args: --major, --minor, --patch (default: patch)
+// Detect bump type from args: -- --major, --minor, --patch (default: patch)
 const args = process.argv.slice(2);
 const bumpType = args.find((a) => a.startsWith("--"))?.slice(2) || "patch";
 
@@ -43,19 +43,23 @@ const banner = `// Built on ${now} — AUTO-GENERATED, edit from /src and rebuil
 
 const header = `// ==UserScript==
 // @name         F95Zone Latest Highlighter
+// @version      ${versionString}
 // @icon         https://external-content.duckduckgo.com/iu/?u=https://f95zone.to/data/avatars/l/1963/1963870.jpg?1744969685
 // @namespace    https://f95zone.to/threads/f95zone-latest.250836/
 // @homepage     https://f95zone.to/threads/f95zone-latest.250836/
 // @homepageURL  https://f95zone.to/threads/f95zone-latest.250836/
+// @supportURL   https://f95zone.to/threads/forum-latest.250836/
 // @author       X Death on F95zone
 // @author       Edexal
 // @match        https://f95zone.to/sam/latest_alpha/*
 // @match        https://f95zone.to/threads/*
 // @grant        GM.setValue
 // @grant        GM.getValues
+// @grant GM_addValueChangeListener
 // @run-at       document-idle
 // @license      GPL-3.0-or-later
-// @version      ${versionString}
+// @downloadURL  https://update.greasyfork.org/scripts/546518/F95Zone%20Latest%20Highlighter.user.js
+// @updateURL    https://update.greasyfork.org/scripts/546518/F95Zone%20Latest%20Highlighter.user.js
 // @description  Highlight thread cards on the Latest Updates Page and adds colorful thread tags!
 // ==/UserScript==
 // ------------------------------------------------------------
@@ -63,21 +67,24 @@ ${banner}
 // ------------------------------------------------------------
 
 `;
+
 const headerUglified = `// ==UserScript==
 // @name         F95Zone Latest Highlighter uglified
+// @version      ${versionString}
 // @icon         https://external-content.duckduckgo.com/iu/?u=https://f95zone.to/data/avatars/l/1963/1963870.jpg?1744969685
 // @namespace    https://f95zone.to/threads/f95zone-latest.250836/
 // @homepage     https://f95zone.to/threads/f95zone-latest.250836/
 // @homepageURL  https://f95zone.to/threads/f95zone-latest.250836/
+// @supportURL   https://f95zone.to/threads/forum-latest.250836/
 // @author       X Death on F95zone
 // @author       Edexal
 // @match        https://f95zone.to/sam/latest_alpha/*
 // @match        https://f95zone.to/threads/*
 // @grant        GM.setValue
 // @grant        GM.getValues
+// @grant GM_addValueChangeListener
 // @run-at       document-idle
 // @license      GPL-3.0-or-later
-// @version      ${versionString}
 // @description  Highlight thread cards on the Latest Updates Page and adds colorful thread tags!
 // ==/UserScript==
 // ------------------------------------------------------------
