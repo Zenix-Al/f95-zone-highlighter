@@ -1,7 +1,44 @@
+import { hijackMaskedLinks } from "../helper/maskedLinkSkipper";
 import { wideForum } from "../ui/wideForum";
 
 // meta/threadSettings.js
 export const threadSettingsMeta = {
+  skipMaskedLink: {
+    type: "toggle",
+    text: "Skip masked link page",
+    tooltip: "Automatically bypass the masked link intermediary page when accessing masked links",
+    config: "threadSettings.skipMaskedLink",
+    effects: {
+      custom: () => {
+        hijackMaskedLinks();
+      },
+      toast: (v) => `Skip Masked Link ${v ? "enabled" : "disabled"}`,
+    },
+  },
+  isWide: {
+    type: "toggle",
+    text: "Wide thread (full width)",
+    tooltip: "Remove max-width restriction — makes thread use full screen width",
+    config: "threadSettings.isWide",
+    effects: {
+      custom: (v) => wideForum(v),
+      toast: (v) => `Wide Thread ${v ? "enabled" : "disabled"}`,
+    },
+  },
+
+  imgRetry: {
+    type: "toggle",
+    text: "Image Retry",
+    tooltip: "Enable image retry for broken images in threads",
+    config: "threadSettings.imgRetry",
+    effects: {
+      toast: (v) => `Image Retry ${v ? "enabled" : "disabled"}`,
+    },
+  },
+  _header_visibility: {
+    type: "header",
+    text: "Thread Overlay Settings",
+  },
   neutral: {
     type: "toggle",
     text: "Show Neutral overlay",
@@ -54,27 +91,6 @@ export const threadSettingsMeta = {
     effects: {
       reapply: "overlay",
       toast: (v) => `Excluded Shadow ${v ? "enabled" : "disabled"}`,
-    },
-  },
-
-  isWide: {
-    type: "toggle",
-    text: "Wide thread (full width)",
-    tooltip: "Remove max-width restriction — makes thread use full screen width",
-    config: "threadSettings.isWide",
-    effects: {
-      custom: (v) => wideForum(v),
-      toast: (v) => `Wide Thread ${v ? "enabled" : "disabled"}`,
-    },
-  },
-
-  imgRetry: {
-    type: "toggle",
-    text: "Image Retry",
-    tooltip: "Enable image retry for broken images in threads",
-    config: "threadSettings.imgRetry",
-    effects: {
-      toast: (v) => `Image Retry ${v ? "enabled" : "disabled"}`,
     },
   },
 };
