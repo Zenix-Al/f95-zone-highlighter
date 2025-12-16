@@ -1,6 +1,6 @@
 # F95 Zone Highlighter
 
-A userscript that highlights specific content on [F95 Zone](https://f95zone.to) to improve readability and navigation.
+Level up your F95Zone experience with this all-in-one userscript powerhouse! Combines advanced thread highlighting, customizable overlays and tags, layout enhancements, auto latest page features, and seamless masked link skipping for faster downloads. Everything is highly configurable to match your vibe, preferred/excluded tags, colors, overlays, wide mode, and more.
 
 ## 📦 Requirements
 

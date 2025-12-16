@@ -42,17 +42,18 @@ const now = new Date().toISOString().replace("T", " ").substring(0, 19) + " UTC"
 const banner = `// Built on ${now} — AUTO-GENERATED, edit from /src and rebuild`;
 
 const header = `// ==UserScript==
-// @name         F95Zone Latest Highlighter
+// @name         F95Zone Ultimate Enhancer
 // @version      ${versionString}
 // @icon         https://external-content.duckduckgo.com/iu/?u=https://f95zone.to/data/avatars/l/1963/1963870.jpg?1744969685
 // @namespace    https://f95zone.to/threads/f95zone-latest.250836/
 // @homepage     https://f95zone.to/threads/f95zone-latest.250836/
 // @homepageURL  https://f95zone.to/threads/f95zone-latest.250836/
 // @supportURL   https://f95zone.to/threads/forum-latest.250836/
-// @author       X Death on F95zone
-// @author       Edexal
+// @author       X Death (creator and maintainer)
+// @author       Edexal (enhancements)
 // @match        https://f95zone.to/sam/latest_alpha/*
 // @match        https://f95zone.to/threads/*
+// @match        https://f95zone.to/masked/*
 // @grant        GM.setValue
 // @grant        GM.getValues
 // @grant GM_addValueChangeListener
@@ -60,7 +61,7 @@ const header = `// ==UserScript==
 // @license      GPL-3.0-or-later
 // @downloadURL  https://update.greasyfork.org/scripts/546518/F95Zone%20Latest%20Highlighter.user.js
 // @updateURL    https://update.greasyfork.org/scripts/546518/F95Zone%20Latest%20Highlighter.user.js
-// @description  Highlight thread cards on the Latest Updates Page and adds colorful thread tags!
+// @description  All-in-one powerhouse for F95Zone: Advanced thread highlighting & overlays, customizable tags/colors, wide layouts, auto latest refresh + notifications, seamless masked link skipping (direct on-click zap to hosts), image retry fixes, and more!
 // ==/UserScript==
 // ------------------------------------------------------------
 ${banner}
@@ -69,23 +70,24 @@ ${banner}
 `;
 
 const headerUglified = `// ==UserScript==
-// @name         F95Zone Latest Highlighter uglified
+// @name         F95Zone Ultimate Enhancer
 // @version      ${versionString}
 // @icon         https://external-content.duckduckgo.com/iu/?u=https://f95zone.to/data/avatars/l/1963/1963870.jpg?1744969685
 // @namespace    https://f95zone.to/threads/f95zone-latest.250836/
 // @homepage     https://f95zone.to/threads/f95zone-latest.250836/
 // @homepageURL  https://f95zone.to/threads/f95zone-latest.250836/
 // @supportURL   https://f95zone.to/threads/forum-latest.250836/
-// @author       X Death on F95zone
-// @author       Edexal
+// @author       X Death (creator and maintainer)
+// @author       Edexal (enhancements)
 // @match        https://f95zone.to/sam/latest_alpha/*
 // @match        https://f95zone.to/threads/*
+// @match        https://f95zone.to/masked/*
 // @grant        GM.setValue
 // @grant        GM.getValues
 // @grant GM_addValueChangeListener
 // @run-at       document-idle
 // @license      GPL-3.0-or-later
-// @description  Highlight thread cards on the Latest Updates Page and adds colorful thread tags!
+// @description  All-in-one powerhouse for F95Zone: Advanced thread highlighting & overlays, customizable tags/colors, wide layouts, auto latest refresh + notifications, seamless masked link skipping (direct on-click zap to hosts), image retry fixes, and more!
 // ==/UserScript==
 // ------------------------------------------------------------
 ${banner}
@@ -110,9 +112,9 @@ esbuild
     const builtCode = fs.readFileSync("dist/userscript.js", "utf8");
     const finalOutput = header + builtCode;
 
-    fs.writeFileSync("dist/f95zone-latest-highlighter.user.js", finalOutput);
+    fs.writeFileSync("dist/f95zone-ultimate-enhancer.user.js", finalOutput);
     console.log(`Build complete! Version: ${versionString}`);
-    console.log(`Output: dist/f95zone-latest-highlighter.user.js`);
+    console.log(`Output: dist/f95zone-ultimate-enhancer.user.js`);
   })
   .catch((err) => {
     console.error("Build failed:", err);
@@ -134,9 +136,9 @@ esbuild
     const builtCode = fs.readFileSync("dist/uglified.js", "utf8");
     const finalOutput = headerUglified + builtCode;
 
-    fs.writeFileSync("dist/f95zone-latest-highlighter.uglified.user.js", finalOutput);
+    fs.writeFileSync("dist/f95zone-ultimate-enhancer.uglified.user.js", finalOutput);
     console.log(`Uglify Build complete! Version: ${versionString}`);
-    console.log(`Output: dist/f95zone-latest-highlighter.uglified.user.js`);
+    console.log(`Output: dist/f95zone-ultimate-enhancer.uglified.user.js`);
   })
   .catch((err) => {
     console.error("Build failed:", err);

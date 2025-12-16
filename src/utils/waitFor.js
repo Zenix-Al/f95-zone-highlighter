@@ -24,5 +24,7 @@ export function detectPage() {
     state.isThread = true;
   } else if (path.startsWith("/sam/latest_alpha")) {
     state.isLatest = true;
+  } else if (path.startsWith("/masked")) {
+    state.isMaskedLink = true;
   }
 }

@@ -11,6 +11,7 @@ import { detectPage, waitFor } from "./utils/waitFor";
 // IMAGE RETRY IMPORTS
 import { injectImageRepair } from "./cores/imageHandler.js";
 import { initCrossTabSync } from "./storage/crossTabSync.js";
+import { hijackMaskedLinks, skipMaskedPage } from "./helper/maskedLinkSkipper.js";
 
 function waitForBody(callback) {
   if (document.body) {
@@ -40,10 +41,13 @@ waitForBody(async () => {
       });
   }
 
-  // === THREAD LOGIC + IMAGE RETRY ===
   if (state.isThread) {
     processThreadTags();
     wideForum();
     injectImageRepair();
+    config.threadSettings.skipMaskedLink && hijackMaskedLinks();
+  }
+  if (state.isMaskedLink) {
+    config.threadSettings.skipMaskedLink && skipMaskedPage();
   }
 });

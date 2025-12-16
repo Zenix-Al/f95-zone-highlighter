@@ -13,6 +13,8 @@ export const state = {
   isLatest: false,
   isImgRetryInjected: false,
   firstLoad: true,
+  isMaskedLink: false,
+  isMaskedLinkApplied: false,
 };
 export const validVersions = ["full", "final"];
 
@@ -51,6 +53,7 @@ export const defaultThreadSetting = {
   excludedShadow: true,
   isWide: false,
   imgRetry: false,
+  skipMaskedLink: true,
 };
 
 export const defaultLatestSettings = {
