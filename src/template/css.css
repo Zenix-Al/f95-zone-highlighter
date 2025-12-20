@@ -32,16 +32,18 @@
   background-color: var(--preferred-color);
   font-weight: bold;
   color: var(--preferred-text-color);
+}
+.preffered-shadow {
   box-shadow: var(--preferred-shadow);
 }
-
 .excluded {
   background-color: var(--excluded-color);
   font-weight: bold;
   color: var(--excluded-text-color);
+}
+.excluded-shadow {
   box-shadow: var(--excluded-shadow);
 }
-
 .neutral {
   background-color: var(--neutral-color);
   font-weight: bold;
@@ -390,28 +392,32 @@ div#latest-page_items-wrap_inner div.resource-tile a.resource-tile_link {
   width: auto;
   opacity: 0.75;
   transition:
-    opacity 0.2s ease,
-    transform 0.2s ease;
-  @media (width < 480px) {
-    bottom: 60px;
-  }
+    opacity 1s ease,
+    transform 0.5s ease;
 }
 
-/* Hover effect */
 #tag-config-button:hover {
   opacity: 1;
 }
+
 #tag-config-button:active {
   transform: scale(0.9);
 }
+
+/* Hidden state that still allows hover */
 #tag-config-button.hidden {
   opacity: 0;
-  pointer-events: auto;
+  pointer-events: auto; /* stays interactive for hover */
   transition: opacity 0.3s ease;
 }
 
 #tag-config-button.hidden:hover {
-  opacity: 0.75;
+  opacity: 0.75; /* restores visible opacity on hover */
+}
+
+/* Optional: for blinking effect */
+.blink-hide {
+  animation: blink-hidden 0.4s ease-in-out 3;
 }
 
 #tag-config-modal .modal-content {
@@ -635,5 +641,16 @@ html.latest-signature-collapsed aside.message-signature.latest-signature-expande
 @media (max-width: 480px) {
   html.latest-signature-collapsed .latest-signature-toggle {
     display: none;
+  }
+}
+@keyframes blink-hidden {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
   }
 }

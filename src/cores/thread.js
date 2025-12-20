@@ -27,11 +27,17 @@ export function processThreadTag(tagElement) {
   Object.values(STATUS).forEach((cls) => tagElement.classList.remove(cls));
 
   // Apply class only if setting is enabled
-  if (preferredId && config.threadSettings.preferred) {
+  const { preferred, preferredShadow, excluded, excludedShadow, neutral } = config.threadSettings;
+
+  if (preferredId && preferred) {
     tagElement.classList.add(STATUS.PREFERRED);
-  } else if (excludedId && config.threadSettings.excluded) {
+    preferredShadow && tagElement.classList.add(STATUS.PREFFERED_SHADOW);
+    return;
+  } else if (excludedId && excluded) {
     tagElement.classList.add(STATUS.EXCLUDED);
-  } else if (config.threadSettings.neutral) {
+    excludedShadow && tagElement.classList.add(STATUS.EXCLUDED_SHADOW);
+    return;
+  } else if (neutral) {
     tagElement.classList.add(STATUS.NEUTRAL);
   }
 }
