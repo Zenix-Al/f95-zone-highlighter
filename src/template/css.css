@@ -17,7 +17,7 @@
   --preferred-shadow: 0 0 2px 1px white;
   --excluded-shadow: 0 0 2px 1px white;
 }
-#tag-error-notif {
+.modal-error-notif {
   display: none; /* hidden by default */
   background-color: #ffe5e5; /* soft red/pink */
   color: #b00020; /* dark red text */
@@ -107,25 +107,35 @@ div#latest-page_items-wrap_inner div.resource-tile a.resource-tile_link {
 .tag-btn:hover {
   filter: brightness(1.1);
 }
-#toast {
+#toast-container {
   position: fixed;
   top: 20px;
   left: 50%;
   transform: translateX(-50%);
+  z-index: 10000; /* above modal */
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.toast {
   padding: 10px;
   background-color: #333;
   color: #fff;
   border-radius: 8px;
-  z-index: 10000; /* above modal */
   opacity: 0;
+  transform: translateY(-10px);
   transition:
     opacity 0.3s ease,
-    top 0.3s ease;
-  pointer-events: none; /* doesn’t block clicks */
+    transform 0.3s ease;
 }
-#toast.show {
+
+.toast.show {
   opacity: 1;
+  transform: translateY(0);
 }
+
 #tag-config-modal {
   display: none;
   position: fixed;
@@ -174,13 +184,22 @@ div#latest-page_items-wrap_inner div.resource-tile a.resource-tile_link {
 }
 
 /* Excluded tags container */
+.tag-actions {
+  display: flex;
+  gap: 5px;
+}
 #excluded-tags-list {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
   margin-top: 8px;
 }
-
+#search-container {
+  position: relative;
+  display: inline-block;
+  min-height: 250px;
+  width: 100%;
+}
 /* Excluded tag item */
 .excluded-tag-item {
   display: inline-flex;
@@ -208,16 +227,16 @@ div#latest-page_items-wrap_inner div.resource-tile a.resource-tile_link {
   font-weight: bold;
 }
 
-.ignored-tag-remove:hover {
-  background-color: #a34040;
-}
-
 /* Individual list items */
 #search-results li {
   padding: 6px 8px;
   cursor: pointer;
   color: #fff;
   background-color: #222;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 #search-results li:hover {
@@ -522,4 +541,99 @@ html.latest-wide main#latest-page_main-wrap {
   text-transform: uppercase;
 
   user-select: none;
+}
+
+/* Existing: Wide Latest Page – full width container */
+html.latest-wide main#latest-page_main-wrap {
+  width: 100% !important;
+  max-width: none !important;
+}
+
+/* New: Dense Adaptive Grid – overrides the shitty 30% minmax */
+html.latest-dense .grid-normal {
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(260px, 1fr)
+  ) !important; /* Magic number – adaptive columns */
+  gap: 20px !important; /* Keeps spacing clean */
+}
+
+/* Polish: let cards breathe and fill the slot properly */
+html.latest-dense .structItem.structItem--latest {
+  max-width: none !important;
+  width: 100% !important;
+}
+
+/* Optional extra: slight card tightening if you want even more density */
+html.latest-dense .structItem-cell.structItem-cell--main {
+  padding: 12px !important; /* Default is bigger, this makes 'em snugger */
+}
+/* collapse signatures globally when enabled */
+html.latest-signature-collapsed aside.message-signature {
+  max-height: 0 !important;
+  overflow: hidden !important;
+
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  margin-top: 0 !important;
+  border-top: none !important;
+
+  opacity: 0;
+  transition:
+    max-height 0.25s ease,
+    opacity 0.2s ease;
+}
+
+/* expanded state (per message) */
+html.latest-signature-collapsed aside.message-signature.latest-signature-expanded {
+  max-height: 300px !important;
+  overflow-y: auto !important;
+
+  padding-top: 10px !important;
+  padding-bottom: 10px !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
+
+  opacity: 1;
+}
+
+/* toggle button */
+.latest-signature-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  margin: 6px 0 12px;
+  padding: 6px 0;
+
+  border: none;
+  border-radius: 0;
+  background: transparent;
+
+  font-size: 1.2rem;
+  color: #ec5555;
+  cursor: pointer;
+
+  position: relative;
+}
+
+/* separator lines */
+.latest-signature-toggle::before,
+.latest-signature-toggle::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.12);
+  margin: 0 10px;
+}
+
+.latest-signature-toggle span {
+  white-space: nowrap;
+}
+
+/* mobile keeps forum behavior */
+@media (max-width: 480px) {
+  html.latest-signature-collapsed .latest-signature-toggle {
+    display: none;
+  }
 }

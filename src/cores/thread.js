@@ -1,6 +1,7 @@
-import { config, state, STATUS } from "../constants";
+import { config, debug, state, STATUS } from "../constants";
 
 export function processThreadTags() {
+  if (!state.isThread || !config.threadSettings.threadOverlayToggle) return;
   const tagList = document.querySelector(".js-tagList");
   if (!tagList) {
     return;
@@ -34,30 +35,67 @@ export function processThreadTag(tagElement) {
     tagElement.classList.add(STATUS.NEUTRAL);
   }
 }
-
-export function autoRefreshClick() {
-  const autoRefreshBtn = document.getElementById("controls_auto-refresh");
-  if (!autoRefreshBtn) return;
-  state.refreshNotification = true;
-  const selected = autoRefreshBtn.classList.contains("selected");
-
-  if (
-    (!selected && config.latestSettings.autoRefresh) ||
-    (selected && !config.latestSettings.autoRefresh)
-  ) {
-    autoRefreshBtn.click();
+export function toggleThreadTagOverlay() {
+  if (!state.isThread) return;
+  if (config.threadSettings.threadOverlayToggle) {
+    processThreadTags();
+  } else {
+    disableThreadTagOverlay();
   }
 }
+export function disableThreadTagOverlay() {
+  if (!state.isThread) return;
+  // Find all tags that might have been processed
+  const tagList = document.querySelector(".js-tagList");
+  if (!tagList) return;
 
-export function webNotifClick() {
-  const webNotifBtn = document.getElementById("controls_notify");
-  if (!webNotifBtn) return;
-  state.refreshNotification = true;
-  const selected = webNotifBtn.classList.contains("selected");
+  const tags = tagList.getElementsByClassName("tagItem");
+  Array.from(tags).forEach((tag) => {
+    // Remove every possible status class we ever added
+    Object.values(STATUS).forEach((cls) => {
+      tag.classList.remove(cls);
+    });
+  });
 
-  if (!selected && config.latestSettings.webNotif) {
-    webNotifBtn.click();
-  } else if (selected && !config.latestSettings.webNotif) {
-    webNotifBtn.click();
+  console.log("Thread tag overlay disabled — tags back to vanilla");
+}
+export function signatureCollapse() {
+  if (!state.isThread) return;
+
+  const enabled = !!config.threadSettings.collapseSignature;
+  const root = document.documentElement;
+
+  root.classList.toggle("latest-signature-collapsed", enabled);
+
+  if (!enabled) {
+    cleanup();
+    return;
   }
+
+  document.querySelectorAll("aside.message-signature").forEach((sig) => {
+    debug && console.log("Processing signature collapse", sig);
+    if (sig.dataset.latestProcessed) return;
+    sig.dataset.latestProcessed = "1";
+
+    const btn = document.createElement("button");
+    btn.innerHTML = "<span>Show signature</span>";
+    btn.className = "latest-signature-toggle";
+    btn.type = "button";
+
+    btn.addEventListener("click", () => {
+      const expanded = sig.classList.toggle("latest-signature-expanded");
+      btn.querySelector("span").textContent = expanded ? "Hide signature" : "Show signature";
+    });
+
+    sig.after(btn);
+  });
+}
+
+function cleanup() {
+  document.querySelectorAll(".latest-signature-toggle").forEach((b) => b.remove());
+
+  document.querySelectorAll("aside.message-signature").forEach((sig) => {
+    delete sig.dataset.latestProcessed;
+    sig.classList.remove("latest-signature-expanded");
+  });
 }

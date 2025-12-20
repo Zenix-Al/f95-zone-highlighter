@@ -1,5 +1,4 @@
 import { processAllTiles } from "../cores/latest";
-import { autoRefreshClick, webNotifClick } from "../cores/thread";
 
 // New helper function
 export function verifyTilesAfterLoad(retryDelay = 2000, maxRetries = 3) {
@@ -19,8 +18,6 @@ export function verifyTilesAfterLoad(retryDelay = 2000, maxRetries = 3) {
     if (!hasModified) {
       console.warn("Tiles not modified yet, forcing manual trigger...");
       processAllTiles();
-      autoRefreshClick();
-      webNotifClick();
 
       retries++;
       if (retries < maxRetries) {

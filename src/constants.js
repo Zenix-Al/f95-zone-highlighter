@@ -6,15 +6,13 @@ export const state = {
   colorRendered: false,
   overlayRendered: false,
   threadSettingsRendered: false,
-  reapplyOverlay: false,
-  refreshNotification: false,
-  refreshLayout: false,
   isThread: false,
   isLatest: false,
   isImgRetryInjected: false,
   firstLoad: true,
   isMaskedLink: false,
   isMaskedLinkApplied: false,
+  isProcessingTiles: false,
 };
 export const validVersions = ["full", "final"];
 
@@ -42,7 +40,6 @@ export const defaultOverlaySettings = {
   preferred: true,
   excluded: true,
   overlayText: true,
-  tileText: true,
 };
 
 export const defaultThreadSetting = {
@@ -54,6 +51,8 @@ export const defaultThreadSetting = {
   isWide: false,
   imgRetry: false,
   skipMaskedLink: true,
+  collapseSignature: false,
+  threadOverlayToggle: true,
 };
 
 export const defaultLatestSettings = {
@@ -61,7 +60,8 @@ export const defaultLatestSettings = {
   webNotif: false,
   minVersion: 0.5,
   wideLatest: false,
-  //scriptNotif: false,
+  denseLatestGrid: false,
+  latestOverlayToggle: true,
 };
 
 export const metrics = {

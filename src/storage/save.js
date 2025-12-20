@@ -15,32 +15,6 @@ export async function saveConfigKeys(data) {
   if (debug) console.log("Config saved (keys)", data);
 }
 
-// Deep merge helper
-function deepMerge(defaults, loaded) {
-  const result = Array.isArray(defaults) ? [...defaults] : { ...defaults };
-
-  if (!loaded || typeof loaded !== "object") return result;
-
-  for (const key in defaults) {
-    if (loaded[key] === undefined) {
-      // Use default if missing
-      result[key] = defaults[key];
-    } else if (
-      typeof defaults[key] === "object" &&
-      defaults[key] !== null &&
-      !Array.isArray(defaults[key])
-    ) {
-      // Recursively merge nested objects
-      result[key] = deepMerge(defaults[key], loaded[key]);
-    } else {
-      // Use loaded value
-      result[key] = loaded[key];
-    }
-  }
-
-  return result;
-}
-
 export async function loadData() {
   let parsed = {};
   try {

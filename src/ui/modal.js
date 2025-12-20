@@ -1,7 +1,7 @@
 import { config } from "../constants";
 import ui from "../template/ui.html?raw";
 import css from "../template/css.css?raw";
-import { checkForUpdates, initModalUi } from "../cores/init";
+import { initModalUi } from "../cores/init";
 export function injectButton() {
   const button = document.createElement("button");
   button.textContent = "⚙";
@@ -9,28 +9,42 @@ export function injectButton() {
   button.addEventListener("click", () => openModal());
   document.body.appendChild(button);
 }
-export function showToast(message, duration = 2000) {
-  let toast = document.getElementById("toast");
-  if (!toast) {
-    toast = document.createElement("div");
-    toast.id = "toast";
-    document.body.appendChild(toast);
+const MAX_TOASTS = 4;
+const TOAST_DURATION = 2000;
+
+export function showToast(message, duration = TOAST_DURATION) {
+  let container = document.getElementById("toast-container");
+
+  if (!container) {
+    container = document.createElement("div");
+    container.id = "toast-container";
+    document.body.appendChild(container);
   }
 
+  const toast = document.createElement("div");
+  toast.className = "toast";
   toast.textContent = message;
-  toast.classList.add("show");
+  container.appendChild(toast);
+
+  // enforce limit
+  while (container.children.length > MAX_TOASTS) {
+    container.firstElementChild.remove();
+  }
+
+  requestAnimationFrame(() => toast.classList.add("show"));
 
   setTimeout(() => {
     toast.classList.remove("show");
+    setTimeout(() => toast.remove(), 200);
   }, duration);
 }
+
 export function openModal() {
   initModalUi();
   document.getElementById("tag-config-modal").style.display = "block";
 }
 export function closeModal() {
   document.getElementById("tag-config-modal").style.display = "none";
-  checkForUpdates();
 }
 
 export function injectModal() {

@@ -1,20 +1,38 @@
-import { state } from "../constants";
+import { config, state } from "../constants";
 import { updateTags } from "../data/tags";
+import { hijackMaskedLinks } from "../helper/maskedLinkSkipper";
 import { colorSettingsMeta } from "../meta/colorSettings";
 import { globalSettingsMeta } from "../meta/globalSettings";
 import { latestSettingsMeta } from "../meta/latestSettings";
-import { overlaySettingsMeta } from "../meta/overlaySettings";
-import { threadSettingsMeta } from "../meta/threadSettings";
+import { disabledOverlaySettingsMeta, overlaySettingsMeta } from "../meta/overlaySettings";
+import {
+  disabledThreadOverlayMeta,
+  threadOverlaySettingsMeta,
+  threadSettingsMeta,
+} from "../meta/threadSettings";
 import { renderExcluded, renderPreferred } from "../renderer/searchTags";
 import { renderSettingsSection } from "../renderer/settingsSection";
+import { updateColorStyle } from "../renderer/updateColorStyle";
 import { injectListener } from "../ui/listeners";
-import { injectModal } from "../ui/modal";
+import { injectButton, injectCSS, injectModal } from "../ui/modal";
 import { wideForum } from "../ui/wideForum";
+import { waitFor } from "../utils/waitFor";
 import { injectImageRepair } from "./imageHandler";
-import { processAllTiles } from "./latest";
+import {
+  handleWebClick,
+  processAllTiles,
+  toggleDenseLatestGrid,
+  toggleWideLatestPage,
+  watchAndUpdateTiles,
+} from "./latest";
 import { checkTags } from "./safety";
-import { autoRefreshClick, processThreadTags, webNotifClick } from "./thread";
+import { processThreadTags, signatureCollapse } from "./thread";
 
+export function initUI() {
+  injectCSS();
+  injectButton();
+  updateColorStyle();
+}
 export function initModalUi() {
   if (!state.modalInjected) {
     state.modalInjected = true;
@@ -31,12 +49,11 @@ export function initModalUi() {
   }
   if (!state.overlayRendered) {
     state.overlayRendered = true;
-    renderSettingsSection("latest-settings-container", latestSettingsMeta);
-    renderSettingsSection("overlay-settings-container", overlaySettingsMeta);
+    updateLatestUI();
   }
   if (!state.threadSettingsRendered) {
     state.threadSettingsRendered = true;
-    renderSettingsSection("thread-settings-container", threadSettingsMeta);
+    updateThreadUI();
   }
 
   renderPreferred();
@@ -45,20 +62,50 @@ export function initModalUi() {
   checkTags();
 }
 
-export function checkForUpdates() {
-  if (state.isLatest && state.refreshNotification) {
-    autoRefreshClick();
-    webNotifClick();
+export function updateLatestUI() {
+  renderSettingsSection("latest-settings-container", latestSettingsMeta);
+  if (config.latestSettings.latestOverlayToggle) {
+    renderSettingsSection("overlay-settings-container", overlaySettingsMeta);
+  } else {
+    renderSettingsSection("overlay-settings-container", disabledOverlaySettingsMeta);
   }
-  if (state.refreshLayout) {
-    wideForum();
+}
+
+export function updateThreadUI() {
+  renderSettingsSection("thread-settings-container", threadSettingsMeta);
+  if (config.threadSettings.threadOverlayToggle) {
+    renderSettingsSection("thread-overlay-settings-container", threadOverlaySettingsMeta);
+  } else {
+    renderSettingsSection("thread-overlay-settings-container", disabledThreadOverlayMeta);
   }
-  if (state.reapplyOverlay) {
-    if (state.isThread) {
-      processThreadTags();
-      injectImageRepair();
-    } else if (state.isLatest) {
-      processAllTiles(true);
-    }
+}
+
+export function toggleUIOverlayOverallSettings() {
+  //disable color and tag settings UI
+}
+
+export async function initLatestPage() {
+  try {
+    await waitFor(() => document.getElementById("latest-page_items-wrap"));
+
+    if (config.latestSettings.wideLatest) toggleWideLatestPage();
+    watchAndUpdateTiles();
+    if (config.latestSettings.denseLatestGrid) toggleDenseLatestGrid();
+    processAllTiles();
+    handleWebClick();
+  } catch {
+    console.warn("Observer container not found on latest page");
   }
+}
+
+export function initThreadPage() {
+  if (config.threadSettings.threadOverlayToggle) processThreadTags();
+  if (config.threadSettings.isWide) wideForum();
+  if (config.threadSettings.imgRetry) injectImageRepair();
+  if (config.threadSettings.collapseSignature) signatureCollapse();
+  if (config.threadSettings.skipMaskedLink) hijackMaskedLinks();
+}
+export function initPageState() {
+  if (state.isLatest) initLatestPage();
+  if (state.isThread) initThreadPage();
 }

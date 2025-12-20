@@ -70,7 +70,7 @@ ${banner}
 `;
 
 const headerUglified = `// ==UserScript==
-// @name         F95Zone Ultimate Enhancer
+// @name         F95Zone Ultimate Enhancer (Uglified)
 // @version      ${versionString}
 // @icon         https://external-content.duckduckgo.com/iu/?u=https://f95zone.to/data/avatars/l/1963/1963870.jpg?1744969685
 // @namespace    https://f95zone.to/threads/f95zone-latest.250836/
@@ -103,6 +103,7 @@ esbuild
     minify: false,
     outfile: "dist/userscript.js",
     format: "iife",
+    legalComments: "none",
     loader: {
       ".html": "text",
       ".css": "text",

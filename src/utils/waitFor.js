@@ -28,3 +28,10 @@ export function detectPage() {
     state.isMaskedLink = true;
   }
 }
+export function waitForBody(callback) {
+  if (document.body) {
+    callback();
+  } else {
+    requestAnimationFrame(() => waitForBody(callback));
+  }
+}

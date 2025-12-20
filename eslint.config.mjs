@@ -1,6 +1,9 @@
 import js from "@eslint/js";
 import globals from "globals";
 import { defineConfig } from "eslint/config";
+import pkgUnusedImports from "eslint-plugin-unused-imports"; // CommonJS default import
+
+const unusedImports = pkgUnusedImports; // may need .default if ESM resolution
 
 const gmGlobals = [
   "GM_getValue",
@@ -15,6 +18,10 @@ const gmGlobals = [
   "GM_xmlhttpRequest",
   "GM_download",
   "unsafeWindow",
+  "GM_addValueChangeListener",
+  "GM_removeValueChangeListener",
+  "GM",
+  "grecaptcha",
 ].reduce((acc, name) => ((acc[name] = "readonly"), acc), {});
 
 export default defineConfig([
@@ -26,9 +33,13 @@ export default defineConfig([
         ...gmGlobals,
       },
     },
+    plugins: {
+      "unused-imports": unusedImports,
+    },
     rules: {
       "no-undef": "error",
-      "no-unused-vars": "warn",
+      "no-unused-vars": ["warn", { vars: "all", args: "after-used", ignoreRestSiblings: false }],
+      "unused-imports/no-unused-vars": "warn",
     },
   },
   {

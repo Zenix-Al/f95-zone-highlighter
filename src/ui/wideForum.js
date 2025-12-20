@@ -7,5 +7,4 @@ export function wideForum() {
   document
     .querySelectorAll(".p-body-inner")
     .forEach((el) => el.classList.toggle("no-max-width", isWide));
-  state.refreshLayout = true;
 }

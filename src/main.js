@@ -1,53 +1,34 @@
 import { config, state } from "./constants";
-import { toggleWideLatestPage, watchAndUpdateTiles } from "./cores/latest";
-import { processThreadTags } from "./cores/thread";
-import { updateColorStyle } from "./renderer/updateColorStyle";
 import { migrateLatestSettings } from "./storage/migrate";
 import { loadData } from "./storage/save";
-import { injectButton, injectCSS, updateButtonVisibility } from "./ui/modal";
-import { wideForum } from "./ui/wideForum";
-import { detectPage, waitFor } from "./utils/waitFor";
+import { updateButtonVisibility } from "./ui/modal";
+import { detectPage, waitForBody } from "./utils/waitFor";
 
-// IMAGE RETRY IMPORTS
-import { injectImageRepair } from "./cores/imageHandler.js";
-import { initCrossTabSync } from "./storage/crossTabSync.js";
-import { hijackMaskedLinks, skipMaskedPage } from "./helper/maskedLinkSkipper.js";
-
-function waitForBody(callback) {
-  if (document.body) {
-    callback();
-  } else {
-    requestAnimationFrame(() => waitForBody(callback));
-  }
-}
+import { toggleCrossTabSync } from "./storage/crossTabSync.js";
+import { initPageState, initUI } from "./cores/init.js";
+import { skipMaskedPage } from "./helper/maskedLinkSkipper.js";
 
 waitForBody(async () => {
+  // --- Load user config ---
   Object.assign(config, await loadData());
-  detectPage();
-  injectCSS();
-  injectButton();
-  updateColorStyle();
-  updateButtonVisibility();
   migrateLatestSettings();
-  config.globalSettings.enableCrossTabSync && initCrossTabSync();
-  if (state.isLatest) {
-    waitFor(() => document.getElementById("latest-page_items-wrap"))
-      .then(() => {
-        toggleWideLatestPage();
-        watchAndUpdateTiles();
-      })
-      .catch(() => {
-        console.warn("Observer container not found on this page");
-      });
+
+  // --- Detect page type/state ---
+  detectPage();
+
+  // --- Masked link handling takes priority ---
+  if (state.isMaskedLink) {
+    if (config.threadSettings.skipMaskedLink) skipMaskedPage();
+    return;
   }
 
-  if (state.isThread) {
-    processThreadTags();
-    wideForum();
-    injectImageRepair();
-    config.threadSettings.skipMaskedLink && hijackMaskedLinks();
-  }
-  if (state.isMaskedLink) {
-    config.threadSettings.skipMaskedLink && skipMaskedPage();
-  }
+  // --- Initialize UI ---
+  initUI();
+
+  // --- Global settings ---
+  updateButtonVisibility();
+  toggleCrossTabSync(config.globalSettings.enableCrossTabSync);
+
+  // --- Page-specific functionality ---
+  initPageState();
 });
