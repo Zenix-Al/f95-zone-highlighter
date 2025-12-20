@@ -2,7 +2,7 @@ import { config, crossTabKeys } from "../constants";
 import { applyEffects } from "../renderer/applyEffects";
 import { metaRegistry } from "../meta/metaRegistry";
 
-export function initCrossTabSync() {
+function initCrossTabSync() {
   Object.keys(crossTabKeys).forEach((key) => {
     GM_addValueChangeListener(key, (name, oldVal, newVal, remote) => {
       if (!remote) return;
@@ -29,4 +29,17 @@ function handleSectionChange(section, oldVal = {}, newVal = {}) {
 
     applyEffects(meta, newVal[subKey]);
   });
+}
+
+function disableCrossTabSync() {
+  Object.keys(crossTabKeys).forEach((key) => {
+    GM_removeValueChangeListener(key);
+  });
+}
+export function toggleCrossTabSync(enabled) {
+  if (enabled) {
+    initCrossTabSync();
+  } else {
+    disableCrossTabSync();
+  }
 }

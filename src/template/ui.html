@@ -1,4 +1,4 @@
-<div id="toast"></div>
+<div id="toast-container"></div>
 
 <div class="modal-content">
   <h2 style="text-align: center">CONFIG</h2>
@@ -31,6 +31,7 @@
       <summary>Thread settings</summary>
       <div class="settings-wrapper">
         <div id="thread-settings-container"></div>
+        <div id="thread-overlay-settings-container"></div>
       </div>
     </details>
   </div>
@@ -41,18 +42,10 @@
       <summary>Tags</summary>
 
       <div class="settings-wrapper">
-        <div id="tag-error-notif"></div>
+        <div id="tag-error-notif" class="modal-error-notif"></div>
         <div id="tags-container">
-          <div
-            id="search-container"
-            style="position: relative; display: inline-block; min-height: 250px; width: 100%"
-          >
-            <input
-              type="text"
-              id="tags-search"
-              placeholder="Search prefixes..."
-              autocomplete="off"
-            />
+          <div id="search-container">
+            <input type="text" id="tags-search" placeholder="Search tags..." autocomplete="off" />
             <ul id="search-results"></ul>
             <div id="preffered-tags-list"></div>
             <div id="excluded-tags-list"></div>
@@ -67,6 +60,8 @@
     <details class="config-list-details">
       <summary>Color</summary>
       <div class="settings-wrapper">
+        <div id="color-error-notif" class="modal-error-notif"></div>
+
         <div id="color-container"></div>
       </div>
       <div class="centered-item">

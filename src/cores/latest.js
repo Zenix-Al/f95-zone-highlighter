@@ -1,39 +1,37 @@
 import { config, debug, state } from "../constants";
 import { getTextColorForGradient } from "../helper/handleTextColor";
 import { verifyTilesAfterLoad } from "../helper/tileVerifier";
-import { autoRefreshClick, webNotifClick } from "./thread";
 
 export function watchAndUpdateTiles() {
   const latestUpdateWrapper = document.getElementById("latest-page_items-wrap");
   if (!latestUpdateWrapper) return;
 
-  // Process any existing tiles first
-  processAllTiles();
-
   const mutationObserver = new MutationObserver(() => {
-    processAllTiles();
     setTimeout(() => {
-      autoRefreshClick();
-      webNotifClick();
+      handleWebClick();
     }, 100);
-    verifyTilesAfterLoad();
+    processAllTiles();
   });
 
   const options = { childList: true, subtree: true }; // subtree ensures nested additions trigger
   mutationObserver.observe(latestUpdateWrapper, options);
-  verifyTilesAfterLoad();
 }
 
 export function processAllTiles(reset = false) {
+  if (!config.latestSettings.latestOverlayToggle || !state.isLatest) return;
+
   const tiles = document.getElementsByClassName("resource-tile");
 
-  if (!tiles.length) {
+  if (!tiles.length || state.isProcessingTiles) {
     return;
   }
 
+  state.isProcessingTiles = true;
   for (let i = 0; i < tiles.length; i++) {
     processTile(tiles[i], reset); // Apply overlays and styles
   }
+  verifyTilesAfterLoad();
+  state.isProcessingTiles = false;
 }
 export function processTile(tile, reset = false) {
   if (tile.dataset.modified === "true" && !reset) return;
@@ -84,14 +82,14 @@ export function processTile(tile, reset = false) {
   if (
     (config.overlaySettings.highVersion &&
       versionNumber !== null &&
-      versionNumber >= config.minVersion) ||
+      versionNumber >= config.latestSettings.minVersion) ||
     isValidKeyword
   ) {
     isOverlayApplied = addOverlayLabel(tile, "High Version", isOverlayApplied);
     colors.push(config.color.highVersion);
   } else if (
     versionNumber !== null &&
-    versionNumber < config.minVersion &&
+    versionNumber < config.latestSettings.minVersion &&
     config.overlaySettings.invalidVersion
   ) {
     addOverlayLabel(tile, "Invalid Version", isOverlayApplied);
@@ -194,12 +192,81 @@ export function getVersionText(tile) {
 
 export function toggleWideLatestPage() {
   const root = document.documentElement;
-
   if (config.latestSettings.wideLatest) {
     root.classList.add("latest-wide");
   } else {
     root.classList.remove("latest-wide");
   }
+}
+export function toggleDenseLatestGrid() {
+  const root = document.documentElement;
+  if (config.latestSettings.denseLatestGrid) {
+    root.classList.add("latest-dense");
+  } else {
+    root.classList.remove("latest-dense");
+  }
+}
 
-  state.refreshLayout = true;
+export function resetAllTiles() {
+  if (config.latestSettings.latestOverlayToggle || !state.isLatest) return;
+  debug && console.log("Resetting all tiles on Latest Updates page");
+  const tiles = document.getElementsByClassName("resource-tile");
+  if (!tiles.length) return;
+
+  for (let i = 0; i < tiles.length; i++) {
+    resetTile(tiles[i]);
+  }
+}
+
+export function resetTile(tile) {
+  if (tile.dataset.modified !== "true") return;
+
+  const body = tile.querySelector(".resource-tile_body");
+  if (!body) return;
+
+  // Remove overlays
+  const overlays = tile.querySelectorAll(".resource-tile_overlay");
+  overlays.forEach((overlay) => overlay.remove());
+
+  // Remove all inline styles
+  body.removeAttribute("style");
+
+  // Reset all meta elements
+  const metas = body.querySelectorAll(".resource-tile_info-meta");
+  metas.forEach((meta) => meta.removeAttribute("style"));
+
+  // Clear modified flag
+  tile.dataset.modified = "";
+}
+
+export function autoRefreshClick() {
+  const autoRefreshBtn = document.getElementById("controls_auto-refresh");
+  if (!autoRefreshBtn) return;
+
+  const selected = autoRefreshBtn.classList.contains("selected");
+
+  if (
+    (!selected && config.latestSettings.autoRefresh) ||
+    (selected && !config.latestSettings.autoRefresh)
+  ) {
+    autoRefreshBtn.click();
+  }
+}
+
+export function webNotifClick() {
+  const webNotifBtn = document.getElementById("controls_notify");
+  if (!webNotifBtn) return;
+  const selected = webNotifBtn.classList.contains("selected");
+
+  if (
+    (!selected && config.latestSettings.webNotif) ||
+    (selected && !config.latestSettings.webNotif)
+  ) {
+    webNotifBtn.click();
+  }
+}
+
+export function handleWebClick() {
+  autoRefreshClick();
+  webNotifClick();
 }

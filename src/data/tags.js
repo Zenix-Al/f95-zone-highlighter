@@ -1,13 +1,12 @@
 import { debug, config, state } from "../constants";
+import { checkTags } from "../cores/safety";
 import { saveConfigKeys } from "../storage/save";
 import { waitFor } from "../utils/waitFor";
 export async function updateTags() {
   if (state.tagsUpdated) return;
 
   const selector = document.querySelector(".selectize-input.items.not-full");
-  const dropdown = document.querySelector(
-    ".selectize-dropdown.single.filter-tags-select"
-  );
+  const dropdown = document.querySelector(".selectize-dropdown.single.filter-tags-select");
 
   if (!selector || !dropdown) {
     if (debug) console.log("updateTags: failed to find selector/dropdown");
@@ -17,11 +16,7 @@ export async function updateTags() {
 
   // wait until options exist
   try {
-    await waitFor(
-      () => dropdown.querySelectorAll(".option").length > 0,
-      50,
-      3000
-    );
+    await waitFor(() => dropdown.querySelectorAll(".option").length > 0, 50, 3000);
   } catch (err) {
     if (debug) console.log("updateTags: timeout waiting for options", err);
     return;
@@ -37,8 +32,7 @@ export async function updateTags() {
   const arraysAreDifferent = !(
     config.tags.length === newTags.length &&
     config.tags.every(
-      (tag, index) =>
-        tag.id === newTags[index].id && tag.name === newTags[index].name
+      (tag, index) => tag.id === newTags[index].id && tag.name === newTags[index].name
     )
   );
 
@@ -47,7 +41,7 @@ export async function updateTags() {
     saveConfigKeys({ tags: config.tags });
     if (debug) console.log("updateTags: tags updated", newTags);
   }
-
+  checkTags();
   state.tagsUpdated = true;
   if (debug) console.log("updateTags: finished");
 }

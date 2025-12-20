@@ -1,6 +1,7 @@
-import { state } from "../constants";
+import { config, state } from "../constants";
 
 export function skipMaskedPage() {
+  if (!config.threadSettings.skipMaskedLink) return;
   if (!location.pathname.startsWith("/masked/") || location.pathname === "/masked/") return;
 
   // Auto-click the continue button if present (most reliable now)
@@ -51,6 +52,7 @@ export function skipMaskedPage() {
             }
           } catch (e) {
             handleError("Bad Response", "Try refreshing");
+            console.error("skipMaskedPage parse error:", e);
           }
         } else {
           handleError("Server Error", "Chill and retry");
@@ -63,11 +65,16 @@ export function skipMaskedPage() {
   sendRequest();
 }
 
-// Hijack clicks on thread pages
+let clickHandler = null; // To keep reference for removal
+let auxclickHandler = null;
+
 export function hijackMaskedLinks() {
   if (location.pathname.startsWith("/masked/")) return;
   if (state.isMaskedLinkApplied) return;
+  if (!config.threadSettings.skipMaskedLink) return;
+
   state.isMaskedLinkApplied = true;
+
   const handler = function (e) {
     if (e.button !== 0 && e.button !== 1) return; // Only left or middle
 
@@ -97,18 +104,45 @@ export function hijackMaskedLinks() {
             const data = JSON.parse(xhr.responseText);
             if (data.status === "ok" && data.msg) {
               targetUrl = data.msg;
+              link.href = targetUrl; // <--- Here: replace the actual href with the real one
               link.style.color = "#00ff00"; // Green success
             }
-          } catch (_) {}
+          } catch (_) {
+            console.error("hijackMaskedLinks parse error:", _);
+          }
+        } else {
+          link.style.color = ""; // Reset color on fail
         }
-        // Redirect properly
+        // Still open the (possibly unmasked) URL in new tab
         window.open(targetUrl, "_blank");
       }
     };
     xhr.send("xhr=1&download=1");
   };
 
-  // Listen to both click (left) and auxclick (middle/right/non-primary)
+  // Assign to vars so we can remove later
+  clickHandler = handler;
+  auxclickHandler = handler;
+
   document.addEventListener("click", handler, true);
   document.addEventListener("auxclick", handler, true);
+}
+
+export function disableHijackMaskedLink() {
+  if (!state.isMaskedLinkApplied) return;
+  if (clickHandler) {
+    document.removeEventListener("click", clickHandler, true);
+    document.removeEventListener("auxclick", auxclickHandler, true);
+    clickHandler = null;
+    auxclickHandler = null;
+  }
+  state.isMaskedLinkApplied = false;
+}
+
+export function toggleHijackMaskedLink() {
+  if (config.threadSettings.skipMaskedLink) {
+    hijackMaskedLinks();
+  } else {
+    disableHijackMaskedLink();
+  }
 }

@@ -1,15 +1,20 @@
 import { config, defaultColors, state } from "../constants";
+import { processAllTiles } from "../cores/latest";
+import { showAllTags, updateSearch } from "../cores/tags";
+import { toggleThreadTagOverlay } from "../cores/thread";
+import { createQueuedTask } from "../helper/createQueuedTask";
 import { colorSettingsMeta } from "../meta/colorSettings";
 import { reRenderSettingsSection } from "../renderer/reRenderSetting";
-import { renderList } from "../renderer/searchTags";
 import { updateColorStyle } from "../renderer/updateColorStyle";
 import { saveConfigKeys } from "../storage/save";
-import { openModal, closeModal, showToast, updateButtonVisibility } from "./modal";
+import { closeModal, showToast } from "./modal";
 
+/**
+ * this file contain is legacy code, carefully migrate functions one by one
+ */
 export function injectListener() {
-  setEventById("tag-config-button", openModal);
-  setEventById("close-modal", closeModal);
   setEventById("tags-search", updateSearch, "input");
+  setEventById("close-modal", closeModal);
   setEventById("tags-search", showAllTags, "focus");
   setEventById("rese-color", resetColor);
   //setEventById("settings-script-notif", updateScriptNotif());
@@ -32,50 +37,6 @@ export function setEventById(idSelector, callback, eventType = "click") {
   }
 }
 
-export function updateSearch(event) {
-  const query = event.target.value.trim().toLowerCase();
-  const results = document.getElementById("search-results");
-
-  if (!query || !results) {
-    if (results) results.style.display = "none";
-    return;
-  }
-
-  const filteredTags = config.tags.filter((tag) => tag.name.toLowerCase().includes(query));
-
-  renderList(filteredTags);
-}
-export function showAllTags() {
-  const results = document.getElementById("search-results");
-  if (!results) return;
-  renderList(config.tags);
-  results.style.display = "block";
-}
-
-export function updateColor(event, key) {
-  const newValue = event.target.value;
-  showToast("color saved successfully!");
-  config.color[key] = newValue;
-  updateColorStyle();
-  saveConfigKeys({ color: config.color });
-  state.reapplyOverlay = true;
-}
-
-export function updateMinVersion(event) {
-  const valueStr = event.target?.value ?? event.value;
-  const value = parseFloat(valueStr);
-
-  if (isNaN(value)) {
-    showToast("Invalid version: must be a number");
-    return;
-  }
-
-  config.minVersion = value;
-  saveConfigKeys({ minVersion: config.minVersion });
-  showToast(`Min version changed to ${config.minVersion}`);
-  state.reapplyOverlay = true;
-}
-
 export function resetColor() {
   if (confirm("Are you sure you want to reset all colors to default?")) {
     config.color = { ...defaultColors };
@@ -83,8 +44,11 @@ export function resetColor() {
     reRenderSettingsSection("color-container", colorSettingsMeta);
     saveConfigKeys({ color: config.color });
     showToast("Colors have been reset to default");
-    state.reapplyOverlay = true;
+    if (config.latestSettings.latestOverlayToggle && state.isLatest) {
+      createQueuedTask(processAllTiles());
+    }
+    if (config.threadSettings.threadOverlayToggle && state.isThread) {
+      createQueuedTask(toggleThreadTagOverlay());
+    }
   }
 }
-
-export function updateScriptNotif() {}

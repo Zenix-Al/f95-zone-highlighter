@@ -15,3 +15,17 @@ export function injectUI() {
     toastEl.style.display = "none";
   }
 }
+export function destroyInjectedUI() {
+  const wrapper = document.getElementById("image-retry-toast-wrapper");
+
+  if (wrapper) {
+    wrapper.remove();
+  }
+
+  // Bonus: hide the toast element if it somehow lingers (defensive)
+  const toastEl = document.getElementById("img-retry-toast");
+  if (toastEl) {
+    toastEl.style.display = "none";
+    toastEl.remove(); // Just in case
+  }
+}

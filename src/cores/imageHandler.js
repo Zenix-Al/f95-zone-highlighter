@@ -3,7 +3,7 @@ import { retryImage } from "./retryLogic.js";
 import { updateToast } from "../ui/toast.js";
 import { recordSuccess } from "./metrics.js";
 import { config } from "../constants.js";
-import { injectUI } from "../ui/imgRetryUi.js";
+import { destroyInjectedUI, injectUI } from "../ui/imgRetryUi.js";
 import { observeDom } from "./observer.js";
 
 let domObserver = null;
@@ -30,8 +30,13 @@ export function injectImageRepair() {
 }
 
 export function handleImage(img, retryingImages) {
-  if (!img.src.startsWith("https://attachments.f95zone.to/")) return;
-  if (img.dataset.retryAttached) return;
+  if (
+    !config.threadSettings.imgRetry ||
+    img.dataset.retryAttached ||
+    !img.src.startsWith("https://attachments.f95zone.to/")
+  ) {
+    return;
+  }
 
   img.dataset.originalSrc = img.dataset.originalSrc || img.src;
   const start = performance.now();
@@ -68,6 +73,7 @@ export function handleImage(img, retryingImages) {
 export function destroyImageRepair() {
   if (!config.isImgRetryInjected) return;
   config.isImgRetryInjected = false;
+  destroyInjectedUI();
   if (domObserver) {
     domObserver.disconnect();
     domObserver = null;

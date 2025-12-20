@@ -7,9 +7,7 @@ const capitalize = (str) => {
 };
 
 export function applyEffects(meta, value) {
-  if (meta.effects?.reapply) {
-    state[`reapply${capitalize(meta.effects.reapply)}`] = true;
-  }
+  //reapply is legacy code, must be moved to metadata approach
 
   if (meta.effects?.toast) {
     showToast(meta.effects.toast(value));

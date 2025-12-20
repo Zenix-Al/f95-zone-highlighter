@@ -1,5 +1,5 @@
 import { config } from "../constants";
-import { initCrossTabSync } from "../storage/crossTabSync";
+import { toggleCrossTabSync } from "../storage/crossTabSync";
 import { updateButtonVisibility } from "../ui/modal";
 
 export const globalSettingsMeta = {
@@ -21,7 +21,7 @@ export const globalSettingsMeta = {
     config: "globalSettings.enableCrossTabSync",
     effects: {
       custom: () => {
-        config.globalSettings.enableCrossTabSync && initCrossTabSync();
+        toggleCrossTabSync(config.globalSettings.enableCrossTabSync);
       },
       toast: (v) => `(experimental)Cross-tab settings sync ${v ? "enabled" : "disabled"}`,
     },
