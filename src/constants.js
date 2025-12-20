@@ -95,6 +95,8 @@ export const STATUS = Object.freeze({
   PREFERRED: "preferred",
   EXCLUDED: "excluded",
   NEUTRAL: "neutral",
+  PREFFERED_SHADOW: "preffered-shadow",
+  EXCLUDED_SHADOW: "excluded-shadow",
 });
 
 export const crossTabKeys = {

@@ -75,32 +75,16 @@ export function updateButtonVisibility() {
   if (!button) return;
 
   if (config.globalSettings.configVisibility === false) {
-    // Blink 3 times
-    let blinkCount = 0;
-    const maxBlinks = 3;
-    const blinkInterval = 400; // ms
+    button.classList.add("blink-hide", "hover-reveal");
 
-    if (button.blinkIntervalId) {
-      clearInterval(button.blinkIntervalId);
-    }
-    button.classList.add("hidden");
+    const onEnd = () => {
+      button.classList.remove("blink-hide");
+      button.classList.add("hidden");
+      button.removeEventListener("animationend", onEnd);
+    };
 
-    button.blinkIntervalId = setInterval(() => {
-      button.classList.toggle("hidden");
-
-      blinkCount++;
-      if (blinkCount >= maxBlinks * 2) {
-        clearInterval(button.blinkIntervalId);
-        button.classList.add("hidden");
-        button.blinkIntervalId = undefined;
-      }
-    }, blinkInterval);
+    button.addEventListener("animationend", onEnd);
   } else {
-    // Show button normally
-    if (button.blinkIntervalId) {
-      clearInterval(button.blinkIntervalId);
-      button.blinkIntervalId = undefined;
-    }
-    button.classList.remove("hidden");
+    button.classList.remove("hidden", "blink-hide", "hover-reveal");
   }
 }
