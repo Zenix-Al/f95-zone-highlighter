@@ -2,16 +2,16 @@ import { state } from "../constants";
 import { injectImageRepair } from "../cores/imageHandler";
 import { updateThreadUI } from "../cores/init";
 import { checkOverlaySettings } from "../cores/safety";
-import { signatureCollapse, toggleThreadTagOverlay } from "../cores/thread";
-import { createQueuedTask } from "../helper/createQueuedTask";
+import { signatureCollapse } from "../cores/thread";
 import { toggleHijackMaskedLink } from "../helper/maskedLinkSkipper";
+import { queuedProcessThreadTags } from "../helper/tasksRegistry";
 import { wideForum } from "../ui/wideForum";
 
 const effectOverlayToggle = () => {
   updateThreadUI();
   checkOverlaySettings();
   if (!state.isThread) return;
-  createQueuedTask(toggleThreadTagOverlay());
+  queuedProcessThreadTags();
 };
 // meta/threadSettings.js
 export const threadSettingsMeta = {
@@ -79,7 +79,7 @@ export const threadOverlaySettingsMeta = {
     tooltip: "Display neutral reaction buttons",
     config: "threadSettings.neutral",
     effects: {
-      custom: toggleThreadTagOverlay,
+      custom: queuedProcessThreadTags,
       toast: (v) => `Neutral ${v ? "enabled" : "disabled"}`,
     },
   },
@@ -90,7 +90,7 @@ export const threadOverlaySettingsMeta = {
     tooltip: "Display your preferred (favorited) overlay",
     config: "threadSettings.preferred",
     effects: {
-      custom: toggleThreadTagOverlay,
+      custom: queuedProcessThreadTags,
       toast: (v) => `Preferred ${v ? "enabled" : "disabled"}`,
     },
   },
@@ -101,7 +101,7 @@ export const threadOverlaySettingsMeta = {
     tooltip: "Add a subtle shadow effect to preferred overlay",
     config: "threadSettings.preferredShadow",
     effects: {
-      custom: toggleThreadTagOverlay,
+      custom: queuedProcessThreadTags,
       toast: (v) => `Preferred Shadow ${v ? "enabled" : "disabled"}`,
     },
   },
@@ -112,7 +112,7 @@ export const threadOverlaySettingsMeta = {
     tooltip: "Show overlay you've excluded",
     config: "threadSettings.excluded",
     effects: {
-      custom: toggleThreadTagOverlay,
+      custom: queuedProcessThreadTags,
       toast: (v) => `Excluded ${v ? "enabled" : "disabled"}`,
     },
   },
@@ -123,7 +123,7 @@ export const threadOverlaySettingsMeta = {
     tooltip: "Add shadow to excluded overlay",
     config: "threadSettings.excludedShadow",
     effects: {
-      custom: toggleThreadTagOverlay,
+      custom: queuedProcessThreadTags,
       toast: (v) => `Excluded Shadow ${v ? "enabled" : "disabled"}`,
     },
   },

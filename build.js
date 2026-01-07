@@ -1,6 +1,7 @@
 const esbuild = require("esbuild");
 const fs = require("fs");
 const path = require("path");
+const { stripCssComments } = require("./build/stripCssComments");
 
 // Config
 const VERSION_FILE = path.join(__dirname, "version.json");
@@ -56,7 +57,8 @@ const header = `// ==UserScript==
 // @match        https://f95zone.to/masked/*
 // @grant        GM.setValue
 // @grant        GM.getValues
-// @grant GM_addValueChangeListener
+// @grant        GM_addValueChangeListener
+// @grant        GM_removeValueChangeListener
 // @run-at       document-idle
 // @license      GPL-3.0-or-later
 // @downloadURL  https://update.greasyfork.org/scripts/546518/F95Zone%20Latest%20Highlighter.user.js
@@ -84,7 +86,8 @@ const headerUglified = `// ==UserScript==
 // @match        https://f95zone.to/masked/*
 // @grant        GM.setValue
 // @grant        GM.getValues
-// @grant GM_addValueChangeListener
+// @grant        GM_addValueChangeListener
+// @grant        GM_removeValueChangeListener
 // @run-at       document-idle
 // @license      GPL-3.0-or-later
 // @description  All-in-one powerhouse for F95Zone: Advanced thread highlighting & overlays, customizable tags/colors, wide layouts, auto latest refresh + notifications, seamless masked link skipping (direct on-click zap to hosts), image retry fixes, and more!
@@ -108,6 +111,7 @@ esbuild
       ".html": "text",
       ".css": "text",
     },
+    plugins: [stripCssComments],
   })
   .then(() => {
     const builtCode = fs.readFileSync("dist/userscript.js", "utf8");
@@ -132,6 +136,7 @@ esbuild
       ".html": "text",
       ".css": "text",
     },
+    plugins: [stripCssComments],
   })
   .then(() => {
     const builtCode = fs.readFileSync("dist/uglified.js", "utf8");

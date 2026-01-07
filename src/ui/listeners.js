@@ -1,8 +1,6 @@
 import { config, defaultColors, state } from "../constants";
-import { processAllTiles } from "../cores/latest";
 import { showAllTags, updateSearch } from "../cores/tags";
-import { toggleThreadTagOverlay } from "../cores/thread";
-import { createQueuedTask } from "../helper/createQueuedTask";
+import { queuedProcessAllTilesReset, queuedProcessThreadTags } from "../helper/tasksRegistry";
 import { colorSettingsMeta } from "../meta/colorSettings";
 import { reRenderSettingsSection } from "../renderer/reRenderSetting";
 import { updateColorStyle } from "../renderer/updateColorStyle";
@@ -16,7 +14,7 @@ export function injectListener() {
   setEventById("tags-search", updateSearch, "input");
   setEventById("close-modal", closeModal);
   setEventById("tags-search", showAllTags, "focus");
-  setEventById("rese-color", resetColor);
+  setEventById("reset-color", resetColor);
   //setEventById("settings-script-notif", updateScriptNotif());
   document.addEventListener("click", (e) => {
     const input = document.getElementById("tags-search");
@@ -41,14 +39,14 @@ export function resetColor() {
   if (confirm("Are you sure you want to reset all colors to default?")) {
     config.color = { ...defaultColors };
     updateColorStyle();
-    reRenderSettingsSection("color-container", colorSettingsMeta);
     saveConfigKeys({ color: config.color });
-    showToast("Colors have been reset to default");
+
     if (config.latestSettings.latestOverlayToggle && state.isLatest) {
-      createQueuedTask(processAllTiles());
+      queuedProcessAllTilesReset();
+    } else if (config.threadSettings.threadOverlayToggle && state.isThread) {
+      queuedProcessThreadTags();
     }
-    if (config.threadSettings.threadOverlayToggle && state.isThread) {
-      createQueuedTask(toggleThreadTagOverlay());
-    }
+    reRenderSettingsSection("color-container", colorSettingsMeta);
+    showToast("Colors have been reset to default");
   }
 }

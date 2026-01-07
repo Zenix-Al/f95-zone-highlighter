@@ -1,4 +1,5 @@
 import { config } from "../constants";
+import { queuedProcessAllTilesReset, queuedProcessThreadTags } from "../helper/tasksRegistry";
 import { saveConfigKeys } from "../storage/save";
 import { showToast } from "../ui/modal";
 
@@ -48,6 +49,8 @@ function createTagResultItem(tag, input, results) {
           renderPreferred();
           showToast(`${tag.name} added to preferred`);
           saveConfigKeys({ preferredTags: config.preferredTags });
+          queuedProcessAllTilesReset();
+          queuedProcessThreadTags();
         }
       },
       input,
@@ -66,6 +69,8 @@ function createTagResultItem(tag, input, results) {
           renderExcluded();
           showToast(`${tag.name} added to exclusion`);
           saveConfigKeys({ excludedTags: config.excludedTags });
+          queuedProcessAllTilesReset();
+          queuedProcessThreadTags();
         }
       },
       input,
@@ -108,6 +113,8 @@ export function renderPreferred() {
       config.preferredTags.splice(index, 1);
       showToast(`${tag.name} removed from preferred`);
       saveConfigKeys({ preferredTags: config.preferredTags });
+      queuedProcessAllTilesReset();
+      queuedProcessThreadTags();
     },
   });
 }
@@ -122,6 +129,8 @@ export function renderExcluded() {
       config.excludedTags.splice(index, 1);
       showToast(`${tag.name} removed from exclusion`);
       saveConfigKeys({ excludedTags: config.excludedTags });
+      queuedProcessAllTilesReset();
+      queuedProcessThreadTags();
     },
   });
 }

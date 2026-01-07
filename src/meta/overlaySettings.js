@@ -1,13 +1,6 @@
-import { config, state } from "../constants";
-import { processAllTiles } from "../cores/latest";
-import { createQueuedTask } from "../helper/createQueuedTask";
+import { queuedProcessAllTilesReset } from "../helper/tasksRegistry";
 
 // meta/overlaySettings.js
-const updateOverlay = () => {
-  if (config.latestSettings.latestOverlayToggle && state.isLatest) {
-    createQueuedTask(processAllTiles(true));
-  }
-};
 export const overlaySettingsMeta = {
   _header_visibility: {
     type: "header",
@@ -19,7 +12,7 @@ export const overlaySettingsMeta = {
     tooltip: "Show overlay for completed threads",
     config: "overlaySettings.completed",
     effects: {
-      custom: updateOverlay,
+      custom: queuedProcessAllTilesReset,
       toast: (v) => `Completed ${v ? "enabled" : "disabled"}`,
     },
   },
@@ -29,7 +22,7 @@ export const overlaySettingsMeta = {
     tooltip: "Show overlay for threads on hold",
     config: "overlaySettings.onhold",
     effects: {
-      custom: updateOverlay,
+      custom: queuedProcessAllTilesReset,
       toast: (v) => `On Hold ${v ? "enabled" : "disabled"}`,
     },
   },
@@ -40,7 +33,7 @@ export const overlaySettingsMeta = {
     tooltip: "Show overlay for abandoned threads",
     config: "overlaySettings.abandoned",
     effects: {
-      custom: updateOverlay,
+      custom: queuedProcessAllTilesReset,
       toast: (v) => `Abandoned ${v ? "enabled" : "disabled"}`,
     },
   },
@@ -51,7 +44,7 @@ export const overlaySettingsMeta = {
     tooltip: "Show overlay for game threads with higher version than your set minimum",
     config: "overlaySettings.highVersion",
     effects: {
-      custom: updateOverlay,
+      custom: queuedProcessAllTilesReset,
       toast: (v) => `High Version ${v ? "enabled" : "disabled"}`,
     },
   },
@@ -62,7 +55,7 @@ export const overlaySettingsMeta = {
     tooltip: "Show overlay for threads with invalid version format",
     config: "overlaySettings.invalidVersion",
     effects: {
-      custom: updateOverlay,
+      custom: queuedProcessAllTilesReset,
       toast: (v) => `Invalid Version ${v ? "enabled" : "disabled"}`,
     },
   },
@@ -73,7 +66,7 @@ export const overlaySettingsMeta = {
     tooltip: "Show overlay for threads you've marked as preferred",
     config: "overlaySettings.preferred",
     effects: {
-      custom: updateOverlay,
+      custom: queuedProcessAllTilesReset,
       toast: (v) => `Preferred ${v ? "enabled" : "disabled"}`,
     },
   },
@@ -84,7 +77,7 @@ export const overlaySettingsMeta = {
     tooltip: "Show overlay for threads you've marked as excluded",
     config: "overlaySettings.excluded",
     effects: {
-      custom: updateOverlay,
+      custom: queuedProcessAllTilesReset,
       toast: (v) => `Excluded ${v ? "enabled" : "disabled"}`,
     },
   },
@@ -95,7 +88,7 @@ export const overlaySettingsMeta = {
     tooltip: "Display status text directly over the thread thumbnail",
     config: "overlaySettings.overlayText",
     effects: {
-      custom: updateOverlay,
+      custom: queuedProcessAllTilesReset,
       toast: (v) => `Overlay Text ${v ? "enabled" : "disabled"}`,
     },
   },

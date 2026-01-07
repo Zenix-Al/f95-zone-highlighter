@@ -13,6 +13,7 @@ export const state = {
   isMaskedLink: false,
   isMaskedLinkApplied: false,
   isProcessingTiles: false,
+  isCrossTabSyncInitialized: false,
 };
 export const validVersions = ["full", "final"];
 
@@ -62,6 +63,13 @@ export const defaultLatestSettings = {
   wideLatest: false,
   denseLatestGrid: false,
   latestOverlayToggle: true,
+
+  // ── new horny addition ──
+  goldenFreshGlow: true, // main toggle
+  goldenMaxViews: 5000, // threshold
+  goldenMaxAgeMinutes: 60, // strict <1h or relax to 120/180 later
+  goldenMaxBleedPx: 6, // keep it tight
+  goldenMinOpacity: 0.15, // so it never fully disappears
 };
 
 export const metrics = {

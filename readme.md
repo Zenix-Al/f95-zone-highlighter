@@ -2,6 +2,10 @@
 
 Level up your F95Zone experience with this all-in-one userscript powerhouse! Combines advanced thread highlighting, customizable overlays and tags, layout enhancements, auto latest page features, and seamless masked link skipping for faster downloads. Everything is highly configurable to match your vibe, preferred/excluded tags, colors, overlays, wide mode, and more.
 
+## Download
+
+**[Install userscript](https://greasyfork.org/en/scripts/546518-f95zone-ultimate-enhancer)**
+
 ## 📦 Requirements
 
 - [Node.js](https://nodejs.org/) (LTS recommended)

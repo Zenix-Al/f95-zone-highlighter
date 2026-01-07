@@ -1,4 +1,4 @@
-import { config, crossTabKeys } from "../constants";
+import { config, crossTabKeys, state } from "../constants";
 import { applyEffects } from "../renderer/applyEffects";
 import { metaRegistry } from "../meta/metaRegistry";
 
@@ -7,7 +7,7 @@ function initCrossTabSync() {
     GM_addValueChangeListener(key, (name, oldVal, newVal, remote) => {
       if (!remote) return;
       if (!config.latestSettings.enableCrossTabSync) return;
-
+      state.isCrossTabSyncInitialized = true;
       handleSectionChange(key, oldVal, newVal);
     });
   });
@@ -32,10 +32,14 @@ function handleSectionChange(section, oldVal = {}, newVal = {}) {
 }
 
 function disableCrossTabSync() {
+  if (!state.isCrossTabSyncInitialized) return;
+
   Object.keys(crossTabKeys).forEach((key) => {
     GM_removeValueChangeListener(key);
   });
+  state.isCrossTabSyncInitialized = false;
 }
+
 export function toggleCrossTabSync(enabled) {
   if (enabled) {
     initCrossTabSync();

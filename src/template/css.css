@@ -530,6 +530,35 @@ html.latest-wide main#latest-page_main-wrap {
   width: 100% !important;
   max-width: none !important;
 }
+.hide-notices ul.notices.notices--block.js-notices {
+  display: none !important;
+}
+
+.header-scroll .uix_headerContainer {
+  transition: transform 0.25s ease;
+  will-change: transform;
+}
+
+.header-scroll.header-hidden .uix_headerContainer {
+  transform: translateY(-100%);
+}
+
+/* Animate sticky bar */
+.thread-scroll-hide .p-navSticky {
+  transition: transform 0.25s ease;
+  will-change: transform;
+}
+
+/* Hidden state */
+.thread-scroll-hide .p-navSticky.is-sticky {
+  transition: transform 0.25s ease;
+  will-change: transform;
+}
+
+.thread-scroll-hide.thread-header-hidden .p-navSticky.is-sticky {
+  transform: translateY(-100%);
+}
+
 .config-header {
   display: flex;
   align-items: center;

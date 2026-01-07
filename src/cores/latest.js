@@ -19,7 +19,6 @@ export function watchAndUpdateTiles() {
 
 export function processAllTiles(reset = false) {
   if (!config.latestSettings.latestOverlayToggle || !state.isLatest) return;
-
   const tiles = document.getElementsByClassName("resource-tile");
 
   if (!tiles.length || state.isProcessingTiles) {
@@ -192,12 +191,48 @@ export function getVersionText(tile) {
 
 export function toggleWideLatestPage() {
   const root = document.documentElement;
+
   if (config.latestSettings.wideLatest) {
-    root.classList.add("latest-wide");
+    root.classList.add("latest-wide", "hide-notices", "header-scroll");
+    enableHeaderScrollBehavior();
   } else {
-    root.classList.remove("latest-wide");
+    root.classList.remove("latest-wide", "hide-notices", "header-scroll");
+    disableHeaderScrollBehavior();
   }
 }
+
+let headerScrollHandler = null;
+
+export function enableHeaderScrollBehavior() {
+  if (headerScrollHandler) return; // already enabled
+
+  let lastScrollY = window.scrollY;
+
+  headerScrollHandler = () => {
+    const root = document.documentElement;
+    const currentY = window.scrollY;
+
+    if (currentY > lastScrollY && currentY > 80) {
+      root.classList.add("header-hidden");
+    } else {
+      root.classList.remove("header-hidden");
+    }
+
+    lastScrollY = currentY;
+  };
+
+  window.addEventListener("scroll", headerScrollHandler, { passive: true });
+}
+
+export function disableHeaderScrollBehavior() {
+  if (!headerScrollHandler) return;
+
+  window.removeEventListener("scroll", headerScrollHandler);
+  headerScrollHandler = null;
+
+  document.documentElement.classList.remove("header-hidden");
+}
+
 export function toggleDenseLatestGrid() {
   const root = document.documentElement;
   if (config.latestSettings.denseLatestGrid) {

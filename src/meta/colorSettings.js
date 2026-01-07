@@ -1,21 +1,8 @@
-import { config, state } from "../constants";
-import { processAllTiles } from "../cores/latest";
-import { processThreadTags } from "../cores/thread";
-import { createQueuedTask } from "../helper/createQueuedTask";
+import { queuedProcessAllTilesReset, queuedProcessThreadTags } from "../helper/tasksRegistry";
 import { updateColorStyle } from "../renderer/updateColorStyle";
 
-// Queued tasks for heavy operations
-const queuedProcessAllTiles = createQueuedTask(() => {
-  if (!config.overlaySettings || !state.isLatest) return;
-  processAllTiles(true);
-}, 100);
-
-const queuedProcessThreadTags = createQueuedTask(() => {
-  if (!state.isThread || !config.threadSettings.threadOverlayToggle) return;
-  processThreadTags();
-}, 100);
 const executeBothQueuedTasks = () => {
-  queuedProcessAllTiles();
+  queuedProcessAllTilesReset();
   queuedProcessThreadTags();
 };
 // Per-color effect functions

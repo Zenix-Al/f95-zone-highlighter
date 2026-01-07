@@ -1,24 +1,23 @@
 import { config, state } from "../constants";
-import { updateLatestUI } from "../cores/init";
-import {
-  handleWebClick,
-  processAllTiles,
-  resetAllTiles,
-  toggleDenseLatestGrid,
-  toggleWideLatestPage,
-} from "../cores/latest";
+import { handleWebClick, toggleDenseLatestGrid, toggleWideLatestPage } from "../cores/latest";
 import { checkOverlaySettings } from "../cores/safety";
-import { createQueuedTask } from "../helper/createQueuedTask";
+import {
+  queuedProcessAllTilesReset,
+  queuedResetAllTiles,
+  queuedUpdateLatestUI,
+} from "../helper/tasksRegistry";
 
 const effectOverlayToggle = () => {
   checkOverlaySettings();
-  createQueuedTask(updateLatestUI());
-  if (!config.latestSettings.latestOverlayToggle && state.isLatest) {
-    createQueuedTask(resetAllTiles());
+  queuedUpdateLatestUI();
+  if (!state.isLatest) return;
+  if (!config.latestSettings.latestOverlayToggle) {
+    queuedResetAllTiles();
   } else {
-    createQueuedTask(processAllTiles());
+    queuedProcessAllTilesReset();
   }
 };
+
 export const latestSettingsMeta = {
   autoRefresh: {
     type: "toggle",
@@ -32,7 +31,6 @@ export const latestSettingsMeta = {
       toast: (v) => `Auto Refresh ${v ? "enabled" : "disabled"}`,
     },
   },
-  //effect doesnt work
   webNotif: {
     type: "toggle",
     text: "Web Notifications",
@@ -56,10 +54,7 @@ export const latestSettingsMeta = {
       step: 0.1,
     },
     effects: {
-      custom: () => {
-        if (config.latestSettings.latestOverlayToggle && state.isLatest)
-          createQueuedTask(processAllTiles(true));
-      },
+      custom: queuedProcessAllTilesReset,
       toast: (v) => `Min Version set to ${v}`,
     },
   },
