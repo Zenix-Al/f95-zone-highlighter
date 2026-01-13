@@ -1,11 +1,11 @@
-import { debug } from "../constants";
+import { debugLog } from "../utils/debugOutput";
 import { renderSetting } from "./renderSetting";
 
 export function renderSettingsSection(containerId, metaMap) {
   const container = document.getElementById(containerId);
-  debug && console.log("Rendering settings section:", containerId, metaMap);
+  debugLog("SettingsSection", `Rendering settings section: ${containerId}`);
   if (!container) {
-    debug && console.warn("Container not found:", containerId);
+    debugLog("SettingsSection", `Container not found: ${containerId}`);
     return;
   }
 

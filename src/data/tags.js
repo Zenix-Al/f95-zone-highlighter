@@ -1,6 +1,7 @@
-import { debug, config, state } from "../constants";
+import { config, state } from "../constants";
 import { checkTags } from "../cores/safety";
 import { saveConfigKeys } from "../storage/save";
+import { debugLog } from "../utils/debugOutput";
 import { waitFor } from "../utils/waitFor";
 export async function updateTags() {
   if (state.tagsUpdated) return;
@@ -9,7 +10,7 @@ export async function updateTags() {
   const dropdown = document.querySelector(".selectize-dropdown.single.filter-tags-select");
 
   if (!selector || !dropdown) {
-    if (debug) console.log("updateTags: failed to find selector/dropdown");
+    debugLog("Tag Update", "Failed to find selector or dropdown elements");
     return;
   }
   selector.click();
@@ -18,7 +19,7 @@ export async function updateTags() {
   try {
     await waitFor(() => dropdown.querySelectorAll(".option").length > 0, 50, 3000);
   } catch (err) {
-    if (debug) console.log("updateTags: timeout waiting for options", err);
+    debugLog("Tag Update", `"Timeout waiting for options", ${err}`);
     return;
   }
 
@@ -39,9 +40,9 @@ export async function updateTags() {
   if (arraysAreDifferent) {
     config.tags = newTags;
     saveConfigKeys({ tags: config.tags });
-    if (debug) console.log("updateTags: tags updated", newTags);
+    debugLog("Tag Update", `Tags updated: ${JSON.stringify(newTags)}`);
   }
   checkTags();
   state.tagsUpdated = true;
-  if (debug) console.log("updateTags: finished");
+  debugLog("Tag Update", "Finished updating tags");
 }

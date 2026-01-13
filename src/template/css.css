@@ -683,3 +683,69 @@ html.latest-signature-collapsed aside.message-signature.latest-signature-expande
     opacity: 1;
   }
 }
+/* Notice close button */
+.js-notice {
+  position: relative; /* important so we can absolute-position the button inside */
+  padding-right: 36px; /* give breathing room on the right so text doesn't get squished */
+}
+
+.js-notice-dismiss-btn {
+  position: absolute;
+  top: 50%;
+  right: 8px; /* middle-right, adjust if you want it more/less inset */
+  transform: translateY(-50%); /* perfect vertical center */
+
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #ec5555;
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+  line-height: 1;
+  text-align: center;
+  border: none;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transition: all 0.2s ease;
+}
+
+.js-notice-dismiss-btn:hover {
+  background: #d43e3e; /* slightly darker red on hover */
+  transform: translateY(-50%) scale(1.1);
+}
+
+.js-notice-dismiss-btn:active {
+  transform: translateY(-50%) scale(0.95);
+}
+.modal-footer-hint {
+  position: absolute;
+  bottom: 12px; /* or 16px if you want more breathing room */
+  left: 0;
+  right: 0;
+  text-align: center;
+  padding: 8px 16px;
+  font-size: 13px;
+  color: #ffffff;
+  opacity: 0.7;
+  pointer-events: none; /* so it doesn't block clicks on buttons below */
+  user-select: none;
+  transition: opacity 0.2s ease;
+}
+
+.modal-footer-hint:hover {
+  opacity: 1;
+  color: #ec5555; /* your sexy red when they actually hover near it */
+}
+
+.hint-text {
+  background: rgba(0, 0, 0, 0.4); /* subtle bg so it pops on light/dark modals */
+  padding: 4px 12px;
+  border-radius: 12px;
+  backdrop-filter: blur(4px); /* glass-morphism vibe if you’re feeling fancy */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}

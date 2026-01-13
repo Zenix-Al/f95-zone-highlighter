@@ -1,4 +1,5 @@
 import { config, debug, state, STATUS } from "../constants";
+import { debugLog } from "../utils/debugOutput";
 
 export function processThreadTags() {
   if (!state.isThread || !config.threadSettings.threadOverlayToggle) return;
@@ -63,7 +64,7 @@ export function disableThreadTagOverlay() {
     });
   });
 
-  console.log("Thread tag overlay disabled — tags back to vanilla");
+  debugLog("disableThreadTagOverlay", "Thread tag overlay disabled — tags back to vanilla");
 }
 export function signatureCollapse() {
   if (!state.isThread) return;
@@ -79,7 +80,7 @@ export function signatureCollapse() {
   }
 
   document.querySelectorAll("aside.message-signature").forEach((sig) => {
-    debug && console.log("Processing signature collapse", sig);
+    debugLog("Processing signature collapse", sig);
     if (sig.dataset.latestProcessed) return;
     sig.dataset.latestProcessed = "1";
 

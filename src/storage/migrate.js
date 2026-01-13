@@ -1,5 +1,6 @@
-import { config, debug } from "../constants";
+import { config } from "../constants";
 import { saveConfigKeys } from "../storage/save";
+import { debugLog } from "../utils/debugOutput";
 
 export function migrateLatestSettings() {
   let migrated = false;
@@ -39,6 +40,6 @@ export function migrateLatestSettings() {
   // Save only if something changed
   if (migrated || needsSave) {
     saveConfigKeys({ latestSettings: config.latestSettings });
-    debug && console.log("Latest settings migrated successfully");
+    debugLog("migrateLatestSettings", "Latest settings migrated successfully");
   }
 }

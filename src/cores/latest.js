@@ -1,6 +1,7 @@
-import { config, debug, state } from "../constants";
+import { config, state } from "../constants";
 import { getTextColorForGradient } from "../helper/handleTextColor";
 import { verifyTilesAfterLoad } from "../helper/tileVerifier";
+import { debugLog } from "../utils/debugOutput";
 
 export function watchAndUpdateTiles() {
   const latestUpdateWrapper = document.getElementById("latest-page_items-wrap");
@@ -46,12 +47,18 @@ export function processTile(tile, reset = false) {
   const isValidKeyword = ["full", "final"].some((valid) =>
     versionText.toLowerCase().includes(valid)
   );
-  debug && console.log(versionText, versionNumber, match, isValidKeyword);
+  debugLog(
+    "Tile Processing",
+    `Version Text: ${versionText}, Version Number: ${versionNumber}, Match: ${match}, Is Valid Keyword: ${isValidKeyword}`
+  );
   // === Label / Tag extraction ===
   const labelText = getLabelText(tile); // e.g., "completed"
   const matchedTag = processTag(tile, config.preferredTags);
   const excludedTag = processTag(tile, config.excludedTags);
-  debug && console.log(labelText, matchedTag, excludedTag);
+  debugLog(
+    "Tile Processing",
+    `Label Text: ${labelText}, Matched Tag: ${matchedTag}, Excluded Tag: ${excludedTag}`
+  );
 
   // === Excluded ===
   if (excludedTag && config.overlaySettings.excluded) {
@@ -173,9 +180,9 @@ function processTag(tile, tags) {
     .split(",")
     .map((id) => parseInt(id.trim(), 10))
     .filter(Number.isFinite);
-  debug && console.log(tagIds);
+  debugLog("Tile Processing", `Tag IDs: ${tagIds}`);
   const matchedId = tagIds.find((id) => tags.some((tag) => tag === id));
-  debug && console.log(matchedId);
+  debugLog("Tile Processing", `Matched Tag ID: ${matchedId}`);
 
   if (!matchedId) return false;
 
@@ -244,7 +251,7 @@ export function toggleDenseLatestGrid() {
 
 export function resetAllTiles() {
   if (config.latestSettings.latestOverlayToggle || !state.isLatest) return;
-  debug && console.log("Resetting all tiles on Latest Updates page");
+  debugLog("Tile Processing", "Resetting all tiles on Latest Updates page");
   const tiles = document.getElementsByClassName("resource-tile");
   if (!tiles.length) return;
 

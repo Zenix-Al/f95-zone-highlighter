@@ -1,4 +1,9 @@
 import { config, state } from "../constants";
+import { saveConfigKeys } from "../storage/save";
+import { showToast } from "../ui/modal";
+import { getSupportedLinkType, isSupportedDownloadLink } from "./download/hijackDownloadLink";
+import { openInNewTabHelper } from "./download/openInNewTabHelper";
+import { injectFrame } from "./iframe";
 
 export function skipMaskedPage() {
   if (!config.threadSettings.skipMaskedLink) return;
@@ -89,7 +94,7 @@ export function hijackMaskedLinks() {
 
     e.preventDefault();
     e.stopImmediatePropagation();
-
+    showToast("Resolving masked link...");
     link.style.color = "#ffff00"; // Yellow while working
 
     const xhr = new XMLHttpRequest();
@@ -103,6 +108,7 @@ export function hijackMaskedLinks() {
           try {
             const data = JSON.parse(xhr.responseText);
             if (data.status === "ok" && data.msg) {
+              showToast("Masked link resolved.");
               targetUrl = data.msg;
               link.href = targetUrl; // <--- Here: replace the actual href with the real one
               link.style.color = "#00ff00"; // Green success
@@ -114,7 +120,23 @@ export function hijackMaskedLinks() {
           link.style.color = ""; // Reset color on fail
         }
         // Still open the (possibly unmasked) URL in new tab
-        window.open(targetUrl, "_blank");
+        if (config.threadSettings.directDownloadLinks && isSupportedDownloadLink(targetUrl)) {
+          const type = getSupportedLinkType(targetUrl);
+          if (type === "iframe") {
+            injectFrame(targetUrl);
+          } else if (type === "direct") {
+            showToast("Direct download started...");
+            injectFrame(targetUrl, { onSuccess: () => showToast("Direct download initiated.") });
+          } else if (type === "normal") {
+            saveConfigKeys({ processingDownload: true });
+            showToast("Processing download in new tab...");
+            showToast("you'll alered if download starts or fails");
+            openInNewTabHelper(targetUrl);
+          }
+        } else {
+          showToast("resolving failed, opening link...");
+          window.open(targetUrl, "_blank");
+        }
       }
     };
     xhr.send("xhr=1&download=1");

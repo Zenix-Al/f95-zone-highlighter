@@ -3,6 +3,8 @@ import { injectImageRepair } from "../cores/imageHandler";
 import { updateThreadUI } from "../cores/init";
 import { checkOverlaySettings } from "../cores/safety";
 import { signatureCollapse } from "../cores/thread";
+import { toggleDirectDownloadHijack } from "../helper/download/hijackDownloadLink";
+import { toggleMsgEventHandler } from "../helper/download/msgHandler";
 import { toggleHijackMaskedLink } from "../helper/maskedLinkSkipper";
 import { queuedProcessThreadTags } from "../helper/tasksRegistry";
 import { wideForum } from "../ui/wideForum";
@@ -18,11 +20,26 @@ export const threadSettingsMeta = {
   skipMaskedLink: {
     type: "toggle",
     text: "Skip masked link page",
-    tooltip: "Automatically bypass the masked link intermediary page when accessing masked links",
+    tooltip:
+      "Automatically bypass the masked link intermediary page when accessing masked links \n support with direct download features",
     config: "threadSettings.skipMaskedLink",
     effects: {
       custom: () => toggleHijackMaskedLink(),
       toast: (v) => `Skip Masked Link ${v ? "enabled" : "disabled"}`,
+    },
+  },
+  directDownloadLinks: {
+    type: "toggle",
+    text: "Direct Download Links",
+    tooltip:
+      "Enable direct download links for supported file hosts \n works independently outside of masked links",
+    config: "threadSettings.directDownloadLinks",
+    effects: {
+      custom: () => {
+        toggleDirectDownloadHijack();
+        toggleMsgEventHandler();
+      },
+      toast: (v) => `Direct Download Links ${v ? "enabled" : "disabled"}`,
     },
   },
   isWide: {
