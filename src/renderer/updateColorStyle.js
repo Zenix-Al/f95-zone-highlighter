@@ -1,16 +1,17 @@
-import { config, debug } from "../constants";
+import { config } from "../constants";
+import { debugLog } from "../utils/debugOutput";
 
 export function updateColorStyle(key) {
   if (key && config.color[key] !== undefined) {
     const varName = `--${key}-color`;
     document.documentElement.style.setProperty(varName, config.color[key]);
-    debug && console.log(varName, config.color[key]);
+    debugLog("updateColorStyle", `Updated color for key: ${key} to ${config.color[key]}`);
   } else {
     // Fallback: update all if no key provided
     for (const [k, value] of Object.entries(config.color)) {
       const varName = `--${k}-color`;
       document.documentElement.style.setProperty(varName, value);
-      debug && console.log(varName, value);
+      debugLog("updateColorStyle", `Updated color for key: ${k} to ${value}`);
     }
   }
 

@@ -1,4 +1,5 @@
 import { config } from "../constants";
+import { toggleNoticeDismissal } from "../helper/notificationCloser";
 import { toggleCrossTabSync } from "../storage/crossTabSync";
 import { updateButtonVisibility } from "../ui/modal";
 
@@ -11,6 +12,18 @@ export const globalSettingsMeta = {
     effects: {
       custom: updateButtonVisibility,
       toast: (v) => `Configuration menu ${v ? "shown" : "hidden"}`,
+    },
+  },
+  noticeDismissal: {
+    type: "toggle",
+    text: "Enable notification dismissal",
+    tooltip: "Allow closing notifications by clicking a close button",
+    config: "globalSettings.closeNotifOnClick",
+    effects: {
+      custom: () => {
+        toggleNoticeDismissal();
+      },
+      toast: (v) => `Notification dismissal ${v ? "enabled" : "disabled"}`,
     },
   },
   enableCrossTabSync: {

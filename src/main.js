@@ -16,19 +16,19 @@ waitForBody(async () => {
   // --- Detect page type/state ---
   detectPage();
 
-  // --- Masked link handling takes priority ---
+  // --- Preventing further unnecessary code execution ---
   if (state.isMaskedLink) {
     if (config.threadSettings.skipMaskedLink) skipMaskedPage();
     return;
   }
 
-  // --- Initialize UI ---
-  initUI();
+  // --- Initialize ---
+  if (state.isF95Zone) {
+    initUI();
+    updateButtonVisibility();
+    toggleCrossTabSync(config.globalSettings.enableCrossTabSync);
+  }
 
-  // --- Global settings ---
-  updateButtonVisibility();
-  toggleCrossTabSync(config.globalSettings.enableCrossTabSync);
-
-  // --- Page-specific functionality ---
+  // --- Execute Page-specific functionality ---
   initPageState();
 });

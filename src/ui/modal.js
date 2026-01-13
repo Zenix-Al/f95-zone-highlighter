@@ -1,7 +1,8 @@
-import { config } from "../constants";
+import { config, debug, helpMessages } from "../constants";
 import ui from "../template/ui.html?raw";
 import css from "../template/css.css?raw";
 import { initModalUi } from "../cores/init";
+import { debugLog } from "../utils/debugOutput";
 export function injectButton() {
   const button = document.createElement("button");
   button.textContent = "⚙";
@@ -41,6 +42,7 @@ export function showToast(message, duration = TOAST_DURATION) {
 
 export function openModal() {
   initModalUi();
+  changeHelpMsg();
   document.getElementById("tag-config-modal").style.display = "block";
 }
 export function closeModal() {
@@ -86,5 +88,25 @@ export function updateButtonVisibility() {
     button.addEventListener("animationend", onEnd);
   } else {
     button.classList.remove("hidden", "blink-hide", "hover-reveal");
+  }
+}
+
+let helpMsgInterval = null;
+export function changeHelpMsg() {
+  function getRandomStupidHelpMsg() {
+    const randomIndex = Math.floor(Math.random() * helpMessages.length);
+    return helpMessages[randomIndex];
+  }
+  const msg = getRandomStupidHelpMsg();
+  debugLog("getRandomStupidHelpMsg", `Selected help message: ${msg}`);
+  const hintSpan = document.querySelector(".modal-footer-hint  .hint-text");
+  if (hintSpan) {
+    hintSpan.textContent = msg;
+  }
+  if (!helpMsgInterval) {
+    helpMsgInterval = setInterval(() => {
+      const el = document.querySelector(".modal-footer-hint .hint-text");
+      if (el) el.textContent = getRandomStupidHelpMsg();
+    }, 12000);
   }
 }

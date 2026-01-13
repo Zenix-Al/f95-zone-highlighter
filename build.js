@@ -42,61 +42,43 @@ fs.writeFileSync(VERSION_FILE, JSON.stringify(newVersion, null, 2));
 const now = new Date().toISOString().replace("T", " ").substring(0, 19) + " UTC";
 const banner = `// Built on ${now} — AUTO-GENERATED, edit from /src and rebuild`;
 
-const header = `// ==UserScript==
-// @name         F95Zone Ultimate Enhancer
-// @version      ${versionString}
-// @icon         https://external-content.duckduckgo.com/iu/?u=https://f95zone.to/data/avatars/l/1963/1963870.jpg?1744969685
-// @namespace    https://f95zone.to/threads/f95zone-latest.250836/
-// @homepage     https://f95zone.to/threads/f95zone-latest.250836/
-// @homepageURL  https://f95zone.to/threads/f95zone-latest.250836/
-// @supportURL   https://f95zone.to/threads/forum-latest.250836/
-// @author       X Death (creator and maintainer)
-// @author       Edexal (enhancements)
-// @match        https://f95zone.to/sam/latest_alpha/*
-// @match        https://f95zone.to/threads/*
-// @match        https://f95zone.to/masked/*
+//header
+function makeHeader(name, version, banner) {
+  return `// ==UserScript==
+// @name         ${name}
+// @namespace    f95zone-latest-highlighter
+// @version      ${version}
+// @description  All-in-one F95Zone beast: thread highlighting, custom tags & colors, wide layout, auto-refresh latest, masked-link bypass, image fix, notifs & more
+// @author       X Death
+// @contributor  Edexal (GM storage, change listener & summarize UI element)
+// @match        *://f95zone.to/*
+// @match        *://buzzheavier.com/*
+// @match        *://trashbytes.net/dl/*
+// @match        *://gofile.io/d/*
+// @icon         https://f95zone.to/data/avatars/l/1963/1963870.jpg
 // @grant        GM.setValue
-// @grant        GM.getValues
+// @grant        GM.getValue
+// @grant        GM_openInTab
 // @grant        GM_addValueChangeListener
 // @grant        GM_removeValueChangeListener
+// @grant        GM_xmlhttpRequest
+// @grant        unsafeWindow
 // @run-at       document-idle
 // @license      GPL-3.0-or-later
-// @downloadURL  https://update.greasyfork.org/scripts/546518/F95Zone%20Latest%20Highlighter.user.js
+// @homepageURL  https://f95zone.to/threads/f95zone-latest.250836/
+// @supportURL   https://f95zone.to/threads/f95zone-latest.250836/
+// @source       https://github.com/Zenix-Al/f95-zone-highlighter
 // @updateURL    https://update.greasyfork.org/scripts/546518/F95Zone%20Latest%20Highlighter.user.js
-// @description  All-in-one powerhouse for F95Zone: Advanced thread highlighting & overlays, customizable tags/colors, wide layouts, auto latest refresh + notifications, seamless masked link skipping (direct on-click zap to hosts), image retry fixes, and more!
+// @downloadURL  https://update.greasyfork.org/scripts/546518/F95Zone%20Latest%20Highlighter.user.js
 // ==/UserScript==
 // ------------------------------------------------------------
 ${banner}
 // ------------------------------------------------------------
-
 `;
+}
+const header = makeHeader("F95Zone Ultimate Enhancer", versionString, banner);
 
-const headerUglified = `// ==UserScript==
-// @name         F95Zone Ultimate Enhancer (Uglified)
-// @version      ${versionString}
-// @icon         https://external-content.duckduckgo.com/iu/?u=https://f95zone.to/data/avatars/l/1963/1963870.jpg?1744969685
-// @namespace    https://f95zone.to/threads/f95zone-latest.250836/
-// @homepage     https://f95zone.to/threads/f95zone-latest.250836/
-// @homepageURL  https://f95zone.to/threads/f95zone-latest.250836/
-// @supportURL   https://f95zone.to/threads/forum-latest.250836/
-// @author       X Death (creator and maintainer)
-// @author       Edexal (enhancements)
-// @match        https://f95zone.to/sam/latest_alpha/*
-// @match        https://f95zone.to/threads/*
-// @match        https://f95zone.to/masked/*
-// @grant        GM.setValue
-// @grant        GM.getValues
-// @grant        GM_addValueChangeListener
-// @grant        GM_removeValueChangeListener
-// @run-at       document-idle
-// @license      GPL-3.0-or-later
-// @description  All-in-one powerhouse for F95Zone: Advanced thread highlighting & overlays, customizable tags/colors, wide layouts, auto latest refresh + notifications, seamless masked link skipping (direct on-click zap to hosts), image retry fixes, and more!
-// ==/UserScript==
-// ------------------------------------------------------------
-${banner}
-// ------------------------------------------------------------
-
-`;
+const headerUglified = makeHeader("F95Zone Ultimate Enhancer (Uglified)", versionString, banner);
 
 // Build with esbuild
 esbuild

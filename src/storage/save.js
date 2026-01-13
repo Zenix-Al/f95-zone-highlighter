@@ -1,6 +1,5 @@
 import {
   config,
-  debug,
   defaultColors,
   defaultGlobalSettings,
   defaultLatestSettings,
@@ -8,11 +7,26 @@ import {
   defaultThreadSetting,
   metrics,
 } from "../constants";
+import { debugLog } from "../utils/debugOutput";
 
-export async function saveConfigKeys(data) {
-  const promises = Object.entries(data).map(([key, value]) => GM.setValue(key, value));
+export async function saveConfigKeys(updates) {
+  const promises = [];
+
+  for (const [key, value] of Object.entries(updates)) {
+    if (Array.isArray(value)) {
+      // treat as "add these items"
+      let current = (await GM.getValue(key, [])) || [];
+      const toAdd = Array.isArray(value) ? value : [value];
+      const newList = [...current, ...toAdd.filter((x) => !current.includes(x))];
+      promises.push(GM.setValue(key, newList));
+    } else {
+      // normal overwrite
+      promises.push(GM.setValue(key, value));
+    }
+  }
+
   await Promise.all(promises);
-  if (debug) console.log("Config saved (keys)", data);
+  debugLog("saveConfigKeys", `Config updated: ${JSON.stringify(updates)}`);
 }
 
 export async function loadData() {
@@ -20,7 +34,7 @@ export async function loadData() {
   try {
     parsed = (await GM.getValues(Object.keys(config))) ?? {};
   } catch (e) {
-    debug && console.warn("loadData error:", e);
+    debugLog("loadData", `Error loading data: ${e}`);
     parsed = {};
   }
 
@@ -61,6 +75,8 @@ export async function loadData() {
         },
       }),
     metrics: mergeWithDefault(parsed.metrics, metrics),
+    savedNotifID: parsed.savedNotifID || null,
+    processingDownload: parsed.processingDownload || false,
   };
 
   // Final safety: ensure latestSettings has minVersion
@@ -68,7 +84,7 @@ export async function loadData() {
     result.latestSettings.minVersion = 0.5;
   }
 
-  debug && console.log("loadData result:", result);
+  debugLog("loadData", `loadData result:`, result);
 
   return result;
 }

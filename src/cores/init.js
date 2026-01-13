@@ -1,6 +1,12 @@
 import { config, state } from "../constants";
 import { updateTags } from "../data/tags";
+import { executeAutoRetry } from "../helper/download/autoRetryDownload";
+import { handleDownload } from "../helper/download/fileHostHelper";
+import { processGofileDownload } from "../helper/download/gofile";
+import { hicjackLink } from "../helper/download/hijackDownloadLink";
+import { handleMsgEvent } from "../helper/download/msgHandler";
 import { hijackMaskedLinks } from "../helper/maskedLinkSkipper";
+import { initNoticeDismissal } from "../helper/notificationCloser";
 import { colorSettingsMeta } from "../meta/colorSettings";
 import { globalSettingsMeta } from "../meta/globalSettings";
 import { latestSettingsMeta } from "../meta/latestSettings";
@@ -16,6 +22,7 @@ import { updateColorStyle } from "../renderer/updateColorStyle";
 import { injectListener } from "../ui/listeners";
 import { injectButton, injectCSS, injectModal } from "../ui/modal";
 import { wideForum } from "../ui/wideForum";
+import { debugLog } from "../utils/debugOutput";
 import { waitFor } from "../utils/waitFor";
 import { injectImageRepair } from "./imageHandler";
 import {
@@ -104,8 +111,30 @@ export function initThreadPage() {
   if (config.threadSettings.imgRetry) injectImageRepair();
   if (config.threadSettings.collapseSignature) signatureCollapse();
   if (config.threadSettings.skipMaskedLink) hijackMaskedLinks();
+  if (config.threadSettings.directDownloadLinks) {
+    debugLog("Init", "Direct download links enabled");
+    hicjackLink();
+    handleMsgEvent();
+  }
+}
+export function initDownloadPage() {
+  if (state.isDownloadPage === "buzzheavier.com") {
+    handleDownload("buzzheavier.com");
+  } else if (state.isDownloadPage === "gofile.io") {
+    processGofileDownload();
+  }
 }
 export function initPageState() {
   if (state.isLatest) initLatestPage();
   if (state.isThread) initThreadPage();
+  if (state.isDownloadPage) {
+    debugLog("Init", `Download page detected: ${state.isDownloadPage}`);
+    initDownloadPage();
+  }
+  if (state.isDirectDownloadPage) {
+    executeAutoRetry(state.isDirectDownloadPage.host);
+  }
+  if (state.isF95Zone) {
+    initNoticeDismissal();
+  }
 }

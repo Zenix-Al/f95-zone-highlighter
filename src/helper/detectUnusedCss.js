@@ -1,4 +1,5 @@
 // used to detect unused CSS selectors in the userscript CSS, not for import/export
+// this is only a tool script, not part of the main userscript functionality
 (function checkUnusedCSS() {
   // find the style tag that contains your userscript CSS
   const style = [...document.querySelectorAll("style")].find((s) =>
@@ -46,6 +47,5 @@
   console.group(`Unused CSS selectors (${unused.length})`);
   unused.forEach((s) => console.log(s));
   console.groupEnd();
-
-  console.log(`Checked ${selectors.size} selectors`);
+  console.log(`Checked ${selectors.size} selectors, found ${unused.length} unused.`);
 })();
