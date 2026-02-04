@@ -1,9 +1,6 @@
 import { config, defaultColors, state } from "../../config";
 import { showAllTags, updateSearch } from "../../services/tagsService";
-import {
-  queuedProcessAllTilesReset,
-  queuedProcessThreadTags,
-} from "../../core/tasksRegistry";
+import { queuedProcessAllTilesReset, queuedProcessThreadTags } from "../../core/tasksRegistry";
 import { colorSettingsMeta } from "../settings/colorSettings";
 import { reRenderSettingsSection } from "../settings/reRenderSetting";
 import { updateColorStyle } from "../settings/updateColorStyle";
@@ -20,17 +17,20 @@ export function injectListener() {
   setEventById("reset-color", resetColor);
   //setEventById("settings-script-notif", updateScriptNotif());
   document.addEventListener("click", (e) => {
-    const input = document.getElementById("tags-search");
-    const results = document.getElementById("search-results");
+    if (!state.shadowRoot) return;
+    const input = state.shadowRoot.getElementById("tags-search");
+    const results = state.shadowRoot.getElementById("search-results");
     if (!input || !results) return;
 
-    if (!input.contains(e.target) && !results.contains(e.target)) {
+    // Use composedPath to correctly detect clicks inside/outside the shadow DOM
+    const path = e.composedPath();
+    if (!path.includes(input) && !path.includes(results)) {
       results.style.display = "none";
     }
   });
 }
 export function setEventById(idSelector, callback, eventType = "click") {
-  const el = document.getElementById(idSelector);
+  const el = state.shadowRoot.getElementById(idSelector);
   if (el) {
     el.addEventListener(eventType, callback);
   } else {

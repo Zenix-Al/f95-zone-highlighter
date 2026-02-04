@@ -3,7 +3,7 @@ import {
   handleWebClick,
   toggleDenseLatestGrid,
   toggleWideLatestPage,
-} from "../../services/latestService";
+} from "../../features/latestService";
 import { checkOverlaySettings } from "../../services/safetyService";
 import {
   queuedProcessAllTilesReset,

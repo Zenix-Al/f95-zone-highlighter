@@ -1,8 +1,9 @@
 import { debugLog } from "../../core/logger";
+import { state } from "../../config";
 import { renderSetting } from "./renderSetting";
 
 export function renderSettingsSection(containerId, metaMap) {
-  const container = document.getElementById(containerId);
+  const container = state.shadowRoot.getElementById(containerId);
   debugLog("SettingsSection", `Rendering settings section: ${containerId}`);
   if (!container) {
     debugLog("SettingsSection", `Container not found: ${containerId}`);

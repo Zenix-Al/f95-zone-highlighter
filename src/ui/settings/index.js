@@ -1,10 +1,8 @@
 import { config, state } from "../../config";
 import { renderExcluded, renderPreferred } from "./searchTags";
 import { renderSettingsSection } from "./settingsSection";
-import { updateColorStyle } from "./updateColorStyle";
 import { injectListener } from "../components/listeners";
 import { injectModal } from "../components/modal";
-import { wideForum } from "../components/wideForum";
 import { colorSettingsMeta } from "./colorSettings";
 import { globalSettingsMeta } from "./globalSettings";
 import { latestSettingsMeta } from "./latestSettings";
@@ -17,7 +15,7 @@ import {
 import { updateTags } from "../../services/tagsService";
 import { checkTags } from "../../services/safetyService";
 
-export function initModalUi() {
+export async function initModalUi() {
   if (!state.modalInjected) {
     state.modalInjected = true;
     injectModal();
@@ -40,9 +38,10 @@ export function initModalUi() {
     updateThreadUI();
   }
 
+  await updateTags();
+
   renderPreferred();
   renderExcluded();
-  updateTags();
   checkTags();
 }
 

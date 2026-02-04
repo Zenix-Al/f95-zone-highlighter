@@ -1,13 +1,13 @@
 import { state } from "../../config";
-import { injectImageRepair } from "../../services/imageService";
+import { injectImageRepair } from "../../features/imageService";
 import { updateThreadUI } from ".";
 import { checkOverlaySettings } from "../../services/safetyService";
-import { signatureCollapse } from "../../services/threadService";
+import { signatureCollapse } from "../../features/threadService";
 import { toggleDirectDownloadHijack } from "../../features/hijackDownloadLink";
 import { toggleMsgEventHandler } from "../../features/msgHandler";
 import { toggleHijackMaskedLink } from "../../features/maskedLinkSkipper";
 import { queuedProcessThreadTags } from "../../core/tasksRegistry";
-import { wideForum } from "../components/wideForum";
+import { wideForum } from "../../features/wideForum";
 
 const effectOverlayToggle = () => {
   updateThreadUI();

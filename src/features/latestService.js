@@ -1,6 +1,6 @@
 import { config, state } from "../config";
-import { getTextColorForGradient } from "../features/handleTextColor";
-import { verifyTilesAfterLoad } from "../features/tileVerifier";
+import { getTextColorForGradient } from "./handleTextColor";
+import { verifyTilesAfterLoad } from "./tileVerifier";
 import { debugLog } from "../core/logger";
 
 export function watchAndUpdateTiles() {

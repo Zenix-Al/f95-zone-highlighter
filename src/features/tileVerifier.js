@@ -1,4 +1,4 @@
-import { processAllTiles } from "../services/latestService";
+import { processAllTiles } from "./latestService";
 
 // New helper function
 export function verifyTilesAfterLoad(retryDelay = 2000, maxRetries = 3) {

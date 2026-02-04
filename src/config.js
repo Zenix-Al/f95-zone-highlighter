@@ -1,5 +1,6 @@
-export const debug = false;
+export const debug = true;
 export const state = {
+  shadowRoot: null,
   modalInjected: false,
   tagsUpdated: false,
   globalSettingsRendered: false,

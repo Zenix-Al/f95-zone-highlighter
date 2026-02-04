@@ -1,14 +1,11 @@
-import { config } from "../../config";
-import {
-  queuedProcessAllTilesReset,
-  queuedProcessThreadTags,
-} from "../../core/tasksRegistry";
+import { config, state } from "../../config";
+import { queuedProcessAllTilesReset, queuedProcessThreadTags } from "../../core/tasksRegistry";
 import { saveConfigKeys } from "../../services/settingsService";
 import { showToast } from "../components/modal";
 
 export function renderList(filteredTags) {
-  const results = document.getElementById("search-results");
-  const input = document.getElementById("tags-search");
+  const results = state.shadowRoot.getElementById("search-results");
+  const input = state.shadowRoot.getElementById("tags-search");
   if (!results || !input) return;
 
   results.innerHTML = "";
@@ -139,7 +136,7 @@ export function renderExcluded() {
   });
 }
 function renderTagList({ containerId, ids, itemClass, removeBtnClass, onRemove }) {
-  const container = document.getElementById(containerId);
+  const container = state.shadowRoot.getElementById(containerId);
   if (!container) return;
 
   container.innerHTML = "";

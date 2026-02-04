@@ -1,7 +1,7 @@
 // cores/imageHandler.js
 import { retryImage } from "../core/retryLogic.js";
 import { updateToast } from "../ui/components/toast.js";
-import { recordSuccess } from "./metricsService.js";
+import { recordSuccess } from "../services/metricsService.js";
 import { config } from "../config.js";
 import { destroyInjectedUI, injectUI } from "../ui/components/imgRetryUi.js";
 import { observeDom } from "../core/observer.js";

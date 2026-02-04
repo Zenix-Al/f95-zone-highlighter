@@ -1,7 +1,7 @@
 import { config, state } from "../config";
 import { updateLatestUI } from "../ui/settings";
-import { processAllTiles, resetAllTiles } from "../services/latestService";
-import { toggleThreadTagOverlay } from "../services/threadService";
+import { processAllTiles, resetAllTiles } from "../features/latestService";
+import { toggleThreadTagOverlay } from "../features/threadService";
 import { createQueuedTask } from "./createQueuedTask";
 
 export const queuedProcessAllTilesReset = createQueuedTask(() => {

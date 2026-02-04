@@ -1,4 +1,4 @@
-import { config, state } from "../../config";
+import { config, state } from "../config";
 
 export function wideForum() {
   if (!state.isThread) return;
