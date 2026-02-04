@@ -46,7 +46,6 @@ const banner = `// Built on ${now} — AUTO-GENERATED, edit from /src and rebuil
 function makeHeader(name, version, banner) {
   return `// ==UserScript==
 // @name         ${name}
-// @namespace    f95zone-latest-highlighter
 // @version      ${version}
 // @description  All-in-one F95Zone beast: thread highlighting, custom tags & colors, wide layout, auto-refresh latest, masked-link bypass, image fix, notifs & more
 // @author       X Death
