@@ -1,75 +1,18 @@
-import { queuedProcessAllTilesReset, queuedProcessThreadTags } from "../../core/tasksRegistry";
-import { updateColorStyle } from "./updateColorStyle";
+import {
+  debouncedProcessAllTilesReset,
+  debouncedProcessThreadTags,
+} from "../../core/tasksRegistry";
+import { updateColorStyle } from "../helpers/updateColorStyle";
 
 const executeBothQueuedTasks = () => {
-  queuedProcessAllTilesReset();
-  queuedProcessThreadTags();
+  debouncedProcessAllTilesReset();
+  debouncedProcessThreadTags();
 };
-// Per-color effect functions
-export function effectCompletedColor() {
-  updateColorStyle("completedColor");
-  executeBothQueuedTasks();
-}
 
-export function effectOnHoldColor() {
-  updateColorStyle("onholdColor");
+const createColorEffect = (colorName) => () => {
+  updateColorStyle(colorName);
   executeBothQueuedTasks();
-}
-
-export function effectAbandonedColor() {
-  updateColorStyle("abandonedColor");
-  executeBothQueuedTasks();
-}
-
-export function effectHighVersionColor() {
-  updateColorStyle("highVersionColor");
-  executeBothQueuedTasks();
-}
-
-export function effectInvalidVersionColor() {
-  updateColorStyle("invalidVersionColor");
-  executeBothQueuedTasks();
-}
-
-export function effectTileInfoColor() {
-  updateColorStyle("tileInfoColor");
-  executeBothQueuedTasks();
-}
-
-export function effectTileHeaderColor() {
-  updateColorStyle("tileHeaderColor");
-  executeBothQueuedTasks();
-}
-
-export function effectPreferredColor() {
-  updateColorStyle("preferredColor");
-  executeBothQueuedTasks();
-}
-
-export function effectPreferredTextColor() {
-  updateColorStyle("preferredTextColor");
-  executeBothQueuedTasks();
-}
-
-export function effectExcludedColor() {
-  updateColorStyle("excludedColor");
-  executeBothQueuedTasks();
-}
-
-export function effectExcludedTextColor() {
-  updateColorStyle("excludedTextColor");
-  executeBothQueuedTasks();
-}
-
-export function effectNeutralColor() {
-  updateColorStyle("neutralColor");
-  executeBothQueuedTasks();
-}
-
-export function effectNeutralTextColor() {
-  updateColorStyle("neutralTextColor");
-  executeBothQueuedTasks();
-}
+};
 
 export const colorSettingsMeta = {
   completedColor: {
@@ -77,7 +20,7 @@ export const colorSettingsMeta = {
     text: "Completed",
     config: "color.completed",
     effects: {
-      custom: effectCompletedColor,
+      custom: createColorEffect("completedColor"),
       toast: () => "Completed color updated",
     },
   },
@@ -87,7 +30,7 @@ export const colorSettingsMeta = {
     text: "On Hold",
     config: "color.onhold",
     effects: {
-      custom: effectOnHoldColor,
+      custom: createColorEffect("onholdColor"),
       toast: () => "On Hold color updated",
     },
   },
@@ -97,7 +40,7 @@ export const colorSettingsMeta = {
     text: "Abandoned",
     config: "color.abandoned",
     effects: {
-      custom: effectAbandonedColor,
+      custom: createColorEffect("abandonedColor"),
       toast: () => "Abandoned color updated",
     },
   },
@@ -107,7 +50,7 @@ export const colorSettingsMeta = {
     text: "High Version",
     config: "color.highVersion",
     effects: {
-      custom: effectHighVersionColor,
+      custom: createColorEffect("highVersionColor"),
       toast: () => "High Version color updated",
     },
   },
@@ -117,7 +60,7 @@ export const colorSettingsMeta = {
     text: "Invalid Version",
     config: "color.invalidVersion",
     effects: {
-      custom: effectInvalidVersionColor,
+      custom: createColorEffect("invalidVersionColor"),
       toast: () => "Invalid Version color updated",
     },
   },
@@ -127,7 +70,7 @@ export const colorSettingsMeta = {
     text: "Tile Info",
     config: "color.tileInfo",
     effects: {
-      custom: effectTileInfoColor,
+      custom: createColorEffect("tileInfoColor"),
       toast: () => "Tile Info color updated",
     },
   },
@@ -137,7 +80,7 @@ export const colorSettingsMeta = {
     text: "Tile Header",
     config: "color.tileHeader",
     effects: {
-      custom: effectTileHeaderColor,
+      custom: createColorEffect("tileHeaderColor"),
       toast: () => "Tile Header color updated",
     },
   },
@@ -148,7 +91,7 @@ export const colorSettingsMeta = {
     config: "color.preferred",
     before: "hr",
     effects: {
-      custom: effectPreferredColor,
+      custom: createColorEffect("preferredColor"),
       toast: () => "Preferred color updated",
     },
   },
@@ -158,7 +101,7 @@ export const colorSettingsMeta = {
     text: "Preferred Text",
     config: "color.preferredText",
     effects: {
-      custom: effectPreferredTextColor,
+      custom: createColorEffect("preferredTextColor"),
       toast: () => "Preferred Text color updated",
     },
   },
@@ -168,7 +111,7 @@ export const colorSettingsMeta = {
     text: "Excluded",
     config: "color.excluded",
     effects: {
-      custom: effectExcludedColor,
+      custom: createColorEffect("excludedColor"),
       toast: () => "Excluded color updated",
     },
   },
@@ -178,7 +121,7 @@ export const colorSettingsMeta = {
     text: "Excluded Text",
     config: "color.excludedText",
     effects: {
-      custom: effectExcludedTextColor,
+      custom: createColorEffect("excludedTextColor"),
       toast: () => "Excluded Text color updated",
     },
   },
@@ -188,7 +131,7 @@ export const colorSettingsMeta = {
     text: "Neutral",
     config: "color.neutral",
     effects: {
-      custom: effectNeutralColor,
+      custom: createColorEffect("neutralColor"),
       toast: () => "Neutral color updated",
     },
   },
@@ -198,7 +141,7 @@ export const colorSettingsMeta = {
     text: "Neutral Text",
     config: "color.neutralText",
     effects: {
-      custom: effectNeutralTextColor,
+      custom: createColorEffect("neutralTextColor"),
       toast: () => "Neutral Text color updated",
     },
   },

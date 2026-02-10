@@ -1,41 +1,35 @@
 // src/loader.js
 import { config, state } from "./config";
 import { debugLog } from "./core/logger";
-import { waitFor } from "./core/dom";
 
 // Features
-import { executeAutoRetry } from "./features/autoRetryDownload";
-import { initNoticeDismissal } from "./features/notificationCloser";
-import {
-  toggleDenseLatestGrid,
-  watchAndUpdateTiles,
-  processAllTiles,
-  handleWebClick,
-  toggleWideLatestPage,
-} from "./features/latestService";
-import { injectImageRepair } from "./features/imageService";
-import { signatureCollapse, processThreadTags } from "./features/threadService";
-import { hijackMaskedLinks } from "./features/maskedLinkSkipper";
-import { processGofileDownload } from "./features/gofile";
-import { handleDownload } from "./features/fileHostHelper";
-import { hicjackLink } from "./features/hijackDownloadLink";
-import { handleMsgEvent } from "./features/msgHandler";
-import { wideForum } from "./features/wideForum";
+import { executeAutoRetry } from "./features/direct-download/autoRetryDownload.js";
+import { toggleNoticeDismissal } from "./features/dismiss-notification/index.js";
+import { enableLatestOverlay } from "./features/latest-overlay/latest-overlay.js";
+import { toggleWideLatestPage } from "./features/wide-latest/wide-latest-page.js";
+import { toggleDenseLatestGrid } from "./features/wide-latest/dense-latest-page.js";
+import { enableLatestControls } from "./features/latest-control/latest-controls.js";
+import { toggleImageRepair } from "./features/image-repair/index.js";
+import { signatureCollapse } from "./features/signature-collapse/index.js";
+import { processThreadTags } from "./features/thread-overlay/index.js";
+import { hijackMaskedLinks, handleRecaptcha } from "./features/masked-link-skipper/index.js";
+import { handleDownload } from "./features/direct-download/fileHostHelper.js";
+import { enableDirectDownload } from "./features/direct-download/index.js";
+import { handleMsgEvent } from "./features/direct-download/msgHandler.js";
+import { wideForum } from "./features/wideForum/index";
 
-async function loadLatestPageFeatures() {
-  try {
-    await waitFor(() => document.getElementById("latest-page_items-wrap"));
-    debugLog("Loader", "Latest page features loading...");
+function loadLatestPageFeatures() {
+  debugLog("Loader", "Latest page features loading...");
 
-    if (config.latestSettings.wideLatest) toggleWideLatestPage();
-    if (config.latestSettings.denseLatestGrid) toggleDenseLatestGrid();
-    if (config.latestSettings.webNotif) handleWebClick();
+  // These features are self-contained. They handle their own initialization,
+  // including waiting for DOM elements and setting up observers if necessary.
+  if (config.latestSettings.wideLatest) toggleWideLatestPage();
+  if (config.latestSettings.denseLatestGrid) toggleDenseLatestGrid();
+  if (config.latestSettings.webNotif || config.latestSettings.autoRefresh) enableLatestControls();
 
-    watchAndUpdateTiles(); // This handles observing and processing tiles
-    processAllTiles(); // Initial run
-  } catch (err) {
-    console.warn("Observer container not found on latest page, some features may not work.", err);
-  }
+  // Initialize overlays if the feature is enabled. The feature itself
+  // handles waiting for content and setting up its own observer.
+  if (config.latestSettings.latestOverlayToggle) enableLatestOverlay();
 }
 
 function loadThreadPageFeatures() {
@@ -43,22 +37,20 @@ function loadThreadPageFeatures() {
 
   if (config.threadSettings.threadOverlayToggle) processThreadTags();
   if (config.threadSettings.isWide) wideForum();
-  if (config.threadSettings.imgRetry) injectImageRepair();
+  if (config.threadSettings.imgRetry) toggleImageRepair();
   if (config.threadSettings.collapseSignature) signatureCollapse();
   if (config.threadSettings.skipMaskedLink) hijackMaskedLinks();
   if (config.threadSettings.directDownloadLinks) {
     debugLog("Init", "Direct download links enabled");
-    hicjackLink();
+    enableDirectDownload();
     handleMsgEvent();
   }
 }
 
 function loadDownloadPageFeatures() {
-  debugLog("Init", `Download page detected: ${state.isDownloadPage}`);
-  if (state.isDownloadPage === "buzzheavier.com") {
-    handleDownload("buzzheavier.com");
-  } else if (state.isDownloadPage === "gofile.io") {
-    processGofileDownload();
+  if (state.isDownloadPage) {
+    debugLog("Init", `Download page detected: ${state.isDownloadPage}`);
+    handleDownload(state.isDownloadPage);
   }
 }
 
@@ -77,6 +69,9 @@ export function loadFeatures() {
   }
   if (state.isF95Zone) {
     // Global features for f95zone
-    initNoticeDismissal();
+    toggleNoticeDismissal();
+  }
+  if (state.isRecaptchaFrame) {
+    handleRecaptcha();
   }
 }

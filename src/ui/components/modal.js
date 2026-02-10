@@ -2,7 +2,7 @@ import { config, helpMessages, state } from "../../config";
 import ui_html from "../assets/ui.html";
 import ui_css from "../assets/css.css";
 import web_css from "../assets/web.css";
-import { initModalUi } from "../settings";
+import { initModalUi } from "../settings/index.js";
 import { debugLog } from "../../core/logger";
 
 export function injectButton() {
@@ -49,6 +49,12 @@ export async function openModal() {
 }
 export function closeModal() {
   state.shadowRoot.getElementById("tag-config-modal").style.display = "none";
+  // Stop the help message from changing in the background to prevent a resource leak.
+  if (helpMsgInterval) {
+    clearInterval(helpMsgInterval);
+    helpMsgInterval = null;
+    debugLog("HelpMsg", "Stopped help message interval.");
+  }
 }
 
 export function injectModal() {
@@ -84,7 +90,7 @@ export function updateButtonVisibility() {
   if (!button) return;
 
   if (config.globalSettings.configVisibility === false) {
-    button.classList.add("blink-hide", "hover-reveal");
+    button.classList.add("blink-hide");
 
     const onEnd = () => {
       button.classList.remove("blink-hide");
@@ -94,7 +100,7 @@ export function updateButtonVisibility() {
 
     button.addEventListener("animationend", onEnd);
   } else {
-    button.classList.remove("hidden", "blink-hide", "hover-reveal");
+    button.classList.remove("hidden", "blink-hide");
   }
 }
 

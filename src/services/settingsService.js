@@ -9,24 +9,10 @@ import {
 } from "../config";
 import { debugLog } from "../core/logger";
 
-export async function saveConfigKeys(updates, replace = false) {
-  const promises = [];
-
-  for (const [key, value] of Object.entries(updates)) {
-    if (replace) {
-      promises.push(GM.setValue(key, value));
-    } else if (Array.isArray(value)) {
-      // treat as "add these items"
-      let current = (await GM.getValue(key, [])) || [];
-      const toAdd = Array.isArray(value) ? value : [value];
-      const newList = [...current, ...toAdd.filter((x) => !current.includes(x))];
-      promises.push(GM.setValue(key, newList));
-    } else {
-      // normal overwrite
-      promises.push(GM.setValue(key, value));
-    }
-  }
-
+export async function saveConfigKeys(updates) {
+  const promises = Object.entries(updates).map(([key, value]) => {
+    return GM.setValue(key, value);
+  });
   await Promise.all(promises);
   debugLog("saveConfigKeys", `Config updated: ${JSON.stringify(updates)}`);
 }
@@ -67,25 +53,26 @@ export async function loadData() {
     latestSettings: mergeWithDefault(parsed.latestSettings, defaultLatestSettings),
     globalSettings: mergeWithDefault(parsed.globalSettings, defaultGlobalSettings),
 
-    // Backward compat: old flat minVersion → migrate to latestSettings
-    // (safe even if latestSettings already exists)
-    ...(typeof parsed.minVersion === "number" &&
-      !parsed.latestSettings?.minVersion && {
-        latestSettings: {
-          ...(parsed.latestSettings || defaultLatestSettings),
-          minVersion: parsed.minVersion,
-        },
-      }),
     metrics: mergeWithDefault(parsed.metrics, metrics),
     savedNotifID: parsed.savedNotifID || null,
     processingDownload: parsed.processingDownload || false,
   };
 
-  // Final safety: ensure latestSettings has minVersion
-  if (!result.latestSettings.minVersion && result.latestSettings.minVersion !== 0) {
-    result.latestSettings.minVersion = 0.5;
+  // --- Data Migration & Safety Checks ---
+
+  // Migrate old flat `minVersion` to `latestSettings.minVersion`.
+  // This runs if a user has an old config with `minVersion` but `latestSettings` from storage lacks it.
+  if (
+    typeof parsed.minVersion === "number" &&
+    (!parsed.latestSettings || typeof parsed.latestSettings.minVersion === "undefined")
+  ) {
+    result.latestSettings.minVersion = parsed.minVersion;
   }
 
+  // Final safety check: ensure latestSettings has a valid minVersion.
+  if (typeof result.latestSettings.minVersion !== "number") {
+    result.latestSettings.minVersion = defaultLatestSettings.minVersion;
+  }
   debugLog("loadData", `loadData result:`, result);
 
   return result;

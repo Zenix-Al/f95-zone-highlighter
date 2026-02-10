@@ -1,8 +1,8 @@
 import { config, state } from "../../config";
-import { renderExcluded, renderPreferred } from "./searchTags";
-import { renderSettingsSection } from "./settingsSection";
+import { renderExcluded, renderPreferred } from "../components/tag-search";
+import { renderSettingsSection } from "../renderers/settingsSection";
 import { injectListener } from "../components/listeners";
-import { injectModal } from "../components/modal";
+import { injectModal, showToast } from "../components/modal";
 import { colorSettingsMeta } from "./colorSettings";
 import { globalSettingsMeta } from "./globalSettings";
 import { latestSettingsMeta } from "./latestSettings";
@@ -15,7 +15,7 @@ import {
 import { updateTags } from "../../services/tagsService";
 import { checkTags } from "../../services/safetyService";
 
-export async function initModalUi() {
+export function initModalUi() {
   if (!state.modalInjected) {
     state.modalInjected = true;
     injectModal();
@@ -38,11 +38,16 @@ export async function initModalUi() {
     updateThreadUI();
   }
 
-  await updateTags();
-
-  renderPreferred();
-  renderExcluded();
-  checkTags();
+  // Kick off the tag update process, but don't wait for it.
+  // The UI will be responsive, and the tag sections will populate when ready.
+  updateTags().then((result) => {
+    if (result?.pruned && result.count > 0) {
+      showToast(`${result.count} obsolete tag(s) removed from your lists.`);
+    }
+    renderPreferred();
+    renderExcluded();
+    checkTags();
+  });
 }
 
 export function updateLatestUI() {

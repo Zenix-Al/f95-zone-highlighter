@@ -2,7 +2,7 @@ export const debug = true;
 export const state = {
   shadowRoot: null,
   modalInjected: false,
-  tagsUpdated: false,
+  tagsUpdateStatus: "IDLE", // "IDLE", "UPDATING", "COMPLETE"
   globalSettingsRendered: false,
   colorRendered: false,
   overlayRendered: false,
@@ -19,6 +19,8 @@ export const state = {
   isProcessingTiles: false,
   isCrossTabSyncInitialized: false,
   isDirectDownloadHijackApplied: false,
+  isRecaptchaFrame: false,
+  latestOverlayStatus: "IDLE", // "IDLE", "INITIALIZING", "ACTIVE", "TEARING_DOWN"
   isDirectDownloadmsgHandlerApplied: false,
 };
 export const validVersions = ["full", "final"];
@@ -117,45 +119,27 @@ export const crossTabKeys = {
   latestSettings: true,
 };
 
-export const supportedHosts = [
-  "buzzheavier.com",
-  //"pixeldrain.com", // disabled because not working
-  "gofile.io",
-  //'mega.nz',
-  //'anonfiles.com',
-];
-export const typeDownload = [
-  {
-    id: "buzzheavier.com",
-    type: "iframe",
+export const downloadHostConfigs = {
+  "buzzheavier.com": {
+    clickType: "iframe", // What to do when clicked on f95
+    pageHandler: "buzzheavier.com", // The handler key in fileHostHelper
+    handlerConfig: {
+      // Config for the page handler
+      btn: 'a[hx-get*="/download"]',
+      directDownloadLink: /https:\/\/trashbytes\.net\/dl\/[\w-]+(?:\?.+)?/,
+    },
   },
-  {
-    id: "gofile.io",
-    type: "normal",
+  "gofile.io": {
+    clickType: "normal",
+    pageHandler: "gofile.io",
   },
-];
-export const supportedDirectDownload = [
-  {
-    id: "buzzheavier.com",
-    host: "trashbytes.net",
+  "trashbytes.net": {
+    // This host is not clicked on, it's a destination.
+    pageType: "auto-retry",
     pathStartsWith: "/dl/",
-    btn: 'a[hx-get*="/download"]',
-    directDownloadLink: /https:\/\/trashbytes\.net\/dl\/[\w-]+(?:\?.+)?/,
   },
-  {
-    id: "gofile.io",
-    host: "gofile.io",
-  },
-  // disabled because not working
-  //{
-  //  id: "pixeldrain.com",
-  //  host: "pixeldrain.com",
-  //  pathStartsWith: "/f/",
-  //  btn: 'a[href*="/d/"]',
-  //  directDownloadLink: /https:\/\/pixeldrain\.com\/d\/[\w-]+(?:\?.+)?/,
-  //},
-  //other hosts can be added here
-];
+};
+
 export const cache = new Map();
 export const colorState = {
   PENDING: { color: "#FFA500" },

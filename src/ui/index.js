@@ -1,5 +1,5 @@
 import { injectButton, injectCSS } from "./components/modal";
-import { updateColorStyle } from "./settings/updateColorStyle";
+import { updateColorStyle } from "./helpers/updateColorStyle";
 import { state } from "../config";
 
 function initShadowDOM() {

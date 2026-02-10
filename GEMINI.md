@@ -57,7 +57,7 @@ The script uses several `default...` objects to initialize a user's configuratio
 ### Constants & Enums
 
 - **`STATUS`**: A frozen object acting as an enum for internal status representation (`PREFERRED`, `EXCLUDED`, `NEUTRAL`, etc.). **Always use this enum instead of raw strings** to avoid typos and ensure consistency.
-- **`supportedHosts` & `supportedDirectDownload`**: These arrays define the logic for the direct download feature. To add support for a new host, it must be added to these structures with the correct parameters (`id`, `host`, `btn` selector, etc.).
+- **`downloadHostConfigs`**: This object is the central configuration for the direct download feature. Each key is a host domain, and the value is an object defining its behavior (e.g., `clickType`, `pageHandler`, and selectors for finding download buttons).
 - **`crossTabKeys`**: An object where keys represent the settings categories from the `config` object that should be synchronized across tabs.
 
 ## 4. State Management (`state` object)
@@ -87,9 +87,9 @@ The `state` object in `config.js` is a global, in-memory store for the script's 
 
 ### Supporting a New Download Host
 
-1.  Add the host's domain to the `supportedHosts` array.
-2.  Add a new object to the `typeDownload` array specifying its download mechanism (`iframe` or `normal`).
-3.  Add a detailed configuration object to the `supportedDirectDownload` array. This requires inspecting the host's download page to find the correct selectors (`btn`) and URL patterns (`directDownloadLink`).
+1.  Open `src/config.js` and locate the `downloadHostConfigs` object.
+2.  Add a new entry where the key is the host's domain (e.g., `"newhost.com"`).
+3.  Define the configuration object for this host, specifying its `clickType`, the `pageHandler` key (which corresponds to a handler in `fileHostHelper.js`), and any `handlerConfig` needed for the download page itself (like button selectors).
 
 ## 6. Styling (CSS Architecture)
 
@@ -116,12 +116,18 @@ The project uses a split CSS architecture to isolate its own UI from the styles 
 
 - **`src/features/`**: Modules that directly add, remove, or change elements and behavior on the page for a distinct user-facing purpose (e.g., collapsing signatures, adding a dense grid layout, enabling wide mode). These are the "what" the script does.
 - **`src/services/`**: Modules that provide shared logic, data fetching/management, or complex background processing that features can use (e.g., fetching all tags, processing tiles based on tags, saving settings). These are the "how" things get done behind the scenes.
-- **`src/ui/`**: Modules strictly for creating and managing the script's own interface, primarily the settings modal and its components.
+- **`src/ui/`**: The root for all modules related to the script's own user interface.
+  - **`src/ui/settings/`**: Modules that define the _metadata_ for each settings section (e.g., `colorSettings.js`, `globalSettings.js`). These files describe _what_ settings exist and _how_ they behave, but do not contain rendering logic.
+  - **`src/ui/renderers/`**: Modules responsible for _rendering_ UI elements based on metadata (e.g., `settingsSection.js`, `renderSetting.js`). This includes creating inputs, labels, and sections.
+  - **`src/ui/helpers/`**: Utility functions specific to the UI that can be reused across different components or rendering processes (e.g., `updateColorStyle.js`).
+  - **`src/ui/components/`**: Self-contained, complex UI widgets that manage their own rendering and interaction (e.g., `tag-search/index.js`, `modal.js`).
 - **`src/core/`**: Foundational, reusable helper functions that are not specific to any feature (e.g., `logger`, `dom` utilities).
 
 ---
 
-## 7. Feature Development Workflow
+## 7. Feature Development Workflow (and UI Integration)
+
+This section outlines the process for adding new features and integrating them with the settings UI.
 
 When adding a new feature, follow this established pattern to ensure consistency and maintainability.
 
@@ -136,33 +142,7 @@ When adding a new feature, follow this established pattern to ensure consistency
     - Add a new property to the appropriate `default...` settings object (e.g., `myNewFeatureEnabled: false` in `defaultThreadSetting`). This provides the default value for new users and ensures the config structure is consistent.
 
 3.  **Integrate into the UI (`src/ui/`)**
-    - Add a control (e.g., a checkbox) to the settings modal.
-    - This control should read its initial state from the `config` object (e.g., `config.threadSettings.myNewFeatureEnabled`).
-    - When the user interacts with the control, it should update the `config` object and call the feature's `toggle...()` function to apply the change immediately.
-
-4.  **Initial Load (`src/loader.js`)**
-    - In `loadFeatures()`, add a call to your feature's initialization logic. This should be guarded by both the appropriate page check (`if (state.isThread)`) and the feature's config flag (`if (config.threadSettings.myNewFeatureEnabled)`). This ensures the feature is activated on page load if the user has it enabled.
-
-5.  **Heavy Features ("Task Registry")**
-    - For features that are resource-intensive or involve ongoing monitoring (e.g., using `MutationObserver`), they are considered "heavy features".
-    - While there isn't a formal "task registry" file, the pattern is to manage these tasks carefully. Ensure the `disable...()` function properly disconnects observers or stops intervals to prevent memory leaks and performance degradation when the feature is turned off.
-
-## 6. Feature Development Workflow
-
-When adding a new feature, follow this established pattern to ensure consistency and maintainability.
-
-1.  **Create a Feature Module (`src/features/`)**
-    - All feature logic should be encapsulated within its own file in the `src/features/` directory (e.g., `src/features/myNewFeature.js`).
-    - This module **must** export functions to manage its state:
-      - `initMyNewFeature()`: Contains the logic to **activate** the feature (e.g., add event listeners, inject DOM elements).
-      - `disableMyNewFeature()`: Contains the logic to completely **deactivate and clean up** the feature (e.g., remove event listeners, remove DOM elements). This is crucial for toggling features without a page refresh.
-      - `toggleMyNewFeature(isEnabled)`: A wrapper function that calls `init...()` or `disable...()` based on the boolean `isEnabled` argument.
-
-2.  **Add a Configuration Setting (`src/config.js`)**
-    - Add a new property to the appropriate `default...` settings object (e.g., `myNewFeatureEnabled: false` in `defaultThreadSetting`). This provides the default value for new users and ensures the config structure is consistent.
-
-3.  **Integrate into the UI (`src/ui/`)**
-    - Add a control (e.g., a checkbox) to the settings modal.
+    - Add a control (e.g., a checkbox) to the settings modal by defining its metadata in the appropriate `src/ui/settings/*.js` file.
     - This control should read its initial state from the `config` object (e.g., `config.threadSettings.myNewFeatureEnabled`).
     - When the user interacts with the control, it should update the `config` object and call the feature's `toggle...()` function to apply the change immediately.
 

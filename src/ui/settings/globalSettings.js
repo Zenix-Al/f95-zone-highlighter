@@ -1,5 +1,5 @@
 import { config } from "../../config";
-import { toggleNoticeDismissal } from "../../features/notificationCloser";
+import { toggleNoticeDismissal } from "../../features/dismiss-notification";
 import { toggleCrossTabSync } from "../../services/syncService";
 import { updateButtonVisibility } from "../components/modal";
 
