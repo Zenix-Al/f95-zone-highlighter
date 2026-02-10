@@ -1,15 +1,13 @@
 import { config, defaultColors, state } from "../../config";
 import { showAllTags, updateSearch } from "../../services/tagsService";
-import { queuedProcessAllTilesReset, queuedProcessThreadTags } from "../../core/tasksRegistry";
+import { reprocessAllTiles as reprocessLatestOverlay } from "../../features/latest-overlay/latest-overlay";
+import { debouncedProcessThreadTags } from "../../core/tasksRegistry";
 import { colorSettingsMeta } from "../settings/colorSettings";
-import { reRenderSettingsSection } from "../settings/reRenderSetting";
-import { updateColorStyle } from "../settings/updateColorStyle";
+import { reRenderSettingsSection } from "../renderers/reRenderSetting";
+import { updateColorStyle } from "../helpers/updateColorStyle";
 import { saveConfigKeys } from "../../services/settingsService";
 import { closeModal, showToast } from "./modal";
 
-/**
- * this file contain is legacy code, carefully migrate functions one by one
- */
 export function injectListener() {
   setEventById("tags-search", updateSearch, "input");
   setEventById("close-modal", closeModal);
@@ -44,11 +42,11 @@ export function resetColor() {
     updateColorStyle();
     saveConfigKeys({ color: config.color });
 
-    if (config.latestSettings.latestOverlayToggle && state.isLatest) {
-      queuedProcessAllTilesReset();
-    } else if (config.threadSettings.threadOverlayToggle && state.isThread) {
-      queuedProcessThreadTags();
-    }
+    // The called functions have internal guards to only run on the correct page
+    // and if the corresponding feature is enabled.
+    reprocessLatestOverlay();
+    debouncedProcessThreadTags();
+
     reRenderSettingsSection("color-container", colorSettingsMeta);
     showToast("Colors have been reset to default");
   }

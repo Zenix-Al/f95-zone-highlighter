@@ -1,18 +1,16 @@
 import { config, state } from "./config";
-import { migrateLatestSettings } from "./services/migrateService";
 import { loadData } from "./services/settingsService";
 import { updateButtonVisibility } from "./ui/components/modal";
 import { detectPage, waitForBody } from "./core/dom";
 
 import { toggleCrossTabSync } from "./services/syncService";
 import { initUI } from "./ui";
-import { skipMaskedPage } from "./features/maskedLinkSkipper.js";
+import { skipMaskedPage } from "./features/masked-link-skipper/index.js";
 import { loadFeatures } from "./loader";
 
 waitForBody(async () => {
   // --- Load user config ---
   Object.assign(config, await loadData());
-  migrateLatestSettings(); 
 
   // --- Detect page type/state ---
   detectPage();

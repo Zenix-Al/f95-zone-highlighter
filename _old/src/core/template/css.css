@@ -1,0 +1,833 @@
+:root {
+  --completed-color: #388e3c;
+  --onhold-color: #1976d2;
+  --abandoned-color: #c9a300;
+  --highVersion-color: #2e7d32;
+  --invalidVersion-color: #a38400;
+  --tileInfo-color: #9398a0;
+  --tileHeader-color: #d9d9d9;
+  --preferred-color: #7b1fa2;
+  --preferred-text-color: #ffffff;
+  --excluded-color: #b71c1c;
+  --excluded-text-color: #ffffff;
+  --neutral-color: #37383a;
+  --neutral-text-color: #9398a0;
+
+  /* optional shadow toggles */
+  --preferred-shadow: 0 0 2px 1px white;
+  --excluded-shadow: 0 0 2px 1px white;
+}
+.modal-error-notif {
+  display: none; /* hidden by default */
+  background-color: #ffe5e5; /* soft red/pink */
+  color: #b00020; /* dark red text */
+  border: 1px solid #b00020;
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  font-size: 14px;
+  font-weight: 500;
+}
+.preferred {
+  background-color: var(--preferred-color);
+  font-weight: bold;
+  color: var(--preferred-text-color);
+}
+.preffered-shadow {
+  box-shadow: var(--preferred-shadow);
+}
+.excluded {
+  background-color: var(--excluded-color);
+  font-weight: bold;
+  color: var(--excluded-text-color);
+}
+.excluded-shadow {
+  box-shadow: var(--excluded-shadow);
+}
+.neutral {
+  background-color: var(--neutral-color);
+  font-weight: bold;
+  color: var(--neutral-text-color);
+}
+.custom-overlay-reason {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 2px 6px;
+  font-size: 12px;
+  border-radius: 4px;
+  z-index: 2;
+  pointer-events: none;
+}
+.centered-item {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+}
+.settings-wrapper {
+  padding: 10px;
+  color: #ccc;
+  font-size: 14px;
+  line-height: 1.6;
+}
+div#latest-page_items-wrap_inner
+  div.resource-tile
+  a.resource-tile_link
+  div.resource-tile_info
+  div.resource-tile_info-meta {
+  color: var(--tileInfo-color);
+  font-weight: 600;
+}
+
+div#latest-page_items-wrap_inner div.resource-tile a.resource-tile_link {
+  color: var(--tileHeader-color);
+}
+.tag-btn {
+  border: none;
+  padding: 5px;
+  margin: 0 2px;
+  cursor: pointer;
+  font-size: 14px;
+  color: white;
+  font-weight: bold;
+  transition: background-color 0.2s ease;
+}
+
+.tag-btn.excluded {
+  background-color: var(--excluded-color);
+  color: var(--excludedText-color);
+}
+
+.tag-btn.preferred {
+  background-color: var(--preferred-color);
+  color: var(--preferredText-color);
+}
+
+.tag-btn:hover {
+  filter: brightness(1.1);
+}
+#toast-container {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10000; /* above modal */
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.toast {
+  padding: 10px;
+  background-color: #333;
+  color: #fff;
+  border-radius: 8px;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+#tag-config-modal {
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+/* Preferred tags container */
+#preffered-tags-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+/* Preferred tag item */
+.preferred-tag-item {
+  display: inline-flex;
+  align-items: center;
+  background-color: var(--preferred-color);
+  color: var(--preferredText-color);
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.preferred-tag-item span {
+  margin-right: 6px;
+  margin-left: 6px;
+}
+
+.preferred-tag-remove {
+  background-color: #c15858;
+  color: #fff;
+  border: none;
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+
+  padding: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+/* Excluded tags container */
+.tag-actions {
+  display: flex;
+  gap: 5px;
+}
+#excluded-tags-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+#search-container {
+  position: relative;
+  display: inline-block;
+  min-height: 250px;
+  width: 100%;
+}
+/* Excluded tag item */
+.excluded-tag-item {
+  display: inline-flex;
+  align-items: center;
+  background-color: var(--excluded-color);
+  color: var(--excludedText-color);
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.excluded-tag-item span {
+  margin-right: 6px;
+}
+
+.excluded-tag-remove {
+  background-color: #c15858;
+  color: #fff;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+/* Individual list items */
+#search-results li {
+  padding: 6px 8px;
+  cursor: pointer;
+  color: #fff;
+  background-color: #222;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+#search-results li:hover {
+  background-color: #333; /* slightly lighter on hover */
+}
+#tags-search {
+  background-color: #222;
+  color: #fff;
+  border: 1px solid #555;
+  border-radius: 4px;
+  padding: 6px 8px;
+  width: 100%;
+}
+
+#tags-search:focus {
+  outline: none;
+  border: 1px solid #c15858;
+}
+#search-results {
+  position: absolute;
+  left: 0;
+  right: 0;
+  max-height: 200px;
+  overflow-y: auto;
+  background-color: #222; /* same as inputs */
+  border: 1px solid #555; /* same border as input */
+  border-radius: 4px;
+  margin: 2px 0 0 0; /* small gap below input */
+  padding: 0;
+  list-style: none;
+  display: none;
+  z-index: 1000;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); /* subtle shadow */
+}
+/* All text inputs, textareas, selects */
+#tag-config-modal input,
+#tag-config-modal textarea,
+#tag-config-modal select {
+  background-color: #222;
+  color: #fff;
+  border: 1px solid #555;
+  border-radius: 4px;
+}
+#tag-config-modal input:focus,
+#tag-config-modal textarea:focus,
+#tag-config-modal select:focus {
+  outline: none;
+  border: 1px solid #c15858;
+}
+
+/* Checkboxes and radios */
+#tag-config-modal input[type="checkbox"],
+#tag-config-modal input[type="radio"] {
+  accent-color: #c15858;
+  background-color: #222;
+  border: 1px solid #555;
+}
+#tag-config-modal .config-color-input {
+  border: 2px solid #3f4043;
+  border-radius: 5px;
+  padding: 2px;
+  width: 40px;
+  height: 28px;
+  cursor: pointer;
+  background-color: #181a1d;
+}
+
+#tag-config-modal .config-color-input::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+#tag-config-modal .config-color-input::-webkit-color-swatch {
+  border-radius: 4px;
+  border: none;
+}
+
+.modal-btn {
+  background-color: #893839;
+  color: white;
+  border: 2px solid #893839;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease;
+  box-shadow: 0 4px 8px rgba(137, 56, 56, 0.5);
+}
+
+.modal-btn:hover {
+  background-color: #b94f4f;
+  border-color: #b94f4f;
+}
+
+.modal-btn:active {
+  background-color: #6e2b2b;
+  border-color: #6e2b2b;
+  box-shadow: none;
+}
+.config-row {
+  display: flex;
+  align-items: center; /* vertically center everything */
+  gap: 12px;
+  margin: 8px 0;
+  line-height: 1.4;
+  user-select: none;
+}
+
+/* Fixed-width label column (all labels perfectly aligned) */
+.config-row label {
+  flex: 0 0 180px; /* adjust 180px to your longest label */
+  text-align: left;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap; /* prevent label wrap */
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Checkbox stays small and on the right */
+.config-row input[type="checkbox"] {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  cursor: pointer;
+  accent-color: #6e42d6; /* optional: nice purple accent */
+}
+
+.config-row:hover {
+  background: rgba(110, 66, 214, 0.05);
+}
+
+#tag-config-button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  left: 20px;
+  padding: 8px 12px;
+  font-size: 20px;
+  z-index: 7;
+  cursor: pointer;
+  border: 2px inset #461616;
+  background: #cc3131;
+  color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  max-width: 70px;
+  width: auto;
+  opacity: 0.75;
+  transition:
+    opacity 1s ease,
+    transform 0.5s ease;
+}
+
+#tag-config-button:hover {
+  opacity: 1;
+}
+
+#tag-config-button:active {
+  transform: scale(0.9);
+}
+
+/* Hidden state that still allows hover */
+#tag-config-button.hidden {
+  opacity: 0;
+  pointer-events: auto; /* stays interactive for hover */
+  transition: opacity 0.3s ease;
+}
+
+#tag-config-button.hidden:hover {
+  opacity: 0.75; /* restores visible opacity on hover */
+}
+
+/* Optional: for blinking effect */
+.blink-hide {
+  animation: blink-hidden 0.4s ease-in-out 3;
+}
+
+#tag-config-modal .modal-content {
+  background: black;
+  border-radius: 10px;
+  min-width: 300px;
+  max-height: 80vh;
+  overflow-y: scroll; /* always show vertical scrollbar */
+  background: #191b1e;
+  max-width: 400px;
+  margin: 100px auto;
+}
+
+#tag-config-modal.show {
+  display: flex;
+}
+
+.config-list-details {
+  overflow: hidden;
+  transition:
+    border-width 1s,
+    max-height 1s ease;
+  max-height: 40px;
+}
+
+.config-list-details[open] {
+  border-width: 2px;
+  max-height: 1300px;
+}
+.thick-line {
+  border: none;
+  height: 1px;
+  background-color: #3f4043;
+}
+.config-list-details summary {
+  text-align: center;
+  background: #353535;
+  border-radius: 8px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  cursor: pointer;
+}
+
+.config-tag-item {
+  margin-left: 5px;
+  cursor: pointer;
+}
+
+.modal-settings-spacing {
+  padding: 10px;
+}
+.no-max-width {
+  max-width: none !important; /* or just max-width: unset; */
+}
+.config-label:hover {
+  text-decoration: underline;
+  text-decoration-style: dotted;
+}
+
+/* Toast container */
+.img-retry-toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  padding: 10px 15px;
+  border-radius: 8px;
+  font-family: sans-serif;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 99999;
+  pointer-events: none;
+}
+
+/* Spinner inside toast */
+.img-retry-toast .img-retry-spinner {
+  border: 2px solid #fff;
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  width: 14px;
+  height: 14px;
+  display: inline-block;
+  animation: img-retry-spin 1s linear infinite;
+}
+
+/* Spinner animation */
+@keyframes img-retry-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Stats inside toast */
+.img-retry-toast .img-retry-stats {
+  margin-left: 10px;
+  opacity: 0.8;
+}
+
+/* Base — make sure the container can grow smoothly */
+.p-body-inner {
+  max-width: 1220px; /* to compensate padding 20px*/
+  padding-left: 20px;
+  padding-right: 20px;
+  padding-bottom: 20px;
+  padding-top: 20px;
+  transition:
+    padding-left 0.5s ease,
+    padding-right 0.5s ease,
+    max-width 0.6s ease;
+}
+
+html.latest-wide .p-body-inner {
+  padding-left: 0;
+  padding-right: 0;
+  max-width: none;
+}
+
+/* Your main wrap — we can tween this too if it helps */
+main#latest-page_main-wrap {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  /* animate width-like property instead of visual scaling */
+  transition: max-width 0.7s ease-out;
+  will-change: max-width;
+}
+
+html.latest-wide main#latest-page_main-wrap {
+  /* subtle width increase instead of scaling */
+  max-width: 1430px; /* ~1400 * 1.02 */
+}
+
+/* Respect users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  main#latest-page_main-wrap,
+  .p-body-pageContent,
+  .structItemContainer {
+    transition: none !important;
+  }
+}
+
+/* Bonus polish: fade/scale inner content slightly for extra oomph */
+.p-body-pageContent,
+.structItemContainer {
+  /* target your actual content wrappers */
+  transition:
+    opacity 0.5s ease,
+    transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  opacity: 1;
+  transform: scale(1);
+}
+
+html.latest-wide .p-body-pageContent,
+html.latest-wide .structItemContainer {
+  /* optional — tiny scale/pop makes it feel alive */
+  transform: scale(1.01); /* barely noticeable but delicious */
+}
+
+/* When hidden class is added (your .hide-notices) – collapse cleanly */
+.hide-notices ul.notices.notices--block.js-notices {
+  display: none !important;
+}
+/* Notices: collapse/expand animation handled in JS via `collapseNotice()`.
+   CSS rules were removed so the helper owns transitions and display. */
+/* Leave default browser styles for `.js-notice` blocks. */
+
+@media (prefers-reduced-motion: reduce) {
+  ul.notices.notices--block.js-notices {
+    transition: none !important;
+  }
+}
+.header-scroll .uix_headerContainer {
+  transition: transform 0.25s ease;
+  will-change: transform;
+}
+
+.header-scroll.header-hidden .uix_headerContainer {
+  transform: translateY(-100%);
+}
+
+/* Animate sticky bar */
+.thread-scroll-hide .p-navSticky {
+  transition: transform 0.25s ease;
+  will-change: transform;
+}
+
+/* Hidden state */
+.thread-scroll-hide .p-navSticky.is-sticky {
+  transition: transform 0.25s ease;
+  will-change: transform;
+}
+
+.thread-scroll-hide.thread-header-hidden .p-navSticky.is-sticky {
+  transform: translateY(-100%);
+}
+
+.config-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin: 14px 0 10px;
+  padding: 6px 0;
+
+  font-size: 0.95em;
+  font-weight: 600;
+  text-align: center;
+
+  color: #b0b3b8; /* subtle, non-dominant */
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+
+  user-select: none;
+}
+
+/* Base grid setup — keep your original default here somewhere */
+.grid-normal {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(30%, 1fr)); /* your original shitty 30% */
+  gap: 20px; /* adjust to your normal gap, I guessed */
+  /* optional: helps performance on resize/toggle */
+  will-change: gap;
+  transition:
+    grid-template-columns 0.5s ease,
+    gap 0.5s ease;
+}
+
+/* Make cards control their own sizing with smooth transition */
+.structItem.structItem--latest {
+  width: 100%;
+  max-width: 33.333%; /* ≈ matches 30% minmax on average screens — tweak if your container has padding */
+  transition:
+    max-width 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
+    /* sexy overshoot bounce */ width 0.45s ease-out;
+  box-sizing: border-box;
+  /* optional extra polish */
+  will-change: max-width;
+}
+
+/* Dense mode — shrink cards so more fit via auto-fill */
+html.latest-dense .structItem.structItem--latest {
+  max-width: 260px; /* your magic number */
+}
+
+/* Your existing dense overrides — keep them, but now they feel animated */
+html.latest-dense .grid-normal {
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)) !important;
+  gap: 10px !important;
+}
+
+/* Card polish in dense mode */
+html.latest-dense .structItem.structItem--latest {
+  max-width: none !important; /* let it fill the 260px minmax slot fully */
+  width: 100% !important;
+}
+
+/* Snugger padding when dense */
+html.latest-dense .structItem-cell.structItem-cell--main {
+  padding: 12px !important;
+}
+
+/* collapse signatures globally when enabled */
+html.latest-signature-collapsed aside.message-signature {
+  max-height: 0 !important;
+  overflow: hidden !important;
+
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  margin-top: 0 !important;
+  border-top: none !important;
+
+  opacity: 0;
+  transition:
+    max-height 0.25s ease,
+    opacity 0.2s ease;
+}
+
+/* expanded state (per message) */
+html.latest-signature-collapsed aside.message-signature.latest-signature-expanded {
+  max-height: 300px !important;
+  overflow-y: auto !important;
+
+  padding-top: 10px !important;
+  padding-bottom: 10px !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
+
+  opacity: 1;
+}
+
+/* toggle button */
+.latest-signature-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  margin: 6px 0 12px;
+  padding: 6px 0;
+
+  border: none;
+  border-radius: 0;
+  background: transparent;
+
+  font-size: 1.2rem;
+  color: #ec5555;
+  cursor: pointer;
+
+  position: relative;
+}
+
+/* separator lines */
+.latest-signature-toggle::before,
+.latest-signature-toggle::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.12);
+  margin: 0 10px;
+}
+
+.latest-signature-toggle span {
+  white-space: nowrap;
+}
+
+/* mobile keeps forum behavior */
+@media (max-width: 480px) {
+  html.latest-signature-collapsed .latest-signature-toggle {
+    display: none;
+  }
+}
+@keyframes blink-hidden {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+/* Notice close button */
+.js-notice {
+  position: relative; /* important so we can absolute-position the button inside */
+  padding-right: 36px; /* give breathing room on the right so text doesn't get squished */
+}
+
+.js-notice-dismiss-btn {
+  position: absolute;
+  top: 50%;
+  right: 8px; /* middle-right, adjust if you want it more/less inset */
+  transform: translateY(-50%); /* perfect vertical center */
+
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #ec5555;
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+  line-height: 1;
+  text-align: center;
+  border: none;
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transition: all 0.2s ease;
+}
+
+.js-notice-dismiss-btn:hover {
+  background: #d43e3e; /* slightly darker red on hover */
+  transform: translateY(-50%) scale(1.1);
+}
+
+.js-notice-dismiss-btn:active {
+  transform: translateY(-50%) scale(0.95);
+}
+.modal-footer-hint {
+  position: absolute;
+  bottom: 12px; /* or 16px if you want more breathing room */
+  left: 0;
+  right: 0;
+  text-align: center;
+  padding: 8px 16px;
+  font-size: 13px;
+  color: #ffffff;
+  opacity: 0.7;
+  pointer-events: none; /* so it doesn't block clicks on buttons below */
+  user-select: none;
+  transition: opacity 0.2s ease;
+}
+
+.modal-footer-hint:hover {
+  opacity: 1;
+  color: #ec5555; /* your sexy red when they actually hover near it */
+}
+
+.hint-text {
+  background: rgba(0, 0, 0, 0.4); /* subtle bg so it pops on light/dark modals */
+  padding: 4px 12px;
+  border-radius: 12px;
+  backdrop-filter: blur(4px); /* glass-morphism vibe if you’re feeling fancy */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}

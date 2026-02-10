@@ -1,24 +1,25 @@
 import { config, state } from "../../config";
-import {
-  handleWebClick,
-  toggleDenseLatestGrid,
-  toggleWideLatestPage,
-} from "../../features/latestService";
+import { toggleWideLatestPage } from "../../features/wide-latest/wide-latest-page.js";
+import { toggleDenseLatestGrid } from "../../features/wide-latest/dense-latest-page.js";
+import { toggleLatestControls } from "../../features/latest-control/latest-controls.js";
 import { checkOverlaySettings } from "../../services/safetyService";
+import { debouncedProcessAllTilesReset, debouncedUpdateLatestUI } from "../../core/tasksRegistry";
 import {
-  queuedProcessAllTilesReset,
-  queuedResetAllTiles,
-  queuedUpdateLatestUI,
-} from "../../core/tasksRegistry";
+  enableLatestOverlay,
+  disableLatestOverlay,
+} from "../../features/latest-overlay/latest-overlay.js";
 
 const effectOverlayToggle = () => {
   checkOverlaySettings();
-  queuedUpdateLatestUI();
+  debouncedUpdateLatestUI();
   if (!state.isLatest) return;
   if (!config.latestSettings.latestOverlayToggle) {
-    queuedResetAllTiles();
+    // When turning OFF, we call the function that handles full teardown and cleanup.
+    disableLatestOverlay();
   } else {
-    queuedProcessAllTilesReset();
+    // When turning ON, we must call enableLatestOverlay to initialize the task queue and observer.
+    // Calling a "reprocess" task would fail because the queue would be null.
+    enableLatestOverlay();
   }
 };
 
@@ -30,7 +31,7 @@ export const latestSettingsMeta = {
     config: "latestSettings.autoRefresh",
     effects: {
       custom: () => {
-        state.isLatest && handleWebClick();
+        state.isLatest && toggleLatestControls();
       },
       toast: (v) => `Auto Refresh ${v ? "enabled" : "disabled"}`,
     },
@@ -43,7 +44,7 @@ export const latestSettingsMeta = {
     config: "latestSettings.webNotif",
     effects: {
       custom: () => {
-        state.isLatest && handleWebClick();
+        state.isLatest && toggleLatestControls();
       },
       toast: (v) => `Web Notifications ${v ? "enabled" : "disabled"}`,
     },
@@ -58,7 +59,7 @@ export const latestSettingsMeta = {
       step: 0.1,
     },
     effects: {
-      custom: queuedProcessAllTilesReset,
+      custom: debouncedProcessAllTilesReset,
       toast: (v) => `Min Version set to ${v}`,
     },
   },

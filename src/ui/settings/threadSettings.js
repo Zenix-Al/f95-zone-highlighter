@@ -1,19 +1,18 @@
 import { state } from "../../config";
-import { injectImageRepair } from "../../features/imageService";
+import { toggleImageRepair } from "../../features/image-repair/index.js";
 import { updateThreadUI } from ".";
 import { checkOverlaySettings } from "../../services/safetyService";
-import { signatureCollapse } from "../../features/threadService";
-import { toggleDirectDownloadHijack } from "../../features/hijackDownloadLink";
-import { toggleMsgEventHandler } from "../../features/msgHandler";
-import { toggleHijackMaskedLink } from "../../features/maskedLinkSkipper";
-import { queuedProcessThreadTags } from "../../core/tasksRegistry";
-import { wideForum } from "../../features/wideForum";
+import { signatureCollapse } from "../../features/signature-collapse/index.js";
+import { toggleDirectDownload } from "../../features/direct-download/index.js";
+import { toggleHijackMaskedLink } from "../../features/masked-link-skipper/index.js";
+import { debouncedProcessThreadTags } from "../../core/tasksRegistry";
+import { wideForum } from "../../features/wideForum/index";
 
 const effectOverlayToggle = () => {
   updateThreadUI();
   checkOverlaySettings();
   if (!state.isThread) return;
-  queuedProcessThreadTags();
+  debouncedProcessThreadTags();
 };
 // meta/threadSettings.js
 export const threadSettingsMeta = {
@@ -35,10 +34,7 @@ export const threadSettingsMeta = {
       "Enable direct download links for supported file hosts \n works independently outside of masked links",
     config: "threadSettings.directDownloadLinks",
     effects: {
-      custom: () => {
-        toggleDirectDownloadHijack();
-        toggleMsgEventHandler();
-      },
+      custom: toggleDirectDownload,
       toast: (v) => `Direct Download Links ${v ? "enabled" : "disabled"}`,
     },
   },
@@ -59,11 +55,11 @@ export const threadSettingsMeta = {
     tooltip: "Enable image retry for broken images in threads",
     config: "threadSettings.imgRetry",
     effects: {
-      custom: injectImageRepair,
+      custom: toggleImageRepair,
       toast: (v) => `Image Retry ${v ? "enabled" : "disabled"}`,
     },
   },
-  collapseableSignatures: {
+  collapseSignature: {
     type: "toggle",
     text: "Collapsable Signatures",
     tooltip: "Make user signatures collapsable in threads",
@@ -96,7 +92,7 @@ export const threadOverlaySettingsMeta = {
     tooltip: "Display neutral reaction buttons",
     config: "threadSettings.neutral",
     effects: {
-      custom: queuedProcessThreadTags,
+      custom: debouncedProcessThreadTags,
       toast: (v) => `Neutral ${v ? "enabled" : "disabled"}`,
     },
   },
@@ -107,7 +103,7 @@ export const threadOverlaySettingsMeta = {
     tooltip: "Display your preferred (favorited) overlay",
     config: "threadSettings.preferred",
     effects: {
-      custom: queuedProcessThreadTags,
+      custom: debouncedProcessThreadTags,
       toast: (v) => `Preferred ${v ? "enabled" : "disabled"}`,
     },
   },
@@ -118,7 +114,7 @@ export const threadOverlaySettingsMeta = {
     tooltip: "Add a subtle shadow effect to preferred overlay",
     config: "threadSettings.preferredShadow",
     effects: {
-      custom: queuedProcessThreadTags,
+      custom: debouncedProcessThreadTags,
       toast: (v) => `Preferred Shadow ${v ? "enabled" : "disabled"}`,
     },
   },
@@ -129,7 +125,7 @@ export const threadOverlaySettingsMeta = {
     tooltip: "Show overlay you've excluded",
     config: "threadSettings.excluded",
     effects: {
-      custom: queuedProcessThreadTags,
+      custom: debouncedProcessThreadTags,
       toast: (v) => `Excluded ${v ? "enabled" : "disabled"}`,
     },
   },
@@ -140,7 +136,7 @@ export const threadOverlaySettingsMeta = {
     tooltip: "Add shadow to excluded overlay",
     config: "threadSettings.excludedShadow",
     effects: {
-      custom: queuedProcessThreadTags,
+      custom: debouncedProcessThreadTags,
       toast: (v) => `Excluded Shadow ${v ? "enabled" : "disabled"}`,
     },
   },

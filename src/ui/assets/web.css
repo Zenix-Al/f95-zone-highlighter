@@ -50,6 +50,20 @@
   z-index: 2;
   pointer-events: none;
 }
+
+/*
+ * Styles for the Latest Overlay feature using CSS variables for performance.
+ * These rules are activated when the 'has-custom-overlay' class is added to a tile.
+ */
+.resource-tile.has-custom-overlay .resource-tile_body {
+  background: var(--tile-background);
+  color: var(--tile-text-color);
+}
+
+.resource-tile.has-custom-overlay .resource-tile_info-meta {
+  color: var(--tile-text-color);
+  font-weight: bold;
+}
 div#latest-page_items-wrap_inner
   div.resource-tile
   a.resource-tile_link
@@ -177,6 +191,26 @@ html.latest-wide .structItemContainer {
 /* Notices: collapse/expand animation handled in JS via `collapseNotice()`.
    CSS rules were removed so the helper owns transitions and display. */
 /* Leave default browser styles for `.js-notice` blocks. */
+/* Animation for notice dismissal */
+.js-notice {
+  transition:
+    opacity 0.3s ease,
+    max-height 0.35s ease,
+    padding 0.3s ease,
+    margin 0.3s ease,
+    border-width 0.3s ease;
+  overflow: hidden;
+}
+
+.js-notice.f95-is-collapsing {
+  opacity: 0;
+  max-height: 0 !important; /* Use !important to override inline style from JS */
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  border-width: 0 !important;
+}
 
 @media (prefers-reduced-motion: reduce) {
   ul.notices.notices--block.js-notices {
