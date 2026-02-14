@@ -5,7 +5,7 @@ import {
   defaultLatestSettings,
   defaultOverlaySettings,
   defaultThreadSetting,
-  metrics,
+  defaultMetrics,
 } from "../config";
 import { debugLog } from "../core/logger";
 
@@ -20,7 +20,28 @@ export async function saveConfigKeys(updates) {
 export async function loadData() {
   let parsed = {};
   try {
-    parsed = (await GM.getValues(Object.keys(config))) ?? {};
+    // Violentmonkey/Tampermonkey/Greasemonkey differ slightly in storage APIs.
+    // Prefer bulk `GM.getValues` if available; otherwise fall back to per-key `GM.getValue`.
+    const keys = Object.keys(config);
+    if (typeof GM.getValues === "function") {
+      parsed = (await GM.getValues(keys)) ?? {};
+    } else {
+      // Fallback: fetch keys individually and assemble an object
+      const entries = await Promise.all(
+        keys.map(async (k) => {
+          try {
+            const v = await GM.getValue(k);
+            return [k, v];
+          } catch {
+            return [k, undefined];
+          }
+        }),
+      );
+      parsed = entries.reduce((acc, [k, v]) => {
+        if (typeof v !== "undefined") acc[k] = v;
+        return acc;
+      }, {});
+    }
   } catch (e) {
     debugLog("loadData", `Error loading data: ${e}`);
     parsed = {};
@@ -53,7 +74,7 @@ export async function loadData() {
     latestSettings: mergeWithDefault(parsed.latestSettings, defaultLatestSettings),
     globalSettings: mergeWithDefault(parsed.globalSettings, defaultGlobalSettings),
 
-    metrics: mergeWithDefault(parsed.metrics, metrics),
+    metrics: mergeWithDefault(parsed.metrics, defaultMetrics),
     savedNotifID: parsed.savedNotifID || null,
     processingDownload: parsed.processingDownload || false,
   };

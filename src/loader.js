@@ -1,77 +1,106 @@
 // src/loader.js
-import { config, state } from "./config";
+import stateManager, { config } from "./config.js";
 import { debugLog } from "./core/logger";
+import { safeExecute } from "./core/safeExecute.js";
 
 // Features
 import { executeAutoRetry } from "./features/direct-download/autoRetryDownload.js";
-import { toggleNoticeDismissal } from "./features/dismiss-notification/index.js";
-import { enableLatestOverlay } from "./features/latest-overlay/latest-overlay.js";
-import { toggleWideLatestPage } from "./features/wide-latest/wide-latest-page.js";
-import { toggleDenseLatestGrid } from "./features/wide-latest/dense-latest-page.js";
-import { enableLatestControls } from "./features/latest-control/latest-controls.js";
-import { toggleImageRepair } from "./features/image-repair/index.js";
-import { signatureCollapse } from "./features/signature-collapse/index.js";
-import { processThreadTags } from "./features/thread-overlay/index.js";
-import { hijackMaskedLinks, handleRecaptcha } from "./features/masked-link-skipper/index.js";
+import { dismissNotificationFeature } from "./features/dismiss-notification/index.js";
+import { latestOverlayFeature } from "./features/latest-overlay/index.js";
+import { wideLatestPageFeature, denseLatestGridFeature } from "./features/wide-latest/index.js";
+import { latestControlFeature } from "./features/latest-control/index.js";
+import { imageRepairFeature } from "./features/image-repair/index.js";
+import { signatureCollapseFeature } from "./features/signature-collapse/index.js";
+import { threadOverlayFeature } from "./features/thread-overlay/index.js";
+import { maskedLinkHijackerFeature, handleRecaptcha } from "./features/masked-link-skipper/index.js";
 import { handleDownload } from "./features/direct-download/fileHostHelper.js";
-import { enableDirectDownload } from "./features/direct-download/index.js";
-import { handleMsgEvent } from "./features/direct-download/msgHandler.js";
-import { wideForum } from "./features/wideForum/index";
+import { directDownloadFeature } from "./features/direct-download/index.js";
+import { wideForumFeature } from "./features/wideForum/index.js";
+
+const latestPageFeaturesMap = [
+  { feature: wideLatestPageFeature },
+  { feature: denseLatestGridFeature },
+  { feature: latestOverlayFeature },
+  { feature: latestControlFeature },
+];
+
+const threadPageFeaturesMap = [
+  { feature: threadOverlayFeature },
+  { feature: wideForumFeature },
+  { feature: imageRepairFeature },
+  { feature: signatureCollapseFeature },
+  { feature: maskedLinkHijackerFeature },
+  { feature: directDownloadFeature },
+];
+
+const globalFeaturesMap = [
+  { feature: dismissNotificationFeature },
+];
+
+function runFeaturesFromMap(features, settings) {
+  for (const feature of features) {
+    if (feature.feature) { // New standardized feature object
+        if (feature.feature.isEnabled()) {
+            safeExecute(() => feature.feature.enable());
+        }
+        continue;
+    }
+
+    // Legacy feature loading
+    let shouldRun = false;
+    if (Array.isArray(feature.configKey)) {
+      const operator = feature.operator || "AND"; // Default to AND
+      if (operator === "OR") {
+        shouldRun = feature.configKey.some((key) => settings[key]);
+      } else {
+        shouldRun = feature.configKey.every((key) => settings[key]);
+      }
+    } else {
+      shouldRun = !!settings[feature.configKey];
+    }
+
+    if (shouldRun) {
+      safeExecute(feature.handler);
+    }
+  }
+}
 
 function loadLatestPageFeatures() {
   debugLog("Loader", "Latest page features loading...");
-
-  // These features are self-contained. They handle their own initialization,
-  // including waiting for DOM elements and setting up observers if necessary.
-  if (config.latestSettings.wideLatest) toggleWideLatestPage();
-  if (config.latestSettings.denseLatestGrid) toggleDenseLatestGrid();
-  if (config.latestSettings.webNotif || config.latestSettings.autoRefresh) enableLatestControls();
-
-  // Initialize overlays if the feature is enabled. The feature itself
-  // handles waiting for content and setting up its own observer.
-  if (config.latestSettings.latestOverlayToggle) enableLatestOverlay();
+  runFeaturesFromMap(latestPageFeaturesMap, config.latestSettings);
 }
 
 function loadThreadPageFeatures() {
   debugLog("Loader", "Thread page features loading...");
-
-  if (config.threadSettings.threadOverlayToggle) processThreadTags();
-  if (config.threadSettings.isWide) wideForum();
-  if (config.threadSettings.imgRetry) toggleImageRepair();
-  if (config.threadSettings.collapseSignature) signatureCollapse();
-  if (config.threadSettings.skipMaskedLink) hijackMaskedLinks();
-  if (config.threadSettings.directDownloadLinks) {
-    debugLog("Init", "Direct download links enabled");
-    enableDirectDownload();
-    handleMsgEvent();
-  }
+  runFeaturesFromMap(threadPageFeaturesMap, config.threadSettings);
 }
 
 function loadDownloadPageFeatures() {
-  if (state.isDownloadPage) {
-    debugLog("Init", `Download page detected: ${state.isDownloadPage}`);
-    handleDownload(state.isDownloadPage);
+  const downloadPageHost = stateManager.get('isDownloadPage');
+  if (downloadPageHost) {
+    debugLog("Init", `Download page detected: ${downloadPageHost}`);
+    handleDownload(downloadPageHost);
   }
 }
 
 export function loadFeatures() {
-  if (state.isLatest) {
+  if (stateManager.get('isLatest')) {
     loadLatestPageFeatures();
   }
-  if (state.isThread) {
+  if (stateManager.get('isThread')) {
     loadThreadPageFeatures();
   }
-  if (state.isDownloadPage) {
+  if (stateManager.get('isDownloadPage')) {
     loadDownloadPageFeatures();
   }
-  if (state.isDirectDownloadPage) {
-    executeAutoRetry(state.isDirectDownloadPage.host);
+  const directDownloadHost = stateManager.get('isDirectDownloadPage');
+  if (directDownloadHost) {
+    executeAutoRetry(directDownloadHost);
   }
-  if (state.isF95Zone) {
-    // Global features for f95zone
-    toggleNoticeDismissal();
+  if (stateManager.get('isF95Zone')) {
+    runFeaturesFromMap(globalFeaturesMap, config.globalSettings);
   }
-  if (state.isRecaptchaFrame) {
+  if (stateManager.get('isRecaptchaFrame')) {
     handleRecaptcha();
   }
 }

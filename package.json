@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "main": "latest-highlighter.user.js",
   "scripts": {
-    "build": "node build.js"
+    "build": "node build.js",
+    "lint": "eslint \"src/**\" --ext .js",
+    "lint:fix": "eslint \"src/**\" --ext .js --fix"
   },
   "devDependencies": {
     "esbuild": "^0.25.9",

@@ -1,9 +1,11 @@
 import { debugLog } from "../../core/logger";
+import TIMINGS from "../../config/timings.js";
 
 function autoRetryDownload(maxRetries = 99) {
-  let retries = 0;
-  let success = false;
   const originalUrl = location.href;
+  const storageKey = `autoRetryCount_${encodeURIComponent(originalUrl)}`;
+  let retries = parseInt(sessionStorage.getItem(storageKey) || "0", 10);
+  let success = false;
 
   // This is the KEY: observer that detects when download probably started
   const observer = new MutationObserver((mutations) => {
@@ -21,6 +23,7 @@ function autoRetryDownload(maxRetries = 99) {
         ) {
           debugLog("autoRetryDownload", `Detected download link on attempt ${retries + 1}`);
           success = true;
+          sessionStorage.removeItem(storageKey); // Clean up on success
           observer.disconnect();
           return;
         }
@@ -32,6 +35,7 @@ function autoRetryDownload(maxRetries = 99) {
         ) {
           debugLog("autoRetryDownload", `Detected progress UI on attempt ${retries + 1}`);
           success = true;
+          sessionStorage.removeItem(storageKey); // Clean up on success
           observer.disconnect();
           return;
         }
@@ -45,18 +49,23 @@ function autoRetryDownload(maxRetries = 99) {
   const tryLoad = () => {
     if (success || retries >= maxRetries) {
       observer.disconnect();
-      if (success) debugLog("autoRetryDownload", `Download started after ${retries} retries`);
-      else debugLog("autoRetryDownload", `Gave up after ${maxRetries} retries`);
+      if (success) {
+        debugLog("autoRetryDownload", `Download started after ${retries} retries`);
+      } else {
+        debugLog("autoRetryDownload", `Gave up after ${maxRetries} retries`);
+        sessionStorage.removeItem(storageKey); // Clean up on failure
+      }
       return;
     }
 
     retries++;
+    sessionStorage.setItem(storageKey, retries);
     debugLog("autoRetryDownload", `Attempt ${retries}/${maxRetries} — ${originalUrl}`);
 
     GM_xmlhttpRequest({
       method: "HEAD",
       url: originalUrl,
-      timeout: 10000, // don't hang forever
+      timeout: TIMINGS.DOWNLOAD_TIMEOUT, // don't hang forever
       onload: (response) => {
         const status = response.status;
         debugLog("autoRetryDownload", `[HEAD] Status: ${status}`);
@@ -95,7 +104,7 @@ function autoRetryDownload(maxRetries = 99) {
       debugLog("autoRetryDownload", "Timeout waiting for download signal — forcing retry");
       location.reload();
     }
-  }, 60000);
+  }, TIMINGS.AUTO_RETRY_TIMEOUT);
 }
 
 export function executeAutoRetry(host) {

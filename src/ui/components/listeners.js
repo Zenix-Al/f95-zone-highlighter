@@ -1,53 +1,31 @@
-import { config, defaultColors, state } from "../../config";
-import { showAllTags, updateSearch } from "../../services/tagsService";
-import { reprocessAllTiles as reprocessLatestOverlay } from "../../features/latest-overlay/latest-overlay";
-import { debouncedProcessThreadTags } from "../../core/tasksRegistry";
-import { colorSettingsMeta } from "../settings/colorSettings";
-import { reRenderSettingsSection } from "../renderers/reRenderSetting";
-import { updateColorStyle } from "../helpers/updateColorStyle";
-import { saveConfigKeys } from "../../services/settingsService";
-import { closeModal, showToast } from "./modal";
+import stateManager from "../../config.js";
+import { closeModal } from "./modal";
+import { resetColor } from "./settingsActions.js";
 
-export function injectListener() {
-  setEventById("tags-search", updateSearch, "input");
-  setEventById("close-modal", closeModal);
-  setEventById("tags-search", showAllTags, "focus");
-  setEventById("reset-color", resetColor);
-  //setEventById("settings-script-notif", updateScriptNotif());
-  document.addEventListener("click", (e) => {
-    if (!state.shadowRoot) return;
-    const input = state.shadowRoot.getElementById("tags-search");
-    const results = state.shadowRoot.getElementById("search-results");
-    if (!input || !results) return;
+export function handleModalClick(e) {
+  // Use closest to handle clicks on child elements of a button
+  const target = e.target.closest("[id]");
+  if (!target) return;
 
-    // Use composedPath to correctly detect clicks inside/outside the shadow DOM
-    const path = e.composedPath();
-    if (!path.includes(input) && !path.includes(results)) {
-      results.style.display = "none";
-    }
-  });
-}
-export function setEventById(idSelector, callback, eventType = "click") {
-  const el = state.shadowRoot.getElementById(idSelector);
-  if (el) {
-    el.addEventListener(eventType, callback);
-  } else {
-    console.warn(`setEventById: element with id "${idSelector}" not found.`);
+  switch (target.id) {
+    case "close-modal":
+      closeModal();
+      break;
+    case "reset-color":
+      resetColor();
+      break;
   }
 }
 
-export function resetColor() {
-  if (confirm("Are you sure you want to reset all colors to default?")) {
-    config.color = { ...defaultColors };
-    updateColorStyle();
-    saveConfigKeys({ color: config.color });
+export function handleOutsideSearchClick(e) {
+  if (!stateManager.get('shadowRoot')) return;
+  const input = stateManager.get('shadowRoot').getElementById("tags-search");
+  const results = stateManager.get('shadowRoot').getElementById("search-results");
+  if (!input || !results) return;
 
-    // The called functions have internal guards to only run on the correct page
-    // and if the corresponding feature is enabled.
-    reprocessLatestOverlay();
-    debouncedProcessThreadTags();
-
-    reRenderSettingsSection("color-container", colorSettingsMeta);
-    showToast("Colors have been reset to default");
+  // Use composedPath to correctly detect clicks inside/outside the shadow DOM
+  const path = e.composedPath();
+  if (!path.includes(input) && !path.includes(results)) {
+    results.style.display = "none";
   }
 }

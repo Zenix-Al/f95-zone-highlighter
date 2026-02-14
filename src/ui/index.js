@@ -1,15 +1,16 @@
-import { injectButton, injectCSS } from "./components/modal";
+import { injectButton } from "./components/configButton";
+import { injectCSS } from "./helpers/cssInjector";
 import { updateColorStyle } from "./helpers/updateColorStyle";
-import { state } from "../config";
+import stateManager from "../config.js";
 
 function initShadowDOM() {
-  if (state.shadowRoot) return; // Already initialized
+  if (stateManager.get('shadowRoot')) return; // Already initialized
 
   const shadowHost = document.createElement("div");
   shadowHost.id = "latest-highlighter-host";
   document.body.appendChild(shadowHost);
 
-  state.shadowRoot = shadowHost.attachShadow({ mode: "open" });
+  stateManager.set('shadowRoot', shadowHost.attachShadow({ mode: "open" }));
 }
 
 export function initUI() {

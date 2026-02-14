@@ -1,17 +1,19 @@
-import { config } from "../../config";
+import { createFeature } from "../../core/featureFactory.js";
 import { enableImageRepair, disableImageRepair } from "./handler.js";
 import { injectUI, destroyInjectedUI } from "./ui.js";
 
 /**
- * Toggles the image repair feature based on the user's config.
- * This is the primary function used by the settings UI and loader.
+ * Feature module for retrying failed images on the forum.
+ * This feature injects a UI to manually retry images and can automatically retry them.
  */
-export function toggleImageRepair() {
-  if (config.threadSettings.imgRetry) {
+export const imageRepairFeature = createFeature("Image Repair", {
+  configPath: "threadSettings.imgRetry",
+  enable: () => {
     injectUI();
     enableImageRepair();
-  } else {
+  },
+  disable: () => {
     disableImageRepair();
     destroyInjectedUI();
-  }
-}
+  },
+});

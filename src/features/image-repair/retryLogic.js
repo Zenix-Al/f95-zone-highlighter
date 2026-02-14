@@ -2,13 +2,14 @@
 import { recordFail, recordSuccess } from "../../services/metricsService.js";
 import { notifyAllDone, notifyMaxAttempts } from "../../services/notificationService.js";
 import { updateToast } from "./ui.js";
-import { config } from "../../config.js";
+import stateManager, { config } from "../../config.js";
 export const notifInfo = {
   isErrorNotified: false,
   isCompleteNotified: false,
 };
 export function retryImage(img, start, retryingImages, MAX_ATTEMPTS, RETRY_DELAY) {
   function markDone(success, duration) {
+    if (!stateManager.get('isImgRetryInjected')) return;
     retryingImages.delete(img);
     img.dataset.retrying = "false";
     img.dataset.retryAttached = "true";
@@ -33,6 +34,7 @@ export function retryImage(img, start, retryingImages, MAX_ATTEMPTS, RETRY_DELAY
     img.src = img.dataset.originalSrc + "?retry=" + Date.now();
 
     setTimeout(() => {
+      if (!stateManager.get('isImgRetryInjected')) return;
       if (img.complete && img.naturalWidth > 0) {
         const duration = performance.now() - start;
         markDone(true, duration);

@@ -22,7 +22,7 @@
   font-weight: bold;
   color: var(--preferred-text-color);
 }
-.preffered-shadow {
+.preferred-shadow {
   box-shadow: var(--preferred-shadow);
 }
 .excluded {

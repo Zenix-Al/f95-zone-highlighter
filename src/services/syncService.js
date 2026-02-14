@@ -1,4 +1,4 @@
-import { config, crossTabKeys, state } from "../config";
+import stateManager, { config, crossTabKeys } from "../config.js";
 import { applyEffects } from "../ui/renderers/applyEffects";
 import { metaRegistry } from "../ui/settings/metaRegistry";
 
@@ -6,7 +6,7 @@ const listenerIds = [];
 
 function initCrossTabSync() {
   // Prevent adding listeners multiple times
-  if (state.isCrossTabSyncInitialized) return;
+  if (stateManager.get('isCrossTabSyncInitialized')) return;
 
   Object.keys(crossTabKeys).forEach((key) => {
     const listenerId = GM_addValueChangeListener(key, (name, oldVal, newVal, remote) => {
@@ -41,17 +41,17 @@ function handleSectionChange(section, oldVal = {}, newVal = {}) {
 }
 
 function disableCrossTabSync() {
-  if (!state.isCrossTabSyncInitialized) return;
+  if (!stateManager.get('isCrossTabSyncInitialized')) return;
 
   listenerIds.forEach(GM_removeValueChangeListener);
   listenerIds.length = 0; // Clear the array of listener IDs
-  state.isCrossTabSyncInitialized = false;
+  stateManager.set('isCrossTabSyncInitialized', false);
 }
 
 export function toggleCrossTabSync(enabled) {
   if (enabled) {
     initCrossTabSync();
-    state.isCrossTabSyncInitialized = true;
+    stateManager.set('isCrossTabSyncInitialized', true);
   } else {
     disableCrossTabSync();
   }

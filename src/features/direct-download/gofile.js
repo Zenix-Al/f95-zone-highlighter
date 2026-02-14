@@ -1,11 +1,14 @@
-import { config } from "../config";
-import { saveConfigKeys } from "../services/settingsService";
-import { debugLog } from "../core/logger";
+import { config } from "../../config";
+import { saveConfigKeys } from "../../services/settingsService";
+import { debugLog } from "../../core/logger";
+import TIMINGS from "../../config/timings.js";
+import { SELECTORS } from "../../config/selectors.js";
+import { styleDownloadSuccess } from "../../utils/helpers.js";
 
 export async function processGofileDownload() {
   if (!config.threadSettings.directDownloadLinks || !config.processingDownload) return;
 
-  const AUTO_CLOSE_DELAY = 6000; // 6 seconds — adjust if your downloads are slower/faster
+  const AUTO_CLOSE_DELAY = TIMINGS.GOFILE_AUTO_CLOSE; // 6 seconds — adjust if your downloads are slower/faster
 
   const waitForContentReady = (timeout = 20000) => {
     // bumped timeout a bit
@@ -13,8 +16,8 @@ export async function processGofileDownload() {
       const start = Date.now();
 
       const check = () => {
-        const loading = document.querySelector("#filemanager_loading");
-        const itemsList = document.querySelector("#filemanager_itemslist");
+        const loading = document.querySelector(SELECTORS.GOFILE.LOADING);
+        const itemsList = document.querySelector(SELECTORS.GOFILE.ITEMS_LIST);
 
         // Loading gone AND itemsList exists AND has children (or at least trying)
         const isReady =
@@ -33,7 +36,7 @@ export async function processGofileDownload() {
           return;
         }
 
-        setTimeout(check, 400); // poll every 400ms — not too aggressive
+        setTimeout(check, TIMINGS.POLL_INTERVAL); // poll every POLL_INTERVAL ms — not too aggressive
       };
 
       check();
@@ -48,7 +51,7 @@ export async function processGofileDownload() {
     await waitForContentReady(); // ← this bad boy waits properly
     await new Promise((r) => setTimeout(r, 600));
 
-    const alertEl = document.querySelector("#filemanager_alert");
+    const alertEl = document.querySelector(SELECTORS.GOFILE.ALERT);
     if (alertEl && getComputedStyle(alertEl).display !== "none") {
       debugLog("GofileDownloader", "Alert visible — file/folder taken down or restricted");
       alert("This shit got removed or blocked");
@@ -56,7 +59,7 @@ export async function processGofileDownload() {
       return;
     }
 
-    const itemsList = document.querySelector("#filemanager_itemslist");
+    const itemsList = document.querySelector(SELECTORS.GOFILE.ITEMS_LIST);
     if (!itemsList) {
       throw new Error("No #filemanager_itemslist found — page layout changed?");
     }
@@ -111,17 +114,13 @@ export async function processGofileDownload() {
         // Cute fallback overlay
         const msg = document.createElement("div");
         msg.innerHTML = `
-          <div style="
-            position: fixed; bottom: 20px; right: 20px; 
-            background: #ec5555; color: white; 
-            padding: 16px 24px; border-radius: 12px; 
-            box-shadow: 0 4px 20px rgba(0,0,0,0.5); 
-            z-index: 99999; font-weight: bold; font-size: 16px;
-          ">
+          <div>
             Download started! You can close this tab now 
           </div>
         `;
-        document.body.appendChild(msg.firstElementChild);
+        const el = msg.firstElementChild;
+        styleDownloadSuccess(el, { background: "#ec5555", color: "white" });
+        document.body.appendChild(el);
       }
     }, AUTO_CLOSE_DELAY);
   } catch (err) {

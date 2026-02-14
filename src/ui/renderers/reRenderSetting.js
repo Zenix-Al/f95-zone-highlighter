@@ -1,4 +1,4 @@
-import { state } from "../../config";
+import stateManager from "../../config.js";
 import { renderSettingsSection } from "./settingsSection";
 
 export function reRenderSettingsSection(containerId, meta) {
@@ -8,8 +8,8 @@ export function reRenderSettingsSection(containerId, meta) {
 }
 
 export function clearContainer(id) {
-  if (!state.shadowRoot) return false;
-  const el = state.shadowRoot.getElementById(id);
+  if (!stateManager.get('shadowRoot')) return false;
+  const el = stateManager.get('shadowRoot').getElementById(id);
   if (el) {
     el.innerHTML = "";
     return true;

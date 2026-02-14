@@ -30,6 +30,10 @@ export function destroyInjectedUI() {
   if (wrapper) {
     wrapper.remove();
   }
+  if (imgRetryTimeoutContainer) {
+    clearTimeout(imgRetryTimeoutContainer);
+    imgRetryTimeoutContainer = null;
+  }
 }
 
 /**

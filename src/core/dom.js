@@ -1,7 +1,12 @@
-import { state, downloadHostConfigs } from "../config";
-import { debugLog } from "./logger";
+import stateManager, { downloadHostConfigs } from "../config.js";
+import { debugLog } from "./logger.js";
+import TIMINGS from "../config/timings.js";
 
-export function waitFor(conditionFn, interval = 50, timeout = 2000) {
+export function waitFor(
+  conditionFn,
+  interval = TIMINGS.TILE_POPULATE_CHECK_INTERVAL,
+  timeout = TIMINGS.TILE_POPULATE_TIMEOUT,
+) {
   return new Promise((resolve, reject) => {
     const start = Date.now();
 
@@ -21,20 +26,20 @@ export function waitFor(conditionFn, interval = 50, timeout = 2000) {
 export function detectPage() {
   const path = location.pathname;
   if (window.location.hostname.includes("f95zone.to")) {
-    state.isF95Zone = true;
+    stateManager.set("isF95Zone", true);
   }
   if (path.startsWith("/threads")) {
-    state.isThread = true;
+    stateManager.set("isThread", true);
   } else if (path.startsWith("/sam/latest_alpha")) {
-    state.isLatest = true;
+    stateManager.set("isLatest", true);
   } else if (path.startsWith("/masked")) {
-    state.isMaskedLink = true;
+    stateManager.set("isMaskedLink", true);
   } else if (
     (location.hostname.includes("google.com") || location.hostname.includes("recaptcha.net")) &&
     path.startsWith("/recaptcha/")
   ) {
     // Check if we are inside a reCaptcha iframe
-    state.isRecaptchaFrame = true;
+    stateManager.set("isRecaptchaFrame", true);
   } else {
     const currentHost = location.hostname;
     const currentPath = location.pathname;
@@ -43,17 +48,17 @@ export function detectPage() {
       if (currentHost.includes(host)) {
         const config = downloadHostConfigs[host];
         if (config.pageHandler) {
-          state.isDownloadPage = config.pageHandler; // e.g., "gofile.io"
+          stateManager.set("isDownloadPage", config.pageHandler); // e.g., "gofile.io"
         }
         if (config.pageType === "auto-retry" && currentPath.startsWith(config.pathStartsWith)) {
-          state.isDirectDownloadPage = true;
+          stateManager.set("isDirectDownloadPage", true);
         }
       }
     }
   }
   debugLog(
     "PageDetect",
-    `isF95Zone: ${state.isF95Zone}, isThread: ${state.isThread}, isLatest: ${state.isLatest}, isMaskedLink: ${state.isMaskedLink}, isDownloadPage: ${state.isDownloadPage}, isDirectDownloadPage: ${state.isDirectDownloadPage}, isRecaptchaFrame: ${state.isRecaptchaFrame}`,
+    `isF95Zone: ${stateManager.get("isF95Zone")}, isThread: ${stateManager.get("isThread")}, isLatest: ${stateManager.get("isLatest")}, isMaskedLink: ${stateManager.get("isMaskedLink")}, isDownloadPage: ${stateManager.get("isDownloadPage")}, isDirectDownloadPage: ${stateManager.get("isDirectDownloadPage")}, isRecaptchaFrame: ${stateManager.get("isRecaptchaFrame")}`,
   );
 }
 export function waitForBody(callback) {

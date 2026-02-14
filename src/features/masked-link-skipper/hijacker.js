@@ -1,13 +1,12 @@
-import { config, state } from "../../config";
+import stateManager, { config } from "../../config.js";
 import { saveConfigKeys } from "../../services/settingsService";
-import { showToast } from "../../ui/components/modal";
+import { showToast } from "../../ui/components/toast.js";
 import { getSupportedLinkType, isSupportedDownloadLink } from "../direct-download/index.js";
 import { openInNewTabHelper } from "../../core/openInNewTabHelper";
 import { injectFrame } from "../direct-download/iframe.js";
 import { resolveMaskedLink } from "./resolver.js";
-
-let clickHandler = null; // To keep reference for removal
-let auxclickHandler = null;
+import { addListener, removeListener } from "../../core/listenerRegistry.js";
+import TIMINGS from "../../config/timings.js";
 
 /**
  * Dispatches a resolved URL to the appropriate handler (direct download, iframe, new tab).
@@ -26,7 +25,7 @@ function dispatchResolvedLink(url) {
       showToast("you'll be alerted if download starts or fails");
       openInNewTabHelper(url);
       // Reset processing flag after a delay
-      setTimeout(() => saveConfigKeys({ processingDownload: false }), 10000);
+      setTimeout(() => saveConfigKeys({ processingDownload: false }), TIMINGS.DOWNLOAD_TIMEOUT);
       return;
     }
   }
@@ -41,10 +40,13 @@ function dispatchResolvedLink(url) {
  */
 export function hijackMaskedLinks() {
   if (location.pathname.startsWith("/masked/")) return;
-  if (state.isMaskedLinkApplied) return;
+  if (stateManager.get("isMaskedLinkApplied")) return;
   if (!config.threadSettings.skipMaskedLink) return;
 
-  state.isMaskedLinkApplied = true;
+  const CLICK_LISTENER_ID = "masked-link-click-hijack";
+  const AUXCLICK_LISTENER_ID = "masked-link-auxclick-hijack";
+
+  stateManager.set("isMaskedLinkApplied", true);
 
   const handler = function (e) {
     if (e.button !== 0 && e.button !== 1) return; // Only left or middle
@@ -90,24 +92,16 @@ export function hijackMaskedLinks() {
       });
   };
 
-  // Assign to vars so we can remove later
-  clickHandler = handler;
-  auxclickHandler = handler;
-
-  document.addEventListener("click", handler, true);
-  document.addEventListener("auxclick", handler, true);
+  addListener(CLICK_LISTENER_ID, document, "click", handler, { capture: true });
+  addListener(AUXCLICK_LISTENER_ID, document, "auxclick", handler, { capture: true });
 }
 
 /**
  * Removes the event listeners that hijack masked links.
  */
 export function disableHijackMaskedLink() {
-  if (!state.isMaskedLinkApplied) return;
-  if (clickHandler) {
-    document.removeEventListener("click", clickHandler, true);
-    document.removeEventListener("auxclick", auxclickHandler, true);
-    clickHandler = null;
-    auxclickHandler = null;
-  }
-  state.isMaskedLinkApplied = false;
+  if (!stateManager.get("isMaskedLinkApplied")) return;
+  removeListener("masked-link-click-hijack");
+  removeListener("masked-link-auxclick-hijack");
+  stateManager.set("isMaskedLinkApplied", false);
 }
