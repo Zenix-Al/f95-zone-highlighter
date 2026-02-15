@@ -11,13 +11,24 @@ import { preserveOriginalSrc } from "../../utils/helpers.js";
 
 let imageQueue = null;
 
+function hasPotentialImageMutations(mutationsList) {
+  return mutationsList.some((mutation) => {
+    for (const node of mutation.addedNodes || []) {
+      if (node.nodeType !== 1) continue;
+      if (node.tagName === "IMG") return true;
+      if (node.querySelector?.("img")) return true;
+    }
+    return false;
+  });
+}
+
 export function enableImageRepair() {
   if (stateManager.get("isImgRetryInjected")) return;
   stateManager.set("isImgRetryInjected", true);
 
   // Create a new queue instance for this feature
   imageQueue = createTaskQueue({
-    delay: 200, // A small delay between starting each image check
+    delay: TIMINGS.IMAGE_REPAIR_QUEUE_DELAY, // A small delay between starting each image check
     name: "ImageRepairQueue",
   });
 
@@ -74,7 +85,9 @@ export function enableImageRepair() {
   injectUI();
   initImageRetry();
 
-  addObserverCallback("image-repair", processMutations);
+  addObserverCallback("image-repair", processMutations, {
+    filter: hasPotentialImageMutations,
+  });
 }
 
 function handleImage(img, retryingImages) {

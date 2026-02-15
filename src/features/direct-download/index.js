@@ -9,6 +9,54 @@ import { disableMsgEventHandler, handleMsgEvent } from "./msgHandler";
 import { createFeature } from "../../core/featureFactory.js";
 import resourceManager from "../../core/resourceManager.js";
 import TIMINGS from "../../config/timings.js";
+import { notify } from "../../services/notificationService.js";
+
+const DIRECT_DOWNLOAD_ATTENTION_KEY = "directDownloadAttentionEvent";
+let directDownloadAttentionListenerId = null;
+let lastAttentionTimestamp = 0;
+
+function showAttentionNotice(payload) {
+  if (!payload || typeof payload !== "object") return;
+
+  const ts = Number(payload.ts || 0);
+  if (Number.isFinite(ts) && ts > 0) {
+    if (ts <= lastAttentionTimestamp) return;
+    lastAttentionTimestamp = ts;
+  }
+
+  const message =
+    typeof payload.message === "string" && payload.message.trim().length > 0
+      ? payload.message.trim()
+      : "Direct download needs manual action.";
+
+  showToast(`Direct Download: ${message}`, 6000);
+  try {
+    notify("Direct Download Attention", message);
+  } catch {
+    // best-effort
+  }
+}
+
+function enableDirectDownloadAttentionListener() {
+  if (directDownloadAttentionListenerId !== null) return;
+  if (typeof GM_addValueChangeListener !== "function") return;
+
+  directDownloadAttentionListenerId = GM_addValueChangeListener(
+    DIRECT_DOWNLOAD_ATTENTION_KEY,
+    (_name, _oldVal, newVal, remote) => {
+      if (!remote) return;
+      showAttentionNotice(newVal);
+    },
+  );
+}
+
+function disableDirectDownloadAttentionListener() {
+  if (directDownloadAttentionListenerId === null) return;
+  if (typeof GM_removeValueChangeListener === "function") {
+    GM_removeValueChangeListener(directDownloadAttentionListenerId);
+  }
+  directDownloadAttentionListenerId = null;
+}
 
 function getDownloadLinkInfo(urlString) {
   if (!urlString) return false;
@@ -50,7 +98,7 @@ function enableDirectDownload() {
   if (stateManager.get("isDirectDownloadHijackApplied")) return;
   stateManager.set("isDirectDownloadHijackApplied", true);
 
-  function handler(e) {
+  async function handler(e) {
     const el = e.target.closest("a[href]");
     if (!el) return;
     const url = el.href.trim();
@@ -96,8 +144,8 @@ function enableDirectDownload() {
     } else if (type == "normal") {
       showToast("Processing download in new tab...");
       showToast("you'll alered if download starts or fails");
-      //important so if script loaded on new tab it must process the download
-      saveConfigKeys({ processingDownload: true });
+      // Persist before opening tab so download-page loader can read it reliably.
+      await saveConfigKeys({ processingDownload: true });
       setTimeout(() => saveConfigKeys({ processingDownload: false }), TIMINGS.DOWNLOAD_TIMEOUT); // reset after configured delay
       openInNewTabHelper(url);
     }
@@ -113,11 +161,13 @@ function disableDirectDownload() {
 
 function enable() {
   enableDirectDownload();
+  enableDirectDownloadAttentionListener();
   handleMsgEvent();
 }
 
 function disable() {
   disableDirectDownload();
+  disableDirectDownloadAttentionListener();
   disableMsgEventHandler();
 }
 

@@ -133,8 +133,31 @@ function handleTagRemoval(listKey, tag, index, renderFn) {
   triggerTagUpdateEffects();
 }
 
+function handleTagReorder(listKey, fromIndex, toIndex, renderFn) {
+  const list = config[listKey];
+  if (
+    !Array.isArray(list) ||
+    fromIndex < 0 ||
+    toIndex < 0 ||
+    fromIndex >= list.length ||
+    toIndex >= list.length ||
+    fromIndex === toIndex
+  ) {
+    return;
+  }
+
+  const [moved] = list.splice(fromIndex, 1);
+  list.splice(toIndex, 0, moved);
+
+  saveConfigKeys({ [listKey]: list });
+  renderFn();
+  triggerTagUpdateEffects();
+}
+
 export function renderPreferred() {
   renderTagList({
+    listKey: "preferredTags",
+    renderFn: renderPreferred,
     containerId: "preferred-tags-list",
     ids: config.preferredTags,
     itemClass: "preferred-tag-item",
@@ -145,6 +168,8 @@ export function renderPreferred() {
 
 export function renderExcluded() {
   renderTagList({
+    listKey: "excludedTags",
+    renderFn: renderExcluded,
     containerId: "excluded-tags-list",
     ids: config.excludedTags,
     itemClass: "excluded-tag-item",
@@ -152,7 +177,7 @@ export function renderExcluded() {
     onRemove: (index, tag) => handleTagRemoval("excludedTags", tag, index, renderExcluded),
   });
 }
-function renderTagList({ containerId, ids, itemClass, removeBtnClass, onRemove }) {
+function renderTagList({ listKey, renderFn, containerId, ids, itemClass, removeBtnClass, onRemove }) {
   const container = stateManager.get("shadowRoot").getElementById(containerId);
   if (!container) return;
 
@@ -163,16 +188,38 @@ function renderTagList({ containerId, ids, itemClass, removeBtnClass, onRemove }
     const tag = config.tags.find((t) => t.id === id);
     if (!tag) return;
     if (!isValidTag(String(tag.name || ""))) return;
-    fragment.appendChild(createTagListItem(tag, index, itemClass, removeBtnClass, onRemove));
+    fragment.appendChild(
+      createTagListItem(tag, index, itemClass, removeBtnClass, onRemove, (fromIndex, toIndex) =>
+        handleTagReorder(listKey, fromIndex, toIndex, renderFn),
+      ),
+    );
   });
   container.appendChild(fragment);
 }
-function createTagListItem(tag, index, itemClass, removeBtnClass, onRemove) {
+function createTagListItem(tag, index, itemClass, removeBtnClass, onRemove, onReorder) {
   const item = document.createElement("div");
   item.className = `tag-list-item ${itemClass}`;
+  item.dataset.index = String(index);
 
   const text = document.createElement("span");
   text.textContent = tag.name;
+
+  const dragHandle = document.createElement("span");
+  dragHandle.className = "tag-drag-handle";
+  dragHandle.title = "Drag to reorder";
+  dragHandle.textContent = "≡";
+  dragHandle.draggable = true;
+
+  dragHandle.addEventListener("dragstart", (e) => {
+    if (!e.dataTransfer) return;
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", String(index));
+    item.classList.add("dragging");
+  });
+
+  dragHandle.addEventListener("dragend", () => {
+    item.classList.remove("dragging");
+  });
 
   const removeBtn = document.createElement("button");
   removeBtn.textContent = "X";
@@ -185,7 +232,30 @@ function createTagListItem(tag, index, itemClass, removeBtnClass, onRemove) {
     onRemove(index, tag);
   });
 
+  item.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    item.classList.add("drag-over");
+  });
+
+  item.addEventListener("dragleave", () => {
+    item.classList.remove("drag-over");
+  });
+
+  item.addEventListener("drop", (e) => {
+    e.preventDefault();
+    item.classList.remove("drag-over");
+    const fromIndex = Number(e.dataTransfer?.getData("text/plain"));
+    const toIndex = index;
+    if (Number.isNaN(fromIndex)) return;
+    onReorder(fromIndex, toIndex);
+  });
+
+  item.addEventListener("click", () => {
+    item.classList.toggle("reorder-active");
+  });
+
   item.appendChild(text);
+  item.appendChild(dragHandle);
   item.appendChild(removeBtn);
 
   return item;

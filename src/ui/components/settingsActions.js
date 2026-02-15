@@ -7,18 +7,24 @@ import { updateColorStyle } from "../helpers/updateColorStyle";
 import { saveConfigKeys } from "../../services/settingsService";
 import { showToast } from "./toast";
 
+let resetColorConfirmUntil = 0;
+
 export function resetColor() {
-  if (confirm("Are you sure you want to reset all colors to default?")) {
-    config.color = { ...defaultColors };
-    updateColorStyle();
-    saveConfigKeys({ color: config.color });
-
-    // The called functions have internal guards to only run on the correct page
-    // and if the corresponding feature is enabled.
-    reprocessLatestOverlay();
-    debouncedProcessThreadTags();
-
-    reRenderSettingsSection("color-container", colorSettingsMeta);
-    showToast("Colors have been reset to default");
+  const now = Date.now();
+  if (now > resetColorConfirmUntil) {
+    resetColorConfirmUntil = now + 3000;
+    showToast("Press reset again within 3s to confirm.");
+    return;
   }
+
+  resetColorConfirmUntil = 0;
+  config.color = { ...defaultColors };
+  updateColorStyle();
+  saveConfigKeys({ color: config.color });
+
+  reprocessLatestOverlay();
+  debouncedProcessThreadTags();
+
+  reRenderSettingsSection("color-container", colorSettingsMeta);
+  showToast("Colors have been reset to default");
 }

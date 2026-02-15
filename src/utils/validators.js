@@ -16,9 +16,26 @@ export function isPositiveInteger(n) {
   return Number.isInteger(n) && n > 0;
 }
 
+export function isValidLatestOverlayColorOrder(order) {
+  if (!Array.isArray(order)) return false;
+
+  const validKeys = new Set([
+    "excluded",
+    "preferred",
+    "completed",
+    "onhold",
+    "abandoned",
+    "highVersion",
+    "invalidVersion",
+  ]);
+
+  return order.every((key) => typeof key === "string" && validKeys.has(key));
+}
+
 export default {
   isValidTag,
   isValidColor,
   isValidVersion,
   isPositiveInteger,
+  isValidLatestOverlayColorOrder,
 };

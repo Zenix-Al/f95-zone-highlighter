@@ -1,0 +1,17 @@
+.no-max-width {
+  max-width: none !important;
+}
+
+.thread-scroll-hide .p-navSticky {
+  transition: transform 0.25s ease;
+  will-change: transform;
+}
+
+.thread-scroll-hide .p-navSticky.is-sticky {
+  transition: transform 0.25s ease;
+  will-change: transform;
+}
+
+.thread-scroll-hide.thread-header-hidden .p-navSticky.is-sticky {
+  transform: translateY(-100%);
+}

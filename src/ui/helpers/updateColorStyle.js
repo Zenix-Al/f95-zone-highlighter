@@ -2,30 +2,46 @@ import { config } from "../../config";
 import { debugLog } from "../../core/logger";
 import { isValidColor } from "../../utils/validators.js";
 
-export function updateColorStyle(key) {
-  if (key && config.color[key] !== undefined) {
-    const value = config.color[key];
-    const varName = `--${key}-color`;
-    if (isValidColor(value)) {
-      document.documentElement.style.setProperty(varName, value);
-      debugLog("updateColorStyle", `Updated color for key: ${key} to ${value}`);
-    } else {
-      debugLog("updateColorStyle", `Skipped invalid color for key: ${key} -> ${value}`);
-    }
+const COLOR_VAR_MAP = Object.freeze({
+  completed: "--completed-color",
+  onhold: "--onhold-color",
+  abandoned: "--abandoned-color",
+  highVersion: "--high-version-color",
+  invalidVersion: "--invalid-version-color",
+  tileInfo: "--tile-info-color",
+  tileHeader: "--tile-header-color",
+  preferred: "--preferred-color",
+  preferredText: "--preferred-text-color",
+  excluded: "--excluded-color",
+  excludedText: "--excluded-text-color",
+  neutral: "--neutral-color",
+  neutralText: "--neutral-text-color",
+});
+
+function applyColorVar(key, value) {
+  const varName = COLOR_VAR_MAP[key];
+  if (!varName) {
+    debugLog("updateColorStyle", `No CSS variable mapping for key: ${key}`);
+    return;
+  }
+
+  if (isValidColor(value)) {
+    document.documentElement.style.setProperty(varName, value);
+    debugLog("updateColorStyle", `Updated color for key: ${key} to ${value}`);
   } else {
-    // Fallback: update all if no key provided
+    debugLog("updateColorStyle", `Skipped invalid color for key: ${key} -> ${value}`);
+  }
+}
+
+export function updateColorStyle(key) {
+  if (typeof key === "string" && Object.prototype.hasOwnProperty.call(config.color, key)) {
+    applyColorVar(key, config.color[key]);
+  } else {
     for (const [k, value] of Object.entries(config.color)) {
-      const varName = `--${k}-color`;
-      if (isValidColor(value)) {
-        document.documentElement.style.setProperty(varName, value);
-        debugLog("updateColorStyle", `Updated color for key: ${k} to ${value}`);
-      } else {
-        debugLog("updateColorStyle", `Skipped invalid color for key: ${k} -> ${value}`);
-      }
+      applyColorVar(k, value);
     }
   }
 
-  // Update shadows only once (optional, keep as is)
   const preferredShadow = config.threadSettings.preferredShadow ? "0 0 2px 1px white" : "none";
   const excludedShadow = config.threadSettings.excludedShadow ? "0 0 2px 1px white" : "none";
 

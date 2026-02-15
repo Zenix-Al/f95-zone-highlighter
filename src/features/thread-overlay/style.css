@@ -1,0 +1,25 @@
+.preferred {
+  background-color: var(--preferred-color);
+  font-weight: bold;
+  color: var(--preferred-text-color);
+}
+
+.preferred-shadow {
+  box-shadow: var(--preferred-shadow);
+}
+
+.excluded {
+  background-color: var(--excluded-color);
+  font-weight: bold;
+  color: var(--excluded-text-color);
+}
+
+.excluded-shadow {
+  box-shadow: var(--excluded-shadow);
+}
+
+.neutral {
+  background-color: var(--neutral-color);
+  font-weight: bold;
+  color: var(--neutral-text-color);
+}

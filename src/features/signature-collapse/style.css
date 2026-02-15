@@ -1,0 +1,56 @@
+html.latest-signature-collapsed aside.message-signature {
+  max-height: 0 !important;
+  overflow: hidden !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  margin-top: 0 !important;
+  border-top: none !important;
+  opacity: 0;
+  transition:
+    max-height 0.25s ease,
+    opacity 0.2s ease;
+}
+
+html.latest-signature-collapsed aside.message-signature.latest-signature-expanded {
+  max-height: 300px !important;
+  overflow-y: auto !important;
+  padding-top: 10px !important;
+  padding-bottom: 10px !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
+  opacity: 1;
+}
+
+.latest-signature-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin: 6px 0 12px;
+  padding: 6px 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  font-size: 1.2rem;
+  color: #ec5555;
+  cursor: pointer;
+  position: relative;
+}
+
+.latest-signature-toggle::before,
+.latest-signature-toggle::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.12);
+  margin: 0 10px;
+}
+
+.latest-signature-toggle span {
+  white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  html.latest-signature-collapsed .latest-signature-toggle {
+    display: none;
+  }
+}

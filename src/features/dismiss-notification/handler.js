@@ -2,6 +2,7 @@ import stateManager, { config } from "../../config.js";
 import { saveConfigKeys } from "../../services/settingsService";
 import { debugLog } from "../../core/logger";
 import { addObserverCallback, removeObserverCallback } from "../../core/observer.js";
+import { SELECTORS } from "../../config/selectors.js";
 let noticeDismissHandler = null;
 
 /**
@@ -13,7 +14,7 @@ function customDismissHandler(e) {
   e.preventDefault();
   e.stopImmediatePropagation();
 
-  const notice = e.target.closest(".js-notice");
+  const notice = e.target.closest(SELECTORS.NOTICE.SELECTOR);
   if (!notice) return;
 
   const noticeId = notice.getAttribute("data-notice-id");
@@ -35,13 +36,13 @@ function processNotice(notice) {
   }
 
   // Find any existing close button (native or ours).
-  let closeBtn = notice.querySelector(".js-noticeDismiss, .js-notice-dismiss-btn");
-
-  // If no button exists, create our own as a fallback.
+  let closeBtn = notice.querySelector(
+    `${SELECTORS.NOTICE.DISMISS_SELECTOR}, ${SELECTORS.NOTICE.DISMISS_BTN_SELECTOR}`,
+  );
   if (!closeBtn) {
     closeBtn = document.createElement("button");
     closeBtn.innerText = "×";
-    closeBtn.className = "js-notice-dismiss-btn"; // Our custom class
+    closeBtn.className = SELECTORS.NOTICE.DISMISS_BTN_SELECTOR.replace(".", ""); // Our custom class
     notice.appendChild(closeBtn);
   }
 
@@ -60,13 +61,10 @@ function processMutations(mutationsList) {
     if (mutation.type === "childList") {
       for (const node of mutation.addedNodes) {
         if (node.nodeType === 1) {
-          // If the added node is a notice itself
-          if (node.classList.contains("js-notice")) {
+          if (node.classList && node.classList.contains(SELECTORS.NOTICE.CLASS)) {
             processNotice(node);
-          }
-          // Or if it contains notices (e.g., a whole <ul> was added)
-          else if (node.querySelectorAll) {
-            node.querySelectorAll(".js-notice").forEach(processNotice);
+          } else if (node.querySelectorAll) {
+            node.querySelectorAll(SELECTORS.NOTICE.SELECTOR).forEach(processNotice);
           }
         }
       }
@@ -74,38 +72,55 @@ function processMutations(mutationsList) {
   }
 }
 
+function hasNoticeMutations(mutationsList) {
+  return mutationsList.some((mutation) => {
+    for (const node of mutation.addedNodes || []) {
+      if (node.nodeType !== 1) continue;
+      if (node.classList?.contains(SELECTORS.NOTICE.CLASS)) return true;
+      if (node.querySelector?.(SELECTORS.NOTICE.SELECTOR)) return true;
+    }
+    return false;
+  });
+}
+
 export function enableNoticeDismissal() {
-  if (stateManager.get('isNoticeDismissalEnabled')) return; // Already enabled
-  stateManager.set('isNoticeDismissalEnabled', true);
+  if (stateManager.get("isNoticeDismissalEnabled")) return; // Already enabled
+  stateManager.set("isNoticeDismissalEnabled", true);
 
   if (!noticeDismissHandler) {
     noticeDismissHandler = customDismissHandler;
   }
 
   // Process any notices already on the page
-  document.querySelectorAll(".js-notice").forEach(processNotice);
+  document.querySelectorAll(SELECTORS.NOTICE.SELECTOR).forEach(processNotice);
 
   // Observe for new notices being added to the DOM
-  addObserverCallback("dismiss-notification", processMutations);
+  addObserverCallback("dismiss-notification", processMutations, {
+    filter: hasNoticeMutations,
+  });
   debugLog("enableNoticeDismissal", "Dismissal feature initialized and observing for new notices");
 }
 
 export function disableNoticeDismissal() {
-  if (!stateManager.get('isNoticeDismissalEnabled')) return;
-  stateManager.set('isNoticeDismissalEnabled', false);
+  if (!stateManager.get("isNoticeDismissalEnabled")) return;
+  stateManager.set("isNoticeDismissalEnabled", false);
   removeObserverCallback("dismiss-notification");
 
   if (noticeDismissHandler) {
-    document.querySelectorAll(".js-noticeDismiss, .js-notice-dismiss-btn").forEach((btn) => {
-      btn.removeEventListener("click", noticeDismissHandler, { capture: true });
-      delete btn.dataset.dismissHijacked;
-    });
+    document
+      .querySelectorAll(
+        `${SELECTORS.NOTICE.DISMISS_SELECTOR}, ${SELECTORS.NOTICE.DISMISS_BTN_SELECTOR}`,
+      )
+      .forEach((btn) => {
+        btn.removeEventListener("click", noticeDismissHandler, { capture: true });
+        delete btn.dataset.dismissHijacked;
+      });
     noticeDismissHandler = null;
   }
 
-  document.querySelectorAll(".js-notice-dismiss-btn").forEach((btn) => btn.remove());
+  document.querySelectorAll(SELECTORS.NOTICE.DISMISS_BTN_SELECTOR).forEach((btn) => btn.remove());
 
-  document.querySelectorAll(".js-notice").forEach((notice) => {
+  document.querySelectorAll(SELECTORS.NOTICE.SELECTOR).forEach((notice) => {
     expandNotice(notice);
   });
   debugLog("disableNoticeDismissal", "Dismissal feature turned off");

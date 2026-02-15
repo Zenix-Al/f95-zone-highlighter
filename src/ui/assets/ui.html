@@ -45,8 +45,18 @@
           <div id="search-container">
             <input type="text" id="tags-search" placeholder="Search tags..." autocomplete="off" />
             <ul id="search-results"></ul>
-            <div id="preferred-tags-list"></div>
-            <div id="excluded-tags-list"></div>
+            <div class="tag-priority-note">
+              Drag tag chips by the handle to reorder priority inside Preferred/Excluded. Status
+              priority is controlled in Latest settings through Overlay color order.
+            </div>
+            <div class="tag-list-section">
+              <div class="tag-list-header">Preferred tags</div>
+              <div id="preferred-tags-list"></div>
+            </div>
+            <div class="tag-list-section">
+              <div class="tag-list-header">Excluded tags</div>
+              <div id="excluded-tags-list"></div>
+            </div>
           </div>
         </div>
       </div>

@@ -8,13 +8,53 @@ import {
   defaultMetrics,
 } from "../config";
 import { debugLog } from "../core/logger";
+import { isValidColor, isValidVersion } from "../utils/validators";
+import { normalizeOverlayColorOrder } from "../features/latest-overlay/overlayOrder.js";
+
+function sanitizeColorSection(value) {
+  const merged = { ...defaultColors, ...(value || {}) };
+  for (const [key, fallback] of Object.entries(defaultColors)) {
+    if (!isValidColor(merged[key])) {
+      merged[key] = fallback;
+    }
+  }
+  return merged;
+}
+
+function sanitizeLatestSettings(value) {
+  const merged = { ...defaultLatestSettings, ...(value || {}) };
+  if (!isValidVersion(merged.minVersion)) {
+    merged.minVersion = defaultLatestSettings.minVersion;
+  }
+  merged.latestOverlayColorOrder = normalizeOverlayColorOrder(merged.latestOverlayColorOrder);
+  return merged;
+}
+
+function sanitizePersistedUpdate(key, value) {
+  switch (key) {
+    case "color":
+      return sanitizeColorSection(value);
+    case "latestSettings":
+      return sanitizeLatestSettings(value);
+    case "overlaySettings":
+      return { ...defaultOverlaySettings, ...(value || {}) };
+    case "threadSettings":
+      return { ...defaultThreadSetting, ...(value || {}) };
+    case "globalSettings":
+      return { ...defaultGlobalSettings, ...(value || {}) };
+    case "metrics":
+      return { ...defaultMetrics, ...(value || {}) };
+    default:
+      return value;
+  }
+}
 
 export async function saveConfigKeys(updates) {
   const promises = Object.entries(updates).map(([key, value]) => {
-    return GM.setValue(key, value);
+    return GM.setValue(key, sanitizePersistedUpdate(key, value));
   });
   await Promise.all(promises);
-  debugLog("saveConfigKeys", `Config updated: ${JSON.stringify(updates)}`);
+  debugLog("saveConfigKeys", `Config updated: ${JSON.stringify(Object.keys(updates))}`);
 }
 
 export async function loadData() {
@@ -94,6 +134,9 @@ export async function loadData() {
   if (typeof result.latestSettings.minVersion !== "number") {
     result.latestSettings.minVersion = defaultLatestSettings.minVersion;
   }
+  result.latestSettings.latestOverlayColorOrder = normalizeOverlayColorOrder(
+    result.latestSettings.latestOverlayColorOrder,
+  );
   debugLog("loadData", `loadData result:`, result);
 
   return result;

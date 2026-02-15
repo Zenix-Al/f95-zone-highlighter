@@ -1,17 +1,36 @@
-import { config } from "../../config";
+﻿import { config } from "../../config";
 import { saveConfigKeys } from "../../services/settingsService";
 import { debugLog } from "../../core/logger";
 import TIMINGS from "../../config/timings.js";
 import { SELECTORS } from "../../config/selectors.js";
 import { styleDownloadSuccess } from "../../utils/helpers.js";
+import { showToast } from "../../ui/components/toast.js";
+
+const DIRECT_DOWNLOAD_ATTENTION_KEY = "directDownloadAttentionEvent";
+
+async function publishAttention(message, code = "manual_required") {
+  const safeMessage = String(message || "Direct download needs manual action.");
+  try {
+    await saveConfigKeys({
+      [DIRECT_DOWNLOAD_ATTENTION_KEY]: {
+        ts: Date.now(),
+        host: "gofile.io",
+        code,
+        message: safeMessage,
+        href: location.href,
+      },
+    });
+  } catch {
+    // best-effort
+  }
+}
 
 export async function processGofileDownload() {
   if (!config.threadSettings.directDownloadLinks || !config.processingDownload) return;
 
-  const AUTO_CLOSE_DELAY = TIMINGS.GOFILE_AUTO_CLOSE; // 6 seconds — adjust if your downloads are slower/faster
+  const AUTO_CLOSE_DELAY = TIMINGS.GOFILE_AUTO_CLOSE;
 
   const waitForContentReady = (timeout = 20000) => {
-    // bumped timeout a bit
     return new Promise((resolve, reject) => {
       const start = Date.now();
 
@@ -19,103 +38,96 @@ export async function processGofileDownload() {
         const loading = document.querySelector(SELECTORS.GOFILE.LOADING);
         const itemsList = document.querySelector(SELECTORS.GOFILE.ITEMS_LIST);
 
-        // Loading gone AND itemsList exists AND has children (or at least trying)
         const isReady =
           (!loading || getComputedStyle(loading).display === "none") &&
           itemsList &&
-          itemsList.children.length > 0; // or querySelectorAll("[data-item-id]").length > 0 if you wanna be stricter
+          itemsList.children.length > 0;
 
         if (isReady) {
-          debugLog("GofileDownloader", "Content ready — itemsList has kids now 🔥");
+          debugLog("GofileDownloader", "Content ready: items list populated");
           resolve(true);
           return;
         }
 
         if (Date.now() - start > timeout) {
-          reject(new Error("Timeout waiting for actual content to render 😤"));
+          reject(new Error("Timeout waiting for content to render"));
           return;
         }
 
-        setTimeout(check, TIMINGS.POLL_INTERVAL); // poll every POLL_INTERVAL ms — not too aggressive
+        setTimeout(check, TIMINGS.POLL_INTERVAL);
       };
 
       check();
     });
   };
-  try {
-    // gofile, just like most hosting page, almost anything is lazy loaded
-    // expect many delays here and there
-    debugLog("GofileDownloader", "Starting goFile auto-download process...");
 
-    debugLog("GofileDownloader", "Waiting for loading spinner to fuck off...");
-    await waitForContentReady(); // ← this bad boy waits properly
-    await new Promise((r) => setTimeout(r, 600));
+  try {
+    debugLog("GofileDownloader", "Starting goFile auto-download process...");
+    await waitForContentReady();
+    await new Promise((r) => setTimeout(r, TIMINGS.GOFILE_POST_READY_WAIT));
 
     const alertEl = document.querySelector(SELECTORS.GOFILE.ALERT);
     if (alertEl && getComputedStyle(alertEl).display !== "none") {
-      debugLog("GofileDownloader", "Alert visible — file/folder taken down or restricted");
-      alert("This shit got removed or blocked");
-      await saveConfigKeys({ processingDownload: false }); // reset flag even on fail
+      debugLog("GofileDownloader", "Host alert visible: file/folder unavailable");
+      const msg = "File removed or blocked on host.";
+      showToast(msg);
+      await publishAttention(msg, "host_blocked");
+      await saveConfigKeys({ processingDownload: false });
       return;
     }
 
     const itemsList = document.querySelector(SELECTORS.GOFILE.ITEMS_LIST);
     if (!itemsList) {
-      throw new Error("No #filemanager_itemslist found — page layout changed?");
+      throw new Error("No #filemanager_itemslist found");
     }
 
     const itemElements = itemsList.querySelectorAll("[data-item-id]");
     debugLog("GofileDownloader", `Found ${itemElements.length} item(s) with data-item-id`);
 
     if (itemElements.length === 0) {
-      debugLog("GofileDownloader", "No downloadable items found ");
+      debugLog("GofileDownloader", "No downloadable items found");
+      await publishAttention("No downloadable item found. Download manually from host page.", "no_items");
       await saveConfigKeys({ processingDownload: false });
       return;
     }
 
     if (itemElements.length > 1) {
-      debugLog("GofileDownloader", "Multiple files detected — skipping auto-download for now");
-      debugLog("GofileDownloader", "→ Future plan: batch download or picker UI");
+      debugLog("GofileDownloader", "Multiple files detected; auto-download skipped");
+      await publishAttention("Multiple files detected. Manual download required.", "multiple_items");
       await saveConfigKeys({ processingDownload: false });
-      //to gain user attention
-      alert("Multiple files detected — download manually for now.");
+      showToast("Multiple files detected; download manually for now.");
       return;
     }
 
-    // Single file — let's go
     const contentId = itemElements[0].getAttribute("data-item-id");
     if (!contentId) {
-      throw new Error("data-item-id exists but is empty wtf");
+      throw new Error("data-item-id exists but is empty");
     }
 
-    debugLog("GofileDownloader", `Single file locked in: contentId = ${contentId}`);
-
     if (typeof unsafeWindow.downloadContent !== "function") {
-      debugLog("GofileDownloader", "downloadContent is not a function — site updated?");
-
-      alert("Can't find downloadContent — page probably changed.");
+      debugLog("GofileDownloader", "downloadContent is not available");
+      const msg = "downloadContent not found; host page likely changed.";
+      showToast(msg);
+      await publishAttention(msg, "missing_download_api");
       await saveConfigKeys({ processingDownload: false });
       return;
     }
 
-    debugLog("GofileDownloader", "Calling downloadContent()... hold tight");
+    debugLog("GofileDownloader", `Triggering downloadContent(${contentId})`);
     unsafeWindow.downloadContent(contentId);
 
-    // Success path: reset flag + try auto-close
     setTimeout(async () => {
       await saveConfigKeys({ processingDownload: false });
-      debugLog("GofileDownloader", "Download triggered — resetting processing flag");
+      debugLog("GofileDownloader", "Download triggered; resetting processing flag");
 
       try {
-        debugLog("GofileDownloader", "Trying to auto-close tab... bye bitch");
         window.close();
       } catch (e) {
-        console.warn("Close blocked (normal if last tab or not script-opened)", e);
-        // Cute fallback overlay
+        console.warn("Close blocked (normal if tab not script-opened)", e);
         const msg = document.createElement("div");
         msg.innerHTML = `
           <div>
-            Download started! You can close this tab now 
+            Download started! You can close this tab now.
           </div>
         `;
         const el = msg.firstElementChild;
@@ -124,8 +136,10 @@ export async function processGofileDownload() {
       }
     }, AUTO_CLOSE_DELAY);
   } catch (err) {
-    debugLog("GofileDownloader", `Crashed hard: ${err.message}`);
-    alert("Downloader died: " + err.message);
-    await saveConfigKeys({ processingDownload: false }); // always reset on error
+    debugLog("GofileDownloader", `Failed: ${err.message}`);
+    const msg = `Downloader failed: ${err.message}`;
+    showToast(msg);
+    await publishAttention(msg, "exception");
+    await saveConfigKeys({ processingDownload: false });
   }
 }

@@ -1,15 +1,11 @@
-import stateManager from "../../config.js";
 import ui_css from "../assets/css.css";
 import web_css from "../assets/web.css";
+import { acquireStyle } from "../../core/styleRegistry.js";
+
+const BASE_UI_STYLE_ID = "base-ui";
+const BASE_WEB_STYLE_ID = "base-web";
 
 export function injectCSS() {
-  // Inject UI-specific styles into the Shadow DOM for encapsulation
-  const uiStyle = document.createElement("style");
-  uiStyle.textContent = ui_css;
-  stateManager.get('shadowRoot').appendChild(uiStyle);
-
-  // Inject styles that affect the main page into the document's head
-  const webStyle = document.createElement("style");
-  webStyle.textContent = web_css;
-  document.head.appendChild(webStyle);
+  acquireStyle(BASE_UI_STYLE_ID, ui_css, "shadow");
+  acquireStyle(BASE_WEB_STYLE_ID, web_css, "document");
 }

@@ -1,8 +1,13 @@
 import { createFeature } from "../../core/featureFactory.js";
 import { latestPageScroll } from "../../utils/headerScrollHandler.js";
+import featureCss from "./style.css";
+import { acquireStyle, removeStyle } from "../../core/styleRegistry.js";
+
+const WIDE_LATEST_STYLE_ID = "feature-wide-latest";
 
 // --- Wide Latest Page Feature ---
 function enableWideLatestPage() {
+    acquireStyle(WIDE_LATEST_STYLE_ID, featureCss, "document");
     const root = document.documentElement;
     root.classList.add("latest-wide", "hide-notices", "header-scroll");
     latestPageScroll.enable();
@@ -12,6 +17,7 @@ function disableWideLatestPage() {
     const root = document.documentElement;
     root.classList.remove("latest-wide", "hide-notices", "header-scroll");
     latestPageScroll.disable();
+    removeStyle(WIDE_LATEST_STYLE_ID);
 }
 
 export const wideLatestPageFeature = createFeature("Wide Latest Page", {
@@ -23,11 +29,13 @@ export const wideLatestPageFeature = createFeature("Wide Latest Page", {
 
 // --- Dense Latest Grid Feature ---
 function enableDenseLatestGrid() {
+    acquireStyle(WIDE_LATEST_STYLE_ID, featureCss, "document");
     document.documentElement.classList.add("latest-dense");
 }
 
 function disableDenseLatestGrid() {
     document.documentElement.classList.remove("latest-dense");
+    removeStyle(WIDE_LATEST_STYLE_ID);
 }
 
 export const denseLatestGridFeature = createFeature("Dense Latest Grid", {

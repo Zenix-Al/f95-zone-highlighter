@@ -1,7 +1,7 @@
 import createStateManager from "./core/StateManager.js";
 import TIMINGS from "./config/timings.js";
 
-export const debug = true;
+export const debug = false;
 
 export const validVersions = ["full", "final"];
 
@@ -52,6 +52,15 @@ export const defaultLatestSettings = {
   wideLatest: false,
   denseLatestGrid: false,
   latestOverlayToggle: true,
+  latestOverlayColorOrder: [
+    "excluded",
+    "preferred",
+    "completed",
+    "onhold",
+    "abandoned",
+    "highVersion",
+    "invalidVersion",
+  ],
 };
 
 export const defaultGlobalSettings = {
@@ -83,6 +92,7 @@ export let config = {
   latestSettings: { ...defaultLatestSettings },
   metrics: { ...defaultMetrics },
   savedNotifID: null,
+  processingDownload: false,
 };
 
 // This object holds the script's temporary, in-memory state.
@@ -107,13 +117,17 @@ const runtimeState = {
   isProcessingTiles: false,
   isCrossTabSyncInitialized: false,
   isDirectDownloadHijackApplied: false,
+  isMsgEventHandlerApplied: false,
+  isNoticeDismissalEnabled: false,
   isRecaptchaFrame: false,
   latestOverlayStatus: "IDLE", // "IDLE", "INITIALIZING", "ACTIVE", "TEARING_DOWN"
-  isDirectDownloadmsgHandlerApplied: false,
   processingDownload: false,
 };
 
-const stateManager = createStateManager(runtimeState);
+const stateManager = createStateManager(runtimeState, {
+  warnUnknown: true,
+  name: "RuntimeState",
+});
 export default stateManager;
 
 export const STATUS = Object.freeze({
@@ -190,4 +204,5 @@ export const helpMessages = [
   "auto-refresh in latest view is just clicking the website own feature",
   "latest notification require auto-refresh enabled",
   "you can add tags to preferred/excluded as much as you want",
+  "preferred/excluded tag chips can be reordered by dragging them",
 ];

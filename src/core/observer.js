@@ -10,7 +10,11 @@ const callbacks = new Map();
  * @param {MutationObserver} obs
  */
 function masterCallback(mutationsList, obs) {
-  for (const callback of callbacks.values()) {
+  for (const { callback, filter } of callbacks.values()) {
+    if (typeof filter === "function") {
+      const shouldRun = safeExecute(filter, null, mutationsList, obs);
+      if (!shouldRun) continue;
+    }
     safeExecute(callback, null, mutationsList, obs);
   }
 }
@@ -38,15 +42,26 @@ function stopObserver() {
   }
 }
 
-export function addObserverCallback(id, callback) {
+export function addObserverCallback(id, callback, options = {}) {
   if (callbacks.has(id)) return;
-  callbacks.set(id, callback);
-  resourceManager.register(id, () => removeObserverCallback(id));
+  callbacks.set(id, {
+    callback,
+    filter: typeof options.filter === "function" ? options.filter : null,
+  });
+  resourceManager.register(`observer:${id}`, () => removeObserverCallback(id));
   startObserver();
 }
 
 export function removeObserverCallback(id) {
   callbacks.delete(id);
-  resourceManager.unregister(id);
+  resourceManager.unregister(`observer:${id}`);
+  stopObserver();
+}
+
+export function removeAllObserverCallbacks() {
+  for (const id of Array.from(callbacks.keys())) {
+    callbacks.delete(id);
+    resourceManager.unregister(`observer:${id}`);
+  }
   stopObserver();
 }

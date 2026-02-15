@@ -2,31 +2,28 @@ import stateManager, { config } from "../../config.js";
 import { getTextColorForGradient } from "./handleTextColor";
 import { debugLog } from "../../core/logger";
 import { addObserverCallback, removeObserverCallback } from "../../core/observer";
-import resourceManager from "../../core/resourceManager.js";
-import { waitFor } from "../../core/dom";
-import TIMINGS from "../../config/timings.js";
-import { isValidTag } from "../../utils/validators.js";
 import { SELECTORS } from "../../config/selectors.js";
-import { createTaskQueue } from "../../core/taskQueue";
+import TIMINGS from "../../config/timings.js";
+import {
+  OVERLAY_COLOR_ORDER_KEYS,
+  buildOrderedOverlayMatches,
+  normalizeOverlayColorOrder,
+} from "./overlayOrder.js";
 
-let tileQueue = null;
-// A generation counter to invalidate tasks from previous page loads.
-// This acts as a "group ID" for all tasks created during a single page view.
 let generationCounter = 0;
-
-// Cached lookup structures to avoid expensive per-tile allocations
-let preferredTagIdSet = null;
-let excludedTagIdSet = null;
 let tagIdToName = null;
 let overlayFlags = null;
+let overlayColorOrder = OVERLAY_COLOR_ORDER_KEYS;
+
+const pendingMutationTiles = new Set();
+let mutationFlushScheduled = false;
 
 function refreshCaches() {
-  preferredTagIdSet = new Set((config.preferredTags || []).map((id) => Number(id)));
-  excludedTagIdSet = new Set((config.excludedTags || []).map((id) => Number(id)));
   tagIdToName = new Map();
   (config.tags || []).forEach((t) => {
     tagIdToName.set(Number(t.id), t.name);
   });
+
   overlayFlags = {
     excluded: Boolean(config.overlaySettings?.excluded),
     preferred: Boolean(config.overlaySettings?.preferred),
@@ -37,6 +34,227 @@ function refreshCaches() {
     invalidVersion: Boolean(config.overlaySettings?.invalidVersion),
     overlayText: Boolean(config.overlaySettings?.overlayText),
   };
+
+  overlayColorOrder = getOverlayColorOrder();
+}
+
+function getOverlayColorOrder() {
+  return normalizeOverlayColorOrder(config.latestSettings?.latestOverlayColorOrder);
+}
+
+function processMutations(mutationsList, generation) {
+  if (generation !== generationCounter) return;
+
+  for (const mutation of mutationsList) {
+    for (const node of mutation.addedNodes) {
+      if (node.nodeType !== 1) continue;
+
+      if (node.classList?.contains(SELECTORS.TILE.CLASS)) {
+        pendingMutationTiles.add(node);
+      } else if (node.querySelectorAll) {
+        node.querySelectorAll(SELECTORS.TILE.ROOT).forEach((tile) => pendingMutationTiles.add(tile));
+      }
+    }
+  }
+
+  scheduleMutationFlush(generation);
+}
+
+function hasTileMutations(mutationsList) {
+  return mutationsList.some((mutation) => mutation.addedNodes && mutation.addedNodes.length > 0);
+}
+
+function scheduleMutationFlush(generation) {
+  if (mutationFlushScheduled) return;
+  mutationFlushScheduled = true;
+
+  queueMicrotask(() => {
+    mutationFlushScheduled = false;
+    if (generation !== generationCounter) {
+      pendingMutationTiles.clear();
+      return;
+    }
+
+    const tiles = Array.from(pendingMutationTiles);
+    pendingMutationTiles.clear();
+    if (tiles.length === 0) return;
+
+    processTilesBatch(tiles, false, generation);
+  });
+}
+
+function processTilesBatch(tiles, reset, generation) {
+  if (generation !== generationCounter) return;
+
+  const patches = [];
+  for (const tile of tiles) {
+    const patch = buildTilePatch(tile, reset, generation);
+    if (patch) patches.push(patch);
+  }
+  if (patches.length === 0) return;
+
+  applyPatchesWithFrameBudget(patches, generation);
+}
+
+function applyPatchesWithFrameBudget(patches, generation) {
+  const frameBudget = TIMINGS.LATEST_OVERLAY_FRAME_BUDGET_MS;
+  const minChunk = TIMINGS.LATEST_OVERLAY_MIN_CHUNK;
+  let index = 0;
+
+  const step = () => {
+    if (generation !== generationCounter) return;
+
+    const start = performance.now();
+    let processed = 0;
+
+    while (index < patches.length) {
+      applyTilePatch(patches[index], generation);
+      index += 1;
+      processed += 1;
+
+      if (processed >= minChunk && performance.now() - start >= frameBudget) {
+        break;
+      }
+    }
+
+    if (index < patches.length) {
+      requestAnimationFrame(step);
+    }
+  };
+
+  requestAnimationFrame(step);
+}
+
+function buildTilePatch(tile, reset, generation) {
+  if (generation !== generationCounter || !tile?.isConnected) return null;
+
+  const wasModified = tile.dataset.modified === "true";
+  if (!reset && wasModified) {
+    return null;
+  }
+
+  const body = tile.querySelector(SELECTORS.TILE.BODY);
+  if (!body) return null;
+
+  const colors = [];
+  const labels = [];
+  const overlayMatches = {};
+
+  if (overlayFlags.excluded || overlayFlags.preferred) {
+    const tileTags = getTileTags(tile);
+    const { isExcludedTag, isPreferredTag } = processTag(
+      tileTags,
+      overlayFlags.excluded ? config.excludedTags : null,
+      overlayFlags.preferred ? config.preferredTags : null,
+    );
+
+    if (overlayFlags.excluded && isExcludedTag) {
+      overlayMatches.excluded = {
+        label: isExcludedTag,
+        color: config.color.excluded,
+      };
+    }
+    if (overlayFlags.preferred && isPreferredTag) {
+      overlayMatches.preferred = {
+        label: isPreferredTag,
+        color: config.color.preferred,
+      };
+    }
+  }
+
+  if (overlayFlags.completed || overlayFlags.onhold || overlayFlags.abandoned) {
+    const labelText = getLabelText(tile);
+    if (config.overlaySettings.completed && labelText === "completed") {
+      overlayMatches.completed = {
+        label: "Completed",
+        color: config.color.completed,
+      };
+    } else if (config.overlaySettings.onhold && labelText === "onhold") {
+      overlayMatches.onhold = {
+        label: "On Hold",
+        color: config.color.onhold,
+      };
+    } else if (config.overlaySettings.abandoned && labelText === "abandoned") {
+      overlayMatches.abandoned = {
+        label: "Abandoned",
+        color: config.color.abandoned,
+      };
+    }
+  }
+
+  if (overlayFlags.highVersion || overlayFlags.invalidVersion) {
+    const versionText = getVersionText(tile);
+    const match = versionText.match(/(\d+\.\d+)/);
+    const versionNumber = match ? parseFloat(match[1]) : null;
+    const isInvalidVersion =
+      versionNumber !== null && versionNumber < config.latestSettings.minVersion;
+    const isHighVersion =
+      (versionNumber !== null && versionNumber >= config.latestSettings.minVersion) ||
+      ["full", "final"].some((valid) => versionText.toLowerCase().includes(valid));
+
+    if (config.overlaySettings.highVersion && isHighVersion) {
+      overlayMatches.highVersion = {
+        label: "High Version",
+        color: config.color.highVersion,
+      };
+    } else if (config.overlaySettings.invalidVersion && isInvalidVersion) {
+      overlayMatches.invalidVersion = {
+        label: "Invalid Version",
+        color: config.color.invalidVersion,
+      };
+    }
+  }
+
+  const orderedMatches = buildOrderedOverlayMatches(overlayMatches, overlayColorOrder);
+  labels.push(...orderedMatches.labels);
+  colors.push(...orderedMatches.colors);
+
+  if (colors.length === 0) {
+    if (wasModified) {
+      return { type: "reset", tile };
+    }
+    return null;
+  }
+
+  const gradient = getGradientForColors(colors, "45deg");
+  const textColor = getTextColorForGradientCached(gradient);
+
+  return {
+    type: "apply",
+    tile,
+    gradient,
+    textColor,
+    label: labels[0] || "",
+  };
+}
+
+function applyTilePatch(patch, generation) {
+  if (generation !== generationCounter || !patch?.tile?.isConnected) return;
+
+  if (patch.type === "reset") {
+    resetTile(patch.tile);
+    return;
+  }
+
+  const body = patch.tile.querySelector(SELECTORS.TILE.BODY);
+  if (!body) return;
+
+  body.style.background = patch.gradient;
+  body.style.color = patch.textColor;
+
+  const metas = body.querySelectorAll(SELECTORS.TILE.INFO_META);
+  metas.forEach((meta) => {
+    meta.style.color = patch.textColor;
+    meta.style.fontWeight = "bold";
+  });
+
+  if (config.overlaySettings.overlayText && patch.label) {
+    addOverlayLabel(patch.tile, patch.label);
+  } else {
+    removeOverlayLabel(patch.tile);
+  }
+
+  patch.tile.dataset.modified = "true";
 }
 
 export function enableLatestOverlay() {
@@ -51,172 +269,32 @@ export function enableLatestOverlay() {
   debugLog("Latest Overlay", "Initializing feature...");
   stateManager.set("latestOverlayStatus", "INITIALIZING");
 
-  // Create the queue on first run, or reuse it.
-  if (!tileQueue) {
-    tileQueue = createTaskQueue({ delay: 1, name: "LatestOverlayQueue" });
-    // Register cleanup so ResourceManager can clear the queue if needed
-    resourceManager.register("latest-overlay-queue", () => {
-      try {
-        if (tileQueue) {
-          tileQueue.clear();
-          tileQueue = null;
-        }
-      } catch (err) {
-        debugLog("Latest Overlay", `Error cleaning queue: ${err}`);
-      }
-    });
-  }
-
-  // Increment generation and command the queue to purge old tasks.
   generationCounter++;
   const currentGeneration = generationCounter;
-  tileQueue.setGeneration(currentGeneration);
-
-  // Prepare caches for faster per-tile processing
   refreshCaches();
 
-  // Process new tiles that are added to the DOM dynamically
-  function processMutations(mutationsList) {
-    for (const mutation of mutationsList) {
-      for (const node of mutation.addedNodes) {
-        if (node.nodeType === 1) {
-          if (node.classList?.contains(SELECTORS.TILE.CLASS)) {
-            tileQueue.add(node, () => processTile(node), currentGeneration);
-          } else if (node.querySelectorAll) {
-            node
-              .querySelectorAll(SELECTORS.TILE.ROOT)
-              .forEach((tile) => tileQueue.add(tile, () => processTile(tile), currentGeneration));
-          }
-        }
-      }
-    }
-  }
+  processAllTiles(false, currentGeneration);
+  addObserverCallback(
+    "latest-overlay",
+    (mutationsList) => processMutations(mutationsList, currentGeneration),
+    { filter: hasTileMutations },
+  );
 
-  processAllTiles(false, currentGeneration); // Initial run for existing tiles
-  addObserverCallback("latest-overlay", processMutations);
-
-  // As a fallback, verify tiles were processed after a delay to fight race conditions
   stateManager.set("latestOverlayStatus", "ACTIVE");
   debugLog("Latest Overlay", "Feature is now ACTIVE.");
 }
 
-/**
- * Processes a single tile to apply overlays and styles.
- * This version has been reverted to support multi-color gradients for multiple statuses,
- * integrated with the current feature's more robust state management.
- * @param {HTMLElement} tile The resource tile element to process.
- * @param {boolean} [reset=false] Whether to force a reprocessing of the tile.
- */
 export async function processTile(tile, reset = false) {
-  // This is the most critical check for SPA navigation. If the tile is no longer
-  // attached to the document when this task finally runs, abort immediately.
-  if (!tile.isConnected) {
-    // Silently abort the task. The tile was removed from the DOM during SPA
-    // navigation before this task could run. This is expected and not an error,
-    // so we don't log it to avoid console spam.
-    return;
-  }
+  const generation = generationCounter;
+  const patch = buildTilePatch(tile, reset, generation);
+  if (!patch) return;
 
-  const wasModified = tile.dataset.modified === "true";
-  if (reset && tile.dataset.modified === "true") {
-    // If resetting a modified tile, clean it completely before reprocessing.
-    resetTile(tile);
-  }
-  // If not resetting, and tile is already modified, skip.
-  if (wasModified && !reset) return;
-
-  // Wait for the tile's inner content to be ready. This is crucial for tiles
-  // added dynamically by the site's JS, fixing the race condition where the
-  // tile shell is added before its content.
-  try {
-    await waitFor(
-      () => tile.querySelector(SELECTORS.TILE.BODY),
-      TIMINGS.TILE_POPULATE_CHECK_INTERVAL,
-      TIMINGS.TILE_POPULATE_TIMEOUT,
-    );
-  } catch (e) {
-    debugLog("Process Tile", "Tile did not populate its content in time, skipping.", {
-      level: "warn",
-      data: { tile, error: e },
-    });
-    return;
-  }
-
-  const body = tile.querySelector(SELECTORS.TILE.BODY);
-  if (!body) return;
-
-  let colors = [];
-
-  // --- 1. Data Extraction (Reverted Logic) ---
-  // --- 1. Data Extraction (optimized) ---
-  const versionText = getVersionText(tile);
-  const labelText = getLabelText(tile);
-  const preferredTag = processTag(tile, null); // uses cached sets
-  const excludedTag = processTag(tile, null);
-  const match = versionText.match(/(\d+\.\d+)/);
-  const versionNumber = match ? parseFloat(match[1]) : null;
-  const isHighVersion = // Combined from old and new logic for clarity
-    (versionNumber !== null && versionNumber >= config.latestSettings.minVersion) ||
-    ["full", "final"].some((valid) => versionText.toLowerCase().includes(valid));
-  const isInvalidVersion =
-    versionNumber !== null && versionNumber < config.latestSettings.minVersion;
-
-  // --- 2. Color Collection (Reverted multi-status logic) ---
-  if (overlayFlags.excluded && isValidTag(excludedTag)) {
-    addOverlayLabel(tile, excludedTag, false);
-    colors.push(config.color.excluded);
-  }
-  if (overlayFlags.preferred && isValidTag(preferredTag)) {
-    addOverlayLabel(tile, preferredTag, false);
-    colors.push(config.color.preferred);
-  }
-  if (config.overlaySettings.completed && labelText === "completed") {
-    addOverlayLabel(tile, "Completed", false);
-    colors.push(config.color.completed);
-  } else if (config.overlaySettings.onhold && labelText === "onhold") {
-    addOverlayLabel(tile, "On Hold", false);
-    colors.push(config.color.onhold);
-  } else if (config.overlaySettings.abandoned && labelText === "abandoned") {
-    addOverlayLabel(tile, "Abandoned", false);
-    colors.push(config.color.abandoned);
-  }
-  if (config.overlaySettings.highVersion && isHighVersion) {
-    addOverlayLabel(tile, "High Version", false);
-    colors.push(config.color.highVersion);
-  } else if (config.overlaySettings.invalidVersion && isInvalidVersion) {
-    addOverlayLabel(tile, "Invalid Version", false);
-    colors.push(config.color.invalidVersion);
-  }
-
-  // --- 3. DOM Manipulation ---
-  if (colors.length > 0) {
-    const gradient = getGradientForColors(colors, "45deg");
-    const textColor = getTextColorForGradientCached(gradient);
-
-    // Batch DOM writes to the next animation frame to reduce layout thrash.
-    requestAnimationFrame(() => {
-      try {
-        body.style.background = gradient;
-        body.style.color = textColor;
-        const metas = body.querySelectorAll(SELECTORS.TILE.INFO_META);
-        metas.forEach((meta) => {
-          meta.style.color = textColor;
-          meta.style.fontWeight = "bold";
-        });
-        tile.dataset.modified = "true";
-      } catch (err) {
-        debugLog("Latest Overlay", `DOM write failed: ${err}`);
-      }
-    });
-  } else if (wasModified) {
-    // If it was modified but no longer has colors, reset it completely.
-    resetTile(tile);
-  }
+  requestAnimationFrame(() => {
+    applyTilePatch(patch, generation);
+  });
 }
 
 export function disableLatestOverlay() {
-  // Do not run if the feature is already idle or in the process of tearing down.
-  // This allows teardown from an "INITIALIZING" or "ACTIVE" state, fixing the race condition.
   if (
     stateManager.get("latestOverlayStatus") === "IDLE" ||
     stateManager.get("latestOverlayStatus") === "TEARING_DOWN"
@@ -231,16 +309,12 @@ export function disableLatestOverlay() {
   debugLog("Latest Overlay", "Disabling feature...");
   stateManager.set("latestOverlayStatus", "TEARING_DOWN");
 
+  generationCounter++;
+  pendingMutationTiles.clear();
+  mutationFlushScheduled = false;
+
   removeObserverCallback("latest-overlay");
   debugLog("Latest Overlay", "Observer callback for 'latest-overlay' removed.");
-
-  // Let ResourceManager run the registered cleanup for the queue if present.
-  try {
-    resourceManager.cleanup("latest-overlay-queue");
-    debugLog("Latest Overlay", "Tile processing queue cleaned via ResourceManager.");
-  } catch (err) {
-    debugLog("Latest Overlay", `Tile processing queue cleanup failed: ${err}`);
-  }
 
   resetAllTiles();
 
@@ -248,23 +322,15 @@ export function disableLatestOverlay() {
   debugLog("Latest Overlay", "Disable complete. State is now IDLE.");
 }
 
-export function processAllTiles(reset = false, generation) {
-  if (!tileQueue) {
-    debugLog(
-      "Latest Overlay",
-      "processAllTiles called but queue is not initialized. Feature might be disabled.",
-    );
-    return;
-  }
-  const tiles = document.getElementsByClassName(SELECTORS.TILE.CLASS);
-  for (const tile of tiles) {
-    tileQueue.add(tile, () => processTile(tile, reset), generation);
-  }
+export function processAllTiles(reset = false, generation = generationCounter) {
+  if (generation !== generationCounter) return;
+  refreshCaches();
+
+  const tiles = Array.from(document.getElementsByClassName(SELECTORS.TILE.CLASS));
+  if (tiles.length === 0) return;
+  processTilesBatch(tiles, reset, generation);
 }
 
-/**
- * Resets and re-processes all tiles. Useful after settings changes.
- */
 export function reprocessAllTiles() {
   if (stateManager.get("latestOverlayStatus") !== "ACTIVE" || !stateManager.get("isLatest")) {
     debugLog(
@@ -284,10 +350,6 @@ function resetAllTiles() {
   debugLog("Latest Overlay", `Finished resetting ${tiles.length} tiles.`);
 }
 
-/**
- * Resets a tile to its original state, removing all dynamic styles and overlays.
- * @param {HTMLElement} tile The resource tile element to reset.
- */
 export function resetTile(tile) {
   if (tile.dataset.modified !== "true") return;
 
@@ -303,14 +365,6 @@ export function resetTile(tile) {
   debugLog("Tile Reset", "Reset a tile to its original state.");
 }
 
-// --- Helper Functions (private to this module) ---
-
-/**
- * Creates a segmented linear gradient from an array of colors.
- * @param {string[]} colors - Array of CSS color strings.
- * @param {string} [direction="to right"] - Gradient direction.
- * @returns {string} The CSS linear-gradient string.
- */
 function createSegmentedGradient(colors, direction = "to right") {
   if (!Array.isArray(colors) || colors.length === 0) return "";
   if (colors.length === 1) return colors[0];
@@ -327,7 +381,13 @@ function createSegmentedGradient(colors, direction = "to right") {
   );
 }
 
-// Caches for gradients and computed text colors to avoid repeated work
+function getTileTags(tile) {
+  return (tile.getAttribute("data-tags") || "")
+    .split(",")
+    .map((id) => Number(id.trim()))
+    .filter(Number.isFinite);
+}
+
 const gradientCache = new Map();
 const textColorCache = new Map();
 
@@ -361,62 +421,48 @@ function getLabelText(tile) {
     .trim();
 }
 
-function processTag(tile, tagsToMatch) {
-  // If tagsToMatch is provided, build a small set; otherwise prefer cached sets.
-  let matchSet = null;
-  if (Array.isArray(tagsToMatch) && tagsToMatch.length > 0) {
-    matchSet = new Set(tagsToMatch.map((id) => Number(id)));
+function processTag(tileTagIds, excludedTagsArr, preferredTagsArr) {
+  if (!Array.isArray(tileTagIds) || tileTagIds.length === 0) {
+    return { isExcludedTag: false, isPreferredTag: false };
   }
 
-  const tileTagIds = (tile.getAttribute("data-tags") || "")
-    .split(",")
-    .map((id) => Number(id.trim()))
-    .filter(Number.isFinite);
-  if (!tileTagIds.length) return false;
+  const tileTagSet = new Set(tileTagIds);
 
-  // Try cached sets first when available
-  if (!matchSet) {
-    for (const id of tileTagIds) {
-      if (preferredTagIdSet && preferredTagIdSet.has(id)) {
-        const name = tagIdToName.get(id);
-        debugLog("Tile Processing", `Matched preferred Tag: '${name}' (ID: ${id}) on tile.`);
-        return name || false;
-      }
-      if (excludedTagIdSet && excludedTagIdSet.has(id)) {
-        const name = tagIdToName.get(id);
-        debugLog("Tile Processing", `Matched excluded Tag: '${name}' (ID: ${id}) on tile.`);
-        return name || false;
-      }
+  let isExcludedTag = false;
+  let isPreferredTag = false;
+
+  const excludedOrder =
+    Array.isArray(excludedTagsArr) && excludedTagsArr.length
+      ? excludedTagsArr
+      : config.excludedTags || [];
+  for (const rawId of excludedOrder) {
+    const id = Number(rawId);
+    if (!Number.isFinite(id) || !tileTagSet.has(id)) continue;
+    isExcludedTag = tagIdToName ? tagIdToName.get(id) : config.tags.find((t) => t.id == id)?.name;
+    if (isExcludedTag) {
+      debugLog("Tile Processing", `Matched excluded Tag: '${isExcludedTag}' (ID: ${id}) on tile.`);
+      break;
     }
-    return false;
   }
 
-  const matchedId = tileTagIds.find((id) => matchSet.has(id));
-  if (!matchedId) return false;
-  const matchedTag = tagIdToName
-    ? tagIdToName.get(matchedId)
-    : config.tags.find((tag) => tag.id == matchedId)?.name;
-  debugLog("Tile Processing", `Matched Tag: '${matchedTag || ""}' (ID: ${matchedId}) on tile.`);
-  return matchedTag || false;
+  const preferredOrder =
+    Array.isArray(preferredTagsArr) && preferredTagsArr.length
+      ? preferredTagsArr
+      : config.preferredTags || [];
+  for (const rawId of preferredOrder) {
+    const id = Number(rawId);
+    if (!Number.isFinite(id) || !tileTagSet.has(id)) continue;
+    isPreferredTag = tagIdToName ? tagIdToName.get(id) : config.tags.find((t) => t.id == id)?.name;
+    if (isPreferredTag) {
+      debugLog("Tile Processing", `Matched preferred Tag: '${isPreferredTag}' (ID: ${id}) on tile.`);
+      break;
+    }
+  }
+
+  return { isExcludedTag: isExcludedTag || false, isPreferredTag: isPreferredTag || false };
 }
 
-/**
- * Adds a text label to the tile's thumbnail. Only one label is added per tile.
- * @param {HTMLElement} tile
- * @param {string} reasonText
- * @param {boolean} isApplied - Whether a label has already been applied to this tile.
- * @returns {boolean} True if a label is now present or was already present.
- */
-function addOverlayLabel(tile, reasonText, isApplied) {
-  if (!config.overlaySettings.overlayText) {
-    removeOverlayLabel(tile); // Ensure no label is visible if setting is off
-    return isApplied;
-  }
-
-  if (isApplied) {
-    return true; // A label from a higher-priority rule is already there.
-  }
-
+function addOverlayLabel(tile, reasonText) {
   const thumbWrap = tile.querySelector(SELECTORS.TILE.THUMB_WRAP);
   if (!thumbWrap) return;
 
@@ -427,13 +473,8 @@ function addOverlayLabel(tile, reasonText, isApplied) {
     thumbWrap.prepend(overlay);
   }
   overlay.innerText = reasonText;
-  return true;
 }
 
-/**
- * Removes the text label from a specific tile.
- * @param {HTMLElement} tile
- */
 function removeOverlayLabel(tile) {
   const overlay = tile.querySelector(".custom-overlay-reason");
   if (overlay) {

@@ -1,0 +1,99 @@
+.p-body-inner {
+  max-width: 1220px;
+  padding: 20px;
+  transition:
+    padding-left 0.5s ease,
+    padding-right 0.5s ease,
+    max-width 0.6s ease;
+}
+
+html.latest-wide .p-body-inner {
+  padding-left: 0;
+  padding-right: 0;
+  max-width: none;
+}
+
+main#latest-page_main-wrap {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  transition: max-width 0.7s ease-out;
+  will-change: max-width;
+}
+
+html.latest-wide main#latest-page_main-wrap {
+  max-width: 1430px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  main#latest-page_main-wrap,
+  .p-body-pageContent,
+  .structItemContainer {
+    transition: none !important;
+  }
+}
+
+.p-body-pageContent,
+.structItemContainer {
+  transition:
+    opacity 0.5s ease,
+    transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  opacity: 1;
+  transform: scale(1);
+}
+
+html.latest-wide .p-body-pageContent,
+html.latest-wide .structItemContainer {
+  transform: scale(1.01);
+}
+
+.hide-notices ul.notices.notices--block.js-notices {
+  display: none !important;
+}
+
+.header-scroll .uix_headerContainer {
+  transition: transform 0.25s ease;
+  will-change: transform;
+}
+
+.header-scroll.header-hidden .uix_headerContainer {
+  transform: translateY(-100%);
+}
+
+.grid-normal {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(30%, 1fr));
+  gap: 20px;
+  will-change: gap;
+  transition:
+    grid-template-columns 0.5s ease,
+    gap 0.5s ease;
+}
+
+.structItem.structItem--latest {
+  width: 100%;
+  max-width: 33.333%;
+  transition:
+    max-width 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
+    width 0.45s ease-out;
+  box-sizing: border-box;
+  will-change: max-width;
+}
+
+html.latest-dense .structItem.structItem--latest {
+  max-width: 260px;
+}
+
+html.latest-dense .grid-normal {
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)) !important;
+  gap: 10px !important;
+}
+
+html.latest-dense .structItem.structItem--latest {
+  max-width: none !important;
+  width: 100% !important;
+}
+
+html.latest-dense .structItem-cell.structItem-cell--main {
+  padding: 12px !important;
+}
