@@ -20,7 +20,7 @@ export const colorSettingsMeta = {
     text: "Completed",
     config: "color.completed",
     effects: {
-      custom: createColorEffect("completedColor"),
+      custom: createColorEffect("completed"),
       toast: () => "Completed color updated",
     },
   },
@@ -30,7 +30,7 @@ export const colorSettingsMeta = {
     text: "On Hold",
     config: "color.onhold",
     effects: {
-      custom: createColorEffect("onholdColor"),
+      custom: createColorEffect("onhold"),
       toast: () => "On Hold color updated",
     },
   },
@@ -40,7 +40,7 @@ export const colorSettingsMeta = {
     text: "Abandoned",
     config: "color.abandoned",
     effects: {
-      custom: createColorEffect("abandonedColor"),
+      custom: createColorEffect("abandoned"),
       toast: () => "Abandoned color updated",
     },
   },
@@ -50,7 +50,7 @@ export const colorSettingsMeta = {
     text: "High Version",
     config: "color.highVersion",
     effects: {
-      custom: createColorEffect("highVersionColor"),
+      custom: createColorEffect("highVersion"),
       toast: () => "High Version color updated",
     },
   },
@@ -60,7 +60,7 @@ export const colorSettingsMeta = {
     text: "Invalid Version",
     config: "color.invalidVersion",
     effects: {
-      custom: createColorEffect("invalidVersionColor"),
+      custom: createColorEffect("invalidVersion"),
       toast: () => "Invalid Version color updated",
     },
   },
@@ -70,7 +70,7 @@ export const colorSettingsMeta = {
     text: "Tile Info",
     config: "color.tileInfo",
     effects: {
-      custom: createColorEffect("tileInfoColor"),
+      custom: createColorEffect("tileInfo"),
       toast: () => "Tile Info color updated",
     },
   },
@@ -80,7 +80,7 @@ export const colorSettingsMeta = {
     text: "Tile Header",
     config: "color.tileHeader",
     effects: {
-      custom: createColorEffect("tileHeaderColor"),
+      custom: createColorEffect("tileHeader"),
       toast: () => "Tile Header color updated",
     },
   },
@@ -91,7 +91,7 @@ export const colorSettingsMeta = {
     config: "color.preferred",
     before: "hr",
     effects: {
-      custom: createColorEffect("preferredColor"),
+      custom: createColorEffect("preferred"),
       toast: () => "Preferred color updated",
     },
   },
@@ -101,7 +101,7 @@ export const colorSettingsMeta = {
     text: "Preferred Text",
     config: "color.preferredText",
     effects: {
-      custom: createColorEffect("preferredTextColor"),
+      custom: createColorEffect("preferredText"),
       toast: () => "Preferred Text color updated",
     },
   },
@@ -111,7 +111,7 @@ export const colorSettingsMeta = {
     text: "Excluded",
     config: "color.excluded",
     effects: {
-      custom: createColorEffect("excludedColor"),
+      custom: createColorEffect("excluded"),
       toast: () => "Excluded color updated",
     },
   },
@@ -121,7 +121,7 @@ export const colorSettingsMeta = {
     text: "Excluded Text",
     config: "color.excludedText",
     effects: {
-      custom: createColorEffect("excludedTextColor"),
+      custom: createColorEffect("excludedText"),
       toast: () => "Excluded Text color updated",
     },
   },
@@ -131,7 +131,7 @@ export const colorSettingsMeta = {
     text: "Neutral",
     config: "color.neutral",
     effects: {
-      custom: createColorEffect("neutralColor"),
+      custom: createColorEffect("neutral"),
       toast: () => "Neutral color updated",
     },
   },
@@ -141,7 +141,7 @@ export const colorSettingsMeta = {
     text: "Neutral Text",
     config: "color.neutralText",
     effects: {
-      custom: createColorEffect("neutralTextColor"),
+      custom: createColorEffect("neutralText"),
       toast: () => "Neutral Text color updated",
     },
   },

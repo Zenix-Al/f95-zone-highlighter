@@ -1,4 +1,6 @@
 import imgRetryUi from "./assets/imgRetryUi.html?raw";
+import { SELECTORS } from "../../config/selectors.js";
+import TIMINGS from "../../config/timings.js";
 
 let isUpdating = false;
 let pendingUpdate = false;
@@ -9,14 +11,14 @@ let imgRetryTimeoutContainer;
  * This component lives in the main document, not the shadow DOM.
  */
 export function injectUI() {
-  if (document.getElementById("img-retry-toast")) return;
+  if (document.getElementById(SELECTORS.IMAGE_REPAIR.TOAST_ID)) return;
 
   const wrapper = document.createElement("div");
   wrapper.id = "image-retry-toast-wrapper";
   wrapper.innerHTML = imgRetryUi;
 
   document.body.appendChild(wrapper);
-  const toastEl = document.getElementById("img-retry-toast");
+  const toastEl = document.getElementById(SELECTORS.IMAGE_REPAIR.TOAST_ID);
   if (toastEl) {
     toastEl.style.display = "none";
   }
@@ -26,7 +28,7 @@ export function injectUI() {
  * Removes the injected image retry toast UI from the page.
  */
 export function destroyInjectedUI() {
-  const wrapper = document.getElementById("image-retry-toast-wrapper");
+  const wrapper = document.getElementById(SELECTORS.IMAGE_REPAIR.WRAPPER_ID);
   if (wrapper) {
     wrapper.remove();
   }
@@ -70,5 +72,5 @@ export function updateToast(retryingImages, metrics) {
       pendingUpdate = false;
       updateToast(retryingImages, metrics);
     }
-  }, 500);
+  }, TIMINGS.IMAGE_RETRY_TOAST_INTERVAL);
 }

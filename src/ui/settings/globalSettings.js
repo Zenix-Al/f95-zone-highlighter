@@ -43,21 +43,23 @@ export const globalSettingsMeta = {
   },
   featureHealth: {
     type: "button",
-    text: "check feature health",
+    text: "Feature health",
+    buttonText: "Run check",
     tooltip: "Run a diagnostic that reports feature running/disabled/failing states",
     onClick: () => {
       const statuses = getAllFeatureStatuses();
       const counts = { running: 0, disabled: 0, failing: 0, unknown: 0 };
+
       for (const id in statuses) {
         const s = statuses[id].status || "unknown";
         if (counts[s] === undefined) counts.unknown++;
         else counts[s]++;
       }
-      // Show toast summary
+
       showToast(
-        `Feature health — running: ${counts.running}, disabled: ${counts.disabled}, failing: ${counts.failing}`,
+        `Feature health - running: ${counts.running}, disabled: ${counts.disabled}, failing: ${counts.failing}`,
       );
-      // Populate a small dismissible box under global settings
+
       try {
         const shadow = stateManager.get("shadowRoot");
         if (!shadow) return;
@@ -69,14 +71,26 @@ export const globalSettingsMeta = {
           box = document.createElement("div");
           box.id = "feature-health-box";
           box.className = "feature-health-box";
+
+          const header = document.createElement("div");
+          header.className = "feature-health-header";
+
+          const title = document.createElement("div");
+          title.className = "feature-health-title";
+          title.textContent = "Diagnostic";
+
           const closeBtn = document.createElement("button");
           closeBtn.className = "feature-health-close";
-          closeBtn.textContent = "×";
-          closeBtn.title = "Dismiss";
+          closeBtn.type = "button";
+          closeBtn.textContent = "Close";
+          closeBtn.title = "Dismiss diagnostic";
           closeBtn.addEventListener("click", () => {
             box.style.display = "none";
           });
-          box.appendChild(closeBtn);
+
+          header.appendChild(title);
+          header.appendChild(closeBtn);
+          box.appendChild(header);
 
           const content = document.createElement("div");
           content.className = "feature-health-content";
@@ -84,13 +98,14 @@ export const globalSettingsMeta = {
 
           container.appendChild(box);
         }
+
         const content = box.querySelector(".feature-health-content");
         content.innerHTML = "";
         for (const id in statuses) {
           const s = statuses[id];
           const line = document.createElement("div");
           line.className = "feature-health-line";
-          line.textContent = `${id}: ${s.status}${s.details ? " — " + s.details : ""}`;
+          line.textContent = `${id}: ${s.status}${s.details ? " - " + s.details : ""}`;
           content.appendChild(line);
         }
         box.style.display = "block";

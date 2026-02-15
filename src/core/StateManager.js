@@ -2,80 +2,117 @@
 
 /**
  * Gets a nested property from an object using a dot-notation path.
- * @param {object} obj The object to query.
- * @param {string} path The path to the property (e.g., 'a.b.c').
- * @returns {*} The value of the property, or undefined if not found.
+ * @param {object} obj
+ * @param {string} path
+ * @returns {*}
  */
 const getByPath = (obj, path) => {
-    if (typeof path !== 'string') return undefined;
-    return path.split('.').reduce((acc, part) => acc && acc[part], obj);
+  if (typeof path !== "string") return undefined;
+  return path.split(".").reduce((acc, part) => acc && acc[part], obj);
 };
 
 /**
  * Sets a nested property on an object using a dot-notation path.
- * @param {object} obj The object to modify.
- * @param {string} path The path to the property (e.g., 'a.b.c').
- * @param {*} value The value to set.
+ * @param {object} obj
+ * @param {string} path
+ * @param {*} value
  */
 const setByPath = (obj, path, value) => {
-    if (typeof path !== 'string') return;
-    const keys = path.split('.');
-    const lastKey = keys.pop();
-    const target = keys.reduce((acc, part) => {
-        acc[part] = acc[part] || {};
-        return acc[part];
-    }, obj);
-    if (target) {
-        target[lastKey] = value;
-    }
+  if (typeof path !== "string") return;
+  const keys = path.split(".");
+  const lastKey = keys.pop();
+  const target = keys.reduce((acc, part) => {
+    acc[part] = acc[part] || {};
+    return acc[part];
+  }, obj);
+  if (target) {
+    target[lastKey] = value;
+  }
 };
 
-/**
- * Creates a state management instance.
- * @param {object} initialState The initial state.
- * @returns {object} A state manager with get, set, and subscribe methods.
- */
-const createStateManager = (initialState = {}) => {
-    let state = JSON.parse(JSON.stringify(initialState)); // Deep copy
-    const subscriptions = new Map();
+function buildKnownPathsFromObject(obj, prefix = "", out = new Set()) {
+  if (!obj || typeof obj !== "object") return out;
 
-    const get = (path) => getByPath(state, path);
+  for (const key of Object.keys(obj)) {
+    const fullPath = prefix ? `${prefix}.${key}` : key;
+    out.add(fullPath);
+    if (obj[key] && typeof obj[key] === "object" && !Array.isArray(obj[key])) {
+      buildKnownPathsFromObject(obj[key], fullPath, out);
+    }
+  }
 
-    const set = (path, value) => {
-        setByPath(state, path, value);
-        // Notify subscribers for this path and its parents
-        const pathParts = path.split('.');
-        for (let i = 1; i <= pathParts.length; i++) {
-            const currentPath = pathParts.slice(0, i).join('.');
-            if (subscriptions.has(currentPath)) {
-                subscriptions.get(currentPath).forEach(callback => callback(get(currentPath)));
-            }
-        }
+  return out;
+}
+
+const createStateManager = (initialState = {}, options = {}) => {
+  const {
+    knownPaths = null,
+    warnUnknown = false,
+    throwUnknown = false,
+    name = "StateManager",
+  } = options;
+
+  let state = JSON.parse(JSON.stringify(initialState)); // Deep copy
+  const subscriptions = new Map();
+
+  const known = knownPaths
+    ? new Set(knownPaths)
+    : buildKnownPathsFromObject(initialState);
+
+  const isKnownPath = (path) => known.size === 0 || known.has(path);
+
+  const handleUnknownPath = (path) => {
+    const msg = `${name}: unknown state path '${path}'`;
+    if (throwUnknown) throw new Error(msg);
+    if (warnUnknown) console.warn(msg);
+  };
+
+  const get = (path) => getByPath(state, path);
+
+  const set = (path, value) => {
+    if (typeof path !== "string" || path.length === 0) return false;
+    if (!isKnownPath(path)) {
+      handleUnknownPath(path);
+      return false;
+    }
+
+    setByPath(state, path, value);
+    const pathParts = path.split(".");
+    for (let i = 1; i <= pathParts.length; i++) {
+      const currentPath = pathParts.slice(0, i).join(".");
+      if (subscriptions.has(currentPath)) {
+        subscriptions.get(currentPath).forEach((callback) => callback(get(currentPath)));
+      }
+    }
+    return true;
+  };
+
+  const subscribe = (path, callback) => {
+    if (!subscriptions.has(path)) {
+      subscriptions.set(path, new Set());
+    }
+    subscriptions.get(path).add(callback);
+
+    return () => {
+      const subs = subscriptions.get(path);
+      if (!subs) return;
+      subs.delete(callback);
+      if (subs.size === 0) {
+        subscriptions.delete(path);
+      }
     };
+  };
 
-    const subscribe = (path, callback) => {
-        if (!subscriptions.has(path)) {
-            subscriptions.set(path, new Set());
-        }
-        subscriptions.get(path).add(callback);
+  const getState = () => JSON.parse(JSON.stringify(state));
+  const getKnownPaths = () => new Set(known);
 
-        // Return an unsubscribe function
-        return () => {
-            subscriptions.get(path).delete(callback);
-            if (subscriptions.get(path).size === 0) {
-                subscriptions.delete(path);
-            }
-        };
-    };
-    
-    const getState = () => JSON.parse(JSON.stringify(state));
-
-    return {
-        get,
-        set,
-        subscribe,
-        getState, // For debugging or getting a full snapshot
-    };
+  return {
+    get,
+    set,
+    subscribe,
+    getState,
+    getKnownPaths,
+  };
 };
 
 export default createStateManager;

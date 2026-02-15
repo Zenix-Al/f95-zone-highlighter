@@ -1,5 +1,7 @@
 import { config } from "../../config";
 import { resolveMaskedLink } from "./resolver.js";
+import { SELECTORS } from "../../config/selectors.js";
+import TIMINGS from "../../config/timings.js";
 
 /**
  * On the masked page itself, this function tries to automatically
@@ -10,7 +12,7 @@ export function skipMaskedPage() {
   if (!location.pathname.startsWith("/masked/") || location.pathname === "/masked/") return;
 
   // Auto-click the continue button if present (most reliable now)
-  const continueBtn = document.querySelector(".host_link");
+  const continueBtn = document.querySelector(SELECTORS.MASKED_PAGE.CONTINUE_BTN);
   if (continueBtn) {
     continueBtn.click();
     return; // Done, no need for fancy XHR
@@ -26,9 +28,9 @@ export function skipMaskedPage() {
     if (leavingText) leavingText.style.display = "none";
   }
 
-  const $loading = document.getElementById("loading");
-  const $captchaDiv = document.getElementById("captcha");
-  const $error = document.getElementById("error");
+  const $loading = document.getElementById(SELECTORS.MASKED_PAGE.IDS.LOADING);
+  const $captchaDiv = document.getElementById(SELECTORS.MASKED_PAGE.IDS.CAPTCHA);
+  const $error = document.getElementById(SELECTORS.MASKED_PAGE.IDS.ERROR);
 
   function handleError(title, message, retry = false) {
     if ($error)
@@ -92,5 +94,5 @@ export function handleRecaptcha() {
       $box.click();
       clearInterval(clickInterval);
     }
-  }, 500);
+  }, TIMINGS.RECAPTCHA_CLICK_INTERVAL);
 }

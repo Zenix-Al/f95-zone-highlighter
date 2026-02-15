@@ -59,8 +59,7 @@ export function removeListener(id) {
  */
 export function removeAllListeners() {
   debugLog("ListenerRegistry", `Removing all ${listeners.size} registered listeners...`);
-  for (const id of listeners.keys()) {
+  for (const id of Array.from(listeners.keys())) {
     removeListener(id);
   }
-  listeners.clear();
 }

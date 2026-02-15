@@ -3,6 +3,7 @@ import { saveConfigKeys } from "../../services/settingsService";
 import { applyEffects } from "./applyEffects";
 import { createInput } from "./createInput";
 import { createLabel } from "./createLabel";
+import { coerceSettingValue } from "./coerceSettingValue.js";
 
 const getByPath = (obj, path) => {
   if (typeof path !== "string") return undefined;
@@ -43,12 +44,15 @@ export function renderSetting(key, meta) {
     const label = createLabel(meta, `setting-${key}`);
     const btn = document.createElement("button");
     btn.className = "config-button";
-    btn.textContent = meta.text || "Action";
+    btn.textContent = meta.buttonText || meta.text || "Action";
     btn.title = meta.tooltip || "";
-    btn.addEventListener("click", () => {
+    btn.addEventListener("click", async () => {
       try {
-        if (typeof meta.onClick === "function") meta.onClick();
-        else if (meta.effects && typeof meta.effects.custom === "function") meta.effects.custom();
+        if (typeof meta.onClick === "function") {
+          await meta.onClick();
+        } else if (meta.effects && typeof meta.effects.custom === "function") {
+          await meta.effects.custom();
+        }
       } catch (err) {
         console.error("Action failed:", err);
       }
@@ -76,7 +80,15 @@ export function renderSetting(key, meta) {
   }
 
   input.addEventListener("change", () => {
-    const newValue = meta.type === "toggle" ? input.checked : input.value;
+    const rawValue = meta.type === "toggle" ? input.checked : input.value;
+    const previousValue = getByPath(config, meta.config);
+    const newValue = coerceSettingValue(meta, rawValue, previousValue);
+
+    if (meta.type === "toggle") {
+      input.checked = Boolean(newValue);
+    } else {
+      input.value = String(newValue);
+    }
 
     setByPath(config, meta.config, newValue);
 

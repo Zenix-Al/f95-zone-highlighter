@@ -1,14 +1,24 @@
 import { createFeature } from "../../core/featureFactory.js";
 import { config } from "../../config.js";
 import { enableNoticeDismissal, disableNoticeDismissal } from "./handler.js";
+import featureCss from "./style.css";
+import { acquireStyle, removeStyle } from "../../core/styleRegistry.js";
+
+const DISMISS_NOTICE_STYLE_ID = "feature-dismiss-notification";
 
 /**
  * Core feature object for the notice dismissal functionality.
  */
 export const dismissNotificationFeature = createFeature("Dismiss Notification", {
   configPath: "globalSettings.closeNotifOnClick",
-  enable: enableNoticeDismissal,
-  disable: disableNoticeDismissal,
+  enable: () => {
+    acquireStyle(DISMISS_NOTICE_STYLE_ID, featureCss, "document");
+    enableNoticeDismissal();
+  },
+  disable: () => {
+    disableNoticeDismissal();
+    removeStyle(DISMISS_NOTICE_STYLE_ID);
+  },
 });
 
 /**

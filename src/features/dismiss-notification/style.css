@@ -1,0 +1,52 @@
+.js-notice {
+  position: relative;
+  padding-right: 36px;
+  transition:
+    opacity 0.3s ease,
+    max-height 0.35s ease,
+    padding 0.3s ease,
+    margin 0.3s ease,
+    border-width 0.3s ease;
+  overflow: hidden;
+}
+
+.js-notice.f95-is-collapsing {
+  opacity: 0;
+  max-height: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  border-width: 0 !important;
+}
+
+.js-notice-dismiss-btn {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #ec5555;
+  color: #fff;
+  font-size: 18px;
+  font-weight: bold;
+  line-height: 1;
+  text-align: center;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.js-notice-dismiss-btn:hover {
+  background: #d43e3e;
+  transform: translateY(-50%) scale(1.1);
+}
+
+.js-notice-dismiss-btn:active {
+  transform: translateY(-50%) scale(0.95);
+}
