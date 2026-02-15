@@ -1,7 +1,9 @@
-import { config } from "../../config";
+import stateManager, { config } from "../../config.js";
 import { toggleNoticeDismissal } from "../../features/dismiss-notification";
 import { toggleCrossTabSync } from "../../services/syncService";
-import { updateButtonVisibility } from "../components/modal";
+import { updateButtonVisibility } from "../components/configButton";
+import { getAllFeatureStatuses } from "../../core/featureHealth.js";
+import { showToast } from "../components/toast";
 
 export const globalSettingsMeta = {
   configVisibility: {
@@ -37,6 +39,64 @@ export const globalSettingsMeta = {
         toggleCrossTabSync(config.globalSettings.enableCrossTabSync);
       },
       toast: (v) => `(experimental)Cross-tab settings sync ${v ? "enabled" : "disabled"}`,
+    },
+  },
+  featureHealth: {
+    type: "button",
+    text: "check feature health",
+    tooltip: "Run a diagnostic that reports feature running/disabled/failing states",
+    onClick: () => {
+      const statuses = getAllFeatureStatuses();
+      const counts = { running: 0, disabled: 0, failing: 0, unknown: 0 };
+      for (const id in statuses) {
+        const s = statuses[id].status || "unknown";
+        if (counts[s] === undefined) counts.unknown++;
+        else counts[s]++;
+      }
+      // Show toast summary
+      showToast(
+        `Feature health — running: ${counts.running}, disabled: ${counts.disabled}, failing: ${counts.failing}`,
+      );
+      // Populate a small dismissible box under global settings
+      try {
+        const shadow = stateManager.get("shadowRoot");
+        if (!shadow) return;
+        const container = shadow.getElementById("global-settings-container");
+        if (!container) return;
+
+        let box = shadow.getElementById("feature-health-box");
+        if (!box) {
+          box = document.createElement("div");
+          box.id = "feature-health-box";
+          box.className = "feature-health-box";
+          const closeBtn = document.createElement("button");
+          closeBtn.className = "feature-health-close";
+          closeBtn.textContent = "×";
+          closeBtn.title = "Dismiss";
+          closeBtn.addEventListener("click", () => {
+            box.style.display = "none";
+          });
+          box.appendChild(closeBtn);
+
+          const content = document.createElement("div");
+          content.className = "feature-health-content";
+          box.appendChild(content);
+
+          container.appendChild(box);
+        }
+        const content = box.querySelector(".feature-health-content");
+        content.innerHTML = "";
+        for (const id in statuses) {
+          const s = statuses[id];
+          const line = document.createElement("div");
+          line.className = "feature-health-line";
+          line.textContent = `${id}: ${s.status}${s.details ? " — " + s.details : ""}`;
+          content.appendChild(line);
+        }
+        box.style.display = "block";
+      } catch (err) {
+        console.error("Feature health UI failed", err);
+      }
     },
   },
 };

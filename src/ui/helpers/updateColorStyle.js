@@ -1,17 +1,27 @@
 import { config } from "../../config";
 import { debugLog } from "../../core/logger";
+import { isValidColor } from "../../utils/validators.js";
 
 export function updateColorStyle(key) {
   if (key && config.color[key] !== undefined) {
+    const value = config.color[key];
     const varName = `--${key}-color`;
-    document.documentElement.style.setProperty(varName, config.color[key]);
-    debugLog("updateColorStyle", `Updated color for key: ${key} to ${config.color[key]}`);
+    if (isValidColor(value)) {
+      document.documentElement.style.setProperty(varName, value);
+      debugLog("updateColorStyle", `Updated color for key: ${key} to ${value}`);
+    } else {
+      debugLog("updateColorStyle", `Skipped invalid color for key: ${key} -> ${value}`);
+    }
   } else {
     // Fallback: update all if no key provided
     for (const [k, value] of Object.entries(config.color)) {
       const varName = `--${k}-color`;
-      document.documentElement.style.setProperty(varName, value);
-      debugLog("updateColorStyle", `Updated color for key: ${k} to ${value}`);
+      if (isValidColor(value)) {
+        document.documentElement.style.setProperty(varName, value);
+        debugLog("updateColorStyle", `Updated color for key: ${k} to ${value}`);
+      } else {
+        debugLog("updateColorStyle", `Skipped invalid color for key: ${k} -> ${value}`);
+      }
     }
   }
 

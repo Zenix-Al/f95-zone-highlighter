@@ -1,6 +1,6 @@
-import { config, state } from "./config";
+import stateManager, { config } from "./config.js";
 import { loadData } from "./services/settingsService";
-import { updateButtonVisibility } from "./ui/components/modal";
+import { updateButtonVisibility } from "./ui/components/configButton";
 import { detectPage, waitForBody } from "./core/dom";
 
 import { toggleCrossTabSync } from "./services/syncService";
@@ -16,13 +16,13 @@ waitForBody(async () => {
   detectPage();
 
   // --- Preventing further unnecessary code execution ---
-  if (state.isMaskedLink) {
+  if (stateManager.get('isMaskedLink')) {
     if (config.threadSettings.skipMaskedLink) skipMaskedPage();
     return;
   }
 
   // --- Initialize ---
-  if (state.isF95Zone) {
+  if (stateManager.get('isF95Zone')) {
     initUI();
     updateButtonVisibility();
     toggleCrossTabSync(config.globalSettings.enableCrossTabSync);

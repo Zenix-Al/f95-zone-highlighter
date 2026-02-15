@@ -91,7 +91,7 @@
   background-color: rgba(0, 0, 0, 0.5);
 }
 /* Preferred tags container */
-#preffered-tags-list {
+#preferred-tags-list {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
@@ -281,6 +281,48 @@
   background-color: #6e2b2b;
   border-color: #6e2b2b;
   box-shadow: none;
+}
+.config-button {
+  background-color: #893839;
+  color: white;
+  border: 1px solid #893839;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.config-button:hover {
+  background-color: #b94f4f;
+  border-color: #b94f4f;
+}
+
+.feature-health-box {
+  margin-top: 8px;
+  padding: 8px 10px;
+  background: #1e1f21;
+  border: 1px solid #3f4043;
+  border-radius: 6px;
+  position: relative;
+}
+.feature-health-close {
+  position: absolute;
+  right: 6px;
+  top: 4px;
+  background: transparent;
+  color: #bbb;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+}
+.feature-health-content {
+  margin-top: 4px;
+  max-height: 200px;
+  overflow: auto;
+}
+.feature-health-line {
+  color: #ddd;
+  font-size: 13px;
+  padding: 2px 0;
 }
 .config-row {
   display: flex;

@@ -1,4 +1,6 @@
 let observer = null;
+import { safeExecute } from "./safeExecute.js";
+import resourceManager from "./resourceManager.js";
 const callbacks = new Map();
 
 /**
@@ -9,11 +11,7 @@ const callbacks = new Map();
  */
 function masterCallback(mutationsList, obs) {
   for (const callback of callbacks.values()) {
-    try {
-      callback(mutationsList, obs);
-    } catch (error) {
-      console.error("Error in shared observer callback:", error);
-    }
+    safeExecute(callback, null, mutationsList, obs);
   }
 }
 
@@ -43,10 +41,12 @@ function stopObserver() {
 export function addObserverCallback(id, callback) {
   if (callbacks.has(id)) return;
   callbacks.set(id, callback);
+  resourceManager.register(id, () => removeObserverCallback(id));
   startObserver();
 }
 
 export function removeObserverCallback(id) {
   callbacks.delete(id);
+  resourceManager.unregister(id);
   stopObserver();
 }

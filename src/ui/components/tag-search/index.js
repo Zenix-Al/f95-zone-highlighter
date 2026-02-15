@@ -1,21 +1,28 @@
-import { config, state } from "../../../config";
+import stateManager, { config } from "../../../config.js";
+import { isValidTag } from "../../../utils/validators.js";
 import {
   debouncedProcessAllTilesReset,
   debouncedProcessThreadTags,
 } from "../../../core/tasksRegistry";
 import { saveConfigKeys } from "../../../services/settingsService";
-import { showToast } from "../modal";
+import { showToast } from "../toast";
 
 export function renderList(filteredTags) {
-  const results = state.shadowRoot.getElementById("search-results");
-  const input = state.shadowRoot.getElementById("tags-search");
+  const results = stateManager.get("shadowRoot").getElementById("search-results");
+  const input = stateManager.get("shadowRoot").getElementById("tags-search");
   if (!results || !input) return;
 
   results.innerHTML = "";
 
-  const visibleTags = filteredTags.filter(
-    (tag) => !config.preferredTags.includes(tag.id) && !config.excludedTags.includes(tag.id),
-  );
+  const visibleTags = filteredTags
+    .filter(
+      (tag) =>
+        tag &&
+        tag.id != null &&
+        !config.preferredTags.includes(tag.id) &&
+        !config.excludedTags.includes(tag.id),
+    )
+    .filter((tag) => isValidTag(String(tag.name || "")));
 
   if (visibleTags.length === 0) {
     results.style.display = "none";
@@ -43,7 +50,8 @@ function handleTagAddition(listKey, tag, renderFn) {
   if (!list.includes(tag.id)) {
     list.push(tag.id);
     const listType = listKey.includes("preferred") ? "preferred" : "excluded";
-    showToast(`${tag.name} added to ${listType}`);
+    const safeName = String(tag.name || "").trim();
+    showToast(`${safeName} added to ${listType}`);
     saveConfigKeys({ [listKey]: list });
     renderFn(); // Re-render the specific list that changed
     triggerTagUpdateEffects();
@@ -63,7 +71,7 @@ function createTagResultItem(tag, onActionComplete) {
   li.className = "search-result-item";
 
   const nameSpan = document.createElement("span");
-  nameSpan.textContent = tag.name;
+  nameSpan.textContent = String(tag.name || "").trim();
 
   const actions = document.createElement("div");
   actions.className = "tag-actions";
@@ -127,7 +135,7 @@ function handleTagRemoval(listKey, tag, index, renderFn) {
 
 export function renderPreferred() {
   renderTagList({
-    containerId: "preffered-tags-list",
+    containerId: "preferred-tags-list",
     ids: config.preferredTags,
     itemClass: "preferred-tag-item",
     removeBtnClass: "preferred-tag-remove",
@@ -145,7 +153,7 @@ export function renderExcluded() {
   });
 }
 function renderTagList({ containerId, ids, itemClass, removeBtnClass, onRemove }) {
-  const container = state.shadowRoot.getElementById(containerId);
+  const container = stateManager.get("shadowRoot").getElementById(containerId);
   if (!container) return;
 
   container.innerHTML = "";
@@ -154,6 +162,7 @@ function renderTagList({ containerId, ids, itemClass, removeBtnClass, onRemove }
   ids.forEach((id, index) => {
     const tag = config.tags.find((t) => t.id === id);
     if (!tag) return;
+    if (!isValidTag(String(tag.name || ""))) return;
     fragment.appendChild(createTagListItem(tag, index, itemClass, removeBtnClass, onRemove));
   });
   container.appendChild(fragment);
@@ -180,4 +189,15 @@ function createTagListItem(tag, index, itemClass, removeBtnClass, onRemove) {
   item.appendChild(removeBtn);
 
   return item;
+}
+export function initTagSearchListeners() {
+  document.addEventListener("click", (e) => {
+    const input = document.getElementById("tags-search");
+    const results = document.getElementById("search-results");
+    if (!input || !results) return;
+
+    if (!input.contains(e.target) && !results.contains(e.target)) {
+      results.style.display = "none";
+    }
+  });
 }

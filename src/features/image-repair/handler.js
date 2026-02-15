@@ -1,21 +1,43 @@
 import { retryImage } from "./retryLogic.js";
 import { recordSuccess } from "../../services/metricsService.js";
-import { config, state } from "../../config.js";
+import stateManager, { config } from "../../config.js";
 import { updateToast } from "./ui.js";
 import { addObserverCallback, removeObserverCallback } from "../../core/observer.js";
+import resourceManager from "../../core/resourceManager.js";
 import { createTaskQueue } from "../../core/taskQueue.js";
+import TIMINGS from "../../config/timings.js";
 import { injectUI, destroyInjectedUI } from "./ui.js";
+import { preserveOriginalSrc } from "../../utils/helpers.js";
 
 let imageQueue = null;
 
 export function enableImageRepair() {
-  if (state.isImgRetryInjected) return;
-  state.isImgRetryInjected = true;
+  if (stateManager.get("isImgRetryInjected")) return;
+  stateManager.set("isImgRetryInjected", true);
 
   // Create a new queue instance for this feature
   imageQueue = createTaskQueue({
     delay: 200, // A small delay between starting each image check
     name: "ImageRepairQueue",
+  });
+
+  // Register cleanup for the queue and UI
+  resourceManager.register("image-repair-queue", () => {
+    try {
+      if (imageQueue) {
+        imageQueue.clear();
+        imageQueue = null;
+      }
+    } catch {
+      // best-effort
+    }
+  });
+  resourceManager.register("image-repair-ui", () => {
+    try {
+      destroyInjectedUI();
+    } catch {
+      // best-effort
+    }
   });
 
   const retryingImages = new Set();
@@ -60,23 +82,25 @@ function handleImage(img, retryingImages) {
     return;
   }
 
-  img.dataset.originalSrc = img.dataset.originalSrc || img.src;
+  preserveOriginalSrc(img);
   const start = performance.now();
 
   const MAX_ATTEMPTS = 10;
-  const RETRY_DELAY = 4000;
+  const RETRY_DELAY = TIMINGS.IMAGE_RETRY_DELAY;
 
   function handleSuccess() {
+    if (!stateManager.get("isImgRetryInjected")) return;
     const duration = performance.now() - start;
     retryingImages.delete(img);
     img.dataset.retrying = "false";
     img.dataset.retryAttached = "true";
-    recordSuccess(img, duration);
-    config.metrics.succeeded++;
-    updateToast(retryingImages, config.metrics);
+    // Pass updateToast as a callback, consistent with retryLogic.js
+    // This also removes the redundant metrics increment and separate toast update.
+    recordSuccess(img, duration, () => updateToast(retryingImages, config.metrics));
   }
 
   function handleError() {
+    if (!stateManager.get("isImgRetryInjected")) return;
     if (img.dataset.retrying !== "true") {
       img.dataset.retrying = "true";
       retryImage(img, start, retryingImages, MAX_ATTEMPTS, RETRY_DELAY);
@@ -93,13 +117,11 @@ function handleImage(img, retryingImages) {
 }
 
 export function disableImageRepair() {
-  if (!state.isImgRetryInjected) return;
-  state.isImgRetryInjected = false;
+  if (!stateManager.get("isImgRetryInjected")) return;
+  stateManager.set("isImgRetryInjected", false);
   destroyInjectedUI();
   removeObserverCallback("image-repair");
-  // Clear the queue and stop processing
-  if (imageQueue) {
-    imageQueue.clear();
-    imageQueue = null;
-  }
+  // Let ResourceManager handle cleanup for queue/UI if registered
+  resourceManager.cleanup("image-repair-queue");
+  resourceManager.cleanup("image-repair-ui");
 }

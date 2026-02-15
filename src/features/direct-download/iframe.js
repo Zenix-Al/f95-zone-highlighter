@@ -1,4 +1,5 @@
 import { debugLog } from "../../core/logger";
+import TIMINGS from "../../config/timings.js";
 
 export function injectFrame(url, options = {}) {
   const {
@@ -52,7 +53,7 @@ export function injectFrame(url, options = {}) {
       } catch {
         // cross-origin error — normal for most download iframes
       }
-    }, 1500);
+    }, TIMINGS.TILE_POPULATE_TIMEOUT);
   };
 
   document.body.appendChild(frame);

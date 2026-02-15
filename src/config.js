@@ -1,28 +1,8 @@
+import createStateManager from "./core/StateManager.js";
+import TIMINGS from "./config/timings.js";
+
 export const debug = true;
-export const state = {
-  shadowRoot: null,
-  modalInjected: false,
-  tagsUpdateStatus: "IDLE", // "IDLE", "UPDATING", "COMPLETE"
-  globalSettingsRendered: false,
-  colorRendered: false,
-  overlayRendered: false,
-  threadSettingsRendered: false,
-  isThread: false,
-  isLatest: false,
-  isDownloadPage: false,
-  isDirectDownloadPage: false,
-  isImgRetryInjected: false,
-  isF95Zone: false,
-  firstLoad: true,
-  isMaskedLink: false,
-  isMaskedLinkApplied: false,
-  isProcessingTiles: false,
-  isCrossTabSyncInitialized: false,
-  isDirectDownloadHijackApplied: false,
-  isRecaptchaFrame: false,
-  latestOverlayStatus: "IDLE", // "IDLE", "INITIALIZING", "ACTIVE", "TEARING_DOWN"
-  isDirectDownloadmsgHandlerApplied: false,
-};
+
 export const validVersions = ["full", "final"];
 
 export const defaultColors = {
@@ -37,7 +17,7 @@ export const defaultColors = {
   preferredText: "#ffffff",
   excluded: "#b71c1c",
   excludedText: "#ffffff",
-  neutral: "#37383a",
+  neutral: "#373a3a",
   neutralText: "#9398a0",
 };
 export const defaultOverlaySettings = {
@@ -74,7 +54,13 @@ export const defaultLatestSettings = {
   latestOverlayToggle: true,
 };
 
-export const metrics = {
+export const defaultGlobalSettings = {
+  configVisibility: true,
+  closeNotifOnClick: true,
+  enableCrossTabSync: false,
+};
+
+export const defaultMetrics = {
   retried: 0,
   succeeded: 0,
   failed: 0,
@@ -83,32 +69,58 @@ export const metrics = {
   lowest: Infinity,
   mean: 0,
 };
-export const defaultGlobalSettings = {
-  configVisibility: true,
-  closeNotifOnClick: true,
-  enableCrossTabSync: false,
-};
-export const config = {
+
+// This object holds all user-configurable settings that are persisted.
+// It is initialized with default values and can be updated from storage.
+export let config = {
   tags: [],
   preferredTags: [],
   excludedTags: [],
-  color: [],
-  overlaySettings: [],
-  threadSettings: [],
-  globalSettings: [],
-  configVisibility: true,
-  minVersion: 0.5,
-  latestSettings: [],
-  metrics: metrics,
+  color: { ...defaultColors },
+  overlaySettings: { ...defaultOverlaySettings },
+  threadSettings: { ...defaultThreadSetting },
+  globalSettings: { ...defaultGlobalSettings },
+  latestSettings: { ...defaultLatestSettings },
+  metrics: { ...defaultMetrics },
   savedNotifID: null,
+};
+
+// This object holds the script's temporary, in-memory state.
+// It resets on every page load.
+const runtimeState = {
+  shadowRoot: null,
+  modalInjected: false,
+  tagsUpdateStatus: "IDLE", // "IDLE", "UPDATING", "COMPLETE"
+  globalSettingsRendered: false,
+  colorRendered: false,
+  overlayRendered: false,
+  threadSettingsRendered: false,
+  isThread: false,
+  isLatest: false,
+  isDownloadPage: false,
+  isDirectDownloadPage: false,
+  isImgRetryInjected: false,
+  isF95Zone: false,
+  firstLoad: true,
+  isMaskedLink: false,
+  isMaskedLinkApplied: false,
+  isProcessingTiles: false,
+  isCrossTabSyncInitialized: false,
+  isDirectDownloadHijackApplied: false,
+  isRecaptchaFrame: false,
+  latestOverlayStatus: "IDLE", // "IDLE", "INITIALIZING", "ACTIVE", "TEARING_DOWN"
+  isDirectDownloadmsgHandlerApplied: false,
   processingDownload: false,
 };
+
+const stateManager = createStateManager(runtimeState);
+export default stateManager;
 
 export const STATUS = Object.freeze({
   PREFERRED: "preferred",
   EXCLUDED: "excluded",
   NEUTRAL: "neutral",
-  PREFFERED_SHADOW: "preffered-shadow",
+  PREFERRED_SHADOW: "preferred-shadow",
   EXCLUDED_SHADOW: "excluded-shadow",
 });
 
@@ -146,7 +158,7 @@ export const colorState = {
   SUCCESS: { color: "#4CAF50" },
   FAILED: { color: "#F44336" },
 };
-export const timeoutMS = 8000;
+export const timeoutMS = TIMINGS.DOWNLOAD_TIMEOUT;
 export const helpMessages = [
   "type /help if you're lost, or just moan really loud",
   "pro tip: don't nut before reading this",

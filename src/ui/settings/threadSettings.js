@@ -1,17 +1,17 @@
-import { state } from "../../config";
-import { toggleImageRepair } from "../../features/image-repair/index.js";
+import stateManager from "../../config.js";
+import { imageRepairFeature } from "../../features/image-repair/index.js";
 import { updateThreadUI } from ".";
 import { checkOverlaySettings } from "../../services/safetyService";
-import { signatureCollapse } from "../../features/signature-collapse/index.js";
-import { toggleDirectDownload } from "../../features/direct-download/index.js";
+import { signatureCollapseFeature } from "../../features/signature-collapse/index.js";
+import { directDownloadFeature } from "../../features/direct-download/index.js";
 import { toggleHijackMaskedLink } from "../../features/masked-link-skipper/index.js";
 import { debouncedProcessThreadTags } from "../../core/tasksRegistry";
-import { wideForum } from "../../features/wideForum/index";
+import { wideForumFeature } from "../../features/wideForum/index.js";
 
 const effectOverlayToggle = () => {
   updateThreadUI();
   checkOverlaySettings();
-  if (!state.isThread) return;
+  if (!stateManager.get("isThread")) return;
   debouncedProcessThreadTags();
 };
 // meta/threadSettings.js
@@ -34,7 +34,7 @@ export const threadSettingsMeta = {
       "Enable direct download links for supported file hosts \n works independently outside of masked links",
     config: "threadSettings.directDownloadLinks",
     effects: {
-      custom: toggleDirectDownload,
+      custom: () => directDownloadFeature.toggle(directDownloadFeature.isEnabled()),
       toast: (v) => `Direct Download Links ${v ? "enabled" : "disabled"}`,
     },
   },
@@ -44,7 +44,7 @@ export const threadSettingsMeta = {
     tooltip: "Remove max-width restriction — makes thread use full screen width",
     config: "threadSettings.isWide",
     effects: {
-      custom: wideForum,
+      custom: () => wideForumFeature.toggle(wideForumFeature.isEnabled()),
       toast: (v) => `Wide Thread ${v ? "enabled" : "disabled"}`,
     },
   },
@@ -55,7 +55,7 @@ export const threadSettingsMeta = {
     tooltip: "Enable image retry for broken images in threads",
     config: "threadSettings.imgRetry",
     effects: {
-      custom: toggleImageRepair,
+      custom: () => imageRepairFeature.toggle(imageRepairFeature.isEnabled()),
       toast: (v) => `Image Retry ${v ? "enabled" : "disabled"}`,
     },
   },
@@ -65,7 +65,7 @@ export const threadSettingsMeta = {
     tooltip: "Make user signatures collapsable in threads",
     config: "threadSettings.collapseSignature",
     effects: {
-      custom: signatureCollapse,
+      custom: () => signatureCollapseFeature.toggle(signatureCollapseFeature.isEnabled()),
       toast: (v) => `Collapsable Signatures ${v ? "enabled" : "disabled"}`,
     },
   },

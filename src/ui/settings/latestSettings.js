@@ -1,18 +1,14 @@
-import { config, state } from "../../config";
-import { toggleWideLatestPage } from "../../features/wide-latest/wide-latest-page.js";
-import { toggleDenseLatestGrid } from "../../features/wide-latest/dense-latest-page.js";
-import { toggleLatestControls } from "../../features/latest-control/latest-controls.js";
+import stateManager, { config } from "../../config.js";
+import { wideLatestPageFeature, denseLatestGridFeature } from "../../features/wide-latest/index.js";
+import { latestControlFeature } from "../../features/latest-control/index.js";
 import { checkOverlaySettings } from "../../services/safetyService";
 import { debouncedProcessAllTilesReset, debouncedUpdateLatestUI } from "../../core/tasksRegistry";
-import {
-  enableLatestOverlay,
-  disableLatestOverlay,
-} from "../../features/latest-overlay/latest-overlay.js";
+import { enableLatestOverlay, disableLatestOverlay } from "../../features/latest-overlay/index.js";
 
 const effectOverlayToggle = () => {
   checkOverlaySettings();
   debouncedUpdateLatestUI();
-  if (!state.isLatest) return;
+  if (!stateManager.get("isLatest")) return;
   if (!config.latestSettings.latestOverlayToggle) {
     // When turning OFF, we call the function that handles full teardown and cleanup.
     disableLatestOverlay();
@@ -31,7 +27,7 @@ export const latestSettingsMeta = {
     config: "latestSettings.autoRefresh",
     effects: {
       custom: () => {
-        state.isLatest && toggleLatestControls();
+        stateManager.get("isLatest") && latestControlFeature.enable();
       },
       toast: (v) => `Auto Refresh ${v ? "enabled" : "disabled"}`,
     },
@@ -44,7 +40,7 @@ export const latestSettingsMeta = {
     config: "latestSettings.webNotif",
     effects: {
       custom: () => {
-        state.isLatest && toggleLatestControls();
+        stateManager.get("isLatest") && latestControlFeature.enable();
       },
       toast: (v) => `Web Notifications ${v ? "enabled" : "disabled"}`,
     },
@@ -70,7 +66,8 @@ export const latestSettingsMeta = {
     config: "latestSettings.wideLatest",
     effects: {
       custom: () => {
-        state.isLatest && toggleWideLatestPage();
+        stateManager.get("isLatest") &&
+          wideLatestPageFeature.toggle(config.latestSettings.wideLatest);
       },
       toast: (v) => `Wide Latest Page ${v ? "enabled" : "disabled"}`,
     },
@@ -82,7 +79,8 @@ export const latestSettingsMeta = {
     config: "latestSettings.denseLatestGrid",
     effects: {
       custom: () => {
-        state.isLatest && toggleDenseLatestGrid();
+        stateManager.get("isLatest") &&
+          denseLatestGridFeature.toggle(config.latestSettings.denseLatestGrid);
       },
       toast: (v) => `Dense Latest Grid ${v ? "enabled" : "disabled"}`,
     },

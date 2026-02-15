@@ -1,23 +1,12 @@
-import { config, state, STATUS } from "../../config";
-import { debugLog } from "../../core/logger";
-
-export function processThreadTags() {
-  if (!state.isThread || !config.threadSettings.threadOverlayToggle) return;
-  const tagList = document.querySelector(".js-tagList");
-  if (!tagList) {
-    return;
-  }
-  let tags = tagList.getElementsByClassName("tagItem");
-  tags = Array.from(tags);
-  tags.forEach((tag) => {
-    processThreadTag(tag);
-  });
-}
+import { createFeature } from "../../core/featureFactory.js";
+import { config, STATUS } from "../../config.js";
+import { debugLog } from "../../core/logger.js";
+import { isValidTag } from "../../utils/validators.js";
 
 function processThreadTag(tagElement) {
-  const tagName = tagElement.innerHTML.trim();
+  const tagName = String(tagElement.innerHTML || "").trim();
+  if (!isValidTag(tagName)) return; // skip malformed tag text
 
-  // Check if tag ID exists in preferred/excluded
   const preferredId = config.preferredTags.find((id) =>
     config.tags.find((t) => t.id === id && t.name === tagName),
   );
@@ -25,47 +14,44 @@ function processThreadTag(tagElement) {
     config.tags.find((t) => t.id === id && t.name === tagName),
   );
 
-  // Remove all possible STATUS classes first
   Object.values(STATUS).forEach((cls) => tagElement.classList.remove(cls));
 
-  // Apply class only if setting is enabled
   const { preferred, preferredShadow, excluded, excludedShadow, neutral } = config.threadSettings;
 
   if (preferredId && preferred) {
     tagElement.classList.add(STATUS.PREFERRED);
-    preferredShadow && tagElement.classList.add(STATUS.PREFFERED_SHADOW);
-    return;
+    if (preferredShadow) tagElement.classList.add(STATUS.PREFERRED_SHADOW);
   } else if (excludedId && excluded) {
     tagElement.classList.add(STATUS.EXCLUDED);
-    excludedShadow && tagElement.classList.add(STATUS.EXCLUDED_SHADOW);
-    return;
+    if (excludedShadow) tagElement.classList.add(STATUS.EXCLUDED_SHADOW);
   } else if (neutral) {
     tagElement.classList.add(STATUS.NEUTRAL);
   }
 }
 
-export function toggleThreadTagOverlay() {
-  if (!state.isThread) return;
-  if (config.threadSettings.threadOverlayToggle) {
-    processThreadTags();
-  } else {
-    disableThreadTagOverlay();
-  }
+function enableThreadOverlay() {
+  const tagList = document.querySelector(".js-tagList");
+  if (!tagList) return;
+
+  const tags = tagList.getElementsByClassName("tagItem");
+  Array.from(tags).forEach(processThreadTag);
 }
 
-function disableThreadTagOverlay() {
-  if (!state.isThread) return;
-  // Find all tags that might have been processed
+function disableThreadOverlay() {
   const tagList = document.querySelector(".js-tagList");
   if (!tagList) return;
 
   const tags = tagList.getElementsByClassName("tagItem");
   Array.from(tags).forEach((tag) => {
-    // Remove every possible status class we ever added
     Object.values(STATUS).forEach((cls) => {
       tag.classList.remove(cls);
     });
   });
-
-  debugLog("disableThreadTagOverlay", "Thread tag overlay disabled — tags back to vanilla");
+  debugLog("Thread Overlay", "Disabled - tags returned to default style");
 }
+
+export const threadOverlayFeature = createFeature("Thread Overlay", {
+  configPath: "threadSettings.threadOverlayToggle",
+  enable: enableThreadOverlay,
+  disable: disableThreadOverlay,
+});

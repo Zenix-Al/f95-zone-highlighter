@@ -1,15 +1,17 @@
-import { config, state } from "../config";
+import stateManager, { config } from "../config.js";
 import { renderList } from "../ui/components/tag-search";
 
 import { checkTags } from "./safetyService";
 import { saveConfigKeys } from "./settingsService";
 import { debugLog } from "../core/logger";
 import { waitFor } from "../core/dom";
+import TIMINGS from "../config/timings.js";
+import { SELECTORS } from "../config/selectors.js";
 
 export function updateSearch(event) {
   checkTags(); // Ensure warning is visible if tags are missing
   const query = event.target.value.trim().toLowerCase();
-  const results = state.shadowRoot.getElementById("search-results");
+  const results = stateManager.get("shadowRoot").getElementById("search-results");
 
   if (!query || !results) {
     if (results) results.style.display = "none";
@@ -22,30 +24,34 @@ export function updateSearch(event) {
 }
 export function showAllTags() {
   checkTags(); // Ensure warning is visible if tags are missing
-  const results = state.shadowRoot.getElementById("search-results");
+  const results = stateManager.get("shadowRoot").getElementById("search-results");
   if (!results) return;
   renderList(config.tags);
   results.style.display = "block";
 }
 
 export async function updateTags() {
-  if (state.tagsUpdateStatus !== "IDLE") {
-    debugLog("Tag Update", `Skipping update, status is: ${state.tagsUpdateStatus}`);
+  if (stateManager.get("tagsUpdateStatus") !== "IDLE") {
+    debugLog("Tag Update", `Skipping update, status is: ${stateManager.get("tagsUpdateStatus")}`);
     return;
   }
 
   debugLog("Tag Update", "Starting tag update process...");
-  state.tagsUpdateStatus = "UPDATING";
+  stateManager.set("tagsUpdateStatus", "UPDATING");
 
   try {
-    const selector = document.querySelector(".selectize-input.items.not-full");
-    const dropdown = document.querySelector(".selectize-dropdown.single.filter-tags-select");
+    const selector = document.querySelector(SELECTORS.TAG_PICKER.INPUT);
+    const dropdown = document.querySelector(SELECTORS.TAG_PICKER.DROPDOWN);
 
     if (selector && dropdown) {
       selector.click();
 
       // wait until options exist
-      await waitFor(() => dropdown.querySelectorAll(".option").length > 0, 50, 3000);
+      await waitFor(
+        () => dropdown.querySelectorAll(".option").length > 0,
+        TIMINGS.TILE_POPULATE_CHECK_INTERVAL,
+        TIMINGS.SELECTOR_WAIT_TIMEOUT,
+      );
 
       const options = [...dropdown.querySelectorAll(".option")];
 
@@ -102,13 +108,13 @@ export async function updateTags() {
     }
 
     checkTags(); // Safety check for empty tags
-    state.tagsUpdateStatus = "COMPLETE";
+    stateManager.set("tagsUpdateStatus", "COMPLETE");
     debugLog("Tag Update", "Finished updating tags. Status: COMPLETE");
     return { pruned: listsHaveChanged, count: prunedCount };
   } catch (error) {
     debugLog("Tag Update", `An error occurred during tag update: ${error}`, "error");
     // Reset to IDLE on error to allow a potential retry later
-    state.tagsUpdateStatus = "IDLE";
+    stateManager.set("tagsUpdateStatus", "IDLE");
     return { pruned: false, count: 0 };
   }
 }

@@ -1,10 +1,14 @@
-import { cache, colorState, config, state, downloadHostConfigs, timeoutMS } from "../../config";
+import stateManager, { cache, colorState, downloadHostConfigs, timeoutMS } from "../../config.js";
 import { saveConfigKeys } from "../../services/settingsService";
-import { showToast } from "../../ui/components/modal";
+import { showToast } from "../../ui/components/toast";
 import { debugLog } from "../../core/logger";
 import { injectFrame } from "./iframe";
 import { openInNewTabHelper } from "../../core/openInNewTabHelper";
+import { addListener, removeListener } from "../../core/listenerRegistry.js";
 import { disableMsgEventHandler, handleMsgEvent } from "./msgHandler";
+import { createFeature } from "../../core/featureFactory.js";
+import resourceManager from "../../core/resourceManager.js";
+import TIMINGS from "../../config/timings.js";
 
 function getDownloadLinkInfo(urlString) {
   if (!urlString) return false;
@@ -41,10 +45,10 @@ export function getSupportedLinkType(urlString) {
   const info = getDownloadLinkInfo(urlString);
   return info ? info.type : null;
 }
-let clickHandler = null;
-export function enableDirectDownload() {
-  if (state.isDirectDownloadHijackApplied) return;
-  state.isDirectDownloadHijackApplied = true;
+const HIJACK_LISTENER_ID = "direct-download-hijack";
+function enableDirectDownload() {
+  if (stateManager.get("isDirectDownloadHijackApplied")) return;
+  stateManager.set("isDirectDownloadHijackApplied", true);
 
   function handler(e) {
     const el = e.target.closest("a[href]");
@@ -66,39 +70,59 @@ export function enableDirectDownload() {
           el.style.color = colorState.FAILED.color;
           if (frame) frame.remove();
           cache.delete(url);
+          // cleanup any registered resource for this url
+          try {
+            resourceManager.cleanup(`direct-download:${encodeURIComponent(url)}`);
+          } catch {}
           window.open(url, "_blank"); // fallback also new tab
         }
       }, timeoutMS);
 
       cache.set(url, { el, frame, timer });
+      // Register a cleanup hook for this pending download context
+      const resourceId = `direct-download:${encodeURIComponent(url)}`;
+      resourceManager.register(resourceId, () => {
+        try {
+          const ctx = cache.get(url);
+          if (ctx) {
+            clearTimeout(ctx.timer);
+            if (ctx.frame) ctx.frame.remove();
+            cache.delete(url);
+          }
+        } catch (err) {
+          debugLog("DirectDownload", `Cleanup failed for ${url}: ${err}`);
+        }
+      });
     } else if (type == "normal") {
       showToast("Processing download in new tab...");
       showToast("you'll alered if download starts or fails");
       //important so if script loaded on new tab it must process the download
       saveConfigKeys({ processingDownload: true });
-      setTimeout(() => saveConfigKeys({ processingDownload: false }), 10000); // reset after 10s
+      setTimeout(() => saveConfigKeys({ processingDownload: false }), TIMINGS.DOWNLOAD_TIMEOUT); // reset after configured delay
       openInNewTabHelper(url);
     }
   }
-  clickHandler = handler;
-  document.addEventListener("click", clickHandler, true);
+  addListener(HIJACK_LISTENER_ID, document, "click", handler, { capture: true });
 }
 
-export function disableDirectDownload() {
-  if (!state.isDirectDownloadHijackApplied) return;
-  if (clickHandler) {
-    document.removeEventListener("click", clickHandler, true);
-    clickHandler = null;
-  }
-  state.isDirectDownloadHijackApplied = false;
+function disableDirectDownload() {
+  if (!stateManager.get("isDirectDownloadHijackApplied")) return;
+  removeListener(HIJACK_LISTENER_ID);
+  stateManager.set("isDirectDownloadHijackApplied", false);
 }
 
-export function toggleDirectDownload() {
-  if (config.threadSettings.directDownloadLinks) {
-    enableDirectDownload();
-    handleMsgEvent();
-  } else {
-    disableDirectDownload();
-    disableMsgEventHandler();
-  }
+function enable() {
+  enableDirectDownload();
+  handleMsgEvent();
 }
+
+function disable() {
+  disableDirectDownload();
+  disableMsgEventHandler();
+}
+
+export const directDownloadFeature = createFeature("Direct Download", {
+  configPath: "threadSettings.directDownloadLinks",
+  enable: enable,
+  disable: disable,
+});

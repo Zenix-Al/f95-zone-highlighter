@@ -1,18 +1,22 @@
 import { debug } from "../config";
 
-export function debugLog(feature, msg, obj = {}) {
+export function debugLog(feature, msg, { data = null, level = "log" } = {}) {
   if (!debug) return;
 
+  const logMethod = console[level] || console.log;
+
+  // Use a different color for warnings/errors in the group header for better visibility.
+  const style = level === "warn" ? "color: orange;" : level === "error" ? "color: red;" : "";
+
   // Group them so it's neat in console
-  console.groupCollapsed(`[${feature}] ${msg}`);
+  console.groupCollapsed(`%c[${feature}] ${msg}`, style);
 
   // Log the message again inside (optional but looks pro)
-  console.log(msg);
+  logMethod(msg);
 
   // Now dump the object — it stays fully collapsible!
-  if (Object.keys(obj).length > 0) {
-    console.log(obj); // ← this one keeps the object interactive
-    // or console.dir(obj) if you want the property list style
+  if (data) {
+    logMethod(data);
   }
 
   console.groupEnd();

@@ -1,9 +1,26 @@
-import { config } from "../../config";
-import { getByPath, setByPath } from "./rendererHelper";
+import { config } from "../../config.js";
 import { saveConfigKeys } from "../../services/settingsService";
 import { applyEffects } from "./applyEffects";
 import { createInput } from "./createInput";
 import { createLabel } from "./createLabel";
+
+const getByPath = (obj, path) => {
+  if (typeof path !== "string") return undefined;
+  return path.split(".").reduce((acc, part) => acc && acc[part], obj);
+};
+
+const setByPath = (obj, path, value) => {
+  if (typeof path !== "string") return;
+  const keys = path.split(".");
+  const lastKey = keys.pop();
+  const target = keys.reduce((acc, part) => {
+    acc[part] = acc[part] || {};
+    return acc[part];
+  }, obj);
+  if (target) {
+    target[lastKey] = value;
+  }
+};
 
 export function renderSetting(key, meta) {
   if (meta.type === "header") {
@@ -17,6 +34,29 @@ export function renderSetting(key, meta) {
     const hr = document.createElement("hr");
     hr.className = "config-separator";
     return hr;
+  }
+
+  if (meta.type === "button") {
+    const row = document.createElement("div");
+    row.className = "config-row";
+
+    const label = createLabel(meta, `setting-${key}`);
+    const btn = document.createElement("button");
+    btn.className = "config-button";
+    btn.textContent = meta.text || "Action";
+    btn.title = meta.tooltip || "";
+    btn.addEventListener("click", () => {
+      try {
+        if (typeof meta.onClick === "function") meta.onClick();
+        else if (meta.effects && typeof meta.effects.custom === "function") meta.effects.custom();
+      } catch (err) {
+        console.error("Action failed:", err);
+      }
+    });
+
+    row.appendChild(label);
+    row.appendChild(btn);
+    return row;
   }
 
   // ⬇️ existing input renderer stays untouched
@@ -38,10 +78,11 @@ export function renderSetting(key, meta) {
   input.addEventListener("change", () => {
     const newValue = meta.type === "toggle" ? input.checked : input.value;
 
-    const keyName = setByPath(config, meta.config, newValue);
+    setByPath(config, meta.config, newValue);
 
+    const topLevelKey = meta.config.split(".")[0];
     saveConfigKeys({
-      [keyName]: config[keyName],
+      [topLevelKey]: config[topLevelKey],
     });
 
     applyEffects(meta, newValue);

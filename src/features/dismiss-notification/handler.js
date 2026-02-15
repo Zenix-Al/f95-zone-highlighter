@@ -1,4 +1,4 @@
-import { config, state } from "../../config";
+import stateManager, { config } from "../../config.js";
 import { saveConfigKeys } from "../../services/settingsService";
 import { debugLog } from "../../core/logger";
 import { addObserverCallback, removeObserverCallback } from "../../core/observer.js";
@@ -75,8 +75,8 @@ function processMutations(mutationsList) {
 }
 
 export function enableNoticeDismissal() {
-  if (state.isNoticeDismissalEnabled) return; // Already enabled
-  state.isNoticeDismissalEnabled = true;
+  if (stateManager.get('isNoticeDismissalEnabled')) return; // Already enabled
+  stateManager.set('isNoticeDismissalEnabled', true);
 
   if (!noticeDismissHandler) {
     noticeDismissHandler = customDismissHandler;
@@ -91,8 +91,8 @@ export function enableNoticeDismissal() {
 }
 
 export function disableNoticeDismissal() {
-  if (!state.isNoticeDismissalEnabled) return;
-  state.isNoticeDismissalEnabled = false;
+  if (!stateManager.get('isNoticeDismissalEnabled')) return;
+  stateManager.set('isNoticeDismissalEnabled', false);
   removeObserverCallback("dismiss-notification");
 
   if (noticeDismissHandler) {
