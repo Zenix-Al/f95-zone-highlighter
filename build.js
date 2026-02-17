@@ -32,7 +32,7 @@ if (bumpType === "major") {
 
 const versionString = `${newVersion.major}.${newVersion.minor}.${newVersion.patch}`;
 console.log(
-  `Bumping version: ${currentVersion.major}.${currentVersion.minor}.${currentVersion.patch} → ${versionString} (${bumpType})`
+  `Bumping version: ${currentVersion.major}.${currentVersion.minor}.${currentVersion.patch} → ${versionString} (${bumpType})`,
 );
 
 // Save new version
@@ -54,6 +54,8 @@ function makeHeader(name, version, banner) {
 // @match        *://buzzheavier.com/*
 // @match        *://trashbytes.net/dl/*
 // @match        *://gofile.io/d/*
+// @match        *://pixeldrain.com/*
+// @match        *://datanodes.to/download
 // @icon         https://f95zone.to/data/avatars/l/1963/1963870.jpg
 // @grant        GM.setValue
 // @grant        GM.getValue

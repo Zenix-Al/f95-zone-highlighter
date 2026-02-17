@@ -159,6 +159,29 @@ export const downloadHostConfigs = {
     clickType: "normal",
     pageHandler: "gofile.io",
   },
+  "pixeldrain.com": {
+    clickType: "normal",
+    pageHandler: "pixeldrain.com",
+  },
+  "datanodes.to": {
+    clickType: "normal",
+    pageHandler: "datanodes.to",
+  },
+  "workupload.com": {
+    clickType: "normal",
+  },
+  "qiwi.gg": {
+    clickType: "normal",
+  },
+  "krakenfiles.com": {
+    clickType: "normal",
+  },
+  "mega.nz": {
+    clickType: "normal",
+  },
+  "mediafire.com": {
+    clickType: "normal",
+  },
   "trashbytes.net": {
     // This host is not clicked on, it's a destination.
     pageType: "auto-retry",

@@ -5,6 +5,13 @@ export const TIMINGS = {
   TOAST_DISPLAY: 2000, // toast visibility
   DOWNLOAD_TIMEOUT: 8000, // download attempt timeout
   GOFILE_AUTO_CLOSE: 6000, // auto-close gofile tab delay
+  PIXELDRAIN_AUTO_CLOSE: 4000, // auto-close pixeldrain tab delay
+  PIXELDRAIN_POLL_INTERVAL: 250, // button polling interval
+  PIXELDRAIN_BUTTON_WAIT_TIMEOUT: 20000, // max wait for hydrated download button
+  DATANODES_AUTO_CLOSE: 4000, // auto-close datanodes tab delay
+  DATANODES_POLL_INTERVAL: 250, // datanodes button polling interval
+  DATANODES_BUTTON_WAIT_TIMEOUT: 20000, // max wait for datanodes actionable button
+  DATANODES_SECOND_CLICK_DELAY: 6500, // wait for free-tier cooldown before second click
   IMAGE_RETRY_DELAY: 4000,
   POLL_INTERVAL: 400, // general poll interval for host pages
   GOFILE_POST_READY_WAIT: 600,

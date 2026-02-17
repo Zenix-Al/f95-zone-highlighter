@@ -1,5 +1,12 @@
 # Changelog
 
+## [v4.8.0 - Direct Download + Wide Latest Fixes]
+
+- Turned `debug` logging off by default.
+- Fixed a bug where Wide Latest could still appear capped around 14xx width.
+- Improved Masked Link Skipper and Direct Download so they hand off links more reliably.
+- Added more Direct Download host support.
+
 ## [v4.7.1 - Framework Hardening Pass]
 
 ### Major Changes & Improvements

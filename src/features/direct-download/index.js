@@ -1,17 +1,12 @@
-import stateManager, { cache, colorState, downloadHostConfigs, timeoutMS } from "../../config.js";
-import { saveConfigKeys } from "../../services/settingsService";
+import stateManager from "../../config.js";
 import { showToast } from "../../ui/components/toast";
 import { debugLog } from "../../core/logger";
-import { injectFrame } from "./iframe";
-import { openInNewTabHelper } from "../../core/openInNewTabHelper";
 import { addListener, removeListener } from "../../core/listenerRegistry.js";
 import { disableMsgEventHandler, handleMsgEvent } from "./msgHandler";
 import { createFeature } from "../../core/featureFactory.js";
-import resourceManager from "../../core/resourceManager.js";
-import TIMINGS from "../../config/timings.js";
 import { notify } from "../../services/notificationService.js";
-
-const DIRECT_DOWNLOAD_ATTENTION_KEY = "directDownloadAttentionEvent";
+import { isSupportedDownloadLink, routeDownloadUrl } from "../../services/downloadRouter.js";
+import { DIRECT_DOWNLOAD_ATTENTION_KEY } from "./attention.js";
 let directDownloadAttentionListenerId = null;
 let lastAttentionTimestamp = 0;
 
@@ -58,41 +53,6 @@ function disableDirectDownloadAttentionListener() {
   directDownloadAttentionListenerId = null;
 }
 
-function getDownloadLinkInfo(urlString) {
-  if (!urlString) return false;
-
-  let url;
-  try {
-    url = new URL(urlString);
-  } catch (err) {
-    debugLog("DirectDownload", `Invalid URL: ${urlString} - ${err}`);
-    return null;
-  }
-
-  const linkHost = url.hostname.toLowerCase();
-  if (linkHost.includes("f95zone.to")) return null;
-
-  for (const host in downloadHostConfigs) {
-    if (linkHost.includes(host)) {
-      const hostConfig = downloadHostConfigs[host];
-      // Ensure it's a host we intend to hijack clicks for
-      if (hostConfig.clickType) {
-        return { type: hostConfig.clickType };
-      }
-    }
-  }
-
-  return null;
-}
-
-export function isSupportedDownloadLink(urlString) {
-  return getDownloadLinkInfo(urlString) !== null;
-}
-
-export function getSupportedLinkType(urlString) {
-  const info = getDownloadLinkInfo(urlString);
-  return info ? info.type : null;
-}
 const HIJACK_LISTENER_ID = "direct-download-hijack";
 function enableDirectDownload() {
   if (stateManager.get("isDirectDownloadHijackApplied")) return;
@@ -105,50 +65,7 @@ function enableDirectDownload() {
     if (!isSupportedDownloadLink(url)) return;
     debugLog("DirectDownload", `Hijacking download link: ${url}`);
     e.preventDefault();
-    const type = getSupportedLinkType(url);
-    if (type == "iframe") {
-      el.dataset.state = "pending";
-      el.style.color = colorState.PENDING.color;
-
-      const frame = injectFrame(url);
-
-      const timer = setTimeout(() => {
-        if (el.dataset.state !== "resolved") {
-          el.dataset.state = "";
-          el.style.color = colorState.FAILED.color;
-          if (frame) frame.remove();
-          cache.delete(url);
-          // cleanup any registered resource for this url
-          try {
-            resourceManager.cleanup(`direct-download:${encodeURIComponent(url)}`);
-          } catch {}
-          window.open(url, "_blank"); // fallback also new tab
-        }
-      }, timeoutMS);
-
-      cache.set(url, { el, frame, timer });
-      // Register a cleanup hook for this pending download context
-      const resourceId = `direct-download:${encodeURIComponent(url)}`;
-      resourceManager.register(resourceId, () => {
-        try {
-          const ctx = cache.get(url);
-          if (ctx) {
-            clearTimeout(ctx.timer);
-            if (ctx.frame) ctx.frame.remove();
-            cache.delete(url);
-          }
-        } catch (err) {
-          debugLog("DirectDownload", `Cleanup failed for ${url}: ${err}`);
-        }
-      });
-    } else if (type == "normal") {
-      showToast("Processing download in new tab...");
-      showToast("you'll alered if download starts or fails");
-      // Persist before opening tab so download-page loader can read it reliably.
-      await saveConfigKeys({ processingDownload: true });
-      setTimeout(() => saveConfigKeys({ processingDownload: false }), TIMINGS.DOWNLOAD_TIMEOUT); // reset after configured delay
-      openInNewTabHelper(url);
-    }
+    await routeDownloadUrl(url, { anchorEl: el, fallbackToNewTab: true });
   }
   addListener(HIJACK_LISTENER_ID, document, "click", handler, { capture: true });
 }

@@ -21,8 +21,15 @@ main#latest-page_main-wrap {
   will-change: max-width;
 }
 
-html.latest-wide main#latest-page_main-wrap {
-  max-width: 1430px;
+html.latest-wide main#latest-page_main-wrap,
+html.latest-wide #latest-page_main-wrap,
+html.latest-wide #latest-page_items-wrap,
+html.latest-wide #latest-page_items-wrap_inner,
+html.latest-wide .p-body-pageContent,
+html.latest-wide .p-body-content,
+html.latest-wide .uix_contentWrapper {
+  max-width: none !important;
+  width: 100% !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

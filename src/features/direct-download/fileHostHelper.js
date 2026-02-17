@@ -1,10 +1,13 @@
 import { config, downloadHostConfigs } from "../../config";
 import { processGofileDownload } from "./gofile.js";
+import { processPixeldrainDownload } from "./pixeldrain.js";
+import { processDatanodesDownload } from "./datanodes.js";
 
 const hostHandlers = {
   "buzzheavier.com": handleBuzzshare,
   "gofile.io": processGofileDownload,
-  // "pixeldrain.com": handlePixeldrain, // Example for future extensibility
+  "pixeldrain.com": processPixeldrainDownload,
+  "datanodes.to": processDatanodesDownload,
 };
 
 // this file is for iframe download handlers or common handler

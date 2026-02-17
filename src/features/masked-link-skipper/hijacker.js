@@ -1,37 +1,39 @@
 import stateManager, { config } from "../../config.js";
-import { saveConfigKeys } from "../../services/settingsService";
 import { showToast } from "../../ui/components/toast.js";
-import { getSupportedLinkType, isSupportedDownloadLink } from "../direct-download/index.js";
-import { openInNewTabHelper } from "../../core/openInNewTabHelper";
-import { injectFrame } from "../direct-download/iframe.js";
+import { routeDownloadUrl } from "../../services/downloadRouter.js";
 import { resolveMaskedLink } from "./resolver.js";
 import { addListener, removeListener } from "../../core/listenerRegistry.js";
-import TIMINGS from "../../config/timings.js";
+
+function normalizeResolvedUrl(url, fallback) {
+  const raw = String(url || "")
+    .trim()
+    .replace(/&amp;/gi, "&");
+  if (!raw) return fallback;
+
+  try {
+    const parsed = new URL(raw, window.location.href);
+    if (!["http:", "https:"].includes(parsed.protocol)) return fallback;
+    return parsed.href;
+  } catch {
+    return fallback;
+  }
+}
 
 /**
  * Dispatches a resolved URL to the appropriate handler (direct download, iframe, new tab).
  * @param {string} url The URL to handle.
  */
-function dispatchResolvedLink(url) {
-  if (config.threadSettings.directDownloadLinks && isSupportedDownloadLink(url)) {
-    const type = getSupportedLinkType(url);
-    if (type === "iframe") {
-      injectFrame(url);
-      return;
-    }
-    if (type === "normal") {
-      saveConfigKeys({ processingDownload: true });
-      showToast("Processing download in new tab...");
-      showToast("you'll be alerted if download starts or fails");
-      openInNewTabHelper(url);
-      // Reset processing flag after a delay
-      setTimeout(() => saveConfigKeys({ processingDownload: false }), TIMINGS.DOWNLOAD_TIMEOUT);
-      return;
-    }
+async function dispatchResolvedLink(url, { anchorEl = null } = {}) {
+  const safeUrl = normalizeResolvedUrl(url, url);
+  if (config.threadSettings.directDownloadLinks) {
+    const result = await routeDownloadUrl(safeUrl, {
+      anchorEl,
+      fallbackToNewTab: false,
+    });
+    if (result.handled) return;
   }
 
-  // Fallback for non-supported links or if direct downloads are disabled
-  window.open(url, "_blank");
+  window.open(safeUrl, "_blank");
 }
 
 /**
@@ -71,7 +73,7 @@ export function hijackMaskedLinks() {
       .then((data) => {
         if (data.status === "ok" && data.msg) {
           showToast("Masked link resolved.");
-          targetUrl = data.msg;
+          targetUrl = normalizeResolvedUrl(data.msg, href);
           link.href = targetUrl; // Update link href for future clicks/hovers
           link.style.color = "#00ff00"; // Green success
         } else {
@@ -88,7 +90,9 @@ export function hijackMaskedLinks() {
         link.style.color = ""; // Reset color on network fail
       })
       .finally(() => {
-        dispatchResolvedLink(targetUrl);
+        void dispatchResolvedLink(targetUrl, { anchorEl: link }).catch(() => {
+          window.open(targetUrl, "_blank");
+        });
       });
   };
 

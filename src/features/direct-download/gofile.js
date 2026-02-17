@@ -5,25 +5,7 @@ import TIMINGS from "../../config/timings.js";
 import { SELECTORS } from "../../config/selectors.js";
 import { styleDownloadSuccess } from "../../utils/helpers.js";
 import { showToast } from "../../ui/components/toast.js";
-
-const DIRECT_DOWNLOAD_ATTENTION_KEY = "directDownloadAttentionEvent";
-
-async function publishAttention(message, code = "manual_required") {
-  const safeMessage = String(message || "Direct download needs manual action.");
-  try {
-    await saveConfigKeys({
-      [DIRECT_DOWNLOAD_ATTENTION_KEY]: {
-        ts: Date.now(),
-        host: "gofile.io",
-        code,
-        message: safeMessage,
-        href: location.href,
-      },
-    });
-  } catch {
-    // best-effort
-  }
-}
+import { publishDirectDownloadAttention } from "./attention.js";
 
 export async function processGofileDownload() {
   if (!config.threadSettings.directDownloadLinks || !config.processingDownload) return;
@@ -71,7 +53,7 @@ export async function processGofileDownload() {
       debugLog("GofileDownloader", "Host alert visible: file/folder unavailable");
       const msg = "File removed or blocked on host.";
       showToast(msg);
-      await publishAttention(msg, "host_blocked");
+      await publishDirectDownloadAttention("gofile.io", msg, "host_blocked");
       await saveConfigKeys({ processingDownload: false });
       return;
     }
@@ -86,14 +68,22 @@ export async function processGofileDownload() {
 
     if (itemElements.length === 0) {
       debugLog("GofileDownloader", "No downloadable items found");
-      await publishAttention("No downloadable item found. Download manually from host page.", "no_items");
+      await publishDirectDownloadAttention(
+        "gofile.io",
+        "No downloadable item found. Download manually from host page.",
+        "no_items",
+      );
       await saveConfigKeys({ processingDownload: false });
       return;
     }
 
     if (itemElements.length > 1) {
       debugLog("GofileDownloader", "Multiple files detected; auto-download skipped");
-      await publishAttention("Multiple files detected. Manual download required.", "multiple_items");
+      await publishDirectDownloadAttention(
+        "gofile.io",
+        "Multiple files detected. Manual download required.",
+        "multiple_items",
+      );
       await saveConfigKeys({ processingDownload: false });
       showToast("Multiple files detected; download manually for now.");
       return;
@@ -108,7 +98,7 @@ export async function processGofileDownload() {
       debugLog("GofileDownloader", "downloadContent is not available");
       const msg = "downloadContent not found; host page likely changed.";
       showToast(msg);
-      await publishAttention(msg, "missing_download_api");
+      await publishDirectDownloadAttention("gofile.io", msg, "missing_download_api");
       await saveConfigKeys({ processingDownload: false });
       return;
     }
@@ -139,7 +129,7 @@ export async function processGofileDownload() {
     debugLog("GofileDownloader", `Failed: ${err.message}`);
     const msg = `Downloader failed: ${err.message}`;
     showToast(msg);
-    await publishAttention(msg, "exception");
+    await publishDirectDownloadAttention("gofile.io", msg, "exception");
     await saveConfigKeys({ processingDownload: false });
   }
 }

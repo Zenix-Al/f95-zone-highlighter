@@ -20,6 +20,14 @@ export const SELECTORS = {
     ITEMS_LIST: "#filemanager_itemslist",
     ALERT: "#filemanager_alert",
   },
+  PIXELDRAIN: {
+    DOWNLOAD_BUTTON_CANDIDATES: "button.button_highlight, .button_highlight, a.button.button_highlight",
+  },
+  DATANODES: {
+    METHOD_FREE_BUTTON_ID: "method_free",
+    METHOD_FREE_BUTTON: "#method_free",
+    DOWNLOAD_BUTTON_PRIMARY: "button.bg-blue-600",
+  },
   MASKED_PAGE: {
     CONTINUE_BTN: ".host_link",
     LEAVING: ".leaving",
