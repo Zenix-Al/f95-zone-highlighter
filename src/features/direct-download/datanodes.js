@@ -2,10 +2,13 @@ import { config } from "../../config.js";
 import TIMINGS from "../../config/timings.js";
 import { SELECTORS } from "../../config/selectors.js";
 import { debugLog } from "../../core/logger.js";
-import { saveConfigKeys } from "../../services/settingsService.js";
 import { showToast } from "../../ui/components/toast.js";
-import { styleDownloadSuccess } from "../../utils/helpers.js";
 import { publishDirectDownloadAttention } from "./attention.js";
+import { isDirectDownloadHostEnabled } from "./hostPackages.js";
+import {
+  clearProcessingAndTryCloseTab,
+  clearProcessingDownloadFlag,
+} from "./hostFlowHelpers.js";
 
 const DATANODES_STAGE_KEY = "f95ue.datanodes.stage";
 const DATANODES_STAGE_AFTER_FREE = "after_free";
@@ -176,36 +179,18 @@ function pollForButton({
   return finish;
 }
 
-async function clearFlagAndTryClose() {
-  await saveConfigKeys({ processingDownload: false });
-  try {
-    window.close();
-  } catch (e) {
-    console.warn("Close blocked (normal if tab not script-opened)", e);
-    const msg = document.createElement("div");
-    msg.innerHTML = `
-      <div>
-        Download started! You can close this tab now.
-      </div>
-    `;
-    const el = msg.firstElementChild;
-    styleDownloadSuccess(el, { background: "#ec5555", color: "white" });
-    document.body.appendChild(el);
-  }
-}
-
 async function failFlow(message, code = "flow_failed") {
   debugLog("DatanodesDownloader", message, { level: "warn" });
   showToast(message);
   clearDatanodesStage();
   await publishDirectDownloadAttention("datanodes.to", message, code);
-  await saveConfigKeys({ processingDownload: false });
+  await clearProcessingDownloadFlag();
 }
 
 function finishSuccess() {
   clearDatanodesStage();
   setTimeout(() => {
-    void clearFlagAndTryClose();
+    void clearProcessingAndTryCloseTab();
   }, TIMINGS.DATANODES_AUTO_CLOSE);
 }
 
@@ -285,7 +270,12 @@ function startMethodFreePhase() {
 }
 
 export function processDatanodesDownload() {
-  if (!config.threadSettings.directDownloadLinks || !config.processingDownload) return;
+  if (
+    !config.threadSettings.directDownloadLinks ||
+    !config.processingDownload ||
+    !isDirectDownloadHostEnabled(location.hostname)
+  )
+    return;
 
   if (readDatanodesStage() === DATANODES_STAGE_AFTER_FREE) {
     debugLog("DatanodesDownloader", "Resuming after free submit.");

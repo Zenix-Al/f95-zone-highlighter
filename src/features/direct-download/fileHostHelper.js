@@ -2,6 +2,7 @@ import { config, downloadHostConfigs } from "../../config";
 import { processGofileDownload } from "./gofile.js";
 import { processPixeldrainDownload } from "./pixeldrain.js";
 import { processDatanodesDownload } from "./datanodes.js";
+import { isDirectDownloadHostEnabled } from "./hostPackages.js";
 
 const hostHandlers = {
   "buzzheavier.com": handleBuzzshare,
@@ -15,6 +16,7 @@ const hostHandlers = {
 // single site helper should be used instead to avoid bloating this file
 export function handleDownload(host) {
   if (config.threadSettings.directDownloadLinks === false) return;
+  if (!isDirectDownloadHostEnabled(host)) return;
 
   const handler = hostHandlers[host];
   if (!handler) return;

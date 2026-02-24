@@ -27,8 +27,9 @@ export function enableImageRepair() {
   stateManager.set("isImgRetryInjected", true);
 
   // Create a new queue instance for this feature
+  // Small delay between starting each image check to avoid burst load.
   imageQueue = createTaskQueue({
-    delay: TIMINGS.IMAGE_REPAIR_QUEUE_DELAY, // A small delay between starting each image check
+    delay: TIMINGS.IMAGE_REPAIR_QUEUE_DELAY,
     name: "ImageRepairQueue",
   });
 

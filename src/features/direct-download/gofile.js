@@ -1,14 +1,22 @@
 ﻿import { config } from "../../config";
-import { saveConfigKeys } from "../../services/settingsService";
 import { debugLog } from "../../core/logger";
 import TIMINGS from "../../config/timings.js";
 import { SELECTORS } from "../../config/selectors.js";
-import { styleDownloadSuccess } from "../../utils/helpers.js";
 import { showToast } from "../../ui/components/toast.js";
 import { publishDirectDownloadAttention } from "./attention.js";
+import { isDirectDownloadHostEnabled } from "./hostPackages.js";
+import {
+  clearProcessingAndTryCloseTab,
+  clearProcessingDownloadFlag,
+} from "./hostFlowHelpers.js";
 
 export async function processGofileDownload() {
-  if (!config.threadSettings.directDownloadLinks || !config.processingDownload) return;
+  if (
+    !config.threadSettings.directDownloadLinks ||
+    !config.processingDownload ||
+    !isDirectDownloadHostEnabled(location.hostname)
+  )
+    return;
 
   const AUTO_CLOSE_DELAY = TIMINGS.GOFILE_AUTO_CLOSE;
 
@@ -54,7 +62,7 @@ export async function processGofileDownload() {
       const msg = "File removed or blocked on host.";
       showToast(msg);
       await publishDirectDownloadAttention("gofile.io", msg, "host_blocked");
-      await saveConfigKeys({ processingDownload: false });
+      await clearProcessingDownloadFlag();
       return;
     }
 
@@ -73,7 +81,7 @@ export async function processGofileDownload() {
         "No downloadable item found. Download manually from host page.",
         "no_items",
       );
-      await saveConfigKeys({ processingDownload: false });
+      await clearProcessingDownloadFlag();
       return;
     }
 
@@ -84,7 +92,7 @@ export async function processGofileDownload() {
         "Multiple files detected. Manual download required.",
         "multiple_items",
       );
-      await saveConfigKeys({ processingDownload: false });
+      await clearProcessingDownloadFlag();
       showToast("Multiple files detected; download manually for now.");
       return;
     }
@@ -99,7 +107,7 @@ export async function processGofileDownload() {
       const msg = "downloadContent not found; host page likely changed.";
       showToast(msg);
       await publishDirectDownloadAttention("gofile.io", msg, "missing_download_api");
-      await saveConfigKeys({ processingDownload: false });
+      await clearProcessingDownloadFlag();
       return;
     }
 
@@ -107,29 +115,14 @@ export async function processGofileDownload() {
     unsafeWindow.downloadContent(contentId);
 
     setTimeout(async () => {
-      await saveConfigKeys({ processingDownload: false });
       debugLog("GofileDownloader", "Download triggered; resetting processing flag");
-
-      try {
-        window.close();
-      } catch (e) {
-        console.warn("Close blocked (normal if tab not script-opened)", e);
-        const msg = document.createElement("div");
-        msg.innerHTML = `
-          <div>
-            Download started! You can close this tab now.
-          </div>
-        `;
-        const el = msg.firstElementChild;
-        styleDownloadSuccess(el, { background: "#ec5555", color: "white" });
-        document.body.appendChild(el);
-      }
+      await clearProcessingAndTryCloseTab();
     }, AUTO_CLOSE_DELAY);
   } catch (err) {
     debugLog("GofileDownloader", `Failed: ${err.message}`);
     const msg = `Downloader failed: ${err.message}`;
     showToast(msg);
     await publishDirectDownloadAttention("gofile.io", msg, "exception");
-    await saveConfigKeys({ processingDownload: false });
+    await clearProcessingDownloadFlag();
   }
 }

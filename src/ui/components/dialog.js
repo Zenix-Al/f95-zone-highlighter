@@ -1,4 +1,5 @@
 import stateManager from "../../config.js";
+import { renderSetting } from "../renderers/renderSetting.js";
 
 const ACTIVE_DIALOG_ID = "latest-config-dialog";
 
@@ -123,3 +124,74 @@ export function openTextPrompt({
   });
 }
 
+export function openSettingsDialog({
+  title = "Settings",
+  description = "",
+  metaMap = {},
+  closeLabel = "Close",
+} = {}) {
+  const shadowRoot = getShadowRoot();
+  if (!shadowRoot) return;
+
+  removeDialogIfExists();
+
+  const backdrop = document.createElement("div");
+  backdrop.id = ACTIVE_DIALOG_ID;
+  backdrop.className = "config-dialog-backdrop";
+
+  const panel = document.createElement("div");
+  panel.className = "config-dialog-panel";
+
+  const header = document.createElement("div");
+  header.className = "config-dialog-title";
+  header.textContent = title;
+
+  panel.appendChild(header);
+
+  if (description) {
+    const body = document.createElement("div");
+    body.className = "config-dialog-description";
+    body.textContent = description;
+    panel.appendChild(body);
+  }
+
+  const content = document.createElement("div");
+  content.className = "config-dialog-settings";
+  Object.entries(metaMap).forEach(([key, meta]) => {
+    content.appendChild(renderSetting(`dialog-${key}`, meta));
+  });
+  panel.appendChild(content);
+
+  const actions = document.createElement("div");
+  actions.className = "config-dialog-actions";
+  const closeBtn = document.createElement("button");
+  closeBtn.className = "modal-btn dialog-cancel";
+  closeBtn.type = "button";
+  closeBtn.textContent = closeLabel;
+  actions.appendChild(closeBtn);
+  panel.appendChild(actions);
+
+  backdrop.appendChild(panel);
+  shadowRoot.appendChild(backdrop);
+
+  let done = false;
+  const close = () => {
+    if (done) return;
+    done = true;
+    document.removeEventListener("keydown", keydownHandler, true);
+    backdrop.remove();
+  };
+
+  const keydownHandler = (e) => {
+    if (e.key === "Escape") {
+      e.preventDefault();
+      close();
+    }
+  };
+
+  closeBtn.addEventListener("click", close);
+  backdrop.addEventListener("click", (e) => {
+    if (e.target === backdrop) close();
+  });
+  document.addEventListener("keydown", keydownHandler, true);
+}

@@ -1,8 +1,22 @@
 # Changelog
 
+## [v4.8.20 - Settings UX + Build Pipeline Cleanup]
+
+### Major Changes & Improvements
+
+- Refactored settings metadata creation with shared factories to reduce repeated toggle boilerplate.
+- Consolidated object-path helpers into `src/utils/objectPath.js` and reused it across state/features/UI renderers.
+- Refactored `build.js` into a shared target pipeline (regular + uglified always built), with a wired `header.txt` template and centralized post-processing.
+
+### Bug Fixes & Minor Tweaks
+
+- Reordered Thread settings so masked-link and direct-download controls are grouped near their settings buttons.
+- Moved `Direct Download Links` toggle into the Direct Download settings dialog and removed unsupported/placeholder host options.
+- Fixed Excluded tag pill text spacing to match Preferred tag chip alignment.
+- Restored release debug-log stripping behavior for GreasyFork release builds.
+
 ## [v4.8.0 - Direct Download + Wide Latest Fixes]
 
-- Turned `debug` logging off by default.
 - Fixed a bug where Wide Latest could still appear capped around 14xx width.
 - Improved Masked Link Skipper and Direct Download so they hand off links more reliably.
 - Added more Direct Download host support.

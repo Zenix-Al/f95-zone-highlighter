@@ -1,19 +1,31 @@
 # TODO
 
-## Completed (v4.7.1)
+## LOC / DRY opportunities (post `--release` review)
 
-- [x] Feature-scoped CSS with a style registry and per-feature style lifecycle.
-- [x] Runtime state key drift fixed and unknown-path guarding added in `StateManager`.
-- [x] Color CSS variable naming normalized and centralized mapping added.
-- [x] Typed setting coercion/validation added at input and persistence boundaries.
-- [x] Latest overlay apply pipeline moved to frame-budgeted chunking for large tile sets.
-- [x] Mutation observer pre-filtering added to reduce unnecessary callback work.
-- [x] Global teardown path added for listeners/observers/resources/styles on navigation.
-- [x] Blocking `prompt`/`confirm`/`alert` usage removed from app flows.
-- [x] Dead/dormant modules removed.
-- [x] Focused regression tests added and wired to `npm run test`.
+- [x] DRY `build.js` dual esbuild runs into one reusable `buildTarget()` + shared base config.
+  Files: `build.js`
+  Why: The non-minified and uglified builds duplicate most config and post-write logic.
 
-## Next
+- [x] Remove or wire `HEADER_TEMPLATE_PATH`; currently declared but unused.
+  Files: `build.js`, `header.txt`
+  Why: Dead constant adds noise; using a real template also reduces hardcoded metadata LOC.
 
-- Add dedicated perf metrics sampling for overlay batch duration and mutation callback cost.
-- Add E2E browser checks for feature toggling across SPA-like page transitions.
+- [x] Use a small target matrix (`[{ minify, tmpOutfile, finalOutfile, header }]`) and `Promise.all`.
+  Files: `build.js`
+  Why: Replaces repeated promise chains and centralizes output behavior.
+
+- [x] Consolidate repeated object-path helpers (`getByPath`/`setByPath`) into one shared utility.
+  Files: `src/core/StateManager.js`, `src/core/featureFactory.js`, `src/ui/renderers/renderSetting.js`
+  Why: Same logic appears multiple times in bundled output.
+
+- [x] Add a helper factory for direct-download package toggle metadata.
+  Files: `src/ui/settings/threadSettings.js`
+  Why: `buzzheavier/gofile/pixeldrain/datanodes` entries repeat identical effect/toast scaffolding.
+
+- [x] Add a generic setting-meta factory for common toggle patterns.
+  Files: `src/ui/settings/*.js`
+  Why: Many setting objects differ only by label/config/toast text; a factory can reduce boilerplate without changing behavior.
+
+- [x] Replace regex-based debug stripping with compile-time flagging (`define`) + dead-code elimination.
+  Files: `build.js`, `src/core/logger.js`
+  Why: Keeps release stripping deterministic and can reduce bundled LOC with less string-rewrite risk.

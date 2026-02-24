@@ -1,11 +1,8 @@
-import { createFeature } from "../../core/featureFactory.js";
+import { createStyledFeature } from "../../core/createStyledFeature.js";
 import { config, STATUS } from "../../config.js";
 import { debugLog } from "../../core/logger.js";
 import { isValidTag } from "../../utils/validators.js";
 import featureCss from "./style.css";
-import { acquireStyle, removeStyle } from "../../core/styleRegistry.js";
-
-const THREAD_OVERLAY_STYLE_ID = "feature-thread-overlay";
 
 function processThreadTag(tagElement) {
   const tagName = String(tagElement.innerHTML || "").trim();
@@ -34,8 +31,6 @@ function processThreadTag(tagElement) {
 }
 
 function enableThreadOverlay() {
-  acquireStyle(THREAD_OVERLAY_STYLE_ID, featureCss, "document");
-
   const tagList = document.querySelector(".js-tagList");
   if (!tagList) return;
 
@@ -44,8 +39,6 @@ function enableThreadOverlay() {
 }
 
 function disableThreadOverlay() {
-  removeStyle(THREAD_OVERLAY_STYLE_ID);
-
   const tagList = document.querySelector(".js-tagList");
   if (!tagList) return;
 
@@ -58,8 +51,9 @@ function disableThreadOverlay() {
   debugLog("Thread Overlay", "Disabled - tags returned to default style");
 }
 
-export const threadOverlayFeature = createFeature("Thread Overlay", {
+export const threadOverlayFeature = createStyledFeature("Thread Overlay", {
   configPath: "threadSettings.threadOverlayToggle",
+  styleCss: featureCss,
   enable: enableThreadOverlay,
   disable: disableThreadOverlay,
 });

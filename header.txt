@@ -1,0 +1,31 @@
+// ==UserScript==
+// @name         {{NAME}}
+// @version      {{VERSION}}
+// @description  All-in-one F95Zone beast: thread highlighting, custom tags & colors, wide layout, auto-refresh latest, masked-link bypass, image fix, notifs & more
+// @author       X Death
+// @contributor  Edexal (GM storage, change listener & summarize UI element)
+// @match        *://f95zone.to/*
+// @match        *://buzzheavier.com/*
+// @match        *://trashbytes.net/dl/*
+// @match        *://gofile.io/d/*
+// @match        *://pixeldrain.com/*
+// @match        *://datanodes.to/download
+// @icon         https://f95zone.to/data/avatars/l/1963/1963870.jpg
+// @grant        GM.setValue
+// @grant        GM.getValue
+// @grant        GM_openInTab
+// @grant        GM_addValueChangeListener
+// @grant        GM_removeValueChangeListener
+// @grant        GM_xmlhttpRequest
+// @grant        unsafeWindow
+// @run-at       document-idle
+// @license      GPL-3.0-or-later
+// @homepageURL  https://f95zone.to/threads/f95zone-latest.250836/
+// @supportURL   https://f95zone.to/threads/f95zone-latest.250836/
+// @source       https://github.com/Zenix-Al/f95-zone-highlighter
+// @updateURL    https://update.greasyfork.org/scripts/546518/F95Zone%20Latest%20Highlighter.user.js
+// @downloadURL  https://update.greasyfork.org/scripts/546518/F95Zone%20Latest%20Highlighter.user.js
+// ==/UserScript==
+// ------------------------------------------------------------
+{{BANNER}}
+// ------------------------------------------------------------

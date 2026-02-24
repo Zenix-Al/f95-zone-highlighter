@@ -1,4 +1,4 @@
-import { cache, colorState, downloadHostConfigs, timeoutMS } from "../config.js";
+import { cache, colorState, timeoutMS } from "../config.js";
 import TIMINGS from "../config/timings.js";
 import { openInNewTabHelper } from "../core/openInNewTabHelper.js";
 import resourceManager from "../core/resourceManager.js";
@@ -6,6 +6,10 @@ import { debugLog } from "../core/logger.js";
 import { saveConfigKeys } from "./settingsService.js";
 import { showToast } from "../ui/components/toast.js";
 import { injectFrame } from "../features/direct-download/iframe.js";
+import {
+  isDirectDownloadHostEnabled,
+  resolveDirectDownloadHost,
+} from "../features/direct-download/hostPackages.js";
 
 function cleanupPendingContext(url) {
   const existing = cache.get(url);
@@ -73,16 +77,12 @@ export function getDownloadLinkInfo(urlString) {
 
   const linkHost = url.hostname.toLowerCase();
   if (linkHost.includes("f95zone.to")) return null;
-
-  for (const host in downloadHostConfigs) {
-    if (!linkHost.includes(host)) continue;
-    const hostConfig = downloadHostConfigs[host];
-    if (hostConfig.clickType) {
-      return { type: hostConfig.clickType, host };
-    }
-  }
-
-  return null;
+  const resolvedHost = resolveDirectDownloadHost(linkHost);
+  if (!resolvedHost) return null;
+  if (!isDirectDownloadHostEnabled(linkHost)) return null;
+  const hostConfig = resolvedHost.config;
+  if (!hostConfig.clickType) return null;
+  return { type: hostConfig.clickType, host: resolvedHost.host };
 }
 
 export function isSupportedDownloadLink(urlString) {

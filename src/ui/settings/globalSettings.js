@@ -4,43 +4,97 @@ import { toggleCrossTabSync } from "../../services/syncService";
 import { updateButtonVisibility } from "../components/configButton";
 import { getAllFeatureStatuses } from "../../core/featureHealth.js";
 import { showToast } from "../components/toast";
+import { createEnabledDisabledToast, createToggleSetting } from "./metaFactory";
+
+function summarizeFeatureStatuses(statuses) {
+  const counts = { running: 0, disabled: 0, failing: 0, unknown: 0 };
+  for (const id in statuses) {
+    const status = statuses[id]?.status || "unknown";
+    if (counts[status] === undefined) counts.unknown++;
+    else counts[status]++;
+  }
+  return counts;
+}
+
+function formatFeatureHealthReport(statuses, counts) {
+  const lines = [
+    "Feature Health Diagnostic",
+    `Timestamp: ${new Date().toISOString()}`,
+    `Page: ${window.location.href}`,
+    `Summary: running=${counts.running}, disabled=${counts.disabled}, failing=${counts.failing}, unknown=${counts.unknown}`,
+    "",
+  ];
+
+  const entries = Object.entries(statuses).sort(([a], [b]) => a.localeCompare(b));
+  if (entries.length === 0) {
+    lines.push("No feature status entries found.");
+    return lines.join("\n");
+  }
+
+  for (const [id, statusObj] of entries) {
+    const status = statusObj?.status || "unknown";
+    const details = statusObj?.details ? ` - ${statusObj.details}` : "";
+    lines.push(`${id}: ${status}${details}`);
+  }
+  return lines.join("\n");
+}
+
+async function copyTextToClipboard(text) {
+  if (!text) return false;
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch {}
+
+  try {
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.setAttribute("readonly", "true");
+    textarea.style.position = "fixed";
+    textarea.style.top = "0";
+    textarea.style.left = "-9999px";
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+    const copied = document.execCommand("copy");
+    textarea.remove();
+    return copied;
+  } catch {
+    return false;
+  }
+}
 
 export const globalSettingsMeta = {
-  configVisibility: {
-    type: "toggle",
+  configVisibility: createToggleSetting({
     text: "Show configuration button",
     tooltip: "Show or hide the configuration button on the page",
     config: "globalSettings.configVisibility",
-    effects: {
-      custom: updateButtonVisibility,
-      toast: (v) => `Configuration menu ${v ? "shown" : "hidden"}`,
-    },
-  },
-  noticeDismissal: {
-    type: "toggle",
+    custom: updateButtonVisibility,
+    toast: createEnabledDisabledToast("Configuration menu", {
+      enabled: "shown",
+      disabled: "hidden",
+    }),
+  }),
+  noticeDismissal: createToggleSetting({
     text: "Enable notification dismissal",
     tooltip: "Allow closing notifications by clicking a close button",
     config: "globalSettings.closeNotifOnClick",
-    effects: {
-      custom: () => {
-        toggleNoticeDismissal();
-      },
-      toast: (v) => `Notification dismissal ${v ? "enabled" : "disabled"}`,
+    custom: () => {
+      toggleNoticeDismissal();
     },
-  },
-  enableCrossTabSync: {
-    type: "toggle",
+    toast: createEnabledDisabledToast("Notification dismissal"),
+  }),
+  enableCrossTabSync: createToggleSetting({
     text: "Sync settings across tabs",
-    tooltip:
-      "Automatically apply changes made in other tabs(requires to refresh other tabs) experimental",
+    tooltip: "Automatically apply changes made in other tabs(requires to refresh other tabs) experimental",
     config: "globalSettings.enableCrossTabSync",
-    effects: {
-      custom: () => {
-        toggleCrossTabSync(config.globalSettings.enableCrossTabSync);
-      },
-      toast: (v) => `(experimental)Cross-tab settings sync ${v ? "enabled" : "disabled"}`,
+    custom: () => {
+      toggleCrossTabSync(config.globalSettings.enableCrossTabSync);
     },
-  },
+    toast: createEnabledDisabledToast("(experimental)Cross-tab settings sync"),
+  }),
   featureHealth: {
     type: "button",
     text: "Feature health",
@@ -48,16 +102,11 @@ export const globalSettingsMeta = {
     tooltip: "Run a diagnostic that reports feature running/disabled/failing states",
     onClick: () => {
       const statuses = getAllFeatureStatuses();
-      const counts = { running: 0, disabled: 0, failing: 0, unknown: 0 };
-
-      for (const id in statuses) {
-        const s = statuses[id].status || "unknown";
-        if (counts[s] === undefined) counts.unknown++;
-        else counts[s]++;
-      }
+      const counts = summarizeFeatureStatuses(statuses);
+      const reportText = formatFeatureHealthReport(statuses, counts);
 
       showToast(
-        `Feature health - running: ${counts.running}, disabled: ${counts.disabled}, failing: ${counts.failing}`,
+        `Feature health - running: ${counts.running}, disabled: ${counts.disabled}, failing: ${counts.failing}, unknown: ${counts.unknown}`,
       );
 
       try {
@@ -79,6 +128,24 @@ export const globalSettingsMeta = {
           title.className = "feature-health-title";
           title.textContent = "Diagnostic";
 
+          const actions = document.createElement("div");
+          actions.className = "feature-health-actions";
+
+          const copyBtn = document.createElement("button");
+          copyBtn.className = "feature-health-close";
+          copyBtn.type = "button";
+          copyBtn.textContent = "Copy";
+          copyBtn.title = "Copy diagnostic as plain text";
+          copyBtn.addEventListener("click", async () => {
+            const payload = box.dataset.copyPayload || "";
+            if (!payload) {
+              showToast("No diagnostic data to copy.");
+              return;
+            }
+            const copied = await copyTextToClipboard(payload);
+            showToast(copied ? "Feature health copied." : "Copy failed.");
+          });
+
           const closeBtn = document.createElement("button");
           closeBtn.className = "feature-health-close";
           closeBtn.type = "button";
@@ -88,8 +155,10 @@ export const globalSettingsMeta = {
             box.style.display = "none";
           });
 
+          actions.appendChild(copyBtn);
+          actions.appendChild(closeBtn);
           header.appendChild(title);
-          header.appendChild(closeBtn);
+          header.appendChild(actions);
           box.appendChild(header);
 
           const content = document.createElement("div");
@@ -101,13 +170,14 @@ export const globalSettingsMeta = {
 
         const content = box.querySelector(".feature-health-content");
         content.innerHTML = "";
-        for (const id in statuses) {
-          const s = statuses[id];
+        const entries = Object.entries(statuses).sort(([a], [b]) => a.localeCompare(b));
+        for (const [id, s] of entries) {
           const line = document.createElement("div");
           line.className = "feature-health-line";
           line.textContent = `${id}: ${s.status}${s.details ? " - " + s.details : ""}`;
           content.appendChild(line);
         }
+        box.dataset.copyPayload = reportText;
         box.style.display = "block";
       } catch (err) {
         console.error("Feature health UI failed", err);

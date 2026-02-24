@@ -1,7 +1,5 @@
-import { debug } from "../config";
-
 export function debugLog(feature, msg, { data = null, level = "log" } = {}) {
-  if (!debug) return;
+  if (!__F95UE_DEBUG__) return;
 
   const logMethod = console[level] || console.log;
 

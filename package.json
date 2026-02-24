@@ -4,6 +4,7 @@
   "main": "latest-highlighter.user.js",
   "scripts": {
     "build": "node build.js",
+    "build:release": "node build.js --release",
     "lint": "eslint \"src/**\" --ext .js",
     "lint:fix": "eslint \"src/**\" --ext .js --fix",
     "test": "node tests/run.cjs"

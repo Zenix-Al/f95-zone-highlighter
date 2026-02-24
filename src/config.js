@@ -1,8 +1,6 @@
 import createStateManager from "./core/StateManager.js";
 import TIMINGS from "./config/timings.js";
 
-export const debug = false;
-
 export const validVersions = ["full", "final"];
 
 export const defaultColors = {
@@ -31,6 +29,18 @@ export const defaultOverlaySettings = {
   overlayText: true,
 };
 
+export const defaultDirectDownloadPackages = {
+  buzzheavier: true,
+  gofile: true,
+  pixeldrain: true,
+  datanodes: true,
+  workupload: true,
+  qiwi: true,
+  krakenfiles: true,
+  mega: true,
+  mediafire: true,
+};
+
 export const defaultThreadSetting = {
   neutral: true,
   preferred: true,
@@ -43,6 +53,7 @@ export const defaultThreadSetting = {
   collapseSignature: false,
   threadOverlayToggle: true,
   directDownloadLinks: true,
+  directDownloadPackages: { ...defaultDirectDownloadPackages },
 };
 
 export const defaultLatestSettings = {
@@ -97,10 +108,12 @@ export let config = {
 
 // This object holds the script's temporary, in-memory state.
 // It resets on every page load.
+// tagsUpdateStatus values: "IDLE", "UPDATING", "COMPLETE".
+// latestOverlayStatus values: "IDLE", "INITIALIZING", "ACTIVE", "TEARING_DOWN".
 const runtimeState = {
   shadowRoot: null,
   modalInjected: false,
-  tagsUpdateStatus: "IDLE", // "IDLE", "UPDATING", "COMPLETE"
+  tagsUpdateStatus: "IDLE",
   globalSettingsRendered: false,
   colorRendered: false,
   overlayRendered: false,
@@ -120,7 +133,7 @@ const runtimeState = {
   isMsgEventHandlerApplied: false,
   isNoticeDismissalEnabled: false,
   isRecaptchaFrame: false,
-  latestOverlayStatus: "IDLE", // "IDLE", "INITIALIZING", "ACTIVE", "TEARING_DOWN"
+  latestOverlayStatus: "IDLE",
   processingDownload: false,
 };
 
@@ -145,45 +158,59 @@ export const crossTabKeys = {
   latestSettings: true,
 };
 
+// clickType controls thread-click route.
+// pageHandler selects host page automation in fileHostHelper.
 export const downloadHostConfigs = {
   "buzzheavier.com": {
-    clickType: "iframe", // What to do when clicked on f95
-    pageHandler: "buzzheavier.com", // The handler key in fileHostHelper
+    packageKey: "buzzheavier",
+    clickType: "iframe",
+    pageHandler: "buzzheavier.com",
     handlerConfig: {
-      // Config for the page handler
       btn: 'a[hx-get*="/download"]',
       directDownloadLink: /https:\/\/trashbytes\.net\/dl\/[\w-]+(?:\?.+)?/,
     },
   },
   "gofile.io": {
+    packageKey: "gofile",
     clickType: "normal",
     pageHandler: "gofile.io",
   },
+  "api.gofile.com": {
+    packageKey: "gofile",
+    clickType: "normal",
+  },
   "pixeldrain.com": {
+    packageKey: "pixeldrain",
     clickType: "normal",
     pageHandler: "pixeldrain.com",
   },
   "datanodes.to": {
+    packageKey: "datanodes",
     clickType: "normal",
     pageHandler: "datanodes.to",
   },
   "workupload.com": {
+    packageKey: "workupload",
     clickType: "normal",
   },
   "qiwi.gg": {
+    packageKey: "qiwi",
     clickType: "normal",
   },
   "krakenfiles.com": {
+    packageKey: "krakenfiles",
     clickType: "normal",
   },
   "mega.nz": {
+    packageKey: "mega",
     clickType: "normal",
   },
   "mediafire.com": {
+    packageKey: "mediafire",
     clickType: "normal",
   },
   "trashbytes.net": {
-    // This host is not clicked on, it's a destination.
+    packageKey: "buzzheavier",
     pageType: "auto-retry",
     pathStartsWith: "/dl/",
   },
@@ -196,6 +223,7 @@ export const colorState = {
   FAILED: { color: "#F44336" },
 };
 export const timeoutMS = TIMINGS.DOWNLOAD_TIMEOUT;
+// Contains jokes plus practical usage hints.
 export const helpMessages = [
   "type /help if you're lost, or just moan really loud",
   "pro tip: don't nut before reading this",
@@ -218,7 +246,6 @@ export const helpMessages = [
   "you need more futa in your life",
   "if you can read this, you're not horny enough",
   "stay hydrated, stay horny",
-  //actual helpful one
   "hover over options text to see detailed settings",
   "overlay colors can be customized in the color settings section",
   "direct download links are available in thread view for supported hosts",

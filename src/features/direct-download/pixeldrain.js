@@ -2,10 +2,13 @@ import { config } from "../../config.js";
 import TIMINGS from "../../config/timings.js";
 import { SELECTORS } from "../../config/selectors.js";
 import { debugLog } from "../../core/logger.js";
-import { saveConfigKeys } from "../../services/settingsService.js";
 import { showToast } from "../../ui/components/toast.js";
-import { styleDownloadSuccess } from "../../utils/helpers.js";
 import { publishDirectDownloadAttention } from "./attention.js";
+import { isDirectDownloadHostEnabled } from "./hostPackages.js";
+import {
+  clearProcessingAndTryCloseTab,
+  clearProcessingDownloadFlag,
+} from "./hostFlowHelpers.js";
 
 function isLikelyVisible(element) {
   if (!element || !element.isConnected) return false;
@@ -67,26 +70,13 @@ function waitForDownloadButton(timeout = TIMINGS.PIXELDRAIN_BUTTON_WAIT_TIMEOUT)
   });
 }
 
-async function clearFlagAndTryClose() {
-  await saveConfigKeys({ processingDownload: false });
-  try {
-    window.close();
-  } catch (e) {
-    console.warn("Close blocked (normal if tab not script-opened)", e);
-    const msg = document.createElement("div");
-    msg.innerHTML = `
-      <div>
-        Download started! You can close this tab now.
-      </div>
-    `;
-    const el = msg.firstElementChild;
-    styleDownloadSuccess(el, { background: "#ec5555", color: "white" });
-    document.body.appendChild(el);
-  }
-}
-
 export async function processPixeldrainDownload() {
-  if (!config.threadSettings.directDownloadLinks || !config.processingDownload) return;
+  if (
+    !config.threadSettings.directDownloadLinks ||
+    !config.processingDownload ||
+    !isDirectDownloadHostEnabled(location.hostname)
+  )
+    return;
 
   try {
     debugLog("PixeldrainDownloader", "Waiting for download button...");
@@ -97,14 +87,13 @@ export async function processPixeldrainDownload() {
     showToast("Pixeldrain download triggered.");
 
     setTimeout(() => {
-      void clearFlagAndTryClose();
+      void clearProcessingAndTryCloseTab();
     }, TIMINGS.PIXELDRAIN_AUTO_CLOSE);
   } catch (err) {
     const message = `Pixeldrain automation failed: ${err?.message || String(err)}`;
     debugLog("PixeldrainDownloader", message, { level: "warn" });
     showToast(message);
     await publishDirectDownloadAttention("pixeldrain.com", message, "button_not_found");
-    await saveConfigKeys({ processingDownload: false });
+    await clearProcessingDownloadFlag();
   }
 }
-

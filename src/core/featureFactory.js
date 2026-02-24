@@ -2,8 +2,7 @@ import { debugLog } from "./logger.js";
 import { config } from "../config.js";
 import { setFeatureStatus } from "./featureHealth.js";
 import { showToast } from "../ui/components/toast.js";
-
-const getByPath = (obj, path) => path.split(".").reduce((acc, part) => acc && acc[part], obj);
+import { getByPath } from "../utils/objectPath.js";
 
 /**
  * Creates a standardized feature module interface. This factory is designed to

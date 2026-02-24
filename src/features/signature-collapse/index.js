@@ -1,12 +1,10 @@
-import { createFeature } from "../../core/featureFactory.js";
+import { createStyledFeature } from "../../core/createStyledFeature.js";
 import { addListener, removeListener } from "../../core/listenerRegistry.js";
 import { debugLog } from "../../core/logger.js";
 import { SELECTORS } from "../../config/selectors.js";
 import featureCss from "./style.css";
-import { acquireStyle, removeStyle } from "../../core/styleRegistry.js";
 
 const DELEGATED_LISTENER_ID = "signature-collapse-delegated-click";
-const SIGNATURE_COLLAPSE_STYLE_ID = "feature-signature-collapse";
 
 function delegatedSignatureClickHandler(e) {
   const btn = e.target.closest(SELECTORS.SIGNATURE.TOGGLE_SELECTOR);
@@ -20,7 +18,6 @@ function delegatedSignatureClickHandler(e) {
 }
 
 function enableSignatureCollapse() {
-  acquireStyle(SIGNATURE_COLLAPSE_STYLE_ID, featureCss, "document");
   document.documentElement.classList.add("latest-signature-collapsed");
   addListener(DELEGATED_LISTENER_ID, document.body, "click", delegatedSignatureClickHandler);
 
@@ -41,7 +38,6 @@ function enableSignatureCollapse() {
 function disableSignatureCollapse() {
   document.documentElement.classList.remove("latest-signature-collapsed");
   removeListener(DELEGATED_LISTENER_ID);
-  removeStyle(SIGNATURE_COLLAPSE_STYLE_ID);
 
   document.querySelectorAll(SELECTORS.SIGNATURE.TOGGLE_SELECTOR).forEach((b) => b.remove());
   document.querySelectorAll(SELECTORS.SIGNATURE.ASIDE_SELECTOR).forEach((sig) => {
@@ -50,8 +46,9 @@ function disableSignatureCollapse() {
   });
 }
 
-export const signatureCollapseFeature = createFeature("Signature Collapse", {
+export const signatureCollapseFeature = createStyledFeature("Signature Collapse", {
   configPath: "threadSettings.collapseSignature",
+  styleCss: featureCss,
   enable: enableSignatureCollapse,
   disable: disableSignatureCollapse,
 });

@@ -1,6 +1,7 @@
 import {
   config,
   defaultColors,
+  defaultDirectDownloadPackages,
   defaultGlobalSettings,
   defaultLatestSettings,
   defaultOverlaySettings,
@@ -30,6 +31,25 @@ function sanitizeLatestSettings(value) {
   return merged;
 }
 
+function sanitizeThreadSettings(value) {
+  const merged = { ...defaultThreadSetting, ...(value || {}) };
+  const incomingPackages =
+    value &&
+    typeof value === "object" &&
+    value.directDownloadPackages &&
+    typeof value.directDownloadPackages === "object"
+      ? value.directDownloadPackages
+      : {};
+  merged.directDownloadPackages = {
+    ...defaultDirectDownloadPackages,
+    ...incomingPackages,
+  };
+  for (const key of Object.keys(defaultDirectDownloadPackages)) {
+    merged.directDownloadPackages[key] = Boolean(merged.directDownloadPackages[key]);
+  }
+  return merged;
+}
+
 function sanitizePersistedUpdate(key, value) {
   switch (key) {
     case "color":
@@ -39,7 +59,7 @@ function sanitizePersistedUpdate(key, value) {
     case "overlaySettings":
       return { ...defaultOverlaySettings, ...(value || {}) };
     case "threadSettings":
-      return { ...defaultThreadSetting, ...(value || {}) };
+      return sanitizeThreadSettings(value);
     case "globalSettings":
       return { ...defaultGlobalSettings, ...(value || {}) };
     case "metrics":
@@ -109,7 +129,7 @@ export async function loadData() {
 
     overlaySettings: mergeWithDefault(parsed.overlaySettings, defaultOverlaySettings),
 
-    threadSettings: mergeWithDefault(parsed.threadSettings, defaultThreadSetting),
+    threadSettings: sanitizeThreadSettings(parsed.threadSettings),
 
     latestSettings: mergeWithDefault(parsed.latestSettings, defaultLatestSettings),
     globalSettings: mergeWithDefault(parsed.globalSettings, defaultGlobalSettings),
