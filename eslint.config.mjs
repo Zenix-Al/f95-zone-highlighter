@@ -31,6 +31,7 @@ export default defineConfig([
       globals: {
         ...globals.browser,
         ...gmGlobals,
+        __F95UE_DEBUG__: "readonly",
       },
     },
     plugins: {

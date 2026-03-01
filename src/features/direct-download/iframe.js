@@ -2,12 +2,16 @@ import { debugLog } from "../../core/logger";
 import TIMINGS from "../../config/timings.js";
 
 export function injectFrame(url, options = {}) {
+  // Option defaults:
+  // - visible: true only for debugging
+  // - removeAfter: auto-remove to avoid leaking hidden iframes
+  // - onDownloadStart: callback when we infer host download UI is ready
   const {
-    visible = false, // set true for debugging
+    visible = false,
     sandbox = "allow-scripts allow-same-origin allow-downloads",
-    removeAfter = 30000, // ms, auto-remove to not leak memory
+    removeAfter = 30000,
     onLoad = null,
-    onDownloadStart = null, // optional callback when we detect download started
+    onDownloadStart = null,
   } = options;
 
   const frame = document.createElement("iframe");

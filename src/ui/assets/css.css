@@ -56,7 +56,7 @@
   top: 20px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 10000; /* above modal */
+  z-index: 12010; /* above config dialog backdrops */
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -178,6 +178,7 @@
 
 .excluded-tag-item span {
   margin-right: 6px;
+  margin-left: 6px;
 }
 
 .excluded-tag-remove {
@@ -371,6 +372,11 @@
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
+.feature-health-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
 .feature-health-close {
   background: #893839;
   color: #fff;
@@ -396,43 +402,78 @@
   padding: 2px 0;
 }
 .config-row {
-  display: flex;
-  align-items: center; /* vertically center everything */
-  gap: 12px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 130px;
+  align-items: center;
+  gap: 10px;
   margin: 8px 0;
   line-height: 1.4;
   user-select: none;
 }
 
-/* Fixed-width label column (all labels perfectly aligned) */
 .config-row label {
-  flex: 0 0 180px; /* adjust 180px to your longest label */
+  min-width: 0;
   text-align: left;
   font-weight: 500;
   cursor: pointer;
-  white-space: nowrap; /* prevent label wrap */
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: initial;
 }
 
-/* Checkbox stays small and on the right */
+.setting-tooltip-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  margin-left: 6px;
+  border: 1px solid #555;
+  border-radius: 50%;
+  background: #24262a;
+  color: #c5c7cb;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: help;
+  vertical-align: middle;
+}
+
+.setting-tooltip-badge:hover {
+  background: #893839;
+  border-color: #893839;
+  color: #fff;
+}
+
 .config-row input[type="checkbox"] {
-  flex-shrink: 0;
   width: 18px;
   height: 18px;
   margin: 0;
   cursor: pointer;
-  accent-color: #6e42d6; /* optional: nice purple accent */
+  accent-color: #c15858;
+  justify-self: center;
 }
 
-/* Inputs that should fill remaining space (text, color, etc.) */
 .config-row input:not([type="checkbox"]) {
-  flex: 1; /* Grow to fill available space */
-  min-width: 0; /* Allow the input to shrink smaller than its default minimum size */
+  width: 100%;
+  max-width: 130px;
+  min-width: 0;
+  justify-self: center;
+}
+
+.config-row input[type="color"] {
+  width: 44px;
+  max-width: 44px;
+  height: 28px;
+  padding: 2px;
+}
+
+.config-row .config-button {
+  justify-self: center;
 }
 
 .config-row:hover {
-  background: rgba(110, 66, 214, 0.05);
+  background: rgba(137, 56, 57, 0.08);
 }
 
 #tag-config-button {
@@ -647,6 +688,14 @@
   line-height: 1.5;
   color: #c5c7cb;
   margin-bottom: 10px;
+}
+
+.config-dialog-settings {
+  max-height: min(60vh, 460px);
+  overflow-y: auto;
+  padding-right: 4px;
+  max-width: 480px;
+  margin: 0 auto;
 }
 
 .config-dialog-input {

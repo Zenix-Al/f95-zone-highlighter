@@ -1,4 +1,5 @@
 import { debouncedProcessAllTilesReset } from "../../core/tasksRegistry";
+import { createEnabledDisabledToast, createToggleSetting } from "./metaFactory";
 
 // meta/overlaySettings.js
 export const overlaySettingsMeta = {
@@ -6,97 +7,60 @@ export const overlaySettingsMeta = {
     type: "header",
     text: "Overlay Visibility Settings",
   },
-  completed: {
-    type: "toggle",
+  completed: createToggleSetting({
     text: "Completed",
     tooltip: "Show overlay for completed threads",
     config: "overlaySettings.completed",
-    effects: {
-      custom: debouncedProcessAllTilesReset,
-      toast: (v) => `Completed ${v ? "enabled" : "disabled"}`,
-    },
-  },
-  onhold: {
-    type: "toggle",
+    custom: debouncedProcessAllTilesReset,
+    toast: createEnabledDisabledToast("Completed"),
+  }),
+  onhold: createToggleSetting({
     text: "On Hold",
     tooltip: "Show overlay for threads on hold",
     config: "overlaySettings.onhold",
-    effects: {
-      custom: debouncedProcessAllTilesReset,
-      toast: (v) => `On Hold ${v ? "enabled" : "disabled"}`,
-    },
-  },
-
-  abandoned: {
-    type: "toggle",
+    custom: debouncedProcessAllTilesReset,
+    toast: createEnabledDisabledToast("On Hold"),
+  }),
+  abandoned: createToggleSetting({
     text: "Abandoned",
     tooltip: "Show overlay for abandoned threads",
     config: "overlaySettings.abandoned",
-    effects: {
-      custom: debouncedProcessAllTilesReset,
-      toast: (v) => `Abandoned ${v ? "enabled" : "disabled"}`,
-    },
-  },
-
-  highVersion: {
-    type: "toggle",
+    custom: debouncedProcessAllTilesReset,
+    toast: createEnabledDisabledToast("Abandoned"),
+  }),
+  highVersion: createToggleSetting({
     text: "High Version tag",
     tooltip: "Show overlay for game threads with higher version than your set minimum",
     config: "overlaySettings.highVersion",
-    effects: {
-      custom: debouncedProcessAllTilesReset,
-      toast: (v) => `High Version ${v ? "enabled" : "disabled"}`,
-    },
-  },
-
-  invalidVersion: {
-    type: "toggle",
+    custom: debouncedProcessAllTilesReset,
+    toast: createEnabledDisabledToast("High Version"),
+  }),
+  invalidVersion: createToggleSetting({
     text: "Invalid Version tag",
     tooltip: "Show overlay for threads with invalid version format",
     config: "overlaySettings.invalidVersion",
-    effects: {
-      custom: debouncedProcessAllTilesReset,
-      toast: (v) => `Invalid Version ${v ? "enabled" : "disabled"}`,
-    },
-  },
-
-  preferred: {
-    type: "toggle",
+    custom: debouncedProcessAllTilesReset,
+    toast: createEnabledDisabledToast("Invalid Version"),
+  }),
+  preferred: createToggleSetting({
     text: "Preferred",
     tooltip: "Show overlay for threads you've marked as preferred",
     config: "overlaySettings.preferred",
-    effects: {
-      custom: debouncedProcessAllTilesReset,
-      toast: (v) => `Preferred ${v ? "enabled" : "disabled"}`,
-    },
-  },
-
-  excluded: {
-    type: "toggle",
+    custom: debouncedProcessAllTilesReset,
+    toast: createEnabledDisabledToast("Preferred"),
+  }),
+  excluded: createToggleSetting({
     text: "Excluded",
     tooltip: "Show overlay for threads you've marked as excluded",
     config: "overlaySettings.excluded",
-    effects: {
-      custom: debouncedProcessAllTilesReset,
-      toast: (v) => `Excluded ${v ? "enabled" : "disabled"}`,
-    },
-  },
-
-  overlayText: {
-    type: "toggle",
+    custom: debouncedProcessAllTilesReset,
+    toast: createEnabledDisabledToast("Excluded"),
+  }),
+  overlayText: createToggleSetting({
     text: "Text overlay on tiles",
     tooltip: "Display status text directly over the thread thumbnail",
     config: "overlaySettings.overlayText",
-    effects: {
-      custom: debouncedProcessAllTilesReset,
-      toast: (v) => `Overlay Text ${v ? "enabled" : "disabled"}`,
-    },
-  },
-};
-
-export const disabledOverlaySettingsMeta = {
-  _header_visibility: {
-    type: "header",
-    text: "Overlay Settings is Disabled",
-  },
+    custom: debouncedProcessAllTilesReset,
+    toast: createEnabledDisabledToast("Overlay Text"),
+  }),
 };

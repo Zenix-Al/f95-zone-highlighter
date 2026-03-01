@@ -1,12 +1,24 @@
-// Centralized timing constants used across the app
+// Centralized timing constants used across the app.
+// Values are milliseconds unless otherwise noted.
+// Notable:
+// - DATANODES_SECOND_CLICK_DELAY: free-tier cooldown before second click.
+// - SELECTOR_WAIT_TIMEOUT: longer wait for complex host pages.
+// - AUTO_RETRY_TIMEOUT: safety net for auto-retry flows.
 export const TIMINGS = {
-  TILE_POPULATE_CHECK_INTERVAL: 50, // ms between DOM checks
-  TILE_POPULATE_TIMEOUT: 1500, // max wait for tile content
-  TOAST_DISPLAY: 2000, // toast visibility
-  DOWNLOAD_TIMEOUT: 8000, // download attempt timeout
-  GOFILE_AUTO_CLOSE: 6000, // auto-close gofile tab delay
+  TILE_POPULATE_CHECK_INTERVAL: 50,
+  TILE_POPULATE_TIMEOUT: 1500,
+  TOAST_DISPLAY: 2000,
+  DOWNLOAD_TIMEOUT: 8000,
+  GOFILE_AUTO_CLOSE: 6000,
+  PIXELDRAIN_AUTO_CLOSE: 4000,
+  PIXELDRAIN_POLL_INTERVAL: 250,
+  PIXELDRAIN_BUTTON_WAIT_TIMEOUT: 20000,
+  DATANODES_AUTO_CLOSE: 4000,
+  DATANODES_POLL_INTERVAL: 250,
+  DATANODES_BUTTON_WAIT_TIMEOUT: 20000,
+  DATANODES_SECOND_CLICK_DELAY: 6500,
   IMAGE_RETRY_DELAY: 4000,
-  POLL_INTERVAL: 400, // general poll interval for host pages
+  POLL_INTERVAL: 400,
   GOFILE_POST_READY_WAIT: 600,
   RECAPTCHA_CLICK_INTERVAL: 500,
   LATEST_CONTROL_WEBNOTIF_DELAY: 400,
@@ -15,9 +27,9 @@ export const TIMINGS = {
   LATEST_OVERLAY_FRAME_BUDGET_MS: 6,
   LATEST_OVERLAY_MIN_CHUNK: 30,
   IMAGE_RETRY_TOAST_INTERVAL: 500,
-  SELECTOR_WAIT_TIMEOUT: 3000, // longer wait for complex host pages
+  SELECTOR_WAIT_TIMEOUT: 3000,
   IMAGE_RETRY_MAX_ATTEMPTS: 10,
-  AUTO_RETRY_TIMEOUT: 60000, // safety net for auto-retry flows
+  AUTO_RETRY_TIMEOUT: 60000,
 };
 
 export default TIMINGS;

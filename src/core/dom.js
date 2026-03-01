@@ -1,6 +1,10 @@
-import stateManager, { downloadHostConfigs } from "../config.js";
+import stateManager from "../config.js";
 import { debugLog } from "./logger.js";
 import TIMINGS from "../config/timings.js";
+import {
+  isDirectDownloadHostEnabled,
+  resolveDirectDownloadHost,
+} from "../features/direct-download/hostPackages.js";
 
 export function waitFor(
   conditionFn,
@@ -43,16 +47,17 @@ export function detectPage() {
   } else {
     const currentHost = location.hostname;
     const currentPath = location.pathname;
-
-    for (const host in downloadHostConfigs) {
-      if (currentHost.includes(host)) {
-        const config = downloadHostConfigs[host];
-        if (config.pageHandler) {
-          stateManager.set("isDownloadPage", config.pageHandler); // e.g., "gofile.io"
-        }
-        if (config.pageType === "auto-retry" && currentPath.startsWith(config.pathStartsWith)) {
-          stateManager.set("isDirectDownloadPage", true);
-        }
+    const resolvedHost = resolveDirectDownloadHost(currentHost);
+    if (resolvedHost && isDirectDownloadHostEnabled(currentHost)) {
+      const hostConfig = resolvedHost.config;
+      if (hostConfig.pageHandler) {
+        stateManager.set("isDownloadPage", hostConfig.pageHandler);
+      }
+      if (
+        hostConfig.pageType === "auto-retry" &&
+        currentPath.startsWith(hostConfig.pathStartsWith)
+      ) {
+        stateManager.set("isDirectDownloadPage", resolvedHost.host);
       }
     }
   }

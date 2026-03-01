@@ -1,4 +1,4 @@
-import stateManager, { config } from "../../config.js";
+import stateManager from "../../config.js";
 import {
   initTagSearchListeners,
   renderExcluded,
@@ -12,12 +12,7 @@ import { showToast } from "../components/toast";
 import { colorSettingsMeta } from "./colorSettings";
 import { globalSettingsMeta } from "./globalSettings";
 import { latestSettingsMeta } from "./latestSettings";
-import { disabledOverlaySettingsMeta, overlaySettingsMeta } from "./overlaySettings";
-import {
-  disabledThreadOverlayMeta,
-  threadOverlaySettingsMeta,
-  threadSettingsMeta,
-} from "./threadSettings";
+import { threadSettingsMeta } from "./threadSettings";
 import { showAllTags, updateSearch, updateTags } from "../../services/tagsService";
 import { checkTags } from "../../services/safetyService";
 
@@ -83,18 +78,8 @@ export function initModalUi() {
 
 export function updateLatestUI() {
   renderSettingsSection("latest-settings-container", latestSettingsMeta);
-  if (config.latestSettings.latestOverlayToggle) {
-    renderSettingsSection("overlay-settings-container", overlaySettingsMeta);
-  } else {
-    renderSettingsSection("overlay-settings-container", disabledOverlaySettingsMeta);
-  }
 }
 
 export function updateThreadUI() {
   renderSettingsSection("thread-settings-container", threadSettingsMeta);
-  if (config.threadSettings.threadOverlayToggle) {
-    renderSettingsSection("thread-overlay-settings-container", threadOverlaySettingsMeta);
-  } else {
-    renderSettingsSection("thread-overlay-settings-container", disabledThreadOverlayMeta);
-  }
 }

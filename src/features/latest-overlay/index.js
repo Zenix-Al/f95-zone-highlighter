@@ -1,4 +1,4 @@
-import { createFeature } from "../../core/featureFactory.js";
+import { createStyledFeature } from "../../core/createStyledFeature.js";
 import {
   enableLatestOverlay as enableLatestOverlayCore,
   disableLatestOverlay as disableLatestOverlayCore,
@@ -7,24 +7,20 @@ import {
   processTile,
 } from "./handler.js";
 import featureCss from "./style.css";
-import { acquireStyle, removeStyle } from "../../core/styleRegistry.js";
 
-const LATEST_OVERLAY_STYLE_ID = "feature-latest-overlay";
-
-export function enableLatestOverlay() {
-  acquireStyle(LATEST_OVERLAY_STYLE_ID, featureCss, "document");
+function runEnableLatestOverlay() {
   enableLatestOverlayCore();
 }
 
-export function disableLatestOverlay() {
+function runDisableLatestOverlay() {
   disableLatestOverlayCore();
-  removeStyle(LATEST_OVERLAY_STYLE_ID);
 }
 
-export const latestOverlayFeature = createFeature("Latest Overlay", {
+export const latestOverlayFeature = createStyledFeature("Latest Overlay", {
   configPath: "latestSettings.latestOverlayToggle",
-  enable: enableLatestOverlay,
-  disable: disableLatestOverlay,
+  styleCss: featureCss,
+  enable: runEnableLatestOverlay,
+  disable: runDisableLatestOverlay,
 });
 
 // Re-export helpers and lifecycle functions for other parts of the app

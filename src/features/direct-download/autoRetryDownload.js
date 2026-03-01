@@ -62,10 +62,11 @@ function autoRetryDownload(maxRetries = 99) {
     sessionStorage.setItem(storageKey, retries);
     debugLog("autoRetryDownload", `Attempt ${retries}/${maxRetries} — ${originalUrl}`);
 
+    // Keep HEAD probe bounded so failed hosts do not hang the flow.
     GM_xmlhttpRequest({
       method: "HEAD",
       url: originalUrl,
-      timeout: TIMINGS.DOWNLOAD_TIMEOUT, // don't hang forever
+      timeout: TIMINGS.DOWNLOAD_TIMEOUT,
       onload: (response) => {
         const status = response.status;
         debugLog("autoRetryDownload", `[HEAD] Status: ${status}`);

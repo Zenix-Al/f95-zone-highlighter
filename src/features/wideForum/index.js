@@ -1,13 +1,9 @@
-import { createFeature } from "../../core/featureFactory.js";
+import { createStyledFeature } from "../../core/createStyledFeature.js";
 import { threadPageScroll } from "../../utils/headerScrollHandler.js";
 import { SELECTORS } from "../../config/selectors.js";
 import featureCss from "./style.css";
-import { acquireStyle, removeStyle } from "../../core/styleRegistry.js";
-
-const WIDE_FORUM_STYLE_ID = "feature-wide-forum";
 
 function enableWideForum() {
-  acquireStyle(WIDE_FORUM_STYLE_ID, featureCss, "document");
   const root = document.documentElement;
   document
     .querySelectorAll(SELECTORS.WIDE_FORUM.P_BODY_INNER)
@@ -23,11 +19,11 @@ function disableWideForum() {
     .forEach((el) => el.classList.remove("no-max-width"));
   root.classList.remove("thread-scroll-hide");
   threadPageScroll.disable();
-  removeStyle(WIDE_FORUM_STYLE_ID);
 }
 
-export const wideForumFeature = createFeature("Wide Forum", {
+export const wideForumFeature = createStyledFeature("Wide Forum", {
   configPath: "threadSettings.isWide",
+  styleCss: featureCss,
   enable: enableWideForum,
   disable: disableWideForum,
 });

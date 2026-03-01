@@ -1,150 +1,181 @@
-import stateManager from "../../config.js";
+import stateManager, { config } from "../../config.js";
 import { imageRepairFeature } from "../../features/image-repair/index.js";
-import { updateThreadUI } from ".";
 import { checkOverlaySettings } from "../../services/safetyService";
 import { signatureCollapseFeature } from "../../features/signature-collapse/index.js";
 import { directDownloadFeature } from "../../features/direct-download/index.js";
 import { toggleHijackMaskedLink } from "../../features/masked-link-skipper/index.js";
 import { debouncedProcessThreadTags } from "../../core/tasksRegistry";
 import { wideForumFeature } from "../../features/wideForum/index.js";
+import { openSettingsDialog } from "../components/dialog.js";
+import { createEnabledDisabledToast, createToggleSetting } from "./metaFactory";
 
 const effectOverlayToggle = () => {
-  updateThreadUI();
   checkOverlaySettings();
   if (!stateManager.get("isThread")) return;
   debouncedProcessThreadTags();
 };
-// meta/threadSettings.js
+
+const threadOverlayToggleSetting = createToggleSetting({
+  text: "Enable overlay",
+  tooltip: "Show thread status overlay on thread pages",
+  config: "threadSettings.threadOverlayToggle",
+  custom: effectOverlayToggle,
+  toast: createEnabledDisabledToast("Thread overlay"),
+});
+
+function syncDirectDownloadFeatureIfEnabled() {
+  if (config.threadSettings.directDownloadLinks) {
+    directDownloadFeature.toggle(directDownloadFeature.isEnabled());
+  }
+}
+
+function createDirectDownloadPackageSetting({ packageKey, text, tooltip, toastLabel }) {
+  return createToggleSetting({
+    text,
+    tooltip,
+    config: `threadSettings.directDownloadPackages.${packageKey}`,
+    custom: syncDirectDownloadFeatureIfEnabled,
+    toast: createEnabledDisabledToast(toastLabel),
+  });
+}
+
+function openThreadOverlaySettingsDialog() {
+  openSettingsDialog({
+    title: "Thread Overlay Settings",
+    description: "Configure thread overlay visibility and styles.",
+    metaMap: threadOverlaySettingsMeta,
+  });
+}
+
+function openDirectDownloadSettingsDialog() {
+  openSettingsDialog({
+    title: "Direct Download Settings",
+    description:
+      "Configure direct download toggle and supported host packages. Some toggles control grouped domains needed for one flow.",
+    metaMap: directDownloadSettingsMeta,
+  });
+}
+
 export const threadSettingsMeta = {
-  skipMaskedLink: {
-    type: "toggle",
+  isWide: createToggleSetting({
+    text: "Wide thread (full width)",
+    tooltip: "Remove max-width restriction - makes thread use full screen width",
+    config: "threadSettings.isWide",
+    custom: () => wideForumFeature.toggle(wideForumFeature.isEnabled()),
+    toast: createEnabledDisabledToast("Wide Thread"),
+  }),
+  imgRetry: createToggleSetting({
+    text: "Image Retry",
+    tooltip: "Enable image retry for broken images in threads",
+    config: "threadSettings.imgRetry",
+    custom: () => imageRepairFeature.toggle(imageRepairFeature.isEnabled()),
+    toast: createEnabledDisabledToast("Image Retry"),
+  }),
+  collapseSignature: createToggleSetting({
+    text: "Collapsable Signatures",
+    tooltip: "Make user signatures collapsable in threads",
+    config: "threadSettings.collapseSignature",
+    custom: () => signatureCollapseFeature.toggle(signatureCollapseFeature.isEnabled()),
+    toast: createEnabledDisabledToast("Collapsable Signatures"),
+  }),
+  skipMaskedLink: createToggleSetting({
     text: "Skip masked link page",
     tooltip:
       "Automatically bypass the masked link intermediary page when accessing masked links \n support with direct download features",
     config: "threadSettings.skipMaskedLink",
+    custom: () => toggleHijackMaskedLink(),
+    toast: createEnabledDisabledToast("Skip Masked Link"),
+  }),
+  directDownloadSettings: {
+    type: "button",
+    text: "Direct download settings",
+    buttonText: "Open",
+    tooltip: "Open per-host direct download package configuration",
     effects: {
-      custom: () => toggleHijackMaskedLink(),
-      toast: (v) => `Skip Masked Link ${v ? "enabled" : "disabled"}`,
+      custom: openDirectDownloadSettingsDialog,
     },
   },
-  directDownloadLinks: {
-    type: "toggle",
-    text: "Direct Download Links",
-    tooltip:
-      "Enable direct download links for supported file hosts \n works independently outside of masked links",
-    config: "threadSettings.directDownloadLinks",
+  threadOverlaySettings: {
+    type: "button",
+    text: "Thread overlay settings",
+    buttonText: "Open",
+    tooltip: "Open thread-page overlay configuration",
     effects: {
-      custom: () => directDownloadFeature.toggle(directDownloadFeature.isEnabled()),
-      toast: (v) => `Direct Download Links ${v ? "enabled" : "disabled"}`,
-    },
-  },
-  isWide: {
-    type: "toggle",
-    text: "Wide thread (full width)",
-    tooltip: "Remove max-width restriction — makes thread use full screen width",
-    config: "threadSettings.isWide",
-    effects: {
-      custom: () => wideForumFeature.toggle(wideForumFeature.isEnabled()),
-      toast: (v) => `Wide Thread ${v ? "enabled" : "disabled"}`,
-    },
-  },
-
-  imgRetry: {
-    type: "toggle",
-    text: "Image Retry",
-    tooltip: "Enable image retry for broken images in threads",
-    config: "threadSettings.imgRetry",
-    effects: {
-      custom: () => imageRepairFeature.toggle(imageRepairFeature.isEnabled()),
-      toast: (v) => `Image Retry ${v ? "enabled" : "disabled"}`,
-    },
-  },
-  collapseSignature: {
-    type: "toggle",
-    text: "Collapsable Signatures",
-    tooltip: "Make user signatures collapsable in threads",
-    config: "threadSettings.collapseSignature",
-    effects: {
-      custom: () => signatureCollapseFeature.toggle(signatureCollapseFeature.isEnabled()),
-      toast: (v) => `Collapsable Signatures ${v ? "enabled" : "disabled"}`,
-    },
-  },
-  threadOverlayToggle: {
-    type: "toggle",
-    text: "Enable overlay",
-    tooltip: "Show thread status overlay on thread pages",
-    config: "threadSettings.threadOverlayToggle",
-    effects: {
-      custom: effectOverlayToggle,
-      toast: (v) => `Thread overlay ${v ? "enabled" : "disabled"}`,
+      custom: openThreadOverlaySettingsDialog,
     },
   },
 };
 
 export const threadOverlaySettingsMeta = {
-  _header_visibility: {
-    type: "header",
-    text: "Thread Overlay Settings",
-  },
-  neutral: {
-    type: "toggle",
+  threadOverlayToggle: threadOverlayToggleSetting,
+  neutral: createToggleSetting({
     text: "Show Neutral overlay",
     tooltip: "Display neutral reaction buttons",
     config: "threadSettings.neutral",
-    effects: {
-      custom: debouncedProcessThreadTags,
-      toast: (v) => `Neutral ${v ? "enabled" : "disabled"}`,
-    },
-  },
-
-  preferred: {
-    type: "toggle",
+    custom: debouncedProcessThreadTags,
+    toast: createEnabledDisabledToast("Neutral"),
+  }),
+  preferred: createToggleSetting({
     text: "Show Preferred overlay",
     tooltip: "Display your preferred (favorited) overlay",
     config: "threadSettings.preferred",
-    effects: {
-      custom: debouncedProcessThreadTags,
-      toast: (v) => `Preferred ${v ? "enabled" : "disabled"}`,
-    },
-  },
-
-  preferredShadow: {
-    type: "toggle",
+    custom: debouncedProcessThreadTags,
+    toast: createEnabledDisabledToast("Preferred"),
+  }),
+  preferredShadow: createToggleSetting({
     text: "Preferred overlay shadow",
     tooltip: "Add a subtle shadow effect to preferred overlay",
     config: "threadSettings.preferredShadow",
-    effects: {
-      custom: debouncedProcessThreadTags,
-      toast: (v) => `Preferred Shadow ${v ? "enabled" : "disabled"}`,
-    },
-  },
-
-  excluded: {
-    type: "toggle",
+    custom: debouncedProcessThreadTags,
+    toast: createEnabledDisabledToast("Preferred Shadow"),
+  }),
+  excluded: createToggleSetting({
     text: "Show Excluded overlay",
     tooltip: "Show overlay you've excluded",
     config: "threadSettings.excluded",
-    effects: {
-      custom: debouncedProcessThreadTags,
-      toast: (v) => `Excluded ${v ? "enabled" : "disabled"}`,
-    },
-  },
-
-  excludedShadow: {
-    type: "toggle",
+    custom: debouncedProcessThreadTags,
+    toast: createEnabledDisabledToast("Excluded"),
+  }),
+  excludedShadow: createToggleSetting({
     text: "Show excluded overlay shadow",
     tooltip: "Add shadow to excluded overlay",
     config: "threadSettings.excludedShadow",
-    effects: {
-      custom: debouncedProcessThreadTags,
-      toast: (v) => `Excluded Shadow ${v ? "enabled" : "disabled"}`,
-    },
-  },
+    custom: debouncedProcessThreadTags,
+    toast: createEnabledDisabledToast("Excluded Shadow"),
+  }),
 };
 
-export const disabledThreadOverlayMeta = {
-  _header_visibility: {
-    type: "header",
-    text: "Thread Overlay is disabled",
-  },
+export const directDownloadSettingsMeta = {
+  directDownloadLinks: createToggleSetting({
+    text: "Direct Download Links",
+    tooltip:
+      "Enable direct download links for supported file hosts \n works independently outside of masked links",
+    config: "threadSettings.directDownloadLinks",
+    custom: () => directDownloadFeature.toggle(directDownloadFeature.isEnabled()),
+    toast: createEnabledDisabledToast("Direct Download Links"),
+  }),
+  buzzheavierPackage: createDirectDownloadPackageSetting({
+    packageKey: "buzzheavier",
+    text: "Buzzheavier package",
+    tooltip: "Controls buzzheavier.com resolver + trashbytes.net direct link flow",
+    toastLabel: "Buzzheavier package",
+  }),
+  gofilePackage: createDirectDownloadPackageSetting({
+    packageKey: "gofile",
+    text: "Gofile package",
+    tooltip: "Controls gofile.io + api.gofile.com flow",
+    toastLabel: "Gofile package",
+  }),
+  pixeldrainPackage: createDirectDownloadPackageSetting({
+    packageKey: "pixeldrain",
+    text: "Pixeldrain",
+    tooltip: "Controls pixeldrain.com flow",
+    toastLabel: "Pixeldrain",
+  }),
+  datanodesPackage: createDirectDownloadPackageSetting({
+    packageKey: "datanodes",
+    text: "Datanodes",
+    tooltip: "Controls datanodes.to flow",
+    toastLabel: "Datanodes",
+  }),
 };
