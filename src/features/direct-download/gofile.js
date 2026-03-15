@@ -3,22 +3,34 @@ import { debugLog } from "../../core/logger";
 import TIMINGS from "../../config/timings.js";
 import { SELECTORS } from "../../config/selectors.js";
 import { showToast } from "../../ui/components/toast.js";
-import { publishDirectDownloadAttention } from "./attention.js";
+import { handleDirectDownloadFailure } from "./attention.js";
 import { isDirectDownloadHostEnabled } from "./hostPackages.js";
 import {
   clearProcessingAndTryCloseTab,
-  clearProcessingDownloadFlag,
+  isProcessingDownloadFlowActive,
+  invokeGofileDownloadContent,
+  markHostDownloadSuccess,
 } from "./hostFlowHelpers.js";
 
 export async function processGofileDownload() {
+  const isProcessing = await isProcessingDownloadFlowActive();
   if (
     !config.threadSettings.directDownloadLinks ||
-    !config.processingDownload ||
+    !isProcessing ||
     !isDirectDownloadHostEnabled(location.hostname)
   )
     return;
 
   const AUTO_CLOSE_DELAY = TIMINGS.GOFILE_AUTO_CLOSE;
+  const failAndExit = async (message, code) => {
+    await handleDirectDownloadFailure({
+      packageKey: "gofile",
+      host: "gofile.io",
+      message,
+      code,
+      trippedToast: "Gofile auto-disabled after 3 consecutive failures.",
+    });
+  };
 
   const waitForContentReady = (timeout = 20000) => {
     return new Promise((resolve, reject) => {
@@ -61,8 +73,7 @@ export async function processGofileDownload() {
       debugLog("GofileDownloader", "Host alert visible: file/folder unavailable");
       const msg = "File removed or blocked on host.";
       showToast(msg);
-      await publishDirectDownloadAttention("gofile.io", msg, "host_blocked");
-      await clearProcessingDownloadFlag();
+      await failAndExit(msg, "host_blocked");
       return;
     }
 
@@ -76,23 +87,16 @@ export async function processGofileDownload() {
 
     if (itemElements.length === 0) {
       debugLog("GofileDownloader", "No downloadable items found");
-      await publishDirectDownloadAttention(
-        "gofile.io",
+      await failAndExit(
         "No downloadable item found. Download manually from host page.",
         "no_items",
       );
-      await clearProcessingDownloadFlag();
       return;
     }
 
     if (itemElements.length > 1) {
       debugLog("GofileDownloader", "Multiple files detected; auto-download skipped");
-      await publishDirectDownloadAttention(
-        "gofile.io",
-        "Multiple files detected. Manual download required.",
-        "multiple_items",
-      );
-      await clearProcessingDownloadFlag();
+      await failAndExit("Multiple files detected. Manual download required.", "multiple_items");
       showToast("Multiple files detected; download manually for now.");
       return;
     }
@@ -102,17 +106,19 @@ export async function processGofileDownload() {
       throw new Error("data-item-id exists but is empty");
     }
 
-    if (typeof unsafeWindow.downloadContent !== "function") {
-      debugLog("GofileDownloader", "downloadContent is not available");
-      const msg = "downloadContent not found; host page likely changed.";
-      showToast(msg);
-      await publishDirectDownloadAttention("gofile.io", msg, "missing_download_api");
-      await clearProcessingDownloadFlag();
+    const bridgeResult = await invokeGofileDownloadContent(contentId);
+    if (!bridgeResult.ok) {
+      debugLog("GofileDownloader", "downloadContent bridge is not available");
+      const msg = `downloadContent bridge unavailable (${bridgeResult.reason || "unknown"}); host page likely changed.`;
+      await failAndExit(msg, "missing_download_api");
       return;
     }
 
-    debugLog("GofileDownloader", `Triggering downloadContent(${contentId})`);
-    unsafeWindow.downloadContent(contentId);
+    debugLog(
+      "GofileDownloader",
+      `Triggering downloadContent(${contentId}) via ${bridgeResult.source}`,
+    );
+    await markHostDownloadSuccess("gofile");
 
     setTimeout(async () => {
       debugLog("GofileDownloader", "Download triggered; resetting processing flag");
@@ -121,8 +127,6 @@ export async function processGofileDownload() {
   } catch (err) {
     debugLog("GofileDownloader", `Failed: ${err.message}`);
     const msg = `Downloader failed: ${err.message}`;
-    showToast(msg);
-    await publishDirectDownloadAttention("gofile.io", msg, "exception");
-    await clearProcessingDownloadFlag();
+    await failAndExit(msg, "exception");
   }
 }

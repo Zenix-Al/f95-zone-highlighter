@@ -3,13 +3,17 @@ import TIMINGS from "../../config/timings.js";
 import { SELECTORS } from "../../config/selectors.js";
 import { debugLog } from "../../core/logger.js";
 import { showToast } from "../../ui/components/toast.js";
-import { publishDirectDownloadAttention } from "./attention.js";
+import { queryAllBySelectors } from "../../utils/selectorQuery.js";
+import { handleDirectDownloadFailure } from "./attention.js";
 import { isDirectDownloadHostEnabled } from "./hostPackages.js";
 import {
   clearProcessingAndTryCloseTab,
-  clearProcessingDownloadFlag,
+  isProcessingDownloadFlowActive,
+  markHostDownloadSuccess,
 } from "./hostFlowHelpers.js";
 
+// Datanodes is a multi-page / multi-state flow. We persist a tiny stage marker so
+// a navigation triggered by the free-method form does not restart from the top.
 const DATANODES_STAGE_KEY = "f95ue.datanodes.stage";
 const DATANODES_STAGE_AFTER_FREE = "after_free";
 const DATANODES_STAGE_MAX_AGE =
@@ -18,11 +22,30 @@ const DATANODES_STAGE_MAX_AGE =
   TIMINGS.DATANODES_AUTO_CLOSE +
   15000;
 
+// The first step is a form-driven "method free" button that can be stubborn and
+// sometimes needs a few attempts before the page transitions.
+const DATANODES_MAX_FREE_CLICKS = 3;
+const DATANODES_RETRY_DELAY = Math.max(1200, TIMINGS.DATANODES_POLL_INTERVAL * 2);
+
+// After the free-method submit, the host often needs a short settle window
+// before the real download button is safe to interact with.
+const DATANODES_AFTER_METHOD_FREE_DELAY = Math.max(1200, TIMINGS.DATANODES_POLL_INTERVAL * 4);
+
+// The first "download" click is fragile on datanodes. Even when the button is
+// already visible, clicking it too early can fail to advance the host state.
+const DATANODES_BEFORE_DOWNLOAD_CLICK_DELAY = 1000;
+
 function isDisabled(element) {
   if (!element) return true;
   if (element.disabled) return true;
   const ariaDisabled = String(element.getAttribute("aria-disabled") || "").toLowerCase();
   return ariaDisabled === "true";
+}
+
+function isVisible(element) {
+  if (!element || !element.isConnected) return false;
+  const style = getComputedStyle(element);
+  return style.display !== "none" && style.visibility !== "hidden";
 }
 
 function normalizeText(value) {
@@ -95,14 +118,26 @@ function isPrimaryDownloadButton(element) {
   return true;
 }
 
+function isCountdownText(text) {
+  return /\b\d+\s*s\b/.test(text);
+}
+
+function hasButtonText(element, text) {
+  return normalizeText(element?.textContent).includes(text);
+}
+
 function getMethodFreeButton() {
-  const button = document.getElementById(SELECTORS.DATANODES.METHOD_FREE_BUTTON_ID);
-  if (!button || !button.isConnected || isDisabled(button)) return null;
-  return button;
+  const buttons = queryAllBySelectors(SELECTORS.DATANODES.METHOD_FREE_BUTTON_CANDIDATES);
+  for (const button of buttons) {
+    if (!button || !button.isConnected || isDisabled(button)) continue;
+    if (!isMethodFreeButton(button)) continue;
+    return button;
+  }
+  return null;
 }
 
 function getPrimaryDownloadButton() {
-  const buttons = Array.from(document.querySelectorAll(SELECTORS.DATANODES.DOWNLOAD_BUTTON_PRIMARY));
+  const buttons = queryAllBySelectors(SELECTORS.DATANODES.DOWNLOAD_BUTTON_PRIMARY_CANDIDATES);
   for (const button of buttons) {
     if (isPrimaryDownloadButton(button)) {
       return button;
@@ -115,9 +150,11 @@ function isReadyForClick(element) {
   return Boolean(element && element.isConnected && !isDisabled(element));
 }
 
-function getSecondPhaseDownloadButton() {
+// Datanodes can surface different controls with similar styling. We keep the
+// selection rules centralized so start-phase and confirm-phase stay consistent.
+function findDatanodesActionButton(matchesText) {
   const primary = getPrimaryDownloadButton();
-  if (primary) return primary;
+  if (primary && matchesText(normalizeText(primary.textContent))) return primary;
 
   const buttons = Array.from(document.querySelectorAll("button"));
   for (const button of buttons) {
@@ -126,17 +163,128 @@ function getSecondPhaseDownloadButton() {
     const text = normalizeText(button.textContent);
     if (!text) continue;
     if (text.includes("premium")) continue;
-    if (
-      text.includes("download") ||
-      text.includes("continue") ||
-      text.includes("get link") ||
-      text.includes("create link")
-    ) {
+    if (matchesText(text)) {
       return button;
     }
   }
 
   return null;
+}
+
+// First click must target the real "download" state only. If we accept
+// "continue" here, the host can jump to the wrong phase and desync the flow.
+function getStartPhaseDownloadButton() {
+  return findDatanodesActionButton((text) => text.includes("download"));
+}
+
+// After the first click, datanodes may swap the same visual button into a
+// countdown / continue state. The confirm lookup intentionally accepts both.
+function getConfirmPhaseDownloadButton() {
+  return findDatanodesActionButton(
+    (text) => text.includes("continue") || text.includes("download"),
+  );
+}
+
+function hasReadyBadge() {
+  const elements = document.querySelectorAll("span,div,strong,b");
+  for (const el of elements) {
+    if (!isVisible(el)) continue;
+    const text = normalizeText(el.textContent);
+    if (text === "ready") return true;
+  }
+  return false;
+}
+
+async function waitForReadyState(timeout = TIMINGS.DATANODES_BUTTON_WAIT_TIMEOUT) {
+  if (hasReadyBadge()) return true;
+
+  const startedAt = Date.now();
+  while (Date.now() - startedAt < timeout) {
+    await sleep(TIMINGS.DATANODES_POLL_INTERVAL);
+    if (hasReadyBadge()) return true;
+  }
+
+  throw new Error("ready_not_found::Datanodes automation failed: Ready state not detected.");
+}
+
+function clickActionButton(button) {
+  if (!button || !button.isConnected) return false;
+
+  try {
+    // Use the native click directly. We previously tried submit-style fallbacks,
+    // but on datanodes those could interact badly with page handlers and recurse.
+    HTMLElement.prototype.click.call(button);
+  } catch (error) {
+    debugLog("DatanodesDownloader", "Button click failed", {
+      level: "warn",
+      data: { error: String(error?.message || error) },
+    });
+    return false;
+  }
+
+  return true;
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function waitForButton({
+  getCandidate,
+  interval = TIMINGS.DATANODES_POLL_INTERVAL,
+  timeout = TIMINGS.DATANODES_BUTTON_WAIT_TIMEOUT,
+  errorCode = "button_not_found",
+  errorMessage = "Datanodes automation failed: Button not found.",
+}) {
+  return new Promise((resolve, reject) => {
+    pollForButton({
+      getCandidate,
+      interval,
+      timeout,
+      onFound: (button) => resolve(button),
+      onTimeout: () => reject(new Error(`${errorCode}::${errorMessage}`)),
+    });
+  });
+}
+
+async function clickButtonWithRetries({
+  getCandidate,
+  maxClicks,
+  delayMs,
+  logPrefix,
+  successToast,
+}) {
+  let clickCount = 0;
+  let missingCount = 0;
+
+  while (clickCount < maxClicks) {
+    const button = getCandidate();
+    if (!button) {
+      missingCount += 1;
+      // If button disappears after at least one click, treat as progress/success.
+      if (clickCount > 0 && missingCount >= 2) {
+        return { clickCount, progressed: true };
+      }
+      await sleep(delayMs);
+      continue;
+    }
+
+    missingCount = 0;
+    const text = normalizeText(button.textContent);
+    debugLog("DatanodesDownloader", `${logPrefix}: clicking button`, {
+      data: { clickCount, text },
+    });
+    clickActionButton(button);
+    clickCount += 1;
+
+    if (successToast && clickCount === 1) {
+      showToast(successToast);
+    }
+
+    await sleep(isCountdownText(text) ? Math.max(delayMs, 1500) : delayMs);
+  }
+
+  return { clickCount, progressed: clickCount > 0 };
 }
 
 function pollForButton({
@@ -181,107 +329,157 @@ function pollForButton({
 
 async function failFlow(message, code = "flow_failed") {
   debugLog("DatanodesDownloader", message, { level: "warn" });
-  showToast(message);
   clearDatanodesStage();
-  await publishDirectDownloadAttention("datanodes.to", message, code);
-  await clearProcessingDownloadFlag();
+  await handleDirectDownloadFailure({
+    packageKey: "datanodes",
+    host: "datanodes.to",
+    message,
+    code,
+    trippedToast: "Datanodes auto-disabled after 3 consecutive failures.",
+  });
 }
 
 function finishSuccess() {
   clearDatanodesStage();
+  void markHostDownloadSuccess("datanodes");
   setTimeout(() => {
     void clearProcessingAndTryCloseTab();
   }, TIMINGS.DATANODES_AUTO_CLOSE);
 }
 
-function clickSecondDownloadButton(previousButton) {
-  if (isReadyForClick(previousButton)) {
-    previousButton.click();
-    showToast("Datanodes download triggered.");
-    finishSuccess();
-    return;
+async function runDownloadPhase() {
+  debugLog("DatanodesDownloader", "Waiting for download button...");
+
+  // Even after the page looks ready, datanodes can still reject the first
+  // download click if we fire immediately. Delay first, then resolve the node,
+  // so we do not keep a stale reference across the settle window.
+  debugLog("DatanodesDownloader", "Settling before first button2 click...", {
+    data: { delayMs: DATANODES_BEFORE_DOWNLOAD_CLICK_DELAY },
+  });
+  await sleep(DATANODES_BEFORE_DOWNLOAD_CLICK_DELAY);
+
+  const button2First = await waitForButton({
+    getCandidate: getStartPhaseDownloadButton,
+    errorCode: "second_button_not_found",
+    errorMessage: "Datanodes automation failed: Download button not found.",
+  });
+
+  debugLog("DatanodesDownloader", "download-phase: first button2 click", {
+    data: { text: normalizeText(button2First.textContent) },
+  });
+  if (!clickActionButton(button2First)) {
+    throw new Error(
+      "second_click_failed::Datanodes automation failed: First download click did not trigger.",
+    );
+  }
+  showToast("Datanodes countdown started...");
+
+  // The host sometimes throws internally on the first click and leaves the
+  // button stuck at its original "download" state. Treat that as a failed
+  // transition and reinforce the first click once before continuing.
+  await sleep(Math.max(1000, DATANODES_RETRY_DELAY));
+
+  const postFirstClickButton = getConfirmPhaseDownloadButton();
+  const postFirstClickText = normalizeText(postFirstClickButton?.textContent);
+  if (postFirstClickButton && hasButtonText(postFirstClickButton, "download")) {
+    debugLog("DatanodesDownloader", "First button2 click did not advance state; retrying once.", {
+      level: "warn",
+      data: { text: postFirstClickText },
+    });
+    if (!clickActionButton(postFirstClickButton)) {
+      throw new Error(
+        "second_click_failed::Datanodes automation failed: Retry of first download click did not trigger.",
+      );
+    }
   }
 
-  const immediateCandidate = getSecondPhaseDownloadButton();
+  // After the first click has advanced, wait out the host-controlled cooldown
+  // and reacquire the button fresh. Datanodes can replace the DOM node here.
+  await sleep(TIMINGS.DATANODES_SECOND_CLICK_DELAY);
 
-  if (immediateCandidate) {
-    immediateCandidate.click();
-    showToast("Datanodes download triggered.");
-    finishSuccess();
-    return;
+  debugLog("DatanodesDownloader", "Waiting for confirm button after countdown...");
+  const button2Second = await waitForButton({
+    getCandidate: getConfirmPhaseDownloadButton,
+    timeout: TIMINGS.DATANODES_BUTTON_WAIT_TIMEOUT,
+    errorCode: "second_click_not_ready",
+    errorMessage: "Datanodes automation failed: Confirm button not available after countdown.",
+  });
+
+  debugLog("DatanodesDownloader", "download-phase: second button2 click", {
+    data: { text: normalizeText(button2Second.textContent) },
+  });
+  if (!clickActionButton(button2Second)) {
+    throw new Error(
+      "second_click_failed::Datanodes automation failed: Confirm download click did not trigger.",
+    );
   }
-
-  debugLog("DatanodesDownloader", "Second download button not ready yet. Waiting...");
-  pollForButton({
-    getCandidate: getSecondPhaseDownloadButton,
-    interval: TIMINGS.DATANODES_POLL_INTERVAL,
-    timeout: TIMINGS.DATANODES_BUTTON_WAIT_TIMEOUT,
-    onFound: (secondDownloadButton) => {
-      secondDownloadButton.click();
-      showToast("Datanodes download triggered.");
-      finishSuccess();
-    },
-    onTimeout: () => {
-      void failFlow("Datanodes automation failed: Second download button not found.", "second_button_not_found");
-    },
-  });
+  showToast("Datanodes download triggered.");
+  finishSuccess();
 }
 
-function startDownloadPhase() {
-  debugLog("DatanodesDownloader", "Free method selected. Waiting for primary download button...");
-  pollForButton({
-    getCandidate: getPrimaryDownloadButton,
-    interval: TIMINGS.DATANODES_POLL_INTERVAL,
-    timeout: TIMINGS.DATANODES_BUTTON_WAIT_TIMEOUT,
-    onFound: (firstDownloadButton) => {
-      firstDownloadButton.click();
-      showToast("Datanodes free countdown started...");
-      const secondClickDelay = Math.max(6000, TIMINGS.DATANODES_SECOND_CLICK_DELAY);
-      setTimeout(() => {
-        clickSecondDownloadButton(firstDownloadButton);
-      }, secondClickDelay);
-    },
-    onTimeout: () => {
-      void failFlow("Datanodes automation failed: Download button not found.", "button_not_found");
-    },
-  });
-}
+async function runMethodFreePhase() {
+  debugLog("DatanodesDownloader", "Waiting for ready state...");
+  await waitForReadyState();
 
-function startMethodFreePhase() {
-  debugLog("DatanodesDownloader", "Waiting for free method button...");
-  pollForButton({
+  debugLog("DatanodesDownloader", "Ready detected. Waiting for free method button...");
+
+  await waitForButton({
     getCandidate: getMethodFreeButton,
     interval: 100,
-    timeout: TIMINGS.DATANODES_BUTTON_WAIT_TIMEOUT,
-    onFound: (methodFreeButton) => {
-      writeDatanodesStage(DATANODES_STAGE_AFTER_FREE);
-      debugLog("DatanodesDownloader", "Free method clicked. Waiting for download state...");
-      methodFreeButton.click();
-      setTimeout(() => {
-        if (readDatanodesStage() === DATANODES_STAGE_AFTER_FREE) {
-          startDownloadPhase();
-        }
-      }, TIMINGS.DATANODES_POLL_INTERVAL);
-    },
-    onTimeout: () => {
-      void failFlow("Datanodes automation failed: Free method button not found.", "free_not_found");
-    },
+    errorCode: "free_not_found",
+    errorMessage: "Datanodes automation failed: Continue button not found.",
   });
+
+  // Persist stage before clicking because this submit can navigate immediately,
+  // and any code scheduled after the click may never run on the current page.
+  writeDatanodesStage(DATANODES_STAGE_AFTER_FREE);
+
+  const result = await clickButtonWithRetries({
+    getCandidate: getMethodFreeButton,
+    maxClicks: DATANODES_MAX_FREE_CLICKS,
+    delayMs: DATANODES_RETRY_DELAY,
+    logPrefix: "method-free-phase",
+    successToast: "Datanodes continue flow started...",
+  });
+
+  if (!result.progressed) {
+    clearDatanodesStage();
+    throw new Error(
+      "free_click_failed::Datanodes automation failed: Could not click continue button.",
+    );
+  }
 }
 
-export function processDatanodesDownload() {
+export async function processDatanodesDownload() {
+  const isProcessing = await isProcessingDownloadFlowActive();
   if (
     !config.threadSettings.directDownloadLinks ||
-    !config.processingDownload ||
+    !isProcessing ||
     !isDirectDownloadHostEnabled(location.hostname)
   )
     return;
 
-  if (readDatanodesStage() === DATANODES_STAGE_AFTER_FREE) {
-    debugLog("DatanodesDownloader", "Resuming after free submit.");
-    startDownloadPhase();
-    return;
-  }
+  try {
+    if (readDatanodesStage() !== DATANODES_STAGE_AFTER_FREE) {
+      await runMethodFreePhase();
 
-  startMethodFreePhase();
+      // This extra pause is separate from the button2 pre-click delay above.
+      // Here we are waiting for the page itself to settle after the free-method
+      // submit/navigation, not for the first download click to become safe.
+      debugLog("DatanodesDownloader", "Stabilizing after method-free click...", {
+        data: { delayMs: DATANODES_AFTER_METHOD_FREE_DELAY },
+      });
+      await sleep(DATANODES_AFTER_METHOD_FREE_DELAY);
+    } else {
+      debugLog("DatanodesDownloader", "Resuming after continue step.");
+    }
+
+    await runDownloadPhase();
+  } catch (error) {
+    const raw = String(error?.message || "");
+    const [codePart, messagePart] = raw.split("::");
+    const code = codePart && !messagePart ? "flow_failed" : codePart || "flow_failed";
+    const message = messagePart || raw || "Datanodes automation failed.";
+    await failFlow(message, code);
+  }
 }

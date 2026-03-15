@@ -1,8 +1,29 @@
 import { debugLog } from "./logger.js";
 import { config } from "../config.js";
-import { setFeatureStatus } from "./featureHealth.js";
+import { setFeatureStatus, pushRuntimeError } from "./featureHealth.js";
 import { showToast } from "../ui/components/toast.js";
 import { getByPath } from "../utils/objectPath.js";
+
+// Capture uncaught errors / unhandled rejections once per session so the
+// health diagnostic can surface runtime failures that happen outside the
+// feature lifecycle (e.g. inside requestAnimationFrame / queueMicrotask).
+let _globalListenerRegistered = false;
+function ensureGlobalListeners() {
+  if (_globalListenerRegistered) return;
+  _globalListenerRegistered = true;
+
+  window.addEventListener("error", (event) => {
+    const msg = event?.message ? String(event.message) : "Unknown error";
+    pushRuntimeError(msg);
+  });
+
+  window.addEventListener("unhandledrejection", (event) => {
+    const reason = event?.reason;
+    const msg = reason?.message ? String(reason.message) : String(reason ?? "Unknown rejection");
+    pushRuntimeError(`Unhandled: ${msg}`);
+  });
+}
+ensureGlobalListeners();
 
 /**
  * Creates a standardized feature module interface. This factory is designed to
@@ -114,6 +135,19 @@ export const createFeature = (
       if (!configPath) return true;
       const value = getByPath(config, configPath);
       return typeof value === "boolean" ? value : false;
+    },
+    /**
+     * Feature code running AFTER enable() can call this to record a runtime
+     * error and update health status without going through the lifecycle.
+     * e.g.  latestOverlayFeature.reportError(err, "processTilesBatch")
+     */
+    reportError: function (err, phase = "runtime") {
+      const message = err?.message || String(err);
+      debugLog(name, `Runtime error [${phase}]: ${message}`);
+      setFeatureStatus(name, "failing", `[${phase}] ${message}`);
+      try {
+        showToast(`${name} error: ${message}`);
+      } catch {}
     },
   };
 

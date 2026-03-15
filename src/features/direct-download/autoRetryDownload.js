@@ -1,19 +1,41 @@
 import { debugLog } from "../../core/logger";
 import TIMINGS from "../../config/timings.js";
 
+async function probeUrlWithTimeout(url, timeout = TIMINGS.DOWNLOAD_TIMEOUT) {
+  const supportsAbort = typeof AbortController === "function";
+  const controller = supportsAbort ? new AbortController() : null;
+  const timeoutId = setTimeout(() => {
+    if (controller) controller.abort();
+  }, timeout);
+
+  try {
+    const response = await fetch(url, {
+      method: "HEAD",
+      cache: "no-store",
+      credentials: "include",
+      signal: controller?.signal,
+    });
+    return { ok: true, status: response.status };
+  } catch (error) {
+    return { ok: false, error };
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
 function autoRetryDownload(maxRetries = 99) {
   const originalUrl = location.href;
   const storageKey = `autoRetryCount_${encodeURIComponent(originalUrl)}`;
   let retries = parseInt(sessionStorage.getItem(storageKey) || "0", 10);
   let success = false;
 
-  // This is the KEY: observer that detects when download probably started
+  // Observer detects when download likely started.
   const observer = new MutationObserver((mutations) => {
     for (const mutation of mutations) {
       for (const node of mutation.addedNodes) {
-        if (node.nodeType !== 1) continue; // only elements
+        if (node.nodeType !== 1) continue;
 
-        // Trashbytes often adds a link or changes UI when download starts
+        // Trashbytes often adds a link or changes UI when download starts.
         if (
           node.tagName === "A" &&
           (node.hasAttribute("download") ||
@@ -23,19 +45,19 @@ function autoRetryDownload(maxRetries = 99) {
         ) {
           debugLog("autoRetryDownload", `Detected download link on attempt ${retries + 1}`);
           success = true;
-          sessionStorage.removeItem(storageKey); // Clean up on success
+          sessionStorage.removeItem(storageKey);
           observer.disconnect();
           return;
         }
 
-        // Or look for progress bar / "Downloading..." text / specific class
+        // Fallback signal: progress UI or downloading text.
         if (
           node.classList?.contains("progress") ||
           node.textContent?.toLowerCase().includes("downloading")
         ) {
           debugLog("autoRetryDownload", `Detected progress UI on attempt ${retries + 1}`);
           success = true;
-          sessionStorage.removeItem(storageKey); // Clean up on success
+          sessionStorage.removeItem(storageKey);
           observer.disconnect();
           return;
         }
@@ -43,66 +65,60 @@ function autoRetryDownload(maxRetries = 99) {
     }
   });
 
-  // Start watching right away
   observer.observe(document.body, { childList: true, subtree: true });
 
-  const tryLoad = () => {
+  const tryLoad = async () => {
     if (success || retries >= maxRetries) {
       observer.disconnect();
       if (success) {
         debugLog("autoRetryDownload", `Download started after ${retries} retries`);
       } else {
         debugLog("autoRetryDownload", `Gave up after ${maxRetries} retries`);
-        sessionStorage.removeItem(storageKey); // Clean up on failure
+        sessionStorage.removeItem(storageKey);
       }
       return;
     }
 
     retries++;
     sessionStorage.setItem(storageKey, retries);
-    debugLog("autoRetryDownload", `Attempt ${retries}/${maxRetries} — ${originalUrl}`);
+    debugLog("autoRetryDownload", `Attempt ${retries}/${maxRetries} - ${originalUrl}`);
 
-    // Keep HEAD probe bounded so failed hosts do not hang the flow.
-    GM_xmlhttpRequest({
-      method: "HEAD",
-      url: originalUrl,
-      timeout: TIMINGS.DOWNLOAD_TIMEOUT,
-      onload: (response) => {
-        const status = response.status;
-        debugLog("autoRetryDownload", `[HEAD] Status: ${status}`);
+    const probe = await probeUrlWithTimeout(originalUrl, TIMINGS.DOWNLOAD_TIMEOUT);
+    if (!probe.ok) {
+      const isAbort =
+        probe.error?.name === "AbortError" || /abort/i.test(String(probe.error?.message || ""));
+      debugLog(
+        "autoRetryDownload",
+        isAbort
+          ? "[HEAD] Timeout - reloading page to retry download"
+          : "[HEAD] Request error - reloading page to retry download",
+      );
+      location.reload();
+      return;
+    }
 
-        if (status >= 200 && status < 300) {
-          debugLog(
-            "autoRetryDownload",
-            `[HEAD] Server says OK — waiting for actual download trigger...`,
-          );
-          // We don't stop here — we keep the observer alive until we see the real sign
-        } else {
-          debugLog(
-            "autoRetryDownload",
-            `[HEAD] Bad status ${status} — reloading page to retry download`,
-          );
-          location.reload();
-        }
-      },
-      onerror: () => {
-        debugLog("autoRetryDownload", "[HEAD] Request error — reloading page to retry download");
-        location.reload();
-      },
-      ontimeout: () => {
-        debugLog("autoRetryDownload", "[HEAD] Timeout — reloading page to retry download");
-        location.reload();
-      },
-    });
+    const status = probe.status;
+    debugLog("autoRetryDownload", `[HEAD] Status: ${status}`);
+
+    if (status >= 200 && status < 300) {
+      debugLog(
+        "autoRetryDownload",
+        "[HEAD] Server says OK - waiting for actual download trigger...",
+      );
+      // Keep observer alive until we see a real download signal.
+      return;
+    }
+
+    debugLog("autoRetryDownload", `[HEAD] Bad status ${status} - reloading page to retry download`);
+    location.reload();
   };
 
-  // Kick it off
-  tryLoad();
+  void tryLoad();
 
-  // Optional: safety net — if no success after 60 seconds, retry anyway
+  // Safety net: if no success after timeout, force retry.
   setTimeout(() => {
     if (!success && retries < maxRetries) {
-      debugLog("autoRetryDownload", "Timeout waiting for download signal — forcing retry");
+      debugLog("autoRetryDownload", "Timeout waiting for download signal - forcing retry");
       location.reload();
     }
   }, TIMINGS.AUTO_RETRY_TIMEOUT);
@@ -110,10 +126,7 @@ function autoRetryDownload(maxRetries = 99) {
 
 export function executeAutoRetry(host) {
   if (host) {
-    debugLog(
-      "autoRetryDownload",
-      `[${host} Auto-Retry] Activated! Let's keep that download pounding...`,
-    );
+    debugLog("autoRetryDownload", `[${host} Auto-Retry] Activated. Retrying download flow...`);
     autoRetryDownload(8, host);
   }
 }

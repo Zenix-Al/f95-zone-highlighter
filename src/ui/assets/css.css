@@ -6,14 +6,17 @@
 
 .modal-error-notif {
   display: none; /* hidden by default */
-  background-color: #ffe5e5; /* soft red/pink */
-  color: #b00020; /* dark red text */
-  border: 1px solid #b00020;
-  padding: 12px 16px;
+  padding: 8px 10px;
+  border: 1px solid #b04a4a;
   border-radius: 6px;
+  background: rgba(176, 74, 74, 0.18);
+  color: #ffd1d1;
+  margin-top: 10px;
   margin-bottom: 12px;
-  font-size: 14px;
+  font-size: 12px;
+  line-height: 1.4;
   font-weight: 500;
+  white-space: pre-wrap;
 }
 .centered-item {
   display: flex;
@@ -118,13 +121,7 @@
   background-color: #c15858;
   color: #fff;
   border: none;
-  border-top-right-radius: 4px;
-  border-bottom-right-radius: 4px;
-
-  padding: 10px;
-  cursor: pointer;
-  font-weight: bold;
-  font-size: 12px;
+  /* consolidated into .tag-remove-btn */
 }
 
 /* Excluded tags container */
@@ -185,12 +182,7 @@
   background-color: #c15858;
   color: #fff;
   border: none;
-  padding: 10px;
-  cursor: pointer;
-  border-top-right-radius: 4px;
-  border-bottom-right-radius: 4px;
-  font-size: 12px;
-  font-weight: bold;
+  /* consolidated into .tag-remove-btn */
 }
 
 .tag-list-item {
@@ -254,6 +246,72 @@
 #tags-search:focus {
   outline: none;
   border: 1px solid #c15858;
+}
+
+/* Make search results scroll visually match modal scrollbar */
+#search-results {
+  max-height: 260px; /* keep results bounded */
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+
+#search-results::-webkit-scrollbar {
+  width: 8px;
+}
+#search-results::-webkit-scrollbar-track {
+  background: #191b1e;
+}
+#search-results::-webkit-scrollbar-thumb {
+  background-color: #893839;
+  border-radius: 4px;
+}
+
+/* Better-shaped action buttons: square/rounded icons rather than raw text */
+.tag-btn {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-size: 14px;
+  line-height: 1;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.15) inset;
+}
+
+.tag-btn.preferred {
+  background-color: var(--preferred-color);
+}
+.tag-btn.excluded {
+  background-color: var(--excluded-color);
+}
+
+/* Slightly larger hit target for mobile */
+@media (max-width: 480px) {
+  .tag-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+  }
+}
+
+/* Improve visuals for remove buttons in tag lists */
+.preferred-tag-remove,
+.excluded-tag-remove,
+.tag-remove-btn {
+  min-width: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0 4px 4px 0;
+  background-color: #c15858;
+  color: #fff;
+  border: none;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: bold;
 }
 #search-results {
   position: absolute;
@@ -401,6 +459,29 @@
   font-size: 13px;
   padding: 2px 0;
 }
+.direct-download-health-notice {
+  margin: 8px 0 10px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(183, 28, 28, 0.75);
+  background: rgba(183, 28, 28, 0.16);
+  color: #ffcbcb;
+}
+.direct-download-health-notice-text {
+  font-size: 13px;
+  line-height: 1.45;
+}
+.direct-download-health-notice-actions {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.direct-download-health-notice-btn {
+  font-size: 12px;
+  padding: 4px 10px;
+  box-shadow: none;
+}
 .config-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 130px;
@@ -530,7 +611,11 @@
   width: min(420px, calc(100vw - 24px));
   max-width: 420px;
   margin: 100px auto;
-  overflow-y: scroll; /* always show vertical scrollbar to prevent layout shifts */
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  /* Reserve scrollbar gutter so showing/hiding the page scrollbar
+     doesn't shift modal horizontally on platforms with non-overlay scrollbars */
+  scrollbar-gutter: stable;
 }
 
 @media (max-width: 480px) {
@@ -561,16 +646,14 @@
 }
 
 .config-list-details {
+  border: 1px solid #34373d;
+  border-radius: 8px;
   overflow: hidden;
-  transition:
-    border-width 1s,
-    max-height 1s ease;
-  max-height: 40px;
 }
 
 .config-list-details[open] {
-  border-width: 2px;
-  max-height: 1300px;
+  border-color: #4a4d54;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
 }
 .thick-line {
   border: none;
@@ -578,12 +661,64 @@
   background-color: #3f4043;
 }
 .config-list-details summary {
-  text-align: center;
-  background: #353535;
-  border-radius: 8px;
-  padding-top: 5px;
-  padding-bottom: 5px;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+  background: transparent;
+  padding: 9px 12px;
+  color: #e1e3e8;
+  font-weight: 600;
   cursor: pointer;
+}
+
+.config-list-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.config-list-details summary::before {
+  content: "\25B8";
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  color: #cfd2d8;
+  transition: transform 0.16s ease;
+}
+
+.config-list-details[open] summary::before {
+  transform: rotate(90deg);
+  color: #e1e3e8;
+}
+
+.config-list-details[open] summary {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.config-list-details > .settings-wrapper {
+  height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition:
+    height 0.22s ease,
+    opacity 0.18s ease;
+}
+
+.config-list-details[open] > .settings-wrapper {
+  opacity: 1;
+}
+
+/* centered-item is typically a small button row; keep its layout but hide when the
+   details are closed so buttons do not get squashed by height:0 rules */
+.config-list-details > .centered-item {
+  padding: 10px;
+  margin-top: 8px;
+}
+
+.config-list-details:not([open]) > .centered-item {
+  display: none;
 }
 
 .config-tag-item {
@@ -592,7 +727,7 @@
 }
 
 .modal-settings-spacing {
-  padding: 10px;
+  padding: 8px 10px;
 }
 .config-label:hover {
   text-decoration: underline;
@@ -724,4 +859,17 @@
   justify-content: flex-end;
   gap: 8px;
   margin-top: 8px;
+}
+
+.config-transfer-dialog-error {
+  margin-top: 10px;
+  margin-bottom: 6px;
+  padding: 8px 10px;
+  border: 1px solid #b04a4a;
+  border-radius: 6px;
+  background: rgba(176, 74, 74, 0.18);
+  color: #ffd1d1;
+  font-size: 12px;
+  line-height: 1.4;
+  white-space: pre-wrap;
 }

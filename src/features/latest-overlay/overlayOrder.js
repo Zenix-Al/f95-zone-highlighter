@@ -8,6 +8,23 @@ export const OVERLAY_COLOR_ORDER_KEYS = Object.freeze([
   "invalidVersion",
 ]);
 
+export function isValidOverlayColorOrder(order) {
+  if (!Array.isArray(order)) return false;
+  if (order.length !== OVERLAY_COLOR_ORDER_KEYS.length) return false;
+
+  const valid = new Set(OVERLAY_COLOR_ORDER_KEYS);
+  const seen = new Set();
+
+  for (const key of order) {
+    if (typeof key !== "string" || !valid.has(key) || seen.has(key)) {
+      return false;
+    }
+    seen.add(key);
+  }
+
+  return true;
+}
+
 export function normalizeOverlayColorOrder(order) {
   const fallback = [...OVERLAY_COLOR_ORDER_KEYS];
   if (!Array.isArray(order)) return fallback;
@@ -43,4 +60,3 @@ export function buildOrderedOverlayMatches(overlayMatches, order) {
 
   return { labels, colors };
 }
-

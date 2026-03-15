@@ -8,6 +8,7 @@ import { saveConfigKeys } from "../../services/settingsService";
 import { showToast } from "../components/toast";
 import {
   OVERLAY_COLOR_ORDER_KEYS,
+  isValidOverlayColorOrder,
   normalizeOverlayColorOrder,
 } from "../../features/latest-overlay/overlayOrder.js";
 import { openSettingsDialog, openTextPrompt } from "../components/dialog.js";
@@ -36,10 +37,7 @@ async function openOverlayColorOrderEditor() {
     .map((v) => v.trim())
     .filter(Boolean);
 
-  const isValid =
-    parsed.length === OVERLAY_COLOR_ORDER_KEYS.length &&
-    new Set(parsed).size === OVERLAY_COLOR_ORDER_KEYS.length &&
-    parsed.every((key) => OVERLAY_COLOR_ORDER_KEYS.includes(key));
+  const isValid = isValidOverlayColorOrder(parsed);
 
   if (!isValid) {
     showToast("Invalid order. Use each allowed key exactly once.");

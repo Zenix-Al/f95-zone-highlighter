@@ -6,12 +6,18 @@ import { disableMsgEventHandler, handleMsgEvent } from "./msgHandler";
 import { createFeature } from "../../core/featureFactory.js";
 import { notify } from "../../services/notificationService.js";
 import { isSupportedDownloadLink, routeDownloadUrl } from "../../services/downloadRouter.js";
-import { DIRECT_DOWNLOAD_ATTENTION_KEY } from "./attention.js";
+import { DIRECT_DOWNLOAD_ATTENTION_KEY, getDirectDownloadAttentionTabId } from "./attention.js";
+import { getSafeTrimmedString } from "../../utils/typeHelpers.js";
 let directDownloadAttentionListenerId = null;
 let lastAttentionTimestamp = 0;
+let lastAttentionId = "";
+const localAttentionTabId = getDirectDownloadAttentionTabId();
 
 function showAttentionNotice(payload) {
   if (!payload || typeof payload !== "object") return;
+
+  const targetTabId = getSafeTrimmedString(payload.targetTabId, "");
+  if (targetTabId && targetTabId !== localAttentionTabId) return;
 
   const ts = Number(payload.ts || 0);
   if (Number.isFinite(ts) && ts > 0) {
@@ -19,10 +25,11 @@ function showAttentionNotice(payload) {
     lastAttentionTimestamp = ts;
   }
 
-  const message =
-    typeof payload.message === "string" && payload.message.trim().length > 0
-      ? payload.message.trim()
-      : "Direct download needs manual action.";
+  const attentionId = getSafeTrimmedString(payload.id, "");
+  if (attentionId && attentionId === lastAttentionId) return;
+  if (attentionId) lastAttentionId = attentionId;
+
+  const message = getSafeTrimmedString(payload.message, "Direct download needs manual action.");
 
   showToast(`Direct Download: ${message}`, 6000);
   try {

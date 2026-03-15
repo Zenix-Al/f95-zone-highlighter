@@ -1,4 +1,4 @@
-import { cache, colorState, timeoutMS } from "../config.js";
+import { cache, colorState, config, timeoutMS } from "../config.js";
 import TIMINGS from "../config/timings.js";
 import { openInNewTabHelper } from "../core/openInNewTabHelper.js";
 import resourceManager from "../core/resourceManager.js";
@@ -6,10 +6,13 @@ import { debugLog } from "../core/logger.js";
 import { saveConfigKeys } from "./settingsService.js";
 import { showToast } from "../ui/components/toast.js";
 import { injectFrame } from "../features/direct-download/iframe.js";
+import { getDirectDownloadAttentionTabId } from "../features/direct-download/attention.js";
+import { getDirectDownloadHostContext } from "../features/direct-download/hostPackages.js";
 import {
-  isDirectDownloadHostEnabled,
-  resolveDirectDownloadHost,
-} from "../features/direct-download/hostPackages.js";
+  createInactiveProcessingDownloadTrigger,
+  createProcessingDownloadTrigger,
+  normalizeProcessingDownloadTrigger,
+} from "../utils/processingDownloadTrigger.js";
 
 function cleanupPendingContext(url) {
   const existing = cache.get(url);
@@ -77,12 +80,11 @@ export function getDownloadLinkInfo(urlString) {
 
   const linkHost = url.hostname.toLowerCase();
   if (linkHost.includes("f95zone.to")) return null;
-  const resolvedHost = resolveDirectDownloadHost(linkHost);
-  if (!resolvedHost) return null;
-  if (!isDirectDownloadHostEnabled(linkHost)) return null;
-  const hostConfig = resolvedHost.config;
+  const hostContext = getDirectDownloadHostContext(linkHost, { requireEnabled: true });
+  if (!hostContext) return null;
+  const hostConfig = hostContext.config;
   if (!hostConfig.clickType) return null;
-  return { type: hostConfig.clickType, host: resolvedHost.host };
+  return { type: hostConfig.clickType, host: hostContext.host };
 }
 
 export function isSupportedDownloadLink(urlString) {
@@ -104,10 +106,22 @@ async function routeNormalDownload(
 ) {
   showToast(startMessage);
   if (detailMessage) showToast(detailMessage);
-  await saveConfigKeys({ processingDownload: true });
+
+  const trigger = createProcessingDownloadTrigger(processingWindowMs);
+  trigger.ownerTabId = getDirectDownloadAttentionTabId();
+  trigger.sourceHref = location.href;
+  config.processingDownload = trigger;
+  await saveConfigKeys({ processingDownload: trigger });
+
+  const clearInMs = Math.max(0, trigger.expiresAt - Date.now());
   setTimeout(() => {
-    saveConfigKeys({ processingDownload: false });
-  }, processingWindowMs);
+    const latest = normalizeProcessingDownloadTrigger(config.processingDownload);
+    if (!latest.active || latest.requestId !== trigger.requestId) return;
+    const inactive = createInactiveProcessingDownloadTrigger();
+    config.processingDownload = inactive;
+    saveConfigKeys({ processingDownload: inactive });
+  }, clearInMs);
+
   openInNewTabHelper(urlString);
 }
 

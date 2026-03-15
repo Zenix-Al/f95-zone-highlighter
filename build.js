@@ -58,7 +58,7 @@ function getPlugins(isRelease) {
 
 function getBuildDefines() {
   return {
-    __F95UE_DEBUG__: "false",
+    __F95UE_DEBUG__: "true",
   };
 }
 
@@ -69,14 +69,29 @@ function readHeaderTemplate() {
   return fs.readFileSync(HEADER_TEMPLATE_PATH, "utf8");
 }
 
-function renderHeader(template, { name, version, banner }) {
+function getBuildInfo(target, isRelease) {
+  const buildMode = isRelease ? "release" : "regular";
+  const artifactType = target.minify ? "uglified" : "regular";
+  const logStatus = isRelease
+    ? "debugLog call sites stripped where possible"
+    : "debugLog call sites retained";
+
+  return [
+    `// Build mode: ${buildMode}`,
+    `// Artifact: ${artifactType}`,
+    `// Logs: ${logStatus}`,
+  ].join("\n");
+}
+
+function renderHeader(template, { name, version, banner, buildInfo }) {
   return template
     .replaceAll("{{NAME}}", name)
     .replaceAll("{{VERSION}}", version)
-    .replaceAll("{{BANNER}}", banner);
+    .replaceAll("{{BANNER}}", banner)
+    .replaceAll("{{BUILD_INFO}}", buildInfo);
 }
 
-async function buildTarget(target, baseOptions, headerTemplate, version, banner) {
+async function buildTarget(target, baseOptions, headerTemplate, version, banner, isRelease) {
   await esbuild.build({
     ...baseOptions,
     minify: target.minify,
@@ -84,10 +99,12 @@ async function buildTarget(target, baseOptions, headerTemplate, version, banner)
   });
 
   const builtCode = fs.readFileSync(target.tmpOutfile, "utf8");
+  const buildInfo = getBuildInfo(target, isRelease);
   const header = renderHeader(headerTemplate, {
     name: target.scriptName,
     version,
     banner,
+    buildInfo,
   });
 
   fs.writeFileSync(target.finalOutfile, header + builtCode);
@@ -132,7 +149,7 @@ async function main() {
 
   await Promise.all(
     BUILD_TARGETS.map((target) =>
-      buildTarget(target, baseBuildOptions, headerTemplate, versionString, banner),
+      buildTarget(target, baseBuildOptions, headerTemplate, versionString, banner, isRelease),
     ),
   );
 }

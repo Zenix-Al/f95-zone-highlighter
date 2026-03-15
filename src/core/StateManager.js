@@ -15,6 +15,45 @@ function buildKnownPathsFromObject(obj, prefix = "", out = new Set()) {
   return out;
 }
 
+function isDomNodeLike(value) {
+  if (!value || typeof value !== "object") return false;
+  if (typeof Node !== "undefined" && value instanceof Node) return true;
+  return false;
+}
+
+function createSerializableSnapshot(source) {
+  const seen = new WeakSet();
+
+  const clone = (value) => {
+    if (value === null || typeof value !== "object") return value;
+    if (isDomNodeLike(value)) return null;
+    if (typeof value.toJSON === "function") {
+      try {
+        return clone(value.toJSON());
+      } catch {
+        return null;
+      }
+    }
+    if (seen.has(value)) return null;
+    seen.add(value);
+
+    if (Array.isArray(value)) {
+      const arr = value.map((item) => clone(item));
+      seen.delete(value);
+      return arr;
+    }
+
+    const out = {};
+    for (const [key, item] of Object.entries(value)) {
+      out[key] = clone(item);
+    }
+    seen.delete(value);
+    return out;
+  };
+
+  return clone(source);
+}
+
 const createStateManager = (initialState = {}, options = {}) => {
   const {
     knownPaths = null,
@@ -47,7 +86,13 @@ const createStateManager = (initialState = {}, options = {}) => {
       return false;
     }
 
-    setByPath(state, path, value);
+    const didSet = setByPath(state, path, value);
+    if (!didSet) {
+      if (warnUnknown) {
+        console.warn(`${name}: failed to set path '${path}'`);
+      }
+      return false;
+    }
     const pathParts = path.split(".");
     for (let i = 1; i <= pathParts.length; i++) {
       const currentPath = pathParts.slice(0, i).join(".");
@@ -74,7 +119,7 @@ const createStateManager = (initialState = {}, options = {}) => {
     };
   };
 
-  const getState = () => JSON.parse(JSON.stringify(state));
+  const getState = () => createSerializableSnapshot(state);
   const getKnownPaths = () => new Set(known);
 
   return {

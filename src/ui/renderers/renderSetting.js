@@ -23,6 +23,7 @@ export function renderSetting(key, meta) {
   if (meta.type === "button") {
     const row = document.createElement("div");
     row.className = "config-row";
+    row.dataset.settingKey = key;
 
     const label = createLabel(meta, `setting-${key}`);
     const btn = document.createElement("button");
@@ -49,6 +50,7 @@ export function renderSetting(key, meta) {
   // ⬇️ existing input renderer stays untouched
   const row = document.createElement("div");
   row.className = "config-row";
+  row.dataset.settingKey = key;
 
   const id = `setting-${key}`;
 
@@ -73,7 +75,10 @@ export function renderSetting(key, meta) {
       input.value = String(newValue);
     }
 
-    setByPath(config, meta.config, newValue);
+    const didSet = setByPath(config, meta.config, newValue);
+    if (!didSet) {
+      return;
+    }
 
     const topLevelKey = meta.config.split(".")[0];
     saveConfigKeys({

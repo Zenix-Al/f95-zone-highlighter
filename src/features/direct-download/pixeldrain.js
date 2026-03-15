@@ -3,11 +3,12 @@ import TIMINGS from "../../config/timings.js";
 import { SELECTORS } from "../../config/selectors.js";
 import { debugLog } from "../../core/logger.js";
 import { showToast } from "../../ui/components/toast.js";
-import { publishDirectDownloadAttention } from "./attention.js";
+import { handleDirectDownloadFailure } from "./attention.js";
 import { isDirectDownloadHostEnabled } from "./hostPackages.js";
 import {
   clearProcessingAndTryCloseTab,
-  clearProcessingDownloadFlag,
+  isProcessingDownloadFlowActive,
+  markHostDownloadSuccess,
 } from "./hostFlowHelpers.js";
 
 function isLikelyVisible(element) {
@@ -30,7 +31,9 @@ function getDownloadButtonCandidate() {
       const iconText = String(el.querySelector("i.icon")?.textContent || "")
         .trim()
         .toLowerCase();
-      const text = String(el.textContent || "").trim().toLowerCase();
+      const text = String(el.textContent || "")
+        .trim()
+        .toLowerCase();
 
       let score = 0;
       if (spanText === "download") score += 4;
@@ -71,9 +74,10 @@ function waitForDownloadButton(timeout = TIMINGS.PIXELDRAIN_BUTTON_WAIT_TIMEOUT)
 }
 
 export async function processPixeldrainDownload() {
+  const isProcessing = await isProcessingDownloadFlowActive();
   if (
     !config.threadSettings.directDownloadLinks ||
-    !config.processingDownload ||
+    !isProcessing ||
     !isDirectDownloadHostEnabled(location.hostname)
   )
     return;
@@ -84,6 +88,7 @@ export async function processPixeldrainDownload() {
     debugLog("PixeldrainDownloader", "Download button found, triggering click.");
 
     downloadButton.click();
+    await markHostDownloadSuccess("pixeldrain");
     showToast("Pixeldrain download triggered.");
 
     setTimeout(() => {
@@ -92,8 +97,12 @@ export async function processPixeldrainDownload() {
   } catch (err) {
     const message = `Pixeldrain automation failed: ${err?.message || String(err)}`;
     debugLog("PixeldrainDownloader", message, { level: "warn" });
-    showToast(message);
-    await publishDirectDownloadAttention("pixeldrain.com", message, "button_not_found");
-    await clearProcessingDownloadFlag();
+    await handleDirectDownloadFailure({
+      packageKey: "pixeldrain",
+      host: "pixeldrain.com",
+      message,
+      code: "button_not_found",
+      trippedToast: "Pixeldrain auto-disabled after 3 consecutive failures.",
+    });
   }
 }
