@@ -22,6 +22,8 @@ export function openTextPrompt({
   submitLabel = "Save",
   cancelLabel = "Cancel",
   validate = null,
+  multiline = false,
+  readOnly = false,
 } = {}) {
   const shadowRoot = getShadowRoot();
   if (!shadowRoot) return Promise.resolve(null);
@@ -44,11 +46,19 @@ export function openTextPrompt({
     body.className = "config-dialog-description";
     body.textContent = description;
 
-    const input = document.createElement("input");
+    const input = multiline ? document.createElement("textarea") : document.createElement("input");
     input.className = "config-dialog-input";
-    input.type = "text";
+    if (!multiline) {
+      input.type = "text";
+    }
     input.placeholder = placeholder;
     input.value = defaultValue;
+    input.readOnly = Boolean(readOnly);
+    if (multiline) {
+      input.rows = 10;
+      input.style.resize = "vertical";
+      input.style.minHeight = "160px";
+    }
 
     const error = document.createElement("div");
     error.className = "config-dialog-error";
@@ -110,7 +120,11 @@ export function openTextPrompt({
         close(null);
         return;
       }
-      if (e.key === "Enter") {
+      if (!multiline && e.key === "Enter") {
+        e.preventDefault();
+        submit();
+      }
+      if (multiline && e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
         submit();
       }
@@ -131,7 +145,7 @@ export function openSettingsDialog({
   closeLabel = "Close",
 } = {}) {
   const shadowRoot = getShadowRoot();
-  if (!shadowRoot) return;
+  if (!shadowRoot) return null;
 
   removeDialogIfExists();
 
@@ -194,4 +208,11 @@ export function openSettingsDialog({
     if (e.target === backdrop) close();
   });
   document.addEventListener("keydown", keydownHandler, true);
+
+  return {
+    backdrop,
+    panel,
+    content,
+    close,
+  };
 }

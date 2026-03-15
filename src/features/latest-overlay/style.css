@@ -10,3 +10,30 @@
   z-index: 2;
   pointer-events: none;
 }
+
+/* Bottom horizontal overlay band (covers fraction of tile height) */
+.custom-overlay-band {
+  position: relative;
+  overflow: visible;
+}
+
+.custom-overlay-band::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(var(--f95ue-overlay-coverage, 0.15) * 100%);
+  background: var(--f95ue-overlay-gradient, transparent);
+  pointer-events: none;
+  z-index: 0;
+  transition:
+    background 180ms ease,
+    height 180ms ease;
+}
+
+/* Ensure original tile content stays above the band without altering layout */
+.custom-overlay-band > * {
+  position: relative;
+  z-index: 1;
+}

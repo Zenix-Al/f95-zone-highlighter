@@ -1,8 +1,29 @@
 import { debugLog } from "./logger.js";
-import { config } from "../config.js";
-import { setFeatureStatus } from "./featureHealth.js";
+import stateManager, { config } from "../config.js";
+import { setFeatureStatus, pushRuntimeError } from "./featureHealth.js";
 import { showToast } from "../ui/components/toast.js";
 import { getByPath } from "../utils/objectPath.js";
+
+// Capture uncaught errors / unhandled rejections once per session so the
+// health diagnostic can surface runtime failures that happen outside the
+// feature lifecycle (e.g. inside requestAnimationFrame / queueMicrotask).
+let _globalListenerRegistered = false;
+function ensureGlobalListeners() {
+  if (_globalListenerRegistered) return;
+  _globalListenerRegistered = true;
+
+  window.addEventListener("error", (event) => {
+    const msg = event?.message ? String(event.message) : "Unknown error";
+    pushRuntimeError(msg);
+  });
+
+  window.addEventListener("unhandledrejection", (event) => {
+    const reason = event?.reason;
+    const msg = reason?.message ? String(reason.message) : String(reason ?? "Unknown rejection");
+    pushRuntimeError(`Unhandled: ${msg}`);
+  });
+}
+ensureGlobalListeners();
 
 /**
  * Creates a standardized feature module interface. This factory is designed to
@@ -11,18 +32,43 @@ import { getByPath } from "../utils/objectPath.js";
  */
 export const createFeature = (
   name,
-  { enable, disable, configPath, isEnabled: customIsEnabled },
+  { enable, disable, configPath, isEnabled: customIsEnabled, isApplicable },
 ) => {
   // Internal operation state to serialize toggles and coalesce rapid requests
   let opInProgress = false;
   let pendingDesired = null; // 'enable' | 'disable' | null
   const OP_TIMEOUT = 15000; // ms - fail-safe to avoid hangs
 
+  function canRunOnCurrentPage() {
+    if (typeof isApplicable !== "function") return true;
+    try {
+      return Boolean(isApplicable({ stateManager, config }));
+    } catch (err) {
+      debugLog(name, `Applicability check failed: ${err?.message || String(err)}`);
+      return false;
+    }
+  }
+
+  function computeIdleStatus() {
+    const desired = feature.isEnabled();
+    if (!desired) return { status: "disabled", details: null };
+    if (!canRunOnCurrentPage()) {
+      return { status: "disabled", details: "page mismatch" };
+    }
+    return { status: "unknown", details: null };
+  }
+
   const feature = {
     name: name,
     enable: function () {
       // Serialize enable requests: if an operation is running, remember desired state and return
       debugLog(name, "Enable requested");
+      if (!canRunOnCurrentPage()) {
+        debugLog(name, "Enable skipped - page mismatch.");
+        setFeatureStatus(name, "disabled", "page mismatch");
+        return;
+      }
+
       if (opInProgress) {
         pendingDesired = "enable";
         debugLog(name, "Enable deferred — operation in progress.");
@@ -115,11 +161,27 @@ export const createFeature = (
       const value = getByPath(config, configPath);
       return typeof value === "boolean" ? value : false;
     },
+    isApplicable: function () {
+      return canRunOnCurrentPage();
+    },
+    /**
+     * Feature code running AFTER enable() can call this to record a runtime
+     * error and update health status without going through the lifecycle.
+     * e.g.  latestOverlayFeature.reportError(err, "processTilesBatch")
+     */
+    reportError: function (err, phase = "runtime") {
+      const message = err?.message || String(err);
+      debugLog(name, `Runtime error [${phase}]: ${message}`);
+      setFeatureStatus(name, "failing", `[${phase}] ${message}`);
+      try {
+        showToast(`${name} error: ${message}`);
+      } catch {}
+    },
   };
 
   try {
-    const desired = feature.isEnabled();
-    setFeatureStatus(name, desired ? "unknown" : "disabled");
+    const initial = computeIdleStatus();
+    setFeatureStatus(name, initial.status, initial.details);
   } catch {
     setFeatureStatus(name, "unknown");
   }

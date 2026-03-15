@@ -18,6 +18,7 @@ export const createStyledFeature = (
   {
     configPath,
     isEnabled,
+    isApplicable,
     styleId,
     styleCss,
     styleTarget = "document",
@@ -29,6 +30,7 @@ export const createStyledFeature = (
   return createFeature(name, {
     configPath,
     isEnabled,
+    isApplicable,
     enable: () => {
       acquireStyle(resolvedStyleId, styleCss, styleTarget);
       return enable ? enable() : null;

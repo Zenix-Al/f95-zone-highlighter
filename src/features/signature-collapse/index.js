@@ -48,6 +48,7 @@ function disableSignatureCollapse() {
 
 export const signatureCollapseFeature = createStyledFeature("Signature Collapse", {
   configPath: "threadSettings.collapseSignature",
+  isApplicable: ({ stateManager }) => stateManager.get("isThread"),
   styleCss: featureCss,
   enable: enableSignatureCollapse,
   disable: disableSignatureCollapse,

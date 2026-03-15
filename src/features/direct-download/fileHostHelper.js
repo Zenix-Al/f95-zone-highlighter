@@ -1,8 +1,10 @@
 import { config, downloadHostConfigs } from "../../config";
+import { SELECTORS } from "../../config/selectors.js";
+import { queryFirstBySelectors } from "../../utils/selectorQuery.js";
 import { processGofileDownload } from "./gofile.js";
 import { processPixeldrainDownload } from "./pixeldrain.js";
 import { processDatanodesDownload } from "./datanodes.js";
-import { isDirectDownloadHostEnabled } from "./hostPackages.js";
+import { getDirectDownloadHostContext } from "./hostPackages.js";
 
 const hostHandlers = {
   "buzzheavier.com": handleBuzzshare,
@@ -16,7 +18,7 @@ const hostHandlers = {
 // single site helper should be used instead to avoid bloating this file
 export function handleDownload(host) {
   if (config.threadSettings.directDownloadLinks === false) return;
-  if (!isDirectDownloadHostEnabled(host)) return;
+  if (!getDirectDownloadHostContext(host, { requireEnabled: true })) return;
 
   const handler = hostHandlers[host];
   if (!handler) return;
@@ -36,6 +38,7 @@ async function handleBuzzshare() {
   if (window.top === window.self) return; // This handler should only run in an iframe
   const { btn: btnEl, directDownloadLink: dlLink } =
     downloadHostConfigs["buzzheavier.com"].handlerConfig;
+  const selectorCandidates = [btnEl, ...SELECTORS.BUZZHEAVIER.DOWNLOAD_BUTTON_CANDIDATES];
 
   function failedDownload() {
     window.parent.postMessage(
@@ -47,13 +50,26 @@ async function handleBuzzshare() {
       "*",
     );
   }
-  const btn = document.querySelector(btnEl);
+  const btn = queryFirstBySelectors(selectorCandidates);
   if (!btn) {
     failedDownload();
     return;
   }
 
-  const endpoint = window.location.origin + btn.getAttribute("hx-get");
+  const endpointSource =
+    btn.getAttribute("hx-get") || btn.getAttribute("data-hx-get") || btn.getAttribute("href");
+  if (!endpointSource) {
+    failedDownload();
+    return;
+  }
+
+  let endpoint = "";
+  try {
+    endpoint = new URL(endpointSource, window.location.origin).href;
+  } catch {
+    failedDownload();
+    return;
+  }
 
   try {
     const res = await fetch(endpoint, {

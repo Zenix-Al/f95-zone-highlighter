@@ -9,6 +9,7 @@ import featureCss from "./style.css";
  */
 export const imageRepairFeature = createStyledFeature("Image Repair", {
   configPath: "threadSettings.imgRetry",
+  isApplicable: ({ stateManager }) => stateManager.get("isThread"),
   styleCss: featureCss,
   enable: () => {
     injectUI();

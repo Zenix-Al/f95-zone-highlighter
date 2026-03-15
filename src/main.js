@@ -17,28 +17,72 @@ function registerGlobalTeardownHooks() {
   );
 }
 
-waitForBody(async () => {
-  registerGlobalTeardownHooks();
+function logBootstrapError(step, err) {
+  console.error(`[Bootstrap] ${step} failed:`, err);
+}
+
+async function runBootstrapStep(step, fn, fallbackValue = undefined) {
+  try {
+    return await fn();
+  } catch (err) {
+    logBootstrapError(step, err);
+    return fallbackValue;
+  }
+}
+
+async function bootstrap() {
+  await runBootstrapStep("registerGlobalTeardownHooks", async () => {
+    registerGlobalTeardownHooks();
+  });
 
   // --- Load user config ---
-  Object.assign(config, await loadData());
+  const loadedConfig = await runBootstrapStep("loadData", loadData, null);
+  if (loadedConfig && typeof loadedConfig === "object") {
+    Object.assign(config, loadedConfig);
+  }
 
   // --- Detect page type/state ---
-  detectPage();
+  await runBootstrapStep("detectPage", async () => {
+    detectPage();
+  });
 
   // --- Preventing further unnecessary code execution ---
-  if (stateManager.get('isMaskedLink')) {
-    if (config.threadSettings.skipMaskedLink) skipMaskedPage();
+  const isMaskedLink = await runBootstrapStep("checkMaskedLinkPage", async () =>
+    stateManager.get("isMaskedLink"),
+  );
+  if (isMaskedLink) {
+    if (config.threadSettings.skipMaskedLink) {
+      await runBootstrapStep("skipMaskedPage", async () => {
+        skipMaskedPage();
+      });
+    }
     return;
   }
 
   // --- Initialize ---
-  if (stateManager.get('isF95Zone')) {
-    initUI();
-    updateButtonVisibility();
-    toggleCrossTabSync(config.globalSettings.enableCrossTabSync);
+  const isF95Zone = await runBootstrapStep("checkF95ZonePage", async () =>
+    stateManager.get("isF95Zone"),
+  );
+  if (isF95Zone) {
+    await runBootstrapStep("initUI", async () => {
+      initUI();
+    });
+    await runBootstrapStep("updateButtonVisibility", async () => {
+      updateButtonVisibility();
+    });
+    await runBootstrapStep("toggleCrossTabSync", async () => {
+      toggleCrossTabSync(config.globalSettings.enableCrossTabSync);
+    });
   }
 
   // --- Execute Page-specific functionality ---
-  loadFeatures();
+  await runBootstrapStep("loadFeatures", async () => {
+    loadFeatures();
+  });
+}
+
+waitForBody(() => {
+  void bootstrap().catch((err) => {
+    logBootstrapError("bootstrap", err);
+  });
 });

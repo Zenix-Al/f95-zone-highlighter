@@ -49,6 +49,8 @@ const {
   buildOrderedOverlayMatches,
 } = loadModule("src/features/latest-overlay/overlayOrder.js");
 const { coerceSettingValue } = loadModule("src/ui/renderers/coerceSettingValue.js");
+const { setByPath } = loadModule("src/utils/objectPath.js");
+const { normalizeDirectDownloadHealth } = loadModule("src/features/direct-download/hostBreaker.js");
 
 runTest("StateManager blocks unknown set paths when knownPaths is provided", () => {
   const manager = createStateManager(
@@ -61,6 +63,41 @@ runTest("StateManager blocks unknown set paths when knownPaths is provided", () 
 
   assert.strictEqual(manager.set("unknown", 1), false);
   assert.strictEqual(manager.get("unknown"), undefined);
+});
+
+runTest("setByPath recovers from primitive intermediate path segments", () => {
+  const obj = { feature: "legacy" };
+  const didSet = setByPath(obj, "feature.enabled", true);
+  assert.strictEqual(didSet, true);
+  assert.deepStrictEqual(obj, { feature: { enabled: true } });
+});
+
+runTest("StateManager getState handles circular runtime values without throwing", () => {
+  const manager = createStateManager({ shadowRoot: null });
+  const circular = {};
+  circular.self = circular;
+
+  assert.strictEqual(manager.set("shadowRoot", circular), true);
+  const snapshot = manager.getState();
+  assert.deepStrictEqual(snapshot, { shadowRoot: { self: null } });
+});
+
+runTest("normalizeDirectDownloadHealth clamps invalid host breaker values", () => {
+  const normalized = normalizeDirectDownloadHealth({
+    gofile: {
+      failCount: -99,
+      autoDisabled: "yes",
+      noticeDismissed: 1,
+      lastError: 42,
+      updatedAt: -2,
+    },
+  });
+
+  assert.strictEqual(normalized.gofile.failCount, 0);
+  assert.strictEqual(normalized.gofile.autoDisabled, true);
+  assert.strictEqual(normalized.gofile.noticeDismissed, true);
+  assert.strictEqual(normalized.gofile.lastError, "");
+  assert.strictEqual(normalized.gofile.updatedAt, 0);
 });
 
 runTest("normalizeOverlayColorOrder restores missing keys and removes duplicates", () => {

@@ -18,6 +18,7 @@ function runDisableLatestOverlay() {
 
 export const latestOverlayFeature = createStyledFeature("Latest Overlay", {
   configPath: "latestSettings.latestOverlayToggle",
+  isApplicable: ({ stateManager }) => stateManager.get("isLatest"),
   styleCss: featureCss,
   enable: runEnableLatestOverlay,
   disable: runDisableLatestOverlay,

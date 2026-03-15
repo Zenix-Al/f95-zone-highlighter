@@ -1,8 +1,9 @@
 import stateManager, { config } from "../../config.js";
+import { openConfigTransferDialog } from "../../features/config-transfer/index.js";
 import { toggleNoticeDismissal } from "../../features/dismiss-notification";
 import { toggleCrossTabSync } from "../../services/syncService";
 import { updateButtonVisibility } from "../components/configButton";
-import { getAllFeatureStatuses } from "../../core/featureHealth.js";
+import { getAllFeatureStatuses, getRuntimeErrors } from "../../core/featureHealth.js";
 import { showToast } from "../components/toast";
 import { createEnabledDisabledToast, createToggleSetting } from "./metaFactory";
 
@@ -28,14 +29,31 @@ function formatFeatureHealthReport(statuses, counts) {
   const entries = Object.entries(statuses).sort(([a], [b]) => a.localeCompare(b));
   if (entries.length === 0) {
     lines.push("No feature status entries found.");
-    return lines.join("\n");
+  } else {
+    for (const [id, statusObj] of entries) {
+      const status = statusObj?.status || "unknown";
+      const details = statusObj?.details ? ` - ${statusObj.details}` : "";
+      lines.push(`${id}: ${status}${details}`);
+      // Include full error history for any feature that recorded failures
+      const errorLog = statusObj?.errorLog;
+      if (Array.isArray(errorLog) && errorLog.length > 0) {
+        for (const entry of errorLog) {
+          lines.push(`  [error ${entry.timestamp}] ${entry.details}`);
+        }
+      }
+    }
   }
 
-  for (const [id, statusObj] of entries) {
-    const status = statusObj?.status || "unknown";
-    const details = statusObj?.details ? ` - ${statusObj.details}` : "";
-    lines.push(`${id}: ${status}${details}`);
+  // Append unattributed runtime errors captured by the global listener
+  const rtErrors = getRuntimeErrors();
+  if (rtErrors.length > 0) {
+    lines.push("");
+    lines.push(`Runtime errors (${rtErrors.length}):`);
+    for (const e of rtErrors) {
+      lines.push(`  [${e.timestamp}] ${e.details}`);
+    }
   }
+
   return lines.join("\n");
 }
 
@@ -88,13 +106,21 @@ export const globalSettingsMeta = {
   }),
   enableCrossTabSync: createToggleSetting({
     text: "Sync settings across tabs",
-    tooltip: "Automatically apply changes made in other tabs(requires to refresh other tabs) experimental",
+    tooltip:
+      "Automatically apply changes made in other tabs(requires to refresh other tabs) experimental",
     config: "globalSettings.enableCrossTabSync",
     custom: () => {
       toggleCrossTabSync(config.globalSettings.enableCrossTabSync);
     },
     toast: createEnabledDisabledToast("(experimental)Cross-tab settings sync"),
   }),
+  configTransfer: {
+    type: "button",
+    text: "Import / export settings",
+    buttonText: "Open",
+    tooltip: "Open JSON import/export tools",
+    onClick: openConfigTransferDialog,
+  },
   featureHealth: {
     type: "button",
     text: "Feature health",
@@ -176,7 +202,37 @@ export const globalSettingsMeta = {
           line.className = "feature-health-line";
           line.textContent = `${id}: ${s.status}${s.details ? " - " + s.details : ""}`;
           content.appendChild(line);
+
+          // Show error history under each feature that has recorded failures
+          const errorLog = s?.errorLog;
+          if (Array.isArray(errorLog) && errorLog.length > 0) {
+            for (const entry of errorLog) {
+              const errLine = document.createElement("div");
+              errLine.className = "feature-health-line";
+              errLine.style.cssText = "padding-left:14px;font-size:11px;opacity:0.75;";
+              errLine.textContent = `\u2937 [${entry.timestamp.slice(11, 19)}] ${entry.details}`;
+              content.appendChild(errLine);
+            }
+          }
         }
+
+        // Show unattributed runtime errors caught by global listener
+        const rtErrors = getRuntimeErrors();
+        if (rtErrors.length > 0) {
+          const sep = document.createElement("div");
+          sep.className = "feature-health-line";
+          sep.style.cssText = "margin-top:6px;font-weight:bold;";
+          sep.textContent = `Runtime errors (${rtErrors.length})`;
+          content.appendChild(sep);
+          for (const e of rtErrors) {
+            const errLine = document.createElement("div");
+            errLine.className = "feature-health-line";
+            errLine.style.cssText = "padding-left:14px;font-size:11px;opacity:0.75;";
+            errLine.textContent = `[${e.timestamp.slice(11, 19)}] ${e.details}`;
+            content.appendChild(errLine);
+          }
+        }
+
         box.dataset.copyPayload = reportText;
         box.style.display = "block";
       } catch (err) {

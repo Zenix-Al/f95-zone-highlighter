@@ -16,8 +16,6 @@
 // @grant        GM_openInTab
 // @grant        GM_addValueChangeListener
 // @grant        GM_removeValueChangeListener
-// @grant        GM_xmlhttpRequest
-// @grant        unsafeWindow
 // @run-at       document-idle
 // @license      GPL-3.0-or-later
 // @homepageURL  https://f95zone.to/threads/f95zone-latest.250836/
@@ -28,4 +26,5 @@
 // ==/UserScript==
 // ------------------------------------------------------------
 {{BANNER}}
+{{BUILD_INFO}}
 // ------------------------------------------------------------

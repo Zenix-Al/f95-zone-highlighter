@@ -2,6 +2,7 @@ import { config } from "../../config";
 import { resolveMaskedLink } from "./resolver.js";
 import { SELECTORS } from "../../config/selectors.js";
 import TIMINGS from "../../config/timings.js";
+import { queryFirstBySelectors } from "../../utils/selectorQuery.js";
 
 /**
  * On the masked page itself, this function tries to automatically
@@ -12,7 +13,7 @@ export function skipMaskedPage() {
   if (!location.pathname.startsWith("/masked/") || location.pathname === "/masked/") return;
 
   // Auto-click the continue button if present (most reliable now)
-  const continueBtn = document.querySelector(SELECTORS.MASKED_PAGE.CONTINUE_BTN);
+  const continueBtn = queryFirstBySelectors(SELECTORS.MASKED_PAGE.CONTINUE_BTN_CANDIDATES);
   if (continueBtn) {
     continueBtn.click();
     return; // Done, no need for fancy XHR
@@ -21,10 +22,10 @@ export function skipMaskedPage() {
   // --- Fallback to XHR method if no button ---
 
   // UI tweaks to prevent layout shift, inspired by F95-Zone Skipper Ultra
-  const $leaving = document.querySelector(".leaving");
+  const $leaving = queryFirstBySelectors(SELECTORS.MASKED_PAGE.LEAVING_CANDIDATES);
   if ($leaving) {
     $leaving.style.width = $leaving.offsetWidth + "px";
-    const leavingText = document.querySelector(".leaving-text");
+    const leavingText = queryFirstBySelectors(SELECTORS.MASKED_PAGE.LEAVING_TEXT_CANDIDATES, $leaving);
     if (leavingText) leavingText.style.display = "none";
   }
 

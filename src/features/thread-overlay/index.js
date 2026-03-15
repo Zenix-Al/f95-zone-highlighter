@@ -53,6 +53,7 @@ function disableThreadOverlay() {
 
 export const threadOverlayFeature = createStyledFeature("Thread Overlay", {
   configPath: "threadSettings.threadOverlayToggle",
+  isApplicable: ({ stateManager }) => stateManager.get("isThread"),
   styleCss: featureCss,
   enable: enableThreadOverlay,
   disable: disableThreadOverlay,

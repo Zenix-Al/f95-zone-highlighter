@@ -1,5 +1,6 @@
 import createStateManager from "./core/StateManager.js";
 import TIMINGS from "./config/timings.js";
+import { createInactiveProcessingDownloadTrigger } from "./utils/processingDownloadTrigger.js";
 
 export const validVersions = ["full", "final"];
 
@@ -41,6 +42,26 @@ export const defaultDirectDownloadPackages = {
   mediafire: true,
 };
 
+export function createDefaultDirectDownloadHostHealth() {
+  return {
+    failCount: 0,
+    autoDisabled: false,
+    noticeDismissed: false,
+    lastError: "",
+    updatedAt: 0,
+  };
+}
+
+export function createDefaultDirectDownloadHealth(
+  packageTemplate = defaultDirectDownloadPackages,
+) {
+  const result = {};
+  for (const key of Object.keys(packageTemplate || {})) {
+    result[key] = createDefaultDirectDownloadHostHealth();
+  }
+  return result;
+}
+
 export const defaultThreadSetting = {
   neutral: true,
   preferred: true,
@@ -54,6 +75,7 @@ export const defaultThreadSetting = {
   threadOverlayToggle: true,
   directDownloadLinks: true,
   directDownloadPackages: { ...defaultDirectDownloadPackages },
+  directDownloadHealth: createDefaultDirectDownloadHealth(),
 };
 
 export const defaultLatestSettings = {
@@ -103,7 +125,7 @@ export let config = {
   latestSettings: { ...defaultLatestSettings },
   metrics: { ...defaultMetrics },
   savedNotifID: null,
-  processingDownload: false,
+  processingDownload: createInactiveProcessingDownloadTrigger(),
 };
 
 // This object holds the script's temporary, in-memory state.

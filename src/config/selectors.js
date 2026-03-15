@@ -20,6 +20,13 @@ export const SELECTORS = {
     ITEMS_LIST: "#filemanager_itemslist",
     ALERT: "#filemanager_alert",
   },
+  BUZZHEAVIER: {
+    DOWNLOAD_BUTTON_CANDIDATES: [
+      'a[hx-get*="/download"]',
+      'a[data-hx-get*="/download"]',
+      'a[href*="/download"]',
+    ],
+  },
   PIXELDRAIN: {
     DOWNLOAD_BUTTON_CANDIDATES: "button.button_highlight, .button_highlight, a.button.button_highlight",
   },
@@ -27,11 +34,30 @@ export const SELECTORS = {
     METHOD_FREE_BUTTON_ID: "method_free",
     METHOD_FREE_BUTTON: "#method_free",
     DOWNLOAD_BUTTON_PRIMARY: "button.bg-blue-600",
+    METHOD_FREE_BUTTON_CANDIDATES: [
+      "#method_free",
+      'button[name="method_free"]',
+      'button[id*="method_free"]',
+    ],
+    DOWNLOAD_BUTTON_PRIMARY_CANDIDATES: [
+      "button.bg-blue-600",
+      'button[id*="download"]',
+      'button[name*="download"]',
+      'button[data-action*="download"]',
+    ],
   },
   MASKED_PAGE: {
     CONTINUE_BTN: ".host_link",
+    CONTINUE_BTN_CANDIDATES: [
+      ".host_link",
+      "a.host_link",
+      ".leaving a[href]",
+      "#leaving a[href]",
+    ],
     LEAVING: ".leaving",
+    LEAVING_CANDIDATES: [".leaving", "#leaving", ".leaving-page"],
     LEAVING_TEXT: ".leaving-text",
+    LEAVING_TEXT_CANDIDATES: [".leaving-text", ".leaving .leaving-text", ".leaving p"],
     IDS: {
       LOADING: "loading",
       CAPTCHA: "captcha",

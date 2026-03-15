@@ -161,7 +161,7 @@ export function renderPreferred() {
     containerId: "preferred-tags-list",
     ids: config.preferredTags,
     itemClass: "preferred-tag-item",
-    removeBtnClass: "preferred-tag-remove",
+    removeBtnClass: "",
     onRemove: (index, tag) => handleTagRemoval("preferredTags", tag, index, renderPreferred),
   });
 }
@@ -173,11 +173,19 @@ export function renderExcluded() {
     containerId: "excluded-tags-list",
     ids: config.excludedTags,
     itemClass: "excluded-tag-item",
-    removeBtnClass: "excluded-tag-remove",
+    removeBtnClass: "",
     onRemove: (index, tag) => handleTagRemoval("excludedTags", tag, index, renderExcluded),
   });
 }
-function renderTagList({ listKey, renderFn, containerId, ids, itemClass, removeBtnClass, onRemove }) {
+function renderTagList({
+  listKey,
+  renderFn,
+  containerId,
+  ids,
+  itemClass,
+  removeBtnClass,
+  onRemove,
+}) {
   const container = stateManager.get("shadowRoot").getElementById(containerId);
   if (!container) return;
 

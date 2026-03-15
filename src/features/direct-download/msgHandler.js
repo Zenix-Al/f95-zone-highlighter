@@ -3,6 +3,8 @@ import { showToast } from "../../ui/components/toast";
 import { injectFrame } from "./iframe.js";
 import resourceManager from "../../core/resourceManager.js";
 import { addListener, removeListener } from "../../core/listenerRegistry.js";
+import { getDirectDownloadHostContext } from "./hostPackages.js";
+import { markDirectDownloadHostFailure, markDirectDownloadHostSuccess } from "./hostBreaker.js";
 
 function cleanupIframeContext(src) {
   const ctx = cache.get(src);
@@ -23,7 +25,7 @@ export function handleMsgEvent() {
   if (stateManager.get("isMsgEventHandlerApplied")) return;
   stateManager.set("isMsgEventHandlerApplied", true);
 
-  function handler({ data }) {
+  async function handler({ data }) {
     if (!data || !data.op || !data.src) return;
 
     const { op, src, dest } = data;
@@ -31,6 +33,12 @@ export function handleMsgEvent() {
     // We only care about these two operations.
     if (op !== "FAILED" && op !== "DOWNLOAD_LINK_RESOLVED") {
       return;
+    }
+    let packageKey = null;
+    try {
+      packageKey = getDirectDownloadHostContext(new URL(src).hostname)?.packageKey || null;
+    } catch {
+      packageKey = null;
     }
 
     const ctx = cleanupIframeContext(src);
@@ -43,6 +51,17 @@ export function handleMsgEvent() {
         textDecoration: "none",
       });
       showToast("Download failed or file not found, open in new tab.");
+      if (packageKey) {
+        const breakerResult = await markDirectDownloadHostFailure(
+          packageKey,
+          "Iframe resolver failed or file not found.",
+        );
+        if (breakerResult?.tripped) {
+          showToast(
+            `${packageKey.charAt(0).toUpperCase() + packageKey.slice(1)} auto-disabled after 3 consecutive failures.`,
+          );
+        }
+      }
       window.open(src, "_blank");
     } else {
       // This must be DOWNLOAD_LINK_RESOLVED
@@ -53,6 +72,9 @@ export function handleMsgEvent() {
         fontWeight: "bold",
         textDecoration: "none",
       });
+      if (packageKey) {
+        await markDirectDownloadHostSuccess(packageKey);
+      }
       if (dest) {
         showToast("Direct download started...");
         injectFrame(dest, { onSuccess: () => showToast("Direct download initiated.") });

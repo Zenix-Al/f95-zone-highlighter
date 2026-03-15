@@ -1,5 +1,6 @@
 import {
   config,
+  createDefaultDirectDownloadHealth,
   defaultColors,
   defaultDirectDownloadPackages,
   defaultGlobalSettings,
@@ -11,6 +12,13 @@ import {
 import { debugLog } from "../core/logger";
 import { isValidColor, isValidVersion } from "../utils/validators";
 import { normalizeOverlayColorOrder } from "../features/latest-overlay/overlayOrder.js";
+import { normalizeDirectDownloadHealthEntry } from "../utils/normalization.js";
+import { normalizeArray, normalizeObject } from "../utils/objectPath.js";
+import {
+  createInactiveProcessingDownloadTrigger,
+  isProcessingDownloadTriggerActive,
+  normalizeProcessingDownloadTrigger,
+} from "../utils/processingDownloadTrigger.js";
 
 function sanitizeColorSection(value) {
   const merged = { ...defaultColors, ...(value || {}) };
@@ -32,20 +40,31 @@ function sanitizeLatestSettings(value) {
 }
 
 function sanitizeThreadSettings(value) {
-  const merged = { ...defaultThreadSetting, ...(value || {}) };
-  const incomingPackages =
-    value &&
-    typeof value === "object" &&
-    value.directDownloadPackages &&
-    typeof value.directDownloadPackages === "object"
-      ? value.directDownloadPackages
-      : {};
+  const sanitizeDirectDownloadHealth = (input) => {
+    const defaults = createDefaultDirectDownloadHealth(defaultDirectDownloadPackages);
+    const source = normalizeObject(input);
+    const result = {};
+    for (const key of Object.keys(defaults)) {
+      result[key] = normalizeDirectDownloadHealthEntry(source[key], defaults[key]);
+    }
+    return result;
+  };
+  const source = normalizeObject(value);
+  const merged = { ...defaultThreadSetting, ...source };
+  const incomingPackages = normalizeObject(source.directDownloadPackages);
   merged.directDownloadPackages = {
     ...defaultDirectDownloadPackages,
     ...incomingPackages,
   };
   for (const key of Object.keys(defaultDirectDownloadPackages)) {
     merged.directDownloadPackages[key] = Boolean(merged.directDownloadPackages[key]);
+  }
+  const incomingHealth = normalizeObject(source.directDownloadHealth);
+  merged.directDownloadHealth = sanitizeDirectDownloadHealth(incomingHealth);
+  for (const key of Object.keys(defaultDirectDownloadPackages)) {
+    if (merged.directDownloadHealth[key]?.autoDisabled) {
+      merged.directDownloadPackages[key] = false;
+    }
   }
   return merged;
 }
@@ -57,24 +76,56 @@ function sanitizePersistedUpdate(key, value) {
     case "latestSettings":
       return sanitizeLatestSettings(value);
     case "overlaySettings":
-      return { ...defaultOverlaySettings, ...(value || {}) };
+      return { ...defaultOverlaySettings, ...normalizeObject(value) };
     case "threadSettings":
       return sanitizeThreadSettings(value);
     case "globalSettings":
-      return { ...defaultGlobalSettings, ...(value || {}) };
+      return { ...defaultGlobalSettings, ...normalizeObject(value) };
     case "metrics":
-      return { ...defaultMetrics, ...(value || {}) };
+      return { ...defaultMetrics, ...normalizeObject(value) };
+    case "processingDownload":
+      return normalizeProcessingDownloadTrigger(value);
     default:
       return value;
   }
 }
 
 export async function saveConfigKeys(updates) {
-  const promises = Object.entries(updates).map(([key, value]) => {
-    return GM.setValue(key, sanitizePersistedUpdate(key, value));
-  });
-  await Promise.all(promises);
-  debugLog("saveConfigKeys", `Config updated: ${JSON.stringify(Object.keys(updates))}`);
+  const entries = Object.entries(updates);
+  if (entries.length === 0) {
+    return { saved: [], failed: [] };
+  }
+  const results = await Promise.allSettled(
+    entries.map(([key, value]) => GM.setValue(key, sanitizePersistedUpdate(key, value))),
+  );
+  const saved = [];
+  const failed = [];
+  for (let i = 0; i < results.length; i++) {
+    const key = entries[i][0];
+    const result = results[i];
+    if (result.status === "fulfilled") {
+      saved.push(key);
+    } else {
+      failed.push({
+        key,
+        reason: result.reason,
+      });
+    }
+  }
+  if (saved.length > 0) {
+    debugLog("saveConfigKeys", `Config updated: ${JSON.stringify(saved)}`);
+  }
+  if (failed.length > 0) {
+    console.warn(
+      "[saveConfigKeys] Some settings failed to persist:",
+      failed.map((item) => item.key),
+    );
+    debugLog("saveConfigKeys", "Failed to persist settings keys", {
+      data: failed,
+      level: "warn",
+    });
+  }
+  return { saved, failed };
 }
 
 export async function loadData() {
@@ -109,21 +160,39 @@ export async function loadData() {
 
   // Helper: deep merge with defaults
   const mergeWithDefault = (saved, defaultObj) => {
-    if (!saved || typeof saved !== "object") return { ...defaultObj };
+    const source = normalizeObject(saved);
     const result = { ...defaultObj }; // start with defaults
-    Object.keys(saved).forEach((key) => {
+    Object.keys(source).forEach((key) => {
       if (key in result) {
-        result[key] = saved[key]; // only override if key exists in default
+        result[key] = source[key]; // only override if key exists in default
       }
       // ignore unknown keys (future cleanup)
     });
     return result;
   };
 
+  const hasLegacyProcessingDownload = typeof parsed.processingDownload === "boolean";
+  let processingDownload = normalizeProcessingDownloadTrigger(parsed.processingDownload);
+  if (hasLegacyProcessingDownload) {
+    try {
+      await GM.setValue("processingDownload", processingDownload);
+    } catch {
+      // best-effort migration write
+    }
+  }
+  if (processingDownload.active && !isProcessingDownloadTriggerActive(processingDownload)) {
+    processingDownload = createInactiveProcessingDownloadTrigger();
+    try {
+      await GM.setValue("processingDownload", processingDownload);
+    } catch {
+      // best-effort migration cleanup
+    }
+  }
+
   const result = {
-    tags: Array.isArray(parsed.tags) ? parsed.tags : [],
-    preferredTags: Array.isArray(parsed.preferredTags) ? parsed.preferredTags : [],
-    excludedTags: Array.isArray(parsed.excludedTags) ? parsed.excludedTags : [],
+    tags: normalizeArray(parsed.tags),
+    preferredTags: normalizeArray(parsed.preferredTags),
+    excludedTags: normalizeArray(parsed.excludedTags),
 
     color: mergeWithDefault(parsed.color, defaultColors),
 
@@ -136,7 +205,7 @@ export async function loadData() {
 
     metrics: mergeWithDefault(parsed.metrics, defaultMetrics),
     savedNotifID: parsed.savedNotifID || null,
-    processingDownload: parsed.processingDownload || false,
+    processingDownload,
   };
 
   // --- Data Migration & Safety Checks ---

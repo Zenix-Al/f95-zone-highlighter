@@ -1,18 +1,58 @@
 # Changelog
 
-## [v4.8.20 - Settings UX + Build Pipeline Cleanup]
+### **[v4.10.0 - Modal UI + Overlay Stability Release]**
 
-### Major Changes & Improvements
+This release focuses on modal usability, page-scope correctness, direct-download reliability, and latest overlay behavior/performance.
 
-- Refactored settings metadata creation with shared factories to reduce repeated toggle boilerplate.
-- Consolidated object-path helpers into `src/utils/objectPath.js` and reused it across state/features/UI renderers.
-- Refactored `build.js` into a shared target pipeline (regular + uglified always built), with a wired `header.txt` template and centralized post-processing.
+**Major Changes & Improvements**
 
-### Bug Fixes & Minor Tweaks
+- **Modal Section UI Updated:** Improved modal section behavior and presentation for a cleaner settings flow.
+- **Datanodes Direct Download Fixed:** Updated Datanodes support so the direct-download path works again on the new flow.
+- **Feature Page Gating Fixed:** Fixed features being triggered on pages where they should not run.
+- **Feature Health Diagnostics Improved:** Improved error capture/reporting so runtime feature failures are surfaced more reliably in Feature Health.
+- **Latest Overlay Updated:** Overlay color band now uses a compact CSS-only height (18%) for better readability and lower overhead.
+- **Latest Overlay Hover Tag Highlighting Added:** Hover-created tags are now highlighted using your preferred/excluded tag rules.
+- **Latest Overlay Optimized:** Additional cleanup and processing optimizations for faster, lighter overlay behavior.
 
-- Reordered Thread settings so masked-link and direct-download controls are grouped near their settings buttons.
-- Moved `Direct Download Links` toggle into the Direct Download settings dialog and removed unsupported/placeholder host options.
-- Fixed Excluded tag pill text spacing to match Preferred tag chip alignment.
+### **[v4.9.0 - Config Transfer + Reinforcement Release]**
+
+This release is focused on configuration portability, direct-download resilience, and core safety hardening.
+
+**Major Changes & Improvements**
+
+- **Import/Export Config Added:** Added dedicated JSON export/import tools in Global Settings (open modal flow), with file download export and strict import validation.
+- **Import Validation Reinforced:** Added schema validation for tags, color/overlay/global/thread/latest sections, including `latestOverlayColorOrder` integrity checks.
+- **Direct Download Trigger Hardening:** Replaced legacy boolean processing flag with timed trigger object (`active`, `startedAt`, `expiresAt`, `requestId`) and legacy migration support.
+- **Direct Download Circuit Breaker:** Added per-host failure tracking and auto-disable after repeated failures, plus UI notice and dismiss flow for affected hosts.
+
+**Security & Reliability Hardening**
+
+- Removed `unsafeWindow` dependency and grant; Gofile now uses a safer page-bridge approach.
+- Migrated auto-retry probing away from `GM_xmlhttpRequest` to native `fetch` + timeout, and removed the extra grant.
+- Added selector fallback matrix + shared selector query helper for brittle host markup (Buzzheavier/Datanodes/Masked page).
+- Added optional MutationObserver profiling/gating instrumentation, disabled by default, for real-cost measurement before optimization changes.
+- Reinforced state/settings paths and persistence behavior (`setByPath` guard behavior, `saveConfigKeys` fail isolation via `Promise.allSettled`).
+
+**UX & Polish**
+
+- Added release/regular build metadata in script header comments.
+- Improved config transfer error visibility inside dialog while still surfacing toast feedback.
+- Mobile modal hint/help behavior adjusted to avoid overlap issues on small screens.
+
+### **[v4.8.20 - Settings UX + Build Pipeline Cleanup]**
+
+Not a feature changes, just adding more freedom in config and stability.
+
+**Improvements**
+
+- **Settings Metadata Refactor:** Refactored settings metadata creation with shared factories to reduce repeated toggle boilerplate.
+- **Consolidated Helpers:** Consolidated object-path helpers into `src/utils/objectPath.js` and reused it across state/features/UI renderers.
+- **Build Pipeline Overhaul:** Refactored `build.js` into a shared target pipeline (regular + uglified always built), with a wired `header.txt` template and centralized post-processing.
+- **Settings UI Streamlined:** Moved Latest Overlay and Thread Overlay settings into dedicated modals to significantly reduce visual clutter in the main configuration menu.
+
+**Bug Fixes & Minor Tweaks**
+
+- Added a quick-copy button to the Feature Health section to easily export status data for debugging.
 - Restored release debug-log stripping behavior for GreasyFork release builds.
 
 ## [v4.8.0 - Direct Download + Wide Latest Fixes]

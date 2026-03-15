@@ -3,6 +3,7 @@ import {
   debouncedProcessThreadTags,
 } from "../../core/tasksRegistry";
 import { updateColorStyle } from "../helpers/updateColorStyle";
+import { buildSettingsMap, createColorSetting } from "./metaFactory";
 
 const executeBothQueuedTasks = () => {
   debouncedProcessAllTilesReset();
@@ -14,138 +15,34 @@ const createColorEffect = (colorName) => () => {
   executeBothQueuedTasks();
 };
 
-export const colorSettingsMeta = {
-  completedColor: {
-    type: "color",
-    text: "Completed",
-    config: "color.completed",
-    effects: {
-      custom: createColorEffect("completed"),
-      toast: () => "Completed color updated",
-    },
-  },
+const COLOR_SETTING_DEFS = [
+  { key: "completedColor", text: "Completed", colorName: "completed" },
+  { key: "onholdColor", text: "On Hold", colorName: "onhold" },
+  { key: "abandonedColor", text: "Abandoned", colorName: "abandoned" },
+  { key: "highVersionColor", text: "High Version", colorName: "highVersion" },
+  { key: "invalidVersionColor", text: "Invalid Version", colorName: "invalidVersion" },
+  { key: "tileInfoColor", text: "Tile Info", colorName: "tileInfo" },
+  { key: "tileHeaderColor", text: "Tile Header", colorName: "tileHeader" },
+  { key: "preferredColor", text: "Preferred", colorName: "preferred", before: "hr" },
+  { key: "preferredTextColor", text: "Preferred Text", colorName: "preferredText" },
+  { key: "excludedColor", text: "Excluded", colorName: "excluded" },
+  { key: "excludedTextColor", text: "Excluded Text", colorName: "excludedText" },
+  { key: "neutralColor", text: "Neutral", colorName: "neutral" },
+  { key: "neutralTextColor", text: "Neutral Text", colorName: "neutralText" },
+];
 
-  onholdColor: {
-    type: "color",
-    text: "On Hold",
-    config: "color.onhold",
-    effects: {
-      custom: createColorEffect("onhold"),
-      toast: () => "On Hold color updated",
-    },
-  },
-
-  abandonedColor: {
-    type: "color",
-    text: "Abandoned",
-    config: "color.abandoned",
-    effects: {
-      custom: createColorEffect("abandoned"),
-      toast: () => "Abandoned color updated",
-    },
-  },
-
-  highVersionColor: {
-    type: "color",
-    text: "High Version",
-    config: "color.highVersion",
-    effects: {
-      custom: createColorEffect("highVersion"),
-      toast: () => "High Version color updated",
-    },
-  },
-
-  invalidVersionColor: {
-    type: "color",
-    text: "Invalid Version",
-    config: "color.invalidVersion",
-    effects: {
-      custom: createColorEffect("invalidVersion"),
-      toast: () => "Invalid Version color updated",
-    },
-  },
-
-  tileInfoColor: {
-    type: "color",
-    text: "Tile Info",
-    config: "color.tileInfo",
-    effects: {
-      custom: createColorEffect("tileInfo"),
-      toast: () => "Tile Info color updated",
-    },
-  },
-
-  tileHeaderColor: {
-    type: "color",
-    text: "Tile Header",
-    config: "color.tileHeader",
-    effects: {
-      custom: createColorEffect("tileHeader"),
-      toast: () => "Tile Header color updated",
-    },
-  },
-
-  preferredColor: {
-    type: "color",
-    text: "Preferred",
-    config: "color.preferred",
-    before: "hr",
-    effects: {
-      custom: createColorEffect("preferred"),
-      toast: () => "Preferred color updated",
-    },
-  },
-
-  preferredTextColor: {
-    type: "color",
-    text: "Preferred Text",
-    config: "color.preferredText",
-    effects: {
-      custom: createColorEffect("preferredText"),
-      toast: () => "Preferred Text color updated",
-    },
-  },
-
-  excludedColor: {
-    type: "color",
-    text: "Excluded",
-    config: "color.excluded",
-    effects: {
-      custom: createColorEffect("excluded"),
-      toast: () => "Excluded color updated",
-    },
-  },
-
-  excludedTextColor: {
-    type: "color",
-    text: "Excluded Text",
-    config: "color.excludedText",
-    effects: {
-      custom: createColorEffect("excludedText"),
-      toast: () => "Excluded Text color updated",
-    },
-  },
-
-  neutralColor: {
-    type: "color",
-    text: "Neutral",
-    config: "color.neutral",
-    effects: {
-      custom: createColorEffect("neutral"),
-      toast: () => "Neutral color updated",
-    },
-  },
-
-  neutralTextColor: {
-    type: "color",
-    text: "Neutral Text",
-    config: "color.neutralText",
-    effects: {
-      custom: createColorEffect("neutralText"),
-      toast: () => "Neutral Text color updated",
-    },
-  },
-};
+export const colorSettingsMeta = buildSettingsMap(
+  COLOR_SETTING_DEFS.map(({ key, text, colorName, before }) => [
+    key,
+    createColorSetting({
+      text,
+      config: `color.${colorName}`,
+      before,
+      custom: createColorEffect(colorName),
+      toast: () => `${text} color updated`,
+    }),
+  ]),
+);
 
 export const colorSettingsDisabledMeta = {
   info: {
