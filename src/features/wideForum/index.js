@@ -23,6 +23,7 @@ function disableWideForum() {
 
 export const wideForumFeature = createStyledFeature("Wide Forum", {
   configPath: "threadSettings.isWide",
+  isApplicable: ({ stateManager }) => stateManager.get("isThread"),
   styleCss: featureCss,
   enable: enableWideForum,
   disable: disableWideForum,

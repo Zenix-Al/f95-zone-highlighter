@@ -1,5 +1,4 @@
 import stateManager, { config } from "../../config.js";
-import { getTextColorForGradient } from "./handleTextColor";
 import { debugLog } from "../../core/logger";
 import { addObserverCallback, removeObserverCallback } from "../../core/observer";
 import { SELECTORS } from "../../config/selectors.js";
@@ -12,6 +11,7 @@ import {
 
 let generationCounter = 0;
 let tagIdToName = null;
+let tagNameToId = null;
 let overlayFlags = null;
 let overlayColorOrder = OVERLAY_COLOR_ORDER_KEYS;
 
@@ -22,6 +22,14 @@ function refreshCaches() {
   tagIdToName = new Map();
   (config.tags || []).forEach((t) => {
     tagIdToName.set(Number(t.id), t.name);
+  });
+
+  // Build name -> id map for hover-created tag elements (they render names)
+  tagNameToId = new Map();
+  (config.tags || []).forEach((t) => {
+    if (t && typeof t.name !== "undefined") {
+      tagNameToId.set(String(t.name).toLowerCase(), Number(t.id));
+    }
   });
 
   overlayFlags = {
@@ -52,7 +60,9 @@ function processMutations(mutationsList, generation) {
       if (node.classList?.contains(SELECTORS.TILE.CLASS)) {
         pendingMutationTiles.add(node);
       } else if (node.querySelectorAll) {
-        node.querySelectorAll(SELECTORS.TILE.ROOT).forEach((tile) => pendingMutationTiles.add(tile));
+        node
+          .querySelectorAll(SELECTORS.TILE.ROOT)
+          .forEach((tile) => pendingMutationTiles.add(tile));
       }
     }
   }
@@ -217,13 +227,11 @@ function buildTilePatch(tile, reset, generation) {
   }
 
   const gradient = getGradientForColors(colors, "45deg");
-  const textColor = getTextColorForGradientCached(gradient);
 
   return {
     type: "apply",
     tile,
     gradient,
-    textColor,
     label: labels[0] || "",
   };
 }
@@ -239,14 +247,9 @@ function applyTilePatch(patch, generation) {
   const body = patch.tile.querySelector(SELECTORS.TILE.BODY);
   if (!body) return;
 
-  body.style.background = patch.gradient;
-  body.style.color = patch.textColor;
-
-  const metas = body.querySelectorAll(SELECTORS.TILE.INFO_META);
-  metas.forEach((meta) => {
-    meta.style.color = patch.textColor;
-    meta.style.fontWeight = "bold";
-  });
+  // Apply a bottom horizontal overlay band via CSS class and gradient variable.
+  body.classList.add("custom-overlay-band");
+  body.style.setProperty("--f95ue-overlay-gradient", patch.gradient);
 
   if (config.overlaySettings.overlayText && patch.label) {
     addOverlayLabel(patch.tile, patch.label);
@@ -280,6 +283,8 @@ export function enableLatestOverlay() {
     { filter: hasTileMutations },
   );
 
+  // Listen for hover-created tag containers and style tags dynamically
+  setupHoverListener();
   stateManager.set("latestOverlayStatus", "ACTIVE");
   debugLog("Latest Overlay", "Feature is now ACTIVE.");
 }
@@ -312,6 +317,8 @@ export function disableLatestOverlay() {
   generationCounter++;
   pendingMutationTiles.clear();
   mutationFlushScheduled = false;
+  // remove hover listener first
+  teardownHoverListener();
 
   removeObserverCallback("latest-overlay");
   debugLog("Latest Overlay", "Observer callback for 'latest-overlay' removed.");
@@ -356,6 +363,7 @@ export function resetTile(tile) {
   const body = tile.querySelector(SELECTORS.TILE.BODY);
   if (body) {
     body.removeAttribute("style");
+    body.classList.remove("custom-overlay-band");
     const metas = body.querySelectorAll(SELECTORS.TILE.INFO_META);
     metas.forEach((meta) => meta.removeAttribute("style"));
   }
@@ -389,7 +397,6 @@ function getTileTags(tile) {
 }
 
 const gradientCache = new Map();
-const textColorCache = new Map();
 
 function getGradientForColors(colors, direction = "45deg") {
   const key = colors.join("|");
@@ -399,11 +406,74 @@ function getGradientForColors(colors, direction = "45deg") {
   return g;
 }
 
-function getTextColorForGradientCached(gradient) {
-  if (textColorCache.has(gradient)) return textColorCache.get(gradient);
-  const c = getTextColorForGradient(gradient);
-  textColorCache.set(gradient, c);
-  return c;
+// Helpers to process tags created inside the hover overlay
+function findTagIdByName(name) {
+  if (!name) return null;
+  return tagNameToId?.get(String(name).toLowerCase()) || null;
+}
+
+function processHoverTagsContainer(container) {
+  if (!container || !container.querySelectorAll) return;
+  const tagEls = container.querySelectorAll(".resource-tile_tags span, .resource-tile_tags > *");
+  tagEls.forEach((el) => {
+    if (!el || el.dataset?.f95ueProcessed === "1") return;
+    const txt = String(el.textContent || "").trim();
+    if (!txt) return;
+
+    const id = findTagIdByName(txt);
+    let applied = false;
+    if (id !== null && Number.isFinite(id)) {
+      const excluded =
+        Array.isArray(config.excludedTags) && config.excludedTags.map(Number).includes(Number(id));
+      const preferred =
+        Array.isArray(config.preferredTags) &&
+        config.preferredTags.map(Number).includes(Number(id));
+
+      if (excluded) {
+        el.style.backgroundColor = config.color.excluded;
+        el.style.color = config.color.excludedText;
+        applied = true;
+      } else if (preferred) {
+        el.style.backgroundColor = config.color.preferred;
+        el.style.color = config.color.preferredText;
+        applied = true;
+      }
+    }
+
+    // make modified tag visually prominent
+    el.style.fontWeight = applied ? "bold" : "";
+
+    // mark as processed even if no style applied to avoid reprocessing churn
+    el.dataset.f95ueProcessed = "1";
+  });
+}
+
+let tileHoverListener = null;
+function setupHoverListener() {
+  if (tileHoverListener) return;
+  tileHoverListener = (ev) => {
+    try {
+      const tile = ev.target?.closest?.(".resource-tile");
+      if (!tile) return;
+      // hover-wrap may be added slightly after the mouseenter; check immediately and shortly after
+      const applyIfFound = () => {
+        const hoverWrap = tile.querySelector(".resource-tile_hover-wrap");
+        if (hoverWrap) processHoverTagsContainer(hoverWrap);
+      };
+      applyIfFound();
+      setTimeout(applyIfFound, 50);
+    } catch (err) {
+      debugLog("Latest Overlay", "tileHoverListener error", err);
+    }
+  };
+
+  document.addEventListener("mouseover", tileHoverListener, true);
+}
+
+function teardownHoverListener() {
+  if (!tileHoverListener) return;
+  document.removeEventListener("mouseover", tileHoverListener, true);
+  tileHoverListener = null;
 }
 
 function getVersionText(tile) {
@@ -454,7 +524,10 @@ function processTag(tileTagIds, excludedTagsArr, preferredTagsArr) {
     if (!Number.isFinite(id) || !tileTagSet.has(id)) continue;
     isPreferredTag = tagIdToName ? tagIdToName.get(id) : config.tags.find((t) => t.id == id)?.name;
     if (isPreferredTag) {
-      debugLog("Tile Processing", `Matched preferred Tag: '${isPreferredTag}' (ID: ${id}) on tile.`);
+      debugLog(
+        "Tile Processing",
+        `Matched preferred Tag: '${isPreferredTag}' (ID: ${id}) on tile.`,
+      );
       break;
     }
   }

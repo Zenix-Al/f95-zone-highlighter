@@ -1,5 +1,19 @@
 # Changelog
 
+### **[v4.10.0 - Modal UI + Overlay Stability Release]**
+
+This release focuses on modal usability, page-scope correctness, direct-download reliability, and latest overlay behavior/performance.
+
+**Major Changes & Improvements**
+
+- **Modal Section UI Updated:** Improved modal section behavior and presentation for a cleaner settings flow.
+- **Datanodes Direct Download Fixed:** Updated Datanodes support so the direct-download path works again on the new flow.
+- **Feature Page Gating Fixed:** Fixed features being triggered on pages where they should not run.
+- **Feature Health Diagnostics Improved:** Improved error capture/reporting so runtime feature failures are surfaced more reliably in Feature Health.
+- **Latest Overlay Updated:** Overlay color band now uses a compact CSS-only height (18%) for better readability and lower overhead.
+- **Latest Overlay Hover Tag Highlighting Added:** Hover-created tags are now highlighted using your preferred/excluded tag rules.
+- **Latest Overlay Optimized:** Additional cleanup and processing optimizations for faster, lighter overlay behavior.
+
 ### **[v4.9.0 - Config Transfer + Reinforcement Release]**
 
 This release is focused on configuration portability, direct-download resilience, and core safety hardening.

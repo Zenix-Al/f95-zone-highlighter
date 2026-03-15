@@ -7,6 +7,7 @@ import { hijackMaskedLinks, disableHijackMaskedLink } from "./hijacker.js";
  */
 export const maskedLinkHijackerFeature = createFeature("Masked Link Skipper", {
   configPath: "threadSettings.skipMaskedLink",
+  isApplicable: ({ stateManager }) => stateManager.get("isThread"),
   enable: hijackMaskedLinks,
   disable: disableHijackMaskedLink,
 });

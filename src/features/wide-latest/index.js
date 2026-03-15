@@ -19,6 +19,7 @@ function disableWideLatestPage() {
 
 export const wideLatestPageFeature = createStyledFeature("Wide Latest Page", {
   configPath: "latestSettings.wideLatest",
+  isApplicable: ({ stateManager }) => stateManager.get("isLatest"),
   styleId: WIDE_LATEST_STYLE_ID,
   styleCss: featureCss,
   enable: enableWideLatestPage,
@@ -36,6 +37,7 @@ function disableDenseLatestGrid() {
 
 export const denseLatestGridFeature = createStyledFeature("Dense Latest Grid", {
   configPath: "latestSettings.denseLatestGrid",
+  isApplicable: ({ stateManager }) => stateManager.get("isLatest"),
   styleId: WIDE_LATEST_STYLE_ID,
   styleCss: featureCss,
   enable: enableDenseLatestGrid,

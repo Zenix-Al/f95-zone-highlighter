@@ -97,6 +97,7 @@ function disable() {
 
 export const directDownloadFeature = createFeature("Direct Download", {
   configPath: "threadSettings.directDownloadLinks",
+  isApplicable: ({ stateManager }) => stateManager.get("isThread"),
   enable: enable,
   disable: disable,
 });

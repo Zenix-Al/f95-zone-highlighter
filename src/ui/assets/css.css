@@ -4,6 +4,29 @@
   box-sizing: border-box;
 }
 
+/* Global scrollbar styling for UI inside the shadow root
+   Applies to all scrollable elements without needing per-element rules. */
+* {
+  /* Firefox */
+  scrollbar-color: var(--f95ue-scrollbar-thumb, #893839) var(--f95ue-scrollbar-track, #191b1e);
+  scrollbar-width: thin;
+}
+
+/* WebKit browsers */
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-track {
+  background: var(--f95ue-scrollbar-track, #191b1e);
+}
+*::-webkit-scrollbar-thumb {
+  background-color: var(--f95ue-scrollbar-thumb, #893839);
+  border-radius: 6px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
 .modal-error-notif {
   display: none; /* hidden by default */
   padding: 8px 10px;
@@ -252,18 +275,6 @@
 #search-results {
   max-height: 260px; /* keep results bounded */
   overflow-y: auto;
-  scrollbar-gutter: stable;
-}
-
-#search-results::-webkit-scrollbar {
-  width: 8px;
-}
-#search-results::-webkit-scrollbar-track {
-  background: #191b1e;
-}
-#search-results::-webkit-scrollbar-thumb {
-  background-color: #893839;
-  border-radius: 4px;
 }
 
 /* Better-shaped action buttons: square/rounded icons rather than raw text */
@@ -615,6 +626,7 @@
   overscroll-behavior: contain;
   /* Reserve scrollbar gutter so showing/hiding the page scrollbar
      doesn't shift modal horizontally on platforms with non-overlay scrollbars */
+  /* scrollbar-gutter handled globally */
   scrollbar-gutter: stable;
 }
 
@@ -627,19 +639,7 @@
   }
 }
 
-/* Custom Scrollbar for Modal Content */
-#tag-config-modal .modal-content::-webkit-scrollbar {
-  width: 8px;
-}
-
-#tag-config-modal .modal-content::-webkit-scrollbar-track {
-  background: #191b1e; /* Match modal background */
-}
-
-#tag-config-modal .modal-content::-webkit-scrollbar-thumb {
-  background-color: #893839; /* Match button color */
-  border-radius: 4px;
-}
+/* Modal scrollbar is styled via global rules */
 
 #tag-config-modal.show {
   display: flex;
