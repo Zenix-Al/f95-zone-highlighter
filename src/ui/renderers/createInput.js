@@ -1,3 +1,5 @@
+import { attachDarkColorPicker } from "../components/darkColorPicker.js";
+
 export function createInput(meta, id) {
   const input = document.createElement("input");
   input.id = id;
@@ -13,7 +15,7 @@ export function createInput(meta, id) {
       break;
 
     case "color":
-      input.type = "color";
+      attachDarkColorPicker(input);
       break;
 
     default:

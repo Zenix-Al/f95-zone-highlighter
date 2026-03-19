@@ -18,8 +18,8 @@
   box-shadow: var(--excluded-shadow);
 }
 
-.neutral {
-  background-color: var(--neutral-color);
+.marked {
+  background-color: var(--marked-color);
   font-weight: bold;
-  color: var(--neutral-text-color);
+  color: var(--marked-text-color);
 }

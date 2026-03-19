@@ -193,6 +193,7 @@ export async function loadData() {
     tags: normalizeArray(parsed.tags),
     preferredTags: normalizeArray(parsed.preferredTags),
     excludedTags: normalizeArray(parsed.excludedTags),
+    markedTags: normalizeArray(parsed.markedTags),
 
     color: mergeWithDefault(parsed.color, defaultColors),
 

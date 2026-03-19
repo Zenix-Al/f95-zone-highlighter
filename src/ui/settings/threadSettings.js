@@ -236,11 +236,11 @@ const THREAD_SETTINGS_TOGGLE_DEFS = [
 
 const THREAD_OVERLAY_TOGGLE_DEFS = [
   {
-    key: "neutral",
-    text: "Show Neutral overlay",
-    tooltip: "Display neutral reaction buttons",
-    config: "threadSettings.neutral",
-    toastLabel: "Neutral",
+    key: "marked",
+    text: "Show Marked overlay",
+    tooltip: "Display marked tags overlay",
+    config: "threadSettings.marked",
+    toastLabel: "Marked",
   },
   {
     key: "preferred",

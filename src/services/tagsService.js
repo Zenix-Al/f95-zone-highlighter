@@ -85,26 +85,35 @@ export async function updateTags() {
 
     const oldPreferredCount = config.preferredTags.length;
     const oldExcludedCount = config.excludedTags.length;
+    const oldMarkedCount = config.markedTags.length;
 
     const newPreferred = pruneList(config.preferredTags);
     const newExcluded = pruneList(config.excludedTags);
+    const newMarked = pruneList(config.markedTags);
 
     const listsHaveChanged =
-      newPreferred.length !== oldPreferredCount || newExcluded.length !== oldExcludedCount;
+      newPreferred.length !== oldPreferredCount ||
+      newExcluded.length !== oldExcludedCount ||
+      newMarked.length !== oldMarkedCount;
 
     let prunedCount = 0;
     if (listsHaveChanged) {
       prunedCount =
-        oldPreferredCount - newPreferred.length + (oldExcludedCount - newExcluded.length);
+        oldPreferredCount -
+        newPreferred.length +
+        (oldExcludedCount - newExcluded.length) +
+        (oldMarkedCount - newMarked.length);
 
       config.preferredTags = newPreferred;
       config.excludedTags = newExcluded;
+      config.markedTags = newMarked;
 
       await saveConfigKeys({
         preferredTags: newPreferred,
         excludedTags: newExcluded,
+        markedTags: newMarked,
       });
-      debugLog("Tag Update", `Pruned ${prunedCount} tags from preferred/excluded lists.`);
+      debugLog("Tag Update", `Pruned ${prunedCount} tags from preferred/excluded/marked lists.`);
     }
 
     checkTags(); // Safety check for empty tags

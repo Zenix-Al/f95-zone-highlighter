@@ -53,30 +53,19 @@
   font-size: 14px;
   line-height: 1.6;
 }
-.tag-btn {
-  border: none;
-  padding: 5px;
-  margin: 0 2px;
-  cursor: pointer;
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 4px;
   font-size: 14px;
-  color: white;
   font-weight: bold;
-  transition: background-color 0.2s ease;
+  padding: 0; /* compact: span provides spacing */
+  height: 28px;
+  touch-action: none; /* prevent native scrolling during touch drag */
+  -ms-touch-action: none;
+  user-select: none;
 }
 
-.tag-btn.excluded {
-  background-color: var(--excluded-color);
-  color: var(--excluded-text-color);
-}
-
-.tag-btn.preferred {
-  background-color: var(--preferred-color);
-  color: var(--preferred-text-color);
-}
-
-.tag-btn:hover {
-  filter: brightness(1.1);
-}
 #toast-container {
   position: fixed;
   top: 20px;
@@ -116,28 +105,54 @@
   height: 100%;
   background-color: rgba(0, 0, 0, 0.5);
 }
-/* Preferred tags container */
-#preferred-tags-list {
+/* Tag list containers (preferred / excluded / marked) */
+.tag-list-container {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
   margin-top: 8px;
+  min-height: 36px; /* allow dropping into empty list */
 }
 
 /* Preferred tag item */
 .preferred-tag-item {
-  display: inline-flex;
-  align-items: center;
   background-color: var(--preferred-color);
   color: var(--preferred-text-color);
+}
+/* Shared chip shape for tags */
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
   border-radius: 4px;
   font-size: 14px;
   font-weight: bold;
+  height: 28px;
+  touch-action: none; /* prevent native scrolling during touch drag */
+  -ms-touch-action: none;
+  user-select: none;
 }
 
-.preferred-tag-item span {
+.tag-chip span {
   margin-right: 6px;
   margin-left: 6px;
+}
+
+/* ghost used for touch drag fallback */
+.drag-ghost {
+  opacity: 0.95;
+  transform: scale(1.02);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+  touch-action: none;
+  -ms-touch-action: none;
+}
+
+/* Desktop cursor affordance for dragging */
+.tag-chip {
+  cursor: grab;
+}
+.tag-chip.dragging {
+  cursor: grabbing;
 }
 
 .preferred-tag-remove {
@@ -152,12 +167,7 @@
   display: flex;
   gap: 5px;
 }
-#excluded-tags-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 8px;
-}
+/* (individual containers now share .tag-list-container) */
 #search-container {
   position: relative;
   display: inline-block;
@@ -187,18 +197,12 @@
 }
 /* Excluded tag item */
 .excluded-tag-item {
-  display: inline-flex;
-  align-items: center;
   background-color: var(--excluded-color);
   color: var(--excluded-text-color);
-  border-radius: 4px;
-  font-size: 14px;
-  font-weight: bold;
 }
-
-.excluded-tag-item span {
-  margin-right: 6px;
-  margin-left: 6px;
+.excluded-tag-item {
+  background-color: var(--excluded-color);
+  color: var(--excluded-text-color);
 }
 
 .excluded-tag-remove {
@@ -207,39 +211,45 @@
   border: none;
   /* consolidated into .tag-remove-btn */
 }
+/* Marked tag item */
+.marked-tag-item {
+  background-color: var(--marked-color);
+  color: var(--marked-text-color);
+}
 
 .tag-list-item {
   position: relative;
 }
 
-.tag-drag-handle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 16px;
-  margin-right: 6px;
-  font-size: 12px;
-  line-height: 1;
+/* Make the chip show a grab cursor when hovered; show grabbing while dragging */
+.tag-list-item:hover {
   cursor: grab;
-  user-select: none;
-  opacity: 0;
-  transition: opacity 0.15s ease;
-}
-
-.tag-list-item:hover .tag-drag-handle,
-.tag-list-item:focus-within .tag-drag-handle,
-.tag-list-item.reorder-active .tag-drag-handle,
-.tag-list-item.dragging .tag-drag-handle {
-  opacity: 0.9;
 }
 
 .tag-list-item.dragging {
   opacity: 0.65;
+  cursor: grabbing;
 }
 
 .tag-list-item.drag-over {
   outline: 2px dashed rgba(255, 255, 255, 0.4);
   outline-offset: 2px;
+}
+
+/* Highlight empty/full list container when an item is dragged over it */
+.tag-list-container.drag-over {
+  outline: 2px dashed rgba(255, 255, 255, 0.4);
+  outline-offset: 2px;
+  padding: 6px;
+  border-radius: 6px;
+}
+
+/* Potential target state shown as lighter dashed hint when dragging starts */
+.tag-list-container.drag-target {
+  outline: 2px dashed rgba(255, 255, 255, 0.18);
+  outline-offset: 2px;
+  padding: 6px;
+  border-radius: 6px;
 }
 
 /* Individual list items */
@@ -282,6 +292,9 @@
   width: 28px;
   height: 28px;
   padding: 0;
+  border: none;
+  cursor: pointer;
+  color: #fff;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -291,11 +304,21 @@
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.15) inset;
 }
 
+.tag-btn:hover {
+  filter: brightness(1.15);
+}
+
 .tag-btn.preferred {
   background-color: var(--preferred-color);
+  color: var(--preferred-text-color);
 }
 .tag-btn.excluded {
   background-color: var(--excluded-color);
+  color: var(--excluded-text-color);
+}
+.tag-btn.marked {
+  background-color: var(--marked-color);
+  color: var(--marked-text-color);
 }
 
 /* Slightly larger hit target for mobile */
@@ -319,7 +342,8 @@
   background-color: #c15858;
   color: #fff;
   border: none;
-  padding: 6px 10px;
+  padding: 0 8px;
+  height: 28px;
   cursor: pointer;
   font-size: 12px;
   font-weight: bold;
@@ -371,6 +395,9 @@
   height: 28px;
   cursor: pointer;
   background-color: #181a1d;
+  color: transparent;
+  text-indent: -9999px;
+  overflow: hidden;
 }
 
 #tag-config-modal .config-color-input::-webkit-color-swatch-wrapper {
@@ -560,6 +587,96 @@
   padding: 2px;
 }
 
+.config-row .config-color-input {
+  width: 44px;
+  max-width: 44px;
+  height: 28px;
+}
+
+.dark-color-popover {
+  position: fixed;
+  z-index: 12020;
+  width: 220px;
+  padding: 10px;
+  border: 1px solid #3c4047;
+  border-radius: 8px;
+  background: #111317;
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.55);
+  opacity: 0;
+  transform: translateY(-4px);
+  transition:
+    opacity 0.12s ease,
+    transform 0.12s ease;
+}
+
+.dark-color-popover.open {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.dark-color-preview {
+  width: 100%;
+  height: 34px;
+  border-radius: 6px;
+  border: 1px solid #4a4f58;
+  margin-bottom: 8px;
+}
+
+.dark-color-hex {
+  width: 100%;
+  margin-bottom: 8px;
+  text-transform: lowercase;
+  letter-spacing: 0.03em;
+  font-family: Consolas, "Courier New", monospace;
+}
+
+.dark-color-labels {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-bottom: 4px;
+  color: #9ca3af;
+  font-size: 11px;
+  text-align: center;
+}
+
+.dark-color-sliders {
+  display: grid;
+  gap: 6px;
+}
+
+.dark-color-slider {
+  width: 100%;
+  margin: 0;
+}
+
+.dark-color-slider.hue {
+  accent-color: #22c55e;
+}
+
+.dark-color-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.dark-color-btn {
+  border: 1px solid #4a4f58;
+  background: #1d2127;
+  color: #e5e7eb;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.dark-color-btn.apply {
+  border-color: #8e3f3f;
+  background: #893839;
+  color: #fff;
+}
+
 .config-row .config-button {
   justify-self: center;
 }
@@ -655,11 +772,6 @@
   border-color: #4a4d54;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
 }
-.thick-line {
-  border: none;
-  height: 1px;
-  background-color: #3f4043;
-}
 .config-list-details summary {
   list-style: none;
   display: flex;
@@ -728,6 +840,7 @@
 
 .modal-settings-spacing {
   padding: 8px 10px;
+  margin-bottom: 6px;
 }
 .config-label:hover {
   text-decoration: underline;

@@ -1,5 +1,15 @@
 # Changelog
 
+### **[v4.11.0 - Tag Marking + Dark Color Picker Release]**
+
+**Changes**
+
+- **Draggable Tag Chips Improved:** Overhauled drag-and-drop behavior for tag chips — drag between Preferred, Excluded, and Marked containers now feels immediate and reliable. Touch screen drag support added.
+- **Marked Tags Added:** New third tag list alongside Preferred and Excluded. Marked tags get a distinct visual style on both the latest overlay and thread pages — useful for quickly spotting tags you neither like nor dislike.
+- **Dark Color Picker:** Replaced the browser-native color picker (which always renders with a white background) with a custom in-panel one that follows the UI theme. Includes hue/saturation/lightness sliders, hex input, and Apply/Cancel.
+- **Removed stale HR separators:** Cleaned up leftover `<hr>` dividers that were made redundant by the bordered accordion sections.
+- Other code improvements.
+
 ### **[v4.10.0 - Modal UI + Overlay Stability Release]**
 
 This release focuses on modal usability, page-scope correctness, direct-download reliability, and latest overlay behavior/performance.

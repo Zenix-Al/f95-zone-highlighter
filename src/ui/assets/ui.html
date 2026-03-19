@@ -10,7 +10,6 @@
       </div>
     </details>
   </div>
-  <hr class="thick-line" />
   <!-- Latest page settings -->
   <div class="modal-settings-spacing">
     <details class="config-list-details">
@@ -20,7 +19,6 @@
       </div>
     </details>
   </div>
-  <hr class="thick-line" />
   <!-- Thread settings -->
   <div class="modal-settings-spacing">
     <details class="config-list-details">
@@ -30,7 +28,6 @@
       </div>
     </details>
   </div>
-  <hr class="thick-line" />
   <!-- TAGS -->
   <div class="modal-settings-spacing">
     <details class="config-list-details">
@@ -43,23 +40,26 @@
             <input type="text" id="tags-search" placeholder="Search tags..." autocomplete="off" />
             <ul id="search-results"></ul>
             <div class="tag-priority-note">
-              Drag tag chips by the handle to reorder priority inside Preferred/Excluded. Status
-              priority is controlled in Latest settings through Overlay color order.
+              Drag tag chips to reorder priority inside Preferred/Excluded/Marked. Status priority
+              is controlled in Latest settings through Overlay color order.
             </div>
             <div class="tag-list-section">
               <div class="tag-list-header">Preferred tags</div>
-              <div id="preferred-tags-list"></div>
+              <div id="preferred-tags-list" class="tag-list-container"></div>
             </div>
             <div class="tag-list-section">
               <div class="tag-list-header">Excluded tags</div>
-              <div id="excluded-tags-list"></div>
+              <div id="excluded-tags-list" class="tag-list-container"></div>
+            </div>
+            <div class="tag-list-section">
+              <div class="tag-list-header">Marked tags</div>
+              <div id="marked-tags-list" class="tag-list-container"></div>
             </div>
           </div>
         </div>
       </div>
     </details>
   </div>
-  <hr class="thick-line" />
   <!-- COLORS -->
   <div class="modal-settings-spacing">
     <details class="config-list-details">
@@ -74,7 +74,6 @@
       </div>
     </details>
   </div>
-  <hr class="thick-line" />
   <div class="modal-footer-hint">
     <span class="hint-text">Hover over options text to see detailed settings</span>
   </div>

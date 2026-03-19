@@ -2,6 +2,7 @@ import stateManager from "../../config.js";
 import {
   initTagSearchListeners,
   renderExcluded,
+  renderMarked,
   renderPreferred,
 } from "../components/tag-search/index.js";
 import { renderSettingsSection } from "../renderers/settingsSection";
@@ -183,6 +184,7 @@ export function initModalUi() {
       }
       renderPreferred();
       renderExcluded();
+      renderMarked();
       checkTags();
     } catch (err) {
       // best-effort: don't block UI on errors

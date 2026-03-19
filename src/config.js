@@ -16,8 +16,9 @@ export const defaultColors = {
   preferredText: "#ffffff",
   excluded: "#b71c1c",
   excludedText: "#ffffff",
-  neutral: "#373a3a",
-  neutralText: "#9398a0",
+  // Marked tags: slightly darker, high-contrast text for readability
+  marked: "#4a4f55",
+  markedText: "#ffffff",
 };
 export const defaultOverlaySettings = {
   completed: true,
@@ -52,9 +53,7 @@ export function createDefaultDirectDownloadHostHealth() {
   };
 }
 
-export function createDefaultDirectDownloadHealth(
-  packageTemplate = defaultDirectDownloadPackages,
-) {
+export function createDefaultDirectDownloadHealth(packageTemplate = defaultDirectDownloadPackages) {
   const result = {};
   for (const key of Object.keys(packageTemplate || {})) {
     result[key] = createDefaultDirectDownloadHostHealth();
@@ -63,7 +62,7 @@ export function createDefaultDirectDownloadHealth(
 }
 
 export const defaultThreadSetting = {
-  neutral: true,
+  marked: true,
   preferred: true,
   preferredShadow: true,
   excluded: true,
@@ -118,6 +117,7 @@ export let config = {
   tags: [],
   preferredTags: [],
   excludedTags: [],
+  markedTags: [],
   color: { ...defaultColors },
   overlaySettings: { ...defaultOverlaySettings },
   threadSettings: { ...defaultThreadSetting },
@@ -168,7 +168,7 @@ export default stateManager;
 export const STATUS = Object.freeze({
   PREFERRED: "preferred",
   EXCLUDED: "excluded",
-  NEUTRAL: "neutral",
+  MARKED: "marked",
   PREFERRED_SHADOW: "preferred-shadow",
   EXCLUDED_SHADOW: "excluded-shadow",
 });

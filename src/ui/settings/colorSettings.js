@@ -27,8 +27,8 @@ const COLOR_SETTING_DEFS = [
   { key: "preferredTextColor", text: "Preferred Text", colorName: "preferredText" },
   { key: "excludedColor", text: "Excluded", colorName: "excluded" },
   { key: "excludedTextColor", text: "Excluded Text", colorName: "excludedText" },
-  { key: "neutralColor", text: "Neutral", colorName: "neutral" },
-  { key: "neutralTextColor", text: "Neutral Text", colorName: "neutralText" },
+  { key: "markedColor", text: "Marked", colorName: "marked" },
+  { key: "markedTextColor", text: "Marked Text", colorName: "markedText" },
 ];
 
 export const colorSettingsMeta = buildSettingsMap(

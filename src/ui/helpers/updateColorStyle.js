@@ -14,8 +14,8 @@ const COLOR_VAR_MAP = Object.freeze({
   preferredText: "--preferred-text-color",
   excluded: "--excluded-color",
   excludedText: "--excluded-text-color",
-  neutral: "--neutral-color",
-  neutralText: "--neutral-text-color",
+  marked: "--marked-color",
+  markedText: "--marked-text-color",
 });
 
 function applyColorVar(key, value) {

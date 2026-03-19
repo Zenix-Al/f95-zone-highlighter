@@ -3,30 +3,27 @@ import { config, STATUS } from "../../config.js";
 import { debugLog } from "../../core/logger.js";
 import { isValidTag } from "../../utils/validators.js";
 import featureCss from "./style.css";
+import { resolveTagStatus } from "../../utils/resolveTagStatus.js";
 
 function processThreadTag(tagElement) {
   const tagName = String(tagElement.innerHTML || "").trim();
   if (!isValidTag(tagName)) return; // skip malformed tag text
 
-  const preferredId = config.preferredTags.find((id) =>
-    config.tags.find((t) => t.id === id && t.name === tagName),
-  );
-  const excludedId = config.excludedTags.find((id) =>
-    config.tags.find((t) => t.id === id && t.name === tagName),
-  );
+  const tag = config.tags.find((t) => t.name === tagName);
+  const status = tag ? resolveTagStatus(Number(tag.id)) : null;
 
   Object.values(STATUS).forEach((cls) => tagElement.classList.remove(cls));
 
-  const { preferred, preferredShadow, excluded, excludedShadow, neutral } = config.threadSettings;
+  const { preferred, preferredShadow, excluded, excludedShadow, marked } = config.threadSettings;
 
-  if (preferredId && preferred) {
+  if (status === STATUS.PREFERRED && preferred) {
     tagElement.classList.add(STATUS.PREFERRED);
     if (preferredShadow) tagElement.classList.add(STATUS.PREFERRED_SHADOW);
-  } else if (excludedId && excluded) {
+  } else if (status === STATUS.EXCLUDED && excluded) {
     tagElement.classList.add(STATUS.EXCLUDED);
     if (excludedShadow) tagElement.classList.add(STATUS.EXCLUDED_SHADOW);
-  } else if (neutral) {
-    tagElement.classList.add(STATUS.NEUTRAL);
+  } else if (status === STATUS.MARKED && marked) {
+    tagElement.classList.add(STATUS.MARKED);
   }
 }
 
