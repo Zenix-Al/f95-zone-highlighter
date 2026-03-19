@@ -1,6 +1,11 @@
+import { debugLog } from "../../../core/logger";
+
 let activePointerDrag = null;
 let pointerCleanupHooksInstalled = false;
 let getShadowRootRef = () => null;
+let cachedShadowRoot = null;
+let cachedContainers = [];
+const ENABLE_NATIVE_DESKTOP_DRAG = false;
 
 const CONTAINERS = [
   { id: "preferred-tags-list", key: "preferredTags" },
@@ -21,10 +26,26 @@ function parseDragData(raw) {
   };
 }
 
+function getContainers(sr) {
+  if (!sr) return [];
+
+  const cacheInvalid =
+    cachedShadowRoot !== sr ||
+    cachedContainers.length !== CONTAINERS.length ||
+    cachedContainers.some((container) => !container?.isConnected);
+
+  if (cacheInvalid) {
+    cachedShadowRoot = sr;
+    cachedContainers = CONTAINERS.map((meta) => sr.getElementById(meta.id)).filter(Boolean);
+  }
+
+  return cachedContainers;
+}
+
 function markPotentialDropTargets(fromListKey) {
   const sr = getShadowRootRef();
   if (!sr) return;
-  const containers = Array.from(sr.querySelectorAll(".tag-list-container"));
+  const containers = getContainers(sr);
   containers.forEach((container) => {
     const key = getContainerListKeyById(container.id);
     if (!key || key === fromListKey) return;
@@ -35,7 +56,7 @@ function markPotentialDropTargets(fromListKey) {
 function clearPotentialDropTargets() {
   const sr = getShadowRootRef();
   if (!sr) return;
-  const containers = Array.from(sr.querySelectorAll(".tag-list-container"));
+  const containers = getContainers(sr);
   containers.forEach((container) => {
     container.classList.remove("drag-target");
     container.classList.remove("drag-over");
@@ -63,6 +84,7 @@ function cleanupActivePointerDrag() {
 
   if (activePointerDrag.onMove) window.removeEventListener("pointermove", activePointerDrag.onMove);
   if (activePointerDrag.onUp) window.removeEventListener("pointerup", activePointerDrag.onUp);
+  if (activePointerDrag.rafId) cancelAnimationFrame(activePointerDrag.rafId);
 
   try {
     activePointerDrag.item?.classList?.remove("dragging");
@@ -98,7 +120,7 @@ function updatePointerDragHighlights(x, y) {
   const over = activePointerDrag.sr.elementFromPoint(x, y);
   if (!over) return;
 
-  const containers = Array.from(activePointerDrag.sr.querySelectorAll(".tag-list-container"));
+  const containers = getContainers(activePointerDrag.sr);
   containers.forEach((c) => c.classList.remove("drag-over"));
 
   const container = over.closest ? over.closest(".tag-list-container") : null;
@@ -165,13 +187,28 @@ export function ensurePointerCleanupHooks(getShadowRoot) {
   pointerCleanupHooksInstalled = true;
 }
 
-export function ensureContainerDropHandlers({ container, listKey, onDropOnContainer }) {
+export function ensureContainerDropHandlers({
+  container,
+  listKey,
+  onDropOnContainer,
+  onDropOnItem,
+}) {
   if (!container || container.dataset.dropInit) return;
   container.dataset.dropInit = "1";
+
+  // Ensure cache is primed early for drag hot paths.
+  getContainers(getShadowRootRef());
+
+  if (!ENABLE_NATIVE_DESKTOP_DRAG) return;
+
+  debugLog("tagDrag:container", `init drop handlers for list: ${listKey}`, {
+    data: { containerId: container.id },
+  });
 
   container.addEventListener("dragover", (e) => {
     e.preventDefault();
     const { fromList } = parseDragData(e.dataTransfer?.getData("text/plain"));
+    if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
     if (fromList && fromList !== listKey) container.classList.add("drag-over");
   });
 
@@ -189,7 +226,21 @@ export function ensureContainerDropHandlers({ container, listKey, onDropOnContai
     e.preventDefault();
     container.classList.remove("drag-over");
     const { fromList, fromIndex } = parseDragData(e.dataTransfer?.getData("text/plain"));
+    debugLog("tagDrag:container", `drop on container ${listKey}`, {
+      data: { fromList, fromIndex, raw: e.dataTransfer?.getData("text/plain") },
+    });
     if (!fromList) return;
+
+    const itemEl = e.target?.closest?.(".tag-list-item");
+    if (itemEl?.dataset?.index != null && Number.isFinite(Number(itemEl.dataset.index))) {
+      onDropOnItem({
+        fromList,
+        fromIndex,
+        toListKey: listKey,
+        toIndex: Number(itemEl.dataset.index),
+      });
+      return;
+    }
 
     onDropOnContainer({ fromList, fromIndex, toListKey: listKey });
   });
@@ -206,10 +257,14 @@ export function createTagChipItem({
   onDropOnContainer,
   getShadowRoot,
 }) {
+  debugLog("tagDrag:chip", `creating chip [${listKey}] "${tag.name}" index=${index}`, {
+    data: { itemClass, listKey, index },
+  });
+
   const item = document.createElement("div");
   item.className = `tag-list-item ${itemClass} tag-chip`;
   item.dataset.index = String(index);
-  item.draggable = true;
+  item.draggable = ENABLE_NATIVE_DESKTOP_DRAG;
 
   const text = document.createElement("span");
   text.textContent = tag.name;
@@ -223,46 +278,30 @@ export function createTagChipItem({
     onRemove(index, tag);
   });
 
-  item.addEventListener("dragstart", (e) => {
-    if (!e.dataTransfer) return;
-    e.dataTransfer.effectAllowed = "move";
-    e.dataTransfer.setData("text/plain", `${String(listKey)}:${String(index)}`);
-    item.classList.add("dragging");
-    markPotentialDropTargets(listKey);
-  });
-
-  item.addEventListener("dragend", () => {
-    item.classList.remove("dragging");
-    clearPotentialDropTargets();
-  });
-
-  item.addEventListener("dragover", (e) => {
-    e.preventDefault();
-    item.classList.add("drag-over");
-  });
-
-  item.addEventListener("dragleave", () => {
-    item.classList.remove("drag-over");
-  });
-
-  item.addEventListener("drop", (e) => {
-    e.preventDefault();
-    e.stopPropagation(); // prevent container drop handler from double-firing
-    item.classList.remove("drag-over");
-
-    const { fromList, fromIndex } = parseDragData(e.dataTransfer?.getData("text/plain"));
-    if (!fromList) return;
-
-    onDropOnItem({
-      fromList,
-      fromIndex,
-      toListKey: listKey,
-      toIndex: index,
+  if (ENABLE_NATIVE_DESKTOP_DRAG) {
+    item.addEventListener("dragstart", (e) => {
+      if (!e.dataTransfer) return;
+      const payload = `${String(listKey)}:${String(index)}`;
+      e.dataTransfer.effectAllowed = "move";
+      e.dataTransfer.setData("text/plain", payload);
+      item.classList.add("dragging");
+      markPotentialDropTargets(listKey);
+      debugLog("tagDrag:chip", `dragstart [${listKey}] "${tag.name}" index=${index}`, {
+        data: { payload, draggable: item.draggable },
+      });
     });
-  });
+
+    item.addEventListener("dragend", () => {
+      item.classList.remove("dragging");
+      clearPotentialDropTargets();
+      debugLog("tagDrag:chip", `dragend [${listKey}] "${tag.name}"`);
+    });
+  }
 
   item.addEventListener("pointerdown", (e) => {
-    if (e.pointerType !== "touch" && e.pointerType !== "pen") return;
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    if (!e.isPrimary) return;
+    if (e.target?.closest?.(".tag-remove-btn")) return;
 
     e.preventDefault();
     item.setPointerCapture?.(e.pointerId);
@@ -282,7 +321,7 @@ export function createTagChipItem({
     ghost.style.pointerEvents = "none";
     ghost.style.zIndex = 12000;
     copyChipStyleToGhost(item, ghost);
-    document.body.appendChild(ghost);
+    sr.appendChild(ghost);
 
     activePointerDrag = {
       ghost,
@@ -296,6 +335,9 @@ export function createTagChipItem({
       hoveredItem: null,
       onMove: null,
       onUp: null,
+      rafId: null,
+      latestX: e.clientX,
+      latestY: e.clientY,
     };
 
     item.classList.add("dragging");
@@ -305,7 +347,14 @@ export function createTagChipItem({
       if (!activePointerDrag) return;
       activePointerDrag.ghost.style.left = `${ev.clientX - activePointerDrag.offsetX}px`;
       activePointerDrag.ghost.style.top = `${ev.clientY - activePointerDrag.offsetY}px`;
-      updatePointerDragHighlights(ev.clientX, ev.clientY);
+      activePointerDrag.latestX = ev.clientX;
+      activePointerDrag.latestY = ev.clientY;
+      if (activePointerDrag.rafId) return;
+      activePointerDrag.rafId = requestAnimationFrame(() => {
+        if (!activePointerDrag) return;
+        activePointerDrag.rafId = null;
+        updatePointerDragHighlights(activePointerDrag.latestX, activePointerDrag.latestY);
+      });
     };
 
     const onUp = (ev) => {

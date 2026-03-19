@@ -150,6 +150,7 @@ function renderTagList({ listKey, containerId, ids, itemClass }) {
     container,
     listKey,
     onDropOnContainer: handleListContainerDrop,
+    onDropOnItem: handleListItemDrop,
   });
 
   container.innerHTML = "";

@@ -1,11 +1,23 @@
 # Changelog
 
+### **[v4.11.23 - Tag Drag Reliability Patch]**
+
+Whoever in charge needs to get spanked, he let bug pass, kek. This patch addresses a critical issue with tag chip dragging where the drag ghost was being appended to the main document body instead of the shadow root, causing styling inconsistencies and drag failures.
+
+**Bug Fixes**
+
+- **Desktop Drag Reworked:** Switched desktop chip dragging to the same pointer-driven drag pipeline used by touch/pen for more consistent behavior across Preferred/Excluded/Marked lists.
+- **Drag Performance Improvements:** Reduced hot-path DOM work and tuned drag highlight updates for smoother response when many chips exist.
+- **Drag Ghost Styling Fixed:** Drag ghost now renders inside the shadow root so chip styling (including remove button visuals) stays consistent while dragging.
+
 ### **[v4.11.0 - Tag Marking + Dark Color Picker Release]**
+
+It aint much, but it's honest work. This release adds a new "Marked" tag list for visually distinguishing tags you feel neutral about, and a custom dark-themed color picker that fits better with the UI.
 
 **Changes**
 
 - **Draggable Tag Chips Improved:** Overhauled drag-and-drop behavior for tag chips — drag between Preferred, Excluded, and Marked containers now feels immediate and reliable. Touch screen drag support added.
-- **Marked Tags Added:** New third tag list alongside Preferred and Excluded. Marked tags get a distinct visual style on both the latest overlay and thread pages — useful for quickly spotting tags you neither like nor dislike.
+- **Marked Tags Added:** New third tag list alongside Preferred and Excluded. Marked tags get a distinct visual style on both the latest overlay and thread pages. Useful for quickly spotting tags you neither like nor dislike.
 - **Dark Color Picker:** Replaced the browser-native color picker (which always renders with a white background) with a custom in-panel one that follows the UI theme. Includes hue/saturation/lightness sliders, hex input, and Apply/Cancel.
 - **Removed stale HR separators:** Cleaned up leftover `<hr>` dividers that were made redundant by the bordered accordion sections.
 - Other code improvements.

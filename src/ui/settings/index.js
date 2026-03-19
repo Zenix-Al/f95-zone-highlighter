@@ -175,22 +175,26 @@ export function initModalUi() {
   }
   renderDirectDownloadHealthNotices();
 
-  // Kick off the tag update process using async/await in a detached task.
-  (async () => {
-    try {
-      const result = await updateTags();
-      if (result?.pruned && result.count > 0) {
-        showToast(`${result.count} obsolete tag(s) removed from your lists.`);
+  // Kick off the tag update process once per session.
+  // Running it on every modal open would re-render chips mid-drag and kill in-progress drags.
+  if (!stateManager.get("tagsUpdateRan")) {
+    stateManager.set("tagsUpdateRan", true);
+    (async () => {
+      try {
+        const result = await updateTags();
+        if (result?.pruned && result.count > 0) {
+          showToast(`${result.count} obsolete tag(s) removed from your lists.`);
+        }
+        renderPreferred();
+        renderExcluded();
+        renderMarked();
+        checkTags();
+      } catch (err) {
+        // best-effort: don't block UI on errors
+        console.warn("updateTags failed:", err);
       }
-      renderPreferred();
-      renderExcluded();
-      renderMarked();
-      checkTags();
-    } catch (err) {
-      // best-effort: don't block UI on errors
-      console.warn("updateTags failed:", err);
-    }
-  })();
+    })();
+  }
 }
 
 export function updateLatestUI() {
