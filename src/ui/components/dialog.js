@@ -138,6 +138,130 @@ export function openTextPrompt({
   });
 }
 
+export function openReorderDialog({
+  title = "Reorder",
+  description = "",
+  items = [], // [{key, label}] in current order
+  submitLabel = "Save",
+  cancelLabel = "Cancel",
+} = {}) {
+  const shadowRoot = getShadowRoot();
+  if (!shadowRoot) return Promise.resolve(null);
+
+  removeDialogIfExists();
+
+  return new Promise((resolve) => {
+    // Working copy so cancel discards changes
+    let order = items.map((i) => ({ ...i }));
+
+    const backdrop = document.createElement("div");
+    backdrop.id = ACTIVE_DIALOG_ID;
+    backdrop.className = "config-dialog-backdrop";
+
+    const panel = document.createElement("div");
+    panel.className = "config-dialog-panel";
+
+    const header = document.createElement("div");
+    header.className = "config-dialog-title";
+    header.textContent = title;
+
+    const body = document.createElement("div");
+    body.className = "config-dialog-description";
+    body.textContent = description;
+
+    const list = document.createElement("div");
+    list.className = "config-reorder-list";
+
+    function rebuildList() {
+      list.innerHTML = "";
+      order.forEach((item, idx) => {
+        const row = document.createElement("div");
+        row.className = "config-reorder-item";
+
+        const label = document.createElement("span");
+        label.className = "config-reorder-label";
+        label.textContent = item.label;
+
+        const handle = document.createElement("div");
+        handle.className = "config-reorder-handle";
+
+        const upBtn = document.createElement("button");
+        upBtn.className = "config-reorder-btn";
+        upBtn.type = "button";
+        upBtn.textContent = "▲";
+        upBtn.disabled = idx === 0;
+        upBtn.addEventListener("click", () => {
+          if (idx === 0) return;
+          [order[idx - 1], order[idx]] = [order[idx], order[idx - 1]];
+          rebuildList();
+        });
+
+        const downBtn = document.createElement("button");
+        downBtn.className = "config-reorder-btn";
+        downBtn.type = "button";
+        downBtn.textContent = "▼";
+        downBtn.disabled = idx === order.length - 1;
+        downBtn.addEventListener("click", () => {
+          if (idx === order.length - 1) return;
+          [order[idx], order[idx + 1]] = [order[idx + 1], order[idx]];
+          rebuildList();
+        });
+
+        handle.appendChild(upBtn);
+        handle.appendChild(downBtn);
+        row.appendChild(label);
+        row.appendChild(handle);
+        list.appendChild(row);
+      });
+    }
+
+    rebuildList();
+
+    const actions = document.createElement("div");
+    actions.className = "config-dialog-actions";
+
+    const cancelBtn = document.createElement("button");
+    cancelBtn.className = "modal-btn dialog-cancel";
+    cancelBtn.type = "button";
+    cancelBtn.textContent = cancelLabel;
+
+    const submitBtn = document.createElement("button");
+    submitBtn.className = "modal-btn dialog-submit";
+    submitBtn.type = "button";
+    submitBtn.textContent = submitLabel;
+
+    actions.appendChild(cancelBtn);
+    actions.appendChild(submitBtn);
+
+    panel.appendChild(header);
+    if (description) panel.appendChild(body);
+    panel.appendChild(list);
+    panel.appendChild(actions);
+    backdrop.appendChild(panel);
+    shadowRoot.appendChild(backdrop);
+
+    let done = false;
+    const close = (value) => {
+      if (done) return;
+      done = true;
+      backdrop.remove();
+      resolve(value);
+    };
+
+    cancelBtn.addEventListener("click", () => close(null));
+    submitBtn.addEventListener("click", () => close(order.map((i) => i.key)));
+    backdrop.addEventListener("click", (e) => {
+      if (e.target === backdrop) close(null);
+    });
+    backdrop.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        close(null);
+      }
+    });
+  });
+}
+
 export function openSettingsDialog({
   title = "Settings",
   description = "",

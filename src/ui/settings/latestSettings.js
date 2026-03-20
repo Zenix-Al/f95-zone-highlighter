@@ -11,40 +11,35 @@ import {
   isValidOverlayColorOrder,
   normalizeOverlayColorOrder,
 } from "../../features/latest-overlay/overlayOrder.js";
-import { openSettingsDialog, openTextPrompt } from "../components/dialog.js";
+import { openSettingsDialog, openReorderDialog } from "../components/dialog.js";
 import { overlaySettingsMeta } from "./overlaySettings.js";
 import { createEnabledDisabledToast, createToggleSetting } from "./metaFactory";
 
+const OVERLAY_KEY_LABELS = {
+  excluded: "Excluded",
+  preferred: "Preferred",
+  completed: "Completed",
+  onhold: "On Hold",
+  abandoned: "Abandoned",
+  highVersion: "High Version",
+  invalidVersion: "Invalid Version",
+};
+
 async function openOverlayColorOrderEditor() {
   const currentOrder = normalizeOverlayColorOrder(config.latestSettings.latestOverlayColorOrder);
-  const input = await openTextPrompt({
+  const items = currentOrder.map((key) => ({ key, label: OVERLAY_KEY_LABELS[key] || key }));
+
+  const result = await openReorderDialog({
     title: "Overlay Color Order",
-    description: [
-      "Set overlay color order (comma-separated keys).",
-      `Allowed: ${OVERLAY_COLOR_ORDER_KEYS.join(", ")}`,
-      `Current: ${currentOrder.join(", ")}`,
-    ].join(" "),
-    defaultValue: currentOrder.join(", "),
-    placeholder: "excluded, preferred, completed, onhold, abandoned, highVersion, invalidVersion",
+    description: "Drag or use arrows to set overlay color priority (top = highest priority).",
+    items,
     submitLabel: "Save",
     cancelLabel: "Cancel",
   });
 
-  if (input === null) return;
+  if (result === null) return;
 
-  const parsed = input
-    .split(",")
-    .map((v) => v.trim())
-    .filter(Boolean);
-
-  const isValid = isValidOverlayColorOrder(parsed);
-
-  if (!isValid) {
-    showToast("Invalid order. Use each allowed key exactly once.");
-    return;
-  }
-
-  config.latestSettings.latestOverlayColorOrder = parsed;
+  config.latestSettings.latestOverlayColorOrder = result;
   await saveConfigKeys({ latestSettings: config.latestSettings });
   debouncedProcessAllTilesReset();
   showToast("Overlay color order updated.");
@@ -140,7 +135,8 @@ export const latestSettingsMeta = {
     tooltip: "Remove width limit on the Latest Updates page",
     config: "latestSettings.wideLatest",
     custom: () => {
-      stateManager.get("isLatest") && wideLatestPageFeature.toggle(config.latestSettings.wideLatest);
+      stateManager.get("isLatest") &&
+        wideLatestPageFeature.toggle(config.latestSettings.wideLatest);
     },
     toast: createEnabledDisabledToast("Wide Latest Page"),
   }),

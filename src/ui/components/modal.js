@@ -28,4 +28,14 @@ export function injectModal() {
       closeModal();
     }
   });
+
+  // Prevent host-page keyboard shortcuts from firing while the modal is open.
+  const stopKeyLeak = (e) => {
+    if (modal.style.display === "none") return;
+    e.stopPropagation();
+  };
+
+  modal.addEventListener("keydown", stopKeyLeak, true);
+  modal.addEventListener("keyup", stopKeyLeak, true);
+  modal.addEventListener("keypress", stopKeyLeak, true);
 }

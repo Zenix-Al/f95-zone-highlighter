@@ -1,5 +1,17 @@
 # Changelog
 
+### **[v4.12.0 - Direct Download + Tag UX Polish]**
+
+This release focuses on direct download reliability, smoother tag management, and small UI/UX quality fixes.
+
+**Changes**
+
+- **Datanodes Direct Download Fixed:** Updated the Datanodes flow so direct download works again.
+- **Tag Search Input Behavior Improved:** Adjusted tag input/search interactions to be less disruptive during tagging.
+- **Tag Drag Container Shift Fixed:** Prevented tag containers from visually shifting while dragging chips.
+- **Section Collapse Animation Fixed:** Resolved collapse jitter/shutter so settings sections close more smoothly.
+- **UI/UX Polish:** Included additional minor interface and usability improvements.
+
 ### **[v4.11.23 - Tag Drag Reliability Patch]**
 
 Whoever in charge needs to get spanked, he let bug pass, kek. This patch addresses a critical issue with tag chip dragging where the drag ghost was being appended to the main document body instead of the shadow root, causing styling inconsistencies and drag failures.

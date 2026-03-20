@@ -48,6 +48,10 @@
   padding: 10px;
 }
 .settings-wrapper {
+  padding: 0;
+}
+
+.settings-wrapper-inner {
   padding: 10px;
   color: #ccc;
   font-size: 14px;
@@ -112,6 +116,8 @@
   gap: 6px;
   margin-top: 8px;
   min-height: 36px; /* allow dropping into empty list */
+  padding: 6px;
+  border-radius: 6px;
 }
 
 /* Preferred tag item */
@@ -240,16 +246,12 @@
 .tag-list-container.drag-over {
   outline: 2px dashed rgba(255, 255, 255, 0.4);
   outline-offset: 2px;
-  padding: 6px;
-  border-radius: 6px;
 }
 
 /* Potential target state shown as lighter dashed hint when dragging starts */
 .tag-list-container.drag-target {
   outline: 2px dashed rgba(255, 255, 255, 0.18);
   outline-offset: 2px;
-  padding: 6px;
-  border-radius: 6px;
 }
 
 /* Individual list items */
@@ -267,13 +269,53 @@
 #search-results li:hover {
   background-color: #333; /* slightly lighter on hover */
 }
+.tags-search-input-wrap {
+  position: relative;
+}
+
 #tags-search {
   background-color: #222;
   color: #fff;
   border: 1px solid #555;
   border-radius: 4px;
-  padding: 6px 8px;
+  padding: 6px 34px 6px 8px;
   width: 100%;
+}
+
+.tags-search-clear {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 5px;
+  background: #3a3d43;
+  color: #d9dce2;
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.14s ease,
+    background-color 0.14s ease,
+    color 0.14s ease;
+}
+
+.tags-search-clear.visible {
+  opacity: 0.92;
+  pointer-events: auto;
+}
+
+.tags-search-clear:hover {
+  background: #893839;
+  color: #fff;
+}
+
+.tags-search-clear:focus-visible {
+  outline: 1px solid #c15858;
 }
 
 #tags-search:focus {
@@ -580,6 +622,28 @@
   justify-self: center;
 }
 
+.config-row input[type="number"] {
+  background-color: #222;
+  color: #fff;
+  border: 1px solid #555;
+  border-radius: 4px;
+  padding: 5px 5px;
+  font-size: 14px;
+  height: 30px;
+  text-align: right;
+}
+
+.config-row input[type="number"]:focus {
+  outline: none;
+  border-color: #c15858;
+}
+
+.config-row input[type="number"]::-webkit-inner-spin-button,
+.config-row input[type="number"]::-webkit-outer-spin-button {
+  opacity: 0.4;
+  cursor: pointer;
+}
+
 .config-row input[type="color"] {
   width: 44px;
   max-width: 44px;
@@ -736,8 +800,8 @@
   min-width: 300px;
   max-height: 80vh;
   background: #191b1e;
-  width: min(420px, calc(100vw - 24px));
-  max-width: 420px;
+  width: min(430px, calc(100vw - 24px));
+  max-width: 430px;
   margin: 100px auto;
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -972,6 +1036,64 @@
   justify-content: flex-end;
   gap: 8px;
   margin-top: 8px;
+}
+
+/* Reorder dialog */
+.config-reorder-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 10px 0;
+}
+
+.config-reorder-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #26292e;
+  border: 1px solid #3a3d43;
+  border-radius: 6px;
+  user-select: none;
+}
+
+.config-reorder-label {
+  flex: 1;
+  font-size: 14px;
+  color: #e1e3e8;
+  padding: 0px 10px;
+}
+
+.config-reorder-handle {
+  display: flex;
+}
+
+.config-reorder-btn {
+  border: 1px solid #4a4d54;
+  border-radius: 4px;
+  background: #1e2025;
+  color: #b0b3b8;
+  font-size: 11px;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  padding: 7px 10px;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease;
+}
+
+.config-reorder-btn:hover:not(:disabled) {
+  background: #893839;
+  border-color: #893839;
+  color: #fff;
+}
+
+.config-reorder-btn:disabled {
+  opacity: 0.25;
+  cursor: default;
 }
 
 .config-transfer-dialog-error {

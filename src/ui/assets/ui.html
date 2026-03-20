@@ -6,7 +6,9 @@
     <details class="config-list-details">
       <summary>General</summary>
       <div class="settings-wrapper">
-        <div id="global-settings-container"></div>
+        <div class="settings-wrapper-inner">
+          <div id="global-settings-container"></div>
+        </div>
       </div>
     </details>
   </div>
@@ -15,7 +17,9 @@
     <details class="config-list-details">
       <summary>Latest page settings</summary>
       <div class="settings-wrapper">
-        <div id="latest-settings-container"></div>
+        <div class="settings-wrapper-inner">
+          <div id="latest-settings-container"></div>
+        </div>
       </div>
     </details>
   </div>
@@ -24,7 +28,9 @@
     <details class="config-list-details">
       <summary>Thread settings</summary>
       <div class="settings-wrapper">
-        <div id="thread-settings-container"></div>
+        <div class="settings-wrapper-inner">
+          <div id="thread-settings-container"></div>
+        </div>
       </div>
     </details>
   </div>
@@ -34,26 +40,44 @@
       <summary>Tags</summary>
 
       <div class="settings-wrapper">
-        <div id="tag-error-notif" class="modal-error-notif"></div>
-        <div id="tags-container">
-          <div id="search-container">
-            <input type="text" id="tags-search" placeholder="Search tags..." autocomplete="off" />
-            <ul id="search-results"></ul>
-            <div class="tag-priority-note">
-              Drag tag chips to reorder priority inside Preferred/Excluded/Marked. Status priority
-              is controlled in Latest settings through Overlay color order.
-            </div>
-            <div class="tag-list-section">
-              <div class="tag-list-header">Preferred tags</div>
-              <div id="preferred-tags-list" class="tag-list-container"></div>
-            </div>
-            <div class="tag-list-section">
-              <div class="tag-list-header">Excluded tags</div>
-              <div id="excluded-tags-list" class="tag-list-container"></div>
-            </div>
-            <div class="tag-list-section">
-              <div class="tag-list-header">Marked tags</div>
-              <div id="marked-tags-list" class="tag-list-container"></div>
+        <div class="settings-wrapper-inner">
+          <div id="tag-error-notif" class="modal-error-notif"></div>
+          <div id="tags-container">
+            <div id="search-container">
+              <div class="tags-search-input-wrap">
+                <input
+                  type="text"
+                  id="tags-search"
+                  placeholder="Search tags..."
+                  autocomplete="off"
+                />
+                <button
+                  type="button"
+                  id="tags-search-clear"
+                  class="tags-search-clear"
+                  aria-label="Clear tag search"
+                  title="Clear search"
+                >
+                  ×
+                </button>
+              </div>
+              <ul id="search-results"></ul>
+              <div class="tag-priority-note">
+                Drag tag chips to reorder priority inside Preferred/Excluded/Marked. Status priority
+                is controlled in Latest settings through Overlay color order.
+              </div>
+              <div class="tag-list-section">
+                <div class="tag-list-header">Preferred tags</div>
+                <div id="preferred-tags-list" class="tag-list-container"></div>
+              </div>
+              <div class="tag-list-section">
+                <div class="tag-list-header">Excluded tags</div>
+                <div id="excluded-tags-list" class="tag-list-container"></div>
+              </div>
+              <div class="tag-list-section">
+                <div class="tag-list-header">Marked tags</div>
+                <div id="marked-tags-list" class="tag-list-container"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -65,9 +89,11 @@
     <details class="config-list-details">
       <summary>Color</summary>
       <div class="settings-wrapper">
-        <div id="color-error-notif" class="modal-error-notif"></div>
+        <div class="settings-wrapper-inner">
+          <div id="color-error-notif" class="modal-error-notif"></div>
 
-        <div id="color-container"></div>
+          <div id="color-container"></div>
+        </div>
       </div>
       <div class="centered-item">
         <button id="reset-color" class="modal-btn">Reset color</button>

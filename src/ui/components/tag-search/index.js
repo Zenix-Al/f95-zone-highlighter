@@ -20,9 +20,29 @@ function getTagById(tagId) {
   return config.tags.find((tag) => tag.id === tagId);
 }
 
-function clearSearchAndHideResults(input, results) {
-  if (input) input.value = "";
-  if (results) results.style.display = "none";
+function refreshSearchResultsAfterAction(input, results) {
+  if (!input || !results) return;
+
+  const query = input.value.trim().toLowerCase();
+  const filteredTags = query
+    ? config.tags.filter((tag) =>
+        String(tag.name || "")
+          .toLowerCase()
+          .includes(query),
+      )
+    : config.tags;
+
+  renderList(filteredTags);
+  input.focus();
+  const end = input.value.length;
+  input.setSelectionRange?.(end, end);
+}
+
+function updateSearchClearButtonState(input, clearBtn) {
+  if (!input || !clearBtn) return;
+  const hasValue = input.value.trim().length > 0;
+  clearBtn.classList.toggle("visible", hasValue);
+  clearBtn.disabled = !hasValue;
 }
 
 function createActionButton(text, title, typeClass, onClick, onActionComplete) {
@@ -210,7 +230,9 @@ export function renderList(filteredTags) {
 
   const fragment = document.createDocumentFragment();
   visibleTags.forEach((tag) => {
-    fragment.appendChild(createTagResultItem(tag, () => clearSearchAndHideResults(input, results)));
+    fragment.appendChild(
+      createTagResultItem(tag, () => refreshSearchResultsAfterAction(input, results)),
+    );
   });
 
   results.appendChild(fragment);
@@ -247,12 +269,47 @@ export function renderMarked() {
 export function initTagSearchListeners() {
   ensurePointerCleanupHooks(getShadowRoot);
 
+  const shadowRoot = getShadowRoot();
+  const input = shadowRoot?.getElementById("tags-search");
+  const results = shadowRoot?.getElementById("search-results");
+  const clearBtn = shadowRoot?.getElementById("tags-search-clear");
+
+  if (input && clearBtn && !clearBtn.dataset.initBound) {
+    clearBtn.dataset.initBound = "1";
+
+    const syncState = () => updateSearchClearButtonState(input, clearBtn);
+    input.addEventListener("input", syncState);
+    input.addEventListener("focus", syncState);
+
+    clearBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      input.value = "";
+      if (results) results.style.display = "none";
+      syncState();
+      input.focus();
+    });
+
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        if (results) results.style.display = "none";
+        input.blur();
+        syncState();
+      }
+    });
+
+    syncState();
+  }
+
   document.addEventListener("click", (e) => {
-    const input = document.getElementById("tags-search");
-    const results = document.getElementById("search-results");
+    const sr = getShadowRoot();
+    const input = sr?.getElementById("tags-search");
+    const results = sr?.getElementById("search-results");
+    const clearBtn = sr?.getElementById("tags-search-clear");
     if (!input || !results) return;
 
-    if (!input.contains(e.target) && !results.contains(e.target)) {
+    const path = e.composedPath ? e.composedPath() : [];
+    if (!path.includes(input) && !path.includes(results) && !path.includes(clearBtn)) {
       results.style.display = "none";
     }
   });

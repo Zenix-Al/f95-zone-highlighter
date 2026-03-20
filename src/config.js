@@ -140,6 +140,7 @@ const runtimeState = {
   colorRendered: false,
   overlayRendered: false,
   threadSettingsRendered: false,
+  tagsUpdateRan: false,
   isThread: false,
   isLatest: false,
   isDownloadPage: false,

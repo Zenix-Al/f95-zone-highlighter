@@ -180,6 +180,8 @@ export function ensurePointerCleanupHooks(getShadowRoot) {
   if (pointerCleanupHooksInstalled) return;
 
   window.addEventListener("pointercancel", cleanupActivePointerDrag);
+  window.addEventListener("blur", cleanupActivePointerDrag);
+  window.addEventListener("pagehide", cleanupActivePointerDrag);
   document.addEventListener("visibilitychange", () => {
     if (document.hidden) cleanupActivePointerDrag();
   });
@@ -376,11 +378,17 @@ export function createTagChipItem({
       cleanupActivePointerDrag();
     };
 
+    const onLostCapture = () => {
+      cleanupActivePointerDrag();
+      item.removeEventListener("lostpointercapture", onLostCapture);
+    };
+
     activePointerDrag.onMove = onMove;
     activePointerDrag.onUp = onUp;
 
     window.addEventListener("pointermove", onMove);
     window.addEventListener("pointerup", onUp);
+    item.addEventListener("lostpointercapture", onLostCapture);
   });
 
   item.appendChild(text);
