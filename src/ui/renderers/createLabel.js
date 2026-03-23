@@ -1,14 +1,16 @@
+import { createEl } from "../../core/dom.js";
+
 export function createLabel(meta, id) {
-  const label = document.createElement("label");
+  const label = createEl("label", { text: meta.text });
   label.htmlFor = id;
-  label.textContent = meta.text;
 
   if (meta.tooltip) {
     label.title = meta.tooltip;
 
-    const tooltipBadge = document.createElement("span");
-    tooltipBadge.className = "setting-tooltip-badge";
-    tooltipBadge.textContent = "?";
+    const tooltipBadge = createEl("span", {
+      className: "setting-tooltip-badge",
+      text: "?",
+    });
     tooltipBadge.title = meta.tooltip;
     tooltipBadge.setAttribute("aria-label", meta.tooltip);
     label.appendChild(tooltipBadge);

@@ -5,30 +5,26 @@ import { createInput } from "./createInput";
 import { createLabel } from "./createLabel";
 import { coerceSettingValue } from "./coerceSettingValue.js";
 import { getByPath, setByPath } from "../../utils/objectPath.js";
+import { createEl } from "../../core/dom.js";
 
 export function renderSetting(key, meta) {
   if (meta.type === "header") {
-    const header = document.createElement("div");
-    header.className = "config-header";
-    header.textContent = meta.text;
-    return header;
+    return createEl("div", { className: "config-header", text: meta.text });
   }
 
   if (meta.type === "separator") {
-    const hr = document.createElement("hr");
-    hr.className = "config-separator";
-    return hr;
+    return createEl("hr", { className: "config-separator" });
   }
 
   if (meta.type === "button") {
-    const row = document.createElement("div");
-    row.className = "config-row";
+    const row = createEl("div", { className: "config-row" });
     row.dataset.settingKey = key;
 
     const label = createLabel(meta, `setting-${key}`);
-    const btn = document.createElement("button");
-    btn.className = "config-button";
-    btn.textContent = meta.buttonText || meta.text || "Action";
+    const btn = createEl("button", {
+      className: "config-button",
+      text: meta.buttonText || meta.text || "Action",
+    });
     btn.title = meta.tooltip || "";
     btn.addEventListener("click", async () => {
       try {
@@ -48,8 +44,7 @@ export function renderSetting(key, meta) {
   }
 
   // ⬇️ existing input renderer stays untouched
-  const row = document.createElement("div");
-  row.className = "config-row";
+  const row = createEl("div", { className: "config-row" });
   row.dataset.settingKey = key;
 
   const id = `setting-${key}`;

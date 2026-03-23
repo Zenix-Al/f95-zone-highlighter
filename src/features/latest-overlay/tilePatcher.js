@@ -38,9 +38,9 @@ export function processMutations(mutationsList, generation) {
 
       if (node.classList?.contains(SELECTORS.TILE.CLASS)) {
         pendingMutationTiles.add(node);
-      } else if (node.querySelectorAll) {
+      } else {
         node
-          .querySelectorAll(SELECTORS.TILE.ROOT)
+          .querySelectorAll?.(SELECTORS.TILE.ROOT)
           .forEach((tile) => pendingMutationTiles.add(tile));
       }
     }
@@ -387,6 +387,10 @@ export function processAllTiles(reset = false, generation = generationCounter) {
 }
 
 export function reprocessAllTiles() {
-  debugLog("Latest Overlay", "Reprocessing all tiles with reset.");
-  processAllTiles(true, generationCounter);
+  try {
+    debugLog("Latest Overlay", "Reprocessing all tiles with reset.");
+    processAllTiles(true, generationCounter);
+  } catch (err) {
+    debugLog("Latest Overlay", `Reprocess failed: ${err?.message || String(err)}`);
+  }
 }

@@ -1,4 +1,4 @@
-import stateManager, { config } from "../../config.js";
+import stateManager from "../../config.js";
 import { debugLog } from "../../core/logger";
 import { addObserverCallback, removeObserverCallback } from "../../core/observer";
 import { refreshCaches } from "./overlayCache.js";
@@ -18,11 +18,7 @@ import { setupHoverListener, teardownHoverListener } from "./hoverTagHandler.js"
 export { reprocessAllTiles, resetTile, processTile, processAllTiles };
 
 export function enableLatestOverlay() {
-  if (
-    stateManager.get("latestOverlayStatus") !== "IDLE" ||
-    !config.latestSettings.latestOverlayToggle ||
-    !stateManager.get("isLatest")
-  ) {
+  if (stateManager.get("latestOverlayStatus") !== "IDLE") {
     return;
   }
 

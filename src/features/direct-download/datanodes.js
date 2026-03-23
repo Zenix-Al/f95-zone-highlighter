@@ -496,6 +496,27 @@ async function runMethodFreePhase() {
   return { skipped: false };
 }
 
+async function runPreDownloadPhase() {
+  if (readDatanodesStage() === DATANODES_STAGE_AFTER_FREE) {
+    debugLog("DatanodesDownloader", "Resuming after continue step.");
+    return;
+  }
+
+  const freeResult = await runMethodFreePhase();
+  if (freeResult?.skipped) {
+    debugLog("DatanodesDownloader", "method-free phase skipped; proceeding to download phase.");
+    return;
+  }
+
+  // This extra pause is separate from the button2 pre-click delay above.
+  // Here we are waiting for the page itself to settle after the free-method
+  // submit/navigation, not for the first download click to become safe.
+  debugLog("DatanodesDownloader", "Stabilizing after method-free click...", {
+    data: { delayMs: DATANODES_AFTER_METHOD_FREE_DELAY },
+  });
+  await sleep(DATANODES_AFTER_METHOD_FREE_DELAY);
+}
+
 export async function processDatanodesDownload() {
   const isProcessing = await isProcessingDownloadFlowActive();
   if (
@@ -506,24 +527,7 @@ export async function processDatanodesDownload() {
     return;
 
   try {
-    if (readDatanodesStage() !== DATANODES_STAGE_AFTER_FREE) {
-      const freeResult = await runMethodFreePhase();
-
-      if (!freeResult?.skipped) {
-        // This extra pause is separate from the button2 pre-click delay above.
-        // Here we are waiting for the page itself to settle after the free-method
-        // submit/navigation, not for the first download click to become safe.
-        debugLog("DatanodesDownloader", "Stabilizing after method-free click...", {
-          data: { delayMs: DATANODES_AFTER_METHOD_FREE_DELAY },
-        });
-        await sleep(DATANODES_AFTER_METHOD_FREE_DELAY);
-      } else {
-        debugLog("DatanodesDownloader", "method-free phase skipped; proceeding to download phase.");
-      }
-    } else {
-      debugLog("DatanodesDownloader", "Resuming after continue step.");
-    }
-
+    await runPreDownloadPhase();
     await runDownloadPhase();
   } catch (error) {
     const raw = String(error?.message || "");

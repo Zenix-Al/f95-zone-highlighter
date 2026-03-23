@@ -1,4 +1,4 @@
-import stateManager, { config } from "../../config.js";
+import { config } from "../../config.js";
 import { wideLatestPageFeature, denseLatestGridFeature } from "../../features/wide-latest/index.js";
 import { latestControlFeature } from "../../features/latest-control/index.js";
 import { checkOverlaySettings } from "../../services/safetyService";
@@ -6,11 +6,7 @@ import { debouncedProcessAllTilesReset } from "../../core/tasksRegistry";
 import { latestOverlayFeature } from "../../features/latest-overlay/index.js";
 import { saveConfigKeys } from "../../services/settingsService";
 import { showToast } from "../components/toast";
-import {
-  OVERLAY_COLOR_ORDER_KEYS,
-  isValidOverlayColorOrder,
-  normalizeOverlayColorOrder,
-} from "../../features/latest-overlay/overlayOrder.js";
+import { normalizeOverlayColorOrder } from "../../features/latest-overlay/overlayOrder.js";
 import { openSettingsDialog, openReorderDialog } from "../components/dialog.js";
 import { overlaySettingsMeta } from "./overlaySettings.js";
 import { createEnabledDisabledToast, createToggleSetting } from "./metaFactory";
@@ -47,12 +43,7 @@ async function openOverlayColorOrderEditor() {
 
 const effectOverlayToggle = () => {
   checkOverlaySettings();
-  if (!stateManager.get("isLatest")) return;
-  if (!config.latestSettings.latestOverlayToggle) {
-    latestOverlayFeature.disable();
-  } else {
-    latestOverlayFeature.enable();
-  }
+  latestOverlayFeature.sync();
 };
 
 const latestOverlayToggleSetting = createToggleSetting({
@@ -116,7 +107,7 @@ export const latestSettingsMeta = {
     tooltip: "Auto activate in site auto refresh for the Latest Updates page",
     config: "latestSettings.autoRefresh",
     custom: () => {
-      stateManager.get("isLatest") && latestControlFeature.enable();
+      latestControlFeature.sync();
     },
     toast: createEnabledDisabledToast("Auto Refresh"),
   }),
@@ -126,7 +117,7 @@ export const latestSettingsMeta = {
       "Auto activate in site web notifications for new threads (site might ask for permission)",
     config: "latestSettings.webNotif",
     custom: () => {
-      stateManager.get("isLatest") && latestControlFeature.enable();
+      latestControlFeature.sync();
     },
     toast: createEnabledDisabledToast("Web Notifications"),
   }),
@@ -135,8 +126,7 @@ export const latestSettingsMeta = {
     tooltip: "Remove width limit on the Latest Updates page",
     config: "latestSettings.wideLatest",
     custom: () => {
-      stateManager.get("isLatest") &&
-        wideLatestPageFeature.toggle(config.latestSettings.wideLatest);
+      wideLatestPageFeature.sync();
     },
     toast: createEnabledDisabledToast("Wide Latest Page"),
   }),
@@ -145,8 +135,7 @@ export const latestSettingsMeta = {
     tooltip: "Reduce spacing between thread tiles on the Latest Updates page",
     config: "latestSettings.denseLatestGrid",
     custom: () => {
-      stateManager.get("isLatest") &&
-        denseLatestGridFeature.toggle(config.latestSettings.denseLatestGrid);
+      denseLatestGridFeature.sync();
     },
     toast: createEnabledDisabledToast("Dense Latest Grid"),
   }),

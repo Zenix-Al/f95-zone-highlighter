@@ -45,18 +45,16 @@ export function detectPage() {
     const currentHost = location.hostname;
     const currentPath = location.pathname;
     const hostContext = getDirectDownloadHostContext(currentHost, { requireEnabled: true });
-    if (hostContext) {
-      const hostConfig = hostContext.config;
-      if (hostConfig.pageHandler) {
-        stateManager.set("isDownloadPage", hostConfig.pageHandler);
-      }
-      if (
-        hostConfig.pageType === "auto-retry" &&
-        currentPath.startsWith(hostConfig.pathStartsWith)
-      ) {
-        stateManager.set("isDirectDownloadPage", hostContext.host);
-      }
-    }
+    if (!hostContext) return;
+
+    const { config: hostConfig, host: hostKey } = hostContext;
+    if (hostConfig.pageHandler) stateManager.set("isDownloadPage", hostConfig.pageHandler);
+
+    const isAutoRetry =
+      hostConfig.pageType === "auto-retry" &&
+      typeof hostConfig.pathStartsWith === "string" &&
+      currentPath.startsWith(hostConfig.pathStartsWith);
+    if (isAutoRetry) stateManager.set("isDirectDownloadPage", hostKey);
   }
   debugLog(
     "PageDetect",
@@ -69,4 +67,27 @@ export function waitForBody(callback) {
   } else {
     requestAnimationFrame(() => waitForBody(callback));
   }
+}
+
+export function createEl(tag, { className, attrs, text, children, mount } = {}) {
+  // Allow creating elements intended to be attached into a specific container
+  // (e.g. a `ShadowRoot`, its `host`, or a `DocumentFragment`). If `mount`
+  // is provided we use its ownerDocument (when applicable) so the element is
+  // created in the correct document context and then append the created
+  // element to `mount` before returning it.
+  const doc =
+    (mount && (mount.ownerDocument || (mount.host && mount.host.ownerDocument))) || document;
+  const el = doc.createElement(tag);
+  if (className) el.className = className;
+  if (attrs) Object.keys(attrs).forEach((k) => el.setAttribute(k, attrs[k]));
+  if (text != null) el.textContent = text;
+  if (children && Array.isArray(children)) children.forEach((c) => el.appendChild(c));
+  if (mount && typeof mount.appendChild === "function") {
+    try {
+      mount.appendChild(el);
+    } catch {
+      // If append fails, ignore and return element so callers can append later.
+    }
+  }
+  return el;
 }

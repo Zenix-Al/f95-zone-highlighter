@@ -20,6 +20,48 @@ function cleanupIframeContext(src) {
   return ctx;
 }
 
+function applyLinkStyle(el, state) {
+  Object.assign(el.style, {
+    color: colorState[state].color,
+    fontWeight: "bold",
+    textDecoration: "none",
+  });
+}
+
+async function handleFailed(ctx, src, packageKey) {
+  applyLinkStyle(ctx.el, "FAILED");
+  showToast("Download failed or file not found, open in new tab.");
+
+  if (packageKey) {
+    const breakerResult = await markDirectDownloadHostFailure(
+      packageKey,
+      "Iframe resolver failed or file not found.",
+    );
+    if (breakerResult?.tripped) {
+      showToast(
+        `${packageKey.charAt(0).toUpperCase() + packageKey.slice(1)} auto-disabled after 3 consecutive failures.`,
+      );
+    }
+  }
+
+  window.open(src, "_blank");
+}
+
+async function handleResolved(ctx, dest, packageKey) {
+  ctx.el.dataset.state = "resolved";
+  if (dest) ctx.el.href = dest; // so right-click "open in new tab" works too
+  applyLinkStyle(ctx.el, "SUCCESS");
+
+  if (packageKey) {
+    await markDirectDownloadHostSuccess(packageKey);
+  }
+
+  if (dest) {
+    showToast("Direct download started...");
+    injectFrame(dest, { onSuccess: () => showToast("Direct download initiated.") });
+  }
+}
+
 const MSG_HANDLER_LISTENER_ID = "direct-download-msg-handler";
 export function handleMsgEvent() {
   if (stateManager.get("isMsgEventHandlerApplied")) return;
@@ -29,11 +71,8 @@ export function handleMsgEvent() {
     if (!data || !data.op || !data.src) return;
 
     const { op, src, dest } = data;
+    if (op !== "FAILED" && op !== "DOWNLOAD_LINK_RESOLVED") return;
 
-    // We only care about these two operations.
-    if (op !== "FAILED" && op !== "DOWNLOAD_LINK_RESOLVED") {
-      return;
-    }
     let packageKey = null;
     try {
       packageKey = getDirectDownloadHostContext(new URL(src).hostname)?.packageKey || null;
@@ -45,40 +84,9 @@ export function handleMsgEvent() {
     if (!ctx) return; // Context already cleaned up or never existed.
 
     if (op === "FAILED") {
-      Object.assign(ctx.el.style, {
-        color: colorState.FAILED.color,
-        fontWeight: "bold",
-        textDecoration: "none",
-      });
-      showToast("Download failed or file not found, open in new tab.");
-      if (packageKey) {
-        const breakerResult = await markDirectDownloadHostFailure(
-          packageKey,
-          "Iframe resolver failed or file not found.",
-        );
-        if (breakerResult?.tripped) {
-          showToast(
-            `${packageKey.charAt(0).toUpperCase() + packageKey.slice(1)} auto-disabled after 3 consecutive failures.`,
-          );
-        }
-      }
-      window.open(src, "_blank");
+      await handleFailed(ctx, src, packageKey);
     } else {
-      // This must be DOWNLOAD_LINK_RESOLVED
-      ctx.el.dataset.state = "resolved";
-      if (dest) ctx.el.href = dest; // so right-click "open in new tab" works too
-      Object.assign(ctx.el.style, {
-        color: colorState.SUCCESS.color,
-        fontWeight: "bold",
-        textDecoration: "none",
-      });
-      if (packageKey) {
-        await markDirectDownloadHostSuccess(packageKey);
-      }
-      if (dest) {
-        showToast("Direct download started...");
-        injectFrame(dest, { onSuccess: () => showToast("Direct download initiated.") });
-      }
+      await handleResolved(ctx, dest, packageKey);
     }
   }
   addListener(MSG_HANDLER_LISTENER_ID, window, "message", handler);

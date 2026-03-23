@@ -30,6 +30,94 @@ export function showAllTags() {
   results.style.display = "block";
 }
 
+function toStableTagsString(tags) {
+  return JSON.stringify(tags.slice().sort((a, b) => a.id - b.id));
+}
+
+async function refreshTagsFromPicker() {
+  const selector = document.querySelector(SELECTORS.TAG_PICKER.INPUT);
+  const dropdown = document.querySelector(SELECTORS.TAG_PICKER.DROPDOWN);
+
+  if (!selector || !dropdown) {
+    debugLog("Tag Update", "Tag source elements not found, will use tags from storage.");
+    return;
+  }
+
+  selector.click();
+  await waitFor(
+    () => dropdown.querySelectorAll(".option").length > 0,
+    TIMINGS.TILE_POPULATE_CHECK_INTERVAL,
+    TIMINGS.SELECTOR_WAIT_TIMEOUT,
+  );
+
+  const newTags = [...dropdown.querySelectorAll(".option")].map((opt) => ({
+    id: parseInt(opt.getAttribute("data-value"), 10),
+    name: opt.querySelector(".tag-name")?.textContent.trim() || "",
+  }));
+
+  if (newTags.length === 0) return;
+  if (toStableTagsString(config.tags) === toStableTagsString(newTags)) return;
+
+  config.tags = newTags;
+  await GM.setValue("tags", config.tags);
+  debugLog("Tag Update", `Tags updated and saved: ${newTags.length} tags found.`);
+}
+
+function buildPrunedTagLists() {
+  const validTagIds = new Set(config.tags.map((t) => t.id));
+  const pruneList = (list) => (Array.isArray(list) ? list.filter((id) => validTagIds.has(id)) : []);
+
+  const oldPreferredCount = config.preferredTags.length;
+  const oldExcludedCount = config.excludedTags.length;
+  const oldMarkedCount = config.markedTags.length;
+
+  const newPreferred = pruneList(config.preferredTags);
+  const newExcluded = pruneList(config.excludedTags);
+  const newMarked = pruneList(config.markedTags);
+
+  const hasChanged =
+    newPreferred.length !== oldPreferredCount ||
+    newExcluded.length !== oldExcludedCount ||
+    newMarked.length !== oldMarkedCount;
+
+  const prunedCount = hasChanged
+    ? oldPreferredCount -
+      newPreferred.length +
+      (oldExcludedCount - newExcluded.length) +
+      (oldMarkedCount - newMarked.length)
+    : 0;
+
+  return {
+    hasChanged,
+    prunedCount,
+    newPreferred,
+    newExcluded,
+    newMarked,
+  };
+}
+
+async function applyPrunedTagLists({
+  hasChanged,
+  prunedCount,
+  newPreferred,
+  newExcluded,
+  newMarked,
+}) {
+  if (!hasChanged) return;
+
+  config.preferredTags = newPreferred;
+  config.excludedTags = newExcluded;
+  config.markedTags = newMarked;
+
+  await saveConfigKeys({
+    preferredTags: newPreferred,
+    excludedTags: newExcluded,
+    markedTags: newMarked,
+  });
+
+  debugLog("Tag Update", `Pruned ${prunedCount} tags from preferred/excluded/marked lists.`);
+}
+
 export async function updateTags() {
   if (stateManager.get("tagsUpdateStatus") !== "IDLE") {
     debugLog("Tag Update", `Skipping update, status is: ${stateManager.get("tagsUpdateStatus")}`);
@@ -40,86 +128,15 @@ export async function updateTags() {
   stateManager.set("tagsUpdateStatus", "UPDATING");
 
   try {
-    const selector = document.querySelector(SELECTORS.TAG_PICKER.INPUT);
-    const dropdown = document.querySelector(SELECTORS.TAG_PICKER.DROPDOWN);
+    await refreshTagsFromPicker();
 
-    if (selector && dropdown) {
-      selector.click();
-
-      // wait until options exist
-      await waitFor(
-        () => dropdown.querySelectorAll(".option").length > 0,
-        TIMINGS.TILE_POPULATE_CHECK_INTERVAL,
-        TIMINGS.SELECTOR_WAIT_TIMEOUT,
-      );
-
-      const options = [...dropdown.querySelectorAll(".option")];
-
-      const newTags = options.map((opt) => ({
-        id: parseInt(opt.getAttribute("data-value")),
-        name: opt.querySelector(".tag-name")?.textContent.trim() || "",
-      }));
-
-      if (newTags.length > 0) {
-        // A robust, order-independent check to see if the tag list has actually changed.
-        // We sort by ID and stringify to compare the content, not the order.
-        const oldTagsString = JSON.stringify(config.tags.slice().sort((a, b) => a.id - b.id));
-        const newTagsString = JSON.stringify(newTags.slice().sort((a, b) => a.id - b.id));
-        const arraysAreDifferent = oldTagsString !== newTagsString;
-
-        if (arraysAreDifferent) {
-          config.tags = newTags;
-          await GM.setValue("tags", config.tags);
-          debugLog("Tag Update", `Tags updated and saved: ${newTags.length} tags found.`);
-        }
-      }
-    } else {
-      debugLog("Tag Update", "Tag source elements not found, will use tags from storage.");
-    }
-
-    // Prune tags based on the latest valid list (either newly fetched or from storage)
-    const validTagIds = new Set(config.tags.map((t) => t.id));
-
-    const pruneList = (list) =>
-      Array.isArray(list) ? list.filter((id) => validTagIds.has(id)) : [];
-
-    const oldPreferredCount = config.preferredTags.length;
-    const oldExcludedCount = config.excludedTags.length;
-    const oldMarkedCount = config.markedTags.length;
-
-    const newPreferred = pruneList(config.preferredTags);
-    const newExcluded = pruneList(config.excludedTags);
-    const newMarked = pruneList(config.markedTags);
-
-    const listsHaveChanged =
-      newPreferred.length !== oldPreferredCount ||
-      newExcluded.length !== oldExcludedCount ||
-      newMarked.length !== oldMarkedCount;
-
-    let prunedCount = 0;
-    if (listsHaveChanged) {
-      prunedCount =
-        oldPreferredCount -
-        newPreferred.length +
-        (oldExcludedCount - newExcluded.length) +
-        (oldMarkedCount - newMarked.length);
-
-      config.preferredTags = newPreferred;
-      config.excludedTags = newExcluded;
-      config.markedTags = newMarked;
-
-      await saveConfigKeys({
-        preferredTags: newPreferred,
-        excludedTags: newExcluded,
-        markedTags: newMarked,
-      });
-      debugLog("Tag Update", `Pruned ${prunedCount} tags from preferred/excluded/marked lists.`);
-    }
+    const pruneResult = buildPrunedTagLists();
+    await applyPrunedTagLists(pruneResult);
 
     checkTags(); // Safety check for empty tags
     stateManager.set("tagsUpdateStatus", "COMPLETE");
     debugLog("Tag Update", "Finished updating tags. Status: COMPLETE");
-    return { pruned: listsHaveChanged, count: prunedCount };
+    return { pruned: pruneResult.hasChanged, count: pruneResult.prunedCount };
   } catch (error) {
     debugLog("Tag Update", `An error occurred during tag update: ${error}`, "error");
     // Reset to IDLE on error to allow a potential retry later

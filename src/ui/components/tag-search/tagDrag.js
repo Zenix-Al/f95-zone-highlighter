@@ -1,8 +1,10 @@
 import { debugLog } from "../../../core/logger";
+import { createEl } from "../../../core/dom.js";
+import { createRegistrar } from "../../../core/listenerRegistry.js";
+import { getShadowRoot } from "../../getShadowRoot.js";
 
 let activePointerDrag = null;
 let pointerCleanupHooksInstalled = false;
-let getShadowRootRef = () => null;
 let cachedShadowRoot = null;
 let cachedContainers = [];
 const ENABLE_NATIVE_DESKTOP_DRAG = false;
@@ -43,7 +45,7 @@ function getContainers(sr) {
 }
 
 function markPotentialDropTargets(fromListKey) {
-  const sr = getShadowRootRef();
+  const sr = getShadowRoot();
   if (!sr) return;
   const containers = getContainers(sr);
   containers.forEach((container) => {
@@ -54,7 +56,7 @@ function markPotentialDropTargets(fromListKey) {
 }
 
 function clearPotentialDropTargets() {
-  const sr = getShadowRootRef();
+  const sr = getShadowRoot();
   if (!sr) return;
   const containers = getContainers(sr);
   containers.forEach((container) => {
@@ -82,8 +84,15 @@ function cleanupActivePointerDrag() {
     // ignore
   }
 
-  if (activePointerDrag.onMove) window.removeEventListener("pointermove", activePointerDrag.onMove);
-  if (activePointerDrag.onUp) window.removeEventListener("pointerup", activePointerDrag.onUp);
+  if (typeof activePointerDrag.dispose === "function") {
+    try {
+      activePointerDrag.dispose();
+    } catch {}
+  } else {
+    if (activePointerDrag.onMove)
+      window.removeEventListener("pointermove", activePointerDrag.onMove);
+    if (activePointerDrag.onUp) window.removeEventListener("pointerup", activePointerDrag.onUp);
+  }
   if (activePointerDrag.rafId) cancelAnimationFrame(activePointerDrag.rafId);
 
   try {
@@ -175,8 +184,7 @@ function handlePointerDrop({ x, y, onDropOnItem, onDropOnContainer }) {
   }
 }
 
-export function ensurePointerCleanupHooks(getShadowRoot) {
-  getShadowRootRef = getShadowRoot;
+export function ensurePointerCleanupHooks() {
   if (pointerCleanupHooksInstalled) return;
 
   window.addEventListener("pointercancel", cleanupActivePointerDrag);
@@ -199,7 +207,7 @@ export function ensureContainerDropHandlers({
   container.dataset.dropInit = "1";
 
   // Ensure cache is primed early for drag hot paths.
-  getContainers(getShadowRootRef());
+  getContainers(getShadowRoot());
 
   if (!ENABLE_NATIVE_DESKTOP_DRAG) return;
 
@@ -248,58 +256,44 @@ export function ensureContainerDropHandlers({
   });
 }
 
-export function createTagChipItem({
-  tag,
-  index,
-  itemClass,
-  removeBtnClass,
-  listKey,
-  onRemove,
-  onDropOnItem,
-  onDropOnContainer,
-  getShadowRoot,
-}) {
-  debugLog("tagDrag:chip", `creating chip [${listKey}] "${tag.name}" index=${index}`, {
-    data: { itemClass, listKey, index },
+function createRemoveButton({ removeBtnClass, onRemove, index, tag, mount } = {}) {
+  const removeBtn = createEl("button", {
+    className: `tag-remove-btn ${removeBtnClass}`,
+    text: "X",
+    attrs: { type: "button" },
+    mount,
   });
-
-  const item = document.createElement("div");
-  item.className = `tag-list-item ${itemClass} tag-chip`;
-  item.dataset.index = String(index);
-  item.draggable = ENABLE_NATIVE_DESKTOP_DRAG;
-
-  const text = document.createElement("span");
-  text.textContent = tag.name;
-
-  const removeBtn = document.createElement("button");
-  removeBtn.textContent = "X";
-  removeBtn.className = `tag-remove-btn ${removeBtnClass}`;
   removeBtn.addEventListener("click", (e) => {
     e.preventDefault();
     e.stopPropagation();
     onRemove(index, tag);
   });
+  return removeBtn;
+}
 
-  if (ENABLE_NATIVE_DESKTOP_DRAG) {
-    item.addEventListener("dragstart", (e) => {
-      if (!e.dataTransfer) return;
-      const payload = `${String(listKey)}:${String(index)}`;
-      e.dataTransfer.effectAllowed = "move";
-      e.dataTransfer.setData("text/plain", payload);
-      item.classList.add("dragging");
-      markPotentialDropTargets(listKey);
-      debugLog("tagDrag:chip", `dragstart [${listKey}] "${tag.name}" index=${index}`, {
-        data: { payload, draggable: item.draggable },
-      });
+function bindNativeDesktopDrag(item, { listKey, index, tag }) {
+  if (!ENABLE_NATIVE_DESKTOP_DRAG) return;
+
+  item.addEventListener("dragstart", (e) => {
+    if (!e.dataTransfer) return;
+    const payload = `${String(listKey)}:${String(index)}`;
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", payload);
+    item.classList.add("dragging");
+    markPotentialDropTargets(listKey);
+    debugLog("tagDrag:chip", `dragstart [${listKey}] "${tag.name}" index=${index}`, {
+      data: { payload, draggable: item.draggable },
     });
+  });
 
-    item.addEventListener("dragend", () => {
-      item.classList.remove("dragging");
-      clearPotentialDropTargets();
-      debugLog("tagDrag:chip", `dragend [${listKey}] "${tag.name}"`);
-    });
-  }
+  item.addEventListener("dragend", () => {
+    item.classList.remove("dragging");
+    clearPotentialDropTargets();
+    debugLog("tagDrag:chip", `dragend [${listKey}] "${tag.name}"`);
+  });
+}
 
+function bindPointerDrag(item, { listKey, index, onDropOnItem, onDropOnContainer, getShadowRoot }) {
   item.addEventListener("pointerdown", (e) => {
     if (e.pointerType === "mouse" && e.button !== 0) return;
     if (!e.isPrimary) return;
@@ -325,6 +319,8 @@ export function createTagChipItem({
     copyChipStyleToGhost(item, ghost);
     sr.appendChild(ghost);
 
+    sr.appendChild(ghost);
+
     activePointerDrag = {
       ghost,
       fromListKey: listKey,
@@ -338,6 +334,7 @@ export function createTagChipItem({
       onMove: null,
       onUp: null,
       rafId: null,
+      useLeftTop: true,
       latestX: e.clientX,
       latestY: e.clientY,
     };
@@ -347,8 +344,14 @@ export function createTagChipItem({
 
     const onMove = (ev) => {
       if (!activePointerDrag) return;
-      activePointerDrag.ghost.style.left = `${ev.clientX - activePointerDrag.offsetX}px`;
-      activePointerDrag.ghost.style.top = `${ev.clientY - activePointerDrag.offsetY}px`;
+      if (activePointerDrag.useLeftTop) {
+        try {
+          activePointerDrag.ghost.style.left = `${ev.clientX - activePointerDrag.offsetX}px`;
+          activePointerDrag.ghost.style.top = `${ev.clientY - activePointerDrag.offsetY}px`;
+        } catch {}
+      } else {
+        activePointerDrag.ghost.style.transform = `translate3d(${ev.clientX - activePointerDrag.offsetX}px, ${ev.clientY - activePointerDrag.offsetY}px, 0)`;
+      }
       activePointerDrag.latestX = ev.clientX;
       activePointerDrag.latestY = ev.clientY;
       if (activePointerDrag.rafId) return;
@@ -386,12 +389,47 @@ export function createTagChipItem({
     activePointerDrag.onMove = onMove;
     activePointerDrag.onUp = onUp;
 
-    window.addEventListener("pointermove", onMove);
-    window.addEventListener("pointerup", onUp);
-    item.addEventListener("lostpointercapture", onLostCapture);
+    const { reg, dispose } = createRegistrar("tagDrag-pointer");
+    reg(window, "pointermove", onMove);
+    reg(window, "pointerup", onUp);
+    reg(item, "lostpointercapture", onLostCapture);
+    activePointerDrag.dispose = dispose;
+  });
+}
+
+export function createTagChipItem({
+  tag,
+  index,
+  itemClass,
+  removeBtnClass,
+  listKey,
+  onRemove,
+  onDropOnItem,
+  onDropOnContainer,
+  getShadowRoot,
+}) {
+  debugLog("tagDrag:chip", `creating chip [${listKey}] "${tag.name}" index=${index}`, {
+    data: { itemClass, listKey, index },
   });
 
-  item.appendChild(text);
-  item.appendChild(removeBtn);
+  const sr = typeof getShadowRoot === "function" ? getShadowRoot() : null;
+  const item = createEl("div", { className: `tag-list-item ${itemClass} tag-chip`, mount: sr });
+  item.dataset.index = String(index);
+  item.draggable = ENABLE_NATIVE_DESKTOP_DRAG;
+
+  const text = createEl("span", { text: tag.name, mount: item });
+
+  const removeBtn = createRemoveButton({ removeBtnClass, onRemove, index, tag, mount: item });
+
+  bindNativeDesktopDrag(item, { listKey, index, tag });
+  bindPointerDrag(item, {
+    listKey,
+    index,
+    onDropOnItem,
+    onDropOnContainer,
+    getShadowRoot,
+  });
+
+  item.append(text, removeBtn);
   return item;
 }

@@ -1,5 +1,4 @@
 import { createStyledFeature } from "../../core/createStyledFeature.js";
-import { config } from "../../config.js";
 import { enableNoticeDismissal, disableNoticeDismissal } from "./handler.js";
 import featureCss from "./style.css";
 
@@ -8,6 +7,7 @@ import featureCss from "./style.css";
  */
 export const dismissNotificationFeature = createStyledFeature("Dismiss Notification", {
   configPath: "globalSettings.closeNotifOnClick",
+  isApplicable: ({ stateManager }) => stateManager.get("isF95Zone"),
   styleCss: featureCss,
   enable: () => {
     enableNoticeDismissal();
@@ -22,9 +22,5 @@ export const dismissNotificationFeature = createStyledFeature("Dismiss Notificat
  * This is the primary function used by the settings UI and loader.
  */
 export function toggleNoticeDismissal() {
-  if (config.globalSettings.closeNotifOnClick) {
-    dismissNotificationFeature.enable();
-  } else {
-    dismissNotificationFeature.disable();
-  }
+  dismissNotificationFeature.sync();
 }

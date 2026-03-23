@@ -29,48 +29,48 @@ export function acquireStyle(id, cssText, target = "document") {
   if (!container) return null;
 
   const existing = styles.get(id);
-  if (existing) {
-    existing.refs += 1;
+  if (!existing) {
+    const style = document.createElement("style");
+    style.dataset.styleId = id;
+    style.textContent = cssText;
+    container.appendChild(style);
 
-    const targetChanged = existing.target !== target;
-    const cssChanged = existing.cssText !== cssText;
-    if (targetChanged || cssChanged) {
-      removeStyleElement(existing);
+    styles.set(id, {
+      id,
+      cssText,
+      target,
+      refs: 1,
+      element: style,
+    });
 
-      const nextContainer = resolveTargetContainer(target);
-      if (!nextContainer) return null;
+    resourceManager.register(`style:${id}`, () => {
+      removeStyle(id, { force: true, unregister: false });
+    });
 
-      const nextStyle = document.createElement("style");
-      nextStyle.dataset.styleId = id;
-      nextStyle.textContent = cssText;
-      nextContainer.appendChild(nextStyle);
-
-      existing.element = nextStyle;
-      existing.target = target;
-      existing.cssText = cssText;
-    }
-
-    return existing.element;
+    return style;
   }
 
-  const style = document.createElement("style");
-  style.dataset.styleId = id;
-  style.textContent = cssText;
-  container.appendChild(style);
+  existing.refs += 1;
 
-  styles.set(id, {
-    id,
-    cssText,
-    target,
-    refs: 1,
-    element: style,
-  });
+  const targetChanged = existing.target !== target;
+  const cssChanged = existing.cssText !== cssText;
+  if (targetChanged || cssChanged) {
+    removeStyleElement(existing);
 
-  resourceManager.register(`style:${id}`, () => {
-    removeStyle(id, { force: true, unregister: false });
-  });
+    const nextContainer = resolveTargetContainer(target);
+    if (!nextContainer) return null;
 
-  return style;
+    const nextStyle = document.createElement("style");
+    nextStyle.dataset.styleId = id;
+    nextStyle.textContent = cssText;
+    nextContainer.appendChild(nextStyle);
+
+    existing.element = nextStyle;
+    existing.target = target;
+    existing.cssText = cssText;
+  }
+
+  return existing.element;
 }
 
 export function removeStyle(id, { force = false, unregister = true } = {}) {
@@ -108,4 +108,3 @@ export function getStyleRegistrySnapshot() {
   }
   return snapshot;
 }
-

@@ -6,10 +6,7 @@ import {
   isProcessingDownloadTriggerActive,
   normalizeProcessingDownloadTrigger,
 } from "../../utils/processingDownloadTrigger.js";
-import {
-  markDirectDownloadHostFailure,
-  markDirectDownloadHostSuccess,
-} from "./hostBreaker.js";
+import { markDirectDownloadHostFailure, markDirectDownloadHostSuccess } from "./hostBreaker.js";
 
 const GOFILE_BRIDGE_REQUEST_EVENT = "f95ue:gofile-download-request";
 const GOFILE_BRIDGE_RESULT_EVENT = "f95ue:gofile-download-result";
@@ -80,9 +77,7 @@ function ensureGofilePageBridge() {
               detail: { ok, reason },
             }),
           );
-        } catch {
-          // ignore dispatch failures
-        }
+        } catch {}
       });
     })();
   `;

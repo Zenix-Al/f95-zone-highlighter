@@ -1,4 +1,3 @@
-import { config } from "../../config";
 import { resolveMaskedLink } from "./resolver.js";
 import { SELECTORS } from "../../config/selectors.js";
 import TIMINGS from "../../config/timings.js";
@@ -9,9 +8,6 @@ import { queryFirstBySelectors } from "../../utils/selectorQuery.js";
  * click the continue button or use an XHR fallback to get the real URL.
  */
 export function skipMaskedPage() {
-  if (!config.threadSettings.skipMaskedLink) return;
-  if (!location.pathname.startsWith("/masked/") || location.pathname === "/masked/") return;
-
   // Auto-click the continue button if present (most reliable now)
   const continueBtn = queryFirstBySelectors(SELECTORS.MASKED_PAGE.CONTINUE_BTN_CANDIDATES);
   if (continueBtn) {
@@ -25,7 +21,10 @@ export function skipMaskedPage() {
   const $leaving = queryFirstBySelectors(SELECTORS.MASKED_PAGE.LEAVING_CANDIDATES);
   if ($leaving) {
     $leaving.style.width = $leaving.offsetWidth + "px";
-    const leavingText = queryFirstBySelectors(SELECTORS.MASKED_PAGE.LEAVING_TEXT_CANDIDATES, $leaving);
+    const leavingText = queryFirstBySelectors(
+      SELECTORS.MASKED_PAGE.LEAVING_TEXT_CANDIDATES,
+      $leaving,
+    );
     if (leavingText) leavingText.style.display = "none";
   }
 
@@ -42,38 +41,39 @@ export function skipMaskedPage() {
 
   if ($loading) $loading.style.display = "block";
 
-  function sendRequest(token = "") {
-    resolveMaskedLink(location.pathname, { token })
-      .then((res) => {
-        if (res.status === "ok") {
-          location.href = res.msg;
-        } else if (res.status === "captcha") {
-          if ($captchaDiv) {
-            $captchaDiv.style.display = "block";
-            grecaptcha.render("captcha", {
-              theme: "dark",
-              sitekey: "6LcwQ5kUAAAAAAI-_CXQtlnhdMjmFDt-MruZ2gov",
-              callback: (t) => {
-                $captchaDiv.style.display = "none";
-                if ($loading) $loading.style.display = "block";
-                sendRequest(t);
-              },
-            });
-          }
-        } else if (res.status === "error") {
-          handleError("Error", res.msg || "An unknown error occurred.", true);
-        } else {
-          handleError("Error", res.msg || "An unknown error occurred.");
-        }
-      })
-      .catch((error) => {
-        if (error.type === "parse") {
-          handleError("Bad Response", "The server's response was malformed.", true);
-          console.error("skipMaskedPage parse error:", error.error);
-        } else {
-          handleError("Server Error", "Please try again in a few moments.", true);
-        }
-      });
+  async function sendRequest(token = "") {
+    try {
+      const res = await resolveMaskedLink(location.pathname, { token });
+
+      if (res.status === "ok") {
+        location.href = res.msg;
+        return;
+      }
+
+      if (res.status === "captcha") {
+        if (!$captchaDiv) return;
+        $captchaDiv.style.display = "block";
+        grecaptcha.render("captcha", {
+          theme: "dark",
+          sitekey: "6LcwQ5kUAAAAAAI-_CXQtlnhdMjmFDt-MruZ2gov",
+          callback: (t) => {
+            $captchaDiv.style.display = "none";
+            if ($loading) $loading.style.display = "block";
+            sendRequest(t);
+          },
+        });
+        return;
+      }
+
+      handleError("Error", res.msg || "An unknown error occurred.", res.status === "error");
+    } catch (error) {
+      if (error.type === "parse") {
+        handleError("Bad Response", "The server's response was malformed.", true);
+        console.error("skipMaskedPage parse error:", error.error);
+      } else {
+        handleError("Server Error", "Please try again in a few moments.", true);
+      }
+    }
   }
 
   sendRequest();

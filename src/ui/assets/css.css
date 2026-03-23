@@ -68,6 +68,16 @@
   touch-action: none; /* prevent native scrolling during touch drag */
   -ms-touch-action: none;
   user-select: none;
+  cursor: grab;
+}
+
+.tag-chip span {
+  margin-right: 6px;
+  margin-left: 6px;
+}
+
+.tag-chip.dragging {
+  cursor: grabbing;
 }
 
 #toast-container {
@@ -125,24 +135,6 @@
   background-color: var(--preferred-color);
   color: var(--preferred-text-color);
 }
-/* Shared chip shape for tags */
-.tag-chip {
-  display: inline-flex;
-  align-items: center;
-  border-radius: 4px;
-  font-size: 14px;
-  font-weight: bold;
-  height: 28px;
-  touch-action: none; /* prevent native scrolling during touch drag */
-  -ms-touch-action: none;
-  user-select: none;
-}
-
-.tag-chip span {
-  margin-right: 6px;
-  margin-left: 6px;
-}
-
 /* ghost used for touch drag fallback */
 .drag-ghost {
   opacity: 0.95;
@@ -206,10 +198,6 @@
   background-color: var(--excluded-color);
   color: var(--excluded-text-color);
 }
-.excluded-tag-item {
-  background-color: var(--excluded-color);
-  color: var(--excluded-text-color);
-}
 
 .excluded-tag-remove {
   background-color: #c15858;
@@ -240,6 +228,17 @@
 .tag-list-item.drag-over {
   outline: 2px dashed rgba(255, 255, 255, 0.4);
   outline-offset: 2px;
+}
+
+/* Offscreen textarea used for clipboard fallback copying */
+.offscreen-copy {
+  position: fixed !important;
+  top: 0 !important;
+  left: -9999px !important;
+  width: 1px !important;
+  height: 1px !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 
 /* Highlight empty/full list container when an item is dragged over it */
@@ -897,18 +896,9 @@
   display: none;
 }
 
-.config-tag-item {
-  margin-left: 5px;
-  cursor: pointer;
-}
-
 .modal-settings-spacing {
   padding: 8px 10px;
   margin-bottom: 6px;
-}
-.config-label:hover {
-  text-decoration: underline;
-  text-decoration-style: dotted;
 }
 
 .config-header {

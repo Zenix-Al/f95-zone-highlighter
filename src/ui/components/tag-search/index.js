@@ -1,4 +1,4 @@
-import stateManager, { config } from "../../../config.js";
+import { config } from "../../../config.js";
 import { isValidTag } from "../../../utils/validators.js";
 import {
   addTagToList,
@@ -11,10 +11,7 @@ import {
   ensureContainerDropHandlers,
   ensurePointerCleanupHooks,
 } from "./tagDrag";
-
-function getShadowRoot() {
-  return stateManager.get("shadowRoot");
-}
+import { getShadowRoot } from "../../getShadowRoot.js";
 
 function getTagById(tagId) {
   return config.tags.find((tag) => tag.id === tagId);
@@ -267,7 +264,7 @@ export function renderMarked() {
 }
 
 export function initTagSearchListeners() {
-  ensurePointerCleanupHooks(getShadowRoot);
+  ensurePointerCleanupHooks();
 
   const shadowRoot = getShadowRoot();
   const input = shadowRoot?.getElementById("tags-search");
