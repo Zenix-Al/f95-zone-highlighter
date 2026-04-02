@@ -1,8 +1,8 @@
 import { attachDarkColorPicker } from "../components/darkColorPicker.js";
+import { createEl } from "../../core/dom.js";
 
 export function createInput(meta, id) {
-  const input = document.createElement("input");
-  input.id = id;
+  const input = createEl("input", { attrs: { id }, className: meta.className });
 
   switch (meta.type) {
     case "toggle":
@@ -17,6 +17,20 @@ export function createInput(meta, id) {
     case "color":
       attachDarkColorPicker(input);
       break;
+
+    case "select": {
+      const select = createEl("select", { attrs: { id }, className: meta.className });
+      const options = Array.isArray(meta.options) ? meta.options : [];
+      options.forEach((opt) => {
+        const value = opt && typeof opt === "object" ? opt.key : String(opt);
+        const label = opt && typeof opt === "object" && opt.label ? opt.label : String(opt);
+        const optionEl = document.createElement("option");
+        optionEl.value = value;
+        optionEl.textContent = label;
+        select.appendChild(optionEl);
+      });
+      return select;
+    }
 
     default:
       throw new Error(`Unknown input type: ${meta.type}`);

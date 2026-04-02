@@ -4,12 +4,13 @@ import { OVERLAY_COLOR_ORDER_KEYS, normalizeOverlayColorOrder } from "./overlayO
 // Shared mutable caches consumed by tilePatcher and hoverTagHandler.
 // Call refreshCaches() before any processing pass so all consumers read
 // a consistent snapshot of config for that pass.
+// @type {Map<number, string>|null}
+// @type {Map<string, number>|null}
+// @type {object|null}
+
 export const cache = {
-  /** @type {Map<number, string>|null} */
   tagIdToName: null,
-  /** @type {Map<string, number>|null} */
   tagNameToId: null,
-  /** @type {object|null} */
   overlayFlags: null,
   overlayColorOrder: OVERLAY_COLOR_ORDER_KEYS,
 };

@@ -28,7 +28,14 @@ export const SELECTORS = {
     ],
   },
   PIXELDRAIN: {
-    DOWNLOAD_BUTTON_CANDIDATES: "button.button_highlight, .button_highlight, a.button.button_highlight",
+    DOWNLOAD_BUTTON_CANDIDATES: [
+      "div.description button.button_highlight",
+      'div[class*="description"] button.button_highlight',
+      'div[class*="block"] div[class*="description"] button.button_highlight',
+      "button.button_highlight",
+      "a.button.button_highlight",
+      ".button_highlight",
+    ],
   },
   DATANODES: {
     METHOD_FREE_BUTTON_ID: "method_free",
@@ -48,12 +55,7 @@ export const SELECTORS = {
   },
   MASKED_PAGE: {
     CONTINUE_BTN: ".host_link",
-    CONTINUE_BTN_CANDIDATES: [
-      ".host_link",
-      "a.host_link",
-      ".leaving a[href]",
-      "#leaving a[href]",
-    ],
+    CONTINUE_BTN_CANDIDATES: [".host_link", "a.host_link", ".leaving a[href]", "#leaving a[href]"],
     LEAVING: ".leaving",
     LEAVING_CANDIDATES: [".leaving", "#leaving", ".leaving-page"],
     LEAVING_TEXT: ".leaving-text",

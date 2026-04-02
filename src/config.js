@@ -16,7 +16,6 @@ export const defaultColors = {
   preferredText: "#ffffff",
   excluded: "#b71c1c",
   excludedText: "#ffffff",
-  // Marked tags: slightly darker, high-contrast text for readability
   marked: "#4a4f55",
   markedText: "#ffffff",
 };
@@ -93,6 +92,7 @@ export const defaultLatestSettings = {
     "highVersion",
     "invalidVersion",
   ],
+  latestOverlayStyle: "strip",
 };
 
 export const defaultGlobalSettings = {
@@ -140,6 +140,7 @@ const runtimeState = {
   colorRendered: false,
   overlayRendered: false,
   threadSettingsRendered: false,
+  tagsUpdateRan: false,
   isThread: false,
   isLatest: false,
   isDownloadPage: false,
@@ -151,7 +152,6 @@ const runtimeState = {
   isMaskedLinkApplied: false,
   isProcessingTiles: false,
   isCrossTabSyncInitialized: false,
-  isDirectDownloadHijackApplied: false,
   isMsgEventHandlerApplied: false,
   isNoticeDismissalEnabled: false,
   isRecaptchaFrame: false,
@@ -210,26 +210,6 @@ export const downloadHostConfigs = {
     packageKey: "datanodes",
     clickType: "normal",
     pageHandler: "datanodes.to",
-  },
-  "workupload.com": {
-    packageKey: "workupload",
-    clickType: "normal",
-  },
-  "qiwi.gg": {
-    packageKey: "qiwi",
-    clickType: "normal",
-  },
-  "krakenfiles.com": {
-    packageKey: "krakenfiles",
-    clickType: "normal",
-  },
-  "mega.nz": {
-    packageKey: "mega",
-    clickType: "normal",
-  },
-  "mediafire.com": {
-    packageKey: "mediafire",
-    clickType: "normal",
   },
   "trashbytes.net": {
     packageKey: "buzzheavier",

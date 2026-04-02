@@ -47,13 +47,13 @@ function processMutations(mutationsList) {
     for (const node of mutation.addedNodes) {
       if (node.nodeType !== 1) continue;
 
-      const hasControls =
-        node.id === "controls_auto-refresh" ||
-        node.id === "controls_notify" ||
-        (node.querySelector &&
-          (node.querySelector("#controls_auto-refresh") || node.querySelector("#controls_notify")));
+      const isControl =
+        node.id === SELECTORS.LATEST_CONTROL.IDS.AUTO_REFRESH ||
+        node.id === SELECTORS.LATEST_CONTROL.IDS.NOTIFY ||
+        node.querySelector?.(`#${SELECTORS.LATEST_CONTROL.IDS.AUTO_REFRESH}`) ||
+        node.querySelector?.(`#${SELECTORS.LATEST_CONTROL.IDS.NOTIFY}`);
 
-      if (hasControls) {
+      if (isControl) {
         syncLatestControls();
         return;
       }

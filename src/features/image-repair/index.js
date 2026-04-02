@@ -1,6 +1,5 @@
 import { createStyledFeature } from "../../core/createStyledFeature.js";
 import { enableImageRepair, disableImageRepair } from "./handler.js";
-import { injectUI, destroyInjectedUI } from "./ui.js";
 import featureCss from "./style.css";
 
 /**
@@ -11,12 +10,6 @@ export const imageRepairFeature = createStyledFeature("Image Repair", {
   configPath: "threadSettings.imgRetry",
   isApplicable: ({ stateManager }) => stateManager.get("isThread"),
   styleCss: featureCss,
-  enable: () => {
-    injectUI();
-    enableImageRepair();
-  },
-  disable: () => {
-    disableImageRepair();
-    destroyInjectedUI();
-  },
+  enable: enableImageRepair,
+  disable: disableImageRepair,
 });

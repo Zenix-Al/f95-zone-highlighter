@@ -1,7 +1,7 @@
 import { createStyledFeature } from "../../core/createStyledFeature.js";
 import {
-  enableLatestOverlay as enableLatestOverlayCore,
-  disableLatestOverlay as disableLatestOverlayCore,
+  enableLatestOverlay,
+  disableLatestOverlay,
   reprocessAllTiles,
   resetTile,
   processTile,
@@ -9,11 +9,11 @@ import {
 import featureCss from "./style.css";
 
 function runEnableLatestOverlay() {
-  enableLatestOverlayCore();
+  enableLatestOverlay();
 }
 
 function runDisableLatestOverlay() {
-  disableLatestOverlayCore();
+  disableLatestOverlay();
 }
 
 export const latestOverlayFeature = createStyledFeature("Latest Overlay", {

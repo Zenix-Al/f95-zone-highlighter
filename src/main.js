@@ -1,11 +1,8 @@
-import stateManager, { config } from "./config.js";
+import { config } from "./config.js";
 import { loadData } from "./services/settingsService";
-import { updateButtonVisibility } from "./ui/components/configButton";
 import { detectPage, waitForBody } from "./core/dom";
 
-import { toggleCrossTabSync } from "./services/syncService";
-import { initUI } from "./ui";
-import { skipMaskedPage } from "./features/masked-link-skipper/index.js";
+import { initUiPhaseIfApplicable } from "./ui";
 import { loadFeatures } from "./loader";
 import { addListener } from "./core/listenerRegistry.js";
 import { teardownAll } from "./core/teardown.js";
@@ -46,34 +43,10 @@ async function bootstrap() {
     detectPage();
   });
 
-  // --- Preventing further unnecessary code execution ---
-  const isMaskedLink = await runBootstrapStep("checkMaskedLinkPage", async () =>
-    stateManager.get("isMaskedLink"),
-  );
-  if (isMaskedLink) {
-    if (config.threadSettings.skipMaskedLink) {
-      await runBootstrapStep("skipMaskedPage", async () => {
-        skipMaskedPage();
-      });
-    }
-    return;
-  }
-
-  // --- Initialize ---
-  const isF95Zone = await runBootstrapStep("checkF95ZonePage", async () =>
-    stateManager.get("isF95Zone"),
-  );
-  if (isF95Zone) {
-    await runBootstrapStep("initUI", async () => {
-      initUI();
-    });
-    await runBootstrapStep("updateButtonVisibility", async () => {
-      updateButtonVisibility();
-    });
-    await runBootstrapStep("toggleCrossTabSync", async () => {
-      toggleCrossTabSync(config.globalSettings.enableCrossTabSync);
-    });
-  }
+  // --- Initialize UI phase ---
+  await runBootstrapStep("initUiPhaseIfApplicable", async () => {
+    initUiPhaseIfApplicable();
+  });
 
   // --- Execute Page-specific functionality ---
   await runBootstrapStep("loadFeatures", async () => {

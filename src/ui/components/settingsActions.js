@@ -1,5 +1,5 @@
 import { config, defaultColors } from "../../config";
-import { reprocessAllTiles as reprocessLatestOverlay } from "../../features/latest-overlay/index.js";
+import { reprocessAllTiles } from "../../features/latest-overlay/index.js";
 import { debouncedProcessThreadTags } from "../../core/tasksRegistry";
 import { colorSettingsMeta } from "../settings/colorSettings";
 import { reRenderSettingsSection } from "../renderers/reRenderSetting";
@@ -22,7 +22,7 @@ export function resetColor() {
   updateColorStyle();
   saveConfigKeys({ color: config.color });
 
-  reprocessLatestOverlay();
+  reprocessAllTiles();
   debouncedProcessThreadTags();
 
   reRenderSettingsSection("color-container", colorSettingsMeta);

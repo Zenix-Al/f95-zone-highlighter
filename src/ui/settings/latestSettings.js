@@ -1,4 +1,4 @@
-import stateManager, { config } from "../../config.js";
+import { config } from "../../config.js";
 import { wideLatestPageFeature, denseLatestGridFeature } from "../../features/wide-latest/index.js";
 import { latestControlFeature } from "../../features/latest-control/index.js";
 import { checkOverlaySettings } from "../../services/safetyService";
@@ -6,45 +6,36 @@ import { debouncedProcessAllTilesReset } from "../../core/tasksRegistry";
 import { latestOverlayFeature } from "../../features/latest-overlay/index.js";
 import { saveConfigKeys } from "../../services/settingsService";
 import { showToast } from "../components/toast";
-import {
-  OVERLAY_COLOR_ORDER_KEYS,
-  isValidOverlayColorOrder,
-  normalizeOverlayColorOrder,
-} from "../../features/latest-overlay/overlayOrder.js";
-import { openSettingsDialog, openTextPrompt } from "../components/dialog.js";
+import { normalizeOverlayColorOrder } from "../../features/latest-overlay/overlayOrder.js";
+import { openSettingsDialog, openReorderDialog } from "../components/dialog.js";
 import { overlaySettingsMeta } from "./overlaySettings.js";
 import { createEnabledDisabledToast, createToggleSetting } from "./metaFactory";
 
+const OVERLAY_KEY_LABELS = {
+  excluded: "Excluded",
+  preferred: "Preferred",
+  completed: "Completed",
+  onhold: "On Hold",
+  abandoned: "Abandoned",
+  highVersion: "High Version",
+  invalidVersion: "Invalid Version",
+};
+
 async function openOverlayColorOrderEditor() {
   const currentOrder = normalizeOverlayColorOrder(config.latestSettings.latestOverlayColorOrder);
-  const input = await openTextPrompt({
+  const items = currentOrder.map((key) => ({ key, label: OVERLAY_KEY_LABELS[key] || key }));
+
+  const result = await openReorderDialog({
     title: "Overlay Color Order",
-    description: [
-      "Set overlay color order (comma-separated keys).",
-      `Allowed: ${OVERLAY_COLOR_ORDER_KEYS.join(", ")}`,
-      `Current: ${currentOrder.join(", ")}`,
-    ].join(" "),
-    defaultValue: currentOrder.join(", "),
-    placeholder: "excluded, preferred, completed, onhold, abandoned, highVersion, invalidVersion",
+    description: "Drag or use arrows to set overlay color priority (top = highest priority).",
+    items,
     submitLabel: "Save",
     cancelLabel: "Cancel",
   });
 
-  if (input === null) return;
+  if (result === null) return;
 
-  const parsed = input
-    .split(",")
-    .map((v) => v.trim())
-    .filter(Boolean);
-
-  const isValid = isValidOverlayColorOrder(parsed);
-
-  if (!isValid) {
-    showToast("Invalid order. Use each allowed key exactly once.");
-    return;
-  }
-
-  config.latestSettings.latestOverlayColorOrder = parsed;
+  config.latestSettings.latestOverlayColorOrder = result;
   await saveConfigKeys({ latestSettings: config.latestSettings });
   debouncedProcessAllTilesReset();
   showToast("Overlay color order updated.");
@@ -52,12 +43,7 @@ async function openOverlayColorOrderEditor() {
 
 const effectOverlayToggle = () => {
   checkOverlaySettings();
-  if (!stateManager.get("isLatest")) return;
-  if (!config.latestSettings.latestOverlayToggle) {
-    latestOverlayFeature.disable();
-  } else {
-    latestOverlayFeature.enable();
-  }
+  latestOverlayFeature.sync();
 };
 
 const latestOverlayToggleSetting = createToggleSetting({
@@ -105,6 +91,22 @@ const latestOverlaySettingsDialogMeta = {
   overlayText: overlaySettingsMeta.overlayText,
   minVersion: minVersionSetting,
   latestOverlayColorOrder: latestOverlayColorOrderSetting,
+  overlayStyle: {
+    type: "select",
+    text: "Overlay style",
+    tooltip: "Choose how overlay colors are applied to tiles (strip or border)",
+    config: "latestSettings.latestOverlayStyle",
+    options: [
+      { key: "strip", label: "Bottom strip" },
+      { key: "border", label: "Colored border" },
+    ],
+    effects: {
+      custom: (v) => {
+        debouncedProcessAllTilesReset();
+        showToast(`Overlay style saved: ${v}`);
+      },
+    },
+  },
 };
 
 function openLatestOverlaySettingsDialog() {
@@ -121,7 +123,7 @@ export const latestSettingsMeta = {
     tooltip: "Auto activate in site auto refresh for the Latest Updates page",
     config: "latestSettings.autoRefresh",
     custom: () => {
-      stateManager.get("isLatest") && latestControlFeature.enable();
+      latestControlFeature.sync();
     },
     toast: createEnabledDisabledToast("Auto Refresh"),
   }),
@@ -131,7 +133,7 @@ export const latestSettingsMeta = {
       "Auto activate in site web notifications for new threads (site might ask for permission)",
     config: "latestSettings.webNotif",
     custom: () => {
-      stateManager.get("isLatest") && latestControlFeature.enable();
+      latestControlFeature.sync();
     },
     toast: createEnabledDisabledToast("Web Notifications"),
   }),
@@ -140,7 +142,7 @@ export const latestSettingsMeta = {
     tooltip: "Remove width limit on the Latest Updates page",
     config: "latestSettings.wideLatest",
     custom: () => {
-      stateManager.get("isLatest") && wideLatestPageFeature.toggle(config.latestSettings.wideLatest);
+      wideLatestPageFeature.sync();
     },
     toast: createEnabledDisabledToast("Wide Latest Page"),
   }),
@@ -149,8 +151,7 @@ export const latestSettingsMeta = {
     tooltip: "Reduce spacing between thread tiles on the Latest Updates page",
     config: "latestSettings.denseLatestGrid",
     custom: () => {
-      stateManager.get("isLatest") &&
-        denseLatestGridFeature.toggle(config.latestSettings.denseLatestGrid);
+      denseLatestGridFeature.sync();
     },
     toast: createEnabledDisabledToast("Dense Latest Grid"),
   }),
@@ -164,3 +165,7 @@ export const latestSettingsMeta = {
     },
   },
 };
+
+async function openOverlayStyleDialog() {
+  // overlay style chooser replaced by inline select; function removed.
+}

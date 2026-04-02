@@ -1,0 +1,33 @@
+/* Buttons injected next to masked links and direct-download links */
+.f95ue-masked-resolve-btn {
+  margin-left: 6px;
+  padding: 2px 6px;
+  font-size: 11px;
+  line-height: 1.2;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 4px;
+  color: #fff;
+  cursor: pointer;
+  vertical-align: middle;
+  transition: opacity 0.15s, background 0.2s;
+}
+
+.f95ue-masked-resolve-btn:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+/* Masked-link resolve button (default state) */
+.f95ue-masked-resolve-btn[data-link-type="masked"] {
+  background: rgba(137, 56, 57, 0.85);
+}
+
+/* Direct-download route button */
+.f95ue-masked-resolve-btn[data-link-type="direct"] {
+  background: rgba(30, 90, 160, 0.85);
+}
+
+/* After a masked link has been successfully resolved */
+.f95ue-masked-resolve-btn[data-resolved="true"] {
+  background: rgba(0, 128, 0, 0.85);
+}

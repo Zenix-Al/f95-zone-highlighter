@@ -63,3 +63,30 @@ export function removeAllListeners() {
     removeListener(id);
   }
 }
+
+/**
+ * Create a scoped registrar for local listener management.
+ * Returns an object with `reg(el, type, handler, opts)` and `dispose()`.
+ * `scopeId` should be a short descriptive string for debugging.
+ */
+export function createRegistrar(scopeId = "scope") {
+  let counter = 0;
+  const ids = [];
+  // Ensure this registrar instance uses a unique instance id so that
+  // listener ids do not collide with previously-created but not-disposed
+  // registrars (which would cause addListener to skip registrations).
+  const instanceId = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+
+  const reg = (el, type, handler, opts) => {
+    const id = `${scopeId}:${instanceId}:${++counter}`;
+    addListener(id, el, type, handler, opts);
+    ids.push(id);
+    return () => removeListener(id);
+  };
+
+  const dispose = () => {
+    while (ids.length) removeListener(ids.shift());
+  };
+
+  return { reg, dispose };
+}

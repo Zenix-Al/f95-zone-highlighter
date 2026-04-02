@@ -141,7 +141,15 @@ export function initModalUi() {
     const searchInput = shadowRoot.getElementById("tags-search");
     if (searchInput) {
       addListener("tags-search-input", searchInput, "input", updateSearch);
-      addListener("tags-search-focus", searchInput, "focus", showAllTags);
+      // On focus: if input already has a query keep the filtered view,
+      // otherwise show all tags so the list pops open immediately.
+      addListener("tags-search-focus", searchInput, "focus", (e) => {
+        if (e.target.value.trim()) {
+          updateSearch(e);
+        } else {
+          showAllTags();
+        }
+      });
     }
 
     // Initialize delegated listeners for tag search results and tag lists

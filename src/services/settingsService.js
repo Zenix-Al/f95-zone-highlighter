@@ -128,48 +128,41 @@ export async function saveConfigKeys(updates) {
   return { saved, failed };
 }
 
+// Violentmonkey/Tampermonkey/Greasemonkey differ slightly in storage APIs.
+// Prefer bulk `GM.getValues` if available; otherwise fall back to per-key `GM.getValue`.
+async function loadRawStorage(keys) {
+  if (typeof GM.getValues === "function") {
+    return (await GM.getValues(keys)) ?? {};
+  }
+  const entries = await Promise.all(
+    keys.map(async (k) => {
+      try {
+        return [k, await GM.getValue(k)];
+      } catch {
+        return [k, undefined];
+      }
+    }),
+  );
+  return Object.fromEntries(entries.filter(([, v]) => v !== undefined));
+}
+
+// Deep merge saved values into defaults, ignoring unknown keys.
+function mergeWithDefault(saved, defaultObj) {
+  const source = normalizeObject(saved);
+  const result = { ...defaultObj };
+  for (const key of Object.keys(source)) {
+    if (key in result) result[key] = source[key];
+  }
+  return result;
+}
+
 export async function loadData() {
   let parsed = {};
   try {
-    // Violentmonkey/Tampermonkey/Greasemonkey differ slightly in storage APIs.
-    // Prefer bulk `GM.getValues` if available; otherwise fall back to per-key `GM.getValue`.
-    const keys = Object.keys(config);
-    if (typeof GM.getValues === "function") {
-      parsed = (await GM.getValues(keys)) ?? {};
-    } else {
-      // Fallback: fetch keys individually and assemble an object
-      const entries = await Promise.all(
-        keys.map(async (k) => {
-          try {
-            const v = await GM.getValue(k);
-            return [k, v];
-          } catch {
-            return [k, undefined];
-          }
-        }),
-      );
-      parsed = entries.reduce((acc, [k, v]) => {
-        if (typeof v !== "undefined") acc[k] = v;
-        return acc;
-      }, {});
-    }
+    parsed = await loadRawStorage(Object.keys(config));
   } catch (e) {
     debugLog("loadData", `Error loading data: ${e}`);
-    parsed = {};
   }
-
-  // Helper: deep merge with defaults
-  const mergeWithDefault = (saved, defaultObj) => {
-    const source = normalizeObject(saved);
-    const result = { ...defaultObj }; // start with defaults
-    Object.keys(source).forEach((key) => {
-      if (key in result) {
-        result[key] = source[key]; // only override if key exists in default
-      }
-      // ignore unknown keys (future cleanup)
-    });
-    return result;
-  };
 
   const hasLegacyProcessingDownload = typeof parsed.processingDownload === "boolean";
   let processingDownload = normalizeProcessingDownloadTrigger(parsed.processingDownload);
@@ -194,16 +187,11 @@ export async function loadData() {
     preferredTags: normalizeArray(parsed.preferredTags),
     excludedTags: normalizeArray(parsed.excludedTags),
     markedTags: normalizeArray(parsed.markedTags),
-
     color: mergeWithDefault(parsed.color, defaultColors),
-
     overlaySettings: mergeWithDefault(parsed.overlaySettings, defaultOverlaySettings),
-
     threadSettings: sanitizeThreadSettings(parsed.threadSettings),
-
     latestSettings: mergeWithDefault(parsed.latestSettings, defaultLatestSettings),
     globalSettings: mergeWithDefault(parsed.globalSettings, defaultGlobalSettings),
-
     metrics: mergeWithDefault(parsed.metrics, defaultMetrics),
     savedNotifID: parsed.savedNotifID || null,
     processingDownload,

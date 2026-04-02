@@ -7,9 +7,9 @@ import { queryAllBySelectors } from "../../utils/selectorQuery.js";
 import { handleDirectDownloadFailure } from "./attention.js";
 import { isDirectDownloadHostEnabled } from "./hostPackages.js";
 import {
-  clearProcessingAndTryCloseTab,
   isProcessingDownloadFlowActive,
   markHostDownloadSuccess,
+  scheduleDirectDownloadCompletion,
 } from "./hostFlowHelpers.js";
 
 // Datanodes is a multi-page / multi-state flow. We persist a tiny stage marker so
@@ -204,7 +204,7 @@ async function waitForReadyState(timeout = TIMINGS.DATANODES_BUTTON_WAIT_TIMEOUT
     if (hasReadyBadge()) return true;
   }
 
-  throw new Error("ready_not_found::Datanodes automation failed: Ready state not detected.");
+  return false;
 }
 
 function clickActionButton(button) {
@@ -342,9 +342,7 @@ async function failFlow(message, code = "flow_failed") {
 function finishSuccess() {
   clearDatanodesStage();
   void markHostDownloadSuccess("datanodes");
-  setTimeout(() => {
-    void clearProcessingAndTryCloseTab();
-  }, TIMINGS.DATANODES_AUTO_CLOSE);
+  scheduleDirectDownloadCompletion("DatanodesDownloader", TIMINGS.DATANODES_AUTO_CLOSE);
 }
 
 async function runDownloadPhase() {
@@ -358,19 +356,30 @@ async function runDownloadPhase() {
   });
   await sleep(DATANODES_BEFORE_DOWNLOAD_CLICK_DELAY);
 
-  const button2First = await waitForButton({
-    getCandidate: getStartPhaseDownloadButton,
-    errorCode: "second_button_not_found",
-    errorMessage: "Datanodes automation failed: Download button not found.",
-  });
+  let button2First = null;
+  try {
+    button2First = await waitForButton({
+      getCandidate: getStartPhaseDownloadButton,
+      errorCode: "second_button_not_found",
+      errorMessage: "Datanodes automation failed: Download button not found.",
+    });
+  } catch {
+    showToast("Datanodes: download button not found — skipping download step.");
+    debugLog("DatanodesDownloader", "Download button not found; skipping download phase.", {
+      level: "warn",
+    });
+    return { skipped: true };
+  }
 
   debugLog("DatanodesDownloader", "download-phase: first button2 click", {
     data: { text: normalizeText(button2First.textContent) },
   });
   if (!clickActionButton(button2First)) {
-    throw new Error(
-      "second_click_failed::Datanodes automation failed: First download click did not trigger.",
-    );
+    showToast("Datanodes: first download click failed — skipping.");
+    debugLog("DatanodesDownloader", "First download click did not trigger; skipping.", {
+      level: "warn",
+    });
+    return { skipped: true };
   }
   showToast("Datanodes countdown started...");
 
@@ -387,9 +396,11 @@ async function runDownloadPhase() {
       data: { text: postFirstClickText },
     });
     if (!clickActionButton(postFirstClickButton)) {
-      throw new Error(
-        "second_click_failed::Datanodes automation failed: Retry of first download click did not trigger.",
-      );
+      showToast("Datanodes: retry click failed — skipping confirm step.");
+      debugLog("DatanodesDownloader", "Retry of first download click did not trigger; skipping.", {
+        level: "warn",
+      });
+      return { skipped: true };
     }
   }
 
@@ -398,37 +409,66 @@ async function runDownloadPhase() {
   await sleep(TIMINGS.DATANODES_SECOND_CLICK_DELAY);
 
   debugLog("DatanodesDownloader", "Waiting for confirm button after countdown...");
-  const button2Second = await waitForButton({
-    getCandidate: getConfirmPhaseDownloadButton,
-    timeout: TIMINGS.DATANODES_BUTTON_WAIT_TIMEOUT,
-    errorCode: "second_click_not_ready",
-    errorMessage: "Datanodes automation failed: Confirm button not available after countdown.",
-  });
+  let button2Second = null;
+  try {
+    button2Second = await waitForButton({
+      getCandidate: getConfirmPhaseDownloadButton,
+      timeout: TIMINGS.DATANODES_BUTTON_WAIT_TIMEOUT,
+      errorCode: "second_click_not_ready",
+      errorMessage: "Datanodes automation failed: Confirm button not available after countdown.",
+    });
+  } catch {
+    showToast("Datanodes: confirm button not available — skipping final step.");
+    debugLog("DatanodesDownloader", "Confirm button not available; skipping.", { level: "warn" });
+    return { skipped: true };
+  }
 
   debugLog("DatanodesDownloader", "download-phase: second button2 click", {
     data: { text: normalizeText(button2Second.textContent) },
   });
   if (!clickActionButton(button2Second)) {
-    throw new Error(
-      "second_click_failed::Datanodes automation failed: Confirm download click did not trigger.",
-    );
+    showToast("Datanodes: confirm click failed — skipping.");
+    debugLog("DatanodesDownloader", "Confirm download click did not trigger; skipping.", {
+      level: "warn",
+    });
+    return { skipped: true };
   }
   showToast("Datanodes download triggered.");
   finishSuccess();
+  return { skipped: false };
 }
 
 async function runMethodFreePhase() {
   debugLog("DatanodesDownloader", "Waiting for ready state...");
-  await waitForReadyState();
+  const isReady = await waitForReadyState();
+  if (!isReady) {
+    showToast("Datanodes: ready state not found — skipping free-method step.");
+    debugLog("DatanodesDownloader", "Ready state not detected; skipping method-free phase.", {
+      level: "warn",
+    });
+    return { skipped: true };
+  }
 
   debugLog("DatanodesDownloader", "Ready detected. Waiting for free method button...");
 
-  await waitForButton({
-    getCandidate: getMethodFreeButton,
-    interval: 100,
-    errorCode: "free_not_found",
-    errorMessage: "Datanodes automation failed: Continue button not found.",
-  });
+  let methodFreeButton = null;
+  try {
+    methodFreeButton = await waitForButton({
+      getCandidate: getMethodFreeButton,
+      interval: 100,
+      errorCode: "free_not_found",
+      errorMessage: "Datanodes automation failed: Continue button not found.",
+    });
+  } catch {
+    showToast("Datanodes: free-method button not found — skipping step.");
+    debugLog("DatanodesDownloader", "Free-method button not found; skipping.", { level: "warn" });
+    return { skipped: true };
+  }
+
+  if (!methodFreeButton) {
+    showToast("Datanodes: free-method button missing — skipping step.");
+    return { skipped: true };
+  }
 
   // Persist stage before clicking because this submit can navigate immediately,
   // and any code scheduled after the click may never run on the current page.
@@ -444,10 +484,35 @@ async function runMethodFreePhase() {
 
   if (!result.progressed) {
     clearDatanodesStage();
-    throw new Error(
-      "free_click_failed::Datanodes automation failed: Could not click continue button.",
-    );
+    showToast("Datanodes: could not click continue button — skipping step.");
+    debugLog("DatanodesDownloader", "method-free click did not progress; skipping.", {
+      level: "warn",
+    });
+    return { skipped: true };
   }
+
+  return { skipped: false };
+}
+
+async function runPreDownloadPhase() {
+  if (readDatanodesStage() === DATANODES_STAGE_AFTER_FREE) {
+    debugLog("DatanodesDownloader", "Resuming after continue step.");
+    return;
+  }
+
+  const freeResult = await runMethodFreePhase();
+  if (freeResult?.skipped) {
+    debugLog("DatanodesDownloader", "method-free phase skipped; proceeding to download phase.");
+    return;
+  }
+
+  // This extra pause is separate from the button2 pre-click delay above.
+  // Here we are waiting for the page itself to settle after the free-method
+  // submit/navigation, not for the first download click to become safe.
+  debugLog("DatanodesDownloader", "Stabilizing after method-free click...", {
+    data: { delayMs: DATANODES_AFTER_METHOD_FREE_DELAY },
+  });
+  await sleep(DATANODES_AFTER_METHOD_FREE_DELAY);
 }
 
 export async function processDatanodesDownload() {
@@ -460,20 +525,7 @@ export async function processDatanodesDownload() {
     return;
 
   try {
-    if (readDatanodesStage() !== DATANODES_STAGE_AFTER_FREE) {
-      await runMethodFreePhase();
-
-      // This extra pause is separate from the button2 pre-click delay above.
-      // Here we are waiting for the page itself to settle after the free-method
-      // submit/navigation, not for the first download click to become safe.
-      debugLog("DatanodesDownloader", "Stabilizing after method-free click...", {
-        data: { delayMs: DATANODES_AFTER_METHOD_FREE_DELAY },
-      });
-      await sleep(DATANODES_AFTER_METHOD_FREE_DELAY);
-    } else {
-      debugLog("DatanodesDownloader", "Resuming after continue step.");
-    }
-
+    await runPreDownloadPhase();
     await runDownloadPhase();
   } catch (error) {
     const raw = String(error?.message || "");

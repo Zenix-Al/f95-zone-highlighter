@@ -1,11 +1,8 @@
-import stateManager from "../../config.js";
 import { renderSetting } from "../renderers/renderSetting.js";
-
+import { createEl } from "../../core/dom.js";
+import { createRegistrar } from "../../core/listenerRegistry.js";
+import { getShadowRoot } from "../getShadowRoot.js";
 const ACTIVE_DIALOG_ID = "latest-config-dialog";
-
-function getShadowRoot() {
-  return stateManager.get("shadowRoot");
-}
 
 function removeDialogIfExists() {
   const shadowRoot = getShadowRoot();
@@ -31,26 +28,21 @@ export function openTextPrompt({
   removeDialogIfExists();
 
   return new Promise((resolve) => {
-    const backdrop = document.createElement("div");
-    backdrop.id = ACTIVE_DIALOG_ID;
-    backdrop.className = "config-dialog-backdrop";
+    const backdrop = createEl("div", {
+      attrs: { id: ACTIVE_DIALOG_ID },
+      className: "config-dialog-backdrop",
+    });
 
-    const panel = document.createElement("div");
-    panel.className = "config-dialog-panel";
+    const panel = createEl("div", { className: "config-dialog-panel" });
 
-    const header = document.createElement("div");
-    header.className = "config-dialog-title";
-    header.textContent = title;
+    const header = createEl("div", { className: "config-dialog-title", text: title });
 
-    const body = document.createElement("div");
-    body.className = "config-dialog-description";
-    body.textContent = description;
+    const body = createEl("div", { className: "config-dialog-description", text: description });
 
-    const input = multiline ? document.createElement("textarea") : document.createElement("input");
-    input.className = "config-dialog-input";
-    if (!multiline) {
-      input.type = "text";
-    }
+    const input = multiline
+      ? createEl("textarea", { className: "config-dialog-input" })
+      : createEl("input", { className: "config-dialog-input" });
+    if (!multiline) input.type = "text";
     input.placeholder = placeholder;
     input.value = defaultValue;
     input.readOnly = Boolean(readOnly);
@@ -60,38 +52,36 @@ export function openTextPrompt({
       input.style.minHeight = "160px";
     }
 
-    const error = document.createElement("div");
-    error.className = "config-dialog-error";
+    const error = createEl("div", { className: "config-dialog-error" });
 
-    const actions = document.createElement("div");
-    actions.className = "config-dialog-actions";
+    const actions = createEl("div", { className: "config-dialog-actions" });
 
-    const cancelBtn = document.createElement("button");
-    cancelBtn.className = "modal-btn dialog-cancel";
-    cancelBtn.type = "button";
-    cancelBtn.textContent = cancelLabel;
+    const cancelBtn = createEl("button", {
+      className: "modal-btn dialog-cancel",
+      attrs: { type: "button" },
+      text: cancelLabel,
+    });
+    const submitBtn = createEl("button", {
+      className: "modal-btn dialog-submit",
+      attrs: { type: "button" },
+      text: submitLabel,
+    });
 
-    const submitBtn = document.createElement("button");
-    submitBtn.className = "modal-btn dialog-submit";
-    submitBtn.type = "button";
-    submitBtn.textContent = submitLabel;
+    actions.append(cancelBtn, submitBtn);
 
-    actions.appendChild(cancelBtn);
-    actions.appendChild(submitBtn);
-
-    panel.appendChild(header);
-    panel.appendChild(body);
-    panel.appendChild(input);
-    panel.appendChild(error);
-    panel.appendChild(actions);
+    const frag = document.createDocumentFragment();
+    frag.append(header, body, input, error, actions);
+    panel.appendChild(frag);
     backdrop.appendChild(panel);
     shadowRoot.appendChild(backdrop);
 
     let done = false;
+    const { reg, dispose } = createRegistrar("dialog-textprompt");
 
     const close = (value) => {
       if (done) return;
       done = true;
+      dispose();
       backdrop.remove();
       resolve(value);
     };
@@ -108,9 +98,9 @@ export function openTextPrompt({
       close(value);
     };
 
-    cancelBtn.addEventListener("click", () => close(null));
-    submitBtn.addEventListener("click", submit);
-    backdrop.addEventListener("click", (e) => {
+    reg(cancelBtn, "click", () => close(null));
+    reg(submitBtn, "click", submit);
+    reg(backdrop, "click", (e) => {
       if (e.target === backdrop) close(null);
     });
 
@@ -130,11 +120,129 @@ export function openTextPrompt({
       }
     };
 
-    input.addEventListener("keydown", keydownHandler);
+    reg(input, "keydown", keydownHandler);
     setTimeout(() => {
       input.focus();
       input.select();
     }, 0);
+  });
+}
+
+export function openReorderDialog({
+  title = "Reorder",
+  description = "",
+  items = [],
+  submitLabel = "Save",
+  cancelLabel = "Cancel",
+} = {}) {
+  const shadowRoot = getShadowRoot();
+  if (!shadowRoot) return Promise.resolve(null);
+
+  removeDialogIfExists();
+
+  return new Promise((resolve) => {
+    // Working copy so cancel discards changes
+    let order = items.map((i) => ({ ...i }));
+
+    const backdrop = createEl("div", {
+      attrs: { id: ACTIVE_DIALOG_ID },
+      className: "config-dialog-backdrop",
+    });
+
+    const panel = createEl("div", { className: "config-dialog-panel" });
+
+    const header = createEl("div", { className: "config-dialog-title", text: title });
+
+    const body = createEl("div", { className: "config-dialog-description", text: description });
+
+    const list = createEl("div", { className: "config-reorder-list" });
+
+    function rebuildList() {
+      list.innerHTML = "";
+      order.forEach((item, idx) => {
+        const row = createEl("div", { className: "config-reorder-item" });
+
+        const label = createEl("span", { className: "config-reorder-label", text: item.label });
+
+        const handle = createEl("div", { className: "config-reorder-handle" });
+
+        const upBtn = createEl("button", {
+          className: "config-reorder-btn",
+          attrs: { type: "button" },
+          text: "▲",
+        });
+        upBtn.disabled = idx === 0;
+        upBtn.addEventListener("click", () => {
+          if (idx === 0) return;
+          [order[idx - 1], order[idx]] = [order[idx], order[idx - 1]];
+          rebuildList();
+        });
+
+        const downBtn = createEl("button", {
+          className: "config-reorder-btn",
+          attrs: { type: "button" },
+          text: "▼",
+        });
+        downBtn.disabled = idx === order.length - 1;
+        downBtn.addEventListener("click", () => {
+          if (idx === order.length - 1) return;
+          [order[idx], order[idx + 1]] = [order[idx + 1], order[idx]];
+          rebuildList();
+        });
+
+        handle.append(upBtn, downBtn);
+        row.append(label, handle);
+        list.appendChild(row);
+      });
+    }
+
+    rebuildList();
+
+    const actions = createEl("div", { className: "config-dialog-actions" });
+
+    const cancelBtn = createEl("button", {
+      className: "modal-btn dialog-cancel",
+      attrs: { type: "button" },
+      text: cancelLabel,
+    });
+    const submitBtn = createEl("button", {
+      className: "modal-btn dialog-submit",
+      attrs: { type: "button" },
+      text: submitLabel,
+    });
+
+    actions.append(cancelBtn, submitBtn);
+
+    const frag = document.createDocumentFragment();
+    frag.append(header);
+    if (description) frag.append(body);
+    frag.append(list, actions);
+    panel.appendChild(frag);
+    backdrop.appendChild(panel);
+    shadowRoot.appendChild(backdrop);
+
+    let done = false;
+    const { reg: regReorder, dispose: disposeReorder } = createRegistrar("dialog-reorder");
+
+    const close = (value) => {
+      if (done) return;
+      done = true;
+      disposeReorder();
+      backdrop.remove();
+      resolve(value);
+    };
+
+    regReorder(cancelBtn, "click", () => close(null));
+    regReorder(submitBtn, "click", () => close(order.map((i) => i.key)));
+    regReorder(backdrop, "click", (e) => {
+      if (e.target === backdrop) close(null);
+    });
+    regReorder(backdrop, "keydown", (e) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        close(null);
+      }
+    });
   });
 }
 
@@ -148,51 +256,49 @@ export function openSettingsDialog({
   if (!shadowRoot) return null;
 
   removeDialogIfExists();
+  const backdrop = createEl("div", {
+    attrs: { id: ACTIVE_DIALOG_ID },
+    className: "config-dialog-backdrop",
+  });
 
-  const backdrop = document.createElement("div");
-  backdrop.id = ACTIVE_DIALOG_ID;
-  backdrop.className = "config-dialog-backdrop";
+  const panel = createEl("div", { className: "config-dialog-panel" });
 
-  const panel = document.createElement("div");
-  panel.className = "config-dialog-panel";
+  const header = createEl("div", { className: "config-dialog-title", text: title });
 
-  const header = document.createElement("div");
-  header.className = "config-dialog-title";
-  header.textContent = title;
-
-  panel.appendChild(header);
+  const frag = document.createDocumentFragment();
+  frag.append(header);
 
   if (description) {
-    const body = document.createElement("div");
-    body.className = "config-dialog-description";
-    body.textContent = description;
-    panel.appendChild(body);
+    const body = createEl("div", { className: "config-dialog-description", text: description });
+    frag.append(body);
   }
 
-  const content = document.createElement("div");
-  content.className = "config-dialog-settings";
+  const content = createEl("div", { className: "config-dialog-settings" });
   Object.entries(metaMap).forEach(([key, meta]) => {
     content.appendChild(renderSetting(`dialog-${key}`, meta));
   });
-  panel.appendChild(content);
+  frag.append(content);
 
-  const actions = document.createElement("div");
-  actions.className = "config-dialog-actions";
-  const closeBtn = document.createElement("button");
-  closeBtn.className = "modal-btn dialog-cancel";
-  closeBtn.type = "button";
-  closeBtn.textContent = closeLabel;
-  actions.appendChild(closeBtn);
-  panel.appendChild(actions);
+  const actions = createEl("div", { className: "config-dialog-actions" });
+  const closeBtn = createEl("button", {
+    className: "modal-btn dialog-cancel",
+    attrs: { type: "button" },
+    text: closeLabel,
+  });
+  actions.append(closeBtn);
+  frag.append(actions);
 
+  panel.appendChild(frag);
   backdrop.appendChild(panel);
   shadowRoot.appendChild(backdrop);
 
   let done = false;
+  const { reg: regSettings, dispose: disposeSettings } = createRegistrar("dialog-settings");
+
   const close = () => {
     if (done) return;
     done = true;
-    document.removeEventListener("keydown", keydownHandler, true);
+    disposeSettings();
     backdrop.remove();
   };
 
@@ -203,11 +309,11 @@ export function openSettingsDialog({
     }
   };
 
-  closeBtn.addEventListener("click", close);
-  backdrop.addEventListener("click", (e) => {
+  regSettings(closeBtn, "click", close);
+  regSettings(backdrop, "click", (e) => {
     if (e.target === backdrop) close();
   });
-  document.addEventListener("keydown", keydownHandler, true);
+  regSettings(document, "keydown", keydownHandler, true);
 
   return {
     backdrop,

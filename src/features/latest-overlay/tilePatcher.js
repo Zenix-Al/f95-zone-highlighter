@@ -38,9 +38,9 @@ export function processMutations(mutationsList, generation) {
 
       if (node.classList?.contains(SELECTORS.TILE.CLASS)) {
         pendingMutationTiles.add(node);
-      } else if (node.querySelectorAll) {
+      } else {
         node
-          .querySelectorAll(SELECTORS.TILE.ROOT)
+          .querySelectorAll?.(SELECTORS.TILE.ROOT)
           .forEach((tile) => pendingMutationTiles.add(tile));
       }
     }
@@ -130,6 +130,10 @@ export function resetTile(tile) {
     metas.forEach((meta) => meta.removeAttribute("style"));
   }
 
+  // Remove optional border style applied to the tile element itself
+  tile.classList.remove("custom-overlay-border");
+  tile.removeAttribute("style");
+
   removeOverlayLabel(tile);
   tile.dataset.modified = "";
   debugLog("Tile Reset", "Reset a tile to its original state.");
@@ -140,6 +144,38 @@ export function resetAllTiles() {
   const tiles = document.querySelectorAll(SELECTORS.TILE.MODIFIED_SELECTOR);
   tiles.forEach(resetTile);
   debugLog("Latest Overlay", `Finished resetting ${tiles.length} tiles.`);
+}
+
+export function clearAllOverlayStyles() {
+  debugLog("Latest Overlay", "Clearing overlay styles from all tiles...");
+  const tiles = Array.from(document.getElementsByClassName(SELECTORS.TILE.CLASS));
+  for (const tile of tiles) {
+    try {
+      // Clear body-based band
+      const body = tile.querySelector(SELECTORS.TILE.BODY);
+      if (body) {
+        body.removeAttribute("style");
+        body.classList.remove("custom-overlay-band");
+        const metas = body.querySelectorAll(SELECTORS.TILE.INFO_META);
+        metas.forEach((meta) => meta.removeAttribute("style"));
+      }
+
+      // Clear border-based style on the tile root
+      tile.classList.remove("custom-overlay-border");
+      tile.removeAttribute("style");
+
+      // Remove overlay label and modified flag
+      const overlay = tile.querySelector(".custom-overlay-reason");
+      if (overlay) overlay.remove();
+      tile.dataset.modified = "";
+    } catch (err) {
+      debugLog(
+        "Latest Overlay",
+        `Failed clearing styles for a tile: ${err?.message || String(err)}`,
+      );
+    }
+  }
+  debugLog("Latest Overlay", `Cleared styles on ${tiles.length} tiles.`);
 }
 
 // ---------------------------------------------------------------------------
@@ -314,8 +350,19 @@ function applyTilePatch(patch, generation) {
   const body = patch.tile.querySelector(SELECTORS.TILE.BODY);
   if (!body) return;
 
-  body.classList.add("custom-overlay-band");
-  body.style.setProperty("--f95ue-overlay-gradient", patch.gradient);
+  const styleChoice =
+    (config.latestSettings && config.latestSettings.latestOverlayStyle) || "strip";
+
+  if (styleChoice === "border") {
+    // Apply border style to the tile root
+    patch.tile.classList.remove("custom-overlay-band");
+    patch.tile.classList.add("custom-overlay-border");
+    patch.tile.style.setProperty("--f95ue-overlay-gradient", patch.gradient);
+  } else {
+    // Default: bottom strip band applied to the tile body
+    body.classList.add("custom-overlay-band");
+    body.style.setProperty("--f95ue-overlay-gradient", patch.gradient);
+  }
 
   if (cache.overlayFlags?.overlayText && patch.label) {
     addOverlayLabel(patch.tile, patch.label);
@@ -380,13 +427,20 @@ export function processTile(tile, reset = false) {
 export function processAllTiles(reset = false, generation = generationCounter) {
   if (generation !== generationCounter) return;
   refreshCaches();
-
+  if (reset) {
+    // Ensure any previously-applied overlay styles (band or border) are removed
+    clearAllOverlayStyles();
+  }
   const tiles = Array.from(document.getElementsByClassName(SELECTORS.TILE.CLASS));
   if (tiles.length === 0) return;
   processTilesBatch(tiles, reset, generation);
 }
 
 export function reprocessAllTiles() {
-  debugLog("Latest Overlay", "Reprocessing all tiles with reset.");
-  processAllTiles(true, generationCounter);
+  try {
+    debugLog("Latest Overlay", "Reprocessing all tiles with reset.");
+    processAllTiles(true, generationCounter);
+  } catch (err) {
+    debugLog("Latest Overlay", `Reprocess failed: ${err?.message || String(err)}`);
+  }
 }

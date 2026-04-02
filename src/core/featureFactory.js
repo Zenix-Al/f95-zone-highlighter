@@ -25,6 +25,24 @@ function ensureGlobalListeners() {
 }
 ensureGlobalListeners();
 
+const OP_TIMEOUT = 15000;
+
+function isPromiseLike(value) {
+  return Boolean(value) && typeof value.then === "function";
+}
+
+function getErrorMessage(err) {
+  return err?.message || String(err);
+}
+
+function reportLifecycleFailure(name, action, err) {
+  const message = getErrorMessage(err);
+  setFeatureStatus(name, "failing", message);
+  try {
+    showToast(`${name} failed to ${action}: ${message}`);
+  } catch {}
+}
+
 /**
  * Creates a standardized feature module interface. This factory is designed to
  * ensure all features follow a consistent lifecycle (enable, disable, toggle)
@@ -34,10 +52,8 @@ export const createFeature = (
   name,
   { enable, disable, configPath, isEnabled: customIsEnabled, isApplicable },
 ) => {
-  // Internal operation state to serialize toggles and coalesce rapid requests
   let opInProgress = false;
-  let pendingDesired = null; // 'enable' | 'disable' | null
-  const OP_TIMEOUT = 15000; // ms - fail-safe to avoid hangs
+  let pendingDesired = null;
 
   function canRunOnCurrentPage() {
     if (typeof isApplicable !== "function") return true;
@@ -58,10 +74,54 @@ export const createFeature = (
     return { status: "unknown", details: null };
   }
 
+  function queueDesiredState(action) {
+    pendingDesired = action;
+    debugLog(name, `${action === "enable" ? "Enable" : "Disable"} deferred — operation in progress.`);
+  }
+
+  function finalizeTransition(action, timer, finished) {
+    finished.value = true;
+    clearTimeout(timer);
+    opInProgress = false;
+
+    const nextDesired = pendingDesired;
+    pendingDesired = null;
+    if (nextDesired && nextDesired !== action) {
+      feature[nextDesired]();
+    }
+  }
+
+  function runTransition(action, handler, successStatus, timeoutDetails) {
+    opInProgress = true;
+    pendingDesired = null;
+
+    const finished = { value: false };
+    const timer = setTimeout(() => {
+      if (!finished.value) {
+        debugLog(name, `${action === "enable" ? "Enable" : "Disable"} operation timed out — marking as failing.`);
+        setFeatureStatus(name, "failing", timeoutDetails);
+        opInProgress = false;
+      }
+    }, OP_TIMEOUT);
+
+    async function executeTransition() {
+      try {
+        const result = handler ? handler() : null;
+        if (isPromiseLike(result)) await result;
+        setFeatureStatus(name, successStatus);
+      } catch (err) {
+        reportLifecycleFailure(name, action, err);
+      } finally {
+        finalizeTransition(action, timer, finished);
+      }
+    }
+
+    void executeTransition();
+  }
+
   const feature = {
     name: name,
     enable: function () {
-      // Serialize enable requests: if an operation is running, remember desired state and return
       debugLog(name, "Enable requested");
       if (!canRunOnCurrentPage()) {
         debugLog(name, "Enable skipped - page mismatch.");
@@ -70,79 +130,20 @@ export const createFeature = (
       }
 
       if (opInProgress) {
-        pendingDesired = "enable";
-        debugLog(name, "Enable deferred — operation in progress.");
+        queueDesiredState("enable");
         return;
       }
 
-      opInProgress = true;
-      pendingDesired = null;
-      let finished = false;
-      const timer = setTimeout(() => {
-        if (!finished) {
-          debugLog(name, "Enable operation timed out — marking as failing.");
-          setFeatureStatus(name, "failing", "enable timeout");
-          opInProgress = false;
-        }
-      }, OP_TIMEOUT);
-
-      (async () => {
-        try {
-          const res = enable ? enable() : null;
-          if (res && typeof res.then === "function") await res;
-          setFeatureStatus(name, "running");
-        } catch (err) {
-          setFeatureStatus(name, "failing", err?.message || String(err));
-          try {
-            showToast(`${name} failed to enable: ${err?.message || String(err)}`);
-          } catch {}
-        } finally {
-          finished = true;
-          clearTimeout(timer);
-          opInProgress = false;
-          // If the user changed their mind while we were operating, honor it now
-          if (pendingDesired === "disable") feature.disable();
-          pendingDesired = null;
-        }
-      })();
+      runTransition("enable", enable, "running", "enable timeout");
     },
     disable: function () {
       debugLog(name, "Disable requested");
       if (opInProgress) {
-        pendingDesired = "disable";
-        debugLog(name, "Disable deferred — operation in progress.");
+        queueDesiredState("disable");
         return;
       }
 
-      opInProgress = true;
-      pendingDesired = null;
-      let finished = false;
-      const timer = setTimeout(() => {
-        if (!finished) {
-          debugLog(name, "Disable operation timed out — marking as failing.");
-          setFeatureStatus(name, "failing", "disable timeout");
-          opInProgress = false;
-        }
-      }, OP_TIMEOUT);
-
-      (async () => {
-        try {
-          const res = disable ? disable() : null;
-          if (res && typeof res.then === "function") await res;
-          setFeatureStatus(name, "disabled");
-        } catch (err) {
-          setFeatureStatus(name, "failing", err?.message || String(err));
-          try {
-            showToast(`${name} failed to disable: ${err?.message || String(err)}`);
-          } catch {}
-        } finally {
-          finished = true;
-          clearTimeout(timer);
-          opInProgress = false;
-          if (pendingDesired === "enable") feature.enable();
-          pendingDesired = null;
-        }
-      })();
+      runTransition("disable", disable, "disabled", "disable timeout");
     },
     toggle: function (shouldEnable, force = false) {
       if (force) {
@@ -154,6 +155,9 @@ export const createFeature = (
         }
       }
       shouldEnable ? this.enable() : this.disable();
+    },
+    sync: function (force = false) {
+      this.toggle(this.isEnabled(), force);
     },
     isEnabled: function () {
       if (customIsEnabled) return customIsEnabled();

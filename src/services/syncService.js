@@ -1,12 +1,13 @@
 import stateManager, { config, crossTabKeys } from "../config.js";
 import { applyEffects } from "../ui/renderers/applyEffects";
 import { metaRegistry } from "../ui/settings/metaRegistry";
+import { createFeature } from "../core/featureFactory.js";
 
 const listenerIds = [];
 
 function initCrossTabSync() {
   // Prevent adding listeners multiple times
-  if (stateManager.get('isCrossTabSyncInitialized')) return;
+  if (stateManager.get("isCrossTabSyncInitialized")) return;
 
   Object.keys(crossTabKeys).forEach((key) => {
     const listenerId = GM_addValueChangeListener(key, (name, oldVal, newVal, remote) => {
@@ -41,18 +42,27 @@ function handleSectionChange(section, oldVal = {}, newVal = {}) {
 }
 
 function disableCrossTabSync() {
-  if (!stateManager.get('isCrossTabSyncInitialized')) return;
+  if (!stateManager.get("isCrossTabSyncInitialized")) return;
 
   listenerIds.forEach(GM_removeValueChangeListener);
   listenerIds.length = 0; // Clear the array of listener IDs
-  stateManager.set('isCrossTabSyncInitialized', false);
+  stateManager.set("isCrossTabSyncInitialized", false);
 }
 
-export function toggleCrossTabSync(enabled) {
-  if (enabled) {
+const crossTabSyncFeature = createFeature("Cross Tab Sync", {
+  configPath: "globalSettings.enableCrossTabSync",
+  enable: () => {
     initCrossTabSync();
-    stateManager.set('isCrossTabSyncInitialized', true);
-  } else {
+    stateManager.set("isCrossTabSyncInitialized", true);
+  },
+  disable: () => {
     disableCrossTabSync();
-  }
+  },
+});
+
+// Backwards-compatible wrapper for existing callers that expect a simple toggle function.
+export function toggleCrossTabSync(enabled) {
+  crossTabSyncFeature.toggle(Boolean(enabled));
 }
+
+export { crossTabSyncFeature };

@@ -6,10 +6,10 @@ import { showToast } from "../../ui/components/toast.js";
 import { handleDirectDownloadFailure } from "./attention.js";
 import { isDirectDownloadHostEnabled } from "./hostPackages.js";
 import {
-  clearProcessingAndTryCloseTab,
   isProcessingDownloadFlowActive,
   invokeGofileDownloadContent,
   markHostDownloadSuccess,
+  scheduleDirectDownloadCompletion,
 } from "./hostFlowHelpers.js";
 
 export async function processGofileDownload() {
@@ -120,10 +120,7 @@ export async function processGofileDownload() {
     );
     await markHostDownloadSuccess("gofile");
 
-    setTimeout(async () => {
-      debugLog("GofileDownloader", "Download triggered; resetting processing flag");
-      await clearProcessingAndTryCloseTab();
-    }, AUTO_CLOSE_DELAY);
+    scheduleDirectDownloadCompletion("GofileDownloader", AUTO_CLOSE_DELAY);
   } catch (err) {
     debugLog("GofileDownloader", `Failed: ${err.message}`);
     const msg = `Downloader failed: ${err.message}`;

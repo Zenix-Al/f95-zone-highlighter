@@ -1,9 +1,10 @@
 import stateManager, { config } from "../../config.js";
+import { createEl } from "../../core/dom.js";
 import { imageRepairFeature } from "../../features/image-repair/index.js";
 import { checkOverlaySettings } from "../../services/safetyService";
 import { signatureCollapseFeature } from "../../features/signature-collapse/index.js";
 import { directDownloadFeature } from "../../features/direct-download/index.js";
-import { toggleHijackMaskedLink } from "../../features/masked-link-skipper/index.js";
+import { toggleMaskedLinkResolver } from "../../features/masked-link-skipper/index.js";
 import { debouncedProcessThreadTags } from "../../core/tasksRegistry";
 import { wideForumFeature } from "../../features/wideForum/index.js";
 import { openSettingsDialog } from "../components/dialog.js";
@@ -63,37 +64,41 @@ function createDirectDownloadNoticeElement({
   onDismiss,
   showOpenSettings = true,
 }) {
-  const notice = document.createElement("div");
-  notice.className = DIRECT_DOWNLOAD_NOTICE_CLASS;
-  const text = document.createElement("div");
-  text.className = "direct-download-health-notice-text";
-  text.textContent = buildDirectDownloadNoticeText(packageKeys);
-  notice.appendChild(text);
+  // Create elements using `createEl` so they can be mounted into the correct
+  // shadow root/document context. Callers should append/insert the returned
+  // `notice` into a container that lives in the intended shadow root.
+  const notice = createEl("div", { className: DIRECT_DOWNLOAD_NOTICE_CLASS });
+  createEl("div", {
+    className: "direct-download-health-notice-text",
+    text: buildDirectDownloadNoticeText(packageKeys),
+    mount: notice,
+  });
 
-  const actions = document.createElement("div");
-  actions.className = "direct-download-health-notice-actions";
+  const actions = createEl("div", {
+    className: "direct-download-health-notice-actions",
+    mount: notice,
+  });
 
   if (showOpenSettings && typeof onOpenSettings === "function") {
-    const openBtn = document.createElement("button");
-    openBtn.type = "button";
-    openBtn.className = "modal-btn direct-download-health-notice-btn";
-    openBtn.textContent = "Open settings";
-    openBtn.addEventListener("click", () => onOpenSettings());
-    actions.appendChild(openBtn);
+    createEl("button", {
+      attrs: { type: "button" },
+      className: "modal-btn direct-download-health-notice-btn",
+      text: "Open settings",
+      mount: actions,
+    }).addEventListener("click", () => onOpenSettings());
   }
 
-  const dismissBtn = document.createElement("button");
-  dismissBtn.type = "button";
-  dismissBtn.className = "modal-btn direct-download-health-notice-btn";
-  dismissBtn.textContent = "Dismiss";
-  dismissBtn.addEventListener("click", async () => {
+  createEl("button", {
+    attrs: { type: "button" },
+    className: "modal-btn direct-download-health-notice-btn",
+    text: "Dismiss",
+    mount: actions,
+  }).addEventListener("click", async () => {
     await dismissDirectDownloadHostNotices(packageKeys);
     if (typeof onDismiss === "function") {
       onDismiss();
     }
   });
-  actions.appendChild(dismissBtn);
-  notice.appendChild(actions);
 
   return notice;
 }
@@ -225,12 +230,12 @@ const THREAD_SETTINGS_TOGGLE_DEFS = [
   },
   {
     key: "skipMaskedLink",
-    text: "Skip masked link page",
+    text: "Resolve button on masked links",
     tooltip:
-      "Automatically bypass the masked link intermediary page when accessing masked links \n support with direct download features",
+      "Show a Resolve button next to masked links. Native link clicks stay unchanged; Resolve performs masked-link resolution and direct-download routing.",
     config: "threadSettings.skipMaskedLink",
-    custom: () => toggleHijackMaskedLink(),
-    toastLabel: "Skip Masked Link",
+    custom: () => toggleMaskedLinkResolver(),
+    toastLabel: "Masked Link Resolve Button",
   },
 ];
 
@@ -371,6 +376,7 @@ export const directDownloadSettingsMeta = {
     config: "threadSettings.directDownloadLinks",
     custom: () => {
       directDownloadFeature.toggle(directDownloadFeature.isEnabled());
+      toggleMaskedLinkResolver();
       renderDirectDownloadHealthNotices();
       renderDirectDownloadHealthNoticeInDialogIfOpen();
     },

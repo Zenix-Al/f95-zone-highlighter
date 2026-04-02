@@ -1,5 +1,35 @@
 # Changelog
 
+### **[v4.14.0 - Direct Download & Overlay Options]**
+
+This release improves direct-download reliability and makes masked-link automation explicit, adds a new Latest Overlay border style, fixes Wide Latest layout issues, and updates the build pipeline to reduce release size while remaining GreasyFork-compliant.
+
+**Changes**
+
+- **Masked Link Skipper & Direct Download UI:** Converted from automatic hijacking to an in-page button beside masked/download links so users can opt-in to automation instead of having the original link replaced silently.
+- **Pixeldrain automation:** Switched to a deterministic file-id → direct API download URL flow and improved detection/fallbacks to make Pixeldrain downloads more reliable across page variants.
+- **Latest Overlay — Border Style:** Added a `border` style option for the Latest Overlay; users can now choose between the existing `band` (bottom strip) and the new `border` (decorative frame) styles.
+- **Wide Latest Styling Fixes:** Fixed layout and spacing regressions in Wide Latest mode so tiles align correctly at wide widths.
+- **Build pipeline:** Release builds now apply lightweight, GreasyFork-safe identifier minification to reduce final script size while preserving readability and TOS compliance.
+- **Misc:** Small code quality and performance improvements across overlay and direct-download flows.
+
+**Notes**
+
+- The masked-link/button change makes automation explicit and reduces accidental behavior changes on host pages.
+- Pixeldrain behaviour has been hardened but page variations still exist — please report any cases that still fail so I can add targeted fixes.
+
+### **[v4.12.0 - Direct Download + Tag UX Polish]**
+
+This release focuses on direct download reliability, smoother tag management, and small UI/UX quality fixes.
+
+**Changes**
+
+- **Datanodes Direct Download Fixed:** Updated the Datanodes flow so direct download works again.
+- **Tag Search Input Behavior Improved:** Adjusted tag input/search interactions to be less disruptive during tagging.
+- **Tag Drag Container Shift Fixed:** Prevented tag containers from visually shifting while dragging chips.
+- **Section Collapse Animation Fixed:** Resolved collapse jitter/shutter so settings sections close more smoothly.
+- **UI/UX Polish:** Included additional minor interface and usability improvements.
+
 ### **[v4.11.23 - Tag Drag Reliability Patch]**
 
 Whoever in charge needs to get spanked, he let bug pass, kek. This patch addresses a critical issue with tag chip dragging where the drag ghost was being appended to the main document body instead of the shadow root, causing styling inconsistencies and drag failures.

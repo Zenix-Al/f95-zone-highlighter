@@ -23,7 +23,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  height: calc(var(--f95ue-overlay-coverage, 0.15) * 100%);
+  height: calc(var(--f95ue-overlay-coverage, 0.13) * 100%);
   background: var(--f95ue-overlay-gradient, transparent);
   pointer-events: none;
   z-index: 0;
@@ -36,4 +36,17 @@
 .custom-overlay-band > * {
   position: relative;
   z-index: 1;
+}
+
+/* Alternate style: colored border frame drawn as a visual overlay.
+   This avoids using a real border, so the tile keeps its original size
+   and hover states don't squeeze the card contents. */
+.custom-overlay-border {
+  box-sizing: border-box;
+  border: 4px solid transparent;
+  border-image-source: var(--f95ue-overlay-gradient, none);
+  border-image-slice: 1;
+  transition:
+    border-color 180ms ease,
+    border-image-source 180ms ease;
 }

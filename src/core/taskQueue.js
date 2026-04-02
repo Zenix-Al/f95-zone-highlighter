@@ -85,7 +85,9 @@ export function createTaskQueue({ delay = 100, name = "UnnamedQueue" }) {
         purgedCount++;
       }
     }
-    if (purgedCount > 0) debugLog(name, `Purged ${purgedCount} stale tasks from the queue.`);
+    if (purgedCount > 0) {
+      debugLog(name, `Purged ${purgedCount} stale tasks from the queue.`);
+    }
   }
 
   return { add, start, clear, setGeneration, size: () => queue.size };

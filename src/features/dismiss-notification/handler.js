@@ -58,15 +58,15 @@ function processNotice(notice) {
  */
 function processMutations(mutationsList) {
   for (const mutation of mutationsList) {
-    if (mutation.type === "childList") {
-      for (const node of mutation.addedNodes) {
-        if (node.nodeType === 1) {
-          if (node.classList && node.classList.contains(SELECTORS.NOTICE.CLASS)) {
-            processNotice(node);
-          } else if (node.querySelectorAll) {
-            node.querySelectorAll(SELECTORS.NOTICE.SELECTOR).forEach(processNotice);
-          }
-        }
+    if (mutation.type !== "childList") continue;
+
+    for (const node of mutation.addedNodes) {
+      if (node.nodeType !== 1) continue;
+
+      if (node.classList?.contains(SELECTORS.NOTICE.CLASS)) {
+        processNotice(node);
+      } else {
+        node.querySelectorAll?.(SELECTORS.NOTICE.SELECTOR).forEach(processNotice);
       }
     }
   }

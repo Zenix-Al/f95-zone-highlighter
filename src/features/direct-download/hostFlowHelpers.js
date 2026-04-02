@@ -1,4 +1,5 @@
 import { config } from "../../config.js";
+import { debugLog } from "../../core/logger.js";
 import { saveConfigKeys } from "../../services/settingsService.js";
 import { styleDownloadSuccess } from "../../utils/helpers.js";
 import {
@@ -6,10 +7,7 @@ import {
   isProcessingDownloadTriggerActive,
   normalizeProcessingDownloadTrigger,
 } from "../../utils/processingDownloadTrigger.js";
-import {
-  markDirectDownloadHostFailure,
-  markDirectDownloadHostSuccess,
-} from "./hostBreaker.js";
+import { markDirectDownloadHostFailure, markDirectDownloadHostSuccess } from "./hostBreaker.js";
 
 const GOFILE_BRIDGE_REQUEST_EVENT = "f95ue:gofile-download-request";
 const GOFILE_BRIDGE_RESULT_EVENT = "f95ue:gofile-download-result";
@@ -48,6 +46,31 @@ export async function clearProcessingAndTryCloseTab() {
   }
 }
 
+export function isDirectDownloadAutoCloseEnabled() {
+  return !__F95UE_DEBUG__;
+}
+
+export function scheduleDirectDownloadCompletion(feature, delayMs) {
+  setTimeout(async () => {
+    if (!isDirectDownloadAutoCloseEnabled()) {
+      debugLog(
+        feature,
+        "Debug mode active; skipping tab auto-close and only clearing processing state.",
+        {
+          data: { delayMs },
+        },
+      );
+      await clearProcessingDownloadFlag();
+      return;
+    }
+
+    debugLog(feature, "Auto-close delay elapsed; clearing processing state and closing tab.", {
+      data: { delayMs },
+    });
+    await clearProcessingAndTryCloseTab();
+  }, delayMs);
+}
+
 function ensureGofilePageBridge() {
   if (!document?.documentElement) return false;
   if (document.documentElement.dataset[GOFILE_BRIDGE_MARKER] === "1") return true;
@@ -80,9 +103,7 @@ function ensureGofilePageBridge() {
               detail: { ok, reason },
             }),
           );
-        } catch {
-          // ignore dispatch failures
-        }
+        } catch {}
       });
     })();
   `;

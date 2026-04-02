@@ -1,13 +1,13 @@
 import stateManager from "../../config.js";
 import { showToast } from "../../ui/components/toast";
 import { debugLog } from "../../core/logger";
-import { addListener, removeListener } from "../../core/listenerRegistry.js";
 import { disableMsgEventHandler, handleMsgEvent } from "./msgHandler";
 import { createFeature } from "../../core/featureFactory.js";
 import { notify } from "../../services/notificationService.js";
-import { isSupportedDownloadLink, routeDownloadUrl } from "../../services/downloadRouter.js";
 import { DIRECT_DOWNLOAD_ATTENTION_KEY, getDirectDownloadAttentionTabId } from "./attention.js";
 import { getSafeTrimmedString } from "../../utils/typeHelpers.js";
+import { executeAutoRetry } from "./autoRetryDownload.js";
+import { handleDownload } from "./fileHostHelper.js";
 let directDownloadAttentionListenerId = null;
 let lastAttentionTimestamp = 0;
 let lastAttentionId = "";
@@ -60,37 +60,13 @@ function disableDirectDownloadAttentionListener() {
   directDownloadAttentionListenerId = null;
 }
 
-const HIJACK_LISTENER_ID = "direct-download-hijack";
-function enableDirectDownload() {
-  if (stateManager.get("isDirectDownloadHijackApplied")) return;
-  stateManager.set("isDirectDownloadHijackApplied", true);
-
-  async function handler(e) {
-    const el = e.target.closest("a[href]");
-    if (!el) return;
-    const url = el.href.trim();
-    if (!isSupportedDownloadLink(url)) return;
-    debugLog("DirectDownload", `Hijacking download link: ${url}`);
-    e.preventDefault();
-    await routeDownloadUrl(url, { anchorEl: el, fallbackToNewTab: true });
-  }
-  addListener(HIJACK_LISTENER_ID, document, "click", handler, { capture: true });
-}
-
-function disableDirectDownload() {
-  if (!stateManager.get("isDirectDownloadHijackApplied")) return;
-  removeListener(HIJACK_LISTENER_ID);
-  stateManager.set("isDirectDownloadHijackApplied", false);
-}
-
 function enable() {
-  enableDirectDownload();
+  debugLog("DirectDownload", "Direct-download click hijack disabled; links keep native behavior.");
   enableDirectDownloadAttentionListener();
   handleMsgEvent();
 }
 
 function disable() {
-  disableDirectDownload();
   disableDirectDownloadAttentionListener();
   disableMsgEventHandler();
 }
@@ -100,4 +76,25 @@ export const directDownloadFeature = createFeature("Direct Download", {
   isApplicable: ({ stateManager }) => stateManager.get("isThread"),
   enable: enable,
   disable: disable,
+});
+
+export const downloadPageFeature = createFeature("Download Page Handler", {
+  isEnabled: () => true,
+  isApplicable: ({ stateManager }) => Boolean(stateManager.get("isDownloadPage")),
+  enable: () => {
+    const downloadPageHost = stateManager.get("isDownloadPage");
+    debugLog("Init", `Download page detected: ${downloadPageHost}`);
+    handleDownload(downloadPageHost);
+  },
+  disable: () => {},
+});
+
+export const directDownloadAutoRetryFeature = createFeature("Direct Download Auto Retry", {
+  isEnabled: () => true,
+  isApplicable: ({ stateManager }) => Boolean(stateManager.get("isDirectDownloadPage")),
+  enable: () => {
+    const directDownloadHost = stateManager.get("isDirectDownloadPage");
+    executeAutoRetry(directDownloadHost);
+  },
+  disable: () => {},
 });

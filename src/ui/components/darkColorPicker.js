@@ -1,3 +1,6 @@
+import { createEl } from "../../core/dom.js";
+import { createRegistrar } from "../../core/listenerRegistry.js";
+
 function normalizeHex(value) {
   const raw = String(value || "")
     .trim()
@@ -130,7 +133,7 @@ let activeState = null;
 
 function closePicker(commit = false) {
   if (!activeState) return;
-  const { panel, input, initialValue, onDocPointerDown } = activeState;
+  const { panel, input, initialValue, onDocPointerDown, onDocKeyDown, dispose } = activeState;
 
   panel.classList.remove("open");
   if (panel.parentNode) {
@@ -138,6 +141,8 @@ function closePicker(commit = false) {
   }
 
   document.removeEventListener("pointerdown", onDocPointerDown, true);
+  if (onDocKeyDown) document.removeEventListener("keydown", onDocKeyDown, true);
+  if (typeof dispose === "function") dispose();
 
   if (commit) {
     const next = normalizeHex(input.value);
@@ -155,58 +160,58 @@ function closePicker(commit = false) {
 }
 
 function createPickerPanel(input) {
-  const panel = document.createElement("div");
-  panel.className = "dark-color-popover";
+  const panel = createEl("div", { className: "dark-color-popover" });
+  panel.setAttribute("role", "dialog");
+  panel.setAttribute("aria-label", "Color picker");
 
-  const preview = document.createElement("div");
-  preview.className = "dark-color-preview";
+  const preview = createEl("div", { className: "dark-color-preview" });
 
   const hexInput = document.createElement("input");
   hexInput.className = "dark-color-hex";
   hexInput.type = "text";
   hexInput.maxLength = 7;
 
-  const hue = document.createElement("input");
-  hue.type = "range";
-  hue.min = "0";
-  hue.max = "360";
-  hue.className = "dark-color-slider hue";
+  const createRange = (name, { min = 0, max = 100, className } = {}) => {
+    const r = createEl("input", { className: className || "dark-color-slider" });
+    r.type = "range";
+    r.min = String(min);
+    r.max = String(max);
+    r.setAttribute("aria-label", name);
+    r.setAttribute("aria-valuemin", String(min));
+    r.setAttribute("aria-valuemax", String(max));
+    return r;
+  };
 
-  const sat = document.createElement("input");
-  sat.type = "range";
-  sat.min = "0";
-  sat.max = "100";
-  sat.className = "dark-color-slider";
+  const hue = createRange("Hue", { min: 0, max: 360, className: "dark-color-slider hue" });
+  const sat = createRange("Saturation", { min: 0, max: 100 });
+  const light = createRange("Lightness", { min: 0, max: 100 });
 
-  const light = document.createElement("input");
-  light.type = "range";
-  light.min = "0";
-  light.max = "100";
-  light.className = "dark-color-slider";
+  const labels = createEl("div", { className: "dark-color-labels" });
+  ["H", "S", "L"].forEach((t) => {
+    const s = document.createElement("span");
+    s.textContent = t;
+    labels.appendChild(s);
+  });
 
-  const labels = document.createElement("div");
-  labels.className = "dark-color-labels";
-  labels.innerHTML = "<span>H</span><span>S</span><span>L</span>";
-
-  const sliders = document.createElement("div");
-  sliders.className = "dark-color-sliders";
+  const sliders = createEl("div", { className: "dark-color-sliders" });
   sliders.append(hue, sat, light);
 
-  const footer = document.createElement("div");
-  footer.className = "dark-color-footer";
-
-  const applyBtn = document.createElement("button");
-  applyBtn.type = "button";
-  applyBtn.className = "dark-color-btn apply";
-  applyBtn.textContent = "Apply";
-
-  const cancelBtn = document.createElement("button");
-  cancelBtn.type = "button";
-  cancelBtn.className = "dark-color-btn";
-  cancelBtn.textContent = "Cancel";
-
+  const footer = createEl("div", { className: "dark-color-footer" });
+  const applyBtn = createEl("button", {
+    className: "dark-color-btn apply",
+    attrs: { type: "button" },
+    text: "Apply",
+  });
+  const cancelBtn = createEl("button", {
+    className: "dark-color-btn",
+    attrs: { type: "button" },
+    text: "Cancel",
+  });
   footer.append(applyBtn, cancelBtn);
-  panel.append(preview, hexInput, labels, sliders, footer);
+
+  const frag = document.createDocumentFragment();
+  frag.append(preview, hexInput, labels, sliders, footer);
+  panel.appendChild(frag);
 
   const setFromHex = (hex) => {
     const valid = normalizeHex(hex);
@@ -219,6 +224,11 @@ function createPickerPanel(input) {
     input.value = valid;
     preview.style.backgroundColor = valid;
     updateSwatch(input);
+    try {
+      hue.setAttribute("aria-valuenow", String(hue.value));
+      sat.setAttribute("aria-valuenow", String(sat.value));
+      light.setAttribute("aria-valuenow", String(light.value));
+    } catch {}
   };
 
   const setFromHsl = () => {
@@ -227,23 +237,32 @@ function createPickerPanel(input) {
     input.value = next;
     preview.style.backgroundColor = next;
     updateSwatch(input);
+    try {
+      hue.setAttribute("aria-valuenow", String(hue.value));
+      sat.setAttribute("aria-valuenow", String(sat.value));
+      light.setAttribute("aria-valuenow", String(light.value));
+    } catch {}
   };
 
-  hue.addEventListener("input", setFromHsl);
-  sat.addEventListener("input", setFromHsl);
-  light.addEventListener("input", setFromHsl);
-
-  hexInput.addEventListener("input", () => {
+  const onRangeInput = () => setFromHsl();
+  const onHexInput = () => {
     const normalized = normalizeHex(hexInput.value);
-    if (normalized) {
-      setFromHex(normalized);
-    }
-  });
+    if (normalized) setFromHex(normalized);
+  };
 
-  applyBtn.addEventListener("click", () => closePicker(true));
-  cancelBtn.addEventListener("click", () => closePicker(false));
+  const onApply = () => closePicker(true);
+  const onCancel = () => closePicker(false);
 
-  return { panel, setFromHex };
+  const { reg, dispose } = createRegistrar("darkColorPicker");
+
+  reg(hue, "input", onRangeInput);
+  reg(sat, "input", onRangeInput);
+  reg(light, "input", onRangeInput);
+  reg(hexInput, "input", onHexInput);
+  reg(applyBtn, "click", onApply);
+  reg(cancelBtn, "click", onCancel);
+
+  return { panel, setFromHex, dispose };
 }
 
 function openPicker(input) {
@@ -254,7 +273,7 @@ function openPicker(input) {
   input.value = initialValue;
   updateSwatch(input);
 
-  const { panel, setFromHex } = createPickerPanel(input);
+  const { panel, setFromHex, dispose } = createPickerPanel(input);
   setFromHex(initialValue);
 
   const root = input.getRootNode();
@@ -277,13 +296,20 @@ function openPicker(input) {
     closePicker(true);
   };
 
+  const onDocKeyDown = (ev) => {
+    if (ev.key === "Escape") closePicker(false);
+  };
+
   document.addEventListener("pointerdown", onDocPointerDown, true);
+  document.addEventListener("keydown", onDocKeyDown, true);
 
   activeState = {
     panel,
     input,
     initialValue,
     onDocPointerDown,
+    onDocKeyDown,
+    dispose,
   };
 }
 

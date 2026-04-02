@@ -1,51 +1,77 @@
-import imgRetryUi from "./assets/imgRetryUi.html?raw";
 import { SELECTORS } from "../../config/selectors.js";
 import TIMINGS from "../../config/timings.js";
+import { createEl } from "../../core/dom.js";
 
 let isUpdating = false;
 let pendingUpdate = false;
 let imgRetryTimeoutContainer;
 
-/**
- * Injects the image retry toast UI into the page, hidden by default.
- * This component lives in the main document, not the shadow DOM.
- */
-export function injectUI() {
-  if (document.getElementById(SELECTORS.IMAGE_REPAIR.TOAST_ID)) return;
+function buildToastElement() {
+  const spinner = createEl("span", { className: "img-retry-spinner" });
 
-  const wrapper = document.createElement("div");
-  wrapper.id = "image-retry-toast-wrapper";
-  wrapper.innerHTML = imgRetryUi;
+  const count = createEl("span", { className: "img-retry-count", text: "0" });
 
-  document.body.appendChild(wrapper);
-  const toastEl = document.getElementById(SELECTORS.IMAGE_REPAIR.TOAST_ID);
-  if (toastEl) {
-    toastEl.style.display = "none";
-  }
+  const plural = createEl("span", { className: "img-retry-plural" });
+
+  const succeeded = createEl("span", { className: "img-retry-succeeded", text: "0" });
+  const failed = createEl("span", { className: "img-retry-failed", text: "0" });
+  const avg = createEl("span", { className: "img-retry-avg", text: "0" });
+
+  const stats = createEl("div", { className: "img-retry-stats" });
+  stats.append(
+    document.createTextNode("Success: "),
+    succeeded,
+    document.createTextNode(" | Fail: "),
+    failed,
+    document.createTextNode(" | Avg: "),
+    avg,
+    document.createTextNode(" ms"),
+  );
+
+  const toast = createEl("div", {
+    attrs: { id: SELECTORS.IMAGE_REPAIR.TOAST_ID },
+    className: "img-retry-toast",
+  });
+
+  const frag = document.createDocumentFragment();
+  frag.append(
+    spinner,
+    document.createTextNode("Retrying "),
+    count,
+    document.createTextNode(" image"),
+    plural,
+    document.createTextNode("..."),
+    stats,
+  );
+  toast.appendChild(frag);
+
+  return toast;
 }
 
-/**
- * Removes the injected image retry toast UI from the page.
- */
+export function injectUI() {
+  if (document.getElementById(SELECTORS.IMAGE_REPAIR.TOAST_ID)) return;
+  const toast = buildToastElement();
+  toast.style.display = "none";
+
+  const wrapper = createEl("div", { attrs: { id: SELECTORS.IMAGE_REPAIR.WRAPPER_ID } });
+  wrapper.appendChild(toast);
+
+  document.body.appendChild(wrapper);
+}
+
 export function destroyInjectedUI() {
   const wrapper = document.getElementById(SELECTORS.IMAGE_REPAIR.WRAPPER_ID);
-  if (wrapper) {
-    wrapper.remove();
-  }
+  if (wrapper) wrapper.remove();
+
   if (imgRetryTimeoutContainer) {
     clearTimeout(imgRetryTimeoutContainer);
     imgRetryTimeoutContainer = null;
   }
 }
 
-/**
- * Updates the content and visibility of the image retry toast.
- * @param {Set} retryingImages
- * @param {object} metrics
- */
 export function updateToast(retryingImages, metrics) {
-  const imgRetryToastEl = document.querySelector(".img-retry-toast");
-  if (!imgRetryToastEl) return;
+  const toast = document.getElementById(SELECTORS.IMAGE_REPAIR.TOAST_ID);
+  if (!toast) return;
 
   if (isUpdating) {
     pendingUpdate = true;
@@ -55,15 +81,14 @@ export function updateToast(retryingImages, metrics) {
   isUpdating = true;
 
   if (retryingImages.size === 0) {
-    imgRetryToastEl.style.display = "none";
+    toast.style.display = "none";
   } else {
-    imgRetryToastEl.style.display = "flex";
-    imgRetryToastEl.querySelector(".img-retry-count").textContent = retryingImages.size;
-    imgRetryToastEl.querySelector(".img-retry-plural").textContent =
-      retryingImages.size > 1 ? "s" : "";
-    imgRetryToastEl.querySelector(".img-retry-succeeded").textContent = metrics.succeeded;
-    imgRetryToastEl.querySelector(".img-retry-failed").textContent = metrics.failed;
-    imgRetryToastEl.querySelector(".img-retry-avg").textContent = metrics.avgCache.toFixed(1);
+    toast.style.display = "flex";
+    toast.querySelector(".img-retry-count").textContent = retryingImages.size;
+    toast.querySelector(".img-retry-plural").textContent = retryingImages.size > 1 ? "s" : "";
+    toast.querySelector(".img-retry-succeeded").textContent = metrics.succeeded;
+    toast.querySelector(".img-retry-failed").textContent = metrics.failed;
+    toast.querySelector(".img-retry-avg").textContent = metrics.avgCache.toFixed(1);
   }
 
   imgRetryTimeoutContainer = setTimeout(() => {
