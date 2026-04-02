@@ -1,7 +1,6 @@
-import { config } from "../../config.js";
 import { openConfigTransferDialog } from "../../features/config-transfer/index.js";
 import { toggleNoticeDismissal } from "../../features/dismiss-notification";
-import { toggleCrossTabSync } from "../../services/syncService";
+import { crossTabSyncFeature } from "../../services/syncService";
 import { updateButtonVisibility } from "../components/configButton";
 import { createEnabledDisabledToast, createToggleSetting } from "./metaFactory";
 import { showFeatureHealthBox } from "../components/featureHealth/index.js";
@@ -32,7 +31,7 @@ export const globalSettingsMeta = {
       "Automatically apply changes made in other tabs(requires to refresh other tabs) experimental",
     config: "globalSettings.enableCrossTabSync",
     custom: () => {
-      toggleCrossTabSync(config.globalSettings.enableCrossTabSync);
+      crossTabSyncFeature.toggle(crossTabSyncFeature.isEnabled());
     },
     toast: createEnabledDisabledToast("(experimental)Cross-tab settings sync"),
   }),

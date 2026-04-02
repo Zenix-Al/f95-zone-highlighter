@@ -1,4 +1,5 @@
 import { config } from "../../config.js";
+import { debugLog } from "../../core/logger.js";
 import { saveConfigKeys } from "../../services/settingsService.js";
 import { styleDownloadSuccess } from "../../utils/helpers.js";
 import {
@@ -43,6 +44,31 @@ export async function clearProcessingAndTryCloseTab() {
     styleDownloadSuccess(el, { background: "#ec5555", color: "white" });
     document.body.appendChild(el);
   }
+}
+
+export function isDirectDownloadAutoCloseEnabled() {
+  return !__F95UE_DEBUG__;
+}
+
+export function scheduleDirectDownloadCompletion(feature, delayMs) {
+  setTimeout(async () => {
+    if (!isDirectDownloadAutoCloseEnabled()) {
+      debugLog(
+        feature,
+        "Debug mode active; skipping tab auto-close and only clearing processing state.",
+        {
+          data: { delayMs },
+        },
+      );
+      await clearProcessingDownloadFlag();
+      return;
+    }
+
+    debugLog(feature, "Auto-close delay elapsed; clearing processing state and closing tab.", {
+      data: { delayMs },
+    });
+    await clearProcessingAndTryCloseTab();
+  }, delayMs);
 }
 
 function ensureGofilePageBridge() {

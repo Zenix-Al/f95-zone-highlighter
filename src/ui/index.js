@@ -3,7 +3,7 @@ import { updateButtonVisibility } from "./components/configButton";
 import { injectCSS } from "./helpers/cssInjector";
 import { updateColorStyle } from "./helpers/updateColorStyle";
 import stateManager, { config } from "../config.js";
-import { toggleCrossTabSync } from "../services/syncService";
+import { crossTabSyncFeature } from "../services/syncService";
 import { createEl } from "../core/dom.js";
 
 function initShadowDOM() {
@@ -21,6 +21,6 @@ export function initUiPhaseIfApplicable() {
   injectButton();
   updateColorStyle();
   updateButtonVisibility();
-  toggleCrossTabSync(config.globalSettings.enableCrossTabSync);
+  crossTabSyncFeature.toggle(crossTabSyncFeature.isEnabled());
   return true;
 }

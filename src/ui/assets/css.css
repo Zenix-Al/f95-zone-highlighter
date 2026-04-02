@@ -621,6 +621,26 @@
   justify-self: center;
 }
 
+/* Make select controls visually consistent with other inputs */
+.config-row select {
+  width: 100%;
+  max-width: 130px;
+  min-width: 0;
+  justify-self: center;
+  background-color: #222;
+  color: #fff;
+  border: 1px solid #555;
+  border-radius: 4px;
+  padding: 5px 8px;
+  font-size: 14px;
+  height: 30px;
+}
+
+.config-row select:focus {
+  outline: none;
+  border-color: #c15858;
+}
+
 .config-row input[type="number"] {
   background-color: #222;
   color: #fff;

@@ -7,9 +7,9 @@ import { queryAllBySelectors } from "../../utils/selectorQuery.js";
 import { handleDirectDownloadFailure } from "./attention.js";
 import { isDirectDownloadHostEnabled } from "./hostPackages.js";
 import {
-  clearProcessingAndTryCloseTab,
   isProcessingDownloadFlowActive,
   markHostDownloadSuccess,
+  scheduleDirectDownloadCompletion,
 } from "./hostFlowHelpers.js";
 
 // Datanodes is a multi-page / multi-state flow. We persist a tiny stage marker so
@@ -342,9 +342,7 @@ async function failFlow(message, code = "flow_failed") {
 function finishSuccess() {
   clearDatanodesStage();
   void markHostDownloadSuccess("datanodes");
-  setTimeout(() => {
-    void clearProcessingAndTryCloseTab();
-  }, TIMINGS.DATANODES_AUTO_CLOSE);
+  scheduleDirectDownloadCompletion("DatanodesDownloader", TIMINGS.DATANODES_AUTO_CLOSE);
 }
 
 async function runDownloadPhase() {

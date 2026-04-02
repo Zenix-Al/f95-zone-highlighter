@@ -16,7 +16,7 @@ html.latest-wide .p-body-inner {
 main#latest-page_main-wrap {
   width: 100%;
   max-width: 1400px;
-  margin: 0 auto;
+  margin: 0 auto 40px; /* preserve site bottom spacing so pagination doesn't touch footer */
   transition: max-width 0.7s ease-out;
   will-change: max-width;
 }

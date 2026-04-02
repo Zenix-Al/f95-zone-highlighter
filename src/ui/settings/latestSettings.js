@@ -91,6 +91,22 @@ const latestOverlaySettingsDialogMeta = {
   overlayText: overlaySettingsMeta.overlayText,
   minVersion: minVersionSetting,
   latestOverlayColorOrder: latestOverlayColorOrderSetting,
+  overlayStyle: {
+    type: "select",
+    text: "Overlay style",
+    tooltip: "Choose how overlay colors are applied to tiles (strip or border)",
+    config: "latestSettings.latestOverlayStyle",
+    options: [
+      { key: "strip", label: "Bottom strip" },
+      { key: "border", label: "Colored border" },
+    ],
+    effects: {
+      custom: (v) => {
+        debouncedProcessAllTilesReset();
+        showToast(`Overlay style saved: ${v}`);
+      },
+    },
+  },
 };
 
 function openLatestOverlaySettingsDialog() {
@@ -149,3 +165,7 @@ export const latestSettingsMeta = {
     },
   },
 };
+
+async function openOverlayStyleDialog() {
+  // overlay style chooser replaced by inline select; function removed.
+}

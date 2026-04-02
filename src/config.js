@@ -92,6 +92,7 @@ export const defaultLatestSettings = {
     "highVersion",
     "invalidVersion",
   ],
+  latestOverlayStyle: "strip",
 };
 
 export const defaultGlobalSettings = {

@@ -1,76 +1,69 @@
 import { config } from "../../config.js";
 import TIMINGS from "../../config/timings.js";
-import { SELECTORS } from "../../config/selectors.js";
 import { debugLog } from "../../core/logger.js";
 import { showToast } from "../../ui/components/toast.js";
 import { handleDirectDownloadFailure } from "./attention.js";
 import { isDirectDownloadHostEnabled } from "./hostPackages.js";
 import {
-  clearProcessingAndTryCloseTab,
   isProcessingDownloadFlowActive,
   markHostDownloadSuccess,
+  scheduleDirectDownloadCompletion,
 } from "./hostFlowHelpers.js";
 
-function isLikelyVisible(element) {
-  if (!element || !element.isConnected) return false;
-  const style = getComputedStyle(element);
-  return style.display !== "none" && style.visibility !== "hidden";
+const PIXELDRAIN_ID_REGEX = /^[A-Za-z0-9_-]{6,32}$/;
+
+function isValidPixeldrainId(id) {
+  return PIXELDRAIN_ID_REGEX.test(String(id || ""));
 }
 
-function getDownloadButtonCandidate() {
-  const candidates = Array.from(
-    document.querySelectorAll(SELECTORS.PIXELDRAIN.DOWNLOAD_BUTTON_CANDIDATES),
-  );
-  if (candidates.length === 0) return null;
-
-  const ranked = candidates
-    .map((el) => {
-      const spanText = String(el.querySelector("span")?.textContent || "")
-        .trim()
-        .toLowerCase();
-      const iconText = String(el.querySelector("i.icon")?.textContent || "")
-        .trim()
-        .toLowerCase();
-      const text = String(el.textContent || "")
-        .trim()
-        .toLowerCase();
-
-      let score = 0;
-      if (spanText === "download") score += 4;
-      if (iconText === "download") score += 3;
-      if (text.includes("download")) score += 2;
-      if (el.tagName === "BUTTON") score += 1;
-      if (isLikelyVisible(el)) score += 1;
-
-      return { el, score };
-    })
-    .filter(({ score }) => score >= 4)
-    .sort((a, b) => b.score - a.score);
-
-  return ranked[0]?.el || null;
+function getPixeldrainFileIdFromLocation() {
+  const match = window.location.pathname.match(/\/(?:u|d|f)\/([A-Za-z0-9_-]+)/);
+  return isValidPixeldrainId(match?.[1]) ? match[1] : "";
 }
 
-function waitForDownloadButton(timeout = TIMINGS.PIXELDRAIN_BUTTON_WAIT_TIMEOUT) {
-  return new Promise((resolve, reject) => {
-    const start = Date.now();
+function getPixeldrainFileIdFromDom() {
+  const thumbnail = document.querySelector('img[src*="/api/file/"]');
+  const thumbnailMatch = thumbnail?.getAttribute("src")?.match(/\/api\/file\/([^/?#]+)/);
+  if (isValidPixeldrainId(thumbnailMatch?.[1])) return thumbnailMatch[1];
 
-    const check = () => {
-      const btn = getDownloadButtonCandidate();
-      if (btn) {
-        resolve(btn);
-        return;
-      }
+  const apiLink = document.querySelector('a[href*="/api/file/"]');
+  const apiLinkMatch = apiLink?.getAttribute("href")?.match(/\/api\/file\/([^/?#]+)/);
+  if (isValidPixeldrainId(apiLinkMatch?.[1])) return apiLinkMatch[1];
 
-      if (Date.now() - start > timeout) {
-        reject(new Error("Download button not found."));
-        return;
-      }
+  return "";
+}
 
-      setTimeout(check, TIMINGS.PIXELDRAIN_POLL_INTERVAL);
-    };
+function getPixeldrainFileId() {
+  return getPixeldrainFileIdFromLocation() || getPixeldrainFileIdFromDom();
+}
 
-    check();
-  });
+function buildDirectDownloadUrl(fileId) {
+  return `${window.location.origin}/api/file/${encodeURIComponent(fileId)}?download`;
+}
+
+function triggerDirectDownload(url) {
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.target = "_self";
+  anchor.rel = "noopener noreferrer";
+  anchor.style.display = "none";
+
+  document.body.appendChild(anchor);
+  anchor.click();
+  setTimeout(() => {
+    try {
+      anchor.remove();
+    } catch {
+      // no-op cleanup best effort
+    }
+  }, 2000);
+}
+
+function triggerButtonFallback() {
+  const fallbackButton = document.querySelector("button.button_highlight");
+  if (!fallbackButton) return false;
+  fallbackButton.click();
+  return true;
 }
 
 export async function processPixeldrainDownload() {
@@ -83,17 +76,26 @@ export async function processPixeldrainDownload() {
     return;
 
   try {
-    debugLog("PixeldrainDownloader", "Waiting for download button...");
-    const downloadButton = await waitForDownloadButton();
-    debugLog("PixeldrainDownloader", "Download button found, triggering click.");
+    const fileId = getPixeldrainFileId();
+    if (fileId) {
+      const directUrl = buildDirectDownloadUrl(fileId);
+      debugLog("PixeldrainDownloader", "Triggering direct URL download.", {
+        data: { fileId, directUrl },
+      });
+      triggerDirectDownload(directUrl);
+    } else {
+      debugLog("PixeldrainDownloader", "File ID not found; falling back to page download button.", {
+        level: "warn",
+      });
+      const clicked = triggerButtonFallback();
+      if (!clicked) {
+        throw new Error("Could not find Pixeldrain file ID or fallback download button.");
+      }
+    }
 
-    downloadButton.click();
     await markHostDownloadSuccess("pixeldrain");
     showToast("Pixeldrain download triggered.");
-
-    setTimeout(() => {
-      void clearProcessingAndTryCloseTab();
-    }, TIMINGS.PIXELDRAIN_AUTO_CLOSE);
+    scheduleDirectDownloadCompletion("PixeldrainDownloader", TIMINGS.PIXELDRAIN_AUTO_CLOSE);
   } catch (err) {
     const message = `Pixeldrain automation failed: ${err?.message || String(err)}`;
     debugLog("PixeldrainDownloader", message, { level: "warn" });

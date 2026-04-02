@@ -18,9 +18,9 @@ export function handleModalClick(e) {
 }
 
 export function handleOutsideSearchClick(e) {
-  if (!stateManager.get('shadowRoot')) return;
-  const input = stateManager.get('shadowRoot').getElementById("tags-search");
-  const results = stateManager.get('shadowRoot').getElementById("search-results");
+  if (!stateManager.get("shadowRoot")) return;
+  const input = stateManager.get("shadowRoot").getElementById("tags-search");
+  const results = stateManager.get("shadowRoot").getElementById("search-results");
   if (!input || !results) return;
 
   // Use composedPath to correctly detect clicks inside/outside the shadow DOM
