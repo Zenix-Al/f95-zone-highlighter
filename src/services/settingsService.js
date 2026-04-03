@@ -215,7 +215,7 @@ export async function loadData() {
   result.latestSettings.latestOverlayColorOrder = normalizeOverlayColorOrder(
     result.latestSettings.latestOverlayColorOrder,
   );
-  debugLog("loadData", `loadData result:`, result);
+  debugLog("loadData", `loadData result:`, { result, level: "info" });
 
   return result;
 }
