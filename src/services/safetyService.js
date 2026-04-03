@@ -3,9 +3,9 @@ import { debugLog } from "../core/logger.js";
 
 export function checkTags() {
   // Log for debugging, as requested.
-  debugLog("[tag check]", `Tag length ${config.tags.length}`);
-  if (!stateManager.get('shadowRoot')) return;
-  const el = stateManager.get('shadowRoot').getElementById("tag-error-notif");
+  debugLog("[tag check]", `Tag length ${config.tags.length}`, { tags: config.tags });
+  if (!stateManager.get("shadowRoot")) return;
+  const el = stateManager.get("shadowRoot").getElementById("tag-error-notif");
   if (!el) return; // Element might not be rendered yet
 
   const noTagsMessage = "No tag detected, go to f95zone latest page and open this menu again.";
@@ -21,8 +21,8 @@ export function checkTags() {
 }
 
 function _updateErrorNotif(elementId, text) {
-  if (!stateManager.get('shadowRoot')) return;
-  const el = stateManager.get('shadowRoot').getElementById(elementId);
+  if (!stateManager.get("shadowRoot")) return;
+  const el = stateManager.get("shadowRoot").getElementById(elementId);
   if (!el) return;
   el.textContent = text || "";
   el.style.display = text ? "block" : "none";
@@ -44,8 +44,8 @@ export function checkOverlaySettings() {
   } else {
     colorErrorNotif("");
 
-    if (!stateManager.get('shadowRoot')) return;
-    const el = stateManager.get('shadowRoot').getElementById("tag-error-notif");
+    if (!stateManager.get("shadowRoot")) return;
+    const el = stateManager.get("shadowRoot").getElementById("tag-error-notif");
     // Only clear the message if it's the one we set, to avoid conflicts with checkTags.
     if (el && el.textContent === overlayMessage) {
       tagsErrorNotif("");

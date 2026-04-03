@@ -14,6 +14,8 @@ export const SELECTORS = {
     INPUT: ".selectize-input.items.not-full",
     DROPDOWN: ".selectize-dropdown.single.filter-tags-select",
     OPTION: ".option",
+    SELECTED_WRAP: ".filter-tags-selected-wrap.selectize-selected",
+    SELECTED_TAG: "span[data-tag]",
   },
   GOFILE: {
     LOADING: "#filemanager_loading",

@@ -1,5 +1,6 @@
 import { config } from "../../config.js";
 import { debugLog } from "../../core/logger.js";
+import { ensurePageBridge, requestPageBridge } from "../../core/pageBridge.js";
 import { saveConfigKeys } from "../../services/settingsService.js";
 import { styleDownloadSuccess } from "../../utils/helpers.js";
 import {
@@ -72,12 +73,9 @@ export function scheduleDirectDownloadCompletion(feature, delayMs) {
 }
 
 function ensureGofilePageBridge() {
-  if (!document?.documentElement) return false;
-  if (document.documentElement.dataset[GOFILE_BRIDGE_MARKER] === "1") return true;
-
-  const script = document.createElement("script");
-  script.type = "text/javascript";
-  script.textContent = `
+  return ensurePageBridge({
+    marker: GOFILE_BRIDGE_MARKER,
+    scriptContent: `
     (() => {
       if (window.__f95ueGofileBridgeInstalled) return;
       window.__f95ueGofileBridgeInstalled = true;
@@ -106,20 +104,8 @@ function ensureGofilePageBridge() {
         } catch {}
       });
     })();
-  `;
-  try {
-    document.documentElement.appendChild(script);
-    script.remove();
-    document.documentElement.dataset[GOFILE_BRIDGE_MARKER] = "1";
-    return true;
-  } catch {
-    try {
-      script.remove();
-    } catch {
-      // ignore remove failure
-    }
-    return false;
-  }
+  `,
+  });
 }
 
 export function invokeGofileDownloadContent(contentId, timeoutMs = 1500) {
@@ -144,40 +130,26 @@ export function invokeGofileDownloadContent(contentId, timeoutMs = 1500) {
     return Promise.resolve({ ok: false, source: "pageBridge", reason: "bridge_inject_failed" });
   }
 
-  return new Promise((resolve) => {
-    let settled = false;
-    const finish = (result) => {
-      if (settled) return;
-      settled = true;
-      clearTimeout(timer);
-      window.removeEventListener(GOFILE_BRIDGE_RESULT_EVENT, onResult);
-      resolve(result);
-    };
-    const onResult = (event) => {
-      const detail = event?.detail || {};
-      finish({
-        ok: Boolean(detail.ok),
-        source: "pageBridge",
-        reason: typeof detail.reason === "string" ? detail.reason : "",
-      });
-    };
-    const timer = setTimeout(() => {
-      finish({ ok: false, source: "pageBridge", reason: "bridge_timeout" });
-    }, timeoutMs);
-    window.addEventListener(GOFILE_BRIDGE_RESULT_EVENT, onResult);
-    try {
-      window.dispatchEvent(
-        new CustomEvent(GOFILE_BRIDGE_REQUEST_EVENT, {
-          detail: { contentId },
-        }),
-      );
-    } catch (error) {
-      finish({
+  return requestPageBridge({
+    requestEvent: GOFILE_BRIDGE_REQUEST_EVENT,
+    resultEvent: GOFILE_BRIDGE_RESULT_EVENT,
+    detail: { contentId },
+    timeoutMs,
+  }).then((result) => {
+    if (!result.received) {
+      return {
         ok: false,
         source: "pageBridge",
-        reason: error?.message ? String(error.message) : "bridge_dispatch_failed",
-      });
+        reason: result.reason || "bridge_timeout",
+      };
     }
+
+    const detail = result.detail || {};
+    return {
+      ok: Boolean(detail.ok),
+      source: "pageBridge",
+      reason: typeof detail.reason === "string" ? detail.reason : "",
+    };
   });
 }
 

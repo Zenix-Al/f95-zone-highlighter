@@ -46,8 +46,8 @@ function getPlugins(isRelease) {
   return isRelease ? [stripCssComments, stripDebugLogs] : [stripCssComments];
 }
 
-function getBuildDefines() {
-  return { __F95UE_DEBUG__: "true" };
+function getBuildDefines(isRelease) {
+  return { __F95UE_DEBUG__: isRelease ? "false" : "true" };
 }
 
 function readHeaderTemplate() {
@@ -97,11 +97,12 @@ async function beautifyFromCode(code, header, outPath) {
   ];
 
   const terserOpts = {
-    // single pass compress but remove debug calls and console where possible
-    compress: { passes: 1, pure_funcs: ["debugLog"], drop_console: true },
-    // allow mangling of local identifiers while preserving common globals
+    // Keep readable artifact semantics identical to esbuild output.
+    // Debug log stripping already happens via build plugins in release mode.
+    compress: false,
+    // Allow local identifier mangling while preserving common globals.
     mangle: { reserved, keep_fnames: true },
-    // keep output readable for reviewers
+    // Keep output readable for reviewers.
     format: { beautify: true, comments: false },
   };
 
@@ -167,7 +168,7 @@ async function main() {
     format: "iife",
     legalComments: "none",
     loader: { ".html": "text", ".css": "text" },
-    define: getBuildDefines(),
+    define: getBuildDefines(isRelease),
     plugins: getPlugins(isRelease),
   };
 

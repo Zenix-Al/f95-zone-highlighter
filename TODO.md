@@ -1,38 +1,64 @@
-Task: Add shadow DOM support to `createEl` and update call sites
+# Project TODO
 
-Summary
+Current focus: design and implement an Add-ins (plugins) system so heavy/optional
+features can be distributed as separate userscripts (add-ins) that register with
+the core. This keeps the main script small while allowing large, opt-in
+extensions (e.g. a Threads library).
 
-- Problem: Many components now use `createEl` to build UI nodes. Components intended to render into a ShadowRoot or a host element relied on cloning or manual element creation; `createEl` currently always creates elements using the global `document` and does not optionally append into a provided mount point. This has caused some ghosts/children to lose the expected scoped styling or cause clipping when attachments happen in different document contexts.
+## Roadmap (high-level)
 
-Work done
+1. Design & Spec (planning)
+   - Define `registerAddon` API contract and capability manifest.
+   - Decide event names, RPC shape, storage semantics, and permission model.
+   - Produce a short `ADDINS.md` describing the expected behavior for add-in
+     authors and the core's compatibility policy.
 
-- Modified `src/core/dom.js` to accept a new option `mount` on `createEl(tag, opts)`.
-  - `mount` can be a `ShadowRoot`, its `host` element, a `DocumentFragment`, or any element that supports `appendChild`.
-  - When `mount` is provided, `createEl` will use `mount.ownerDocument || mount.host.ownerDocument || document` as the document to create the element, and will attempt to `appendChild` the created element to `mount` before returning it.
-  - If append fails, `createEl` still returns the element so the caller can append manually.
+2. Bridge Design
+   - Implement a tiny primary bridge available on `window` (direct calls when
+     possible) and a CustomEvent-based RPC fallback for sandboxed managers.
+   - Keep the bridge lazy-init and minimal to reduce size impact.
+   - Define unique event names and timeouts for requests.
 
-Files found using `createEl`
-(These were discovered via a workspace search for `createEl(`; update call sites to pass `mount` when creating elements that should be placed inside a shadow root or host.)
+3. Core API & Storage
+   - Implement `registerAddon({ id, name, version, permissions })` → `AddonHandle`.
+   - `AddonHandle` should expose: `on/off`, `emit`, `request`, `storage.get/set/remove`,
+     and `destroy()`.
+   - Core proxies persistent storage for add-ins under `addon:<id>:...` keys so
+     add-ins don't need extra user grants.
+   - Enforce size/rate limits on storage/RPC to avoid abuse.
 
-- src/ui/components/tag-search/tagDrag.js
-- src/ui/renderers/renderSetting.js
-- src/ui/renderers/createLabel.js
-- src/ui/renderers/createInput.js
-- src/ui/components/toast.js
-- src/ui/components/featureHealth/index.js
-- src/ui/components/dialog.js
-- src/ui/components/darkColorPicker.js
-- src/features/image-repair/ui.js
-- src/ui/components/...(others found in search — see full search output in development logs)
+4. UI / UX
+   - Add an Add-ins section to Settings with enable/disable, permissions, and
+     an Open button to surface add-in UIs inside the core modal.
+   - Allow assigning keyboard shortcuts to open add-ins via the core UI.
+   - Show API version and compatibility status for each registered add-in.
 
-Planned next steps (priority order)
+5. Developer Experience
+   - Ship an `extras/addin-skeleton.user.js` skeleton and `ADDINS.md` usage
+     examples.
+   - Provide a local test harness that fakes the bridge for add-in dev.
 
-1. Audit each call site (above) and decide whether the element should be mounted immediately into a specific `mount` (e.g., a ShadowRoot or host). If yes, pass `mount: sr` (or `mount: sr.host`) to `createEl`.
-2. For call sites that previously relied on `cloneNode(true)` or that require inner structure preserved, prefer owning logic that clones and then uses `mount.appendChild(clone)` (no change needed in those call sites beyond opting to use `mount` where appropriate).
-3. Run the full test suite and manually verify UI components that use shadow roots (tag drag ghost, dialogs, toasts) to ensure scoped CSS and visibility are preserved.
-4. If any components still show styling issues after mounting into the shadow root, consider copying computed styles to clones or applying explicit CSS variables in the host to propagate expected styles.
+6. Sample Add-in
+   - Build a sample `threads` add-in that demonstrates registration, namespaced
+     storage, subscribing to `tagsUpdated`, and opening its UI modal through
+     the core API.
 
-Notes and rationale
+7. Testing & Release
+   - Run compatibility tests across popular userscript managers (Tampermonkey,
+     Violentmonkey, Greasemonkey) and pages where the script runs.
+   - Document the security/permission model for users and add-in authors.
 
-- Creating elements using the correct `ownerDocument` is necessary when rendering inside isolated contexts or if the environment uses multiple documents (iframes, etc.).
-- Appending directly inside `createEl` is optional — callers that need to keep the element detached can still omit `mount` and append later.
+## Notes, trade-offs, and constraints
+
+- Benefits: keeps core small, avoids multiple competing UIs, reduces collisions,
+  makes heavy features opt-in and independently updatable.
+- Costs: added complexity for bridge + maintenance of a stable API surface,
+  UX for enabling/disabling add-ins, and potential compatibility overhead.
+- Strategy: favor a tiny, well-documented API, require user opt-in for add-ins,
+  and version the API so changes are manageable.
+
+## Next step
+
+- Finalize the `registerAddon` spec and event/RPC names in `ADDINS.md` (planning
+  step). Once you confirm, implement the bridge and a minimal `registerAddon`
+  shim in the core, then scaffold a sample add-in.

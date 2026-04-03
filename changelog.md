@@ -1,5 +1,14 @@
 # Changelog
 
+### **[v4.14.14 - Tag Update Reliability Patch]**
+
+This is a small bugfix release focused on improving the reliability of tag updates and search results in the settings modal. It addresses issues with the previous implementation where tag updates target elements misbehave because of short sight or site ui changes, and ensures the tag search results container shows/hides correctly based on the search query.
+
+**Bug Fixes**
+
+- **Tag updates:** Prioritize site-provided `latestUpdates.tags`, preserve selected chips when merging, more reliable than previous element-based method and less buggy.
+- **Tag Search Results:** Fixed an issue where the tag search results container could fail to show when typing in the search input, making it seem like the search was broken. Now the container will reliably show/hide based on the search query.
+
 ### **[v4.14.0 - Direct Download & Overlay Options]**
 
 This release improves direct-download reliability and makes masked-link automation explicit, adds a new Latest Overlay border style, fixes Wide Latest layout issues, and updates the build pipeline to reduce release size while remaining GreasyFork-compliant.
