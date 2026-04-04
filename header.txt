@@ -6,7 +6,6 @@
 // @contributor  Edexal (GM storage, change listener & summarize UI element)
 // @match        *://f95zone.to/*
 // @match        *://buzzheavier.com/*
-// @match        *://trashbytes.net/dl/*
 // @match        *://gofile.io/d/*
 // @match        *://pixeldrain.com/*
 // @match        *://datanodes.to/download
@@ -21,8 +20,6 @@
 // @homepageURL  https://f95zone.to/threads/f95zone-latest.250836/
 // @supportURL   https://f95zone.to/threads/f95zone-latest.250836/
 // @source       https://github.com/Zenix-Al/f95-zone-highlighter
-// @updateURL    https://update.greasyfork.org/scripts/546518/F95Zone%20Latest%20Highlighter.user.js
-// @downloadURL  https://update.greasyfork.org/scripts/546518/F95Zone%20Latest%20Highlighter.user.js
 // ==/UserScript==
 // ------------------------------------------------------------
 {{BANNER}}

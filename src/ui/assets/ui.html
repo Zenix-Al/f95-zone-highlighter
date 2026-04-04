@@ -1,45 +1,67 @@
 <div class="modal-content">
-  <h2 style="text-align: center">CONFIG</h2>
+  <div class="settings-shell">
+    <aside class="settings-sidebar" aria-label="Settings sections">
+      <div class="settings-sidebar-title">Settings</div>
+      <nav id="settings-nav" class="settings-nav">
+        <div class="settings-nav-group" id="settings-nav-core">
+          <button
+            type="button"
+            class="settings-nav-item active"
+            data-target="settings-panel-general"
+          >
+            General
+          </button>
+          <button type="button" class="settings-nav-item" data-target="settings-panel-latest">
+            Latest
+          </button>
+          <button type="button" class="settings-nav-item" data-target="settings-panel-thread">
+            Thread
+          </button>
+          <button type="button" class="settings-nav-item" data-target="settings-panel-tags">
+            Tags
+          </button>
+          <button type="button" class="settings-nav-item" data-target="settings-panel-color">
+            Color
+          </button>
+          <button type="button" class="settings-nav-item" data-target="settings-panel-addins">
+            Add-ons
+          </button>
+        </div>
 
-  <!-- General -->
-  <div class="modal-settings-spacing">
-    <details class="config-list-details">
-      <summary>General</summary>
-      <div class="settings-wrapper">
+        <div
+          id="settings-nav-pinned-group"
+          class="settings-nav-group settings-nav-pinned-group"
+          hidden
+        >
+          <div class="settings-nav-group-label">Pinned Add-ons</div>
+          <div id="settings-nav-pinned-items" class="settings-nav-pinned-items"></div>
+        </div>
+      </nav>
+      <div class="settings-sidebar-footer">
+        <button id="close-modal" class="modal-btn settings-close-btn">Close</button>
+      </div>
+    </aside>
+
+    <section class="settings-main" aria-live="polite">
+      <div id="settings-panel-general" class="settings-panel active">
         <div class="settings-wrapper-inner">
           <div id="global-settings-container"></div>
         </div>
       </div>
-    </details>
-  </div>
-  <!-- Latest page settings -->
-  <div class="modal-settings-spacing">
-    <details class="config-list-details">
-      <summary>Latest page settings</summary>
-      <div class="settings-wrapper">
+
+      <div id="settings-panel-latest" class="settings-panel">
         <div class="settings-wrapper-inner">
           <div id="latest-settings-container"></div>
         </div>
       </div>
-    </details>
-  </div>
-  <!-- Thread settings -->
-  <div class="modal-settings-spacing">
-    <details class="config-list-details">
-      <summary>Thread settings</summary>
-      <div class="settings-wrapper">
+
+      <div id="settings-panel-thread" class="settings-panel">
         <div class="settings-wrapper-inner">
           <div id="thread-settings-container"></div>
         </div>
       </div>
-    </details>
-  </div>
-  <!-- TAGS -->
-  <div class="modal-settings-spacing">
-    <details class="config-list-details">
-      <summary>Tags</summary>
 
-      <div class="settings-wrapper">
+      <div id="settings-panel-tags" class="settings-panel">
         <div class="settings-wrapper-inner">
           <div id="tag-error-notif" class="modal-error-notif"></div>
           <div id="tags-container">
@@ -82,29 +104,41 @@
           </div>
         </div>
       </div>
-    </details>
-  </div>
-  <!-- COLORS -->
-  <div class="modal-settings-spacing">
-    <details class="config-list-details">
-      <summary>Color</summary>
-      <div class="settings-wrapper">
+
+      <div id="settings-panel-color" class="settings-panel">
         <div class="settings-wrapper-inner">
           <div id="color-error-notif" class="modal-error-notif"></div>
-
           <div id="color-container"></div>
+          <div class="centered-item settings-panel-actions">
+            <button id="reset-color" class="modal-btn">Reset color</button>
+          </div>
         </div>
       </div>
-      <div class="centered-item">
-        <button id="reset-color" class="modal-btn">Reset color</button>
+
+      <div id="settings-panel-addins" class="settings-panel">
+        <div class="settings-wrapper-inner">
+          <div class="config-header">Add-ons</div>
+          <div class="tag-priority-note">
+            Trusted add-ons are listed here with install links and page-aware runtime status.
+          </div>
+
+          <div class="addins-panel-section">
+            <div class="addins-panel-header-row">
+              <div>
+                <div class="addins-panel-title">Installed Add-ins</div>
+                <div class="addins-panel-subtitle">
+                  Status can be idle on pages where an add-in is not expected to run.
+                </div>
+              </div>
+            </div>
+            <div id="addins-installed-list" class="addins-list"></div>
+          </div>
+        </div>
       </div>
-    </details>
+    </section>
   </div>
+
   <div class="modal-footer-hint">
     <span class="hint-text">Hover over options text to see detailed settings</span>
-  </div>
-  <!-- Close -->
-  <div class="centered-item">
-    <button id="close-modal" class="modal-btn">🗙 Close</button>
   </div>
 </div>

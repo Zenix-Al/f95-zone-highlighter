@@ -1,6 +1,5 @@
 import {
   defaultColors,
-  defaultDirectDownloadPackages,
   defaultGlobalSettings,
   defaultLatestSettings,
   defaultOverlaySettings,
@@ -71,104 +70,7 @@ function validateOverlaySection(overlaySettings) {
   return "";
 }
 
-const DIRECT_DOWNLOAD_HEALTH_KEYS = [
-  "failCount",
-  "autoDisabled",
-  "noticeDismissed",
-  "lastError",
-  "updatedAt",
-];
-
-function validateDirectDownloadPackages(value) {
-  if (!isPlainObject(value)) {
-    return "threadSettings.directDownloadPackages must be an object.";
-  }
-
-  const pkgUnknown = hasOnlyKnownKeys(value, Object.keys(defaultDirectDownloadPackages));
-  if (pkgUnknown) {
-    return `threadSettings.directDownloadPackages.${pkgUnknown} is not supported.`;
-  }
-
-  for (const [pkgKey, pkgEnabled] of Object.entries(value)) {
-    if (typeof pkgEnabled !== "boolean") {
-      return `threadSettings.directDownloadPackages.${pkgKey} must be boolean.`;
-    }
-  }
-
-  return "";
-}
-
-function validateDirectDownloadHostHealth(pkgKey, hostHealth) {
-  if (!isPlainObject(hostHealth)) {
-    return `threadSettings.directDownloadHealth.${pkgKey} must be an object.`;
-  }
-
-  const hostUnknown = hasOnlyKnownKeys(hostHealth, DIRECT_DOWNLOAD_HEALTH_KEYS);
-  if (hostUnknown) {
-    return `threadSettings.directDownloadHealth.${pkgKey}.${hostUnknown} is not supported.`;
-  }
-
-  if (
-    typeof hostHealth.failCount !== "number" ||
-    !Number.isFinite(hostHealth.failCount) ||
-    hostHealth.failCount < 0
-  ) {
-    return `threadSettings.directDownloadHealth.${pkgKey}.failCount must be a number >= 0.`;
-  }
-
-  if (typeof hostHealth.autoDisabled !== "boolean") {
-    return `threadSettings.directDownloadHealth.${pkgKey}.autoDisabled must be boolean.`;
-  }
-
-  if (typeof hostHealth.noticeDismissed !== "boolean") {
-    return `threadSettings.directDownloadHealth.${pkgKey}.noticeDismissed must be boolean.`;
-  }
-
-  if (typeof hostHealth.lastError !== "string") {
-    return `threadSettings.directDownloadHealth.${pkgKey}.lastError must be string.`;
-  }
-
-  if (
-    typeof hostHealth.updatedAt !== "number" ||
-    !Number.isFinite(hostHealth.updatedAt) ||
-    hostHealth.updatedAt < 0
-  ) {
-    return `threadSettings.directDownloadHealth.${pkgKey}.updatedAt must be a number >= 0.`;
-  }
-
-  return "";
-}
-
-function validateDirectDownloadHealth(value) {
-  if (!isPlainObject(value)) {
-    return "threadSettings.directDownloadHealth must be an object.";
-  }
-
-  const healthUnknown = hasOnlyKnownKeys(value, Object.keys(defaultDirectDownloadPackages));
-  if (healthUnknown) {
-    return `threadSettings.directDownloadHealth.${healthUnknown} is not supported.`;
-  }
-
-  for (const pkgKey of Object.keys(defaultDirectDownloadPackages)) {
-    const hostHealth = value[pkgKey];
-    if (typeof hostHealth === "undefined") continue;
-
-    const hostError = validateDirectDownloadHostHealth(pkgKey, hostHealth);
-    if (hostError) return hostError;
-  }
-
-  return "";
-}
-
 function validateThreadSettingEntry(key, value) {
-  if (key === "directDownloadPackages") {
-    return validateDirectDownloadPackages(value);
-  }
-
-  if (key === "directDownloadHealth") {
-    return validateDirectDownloadHealth(value);
-  }
-
   if (typeof value !== "boolean") {
     return `threadSettings.${key} must be boolean.`;
   }

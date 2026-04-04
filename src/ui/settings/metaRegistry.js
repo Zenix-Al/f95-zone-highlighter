@@ -1,7 +1,7 @@
 import { overlaySettingsMeta } from "./overlaySettings";
 import { colorSettingsMeta } from "./colorSettings";
 import { latestSettingsMeta } from "./latestSettings";
-import { threadSettingsMeta, directDownloadSettingsMeta } from "./threadSettings";
+import { threadSettingsMeta } from "./threadSettings";
 
 export const metaRegistry = {
   overlaySettings: overlaySettingsMeta,
@@ -9,6 +9,5 @@ export const metaRegistry = {
   latestSettings: latestSettingsMeta,
   threadSettings: {
     ...threadSettingsMeta,
-    ...directDownloadSettingsMeta,
   },
 };

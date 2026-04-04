@@ -1,0 +1,60 @@
+{
+  "addons": [
+    {
+      "id": "image-repair-addon",
+      "name": "F95UE Image Repair Add-on",
+      "description": "Automatically retries broken attachment images on F95Zone threads.",
+      "version": "0.1.0",
+      "author": "X Death",
+      "entry": "addons/image-repair-addon/src/main.js",
+      "outfile": "addons/image-repair-addon/dist/image-repair-addon.user.js",
+      "matches": ["*://f95zone.to/threads/*"],
+      "grants": ["none"],
+      "runAt": "document-idle",
+      "requiresCore": true,
+      "capabilities": ["toast", "feature", "storage", "observer"]
+    },
+    {
+      "id": "masked-direct-addon",
+      "name": "F95UE Masked + Direct Download Add-on",
+      "description": "Combines masked-link skipper and direct-download flows into one trusted add-on.",
+      "version": "0.1.0",
+      "author": "X Death",
+      "entry": "addons/masked-direct-addon/src/main.js",
+      "outfile": "addons/masked-direct-addon/dist/masked-direct-addon.user.js",
+      "matches": [
+        "*://f95zone.to/threads/*",
+        "*://f95zone.to/masked/*",
+        "*://buzzheavier.com/*",
+        "*://*.buzzheavier.com/*",
+        "*://gofile.io/*",
+        "*://api.gofile.io/*",
+        "*://pixeldrain.com/*",
+        "*://datanodes.to/*"
+      ],
+      "grants": [
+        "GM_openInTab",
+        "GM.setValue",
+        "GM_addValueChangeListener",
+        "GM_removeValueChangeListener"
+      ],
+      "runAt": "document-idle",
+      "requiresCore": true,
+      "capabilities": ["toast", "feature", "storage", "routing"]
+    },
+    {
+      "id": "library-addon",
+      "name": "F95UE Library Add-on",
+      "description": "Quick-add threads to a personal library and manage entries with a dedicated add-on UI.",
+      "version": "0.1.0",
+      "author": "X Death",
+      "entry": "addons/library-addon/src/main.js",
+      "outfile": "addons/library-addon/dist/library-addon.user.js",
+      "matches": ["*://f95zone.to/*"],
+      "grants": ["none"],
+      "runAt": "document-idle",
+      "requiresCore": true,
+      "capabilities": ["toast", "feature", "storage", "idb", "ui"]
+    }
+  ]
+}

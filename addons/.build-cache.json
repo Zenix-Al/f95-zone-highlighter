@@ -1,0 +1,12 @@
+{
+  "regular": {
+    "masked-direct-addon": "7397c0b185c13191d2b53367b64c358645b6ec73dc4b2ec6121bf331c69bcbca",
+    "image-repair-addon": "127a00f27797c2a3d0721c7b385dc48b31e977c048335b316a78f675aa320634",
+    "library-addon": "3611112781fa9e1453e2e98558e0171737bcc9056d09ca0989e68f72045dd4b7"
+  },
+  "release": {
+    "image-repair-addon": "27b82b4ac74dbeee478aacfa7a047708c20a44169b9bbfd388e0e92dbab4b0bf",
+    "masked-direct-addon": "63c695db989fe71b12abddead4a5d915aa837281bbd583293505a7f54acb32c6",
+    "library-addon": "40caed5016886a04d76380fb268e191455b057d51f49cb53aa312c619b18c721"
+  }
+}

@@ -24,7 +24,13 @@ export function injectModal() {
   modal.addEventListener("click", (e) => {
     // Close modal if the click is on the backdrop, not the content.
     // Ignore clicks that land inside an open dark-color picker popover.
-    if (!modalContent.contains(e.target) && !e.target.closest(".dark-color-popover")) {
+    const path = e.composedPath ? e.composedPath() : [];
+    const clickedInsideModal = path.includes(modalContent);
+    const clickedPopover = path.some(
+      (node) => node && node.classList && node.classList.contains("dark-color-popover"),
+    );
+
+    if (!clickedInsideModal && !clickedPopover) {
       closeModal();
     }
   });

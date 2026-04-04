@@ -1,24 +1,18 @@
 import {
   config,
-  createDefaultDirectDownloadHealth,
+  defaultAddonsSettings,
   defaultColors,
-  defaultDirectDownloadPackages,
   defaultGlobalSettings,
   defaultLatestSettings,
+  defaultMetrics,
   defaultOverlaySettings,
   defaultThreadSetting,
-  defaultMetrics,
 } from "../config";
 import { debugLog } from "../core/logger";
-import { isValidColor, isValidVersion } from "../utils/validators";
 import { normalizeOverlayColorOrder } from "../features/latest-overlay/overlayOrder.js";
-import { normalizeDirectDownloadHealthEntry } from "../utils/normalization.js";
 import { normalizeArray, normalizeObject } from "../utils/objectPath.js";
-import {
-  createInactiveProcessingDownloadTrigger,
-  isProcessingDownloadTriggerActive,
-  normalizeProcessingDownloadTrigger,
-} from "../utils/processingDownloadTrigger.js";
+import { isValidColor, isValidVersion } from "../utils/validators";
+import { LEGACY_STORAGE_KEYS, migrateLegacyConfigPayload } from "./configMigrationService.js";
 
 function sanitizeColorSection(value) {
   const merged = { ...defaultColors, ...(value || {}) };
@@ -40,33 +34,80 @@ function sanitizeLatestSettings(value) {
 }
 
 function sanitizeThreadSettings(value) {
-  const sanitizeDirectDownloadHealth = (input) => {
-    const defaults = createDefaultDirectDownloadHealth(defaultDirectDownloadPackages);
-    const source = normalizeObject(input);
-    const result = {};
-    for (const key of Object.keys(defaults)) {
-      result[key] = normalizeDirectDownloadHealthEntry(source[key], defaults[key]);
-    }
-    return result;
-  };
   const source = normalizeObject(value);
-  const merged = { ...defaultThreadSetting, ...source };
-  const incomingPackages = normalizeObject(source.directDownloadPackages);
-  merged.directDownloadPackages = {
-    ...defaultDirectDownloadPackages,
-    ...incomingPackages,
-  };
-  for (const key of Object.keys(defaultDirectDownloadPackages)) {
-    merged.directDownloadPackages[key] = Boolean(merged.directDownloadPackages[key]);
-  }
-  const incomingHealth = normalizeObject(source.directDownloadHealth);
-  merged.directDownloadHealth = sanitizeDirectDownloadHealth(incomingHealth);
-  for (const key of Object.keys(defaultDirectDownloadPackages)) {
-    if (merged.directDownloadHealth[key]?.autoDisabled) {
-      merged.directDownloadPackages[key] = false;
+  const merged = { ...defaultThreadSetting };
+  for (const key of Object.keys(defaultThreadSetting)) {
+    if (Object.prototype.hasOwnProperty.call(source, key)) {
+      merged[key] = source[key];
     }
   }
   return merged;
+}
+
+function sanitizeAddonsSettings(value) {
+  const source = normalizeObject(value);
+  const byAddonSource = normalizeObject(source.byAddon);
+  const installedMetaSource = normalizeObject(source.installedMeta);
+  const trustedIdsSource = normalizeArray(source.trustedIds);
+  const byAddon = {};
+  const installedMeta = {};
+  const sanitizedTrustedIds = [
+    ...new Set(
+      trustedIdsSource
+        .map((entry) =>
+          String(entry || "")
+            .trim()
+            .replace(/[^a-z0-9_-]+/gi, "-")
+            .replace(/^-+|-+$/g, "")
+            .toLowerCase(),
+        )
+        .filter(Boolean),
+    ),
+  ];
+
+  const trustedIds =
+    sanitizedTrustedIds.length > 0 ? sanitizedTrustedIds : [...defaultAddonsSettings.trustedIds];
+
+  for (const [addonId, addonData] of Object.entries(byAddonSource)) {
+    const normalizedAddonId = String(addonId || "")
+      .trim()
+      .replace(/[^a-z0-9_-]+/gi, "-")
+      .replace(/^-+|-+$/g, "")
+      .toLowerCase();
+    if (!normalizedAddonId) continue;
+
+    const entry = normalizeObject(addonData);
+    byAddon[normalizedAddonId] = {
+      state: normalizeObject(entry.state),
+    };
+  }
+
+  for (const [addonId, metaValue] of Object.entries(installedMetaSource)) {
+    const normalizedAddonId = String(addonId || "")
+      .trim()
+      .replace(/[^a-z0-9_-]+/gi, "-")
+      .replace(/^-+|-+$/g, "")
+      .toLowerCase();
+    if (!normalizedAddonId) continue;
+
+    const meta = normalizeObject(metaValue);
+    const lastSeenAt = Number(meta.lastSeenAt || 0);
+    const installedSeenAt = Number(meta.installedSeenAt || 0);
+
+    installedMeta[normalizedAddonId] = {
+      name: String(meta.name || "").trim(),
+      version: String(meta.version || "").trim(),
+      installedSeenAt: Number.isFinite(installedSeenAt) ? installedSeenAt : 0,
+      lastSeenAt: Number.isFinite(lastSeenAt) ? lastSeenAt : 0,
+    };
+  }
+
+  return {
+    ...defaultAddonsSettings,
+    trustedIds,
+    byAddon,
+    installedMeta,
+  };
 }
 
 function sanitizePersistedUpdate(key, value) {
@@ -83,8 +124,8 @@ function sanitizePersistedUpdate(key, value) {
       return { ...defaultGlobalSettings, ...normalizeObject(value) };
     case "metrics":
       return { ...defaultMetrics, ...normalizeObject(value) };
-    case "processingDownload":
-      return normalizeProcessingDownloadTrigger(value);
+    case "addons":
+      return sanitizeAddonsSettings(value);
     default:
       return value;
   }
@@ -128,8 +169,6 @@ export async function saveConfigKeys(updates) {
   return { saved, failed };
 }
 
-// Violentmonkey/Tampermonkey/Greasemonkey differ slightly in storage APIs.
-// Prefer bulk `GM.getValues` if available; otherwise fall back to per-key `GM.getValue`.
 async function loadRawStorage(keys) {
   if (typeof GM.getValues === "function") {
     return (await GM.getValues(keys)) ?? {};
@@ -146,7 +185,6 @@ async function loadRawStorage(keys) {
   return Object.fromEntries(entries.filter(([, v]) => v !== undefined));
 }
 
-// Deep merge saved values into defaults, ignoring unknown keys.
 function mergeWithDefault(saved, defaultObj) {
   const source = normalizeObject(saved);
   const result = { ...defaultObj };
@@ -159,27 +197,10 @@ function mergeWithDefault(saved, defaultObj) {
 export async function loadData() {
   let parsed = {};
   try {
-    parsed = await loadRawStorage(Object.keys(config));
+    parsed = await loadRawStorage([...Object.keys(config), ...LEGACY_STORAGE_KEYS]);
+    parsed = await migrateLegacyConfigPayload(parsed);
   } catch (e) {
     debugLog("loadData", `Error loading data: ${e}`);
-  }
-
-  const hasLegacyProcessingDownload = typeof parsed.processingDownload === "boolean";
-  let processingDownload = normalizeProcessingDownloadTrigger(parsed.processingDownload);
-  if (hasLegacyProcessingDownload) {
-    try {
-      await GM.setValue("processingDownload", processingDownload);
-    } catch {
-      // best-effort migration write
-    }
-  }
-  if (processingDownload.active && !isProcessingDownloadTriggerActive(processingDownload)) {
-    processingDownload = createInactiveProcessingDownloadTrigger();
-    try {
-      await GM.setValue("processingDownload", processingDownload);
-    } catch {
-      // best-effort migration cleanup
-    }
   }
 
   const result = {
@@ -193,22 +214,10 @@ export async function loadData() {
     latestSettings: mergeWithDefault(parsed.latestSettings, defaultLatestSettings),
     globalSettings: mergeWithDefault(parsed.globalSettings, defaultGlobalSettings),
     metrics: mergeWithDefault(parsed.metrics, defaultMetrics),
+    addons: sanitizeAddonsSettings(parsed.addons),
     savedNotifID: parsed.savedNotifID || null,
-    processingDownload,
   };
 
-  // --- Data Migration & Safety Checks ---
-
-  // Migrate old flat `minVersion` to `latestSettings.minVersion`.
-  // This runs if a user has an old config with `minVersion` but `latestSettings` from storage lacks it.
-  if (
-    typeof parsed.minVersion === "number" &&
-    (!parsed.latestSettings || typeof parsed.latestSettings.minVersion === "undefined")
-  ) {
-    result.latestSettings.minVersion = parsed.minVersion;
-  }
-
-  // Final safety check: ensure latestSettings has a valid minVersion.
   if (typeof result.latestSettings.minVersion !== "number") {
     result.latestSettings.minVersion = defaultLatestSettings.minVersion;
   }

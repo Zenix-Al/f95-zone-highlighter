@@ -1,6 +1,5 @@
 import createStateManager from "./core/StateManager.js";
 import TIMINGS from "./config/timings.js";
-import { createInactiveProcessingDownloadTrigger } from "./utils/processingDownloadTrigger.js";
 
 export const validVersions = ["full", "final"];
 
@@ -30,36 +29,6 @@ export const defaultOverlaySettings = {
   overlayText: true,
 };
 
-export const defaultDirectDownloadPackages = {
-  buzzheavier: true,
-  gofile: true,
-  pixeldrain: true,
-  datanodes: true,
-  workupload: true,
-  qiwi: true,
-  krakenfiles: true,
-  mega: true,
-  mediafire: true,
-};
-
-export function createDefaultDirectDownloadHostHealth() {
-  return {
-    failCount: 0,
-    autoDisabled: false,
-    noticeDismissed: false,
-    lastError: "",
-    updatedAt: 0,
-  };
-}
-
-export function createDefaultDirectDownloadHealth(packageTemplate = defaultDirectDownloadPackages) {
-  const result = {};
-  for (const key of Object.keys(packageTemplate || {})) {
-    result[key] = createDefaultDirectDownloadHostHealth();
-  }
-  return result;
-}
-
 export const defaultThreadSetting = {
   marked: true,
   preferred: true,
@@ -67,13 +36,8 @@ export const defaultThreadSetting = {
   excluded: true,
   excludedShadow: true,
   isWide: false,
-  imgRetry: false,
-  skipMaskedLink: true,
   collapseSignature: false,
   threadOverlayToggle: true,
-  directDownloadLinks: true,
-  directDownloadPackages: { ...defaultDirectDownloadPackages },
-  directDownloadHealth: createDefaultDirectDownloadHealth(),
 };
 
 export const defaultLatestSettings = {
@@ -99,6 +63,13 @@ export const defaultGlobalSettings = {
   configVisibility: true,
   closeNotifOnClick: true,
   enableCrossTabSync: false,
+  allowUntrustedAddons: false,
+};
+
+export const defaultAddonsSettings = {
+  trustedIds: ["image-repair-addon", "masked-direct-addon"],
+  byAddon: {},
+  installedMeta: {},
 };
 
 export const defaultMetrics = {
@@ -124,8 +95,12 @@ export let config = {
   globalSettings: { ...defaultGlobalSettings },
   latestSettings: { ...defaultLatestSettings },
   metrics: { ...defaultMetrics },
+  addons: {
+    trustedIds: [...defaultAddonsSettings.trustedIds],
+    byAddon: { ...defaultAddonsSettings.byAddon },
+    installedMeta: { ...defaultAddonsSettings.installedMeta },
+  },
   savedNotifID: null,
-  processingDownload: createInactiveProcessingDownloadTrigger(),
 };
 
 // This object holds the script's temporary, in-memory state.
@@ -135,6 +110,10 @@ export let config = {
 const runtimeState = {
   shadowRoot: null,
   modalInjected: false,
+  settingsUiPrefsLoaded: false,
+  settingsActivePanel: "settings-panel-general",
+  settingsPinnedAddonIds: [],
+  registeredAddons: [],
   tagsUpdateStatus: "IDLE",
   globalSettingsRendered: false,
   colorRendered: false,
@@ -144,8 +123,6 @@ const runtimeState = {
   isThread: false,
   isLatest: false,
   isDownloadPage: false,
-  isDirectDownloadPage: false,
-  isImgRetryInjected: false,
   isF95Zone: false,
   firstLoad: true,
   isMaskedLink: false,
@@ -156,7 +133,6 @@ const runtimeState = {
   isNoticeDismissalEnabled: false,
   isRecaptchaFrame: false,
   latestOverlayStatus: "IDLE",
-  processingDownload: false,
 };
 
 const stateManager = createStateManager(runtimeState, {
@@ -178,44 +154,7 @@ export const crossTabKeys = {
   overlaySettings: true,
   threadSettings: true,
   latestSettings: true,
-};
-
-// clickType controls thread-click route.
-// pageHandler selects host page automation in fileHostHelper.
-export const downloadHostConfigs = {
-  "buzzheavier.com": {
-    packageKey: "buzzheavier",
-    clickType: "iframe",
-    pageHandler: "buzzheavier.com",
-    handlerConfig: {
-      btn: 'a[hx-get*="/download"]',
-      directDownloadLink: /https:\/\/trashbytes\.net\/dl\/[\w-]+(?:\?.+)?/,
-    },
-  },
-  "gofile.io": {
-    packageKey: "gofile",
-    clickType: "normal",
-    pageHandler: "gofile.io",
-  },
-  "api.gofile.com": {
-    packageKey: "gofile",
-    clickType: "normal",
-  },
-  "pixeldrain.com": {
-    packageKey: "pixeldrain",
-    clickType: "normal",
-    pageHandler: "pixeldrain.com",
-  },
-  "datanodes.to": {
-    packageKey: "datanodes",
-    clickType: "normal",
-    pageHandler: "datanodes.to",
-  },
-  "trashbytes.net": {
-    packageKey: "buzzheavier",
-    pageType: "auto-retry",
-    pathStartsWith: "/dl/",
-  },
+  addons: true,
 };
 
 export const cache = new Map();
@@ -250,7 +189,6 @@ export const helpMessages = [
   "stay hydrated, stay horny",
   "hover over options text to see detailed settings",
   "overlay colors can be customized in the color settings section",
-  "direct download links are available in thread view for supported hosts",
   "not all links are masked",
   "enable cross-tab sync to keep settings consistent across tabs(experimental)",
   "auto-refresh in latest view is just clicking the website own feature",

@@ -1,6 +1,7 @@
 import { openConfigTransferDialog } from "../../features/config-transfer/index.js";
 import { toggleNoticeDismissal } from "../../features/dismiss-notification";
 import { crossTabSyncFeature } from "../../services/syncService";
+import { refreshAddonSecurityPolicies } from "../../services/addonsService.js";
 import { updateButtonVisibility } from "../components/configButton";
 import { createEnabledDisabledToast, createToggleSetting } from "./metaFactory";
 import { showFeatureHealthBox } from "../components/featureHealth/index.js";
@@ -35,6 +36,19 @@ export const globalSettingsMeta = {
     },
     toast: createEnabledDisabledToast("(experimental)Cross-tab settings sync"),
   }),
+  allowUntrustedAddons: createToggleSetting({
+    text: "Allow untrusted add-ons (limited API)",
+    tooltip:
+      "Untrusted add-ons can run with limited permissions (no observer access). Trusted add-ons still get full declared capabilities.",
+    config: "globalSettings.allowUntrustedAddons",
+    custom: () => {
+      refreshAddonSecurityPolicies();
+    },
+    toast: createEnabledDisabledToast("Untrusted add-ons", {
+      enabled: "allowed with limited API",
+      disabled: "blocked unless trusted",
+    }),
+  }),
   configTransfer: {
     type: "button",
     text: "Import / export settings",
@@ -46,7 +60,7 @@ export const globalSettingsMeta = {
     type: "button",
     text: "Feature health",
     buttonText: "Run check",
-    tooltip: "Run a diagnostic that reports feature running/disabled/failing states",
+    tooltip: "Run a diagnostic that reports feature and installed add-on health states",
     onClick: () => {
       try {
         showFeatureHealthBox();

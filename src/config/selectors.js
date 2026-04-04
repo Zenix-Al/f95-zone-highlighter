@@ -22,13 +22,6 @@ export const SELECTORS = {
     ITEMS_LIST: "#filemanager_itemslist",
     ALERT: "#filemanager_alert",
   },
-  BUZZHEAVIER: {
-    DOWNLOAD_BUTTON_CANDIDATES: [
-      'a[hx-get*="/download"]',
-      'a[data-hx-get*="/download"]',
-      'a[href*="/download"]',
-    ],
-  },
   PIXELDRAIN: {
     DOWNLOAD_BUTTON_CANDIDATES: [
       "div.description button.button_highlight",
@@ -67,11 +60,6 @@ export const SELECTORS = {
       CAPTCHA: "captcha",
       ERROR: "error",
     },
-  },
-  IMAGE_REPAIR: {
-    TOAST_ID: "img-retry-toast",
-    WRAPPER_ID: "image-retry-toast-wrapper",
-    TOAST_CLASS: ".img-retry-toast",
   },
   LATEST_CONTROL: {
     IDS: {

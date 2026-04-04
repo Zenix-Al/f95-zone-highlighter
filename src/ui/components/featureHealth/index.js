@@ -2,6 +2,7 @@ import { createEl } from "../../../core/dom.js";
 import { showToast } from "../../components/toast";
 import { getRuntimeErrors, getAllFeatureStatuses } from "../../../core/featureHealth.js";
 import stateManager from "../../../config.js";
+import { listKnownAddons } from "../../../services/addonsService.js";
 
 async function copyTextToClipboard(text) {
   if (!text) return false;
@@ -31,6 +32,27 @@ async function copyTextToClipboard(text) {
 export function showFeatureHealthBox(providedStatuses, providedReportText) {
   try {
     const statuses = providedStatuses || getAllFeatureStatuses();
+    const addonEntries = getInstalledAddonHealthEntries();
+
+    function getInstalledAddonHealthEntries() {
+      try {
+        return listKnownAddons()
+          .filter((addon) => addon && addon.status !== "not-installed")
+          .map((addon) => ({
+            id: String(addon.id || "").trim(),
+            name: String(addon.name || addon.id || "Unknown Add-on").trim(),
+            status: String(addon.status || "unknown").trim() || "unknown",
+            statusMessage: String(addon.statusMessage || "").trim(),
+            activeOnPage: Boolean(addon.activeOnPage),
+            supportsCurrentPage: addon.supportsCurrentPage !== false,
+            blocked: Boolean(addon.blocked),
+            trusted: Boolean(addon.trusted),
+          }))
+          .sort((a, b) => a.name.localeCompare(b.name));
+      } catch {
+        return [];
+      }
+    }
 
     function summarizeFeatureStatuses(statusesArg) {
       const counts = { running: 0, disabled: 0, failing: 0, unknown: 0 };
@@ -42,12 +64,45 @@ export function showFeatureHealthBox(providedStatuses, providedReportText) {
       return counts;
     }
 
-    function formatFeatureHealthReport(statusesArg, countsArg) {
+    function summarizeAddons(entries) {
+      const counts = {
+        totalInstalled: entries.length,
+        installed: 0,
+        disabled: 0,
+        "needs-update": 0,
+        error: 0,
+        broken: 0,
+        unknown: 0,
+        activeOnPage: 0,
+        scopeMatchesPage: 0,
+      };
+
+      for (const addon of entries) {
+        const status = addon?.status || "unknown";
+        if (Object.prototype.hasOwnProperty.call(counts, status)) {
+          counts[status] += 1;
+        } else {
+          counts.unknown += 1;
+        }
+        if (addon.activeOnPage) counts.activeOnPage += 1;
+        if (addon.supportsCurrentPage) counts.scopeMatchesPage += 1;
+      }
+
+      return {
+        ...counts,
+        healthy: counts.installed + counts.disabled,
+        failing: counts.error + counts.broken,
+        degraded: counts["needs-update"],
+      };
+    }
+
+    function formatFeatureHealthReport(statusesArg, countsArg, addonEntriesArg, addonCountsArg) {
       const lines = [
         "Feature Health Diagnostic",
         `Timestamp: ${new Date().toISOString()}`,
         `Page: ${window.location.href}`,
         `Summary: running=${countsArg.running}, disabled=${countsArg.disabled}, failing=${countsArg.failing}, unknown=${countsArg.unknown}`,
+        `Add-ons (installed): total=${addonCountsArg.totalInstalled}, healthy=${addonCountsArg.healthy}, failing=${addonCountsArg.failing}, degraded=${addonCountsArg.degraded}, scoped-to-page=${addonCountsArg.scopeMatchesPage}, active-here=${addonCountsArg.activeOnPage}`,
         "",
       ];
 
@@ -76,13 +131,33 @@ export function showFeatureHealthBox(providedStatuses, providedReportText) {
         }
       }
 
+      lines.push("");
+      lines.push("Add-on Health (installed only):");
+      if (addonEntriesArg.length === 0) {
+        lines.push("No installed add-ons detected.");
+      } else {
+        for (const addon of addonEntriesArg) {
+          const statusBits = [];
+          statusBits.push(addon.activeOnPage ? "active-here" : "inactive-here");
+          statusBits.push(addon.supportsCurrentPage ? "scope-match" : "scope-mismatch");
+          statusBits.push(addon.trusted ? "trusted" : "untrusted");
+          if (addon.blocked) statusBits.push("blocked");
+          const details = addon.statusMessage ? ` - ${addon.statusMessage}` : "";
+          lines.push(
+            `${addon.name} (${addon.id}): ${addon.status} [${statusBits.join(", ")}]${details}`,
+          );
+        }
+      }
+
       return lines.join("\n");
     }
 
     const counts = summarizeFeatureStatuses(statuses);
-    const reportText = providedReportText || formatFeatureHealthReport(statuses, counts);
+    const addonCounts = summarizeAddons(addonEntries);
+    const reportText =
+      providedReportText || formatFeatureHealthReport(statuses, counts, addonEntries, addonCounts);
     showToast(
-      `Feature health - running: ${counts.running}, disabled: ${counts.disabled}, failing: ${counts.failing}, unknown: ${counts.unknown}`,
+      `Feature health - running: ${counts.running}, disabled: ${counts.disabled}, failing: ${counts.failing}, unknown: ${counts.unknown} | add-ons installed: ${addonCounts.totalInstalled}, healthy: ${addonCounts.healthy}, failing: ${addonCounts.failing}, degraded: ${addonCounts.degraded}`,
     );
 
     const shadow = stateManager.get("shadowRoot") || window.__LATEST_HIGHLIGHTER_SHADOW__ || null;
@@ -143,7 +218,7 @@ export function showFeatureHealthBox(providedStatuses, providedReportText) {
       return boxEl;
     }
 
-    function renderContent(boxEl, statusesArg) {
+    function renderContent(boxEl, statusesArg, addonEntriesArg) {
       const content = boxEl.querySelector(".feature-health-content");
       content.innerHTML = "";
 
@@ -183,10 +258,46 @@ export function showFeatureHealthBox(providedStatuses, providedReportText) {
           );
         }
       }
+
+      content.appendChild(
+        createEl("div", {
+          className: "feature-health-line feature-health-sep",
+          text: `Add-on health (installed only: ${addonEntriesArg.length})`,
+        }),
+      );
+
+      if (addonEntriesArg.length === 0) {
+        content.appendChild(
+          createEl("div", {
+            className: "feature-health-line",
+            text: "No installed add-ons detected.",
+          }),
+        );
+        return;
+      }
+
+      for (const addon of addonEntriesArg) {
+        const tags = [];
+        tags.push(addon.activeOnPage ? "active-here" : "inactive-here");
+        tags.push(addon.supportsCurrentPage ? "scope-match" : "scope-mismatch");
+        if (addon.blocked) tags.push("blocked");
+
+        const lineClass =
+          addon.status === "error" || addon.status === "broken"
+            ? "feature-health-line feature-health-error"
+            : "feature-health-line";
+        const details = addon.statusMessage ? ` - ${addon.statusMessage}` : "";
+        content.appendChild(
+          createEl("div", {
+            className: lineClass,
+            text: `${addon.name}: ${addon.status} [${tags.join(", ")}]${details}`,
+          }),
+        );
+      }
     }
 
     const box = ensureBox();
-    renderContent(box, statuses || {});
+    renderContent(box, statuses || {}, addonEntries);
     if (reportText) box.dataset.copyPayload = reportText;
     box.style.display = "block";
     return box;
