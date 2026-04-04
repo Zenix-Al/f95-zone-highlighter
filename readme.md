@@ -110,6 +110,9 @@ npm install
 
 ```bash
 npm run build
+npm run build:release
+npm run build:addons
+npm run build:addons:release
 npm run lint
 npm run lint:fix
 npm run test
@@ -124,6 +127,82 @@ npm run test
 - Auto-bumps version from `version.json`.
   - Default bump: patch
   - Optional: `npm run build -- --minor` or `npm run build -- --major`
+
+### Add-on build behavior
+
+- `npm run build:addons` builds add-ons in regular mode.
+- `npm run build:addons:release` builds add-ons in release mode (minified output).
+- Add-on builds now use change detection and skip unchanged add-ons automatically.
+- Add-on versioning is independent from the main script and stored in `addons/version.json`.
+- Add-on build cache is stored in `addons/.build-cache.json`.
+
+Optional add-on build flags:
+
+```bash
+# bump level (default: patch)
+npm run build:addons -- --minor
+npm run build:addons:release -- --major
+
+# force rebuild even if unchanged
+npm run build:addons -- --force
+
+# build one add-on by id
+node addons/build-addon.js library-addon
+node addons/build-addon.js library-addon --release
+```
+
+## Add-on System
+
+Add-ons are declared in `addons/addons.manifest.json` and built by `addons/build-addon.js`.
+
+Each add-on manifest entry defines:
+
+- `id`, `name`, `description`, `author`
+- `entry`, `outfile`
+- `matches`, `grants`, `runAt`
+- `requiresCore`
+- `capabilities`
+
+Capability-gated core actions are exposed through the add-on bridge (for example: `toast`, `storage`, `idb`, `ui`).
+
+## Library Add-on Guide
+
+### What it does
+
+- Saves thread snapshots into personal IndexedDB-backed records.
+- Adds page dock controls on thread pages (`Save/Remove`, `Open Library`).
+- Provides a dedicated Library Manager modal for bulk operations.
+
+### Library Manager features
+
+- Search, status filter, sort, paging, multi-select.
+- Bulk actions: set status, remove selected, clear selection.
+- Import/export with preview confirmation before import.
+- In-modal toasts and confirmation dialog (non-blocking, no native alert/confirm).
+- Details Editor with editable note/status/score/pin and read-only identity fields.
+- Thread-aware refresh: `Update from This Thread` appears only when active row matches the current thread page.
+- Version tracking column (`Version`) and user rating column (`Rating`) in the table.
+
+### Advanced search tokens (Library Manager)
+
+You can mix plain text with tokens:
+
+- `tag:ntr`
+- `status:playing`
+- `score>=8` (also supports `>`, `<`, `<=`, `=`)
+- `pinned` / `unpinned`
+- `has:note` / `has:no-note`
+- `id:12345`
+
+## Versioning Policy
+
+This repo follows semantic versioning for the main script.
+
+- Use **patch** for bug fixes and internal improvements with no behavior breaks.
+- Use **minor** for backward-compatible new features and UX additions.
+- Use **major** only for breaking changes (config schema breaks, removed behavior users rely on, incompatible public add-on/runtime contracts).
+
+Given the current changes (new add-on features and builder improvements without breaking existing user config/runtime contracts), the main script should stay on **v4** and continue with **minor/patch** bumps.
 
 ## How To Add A New Feature
 

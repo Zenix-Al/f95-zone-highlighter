@@ -1,7 +1,6 @@
 import stateManager from "../config.js";
 import { debugLog } from "./logger.js";
 import TIMINGS from "../config/timings.js";
-import { getDirectDownloadHostContext } from "../features/direct-download/hostPackages.js";
 
 export function waitFor(
   conditionFn,
@@ -41,24 +40,10 @@ export function detectPage() {
   ) {
     // Check if we are inside a reCaptcha iframe
     stateManager.set("isRecaptchaFrame", true);
-  } else {
-    const currentHost = location.hostname;
-    const currentPath = location.pathname;
-    const hostContext = getDirectDownloadHostContext(currentHost, { requireEnabled: true });
-    if (!hostContext) return;
-
-    const { config: hostConfig, host: hostKey } = hostContext;
-    if (hostConfig.pageHandler) stateManager.set("isDownloadPage", hostConfig.pageHandler);
-
-    const isAutoRetry =
-      hostConfig.pageType === "auto-retry" &&
-      typeof hostConfig.pathStartsWith === "string" &&
-      currentPath.startsWith(hostConfig.pathStartsWith);
-    if (isAutoRetry) stateManager.set("isDirectDownloadPage", hostKey);
   }
   debugLog(
     "PageDetect",
-    `isF95Zone: ${stateManager.get("isF95Zone")}, isThread: ${stateManager.get("isThread")}, isLatest: ${stateManager.get("isLatest")}, isMaskedLink: ${stateManager.get("isMaskedLink")}, isDownloadPage: ${stateManager.get("isDownloadPage")}, isDirectDownloadPage: ${stateManager.get("isDirectDownloadPage")}, isRecaptchaFrame: ${stateManager.get("isRecaptchaFrame")}`,
+    `isF95Zone: ${stateManager.get("isF95Zone")}, isThread: ${stateManager.get("isThread")}, isLatest: ${stateManager.get("isLatest")}, isMaskedLink: ${stateManager.get("isMaskedLink")}, isDownloadPage: ${stateManager.get("isDownloadPage")}, isRecaptchaFrame: ${stateManager.get("isRecaptchaFrame")}`,
   );
 }
 export function waitForBody(callback) {

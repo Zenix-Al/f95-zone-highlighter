@@ -1,6 +1,8 @@
 import { config } from "./config.js";
 import { loadData } from "./services/settingsService";
+import { initAddonsConsoleBridge } from "./services/addonsService.js";
 import { detectPage, waitForBody } from "./core/dom";
+import { createBootstrapFailureHandler, runBootstrapPipeline } from "./core/bootstrap.js";
 
 import { initUiPhaseIfApplicable } from "./ui";
 import { loadFeatures } from "./loader";
@@ -14,48 +16,41 @@ function registerGlobalTeardownHooks() {
   );
 }
 
-function logBootstrapError(step, err) {
-  console.error(`[Bootstrap] ${step} failed:`, err);
-}
-
-async function runBootstrapStep(step, fn, fallbackValue = undefined) {
-  try {
-    return await fn();
-  } catch (err) {
-    logBootstrapError(step, err);
-    return fallbackValue;
-  }
-}
-
 async function bootstrap() {
-  await runBootstrapStep("registerGlobalTeardownHooks", async () => {
-    registerGlobalTeardownHooks();
-  });
-
-  // --- Load user config ---
-  const loadedConfig = await runBootstrapStep("loadData", loadData, null);
-  if (loadedConfig && typeof loadedConfig === "object") {
-    Object.assign(config, loadedConfig);
-  }
-
-  // --- Detect page type/state ---
-  await runBootstrapStep("detectPage", async () => {
-    detectPage();
-  });
-
-  // --- Initialize UI phase ---
-  await runBootstrapStep("initUiPhaseIfApplicable", async () => {
-    initUiPhaseIfApplicable();
-  });
-
-  // --- Execute Page-specific functionality ---
-  await runBootstrapStep("loadFeatures", async () => {
-    loadFeatures();
-  });
+  await runBootstrapPipeline([
+    {
+      name: "registerGlobalTeardownHooks",
+      run: () => registerGlobalTeardownHooks(),
+    },
+    {
+      name: "loadData",
+      run: loadData,
+      fallbackValue: null,
+      onResult: (loadedConfig) => {
+        if (loadedConfig && typeof loadedConfig === "object") {
+          Object.assign(config, loadedConfig);
+        }
+      },
+    },
+    {
+      name: "detectPage",
+      run: () => detectPage(),
+    },
+    {
+      name: "initUiPhaseIfApplicable",
+      run: () => initUiPhaseIfApplicable(),
+    },
+    {
+      name: "initAddonsConsoleBridge",
+      run: () => initAddonsConsoleBridge(),
+    },
+    {
+      name: "loadFeatures",
+      run: () => loadFeatures(),
+    },
+  ]);
 }
 
 waitForBody(() => {
-  void bootstrap().catch((err) => {
-    logBootstrapError("bootstrap", err);
-  });
+  void bootstrap().catch(createBootstrapFailureHandler("bootstrap"));
 });

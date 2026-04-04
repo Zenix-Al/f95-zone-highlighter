@@ -1,5 +1,25 @@
 # Changelog
 
+### **[v4.15.0 - Add-on Foundation & Modern Settings UI]**
+
+This release focuses on core architecture changes to support add-ons cleanly, plus a modernized settings experience that is now designed around those add-ons.
+
+**Core Changes**
+
+- **Add-on support introduced in core:** Added the base add-on registry/service pipeline so trusted add-ons can be discovered, initialized, controlled, and surfaced through the core UI.
+- **Feature migration to add-ons:** Moved major optional feature stacks out of core and into add-ons, including **Image Repair** and **Direct Download** (with related host helpers/handlers), reducing core bloat and improving separation of concerns.
+- **Build and release workflow expanded:** Core and add-on build flows are now aligned so release output remains readable while still optimized, and add-ons can be built/released as first-class artifacts.
+
+**UI / UX Changes**
+
+- **Settings UI refreshed for add-ons:** Reworked the settings shell to a more modern layout with sidebar navigation, dedicated Add-ons section, and better panel-level organization.
+- **Add-on-aware controls:** Added add-on status badges, page-activity indicators, pinning shortcuts, panel actions, and safer in-UI feedback patterns (toast/confirm) to support extension-style workflows.
+- **Library Manager and modal polish:** Improved modal sizing/structure, cleaner control grouping, improved search/filter flows, and clearer detail/edit states for add-on-driven tools.
+
+**Add-ons (Scope Note)**
+
+- This version mainly establishes **add-on initialization and integration hooks** from core; add-on-specific feature expansion will continue in later versions.
+
 ### **[v4.14.14 - Tag Update Reliability Patch]**
 
 This is a small bugfix release focused on improving the reliability of tag updates and search results in the settings modal. It addresses issues with the previous implementation where tag updates target elements misbehave because of short sight or site ui changes, and ensures the tag search results container shows/hides correctly based on the search query.
