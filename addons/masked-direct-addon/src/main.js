@@ -1,4 +1,4 @@
-/* global __ADDON_ID__, __ADDON_CAPABILITIES__, __ADDON_REQUIRES_CORE__, GM_openInTab, GM, GM_addValueChangeListener, GM_removeValueChangeListener, grecaptcha */
+/* global __ADDON_ID__, __ADDON_NAME__, __ADDON_VERSION__, __ADDON_DESCRIPTION__, __ADDON_CAPABILITIES__, __ADDON_REQUIRES_CORE__, GM_openInTab, GM, GM_addValueChangeListener, GM_removeValueChangeListener, grecaptcha */
 import { createCoreBridge } from "./coreBridge.js";
 import {
   ADDON_COMMAND_EVENT,
@@ -24,6 +24,13 @@ import { processBuzzheavierDownload } from "./hosts/buzzheavier.js";
 
 const runtime = {
   addonId: typeof __ADDON_ID__ === "string" ? __ADDON_ID__ : "masked-direct-addon",
+  addonName:
+    typeof __ADDON_NAME__ === "string" ? __ADDON_NAME__ : "Masked + Direct Download Add-on",
+  addonVersion: typeof __ADDON_VERSION__ === "string" ? __ADDON_VERSION__ : "0.1.0",
+  addonDescription:
+    typeof __ADDON_DESCRIPTION__ === "string"
+      ? __ADDON_DESCRIPTION__
+      : "Combines masked-link skipper with direct-download routing and host handlers.",
   capabilities: Array.isArray(__ADDON_CAPABILITIES__) ? __ADDON_CAPABILITIES__ : [],
   requiresCore: Boolean(__ADDON_REQUIRES_CORE__),
 };
@@ -37,6 +44,7 @@ let teardownFns = [];
 let settingsCache = null;
 let settingsCacheTs = 0;
 let addonCommandHandlerBound = false;
+let addonCommandHandler = null;
 const ADDON_SETTINGS_KEY = "settings";
 const ADDON_SETTINGS_DEFAULT = Object.freeze({
   skipMaskedLink: true,
@@ -165,7 +173,6 @@ function getDownloadHost() {
   const host = String(location.hostname || "").toLowerCase();
   if (host.includes("buzzheavier.com")) return "buzzheavier.com";
   if (host.includes("gofile.io")) return "gofile.io";
-  if (host.includes("api.gofile.com")) return "api.gofile.com";
   if (host.includes("pixeldrain.com")) return "pixeldrain.com";
   if (host.includes("datanodes.to")) return "datanodes.to";
   return "";
@@ -275,7 +282,7 @@ function enableDirectDownloadAttentionListener() {
 function isHostAllowedInSettings(hostname, flags) {
   const packages = flags?.directDownloadPackages;
   if (!packages || typeof packages !== "object") return true;
-  if (hostname.includes("gofile.io") || hostname.includes("api.gofile.com")) {
+  if (hostname.includes("gofile.io")) {
     return packages.gofile !== false;
   }
   if (hostname.includes("buzzheavier.com")) {
@@ -328,7 +335,6 @@ function routeToDirectDownload(url) {
   const isSupportedHost =
     host.includes("buzzheavier.com") ||
     host.includes("gofile.io") ||
-    host.includes("api.gofile.com") ||
     host.includes("pixeldrain.com") ||
     host.includes("datanodes.to");
   let safeUrl = isSupportedHost ? withAutomationMarker(normalized) : normalized;
@@ -588,7 +594,8 @@ async function handleThreadResolveClick(event) {
 }
 
 function enableThreadHooks() {
-  ui.ensureButtonStyle();
+  // Ensure button style is available (local fallback in case core registration delays)
+  ui.ensureLocalButtonStyle();
   enableDirectDownloadAttentionListener();
 
   const onClick = (event) => {
@@ -732,8 +739,6 @@ async function runDownloadPageHooks() {
     "pixeldrain.com": () =>
       processPixeldrainDownload({ debugLog, showToast, notifyMainFailure, reportAddonHealthy }),
     "gofile.io": () => processGofileDownload({ showToast, notifyMainFailure, reportAddonHealthy }),
-    "api.gofile.com": () =>
-      processGofileDownload({ showToast, notifyMainFailure, reportAddonHealthy }),
     "datanodes.to": () =>
       processDatanodesDownload({
         showToast,
@@ -795,13 +800,12 @@ function registerAddon() {
   bridge.dispatchCoreCommand("register", {
     addon: {
       id: runtime.addonId,
-      name: "Masked + Direct Download Add-on",
-      version: "0.1.0",
-      description:
-        "Combines masked-link skipper with direct-download routing and download-host handlers.",
+      name: runtime.addonName,
+      version: runtime.addonVersion,
+      description: runtime.addonDescription,
       status: isEnabled ? "installed" : "disabled",
       statusMessage: statusMessage(),
-      panelTitle: "Masked + Direct Download Add-on",
+      panelTitle: runtime.addonName,
       panelBody:
         "This add-on provides masked-link Resolve buttons and direct-download page handling for supported hosts.",
       panelSettingsTitle: "Direct Download Settings",
@@ -834,16 +838,57 @@ function storageSet(key, value) {
   return bridge.invokeCoreAction("storage.set", { key, value });
 }
 
-function setEnabled(nextEnabled) {
+async function registerUiStyle() {
+  try {
+    const result = await bridge.invokeCoreAction("ui.style.register", {
+      styleId: ui.styleId,
+      cssText: ui.cssText,
+    });
+    if (!result?.ok) {
+      console.warn(`[${runtime.addonId}] Failed to register UI style:`, result);
+    }
+  } catch (err) {
+    console.warn(`[${runtime.addonId}] Error registering UI style:`, err);
+  }
+}
+
+async function unregisterUiStyle() {
+  try {
+    const result = await bridge.invokeCoreAction("ui.style.unregister", {
+      styleId: ui.styleId,
+    });
+    if (!result?.ok) {
+      console.warn(`[${runtime.addonId}] Failed to unregister UI style:`, result);
+    }
+  } catch (err) {
+    console.warn(`[${runtime.addonId}] Error unregistering UI style:`, err);
+  }
+}
+
+async function setEnabled(nextEnabled) {
   if (isBlockedByCore) {
     isEnabled = false;
-    pushStatusUpdate();
     clearTeardowns();
+    await unregisterUiStyle();
+    pushStatusUpdate();
     return;
   }
 
-  isEnabled = Boolean(nextEnabled);
-  void storageSet("enabled", isEnabled);
+  const shouldEnable = Boolean(nextEnabled);
+  if (shouldEnable && !isEnabled) {
+    // Enabling: register style first
+    await registerUiStyle();
+    isEnabled = true;
+  } else if (!shouldEnable && isEnabled) {
+    // Disabling: unregister style and clear hooks
+    isEnabled = false;
+    clearTeardowns();
+    await unregisterUiStyle();
+  } else {
+    isEnabled = Boolean(nextEnabled);
+  }
+
+  await storageSet("enabled", isEnabled);
   pushStatusUpdate();
   applyCurrentPageBehavior();
 }
@@ -851,33 +896,61 @@ function setEnabled(nextEnabled) {
 function bindAddonCommands() {
   if (addonCommandHandlerBound) return;
 
-  const handler = (event) => {
+  addonCommandHandler = (event) => {
     const detail = event?.detail || {};
     if (String(detail.addonId || "") !== runtime.addonId) return;
 
     const command = String(detail.command || "").trim();
     if (command === "enable") {
-      setEnabled(true);
+      void setEnabled(true);
     } else if (command === "disable") {
-      setEnabled(false);
+      void setEnabled(false);
     } else if (command === "refresh") {
       settingsCache = null;
       settingsCacheTs = 0;
       applyCurrentPageBehavior();
+    } else if (command === "teardown") {
+      void teardownAddon(String(detail.reason || "requested by core"));
     }
   };
 
-  window.addEventListener(ADDON_COMMAND_EVENT, handler);
+  window.addEventListener(ADDON_COMMAND_EVENT, addonCommandHandler);
   addonCommandHandlerBound = true;
+}
+
+function unbindAddonCommands() {
+  if (!addonCommandHandlerBound || !addonCommandHandler) return;
+  window.removeEventListener(ADDON_COMMAND_EVENT, addonCommandHandler);
+  addonCommandHandler = null;
+  addonCommandHandlerBound = false;
+}
+
+async function teardownAddon(reason) {
+  console.info(`[${runtime.addonId}] Teardown requested: ${reason}`);
+  isEnabled = false;
+  clearTeardowns();
+  await unregisterUiStyle();
+  unbindAddonCommands();
+  pushStatusUpdate();
+  
+  // Send teardown-complete to core
+  try {
+    bridge.dispatchCoreCommand("teardown-complete", {
+      addonId: runtime.addonId,
+      reason,
+    });
+  } catch {
+    // best effort
+  }
 }
 
 function installConsoleHelper() {
   window.__F95UE_MASKED_DIRECT_ADDON__ = {
     enable() {
-      setEnabled(true);
+      void setEnabled(true);
     },
     disable() {
-      setEnabled(false);
+      void setEnabled(false);
     },
     refresh() {
       settingsCache = null;
@@ -972,6 +1045,12 @@ async function bootstrap() {
     isEnabled = storedEnabled !== false && storedEnabled !== "false";
 
     installConsoleHelper();
+    
+    // If addon was previously enabled, register style before applying behavior
+    if (isEnabled) {
+      await registerUiStyle();
+    }
+    
     applyCurrentPageBehavior();
     pushStatusUpdate();
   } catch (err) {

@@ -1,12 +1,16 @@
 {
   "regular": {
-    "masked-direct-addon": "7397c0b185c13191d2b53367b64c358645b6ec73dc4b2ec6121bf331c69bcbca",
-    "image-repair-addon": "127a00f27797c2a3d0721c7b385dc48b31e977c048335b316a78f675aa320634",
-    "library-addon": "3611112781fa9e1453e2e98558e0171737bcc9056d09ca0989e68f72045dd4b7"
+    "masked-direct-addon": "b92ef8a44ff688592b546525e29473e980b469afea209b42781b52a645e773cb",
+    "image-repair-addon": "3797d37f7b9c1cc3e85b3265daeea4a75dc3849be98beb4976a5ac564c92c719",
+    "library-addon": "c359caabc83e81408691fec5bbafbbe34b403262d99c31cab1872642a8343cc9",
+    "latest-filters-addon": "337fb128d84f0045bd03b63b6c0e0879a31fb8a41959e4e174425c5ad0cfe390",
+    "halloween-theme-addon": "b91e72193ed38b82cc0b4886877297f4d75a2dd71852457fd8a2a4b4828281b2"
   },
   "release": {
-    "image-repair-addon": "27b82b4ac74dbeee478aacfa7a047708c20a44169b9bbfd388e0e92dbab4b0bf",
-    "masked-direct-addon": "63c695db989fe71b12abddead4a5d915aa837281bbd583293505a7f54acb32c6",
-    "library-addon": "40caed5016886a04d76380fb268e191455b057d51f49cb53aa312c619b18c721"
+    "image-repair-addon": "a9610c96e437ada1c2880bdd8b7384414a36737ca31e54b44c29347644f87ca7",
+    "masked-direct-addon": "eeffe83a971cea1a2519430454d04290c59b057a0a5014b2d9e7d4528e37777b",
+    "library-addon": "ec409ed6c1745f4c09030a2bd8d4c834b5d249c13600dfa75787bca913909a38",
+    "latest-filters-addon": "7132c46ea496e7a7da156cf003ecd3849f5ea2f2a418ab866f7aeb48d6ba5ef4",
+    "halloween-theme-addon": "00839a3b20a9b72a6f21fdd7e36756dbbd413ce3716aa0d65c1b44d603918262"
   }
 }

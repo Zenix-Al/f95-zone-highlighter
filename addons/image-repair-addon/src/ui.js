@@ -1,5 +1,5 @@
 export function createImageRepairUi({ addonId, toastId, wrapperId, toastUpdateInterval, metrics }) {
-  const styleId = `addon-style-${addonId}`;
+  const styleId = `${addonId}-style`;
 
   const css = `
     #${wrapperId} {
@@ -45,13 +45,6 @@ export function createImageRepairUi({ addonId, toastId, wrapperId, toastUpdateIn
 
   function injectUi() {
     if (document.getElementById(toastId)) return;
-
-    if (!document.getElementById(styleId)) {
-      const style = document.createElement("style");
-      style.id = styleId;
-      style.textContent = css;
-      document.head.appendChild(style);
-    }
 
     const spinner = document.createElement("span");
     spinner.className = "img-retry-spinner";
@@ -108,7 +101,6 @@ export function createImageRepairUi({ addonId, toastId, wrapperId, toastUpdateIn
 
   function destroyUi() {
     document.getElementById(wrapperId)?.remove();
-    document.getElementById(styleId)?.remove();
     clearTimeout(toastUpdateTimer);
     toastUpdateTimer = null;
     isToastUpdating = false;
@@ -147,6 +139,8 @@ export function createImageRepairUi({ addonId, toastId, wrapperId, toastUpdateIn
   }
 
   return {
+    styleId,
+    cssText: css,
     injectUi,
     destroyUi,
     updateToast,

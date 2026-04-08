@@ -20,6 +20,7 @@ const gmGlobals = [
   "unsafeWindow",
   "GM_addValueChangeListener",
   "GM_removeValueChangeListener",
+  "GM_getResourceText",
   "GM",
   "grecaptcha",
 ].reduce((acc, name) => ((acc[name] = "readonly"), acc), {});

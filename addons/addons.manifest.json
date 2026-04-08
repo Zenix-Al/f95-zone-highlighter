@@ -12,7 +12,7 @@
       "grants": ["none"],
       "runAt": "document-idle",
       "requiresCore": true,
-      "capabilities": ["toast", "feature", "storage", "observer"]
+      "capabilities": ["toast", "feature", "storage", "observer", "ui", "ui.style"]
     },
     {
       "id": "masked-direct-addon",
@@ -28,7 +28,6 @@
         "*://buzzheavier.com/*",
         "*://*.buzzheavier.com/*",
         "*://gofile.io/*",
-        "*://api.gofile.io/*",
         "*://pixeldrain.com/*",
         "*://datanodes.to/*"
       ],
@@ -40,7 +39,7 @@
       ],
       "runAt": "document-idle",
       "requiresCore": true,
-      "capabilities": ["toast", "feature", "storage", "routing"]
+      "capabilities": ["toast", "feature", "storage", "ui", "ui.style"]
     },
     {
       "id": "library-addon",
@@ -54,7 +53,44 @@
       "grants": ["none"],
       "runAt": "document-idle",
       "requiresCore": true,
-      "capabilities": ["toast", "feature", "storage", "idb", "ui"]
+      "capabilities": [
+        "toast",
+        "feature",
+        "storage",
+        "idb",
+        "ui",
+        "ui.mount",
+        "ui.style",
+        "ui.dialog"
+      ]
+    },
+    {
+      "id": "latest-filters-addon",
+      "name": "F95UE Latest Filters Add-on",
+      "description": "Adds one Saved Filters button on Latest Updates with a searchable preset list and active filter tracking.",
+      "version": "0.1.0",
+      "author": "X Death",
+      "entry": "addons/latest-filters-addon/src/main.js",
+      "outfile": "addons/latest-filters-addon/dist/latest-filters-addon.user.js",
+      "matches": ["*://f95zone.to/sam/latest_alpha/*"],
+      "grants": ["GM.getValue", "GM.setValue"],
+      "runAt": "document-idle",
+      "requiresCore": true,
+      "capabilities": ["toast", "feature", "storage", "ui", "ui.style", "ui.mount", "ui.dialog"]
+    },
+    {
+      "id": "halloween-theme-addon",
+      "name": "F95UE Halloween Theme Add-on",
+      "description": "Forces Halloween logo/background theme with simple apply and teardown lifecycle.",
+      "version": "0.1.0",
+      "author": "X Death",
+      "entry": "addons/halloween-theme-addon/src/main.js",
+      "outfile": "addons/halloween-theme-addon/dist/halloween-theme-addon.user.js",
+      "matches": ["*://f95zone.to/*"],
+      "grants": ["none"],
+      "runAt": "document-idle",
+      "requiresCore": true,
+      "capabilities": ["feature"]
     }
   ]
 }

@@ -1,13 +1,9 @@
 export function createAddonUi({ addonId, buttonClass, addTeardown }) {
   let toastEl = null;
+  let styleInjected = false;
 
-  function ensureButtonStyle() {
-    const styleId = `f95ue-addon-style-${addonId}`;
-    if (document.getElementById(styleId)) return;
-
-    const style = document.createElement("style");
-    style.id = styleId;
-    style.textContent = `
+  const styleId = `f95ue-addon-style-${addonId}`;
+  const cssText = `
       .${buttonClass} {
         margin-left: 6px;
         padding: 2px 6px;
@@ -51,11 +47,22 @@ export function createAddonUi({ addonId, buttonClass, addTeardown }) {
       }
     `;
 
+  function ensureLocalButtonStyle() {
+    if (styleInjected || document.getElementById(styleId)) return;
+    
+    const style = document.createElement("style");
+    style.id = styleId;
+    style.textContent = cssText;
     document.head.appendChild(style);
+    styleInjected = true;
+    
+    addTeardown(() => {
+      style.remove?.();
+      styleInjected = false;
+    });
   }
 
   function showToast(message, duration = 2600) {
-    ensureButtonStyle();
     if (!toastEl) {
       toastEl = document.createElement("div");
       toastEl.id = "f95ue-addon-toast";
@@ -71,7 +78,9 @@ export function createAddonUi({ addonId, buttonClass, addTeardown }) {
   }
 
   return {
-    ensureButtonStyle,
+    styleId,
+    cssText,
+    ensureLocalButtonStyle,
     showToast,
   };
 }

@@ -1,5 +1,45 @@
 # Changelog
 
+### **[v4.16.0 - Add-on Service Hardening & Core-First Model]**
+
+This release is a comprehensive overhaul of the add-on service layer, shifting ownership of DOM, styles, dialogs, and lifecycle management squarely into core. Add-ons now act as intent/state submitters while core owns all runtime surfaces.
+
+**Trusted Catalog**
+
+- Trusted add-on catalog is now fetched at runtime from GitHub CDN via `@resource trustedAddonCatalog` (jsdelivr), removing the hard-coded embedded list from the core script.
+- Catalog URL: `https://cdn.jsdelivr.net/gh/Zenix-Al/f95-zone-highlighter@main/src/services/addons/trusted-catalog.json`.
+
+**Lifecycle Hardening**
+
+- Added lifecycle hooks emitted by core: `addon.before-disable`, `addon.before-unregister`, `addon.before-page-change`, `addon.after-register`.
+- Core now guarantees teardown command is dispatched before any forced cleanup.
+- Added watchdog timeout for non-responsive addons: if an addon does not acknowledge teardown within the window, core force-removes it automatically.
+- `addon.before-page-change` automatically removes all registered addon styles on page transitions.
+- `addon.after-register` delivers capabilities and page scopes to the addon immediately after registration.
+
+**Core CSS Registry**
+
+- Added `ui.style.register({ addonId, styleId, cssText })` and `ui.style.unregister({ addonId, styleId? })` core actions.
+- Core stores style handles per addon and auto-removes all styles on disable or unregister.
+- Added payload size budget checks; oversized style payloads are rejected before registration.
+
+**Core UI Mount API**
+
+- Added `ui.mount({ addonId, slot, templateId|html, options })`, `ui.update({ addonId, mountId, patch|state })`, and `ui.unmount({ addonId, mountId })` core actions.
+- Core now owns mount/unmount lifecycle; addons submit declarative templates and receive mount IDs back.
+- Added fixed modal host managed by core: handles open/close, ESC dismiss, backdrop click, and focus trap for all addon dialog surfaces.
+- Added slot hosts for page dock, panels, and floating tool placements.
+
+**Capability System**
+
+- Split the broad `ui` capability into granular tokens: `ui.style`, `ui.mount`, `ui.dialog`, `ui.dock`.
+- Legacy direct-style addons remain compatible via a backward-compatibility adapter during migration.
+
+**Storage & Telemetry**
+
+- Added per-addon storage quota telemetry to surface payload growth before it becomes a problem.
+- Enforced rule: bulk data stays in addon-local GM or IDB; core config accepts settings and status only.
+
 ### **[v4.15.0 - Add-on Foundation & Modern Settings UI]**
 
 This release focuses on core architecture changes to support add-ons cleanly, plus a modernized settings experience that is now designed around those add-ons.

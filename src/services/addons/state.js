@@ -32,6 +32,12 @@ function ensureInstalledMetaBucket(addonId) {
     addonsRoot.installedMeta[normalizedId] = {
       name: "",
       version: "",
+      description: "",
+      pageScopes: [],
+      capabilities: [],
+      panelTitle: "",
+      panelBody: "",
+      statusMessage: "",
       installedSeenAt: 0,
       lastSeenAt: 0,
     };
@@ -114,6 +120,26 @@ export async function upsertInstalledAddonMeta(addonId, partial = {}) {
 
   bucket.name = String(partial.name || bucket.name || "").trim();
   bucket.version = String(partial.version || bucket.version || "").trim();
+  bucket.description = String(partial.description || bucket.description || "").trim();
+  bucket.panelTitle = String(partial.panelTitle || bucket.panelTitle || "").trim();
+  bucket.panelBody = String(partial.panelBody || bucket.panelBody || "").trim();
+  bucket.statusMessage = String(partial.statusMessage || bucket.statusMessage || "").trim();
+  bucket.pageScopes = Array.isArray(partial.pageScopes)
+    ? partial.pageScopes
+        .map((entry) =>
+          String(entry || "")
+            .trim()
+            .toLowerCase(),
+        )
+        .filter(Boolean)
+    : Array.isArray(bucket.pageScopes)
+      ? bucket.pageScopes
+      : [];
+  bucket.capabilities = Array.isArray(partial.capabilities)
+    ? partial.capabilities.map((entry) => String(entry || "").trim()).filter(Boolean)
+    : Array.isArray(bucket.capabilities)
+      ? bucket.capabilities
+      : [];
   bucket.installedSeenAt =
     Number.isFinite(incomingInstalledSeenAt) && incomingInstalledSeenAt > 0
       ? incomingInstalledSeenAt

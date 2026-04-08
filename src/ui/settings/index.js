@@ -83,7 +83,9 @@ function normalizeAddonEntry(addon) {
     trusted: Boolean(addon.trusted),
     blocked: Boolean(addon.blocked),
     activeOnPage: Boolean(addon.activeOnPage),
+    installedSeenAt: Number(addon.installedSeenAt || 0),
     supportsCurrentPage: addon.supportsCurrentPage !== false,
+    catalogFresh: addon.catalogFresh !== false,
     pageScopes: Array.isArray(addon.pageScopes) ? [...addon.pageScopes] : [],
     downloadUrl: String(addon.downloadUrl || "").trim(),
     panelId: buildAddonPanelId(id),
@@ -203,10 +205,6 @@ function getAddonById(addonId) {
   return getRegisteredAddons().find((addon) => addon.id === addonId) || null;
 }
 
-function getAddonByPanelId(panelId) {
-  return getRegisteredAddons().find((addon) => addon.panelId === panelId) || null;
-}
-
 function getPinnedAddonIds() {
   const pinned = stateManager.get("settingsPinnedAddonIds");
   if (!Array.isArray(pinned)) return [];
@@ -252,6 +250,12 @@ function createBadge(doc, text, className = "") {
   return badge;
 }
 
+function formatAddonScopes(addon) {
+  const scopes = Array.isArray(addon?.pageScopes) ? addon.pageScopes : [];
+  if (scopes.length === 0) return "Runs on: (Missing scope data).";
+  return `Runs on: ${scopes.join(", ")}.`;
+}
+
 function createActionButton(doc, text, action, addonId, extraClass = "") {
   const button = doc.createElement("button");
   button.type = "button";
@@ -269,7 +273,11 @@ function createAddonPanelActions(doc, addon) {
   const backButton = createActionButton(doc, "Back to Add-ons", "back-to-addins", addon.id);
   actions.appendChild(backButton);
 
-  if (addon.capabilities?.includes("feature") && addon.status !== "not-installed") {
+  const supportsFeatureToggle =
+    addon.status !== "not-installed" &&
+    (addon.capabilities?.includes("feature") || (!addon.activeOnPage && addon.installedSeenAt > 0));
+
+  if (supportsFeatureToggle) {
     const isDisabled = addon.status === "disabled";
     const toggleButton = createActionButton(
       doc,
@@ -388,8 +396,13 @@ function createAddonCard(doc, addon, options = {}) {
   description.className = "addins-card-description";
   description.textContent = addon.description;
 
+  const scopeInfo = doc.createElement("div");
+  scopeInfo.className = "addins-card-meta";
+  scopeInfo.textContent = formatAddonScopes(addon);
+
   card.appendChild(head);
   card.appendChild(description);
+  card.appendChild(scopeInfo);
 
   if (!planned && addon.statusMessage) {
     const statusCopy = doc.createElement("div");
@@ -402,7 +415,9 @@ function createAddonCard(doc, addon, options = {}) {
     const actions = doc.createElement("div");
     actions.className = "addins-card-actions";
     const supportsFeatureToggle =
-      addon.capabilities?.includes("feature") && addon.status !== "not-installed";
+      addon.status !== "not-installed" &&
+      (addon.capabilities?.includes("feature") ||
+        (!addon.activeOnPage && addon.installedSeenAt > 0));
     const supportsPinning = addon.status !== "not-installed";
 
     if (supportsFeatureToggle) {
@@ -427,7 +442,9 @@ function createAddonCard(doc, addon, options = {}) {
           const result = await invokeAddonCoreAction(addon.id, action, {});
           if (!result?.ok) {
             showToast(`Add-on action failed: ${result?.reason || "unknown"}`);
+            return;
           }
+          updateRegisteredAddons(listKnownAddons());
         } catch (err) {
           console.warn("Card toggle handler failed:", err);
         }
@@ -436,7 +453,6 @@ function createAddonCard(doc, addon, options = {}) {
     }
 
     const openButton = createActionButton(doc, "Open", "open-addon-panel", addon.id);
-    openButton.disabled = !addon.activeOnPage;
     actions.appendChild(openButton);
     if (supportsPinning) {
       actions.appendChild(
@@ -502,10 +518,9 @@ function syncAddonPanels(shadowRoot) {
 
       const note = document.createElement("div");
       note.className = "tag-priority-note";
-      const scopeText =
-        addon.pageScopes.length > 0 ? ` Runs on: ${addon.pageScopes.join(", ")}.` : "";
-      note.textContent =
-        addon.panelBody || `${addon.name} is connected to the new add-ons shell.${scopeText}`;
+      const scopeText = formatAddonScopes(addon);
+      const panelText = addon.panelBody || `${addon.name} is connected to the new add-ons shell.`;
+      note.textContent = `${panelText} ${scopeText}`.trim();
 
       if (addon.statusMessage) {
         note.classList.add("settings-addon-status-note", addon.status);
@@ -580,6 +595,16 @@ function renderAddinsOverview(shadowRoot) {
 
   const registeredAddons = getRegisteredAddons();
   const pinnedIds = getPinnedAddonIds();
+  const addinsCatalogNote = shadowRoot.getElementById("addins-catalog-note");
+  const hasCatalogFallback = registeredAddons.some((addon) => addon.catalogFresh === false);
+
+  if (addinsCatalogNote) {
+    addinsCatalogNote.textContent = hasCatalogFallback
+      ? "Failed to fetch catalog. Showing fallback metadata with minimum information."
+      : "Trusted add-ons are listed here with install links and page-aware runtime status.";
+    addinsCatalogNote.classList.toggle("settings-addon-status-note", hasCatalogFallback);
+    addinsCatalogNote.classList.toggle("error", hasCatalogFallback);
+  }
 
   if (registeredAddons.length === 0) {
     const emptyState = document.createElement("div");
@@ -633,7 +658,7 @@ function syncPinnedAddonNav(shadowRoot) {
   });
 }
 
-function setActivePanel(shadowRoot, targetId, { persist = true } = {}) {
+function setActivePanel(shadowRoot, targetId, { persist = true, resetScroll = true } = {}) {
   const navItems = [...shadowRoot.querySelectorAll(".settings-nav-item[data-target]")];
   const panels = [...shadowRoot.querySelectorAll(".settings-panel")];
   if (navItems.length === 0 || panels.length === 0) return;
@@ -650,7 +675,7 @@ function setActivePanel(shadowRoot, targetId, { persist = true } = {}) {
   panels.forEach((panel) => {
     const isActive = panel.id === nextPanelId;
     panel.classList.toggle("active", isActive);
-    if (isActive) panel.scrollTop = 0;
+    if (isActive && resetScroll) panel.scrollTop = 0;
   });
 
   stateManager.set("settingsActivePanel", nextPanelId);
@@ -660,10 +685,19 @@ function setActivePanel(shadowRoot, targetId, { persist = true } = {}) {
 }
 
 function syncSettingsSidebarNavigation(shadowRoot) {
+  const activePanelId = String(stateManager.get("settingsActivePanel") || DEFAULT_SETTINGS_PANEL);
+  const activePanelBeforeSync = shadowRoot.getElementById(activePanelId);
+  const preservedScrollTop = Number(activePanelBeforeSync?.scrollTop || 0);
+
   syncAddonPanels(shadowRoot);
   syncPinnedAddonNav(shadowRoot);
   renderAddinsOverview(shadowRoot);
-  setActivePanel(shadowRoot, stateManager.get("settingsActivePanel"), { persist: false });
+  setActivePanel(shadowRoot, activePanelId, { persist: false, resetScroll: false });
+
+  const activePanelAfterSync = shadowRoot.getElementById(activePanelId);
+  if (activePanelAfterSync) {
+    activePanelAfterSync.scrollTop = preservedScrollTop;
+  }
 }
 
 function initSettingsSidebarNavigation(shadowRoot) {
@@ -674,12 +708,6 @@ function initSettingsSidebarNavigation(shadowRoot) {
     const target = event.target?.closest?.(".settings-nav-item[data-target]");
     if (!target) return;
     const targetPanelId = String(target.dataset.target || "").trim();
-    const addon = getAddonByPanelId(targetPanelId);
-    if (addon && !addon.activeOnPage) {
-      showToast("This add-on is idle on this page.");
-      setActivePanel(shadowRoot, "settings-panel-addins");
-      return;
-    }
     setActivePanel(shadowRoot, targetPanelId);
   });
 
@@ -702,10 +730,6 @@ function initAddinsPanelActions(shadowRoot) {
       const addon = getAddonById(addonId);
       if (addon?.status === "not-installed") {
         showToast("Install this add-on before opening its panel.");
-        return;
-      }
-      if (!addon?.activeOnPage) {
-        showToast("This add-on is idle on this page.");
         return;
       }
       setActivePanel(shadowRoot, buildAddonPanelId(addonId));
@@ -774,7 +798,9 @@ function initAddinsPanelActions(shadowRoot) {
       const result = await invokeAddonCoreAction(addonId, action, {});
       if (!result.ok) {
         showToast(`Add-on action failed: ${result.reason || "unknown"}`);
+        return;
       }
+      updateRegisteredAddons(listKnownAddons());
     }
   });
 
@@ -796,7 +822,9 @@ function initAddinsPanelActions(shadowRoot) {
       const result = await invokeAddonCoreAction(addonId, action, {});
       if (!result.ok) {
         showToast(`Add-on action failed: ${result.reason || "unknown"}`);
+        return;
       }
+      updateRegisteredAddons(listKnownAddons());
       return;
     }
 

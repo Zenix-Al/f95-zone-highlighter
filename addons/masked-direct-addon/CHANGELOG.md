@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.2.1 - Core Add-on API Update + Gofile Fix
+
+- Migrated all host-page UI styles to core CSS registry (`ui.style.register` / `ui.style.unregister`).
+- Transient download-flow UI is now routed through core slot and mount API; core owns DOM placement.
+- Teardown now fully removes all route hooks, intervals, and observers on disable; no UI residue left on page transitions.
+- Fixed Gofile automation: updated flow to work again with current Gofile page structure.
+- Restored masked-link and direct-download flows across all supported host pages after API migration.
+
 ## v0.1.6 - Buzzheavier Automation Restored
 
 - Restored Buzzheavier direct-download automation.

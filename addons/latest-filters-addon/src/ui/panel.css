@@ -1,0 +1,257 @@
+__ROOT__ {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+__ROOT__ .f95ue-lf-content {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  align-items: center;
+}
+
+__ROOT__ .f95ue-lf-button-wrap {
+  width: 100%;
+  min-width: 0;
+}
+
+__ROOT__ .f95ue-lf-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid #893839;
+  border-radius: 6px;
+  background: #893839;
+  color: #e7eaf0;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+__ROOT__ .f95ue-lf-trigger:hover,
+__ROOT__ .f95ue-lf-trigger:focus-visible {
+  background-color: #b94f4f;
+  border-color: #b94f4f;
+}
+
+__ROOT__.is-panel-only > .filter-block_title,
+__ROOT__.is-panel-only .f95ue-lf-button-wrap {
+  display: none;
+}
+
+__ROOT__.is-panel-only .f95ue-lf-content {
+  display: block;
+  min-height: 0;
+}
+
+.f95ue-addon-dialog-content .f95ue-lf-dialog {
+  width: min(720px, calc(100vw - 24px));
+  max-height: calc(100vh - 96px);
+  overflow: hidden;
+  padding: 14px;
+  box-sizing: border-box;
+  border: none;
+  border-radius: 6px;
+  background: #191b1e;
+  color: #d7dce6;
+  box-shadow: 0 14px 35px rgba(0, 0, 0, 0.4);
+}
+
+.f95ue-addon-dialog-content .f95ue-lf-popover-header,
+.f95ue-addon-dialog-content .f95ue-lf-save-row,
+.f95ue-addon-dialog-content .f95ue-lf-toolbar,
+.f95ue-addon-dialog-content .f95ue-lf-row-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.f95ue-addon-dialog-content .f95ue-lf-popover-header {
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.f95ue-addon-dialog-content .f95ue-lf-popover-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: #f1f4fb;
+}
+
+.f95ue-addon-dialog-content .f95ue-lf-close {
+  border: #b94f4f;
+  background: #b94f4f;
+  color: #d7dce6;
+  font-weight: 700;
+  border-radius: 10px;
+  min-width: 34px;
+  min-height: 34px;
+  cursor: pointer;
+}
+
+.f95ue-addon-dialog-content .f95ue-lf-current {
+  margin-bottom: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid #89383973;
+  background: #8938391a;
+  color: #d9deea;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.f95ue-addon-dialog-content .f95ue-lf-save-row,
+.f95ue-addon-dialog-content .f95ue-lf-toolbar {
+  margin-bottom: 10px;
+}
+
+.f95ue-addon-dialog-content .f95ue-lf-save-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.f95ue-addon-dialog-content .f95ue-lf-save-row input,
+.f95ue-addon-dialog-content .f95ue-lf-toolbar input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: 1px solid #555;
+  border-radius: 4px;
+  background: #222;
+  color: #e8edf7;
+  padding: 9px 10px;
+}
+
+.f95ue-addon-dialog-content .f95ue-lf-save-row input:focus,
+.f95ue-addon-dialog-content .f95ue-lf-toolbar input:focus {
+  outline: none;
+  border-color: #b94f4f;
+}
+
+.f95ue-addon-dialog-content .f95ue-lf-btn,
+.f95ue-addon-dialog-content .f95ue-lf-row-actions button {
+  border: 1px solid #b94f4f;
+  border-radius: 10px;
+  padding: 8px 10px;
+  background: hsla(0, 0%, 100%, 0.02);
+  color: #d9deea;
+  cursor: pointer;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.f95ue-addon-dialog-content .f95ue-lf-btn.primary,
+.f95ue-addon-dialog-content .f95ue-lf-row-actions button[data-action="apply"] {
+  background-color: #893839;
+  color: white;
+  border: 2px solid #893839;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease;
+}
+
+.f95ue-addon-dialog-content .f95ue-lf-row-actions button[data-action="delete"] {
+  color: #ffd2d2;
+  border-color: #b04a4a80;
+}
+
+.f95ue-addon-dialog-content .f95ue-lf-results {
+  display: grid;
+  gap: 8px;
+  max-height: min(56vh, 420px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 4px;
+}
+
+.f95ue-addon-dialog-content .f95ue-lf-empty {
+  padding: 18px 10px;
+  border-radius: 12px;
+  text-align: center;
+  color: #aeb6c4;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.f95ue-addon-dialog-content .f95ue-lf-row {
+  display: grid;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.f95ue-addon-dialog-content .f95ue-lf-row.is-current {
+  border-color: rgba(137, 56, 57, 0.66);
+  background: rgba(137, 56, 57, 0.14);
+}
+
+.f95ue-addon-dialog-content .f95ue-lf-row-head {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.f95ue-addon-dialog-content .f95ue-lf-row-actions {
+  flex-wrap: wrap;
+  align-items: stretch;
+}
+
+.f95ue-addon-dialog-content .f95ue-lf-row-actions button {
+  flex: 1 1 92px;
+  text-align: center;
+}
+
+.f95ue-addon-dialog-content .f95ue-lf-row-title {
+  font-weight: 700;
+  color: #f1f4fb;
+}
+
+.f95ue-addon-dialog-content .f95ue-lf-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  background: rgba(137, 56, 57, 0.34);
+  color: #ffe8e5;
+}
+
+.f95ue-addon-dialog-content .f95ue-lf-summary {
+  font-size: 12px;
+  color: #bcc3d1;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 700px) {
+  .f95ue-addon-dialog-content .f95ue-lf-dialog {
+    width: 100%;
+    max-height: calc(100vh - 70px);
+  }
+
+  .f95ue-addon-dialog-content .f95ue-lf-save-row,
+  .f95ue-addon-dialog-content .f95ue-lf-toolbar,
+  .f95ue-addon-dialog-content .f95ue-lf-row-actions {
+    flex-wrap: wrap;
+  }
+
+  .f95ue-addon-dialog-content .f95ue-lf-save-row {
+    grid-template-columns: 1fr;
+  }
+}
