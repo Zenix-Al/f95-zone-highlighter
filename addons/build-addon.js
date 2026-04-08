@@ -209,6 +209,10 @@ async function buildAddon(addon, isRelease, versionString) {
     format: "iife",
     write: false,
     legalComments: "none",
+    loader: {
+      ".html": "text",
+      ".css": "text",
+    },
     minifyWhitespace: Boolean(isRelease),
     // Keep function and exported symbol names readable in release, then
     // run a controlled terser beautify pass (same philosophy as main build.js).
@@ -216,6 +220,9 @@ async function buildAddon(addon, isRelease, versionString) {
     minifySyntax: Boolean(isRelease),
     define: {
       __ADDON_ID__: JSON.stringify(addon.id),
+      __ADDON_NAME__: JSON.stringify(addon.name || addon.id || "Add-on"),
+      __ADDON_VERSION__: JSON.stringify(versionString || addon.version || "0.1.0"),
+      __ADDON_DESCRIPTION__: JSON.stringify(addon.description || ""),
       __ADDON_CAPABILITIES__: JSON.stringify(normalizeArray(addon.capabilities, [])),
       __ADDON_REQUIRES_CORE__: addon.requiresCore ? "true" : "false",
     },

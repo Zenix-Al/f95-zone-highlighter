@@ -3,6 +3,7 @@ import { removeAllListeners } from "./listenerRegistry.js";
 import { removeAllObserverCallbacks } from "./observer.js";
 import resourceManager from "./resourceManager.js";
 import { clearAllStyles } from "./styleRegistry.js";
+import { notifyAllAddonsBeforePageChange } from "../services/addonsService.js";
 
 let teardownInProgress = false;
 
@@ -11,6 +12,12 @@ export function teardownAll(reason = "unknown") {
   teardownInProgress = true;
 
   debugLog("Teardown", `Starting global teardown (${reason})`);
+
+  try {
+    notifyAllAddonsBeforePageChange();
+  } catch (err) {
+    debugLog("Teardown", `Addon before-page-change notification failed: ${err}`, { level: "warn" });
+  }
 
   try {
     removeAllObserverCallbacks();
@@ -36,4 +43,3 @@ export function teardownAll(reason = "unknown") {
     debugLog("Teardown", `Style cleanup failed: ${err}`, { level: "warn" });
   }
 }
-

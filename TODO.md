@@ -202,3 +202,111 @@
 - Record identity:
   - primary key by threadId preferred,
   - fallback to canonical URL hash if threadId parse fails.
+
+---
+
+# Add-on Service Hardening Roadmap (Core-First Model)
+
+## Why this section exists
+
+- Goal: make addons behave like ticket submitters to core, not mini-apps that directly own DOM/CSS lifecycle.
+- Current model is capability-gated, but UI/CSS ownership is still mixed.
+- Industry practice for plugin systems: host owns lifecycle, plugin sends intent/state.
+
+## Target architecture
+
+- Core owns:
+  - mount/unmount lifecycle,
+  - style registry/injection/removal,
+  - host containers and dialog surfaces,
+  - teardown guarantees on disable/page-change.
+- Addon owns:
+  - business logic,
+  - serialized UI model/state,
+  - commands/events.
+
+## This Week (low risk, high return)
+
+- [x] Add lifecycle hooks in core bridge:
+  - `addon.before-disable` ✓
+  - `addon.before-unregister` ✓
+  - `addon.before-page-change` ✓ (emitted in teardownAll; removes addon styles)
+  - `addon.after-register` ✓ (emits capabilities + pageScopes to addon)
+- [x] Ensure core emits teardown command before forced cleanup.
+- [x] Add watchdog timeout for non-responsive addon cleanup, then hard-remove.
+- [x] Add core CSS actions:
+  - `ui.style.register({ addonId, styleId, cssText })` ✓
+  - `ui.style.unregister({ addonId, styleId? })` ✓
+- [x] Store style handles per addon in core registry and auto-remove on disable/unregister.
+- [x] Add payload budgets for style/storage actions and reject oversized payloads.
+- [x] Add compatibility adapter so legacy direct-style addons still work during migration.
+
+## Needs Refactor (medium effort)
+
+- [x] Add core-owned UI mount API:
+  - `ui.mount({ addonId, slot, templateId|html, options })`
+  - `ui.update({ addonId, mountId, patch|state })`
+  - `ui.unmount({ addonId, mountId })`
+- [x] Introduce fixed modal host managed by core:
+  - open/close, ESC handling, backdrop click, focus trap.
+- [x] Add slot hosts managed by core for page dock/panels/floating tools.
+- [x] Keep large payloads out of core config storage by rule:
+  - bulk data in addon-local GM or IDB,
+  - core storage for settings/status only.
+- [x] Add per-addon storage quota telemetry.
+- [x] Split capability `ui` into:
+  - `ui.style`, `ui.mount`, `ui.dialog`, `ui.dock`.
+
+## Future / Optional (advanced)
+
+- [ ] Strict mode:
+  - disallow direct addon DOM injection,
+  - require UI through core host APIs.
+- [ ] Add signed remote catalog verification for third-party addons.
+- [ ] Add addon health dashboards:
+  - register latency,
+  - command failure rates,
+  - unhandled error count.
+- [ ] Add trace IDs for command/reply pairs to speed debugging.
+
+## Per-Trusted-Addon Migration Checklist
+
+### 1) image-repair-addon
+
+- [x] Move CSS injection to `ui.style.register` / `ui.style.unregister`.
+- [x] Ensure observer and command listeners are removed via lifecycle hooks.
+- [x] Keep metrics/state in addon-local storage keys (not core global payloads).
+- [x] Verify disable on unsupported page keeps status `Installed + Idle` (never `Not Installed`).
+- [x] Add regression test: disable/enable while idle does not break next thread-page activation.
+
+### 2) masked-direct-addon
+
+- [x] Move any host-page UI styles to core CSS registry.
+- [x] Route transient UI rendering through core slot/mount API.
+- [x] Keep host automation logic internal; only submit status/events to core.
+- [x] Ensure teardown removes all route hooks, intervals, and listeners on disable.
+- [x] Add regression test: page transitions between thread/masked/download leave no UI residue.
+
+### 3) library-addon
+
+- [x] Migrate dock/button rendering to core mount API (core owns DOM).
+- [x] Keep library dataset in IDB only; keep core payload minimal (status/settings).
+- [x] Register/unregister styles through core CSS registry.
+- [x] Ensure manager dialog/surface is mounted/unmounted by core host.
+- [x] Add regression test: 1000-record library does not inflate core config payload size.
+
+### 4) latest-filters-addon
+
+- [x] Move modal shell ownership to core dialog host API.
+- [x] Keep presets in addon-local storage (already moving away from core payload).
+- [x] Register modal/list styles through core CSS registry.
+- [x] Ensure backdrop click + ESC close are core-hosted behavior.
+- [x] Add regression test: save/apply/update/delete persists across refresh and page reload.
+
+## Cross-Addon Acceptance Criteria
+
+- [x] Disabling any addon leaves zero DOM/style residue.
+- [x] Page transitions do not orphan addon UI.
+- [x] Core can force-destroy any addon surface without page reload.
+- [x] Addons can still implement complex UI using core mount contracts.
+- [x] Core config payload size remains stable as addon data grows.

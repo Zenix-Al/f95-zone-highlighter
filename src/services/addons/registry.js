@@ -3,11 +3,10 @@ import {
   sanitizeAddonCapabilities,
   sanitizeAddonId,
   sanitizeAddonIdList,
-  UNTRUSTED_ALLOWED_CAPABILITIES,
   VALID_ADDON_STATUSES,
 } from "./shared.js";
 import { upsertInstalledAddonMeta } from "./state.js";
-import { getTrustedCatalogEntry } from "./catalog.js";
+import { getTrustedCatalogEntry, isBuiltinTrustedAddonId } from "./catalog.js";
 
 const REGISTRY_LISTENERS = new Set();
 let addonsRuntimeRegistry = [];
@@ -22,7 +21,10 @@ function normalizeAddonEntry(addon, existingAddon = null) {
   const requestedStatus = String(addon.status || existingAddon?.status || "installed").trim();
   const untrustedAllowed = Boolean(config.globalSettings?.allowUntrustedAddons);
   const trustedIds = new Set(sanitizeAddonIdList(config.addons?.trustedIds));
-  const trusted = trustedIds.has(id) || Boolean(getTrustedCatalogEntry(id)?.trusted);
+  const trusted =
+    trustedIds.has(id) ||
+    Boolean(getTrustedCatalogEntry(id)?.trusted) ||
+    isBuiltinTrustedAddonId(id);
   const blocked = !trusted && !untrustedAllowed;
 
   const requestedCapabilities = sanitizeAddonCapabilities(
@@ -37,10 +39,7 @@ function normalizeAddonEntry(addon, existingAddon = null) {
             : [],
   );
 
-  const capabilities = requestedCapabilities.filter((entry) => {
-    if (trusted) return true;
-    return UNTRUSTED_ALLOWED_CAPABILITIES.has(entry);
-  });
+  const capabilities = blocked ? [] : requestedCapabilities;
 
   let status = VALID_ADDON_STATUSES.has(requestedStatus) ? requestedStatus : "installed";
   let statusMessage =
@@ -50,13 +49,19 @@ function normalizeAddonEntry(addon, existingAddon = null) {
     status = "disabled";
     statusMessage =
       statusMessage ||
-      "Blocked: enable 'Allow untrusted add-ons' in settings to allow limited API access.";
+      "Blocked: enable 'Allow untrusted add-ons' in settings to allow full API access.";
   }
 
   const panelActions = Array.isArray(addon.panelActions)
     ? addon.panelActions
     : Array.isArray(existingAddon?.panelActions)
       ? existingAddon.panelActions
+      : [];
+
+  const pageScopes = Array.isArray(addon.pageScopes)
+    ? addon.pageScopes
+    : Array.isArray(existingAddon?.pageScopes)
+      ? existingAddon.pageScopes
       : [];
 
   return {
@@ -112,6 +117,13 @@ function normalizeAddonEntry(addon, existingAddon = null) {
           requiresActivePage: entry?.requiresActivePage !== false,
         };
       })
+      .filter(Boolean),
+    pageScopes: pageScopes
+      .map((entry) =>
+        String(entry || "")
+          .trim()
+          .toLowerCase(),
+      )
       .filter(Boolean),
     requestedCapabilities,
     capabilities,
@@ -169,6 +181,12 @@ export function registerAddon(addon) {
   void upsertInstalledAddonMeta(normalized.id, {
     name: normalized.name,
     version: normalized.version,
+    description: normalized.description,
+    pageScopes: normalized.pageScopes,
+    capabilities: normalized.capabilities,
+    panelTitle: normalized.panelTitle,
+    panelBody: normalized.panelBody,
+    statusMessage: normalized.statusMessage,
   });
 
   return replaceRegistry(current);

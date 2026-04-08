@@ -2,14 +2,30 @@ import { createLibraryManagerApp } from "./managerApp.js";
 
 let managerApp = null;
 
-export function openLibraryManager({ library, onMutated, getCurrentThreadSnapshot }) {
-  if (!library || typeof library !== "object") return;
+function getManagerApp(options) {
   if (!managerApp) {
-    managerApp = createLibraryManagerApp({
-      library,
-      onMutated,
-      getCurrentThreadSnapshot,
-    });
+    managerApp = createLibraryManagerApp(options);
   }
-  void managerApp.open();
+  return managerApp;
+}
+
+export function openLibraryManager({ bridge, addonId, library, onMutated, getCurrentThreadSnapshot }) {
+  if (!library || typeof library !== "object") return;
+  void getManagerApp({
+    bridge,
+    addonId,
+    library,
+    onMutated,
+    getCurrentThreadSnapshot,
+  }).open();
+}
+
+export function closeLibraryManager(reason = "addon-close") {
+  if (!managerApp) return;
+  void managerApp.close(reason);
+}
+
+export function handleLibraryManagerDialogClosed(detail) {
+  if (!managerApp) return;
+  void managerApp.handleDialogClosed(detail);
 }

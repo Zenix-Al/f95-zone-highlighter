@@ -1,0 +1,85 @@
+__ROOT__ {
+  position: fixed;
+  left: 18px;
+  bottom: 18px;
+  z-index: 1;
+  pointer-events: none;
+}
+
+__ROOT__ .f95ue-library-dock-widget {
+  pointer-events: none;
+}
+
+__ROOT__ .f95ue-library-dock-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+__ROOT__ .f95ue-library-dock-btn {
+  pointer-events: auto;
+  min-width: 168px;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid #893839;
+  border-radius: 8px;
+  background: #893839;
+  color: #f1f4fb;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
+  cursor: pointer;
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.18s ease,
+    opacity 0.18s ease;
+}
+
+__ROOT__ .f95ue-library-dock-btn:hover,
+__ROOT__ .f95ue-library-dock-btn:focus-visible {
+  background: #b94f4f;
+  border-color: #b94f4f;
+  transform: translateY(-1px);
+}
+
+__ROOT__ .f95ue-library-dock-btn.secondary {
+  background: #222831;
+  border-color: #4b5564;
+}
+
+__ROOT__ .f95ue-library-dock-btn.secondary:hover,
+__ROOT__ .f95ue-library-dock-btn.secondary:focus-visible {
+  background: #2d3642;
+  border-color: #667386;
+}
+
+__ROOT__ .f95ue-library-dock-btn.saved {
+  background: #2f7d4f;
+  border-color: #2f7d4f;
+}
+
+__ROOT__ .f95ue-library-dock-btn.saved:hover,
+__ROOT__ .f95ue-library-dock-btn.saved:focus-visible {
+  background: #3a9961;
+  border-color: #3a9961;
+}
+
+@media (max-width: 780px) {
+  __ROOT__ {
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+  }
+
+  __ROOT__ .f95ue-library-dock-stack {
+    width: 100%;
+  }
+
+  __ROOT__ .f95ue-library-dock-btn {
+    width: 100%;
+    min-width: 0;
+  }
+}

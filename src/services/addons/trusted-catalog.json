@@ -34,5 +34,14 @@
     "pageScopes": ["latest"],
     "downloadUrl": "",
     "trusted": true
+  },
+  {
+    "id": "halloween-theme-addon",
+    "name": "Halloween Theme Add-on",
+    "description": "Forces Halloween logo/background theme with simple apply and teardown lifecycle.",
+    "version": "0.1.0",
+    "pageScopes": [],
+    "downloadUrl": "",
+    "trusted": true
   }
 ]

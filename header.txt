@@ -10,6 +10,8 @@
 // @match        *://pixeldrain.com/*
 // @match        *://datanodes.to/download
 // @icon         https://f95zone.to/data/avatars/l/1963/1963870.jpg
+// @resource     trustedAddonCatalog https://cdn.jsdelivr.net/gh/Zenix-Al/f95-zone-highlighter@main/src/services/addons/trusted-catalog.json
+// @grant        GM_getResourceText
 // @grant        GM.setValue
 // @grant        GM.getValue
 // @grant        GM_openInTab

@@ -40,6 +40,7 @@ export function startImageRepairAddon() {
   let isEnabled = true;
   let isObserverWatching = false;
   let addonCommandHandlerBound = false;
+  let addonCommandHandler = null;
   const metrics = { succeeded: 0, failed: 0, avgCache: 0 };
 
   const ui = createImageRepairUi({
@@ -49,6 +50,20 @@ export function startImageRepairAddon() {
     toastUpdateInterval: TOAST_UPDATE_INTERVAL,
     metrics,
   });
+
+  async function registerUiStyle() {
+    const result = await bridge.invokeCoreAction("ui.style.register", {
+      styleId: ui.styleId,
+      cssText: ui.cssText,
+    });
+    return Boolean(result?.ok);
+  }
+
+  async function unregisterUiStyle() {
+    await bridge.invokeCoreAction("ui.style.unregister", {
+      styleId: ui.styleId,
+    });
+  }
 
   const feature = createImageRepairFeature({
     imageHost: IMAGE_HOST,
@@ -109,16 +124,16 @@ export function startImageRepairAddon() {
     bridge.dispatchCoreCommand("register", {
       addon: {
         id: runtime.addonId,
-        name: "Image Repair Add-on",
-        version: "0.1.0",
-        description:
-          "Automatically retries broken attachment images on F95Zone threads. Runs alongside F95UE core.",
+        name: runtime.addonName,
+        version: runtime.addonVersion,
+        description: runtime.addonDescription,
         status: isEnabled ? "installed" : "disabled",
         statusMessage: statusMessage(),
-        panelTitle: "Image Repair Add-on",
+        panelTitle: runtime.addonName,
         panelBody:
           "Retries failed attachment images (attachments.f95zone.to). Use Enable / Disable to control whether the watcher is active.",
         capabilities: runtime.capabilities,
+        pageScopes: ["thread"],
       },
     });
   }
@@ -131,37 +146,60 @@ export function startImageRepairAddon() {
     });
   }
 
-  function setEnabled(nextEnabled) {
+  async function setEnabled(nextEnabled) {
     isEnabled = Boolean(nextEnabled);
-    void storageSet("enabled", isEnabled);
+    await storageSet("enabled", isEnabled);
 
     if (isEnabled) {
+      await registerUiStyle();
       feature.enable();
-      void startDirectObserver();
+      await startDirectObserver();
     } else {
       feature.disable();
-      void stopDirectObserver();
+      await stopDirectObserver();
+      await unregisterUiStyle();
     }
 
     pushStatusUpdate();
   }
 
+  function unbindAddonCommandListener() {
+    if (!addonCommandHandlerBound || !addonCommandHandler) return;
+    window.removeEventListener(ADDON_COMMAND_EVENT, addonCommandHandler);
+    addonCommandHandlerBound = false;
+    addonCommandHandler = null;
+  }
+
+  async function teardownAddon(reason = "teardown") {
+    feature.disable();
+    await stopDirectObserver();
+    await unregisterUiStyle();
+    unbindAddonCommandListener();
+    bridge.dispatchCoreCommand("teardown-complete", {
+      addonId: runtime.addonId,
+      reason,
+    });
+  }
+
   function bindAddonCommandListener() {
     if (addonCommandHandlerBound) return;
-    window.addEventListener(ADDON_COMMAND_EVENT, (event) => {
+    addonCommandHandler = (event) => {
       const detail = event?.detail || {};
       if (String(detail.addonId || "") !== runtime.addonId) return;
 
       const command = String(detail.command || "").trim();
       if (command === "enable") {
-        setEnabled(true);
+        void setEnabled(true);
       } else if (command === "disable") {
-        setEnabled(false);
+        void setEnabled(false);
+      } else if (command === "teardown") {
+        void teardownAddon(String(detail.reason || "teardown"));
       } else if (command === "observer.nodes") {
         if (String(detail.observerId || "") !== observerId) return;
         feature.enqueueObservedNodes(detail.nodes || []);
       }
-    });
+    };
+    window.addEventListener(ADDON_COMMAND_EVENT, addonCommandHandler);
     addonCommandHandlerBound = true;
   }
 
@@ -221,10 +259,12 @@ export function startImageRepairAddon() {
       bindAddonCommandListener();
 
       if (isEnabled) {
+        await registerUiStyle();
         feature.enable();
         await startDirectObserver();
       } else {
         await stopDirectObserver();
+        await unregisterUiStyle();
         // Sync panel status after applying persisted disabled state.
         pushStatusUpdate();
       }

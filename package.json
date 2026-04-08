@@ -11,6 +11,7 @@
     "build:addons:force": "node addons/build-addon.js --all --force",
     "build:addons:release:force": "node addons/build-addon.js --all --release --force",
     "build:addon:image-repair": "node addons/build-addon.js image-repair-addon",
+    "build:addon:latest-filters": "node addons/build-addon.js latest-filters-addon",
     "lint": "eslint \"src/**\" --ext .js",
     "lint:fix": "eslint \"src/**\" --ext .js --fix",
     "test": "node tests/run.cjs"

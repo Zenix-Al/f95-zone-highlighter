@@ -7,17 +7,26 @@ import {
 import { createCoreBridge } from "./coreBridge.js";
 import { createLibraryService } from "./library/service.js";
 import { getThreadSnapshot, isThreadPage } from "./thread/detector.js";
-import { openLibraryManager } from "./ui/managerLauncher.js";
+import { renderDockMarkup } from "./ui/dockRenderer.js";
+import {
+  closeLibraryManager,
+  handleLibraryManagerDialogClosed,
+  openLibraryManager,
+} from "./ui/managerLauncher.js";
 
 const runtime = getRuntimeConfig();
+console.log(`[library-addon] Runtime config:`, runtime);
 const bridge = createCoreBridge(runtime.addonId);
 const library = createLibraryService(bridge);
+const LIBRARY_DOCK_MOUNT_ID = "library-dock-widget";
 
 let isEnabled = true;
 let showPageButtons = true;
 let addonCommandHandlerBound = false;
+let addonCommandHandler = null;
 let currentSnapshot = null;
 let currentSaved = false;
+let dockMountClickHandler = null;
 
 async function storageGet(key, defaultValue = null) {
   const result = await bridge.invokeCoreAction("storage.get", { key, defaultValue });
@@ -68,13 +77,12 @@ function registerAddon() {
   bridge.dispatchCoreCommand("register", {
     addon: {
       id: runtime.addonId,
-      name: "Library Add-on",
-      version: "0.1.0",
-      description:
-        "Save thread snapshots into a personal library with quick page controls and a dedicated manager.",
+      name: runtime.addonName,
+      version: runtime.addonVersion,
+      description: runtime.addonDescription,
       status: isEnabled ? "installed" : "disabled",
       statusMessage: statusMessage(),
-      panelTitle: "Library Add-on",
+      panelTitle: runtime.addonName,
       panelBody: getPanelBody(),
       panelSettingsTitle: "Library Settings",
       panelSettingsDescription:
@@ -99,12 +107,15 @@ function registerAddon() {
         },
       ],
       capabilities: runtime.capabilities,
+      pageScopes: ["thread", "latest", "download"],
     },
   });
 }
 
 function openManager() {
   openLibraryManager({
+    bridge,
+    addonId: runtime.addonId,
     library,
     getCurrentThreadSnapshot: () => getThreadSnapshot(),
     onMutated: () => {
@@ -123,27 +134,99 @@ function pushStatusUpdate() {
   registerAddon();
 }
 
+function unbindDockMountEvents() {
+  if (!dockMountClickHandler) {
+    return;
+  }
+  window.removeEventListener("click", dockMountClickHandler, true);
+  dockMountClickHandler = null;
+}
+
+function resolveDockActionButton(event) {
+  const path = typeof event?.composedPath === "function" ? event.composedPath() : [];
+  let inLibraryDock = false;
+  let actionEl = null;
+
+  for (const node of path) {
+    if (!node || node.nodeType !== 1) continue;
+
+    if (!inLibraryDock) {
+      const role = String(node.getAttribute?.("data-role") || "").trim();
+      if (role === "libraryDock") {
+        inLibraryDock = true;
+      }
+    }
+
+    if (!actionEl && typeof node.matches === "function" && node.matches("button[data-action]")) {
+      actionEl = node;
+    }
+
+    if (inLibraryDock && actionEl) break;
+  }
+
+  if (!inLibraryDock || !actionEl) return null;
+  return actionEl;
+}
+
+function bindDockMountEvents() {
+  if (dockMountClickHandler) {
+    return;
+  }
+
+  dockMountClickHandler = (event) => {
+    const actionEl = resolveDockActionButton(event);
+    if (!actionEl) return;
+
+    const action = String(actionEl.dataset.action || "").trim();
+    if (action === "open-library") {
+      if (!isEnabled) return;
+      openManager();
+      return;
+    }
+    if (action === "toggle-thread") {
+      if (!isEnabled) return;
+      void toggleCurrentThreadFromDock();
+    }
+  };
+
+  window.addEventListener("click", dockMountClickHandler, true);
+  console.log(`[library-addon] dock click listener bound globally`);
+}
+
+async function mountDockWidget({ showPrimaryButton, isSaved }) {
+  console.log(
+    `[library-addon] mountDockWidget called with showPrimaryButton=${showPrimaryButton}, isSaved=${isSaved}`,
+  );
+  const result = await bridge.invokeCoreAction("ui.mount", {
+    mountId: LIBRARY_DOCK_MOUNT_ID,
+    slot: "page.dock",
+    html: renderDockMarkup({ showPrimaryButton, isSaved }),
+  });
+  console.log(`[library-addon] ui.mount result:`, result);
+  console.log(
+    `[library-addon] Expected element ID: f95ue-addon-mount-${runtime.addonId}-${LIBRARY_DOCK_MOUNT_ID}`,
+  );
+  bindDockMountEvents();
+}
+
 async function mountQuickAddIfApplicable() {
+  console.log(
+    `[library-addon] mountQuickAddIfApplicable called: isEnabled=${isEnabled}, showPageButtons=${showPageButtons}`,
+  );
   if (!isEnabled || !showPageButtons) {
     currentSnapshot = null;
     currentSaved = false;
-    await bridge.invokeCoreAction("ui.dock.removeButtons");
+    await unmountQuickAdd();
     return;
   }
 
   const snapshot = isThreadPage() ? getThreadSnapshot() : null;
+  console.debug(`[library-addon] page snapshot:`, snapshot);
   if (!snapshot?.threadId) {
     currentSnapshot = null;
     currentSaved = false;
-    await bridge.invokeCoreAction("ui.dock.setButtons", {
-      buttons: [
-        {
-          id: "open-library",
-          label: "Library",
-          variant: "secondary",
-        },
-      ],
-    });
+    console.log(`[library-addon] mounting dock widget without primary button (not thread page)`);
+    await mountDockWidget({ showPrimaryButton: false, isSaved: false });
     return;
   }
 
@@ -151,26 +234,14 @@ async function mountQuickAddIfApplicable() {
   currentSnapshot = snapshot;
   currentSaved = Boolean(saved);
 
-  await bridge.invokeCoreAction("ui.dock.setButtons", {
-    buttons: [
-      {
-        id: "toggle-thread",
-        label: currentSaved ? "Remove from Library" : "Save to Library",
-        variant: currentSaved ? "saved" : "primary",
-      },
-      {
-        id: "open-library",
-        label: "Library",
-        variant: "secondary",
-      },
-    ],
-  });
+  await mountDockWidget({ showPrimaryButton: true, isSaved: currentSaved });
 }
 
 async function unmountQuickAdd() {
   currentSnapshot = null;
   currentSaved = false;
-  await bridge.invokeCoreAction("ui.dock.removeButtons");
+  unbindDockMountEvents();
+  await bridge.invokeCoreAction("ui.unmount", { mountId: LIBRARY_DOCK_MOUNT_ID });
 }
 
 async function toggleCurrentThreadFromDock() {
@@ -198,14 +269,15 @@ async function toggleCurrentThreadFromDock() {
   await mountQuickAddIfApplicable();
 }
 
-function setEnabled(nextEnabled) {
+async function setEnabled(nextEnabled) {
   isEnabled = Boolean(nextEnabled);
-  void saveSettings({ enabled: isEnabled });
+  await saveSettings({ enabled: isEnabled });
 
   if (isEnabled) {
-    void mountQuickAddIfApplicable();
+    await mountQuickAddIfApplicable();
   } else {
-    void unmountQuickAdd();
+    await unmountQuickAdd();
+    closeLibraryManager("disabled");
   }
 
   pushStatusUpdate();
@@ -251,18 +323,18 @@ async function saveCurrentThreadFromPanel() {
 function bindAddonCommandListener() {
   if (addonCommandHandlerBound) return;
 
-  window.addEventListener(ADDON_COMMAND_EVENT, (event) => {
+  addonCommandHandler = (event) => {
     const detail = event?.detail || {};
     if (String(detail.addonId || "") !== runtime.addonId) return;
 
     const command = String(detail.command || "").trim();
     if (command === "enable") {
-      setEnabled(true);
+      void setEnabled(true);
       return;
     }
 
     if (command === "disable") {
-      setEnabled(false);
+      void setEnabled(false);
       return;
     }
 
@@ -276,10 +348,15 @@ function bindAddonCommandListener() {
       return;
     }
 
+    if (command === "dialog-closed") {
+      handleLibraryManagerDialogClosed(detail);
+      return;
+    }
+
     if (command === "panel-action") {
       const actionId = String(detail.actionId || "").trim();
       if (actionId === "open-library") {
-        openManager();
+        if (isEnabled) openManager();
         return;
       }
 
@@ -289,19 +366,33 @@ function bindAddonCommandListener() {
       return;
     }
 
-    if (command === "dock-action") {
-      const actionId = String(detail.actionId || "").trim();
-      if (actionId === "open-library") {
-        openManager();
-        return;
-      }
-      if (actionId === "toggle-thread") {
-        void toggleCurrentThreadFromDock();
-      }
+    if (command === "teardown") {
+      void teardownAddon(String(detail.reason || "requested by core"));
     }
-  });
+  };
+
+  window.addEventListener(ADDON_COMMAND_EVENT, addonCommandHandler);
 
   addonCommandHandlerBound = true;
+}
+
+function unbindAddonCommandListener() {
+  if (!addonCommandHandlerBound || !addonCommandHandler) return;
+  window.removeEventListener(ADDON_COMMAND_EVENT, addonCommandHandler);
+  addonCommandHandler = null;
+  addonCommandHandlerBound = false;
+}
+
+async function teardownAddon(reason) {
+  await unmountQuickAdd();
+  closeLibraryManager(reason);
+  if (reason !== "disable") {
+    unbindAddonCommandListener();
+  }
+  bridge.dispatchCoreCommand("teardown-complete", {
+    addonId: runtime.addonId,
+    reason,
+  });
 }
 
 function reportAddonBroken(err) {
