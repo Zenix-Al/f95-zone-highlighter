@@ -1,0 +1,38 @@
+[
+  {
+    "id": "image-repair-addon",
+    "name": "Image Repair Add-on",
+    "description": "Automatically retries broken attachment images on thread pages.",
+    "version": "0.1.0",
+    "pageScopes": ["thread"],
+    "downloadUrl": "https://greasyfork.org/en/scripts/572502-f95ue-image-repair-add-on",
+    "trusted": true
+  },
+  {
+    "id": "masked-direct-addon",
+    "name": "Masked + Direct Download Add-on",
+    "description": "Combines masked-link skipper and direct-download flows in one trusted add-on.",
+    "version": "0.1.0",
+    "pageScopes": ["thread", "download"],
+    "downloadUrl": "https://greasyfork.org/en/scripts/572503-f95ue-masked-direct-download-add-on",
+    "trusted": true
+  },
+  {
+    "id": "library-addon",
+    "name": "Library Add-on",
+    "description": "Quickly save thread snapshots into a personal library and manage them in a dedicated UI.",
+    "version": "0.1.0",
+    "pageScopes": [],
+    "downloadUrl": "https://greasyfork.org/en/scripts/572506-f95ue-library-add-on",
+    "trusted": true
+  },
+  {
+    "id": "latest-filters-addon",
+    "name": "Latest Filters Add-on",
+    "description": "Adds one saved-filters button on Latest Updates with a searchable preset list and active filter tracking.",
+    "version": "0.1.0",
+    "pageScopes": ["latest"],
+    "downloadUrl": "",
+    "trusted": true
+  }
+]
