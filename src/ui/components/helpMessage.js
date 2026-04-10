@@ -1,19 +1,33 @@
-import stateManager, { helpMessages } from "../../config.js";
+import stateManager, { helpMessages, config } from "../../config.js";
 import { debugLog } from "../../core/logger.js";
 
 let helpMsgInterval = null;
-const MOBILE_HELP_MSG_MAX_WIDTH = 480;
 
-function isMobileViewport() {
-  return window.matchMedia(`(max-width: ${MOBILE_HELP_MSG_MAX_WIDTH}px)`).matches;
+function isHelpMessageDisabled() {
+  return config?.globalSettings?.disableHelpMessage === true;
 }
 
-function setHintVisibility(visible) {
+function setHintTextVisibility(visible) {
   const shadowRoot = stateManager.get("shadowRoot");
   if (!shadowRoot) return;
-  const hint = shadowRoot.querySelector(".modal-footer-hint");
-  if (!hint) return;
-  hint.style.display = visible ? "" : "none";
+  const hintText = shadowRoot.querySelector(".modal-footer-hint .hint-text");
+  if (!hintText) return;
+  hintText.style.display = visible ? "" : "none";
+}
+
+function setupHelpMessageButtons() {
+  const shadowRoot = stateManager.get("shadowRoot");
+  if (!shadowRoot) return;
+
+  const feedbackBtn = shadowRoot.querySelector(".modal-footer-hint-feedback");
+
+  if (feedbackBtn && feedbackBtn.dataset.bound !== "1") {
+    feedbackBtn.dataset.bound = "1";
+    feedbackBtn.addEventListener("click", () => {
+      const url = "https://f95zone.to/threads/f95zone-latest.250836/";
+      window.open(url, "_blank");
+    });
+  }
 }
 
 function getRandomStupidHelpMsg() {
@@ -22,8 +36,8 @@ function getRandomStupidHelpMsg() {
 }
 
 export function startHelpMessageCycle() {
-  if (isMobileViewport()) {
-    setHintVisibility(false);
+  if (isHelpMessageDisabled()) {
+    setHintTextVisibility(false);
     if (helpMsgInterval) {
       clearInterval(helpMsgInterval);
       helpMsgInterval = null;
@@ -31,7 +45,8 @@ export function startHelpMessageCycle() {
     return;
   }
 
-  setHintVisibility(true);
+  setHintTextVisibility(true);
+  setupHelpMessageButtons();
   const msg = getRandomStupidHelpMsg();
   debugLog("getRandomStupidHelpMsg", `Selected help message: ${msg}`);
   const hintSpan = stateManager.get("shadowRoot").querySelector(".modal-footer-hint .hint-text");
@@ -52,4 +67,13 @@ export function stopHelpMessageCycle() {
     helpMsgInterval = null;
     debugLog("HelpMsg", "Stopped help message interval.");
   }
+}
+
+export function syncHelpMessageFooter() {
+  if (isHelpMessageDisabled()) {
+    setHintTextVisibility(false);
+    stopHelpMessageCycle();
+    return;
+  }
+  startHelpMessageCycle();
 }

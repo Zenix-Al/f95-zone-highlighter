@@ -5,7 +5,14 @@ export function createEnabledDisabledToast(
   return (value) => `${label} ${value ? enabled : disabled}`;
 }
 
-export function createToggleSetting({ text, tooltip = "", config, custom = null, toast = null }) {
+export function createToggleSetting({
+  text,
+  tooltip = "",
+  config,
+  custom = null,
+  toast = null,
+  beforeChange = null,
+}) {
   const effects = {};
   if (typeof custom === "function") {
     effects.custom = custom;
@@ -14,13 +21,19 @@ export function createToggleSetting({ text, tooltip = "", config, custom = null,
     effects.toast = toast;
   }
 
-  return {
+  const setting = {
     type: "toggle",
     text,
     tooltip,
     config,
     effects,
   };
+
+  if (typeof beforeChange === "function") {
+    setting.beforeChange = beforeChange;
+  }
+
+  return setting;
 }
 
 export function createColorSetting({ text, config, before, custom = null, toast = null }) {

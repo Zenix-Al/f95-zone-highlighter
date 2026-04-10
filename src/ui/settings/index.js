@@ -10,6 +10,7 @@ import { handleModalClick, handleOutsideSearchClick } from "../components/listen
 import { injectModal } from "../components/modal";
 import { addListener } from "../../core/listenerRegistry";
 import { showToast } from "../components/toast";
+import { openConfirmDialog } from "../components/dialog.js";
 import { colorSettingsMeta } from "./colorSettings";
 import { globalSettingsMeta } from "./globalSettings";
 import { latestSettingsMeta } from "./latestSettings";
@@ -18,6 +19,7 @@ import { ADDON_COMMAND_EVENT } from "../../services/addons/shared.js";
 import {
   invokeAddonCoreAction,
   listKnownAddons,
+  removeAddonInstallationTrace,
   subscribeAddonsRegistry,
 } from "../../services/addonsService.js";
 import { showAllTags, updateSearch, updateTags } from "../../services/tagsService";
@@ -27,6 +29,29 @@ const DEFAULT_SETTINGS_PANEL = "settings-panel-general";
 const SETTINGS_ACTIVE_PANEL_STORAGE_KEY = "settingsUiActivePanel";
 const SETTINGS_PINNED_ADDONS_STORAGE_KEY = "settingsUiPinnedAddonIds";
 let addonsRegistryUnsubscribe = null;
+
+function isMobileSettingsViewport() {
+  try {
+    return Boolean(window.matchMedia && window.matchMedia("(max-width: 760px)").matches);
+  } catch {
+    return false;
+  }
+}
+
+function setMobileShellView(shadowRoot, showPanel) {
+  const shell = shadowRoot?.querySelector?.(".settings-shell");
+  const mobileHeader = shadowRoot?.getElementById?.("settings-mobile-panel-header");
+  if (!shell) return;
+
+  if (!isMobileSettingsViewport()) {
+    shell.classList.remove("mobile-show-panel");
+    if (mobileHeader) mobileHeader.hidden = true;
+    return;
+  }
+
+  shell.classList.toggle("mobile-show-panel", Boolean(showPanel));
+  if (mobileHeader) mobileHeader.hidden = !Boolean(showPanel);
+}
 
 const ADDON_STATUS_META = {
   installed: { label: "Installed", badgeClass: "installed" },
@@ -404,7 +429,11 @@ function createAddonCard(doc, addon, options = {}) {
   card.appendChild(description);
   card.appendChild(scopeInfo);
 
-  if (!planned && addon.statusMessage) {
+  const shouldShowCardStatusCopy =
+    !planned &&
+    Boolean(addon.statusMessage) &&
+    !(addon.status === "installed" && addon.activeOnPage);
+  if (shouldShowCardStatusCopy) {
     const statusCopy = doc.createElement("div");
     statusCopy.className = `addins-status-copy ${addon.status}`;
     statusCopy.textContent = addon.statusMessage;
@@ -464,17 +493,25 @@ function createAddonCard(doc, addon, options = {}) {
           "secondary",
         ),
       );
-      actions.appendChild(
-        createActionButton(doc, "Move Up", "move-addon-pin-up", addon.id, "secondary"),
-      );
-      actions.appendChild(
-        createActionButton(doc, "Move Down", "move-addon-pin-down", addon.id, "secondary"),
-      );
+      if (pinned) {
+        actions.appendChild(
+          createActionButton(doc, "Move Up", "move-addon-pin-up", addon.id, "secondary"),
+        );
+        actions.appendChild(
+          createActionButton(doc, "Move Down", "move-addon-pin-down", addon.id, "secondary"),
+        );
+      }
     }
 
     if (addon.downloadUrl && addon.status === "not-installed") {
       actions.appendChild(
         createActionButton(doc, "Download", "open-addon-download", addon.id, "secondary"),
+      );
+    }
+
+    if (addon.status !== "not-installed" && !addon.activeOnPage) {
+      actions.appendChild(
+        createActionButton(doc, "Delete Trace", "delete-addon-trace", addon.id, "secondary"),
       );
     }
 
@@ -658,7 +695,11 @@ function syncPinnedAddonNav(shadowRoot) {
   });
 }
 
-function setActivePanel(shadowRoot, targetId, { persist = true, resetScroll = true } = {}) {
+function setActivePanel(
+  shadowRoot,
+  targetId,
+  { persist = true, resetScroll = true, showMobilePanel = true } = {},
+) {
   const navItems = [...shadowRoot.querySelectorAll(".settings-nav-item[data-target]")];
   const panels = [...shadowRoot.querySelectorAll(".settings-panel")];
   if (navItems.length === 0 || panels.length === 0) return;
@@ -682,17 +723,30 @@ function setActivePanel(shadowRoot, targetId, { persist = true, resetScroll = tr
   if (persist) {
     void persistSettingsUiValue(SETTINGS_ACTIVE_PANEL_STORAGE_KEY, nextPanelId);
   }
+
+  const activeNav = navItems.find((item) => item.dataset.target === nextPanelId);
+  const mobileTitle = shadowRoot.getElementById("settings-mobile-title");
+  if (mobileTitle) {
+    mobileTitle.textContent = String(activeNav?.textContent || "Settings").trim() || "Settings";
+  }
+  setMobileShellView(shadowRoot, showMobilePanel);
 }
 
 function syncSettingsSidebarNavigation(shadowRoot) {
   const activePanelId = String(stateManager.get("settingsActivePanel") || DEFAULT_SETTINGS_PANEL);
   const activePanelBeforeSync = shadowRoot.getElementById(activePanelId);
   const preservedScrollTop = Number(activePanelBeforeSync?.scrollTop || 0);
+  const shell = shadowRoot.querySelector(".settings-shell");
+  const keepMobilePanelOpen = Boolean(shell?.classList?.contains("mobile-show-panel"));
 
   syncAddonPanels(shadowRoot);
   syncPinnedAddonNav(shadowRoot);
   renderAddinsOverview(shadowRoot);
-  setActivePanel(shadowRoot, activePanelId, { persist: false, resetScroll: false });
+  setActivePanel(shadowRoot, activePanelId, {
+    persist: false,
+    resetScroll: false,
+    showMobilePanel: keepMobilePanelOpen,
+  });
 
   const activePanelAfterSync = shadowRoot.getElementById(activePanelId);
   if (activePanelAfterSync) {
@@ -704,11 +758,30 @@ function initSettingsSidebarNavigation(shadowRoot) {
   const nav = shadowRoot.getElementById("settings-nav");
   if (!nav || nav.dataset.initBound) return;
 
+  const mobileBackBtn = shadowRoot.getElementById("settings-mobile-back");
+  const mobileCloseBtn = shadowRoot.getElementById("settings-mobile-close");
+
+  setMobileShellView(shadowRoot, false);
+
   nav.addEventListener("click", (event) => {
     const target = event.target?.closest?.(".settings-nav-item[data-target]");
     if (!target) return;
     const targetPanelId = String(target.dataset.target || "").trim();
     setActivePanel(shadowRoot, targetPanelId);
+  });
+
+  mobileBackBtn?.addEventListener("click", () => {
+    setMobileShellView(shadowRoot, false);
+  });
+
+  mobileCloseBtn?.addEventListener("click", () => {
+    shadowRoot.getElementById("close-modal")?.click();
+  });
+
+  window.addEventListener("resize", () => {
+    if (!isMobileSettingsViewport()) {
+      setMobileShellView(shadowRoot, false);
+    }
   });
 
   nav.dataset.initBound = "1";
@@ -801,6 +874,39 @@ function initAddinsPanelActions(shadowRoot) {
         return;
       }
       updateRegisteredAddons(listKnownAddons());
+      return;
+    }
+
+    if (actionButton.dataset.addonAction === "delete-addon-trace") {
+      const addon = getAddonById(addonId);
+      if (!addon || addon.status === "not-installed") {
+        showToast("Nothing to delete.");
+        return;
+      }
+      if (addon.activeOnPage) {
+        showToast("Cannot delete while add-on is active on this page.");
+        return;
+      }
+
+      const confirmed = await openConfirmDialog({
+        title: "Delete Add-on Trace",
+        description: `Delete installed trace for "${addon.name}"? This removes stale status from Add-ins.`,
+        confirmLabel: "Delete Trace",
+        cancelLabel: "Cancel",
+      });
+      if (!confirmed) return;
+
+      const result = await removeAddonInstallationTrace(addonId);
+      if (!result?.ok) {
+        showToast(`Delete failed: ${result?.reason || "unknown"}`);
+        return;
+      }
+
+      const nextPins = getPinnedAddonIds().filter((id) => id !== addonId);
+      stateManager.set("settingsPinnedAddonIds", nextPins);
+      await persistSettingsUiValue(SETTINGS_PINNED_ADDONS_STORAGE_KEY, nextPins);
+      updateRegisteredAddons(listKnownAddons());
+      showToast("Add-on trace deleted.");
     }
   });
 

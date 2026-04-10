@@ -32,7 +32,7 @@
     "description": "Adds one saved-filters button on Latest Updates with a searchable preset list and active filter tracking.",
     "version": "0.1.0",
     "pageScopes": ["latest"],
-    "downloadUrl": "",
+    "downloadUrl": "https://greasyfork.org/en/scripts/573076-f95ue-latest-filters-add-on",
     "trusted": true
   },
   {
@@ -41,7 +41,7 @@
     "description": "Forces Halloween logo/background theme with simple apply and teardown lifecycle.",
     "version": "0.1.0",
     "pageScopes": [],
-    "downloadUrl": "",
+    "downloadUrl": "https://greasyfork.org/en/scripts/573070-f95ue-halloween-theme-add-on",
     "trusted": true
   }
 ]

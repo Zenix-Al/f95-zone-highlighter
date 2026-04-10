@@ -55,9 +55,7 @@ export function buildKnownAddonsSnapshot({
       } else {
         status = "installed";
         if (!hasKnownScopeMeta) {
-          statusMessage =
-            String(metaEntry?.statusMessage || "").trim() ||
-            "Enabled from core. It will activate when the add-on loads.";
+          statusMessage = String(metaEntry?.statusMessage || "").trim() || "";
         } else if (!scopeApplies) {
           statusMessage = "Enabled. This add-on only activates on supported pages.";
         } else {
@@ -81,7 +79,7 @@ export function buildKnownAddonsSnapshot({
     } else if (!runtimeEntry && !hasInstallSighting) {
       status = "not-installed";
       statusMessage = catalogFresh
-        ? "Not detected yet. Install using the download button."
+        ? ""
         : "Catalog data unavailable - install info may be outdated.";
     }
 

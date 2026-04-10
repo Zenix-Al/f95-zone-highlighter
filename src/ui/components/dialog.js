@@ -11,6 +11,77 @@ function removeDialogIfExists() {
   if (existing) existing.remove();
 }
 
+export function openConfirmDialog({
+  title = "Confirm",
+  description = "Are you sure?",
+  confirmLabel = "Confirm",
+  cancelLabel = "Cancel",
+} = {}) {
+  const shadowRoot = getShadowRoot();
+  if (!shadowRoot) return Promise.resolve(false);
+
+  removeDialogIfExists();
+
+  return new Promise((resolve) => {
+    const backdrop = createEl("div", {
+      attrs: { id: ACTIVE_DIALOG_ID },
+      className: "config-dialog-backdrop",
+    });
+    const panel = createEl("div", { className: "config-dialog-panel" });
+    const header = createEl("div", { className: "config-dialog-title", text: title });
+    const body = createEl("div", { className: "config-dialog-description", text: description });
+
+    const actions = createEl("div", { className: "config-dialog-actions" });
+    const cancelBtn = createEl("button", {
+      className: "modal-btn dialog-cancel",
+      attrs: { type: "button" },
+      text: cancelLabel,
+    });
+    const confirmBtn = createEl("button", {
+      className: "modal-btn dialog-submit",
+      attrs: { type: "button" },
+      text: confirmLabel,
+    });
+
+    actions.append(cancelBtn, confirmBtn);
+    panel.append(header, body, actions);
+    backdrop.appendChild(panel);
+    shadowRoot.appendChild(backdrop);
+
+    let done = false;
+    const { reg, dispose } = createRegistrar("dialog-confirm");
+    const close = (value) => {
+      if (done) return;
+      done = true;
+      dispose();
+      backdrop.remove();
+      resolve(Boolean(value));
+    };
+
+    reg(cancelBtn, "click", () => close(false));
+    reg(confirmBtn, "click", () => close(true));
+    reg(backdrop, "click", (e) => {
+      if (e.target === backdrop) close(false);
+    });
+    reg(backdrop, "keydown", (e) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        close(false);
+      }
+      if (e.key === "Enter") {
+        e.preventDefault();
+        close(true);
+      }
+    });
+
+    setTimeout(() => {
+      try {
+        confirmBtn.focus();
+      } catch {}
+    }, 0);
+  });
+}
+
 export function openTextPrompt({
   title = "Input",
   description = "",

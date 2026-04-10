@@ -408,7 +408,14 @@ async function updatePresetFromCurrent(presetId) {
 async function deletePreset(presetId) {
   const preset = getPresetById(presetId);
   if (!preset) return;
-  if (!window.confirm(`Delete saved filter '${preset.name}'?`)) return;
+
+  const confirmResult = await bridge.invokeCoreAction("ui.confirm", {
+    title: "Delete Saved Filter",
+    description: `Delete saved filter '${preset.name}'?`,
+    confirmLabel: "Delete",
+    cancelLabel: "Cancel",
+  });
+  if (!confirmResult?.ok || !confirmResult?.value?.confirmed) return;
 
   const nextPresets = presetsState.filter((entry) => entry.id !== presetId);
   await persistPresets(nextPresets);

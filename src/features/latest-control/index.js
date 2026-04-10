@@ -3,6 +3,7 @@ import { config } from "../../config.js";
 import { addObserverCallback, removeObserverCallback } from "../../core/observer.js";
 import { SELECTORS } from "../../config/selectors.js";
 import TIMINGS from "../../config/timings.js";
+import { debugLog } from "../../core/logger.js";
 
 /**
  * Main handler to synchronize the state of on-page UI controls
@@ -12,7 +13,12 @@ import TIMINGS from "../../config/timings.js";
 function syncLatestControls() {
   const autoRefreshBtn = document.getElementById(SELECTORS.LATEST_CONTROL.IDS.AUTO_REFRESH);
   const webNotifBtn = document.getElementById(SELECTORS.LATEST_CONTROL.IDS.NOTIFY);
-
+  debugLog("Latest Controls Sync", "Syncing control states with configuration...", {
+    autoRefreshBtn: !!autoRefreshBtn,
+    webNotifBtn: !!webNotifBtn,
+    targetAutoRefresh: config.latestSettings.autoRefresh,
+    targetWebNotif: config.latestSettings.webNotif,
+  });
   if (!autoRefreshBtn || !webNotifBtn) return;
 
   const isAutoRefreshOn = autoRefreshBtn.classList.contains("selected");
@@ -44,34 +50,24 @@ function syncLatestControls() {
  */
 function processMutations(mutationsList) {
   for (const mutation of mutationsList) {
-    for (const node of mutation.addedNodes) {
-      if (node.nodeType !== 1) continue;
-
-      const isControl =
-        node.id === SELECTORS.LATEST_CONTROL.IDS.AUTO_REFRESH ||
-        node.id === SELECTORS.LATEST_CONTROL.IDS.NOTIFY ||
-        node.querySelector?.(`#${SELECTORS.LATEST_CONTROL.IDS.AUTO_REFRESH}`) ||
-        node.querySelector?.(`#${SELECTORS.LATEST_CONTROL.IDS.NOTIFY}`);
-
-      if (isControl) {
+    const hasDomChange =
+      (mutation.addedNodes && mutation.addedNodes.length > 0) ||
+      (mutation.removedNodes && mutation.removedNodes.length > 0);
+    if (hasDomChange) {
+      setTimeout(() => {
         syncLatestControls();
-        return;
-      }
+      }, 100);
+      return;
     }
   }
 }
 
 function hasLatestControlMutations(mutationsList) {
-  return mutationsList.some((mutation) => {
-    for (const node of mutation.addedNodes || []) {
-      if (node.nodeType !== 1) continue;
-      if (node.id === SELECTORS.LATEST_CONTROL.IDS.AUTO_REFRESH) return true;
-      if (node.id === SELECTORS.LATEST_CONTROL.IDS.NOTIFY) return true;
-      if (node.querySelector?.(`#${SELECTORS.LATEST_CONTROL.IDS.AUTO_REFRESH}`)) return true;
-      if (node.querySelector?.(`#${SELECTORS.LATEST_CONTROL.IDS.NOTIFY}`)) return true;
-    }
-    return false;
-  });
+  return mutationsList.some(
+    (mutation) =>
+      (mutation.addedNodes && mutation.addedNodes.length > 0) ||
+      (mutation.removedNodes && mutation.removedNodes.length > 0),
+  );
 }
 
 function enable() {

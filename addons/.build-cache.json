@@ -9,8 +9,8 @@
   "release": {
     "image-repair-addon": "a9610c96e437ada1c2880bdd8b7384414a36737ca31e54b44c29347644f87ca7",
     "masked-direct-addon": "eeffe83a971cea1a2519430454d04290c59b057a0a5014b2d9e7d4528e37777b",
-    "library-addon": "ec409ed6c1745f4c09030a2bd8d4c834b5d249c13600dfa75787bca913909a38",
-    "latest-filters-addon": "7132c46ea496e7a7da156cf003ecd3849f5ea2f2a418ab866f7aeb48d6ba5ef4",
-    "halloween-theme-addon": "00839a3b20a9b72a6f21fdd7e36756dbbd413ce3716aa0d65c1b44d603918262"
+    "library-addon": "d2822c50d3b431e0d4c474cb7e5ffab0c64df700003705d699eb11a2e47cee95",
+    "latest-filters-addon": "6f0ef88dc2468ebb083a54bef9075d5d5e36cc4116d7706666cdb8acacb7ed33",
+    "halloween-theme-addon": "da8c6e0a85844b0d82340fd9c6acc890c5cffd106126ac2f09e7643a57ec174d"
   }
 }

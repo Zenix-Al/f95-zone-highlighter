@@ -164,3 +164,16 @@ export async function clearAddonState(addonId) {
   if (!persisted.ok) return { ok: false, reason: "storage_error" };
   return { ok: true };
 }
+
+export async function removeInstalledAddonMeta(addonId) {
+  const normalizedId = sanitizeAddonId(addonId);
+  if (!normalizedId) return { ok: true };
+
+  const addonsRoot = ensureAddonsConfigBucket();
+  if (!addonsRoot.installedMeta[normalizedId]) return { ok: true };
+
+  delete addonsRoot.installedMeta[normalizedId];
+  const persisted = await persistAddonsState();
+  if (!persisted.ok) return { ok: false, reason: "storage_error" };
+  return { ok: true };
+}
