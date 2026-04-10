@@ -21,6 +21,7 @@ export const ACTION_CAPABILITY_ALTERNATIVES = Object.freeze({
   "ui.unmount": ["ui", "ui.mount"],
   "ui.dialog.open": ["ui", "ui.dialog"],
   "ui.dialog.close": ["ui", "ui.dialog"],
+  "ui.confirm": ["ui", "ui.dialog"],
   "ui.style.register": ["ui", "ui.style"],
   "ui.style.unregister": ["ui", "ui.style"],
 });
@@ -73,6 +74,7 @@ export async function invokeRegisteredAddonCoreAction({
     sanitizeAddonDialogId,
     openAddonDialog,
     closeAddonDialog,
+    openConfirmDialog,
     sanitizeAddonStyleId,
     registerAddonStyle,
     unregisterAddonStyle,
@@ -97,7 +99,7 @@ export async function invokeRegisteredAddonCoreAction({
   if (action === "feature.enable" || action === "feature.disable") {
     const enabled = action === "feature.enable";
     const nextStatus = enabled ? "installed" : "disabled";
-    const nextMessage = enabled ? "Feature is active." : "Feature is currently disabled.";
+    const nextMessage = enabled ? "Feature is active." : "";
 
     updateAddonStatus(addonId, nextStatus, nextMessage);
 
@@ -331,6 +333,19 @@ export async function invokeRegisteredAddonCoreAction({
     const dialogId = String(payload?.dialogId || payload?.id || "");
     const reason = String(payload?.reason || "addon-request");
     return closeAddonDialog(addonId, dialogId, reason);
+  }
+
+  if (action === "ui.confirm") {
+    if (typeof openConfirmDialog !== "function") {
+      return { ok: false, reason: "unsupported_action" };
+    }
+    const confirmed = await openConfirmDialog({
+      title: String(payload?.title || "Confirm"),
+      description: String(payload?.description || payload?.message || "Are you sure?"),
+      confirmLabel: String(payload?.confirmLabel || "Confirm"),
+      cancelLabel: String(payload?.cancelLabel || "Cancel"),
+    });
+    return { ok: true, value: { confirmed: Boolean(confirmed) } };
   }
 
   if (action === "ui.style.register") {

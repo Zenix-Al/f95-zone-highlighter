@@ -62,10 +62,36 @@ export function renderSetting(key, meta) {
     }
   }
 
-  input.addEventListener("change", () => {
+  input.addEventListener("change", async () => {
     const rawValue = meta.type === "toggle" ? input.checked : input.value;
     const previousValue = getByPath(config, meta.config);
     const newValue = coerceSettingValue(meta, rawValue, previousValue);
+
+    if (typeof meta.beforeChange === "function") {
+      let allowed = true;
+      try {
+        const decision = await meta.beforeChange({
+          key,
+          meta,
+          input,
+          previousValue,
+          nextValue: newValue,
+        });
+        allowed = decision !== false;
+      } catch (err) {
+        console.warn("beforeChange hook failed:", err);
+        allowed = false;
+      }
+
+      if (!allowed) {
+        if (meta.type === "toggle") {
+          input.checked = Boolean(previousValue);
+        } else {
+          input.value = String(previousValue ?? "");
+        }
+        return;
+      }
+    }
 
     if (meta.type === "toggle") {
       input.checked = Boolean(newValue);
@@ -83,7 +109,7 @@ export function renderSetting(key, meta) {
       [topLevelKey]: config[topLevelKey],
     });
 
-    applyEffects(meta, newValue);
+    void applyEffects(meta, newValue);
   });
 
   row.appendChild(label);

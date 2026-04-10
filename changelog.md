@@ -1,5 +1,30 @@
 # Changelog
 
+### **[v4.17.0 - Mobile Settings, UI Polish & Safety Improvements]**
+
+This update focus on improving the mobile settings experience, adding some UI polish, and reinforcing safety around untrusted add-ons. Sad announcement: i have to add disable helpful "help" messages because its too useful.
+
+**UI & Mobile Improvements**
+
+- add modal ui support for mobile: responsive layout, touch-friendly controls, and improved input behavior.
+- added a persistent footer with rotating help messages and a feedback button.
+- sadly i have to add this to my super useful "help" message, Added "Disable help message"
+- Move Up / Move Down actions in the add-ons panel now only render when the add-on is actually pinned, preventing the buttons showing on non-pinned cards.
+- Added idle add-on trace/delete entry in the add-ons panel to clean up stale registered add-ons that core didn't auto-remove.
+
+**Add-ons improvements and security**
+
+- Added `ui.confirm` as a new core action available to add-ons with `ui` or `ui.dialog` capability.
+- Enabling "Allow untrusted add-ons" now requires a risk confirmation dialog before the setting is saved. Cancelling leaves the toggle off and nothing is persisted.
+
+**Bug Fixes**
+
+- Fixed auto refresh and web notification features observer for faied to re-trigger the features when detected ui changes.
+
+Note : this update wont make any addons broken.
+
+---
+
 ### **[v4.16.0 - Add-on Service Hardening & Core-First Model]**
 
 This release is a comprehensive overhaul of the add-on service layer, shifting ownership of DOM, styles, dialogs, and lifecycle management squarely into core. Add-ons now act as intent/state submitters while core owns all runtime surfaces.

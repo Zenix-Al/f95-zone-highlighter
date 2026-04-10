@@ -138,8 +138,8 @@ async function bootstrap() {
     return;
   }
 
-  registerAddon();
   bindAddonCommandListener();
+  registerAddon();
   if (isEnabled) {
     applyTheme();
   }

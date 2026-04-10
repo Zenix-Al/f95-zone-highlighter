@@ -43,6 +43,26 @@
     </aside>
 
     <section class="settings-main" aria-live="polite">
+      <div class="settings-mobile-panel-header" hidden>
+        <button
+          type="button"
+          id="settings-mobile-back"
+          class="settings-mobile-nav-btn"
+          aria-label="Back to menu"
+        >
+          < Back
+        </button>
+        <div id="settings-mobile-title" class="settings-mobile-panel-title">Settings</div>
+        <button
+          type="button"
+          id="settings-mobile-close"
+          class="settings-mobile-nav-btn"
+          aria-label="Close settings"
+        >
+          Close
+        </button>
+      </div>
+
       <div id="settings-panel-general" class="settings-panel active">
         <div class="settings-wrapper-inner">
           <div id="global-settings-container"></div>
@@ -139,6 +159,11 @@
   </div>
 
   <div class="modal-footer-hint">
+    <div class="modal-footer-hint-actions">
+      <span class="modal-footer-hint-death" aria-hidden="true">X death</span>
+      <span class="modal-footer-hint-separator" aria-hidden="true">|</span>
+      <button class="modal-footer-hint-feedback" aria-label="Send feedback">Feedback</button>
+    </div>
     <span class="hint-text">Hover over options text to see detailed settings</span>
   </div>
 </div>

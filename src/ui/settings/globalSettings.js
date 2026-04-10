@@ -5,6 +5,8 @@ import { refreshAddonSecurityPolicies } from "../../services/addonsService.js";
 import { updateButtonVisibility } from "../components/configButton";
 import { createEnabledDisabledToast, createToggleSetting } from "./metaFactory";
 import { showFeatureHealthBox } from "../components/featureHealth/index.js";
+import { syncHelpMessageFooter } from "../components/helpMessage.js";
+import { openConfirmDialog } from "../components/dialog.js";
 
 export const globalSettingsMeta = {
   configVisibility: createToggleSetting({
@@ -37,10 +39,22 @@ export const globalSettingsMeta = {
     toast: createEnabledDisabledToast("(experimental)Cross-tab settings sync"),
   }),
   allowUntrustedAddons: createToggleSetting({
-    text: "Allow untrusted add-ons (limited API)",
+    text: "Allow untrusted add-ons",
     tooltip:
-      "Untrusted add-ons can run with limited permissions (no observer access). Trusted add-ons still get full declared capabilities.",
+      "Allow unknown add-ons to access addons api. Not recommended unless you know what you're doing",
     config: "globalSettings.allowUntrustedAddons",
+    beforeChange: async ({ previousValue, nextValue }) => {
+      if (previousValue === true || nextValue !== true) {
+        return true;
+      }
+      return openConfirmDialog({
+        title: "Allow untrusted add-ons?",
+        description:
+          "This enables unknown scripts to access your add-ons API. Only continue if you fully trust the scripts you install.",
+        confirmLabel: "I understand, enable",
+        cancelLabel: "Cancel",
+      });
+    },
     custom: () => {
       refreshAddonSecurityPolicies();
     },
@@ -69,4 +83,16 @@ export const globalSettingsMeta = {
       }
     },
   },
+  disableHelpMessage: createToggleSetting({
+    text: "Disable help message (dont)",
+    tooltip: "y u do dis?",
+    config: "globalSettings.disableHelpMessage",
+    custom: () => {
+      syncHelpMessageFooter();
+    },
+    toast: createEnabledDisabledToast("Help message", {
+      enabled: "disabled",
+      disabled: "enabled",
+    }),
+  }),
 };

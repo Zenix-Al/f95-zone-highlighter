@@ -166,7 +166,13 @@ function renderRows(tbody, rows = [], selectedIds = new Set(), activeId = "") {
     .join("");
 }
 
-export function createLibraryManagerApp({ bridge, addonId, library, onMutated, getCurrentThreadSnapshot }) {
+export function createLibraryManagerApp({
+  bridge,
+  addonId,
+  library,
+  onMutated,
+  getCurrentThreadSnapshot,
+}) {
   const dialogId = `${String(addonId || "library-addon")}-manager`;
   const styleId = `f95ue-${String(addonId || "library-addon")}-manager-style`;
   const state = {
@@ -242,8 +248,8 @@ export function createLibraryManagerApp({ bridge, addonId, library, onMutated, g
     }, 2600);
   }
 
-  function askConfirm(
-    root,
+  async function askConfirm(
+    _root,
     {
       title = "Confirm",
       message = "Are you sure?",
@@ -252,47 +258,15 @@ export function createLibraryManagerApp({ bridge, addonId, library, onMutated, g
       danger = false,
     } = {},
   ) {
-    return new Promise((resolve) => {
-      const existing = root.querySelector(".f95ue-library-confirm-backdrop");
-      existing?.remove();
-
-      const dialog = document.createElement("div");
-      dialog.className = "f95ue-library-confirm-backdrop";
-      dialog.innerHTML = `
-        <div class="f95ue-library-confirm-panel" role="dialog" aria-modal="true" aria-label="${escapeHtml(title)}">
-          <div class="f95ue-library-confirm-title">${escapeHtml(title)}</div>
-          <div class="f95ue-library-confirm-message">${escapeHtml(message)}</div>
-          <div class="f95ue-library-confirm-actions">
-            <button type="button" class="ghost" data-action="dialog-cancel">${escapeHtml(cancelText)}</button>
-            <button type="button" ${danger ? 'class="danger"' : ""} data-action="dialog-confirm">${escapeHtml(confirmText)}</button>
-          </div>
-        </div>
-      `;
-
-      const finish = (value) => {
-        dialog.remove();
-        resolve(Boolean(value));
-      };
-
-      dialog.addEventListener("click", (event) => {
-        if (event.target === dialog) {
-          finish(false);
-          return;
-        }
-        const actionBtn = event.target?.closest?.("button[data-action]");
-        if (!actionBtn) return;
-        const action = String(actionBtn.dataset.action || "").trim();
-        if (action === "dialog-cancel") finish(false);
-        if (action === "dialog-confirm") finish(true);
-      });
-
-      dialog.addEventListener("keydown", (event) => {
-        if (event.key === "Escape") finish(false);
-      });
-
-      root.appendChild(dialog);
-      dialog.querySelector('[data-action="dialog-confirm"]')?.focus();
+    const result = await bridge.invokeCoreAction("ui.confirm", {
+      title,
+      description: message,
+      confirmLabel: confirmText,
+      cancelLabel: cancelText,
+      danger: Boolean(danger),
     });
+    if (!result?.ok) return false;
+    return Boolean(result?.value?.confirmed);
   }
 
   function getActiveEntry() {
@@ -688,11 +662,7 @@ export function createLibraryManagerApp({ bridge, addonId, library, onMutated, g
         });
         if (!ok) return;
         const result = await library.bulkRemoveEntries(ids);
-        showToast(
-          root,
-          `Bulk removed: ${result.removed}, skipped: ${result.skipped}.`,
-          "success",
-        );
+        showToast(root, `Bulk removed: ${result.removed}, skipped: ${result.skipped}.`, "success");
         state.selectedIds = new Set();
         await reloadRows(root);
         if (typeof onMutated === "function") onMutated();

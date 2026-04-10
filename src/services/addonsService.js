@@ -1,5 +1,6 @@
 import stateManager from "../config.js";
 import { showToast } from "../ui/components/toast.js";
+import { openConfirmDialog } from "../ui/components/dialog.js";
 import {
   ADDON_COMMAND_EVENT,
   ADDONS_API_VERSION,
@@ -22,6 +23,7 @@ import {
   getAddonState,
   listInstalledAddonMeta,
   persistAddonsState,
+  removeInstalledAddonMeta,
   setAddonStateValue,
   upsertInstalledAddonMeta,
 } from "./addons/state.js";
@@ -33,10 +35,7 @@ import {
 } from "./addons/observer.js";
 import { initAddonsBridgeServer } from "./addons/bridgeServer.js";
 import { createAddonLifecycleOrchestrator, emitAddonCommand } from "./addons/lifecycle.js";
-import {
-  invokeRegisteredAddonCoreAction,
-  isAddonActionAllowed,
-} from "./addons/coreActions.js";
+import { invokeRegisteredAddonCoreAction, isAddonActionAllowed } from "./addons/coreActions.js";
 import { buildKnownAddonsSnapshot } from "./addons/knownAddons.js";
 import {
   cleanupAddonUi,
@@ -117,6 +116,19 @@ export function refreshAddonSecurityPolicies() {
   return reapplyAddonSecurityPolicies();
 }
 
+export async function removeAddonInstallationTrace(addonId) {
+  const normalizedId = sanitizeAddonId(addonId);
+  if (!normalizedId) return { ok: false, reason: "invalid_addon_id" };
+
+  const metaRemoved = await removeInstalledAddonMeta(normalizedId);
+  if (!metaRemoved.ok) return metaRemoved;
+
+  const stateCleared = await clearAddonState(normalizedId);
+  if (!stateCleared.ok) return stateCleared;
+
+  return { ok: true };
+}
+
 export function unregisterAddon(addonId) {
   const normalizedId = sanitizeAddonId(addonId);
   if (!normalizedId) return listRegisteredAddons();
@@ -148,7 +160,7 @@ export async function invokeAddonCoreAction(addonId, action, payload = {}) {
 
       const enabled = action === "feature.enable";
       const nextStatusMessage = enabled
-        ? "Enabled from core. It will activate when the add-on loads."
+        ? ""
         : "Disabled from core. It will remain off when the add-on loads.";
 
       const stateBucket = ensureAddonStateBucket(normalizedId);
@@ -219,6 +231,7 @@ export async function invokeAddonCoreAction(addonId, action, payload = {}) {
       sanitizeAddonDialogId,
       openAddonDialog,
       closeAddonDialog,
+      openConfirmDialog,
       sanitizeAddonStyleId,
       registerAddonStyle,
       unregisterAddonStyle,
@@ -235,7 +248,11 @@ export async function invokeAddonCoreAction(addonId, action, payload = {}) {
     },
   });
 
-  if (result?.reason === "unsupported_action" && typeof action === "string" && action.startsWith("ui.")) {
+  if (
+    result?.reason === "unsupported_action" &&
+    typeof action === "string" &&
+    action.startsWith("ui.")
+  ) {
     console.warn(
       `[addonsService] Addon "${normalizedId}" called unrecognized UI action "${action}". ` +
         `Migrate direct style injection to ui.style.register({ styleId, cssText }).`,
@@ -266,6 +283,21 @@ export function initAddonsConsoleBridge() {
           }),
         );
         return;
+      }
+
+      const stateBucket = ensureAddonStateBucket(addonId);
+      // Enforce persisted disabled state once, but avoid re-emitting disable
+      // when the addon is already registered as disabled (prevents feedback loops
+      // for addons that re-register after status updates).
+      if (stateBucket?.enabled === false && registered?.status !== "disabled") {
+        window.dispatchEvent(
+          new CustomEvent(ADDON_COMMAND_EVENT, {
+            detail: {
+              addonId,
+              command: "disable",
+            },
+          }),
+        );
       }
 
       const capabilities = Array.isArray(registered?.capabilities)

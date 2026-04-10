@@ -82,7 +82,7 @@
   top: 20px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 12010; /* above config dialog backdrops */
+  z-index: 13210; /* above settings modal (13000) and dialog backdrops (13100) */
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -109,7 +109,7 @@
 #tag-config-modal {
   display: none;
   position: fixed;
-  z-index: 9999;
+  z-index: 13000;
   top: 0;
   left: 0;
   width: 100%;
@@ -541,8 +541,9 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) 130px;
   align-items: center;
-  gap: 10px;
-  margin: 8px 0;
+  gap: 12px;
+  margin: 0;
+  min-height: 35px;
   line-height: 1.4;
   user-select: none;
 }
@@ -875,12 +876,47 @@
   scrollbar-gutter: stable;
 }
 
+.settings-mobile-panel-header {
+  display: none;
+}
+
+.settings-mobile-panel-title {
+  min-width: 0;
+  text-align: center;
+  font-size: 20px;
+  font-weight: 700;
+  color: #f0f2f6;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.settings-mobile-nav-btn {
+  appearance: none;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #cbd0d8;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.settings-mobile-nav-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+}
+
 @media (max-width: 480px) {
   #tag-config-modal .modal-content {
     min-width: 0;
     width: 100%;
-    margin: 0 auto;
-    max-height: calc(100vh - 24px);
+    max-width: none;
+    margin: 0;
+    border-radius: 0;
+    height: 100dvh;
+    max-height: 100dvh;
   }
 }
 
@@ -1325,16 +1361,31 @@
 }
 
 @media (max-width: 760px) {
+  #tag-config-modal {
+    padding: 0;
+  }
+
+  #tag-config-modal .modal-content {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    border-radius: 0;
+    height: 100dvh;
+    max-height: 100dvh;
+  }
+
   .settings-shell {
-    grid-template-columns: 1fr;
-    height: auto;
+    display: block;
+    height: 100%;
     min-height: 0;
   }
 
   .settings-sidebar {
+    height: 100%;
+    overflow-y: auto;
     border-right: 0;
-    border-bottom: 1px solid #2b2e33;
-    padding: 12px;
+    border-bottom: 0;
+    padding: 18px 12px 12px;
   }
 
   .settings-sidebar-title {
@@ -1343,48 +1394,88 @@
   }
 
   .settings-nav {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    display: flex;
+    flex-direction: column;
     gap: 6px;
+    overflow-y: auto;
+    margin-top: 6px;
+    padding-right: 2px;
   }
 
   .settings-nav-group,
   .settings-nav-pinned-items {
-    display: contents;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
   }
 
   .settings-nav-group + .settings-nav-group {
-    margin-top: 0;
-    padding-top: 0;
-    border-top: 0;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
   }
 
   .settings-nav-group-label {
-    grid-column: 1 / -1;
-    padding: 4px 2px 0;
+    padding: 0 10px 2px;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #8f959e;
   }
 
   .settings-nav-item {
-    text-align: center;
-    padding: 8px 6px;
-    font-size: 13px;
+    text-align: left;
+    padding: 9px 12px;
+    font-size: 14px;
   }
 
   .settings-nav-item.settings-nav-addon-item {
-    padding-right: 6px;
+    padding-right: 12px;
   }
 
   .settings-nav-item.settings-nav-addon-item::after {
-    display: none;
+    display: inline;
   }
 
   .settings-sidebar-footer {
-    margin-top: 4px;
-    padding-top: 4px;
+    margin-top: auto;
+    padding: 8px 2px 2px;
+  }
+
+  /* Color panel keeps its own larger spacing */
+  .settings-panel:not(#settings-panel-color):not(#settings-panel-addins) .config-row label {
+    line-height: 1.35;
   }
 
   .settings-main {
+    display: none;
+    height: 100%;
+    overflow: hidden;
     min-height: 0;
+  }
+
+  .settings-shell.mobile-show-panel .settings-sidebar {
+    display: none;
+  }
+
+  .settings-shell.mobile-show-panel .settings-main {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .settings-shell.mobile-show-panel .settings-mobile-panel-header {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border-bottom: 1px solid #2b2e33;
+    background: #141619;
+  }
+
+  .settings-panel {
+    height: auto;
+    flex: 1;
   }
 }
 
@@ -1414,33 +1505,60 @@
 }
 .modal-footer-hint {
   position: static;
-  text-align: center;
-  padding: 8px 16px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   font-size: 13px;
   color: #ffffff;
   opacity: 0.7;
-  pointer-events: none; /* so it doesn't block clicks on buttons below */
+  pointer-events: auto;
   user-select: none;
   transition: opacity 0.2s ease;
 }
 
-.modal-footer-hint:hover {
-  opacity: 1;
-  color: #ec5555; /* your sexy red when they actually hover near it */
+.modal-footer-hint-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.modal-footer-hint-death,
+.modal-footer-hint-separator {
+  color: #cbd0d8;
+  font-size: 12px;
+  letter-spacing: 0.03em;
 }
 
 .hint-text {
-  background: rgba(0, 0, 0, 0.4); /* subtle bg so it pops on light/dark modals */
-  padding: 4px 12px;
   border-radius: 12px;
-  backdrop-filter: blur(4px); /* glass-morphism vibe if you’re feeling fancy */
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  color: #585c61;
+}
+
+.modal-footer-hint-feedback {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: #cbd0d8;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.14s ease;
+  pointer-events: auto;
+}
+
+.modal-footer-hint-feedback:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
 }
 
 .config-dialog-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 11000;
+  z-index: 13100;
   background: rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
