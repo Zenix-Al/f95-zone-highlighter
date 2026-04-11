@@ -315,10 +315,8 @@ function bindPointerDrag(item, { listKey, index, onDropOnItem, onDropOnContainer
     ghost.style.left = `${e.clientX - offsetX}px`;
     ghost.style.top = `${e.clientY - offsetY}px`;
     ghost.style.pointerEvents = "none";
-    ghost.style.zIndex = 12000;
+    ghost.style.zIndex = 13220;
     copyChipStyleToGhost(item, ghost);
-    sr.appendChild(ghost);
-
     sr.appendChild(ghost);
 
     activePointerDrag = {

@@ -29,10 +29,13 @@
         "*://*.buzzheavier.com/*",
         "*://gofile.io/*",
         "*://pixeldrain.com/*",
-        "*://datanodes.to/*"
+        "*://datanodes.to/*",
+        "*://www.mediafire.com/file/*",
+        "*://mediafire.com/file/*"
       ],
       "grants": [
         "GM_openInTab",
+        "GM.getValue",
         "GM.setValue",
         "GM_addValueChangeListener",
         "GM_removeValueChangeListener"

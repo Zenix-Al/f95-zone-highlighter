@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.2.9 - more host support + bugfixes
+
+- Added support for mediafire.com direct-download flow.
+- Fix datanodes.to always gets triggered because of my mistake
+- other code improvement for development and future maintenance
+
+No core update required.
+
 ## v0.2.1 - Core Add-on API Update + Gofile Fix
 
 - Migrated all host-page UI styles to core CSS registry (`ui.style.register` / `ui.style.unregister`).

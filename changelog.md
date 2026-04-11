@@ -1,5 +1,9 @@
 # Changelog
 
+### **[4.17.1 - bugfix]**
+
+- forgot to increase z-index of drag ghost in the last update, fixed now. whoops.
+
 ### **[v4.17.0 - Mobile Settings, UI Polish & Safety Improvements]**
 
 This update focus on improving the mobile settings experience, adding some UI polish, and reinforcing safety around untrusted add-ons. Sad announcement: i have to add disable helpful "help" messages because its too useful.
@@ -16,6 +20,7 @@ This update focus on improving the mobile settings experience, adding some UI po
 
 - Added `ui.confirm` as a new core action available to add-ons with `ui` or `ui.dialog` capability.
 - Enabling "Allow untrusted add-ons" now requires a risk confirmation dialog before the setting is saved. Cancelling leaves the toggle off and nothing is persisted.
+- Added throttle for add-on requests and registrations to prevent rapid-fire abuse of the system by buggy or malicious add-ons. If an add-on exceeds the threshold, it will be automatically disabled and a warning toast will be shown.
 
 **Bug Fixes**
 

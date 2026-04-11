@@ -1,5 +1,48 @@
 import { ensurePageBridge } from "../../core/pageBridge.js";
 
+const CORE_ACTION_RATE_WINDOW_MS = 5000;
+const CORE_ACTION_RATE_MAX = 25;
+const CORE_ACTION_MAX_CONCURRENT = 6;
+const STATUS_UPDATE_RATE_WINDOW_MS = 5000;
+const STATUS_UPDATE_RATE_MAX = 10;
+const REGISTER_RATE_WINDOW_MS = 30000;
+const REGISTER_RATE_MAX = 5;
+const UNREGISTER_RATE_WINDOW_MS = 10000;
+const UNREGISTER_RATE_MAX = 5;
+
+const addonActionTimestamps = new Map();
+const addonInflight = new Map();
+const addonStatusTimestamps = new Map();
+const addonRegisterTimestamps = new Map();
+const addonUnregisterTimestamps = new Map();
+
+function checkRateLimit(map, key, windowMs, maxCount) {
+  const now = Date.now();
+  let timestamps = map.get(key);
+  if (!timestamps) {
+    timestamps = [];
+    map.set(key, timestamps);
+  }
+  const cutoff = now - windowMs;
+  let i = 0;
+  while (i < timestamps.length && timestamps[i] <= cutoff) i++;
+  if (i > 0) timestamps.splice(0, i);
+  if (timestamps.length >= maxCount) return false;
+  timestamps.push(now);
+  return true;
+}
+
+function tryAcquireInflight(addonId) {
+  const count = addonInflight.get(addonId) || 0;
+  if (count >= CORE_ACTION_MAX_CONCURRENT) return false;
+  addonInflight.set(addonId, count + 1);
+  return true;
+}
+
+function releaseInflight(addonId) {
+  addonInflight.set(addonId, Math.max(0, (addonInflight.get(addonId) || 0) - 1));
+}
+
 let isBridgeListenerBound = false;
 
 function createBridgeScript(devCommandEvent, apiVersion) {
@@ -85,16 +128,51 @@ export function initAddonsBridgeServer({
       }
 
       if (type === "register") {
+        const registerAddonId = String(detail.addon?.id || "").trim();
+        if (!registerAddonId) return;
+        if (
+          !checkRateLimit(
+            addonRegisterTimestamps,
+            registerAddonId,
+            REGISTER_RATE_WINDOW_MS,
+            REGISTER_RATE_MAX,
+          )
+        ) {
+          return;
+        }
         onRegister?.(detail.addon || {});
         return;
       }
 
       if (type === "unregister") {
+        const unregisterAddonId = String(detail.addonId || "").trim();
+        if (!unregisterAddonId) return;
+        if (
+          !checkRateLimit(
+            addonUnregisterTimestamps,
+            unregisterAddonId,
+            UNREGISTER_RATE_WINDOW_MS,
+            UNREGISTER_RATE_MAX,
+          )
+        ) {
+          return;
+        }
         onUnregister?.(detail.addonId);
         return;
       }
 
       if (type === "update-status") {
+        const updateAddonId = String(detail.addonId || "").trim();
+        if (
+          !checkRateLimit(
+            addonStatusTimestamps,
+            updateAddonId,
+            STATUS_UPDATE_RATE_WINDOW_MS,
+            STATUS_UPDATE_RATE_MAX,
+          )
+        ) {
+          return;
+        }
         onUpdateStatus?.(detail.addonId, detail.status, detail.statusMessage || "");
         return;
       }
@@ -105,17 +183,53 @@ export function initAddonsBridgeServer({
       }
 
       if (type === "core-action") {
+        const actionAddonId = String(detail.addonId || "").trim();
         const replyEvent = String(detail.replyEvent || "").trim();
+        if (
+          !checkRateLimit(
+            addonActionTimestamps,
+            actionAddonId,
+            CORE_ACTION_RATE_WINDOW_MS,
+            CORE_ACTION_RATE_MAX,
+          )
+        ) {
+          if (replyEvent) {
+            window.dispatchEvent(
+              new CustomEvent(replyEvent, { detail: { ok: false, reason: "rate_limited" } }),
+            );
+          }
+          return;
+        }
+        if (!tryAcquireInflight(actionAddonId)) {
+          if (replyEvent) {
+            window.dispatchEvent(
+              new CustomEvent(replyEvent, {
+                detail: { ok: false, reason: "too_many_concurrent_requests" },
+              }),
+            );
+          }
+          return;
+        }
         Promise.resolve(
           onInvokeCoreAction?.(detail.addonId, detail.action, detail.payload || {}) || {
             ok: false,
             reason: "unsupported_action",
           },
-        ).then((result) => {
-          if (replyEvent) {
-            window.dispatchEvent(new CustomEvent(replyEvent, { detail: result }));
-          }
-        });
+        )
+          .then((result) => {
+            releaseInflight(actionAddonId);
+            if (replyEvent) {
+              window.dispatchEvent(new CustomEvent(replyEvent, { detail: result }));
+            }
+          })
+          .catch(() => {
+            releaseInflight(actionAddonId);
+            if (replyEvent) {
+              window.dispatchEvent(
+                new CustomEvent(replyEvent, { detail: { ok: false, reason: "internal_error" } }),
+              );
+            }
+          });
       }
     });
 

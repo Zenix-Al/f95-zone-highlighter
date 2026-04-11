@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.2.2 - bugfix
+
+- fixed flow execution issue where add-on execute first before register, causing halloween theme is on despite core disabled it.
+
+No core update required.
+
 ## v0.1.0 - Initial Release
 
 - First public add-on release.
