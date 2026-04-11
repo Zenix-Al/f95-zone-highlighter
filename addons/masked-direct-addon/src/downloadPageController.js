@@ -1,0 +1,101 @@
+import { AUTOMATION_MARKER_KEY } from "./constants.js";
+import {
+  isProcessingDownloadTriggerActive,
+  readProcessingDownloadTrigger,
+} from "./processingDownloadTrigger.js";
+
+export function createDownloadPageController({
+  addonId,
+  debugLog,
+  GMApi,
+  getIsBlockedByCore,
+  getIsEnabled,
+  handlers,
+  originTabQueryKey,
+}) {
+  function getDownloadHost() {
+    const host = String(location.hostname || "").toLowerCase();
+    if (host.includes("buzzheavier.com")) return "buzzheavier.com";
+    if (host.includes("gofile.io")) return "gofile.io";
+    if (host.includes("pixeldrain.com")) return "pixeldrain.com";
+    if (host.includes("datanodes.to")) return "datanodes.to";
+    if (host.includes("mediafire.com")) return "mediafire.com";
+    return "";
+  }
+
+  async function shouldRunHostAutomation(host) {
+    if (!host || !getIsEnabled() || getIsBlockedByCore()) return false;
+    let marker = "";
+    let originTabId = "";
+    try {
+      const parsed = new URL(location.href);
+      marker = String(parsed.searchParams.get(AUTOMATION_MARKER_KEY) || "").trim();
+      originTabId = String(parsed.searchParams.get(originTabQueryKey) || "").trim();
+    } catch {
+      marker = "";
+      originTabId = "";
+    }
+
+    const trigger = await readProcessingDownloadTrigger(GMApi);
+    if (isProcessingDownloadTriggerActive(trigger)) {
+      const hostMatches = !trigger.host || trigger.host === host;
+      const tabMatches = !trigger.ownerTabId || !originTabId || trigger.ownerTabId === originTabId;
+      if (hostMatches && tabMatches) return true;
+    }
+
+    const hasRouteMarkerFallback = marker === "1" && Boolean(originTabId);
+    if (hasRouteMarkerFallback) return true;
+
+    return false;
+  }
+
+  async function runDownloadPageHooks() {
+    const host = getDownloadHost();
+    if (!host) {
+      console.info(`[${addonId}] Download hooks skipped: no supported host.`);
+      return;
+    }
+
+    if (!(await shouldRunHostAutomation(host))) {
+      console.info(
+        `[${addonId}] Download hooks blocked by automation gate. host=${host} href=${location.href}`,
+      );
+      debugLog("DownloadHooks", "Automation gate blocked host run.", {
+        host,
+        href: location.href,
+        referrer: document.referrer || "",
+      });
+      return;
+    }
+
+    const handler = handlers[host];
+    if (!handler) {
+      console.info(`[${addonId}] Download hooks skipped: no handler for host=${host}.`);
+      return;
+    }
+
+    console.info(`[${addonId}] Download hooks running for host=${host}.`);
+
+    const exec = async () => {
+      await handler();
+    };
+
+    if (document.readyState === "loading") {
+      document.addEventListener(
+        "DOMContentLoaded",
+        () => {
+          void exec();
+        },
+        { once: true },
+      );
+      return;
+    }
+
+    await exec();
+  }
+
+  return {
+    getDownloadHost,
+    runDownloadPageHooks,
+  };
+}

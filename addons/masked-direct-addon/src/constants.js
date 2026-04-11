@@ -2,7 +2,13 @@ export const ADDON_COMMAND_EVENT = "f95ue:addon-command";
 export const RESOLVE_BTN_CLASS = "f95ue-addon-resolve-btn";
 export const MASKED_LINK_SELECTOR = 'a[href^="/masked/"], a[href^="https://f95zone.to/masked/"]';
 export const F95_CAPTCHA_SITEKEY = "6LcwQ5kUAAAAAAI-_CXQtlnhdMjmFDt-MruZ2gov";
-export const DIRECT_HOSTS = ["buzzheavier.com", "gofile.io", "pixeldrain.com", "datanodes.to"];
+export const DIRECT_HOSTS = [
+  "buzzheavier.com",
+  "gofile.io",
+  "pixeldrain.com",
+  "datanodes.to",
+  "mediafire.com",
+];
 export const AUTOMATION_MARKER_KEY = "f95ue_dd";
 export const DATANODES_STAGE_KEY = "f95ue.datanodes.stage";
 export const DATANODES_STAGE_AFTER_FREE = "after_free";
@@ -41,6 +47,14 @@ export const SELECTORS = Object.freeze({
       'button[id*="download"]',
       'button[name*="download"]',
       'button[data-action*="download"]',
+    ],
+  },
+  MEDIAFIRE: {
+    DOWNLOAD_BUTTON_CANDIDATES: [
+      "#downloadButton.input.popsok",
+      "a#downloadButton",
+      '#download_link a[aria-label="Download file"]',
+      "#download_link a.input.popsok",
     ],
   },
   MASKED_PAGE: {

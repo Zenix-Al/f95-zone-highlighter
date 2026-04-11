@@ -7,7 +7,7 @@ const LEGACY_THREAD_SETTINGS_KEYS = Object.freeze([
   "directDownloadHealth",
 ]);
 
-export const LEGACY_STORAGE_KEYS = Object.freeze(["processingDownload", "minVersion"]);
+export const LEGACY_STORAGE_KEYS = Object.freeze(["minVersion"]);
 
 function dropLegacyThreadSettings(threadSettings) {
   const source = normalizeObject(threadSettings);
@@ -33,11 +33,6 @@ export async function migrateLegacyConfigPayload(parsed) {
   if (threadSettingsResult.changed) {
     next.threadSettings = threadSettingsResult.next;
     writes.push(["threadSettings", threadSettingsResult.next]);
-  }
-
-  if (Object.prototype.hasOwnProperty.call(source, "processingDownload")) {
-    delete next.processingDownload;
-    deletes.push("processingDownload");
   }
 
   if (typeof source.minVersion === "number") {

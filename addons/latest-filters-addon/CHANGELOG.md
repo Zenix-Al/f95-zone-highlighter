@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.2.2 - tinyupdate
+
+- use `ui.confirm` from core instead of `window.confirm` for consistent dialog styling and behavior.
+
+Note : core v4.17.0 or above required
+
 ## v0.1.0 - Initial Release
 
 - First public add-on release.
