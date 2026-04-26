@@ -1,3 +1,4 @@
+import { createEl } from "../../../shared/createEl";
 import managerCssTemplate from "./manager.css";
 import managerHtmlTemplate from "./manager.html";
 
@@ -11,8 +12,7 @@ export function getStyleText(rootSelector = ".f95ue-library-manager-root") {
 
 export function ensureStyle(styleId, rootSelector = ".f95ue-library-manager-root") {
   if (document.getElementById(styleId)) return;
-  const style = document.createElement("style");
-  style.id = styleId;
+  const style = createEl("style", "", "", styleId);
   style.textContent = buildCss(rootSelector);
   document.head.append(style);
 }

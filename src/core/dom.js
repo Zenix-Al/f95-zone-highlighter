@@ -53,13 +53,23 @@ export function waitForBody(callback) {
     requestAnimationFrame(() => waitForBody(callback));
   }
 }
-
-export function createEl(tag, { className, attrs, text, children, mount } = {}) {
-  // Allow creating elements intended to be attached into a specific container
-  // (e.g. a `ShadowRoot`, its `host`, or a `DocumentFragment`). If `mount`
-  // is provided we use its ownerDocument (when applicable) so the element is
-  // created in the correct document context and then append the created
-  // element to `mount` before returning it.
+/**
+ * Quick & flexible DOM element factory.
+ *
+ * Creates an element, applies classes, attributes, text, styles, href and children in one go.
+ * Supports mounting directly into ShadowRoot, DocumentFragment, or any container.
+ *
+ * @param {string} tag
+ * @param {Object} [options]
+ * @param {string} [options.className]
+ * @param {Object} [options.attrs]
+ * @param {string} [options.text]
+ * @param {Node[]} [options.children]
+ * @param {Node} [options.mount] - Where to append (also sets correct document context)
+ * @param {Object} [options.style]
+ * @returns {HTMLElement}
+ */
+export function createEl(tag, { className, attrs, text, children, mount, style } = {}) {
   const doc =
     (mount && (mount.ownerDocument || (mount.host && mount.host.ownerDocument))) || document;
   const el = doc.createElement(tag);
@@ -67,6 +77,8 @@ export function createEl(tag, { className, attrs, text, children, mount } = {}) 
   if (attrs) Object.keys(attrs).forEach((k) => el.setAttribute(k, attrs[k]));
   if (text != null) el.textContent = text;
   if (children && Array.isArray(children)) children.forEach((c) => el.appendChild(c));
+  if (style) Object.assign(el.style, style);
+
   if (mount && typeof mount.appendChild === "function") {
     try {
       mount.appendChild(el);

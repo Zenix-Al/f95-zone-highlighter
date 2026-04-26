@@ -32,10 +32,15 @@ export function isValidLatestOverlayColorOrder(order) {
   return order.every((key) => typeof key === "string" && validKeys.has(key));
 }
 
+export function isValidLatestOverlayStyle(style) {
+  return typeof style === "string" && (style === "strip" || style === "border");
+}
+
 export default {
   isValidTag,
   isValidColor,
   isValidVersion,
   isPositiveInteger,
   isValidLatestOverlayColorOrder,
+  isValidLatestOverlayStyle,
 };

@@ -6,6 +6,7 @@ export const EXPORTABLE_CONFIG_KEYS = Object.freeze([
   "tags",
   "preferredTags",
   "excludedTags",
+  "markedTags",
   "color",
   "overlaySettings",
   "threadSettings",

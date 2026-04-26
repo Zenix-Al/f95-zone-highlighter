@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.2.1 - Code Quality Improvements and optimizations
+
+- Refactored for dom modification efficiency and better separation of concerns.
+- Script wont execute repair unless page is ready state is complete.
+
 ## v0.1.1 - Core Add-on API Update
 
 - Migrated CSS injection to core style registry (`ui.style.register` / `ui.style.unregister`).

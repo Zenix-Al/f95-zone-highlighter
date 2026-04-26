@@ -11,6 +11,12 @@ import { injectModal } from "../components/modal";
 import { addListener } from "../../core/listenerRegistry";
 import { showToast } from "../components/toast";
 import { openConfirmDialog } from "../components/dialog.js";
+import {
+  syncAddonPanels,
+  renderAddinsOverview,
+  syncPinnedAddonNav,
+} from "../components/addons/sync.js";
+import { ADDON_STATUS_META } from "../components/addons/renderer.js";
 import { colorSettingsMeta } from "./colorSettings";
 import { globalSettingsMeta } from "./globalSettings";
 import { latestSettingsMeta } from "./latestSettings";
@@ -52,15 +58,6 @@ function setMobileShellView(shadowRoot, showPanel) {
   shell.classList.toggle("mobile-show-panel", Boolean(showPanel));
   if (mobileHeader) mobileHeader.hidden = !Boolean(showPanel);
 }
-
-const ADDON_STATUS_META = {
-  installed: { label: "Installed", badgeClass: "installed" },
-  disabled: { label: "Disabled", badgeClass: "disabled" },
-  "needs-update": { label: "Needs Update", badgeClass: "needs-update" },
-  error: { label: "Error", badgeClass: "error" },
-  broken: { label: "Broken", badgeClass: "broken" },
-  "not-installed": { label: "Not Installed", badgeClass: "disabled" },
-};
 
 function buildAddonPanelId(addonId) {
   return `settings-panel-addon-${String(addonId || "")
@@ -117,20 +114,6 @@ function normalizeAddonEntry(addon) {
   };
 }
 
-function getSettingByPath(source, path) {
-  if (!source || typeof source !== "object") return undefined;
-  const parts = String(path || "")
-    .split(".")
-    .map((part) => part.trim())
-    .filter(Boolean);
-  let cursor = source;
-  for (const part of parts) {
-    if (!cursor || typeof cursor !== "object") return undefined;
-    cursor = cursor[part];
-  }
-  return cursor;
-}
-
 function setSettingByPath(target, path, value) {
   const parts = String(path || "")
     .split(".")
@@ -147,79 +130,6 @@ function setSettingByPath(target, path, value) {
   }
   cursor[parts[parts.length - 1]] = value;
   return root;
-}
-
-async function renderAddonPanelSettings(container, addon) {
-  if (!container || !addon) return;
-  const settings = Array.isArray(addon.panelSettings) ? addon.panelSettings : [];
-  if (settings.length === 0) {
-    container.hidden = true;
-    container.innerHTML = "";
-    return;
-  }
-
-  container.hidden = false;
-  container.innerHTML = "";
-
-  const title = document.createElement("div");
-  title.className = "feature-health-title";
-  title.textContent = addon.panelSettingsTitle || "Add-on Settings";
-  container.appendChild(title);
-
-  const desc = document.createElement("div");
-  desc.className = "tag-priority-note";
-  desc.textContent =
-    addon.panelSettingsDescription || "Configure this add-on behavior for your current profile.";
-  container.appendChild(desc);
-
-  const valueResult = await invokeAddonCoreAction(addon.id, "storage.get", {
-    key: addon.panelSettingsStorageKey || "settings",
-    defaultValue: addon.panelSettingsDefaults || {},
-  });
-
-  if (!valueResult?.ok) {
-    const error = document.createElement("div");
-    error.className = "addins-status-copy error";
-    error.textContent = `Settings unavailable: ${valueResult?.reason || "unknown_error"}`;
-    container.appendChild(error);
-    return;
-  }
-
-  const current =
-    valueResult.value && typeof valueResult.value === "object"
-      ? valueResult.value
-      : addon.panelSettingsDefaults || {};
-
-  settings.forEach((entry) => {
-    const path = String(entry?.path || "").trim();
-    const label = String(entry?.text || "").trim();
-    if (!path || !label) return;
-
-    const row = document.createElement("div");
-    row.className = "config-row addins-setting-row";
-
-    const labelEl = document.createElement("label");
-    labelEl.textContent = label;
-    const tooltip = String(entry?.tooltip || "").trim();
-    if (tooltip) {
-      const tip = document.createElement("span");
-      tip.className = "setting-tooltip-badge";
-      tip.title = tooltip;
-      tip.textContent = "?";
-      labelEl.appendChild(tip);
-    }
-
-    const toggle = document.createElement("input");
-    toggle.type = "checkbox";
-    toggle.checked = getSettingByPath(current, path) !== false;
-    toggle.dataset.addonAction = "toggle-addon-setting";
-    toggle.dataset.addonId = addon.id;
-    toggle.dataset.addonSettingPath = path;
-
-    row.appendChild(labelEl);
-    row.appendChild(toggle);
-    container.appendChild(row);
-  });
 }
 
 function getRegisteredAddons() {
@@ -268,88 +178,6 @@ async function ensureSettingsUiPrefsLoaded() {
   stateManager.set("settingsUiPrefsLoaded", true);
 }
 
-function createBadge(doc, text, className = "") {
-  const badge = doc.createElement("span");
-  badge.className = `addins-badge${className ? ` ${className}` : ""}`;
-  badge.textContent = text;
-  return badge;
-}
-
-function formatAddonScopes(addon) {
-  const scopes = Array.isArray(addon?.pageScopes) ? addon.pageScopes : [];
-  if (scopes.length === 0) return "Runs on: (Missing scope data).";
-  return `Runs on: ${scopes.join(", ")}.`;
-}
-
-function createActionButton(doc, text, action, addonId, extraClass = "") {
-  const button = doc.createElement("button");
-  button.type = "button";
-  button.className = `addins-action-btn${extraClass ? ` ${extraClass}` : ""}`;
-  button.dataset.addonAction = action;
-  button.dataset.addonId = addonId;
-  button.textContent = text;
-  return button;
-}
-
-function createAddonPanelActions(doc, addon) {
-  const actions = doc.createElement("div");
-  actions.className = "addins-panel-actions";
-
-  const backButton = createActionButton(doc, "Back to Add-ons", "back-to-addins", addon.id);
-  actions.appendChild(backButton);
-
-  const supportsFeatureToggle =
-    addon.status !== "not-installed" &&
-    (addon.capabilities?.includes("feature") || (!addon.activeOnPage && addon.installedSeenAt > 0));
-
-  if (supportsFeatureToggle) {
-    const isDisabled = addon.status === "disabled";
-    const toggleButton = createActionButton(
-      doc,
-      isDisabled ? "Enable" : "Disable",
-      "toggle-addon-feature",
-      addon.id,
-      isDisabled ? "addon-enable-btn" : "addon-disable-btn secondary",
-    );
-    actions.appendChild(toggleButton);
-  }
-
-  if (addon.panelToastLabel && addon.panelToastMessage) {
-    const toastButton = createActionButton(
-      doc,
-      addon.panelToastLabel,
-      "trigger-addon-toast",
-      addon.id,
-      "secondary",
-    );
-    toastButton.dataset.toastMessage = addon.panelToastMessage;
-    actions.appendChild(toastButton);
-  }
-
-  const panelActions = Array.isArray(addon.panelActions) ? addon.panelActions : [];
-  panelActions.forEach((entry) => {
-    const actionId = String(entry?.id || "").trim();
-    const label = String(entry?.label || "").trim();
-    if (!actionId || !label) return;
-
-    const button = createActionButton(
-      doc,
-      label,
-      "trigger-addon-command",
-      addon.id,
-      entry.variant === "secondary" ? "secondary" : "",
-    );
-    button.dataset.addonCommandId = actionId;
-    button.dataset.requiresActivePage = entry.requiresActivePage === false ? "0" : "1";
-    if (button.dataset.requiresActivePage === "1" && !addon.activeOnPage) {
-      button.disabled = true;
-    }
-    actions.appendChild(button);
-  });
-
-  return actions;
-}
-
 function movePinnedAddon(addonId, direction) {
   const pinnedIds = getPinnedAddonIds();
   const currentIndex = pinnedIds.indexOf(addonId);
@@ -362,337 +190,6 @@ function movePinnedAddon(addonId, direction) {
   const [movedId] = reordered.splice(currentIndex, 1);
   reordered.splice(nextIndex, 0, movedId);
   return reordered;
-}
-
-function createAddonCard(doc, addon, options = {}) {
-  const { pinned = false, planned = false, pinnedIndex = -1, pinnedCount = 0 } = options;
-  const card = doc.createElement("article");
-  card.className = "addins-card";
-  card.dataset.addonId = addon.id;
-
-  const head = doc.createElement("div");
-  head.className = "addins-card-head";
-
-  const info = doc.createElement("div");
-  const name = doc.createElement("div");
-  name.className = "addins-card-name";
-  name.textContent = addon.name;
-
-  const meta = doc.createElement("div");
-  meta.className = "addins-card-meta";
-  meta.textContent = planned ? "Roadmap candidate" : `Version ${addon.version}`;
-
-  info.appendChild(name);
-  info.appendChild(meta);
-
-  const badges = doc.createElement("div");
-  badges.className = "addins-card-badges";
-  const statusMeta = planned
-    ? { label: "Planned", badgeClass: "planned" }
-    : ADDON_STATUS_META[addon.status] || ADDON_STATUS_META.installed;
-  badges.appendChild(createBadge(doc, statusMeta.label, statusMeta.badgeClass));
-  badges.appendChild(
-    createBadge(
-      doc,
-      addon.trusted ? "Trusted" : "Untrusted",
-      addon.trusted ? "installed" : "disabled",
-    ),
-  );
-  if (addon.status !== "not-installed") {
-    badges.appendChild(
-      createBadge(
-        doc,
-        addon.activeOnPage ? "Active Here" : "Idle Here",
-        addon.activeOnPage ? "running" : "disabled",
-      ),
-    );
-  }
-  if (addon.blocked) {
-    badges.appendChild(createBadge(doc, "Blocked", "error"));
-  }
-  if (pinned) {
-    badges.appendChild(createBadge(doc, "Pinned", "pinned"));
-  }
-
-  head.appendChild(info);
-  head.appendChild(badges);
-
-  const description = doc.createElement("div");
-  description.className = "addins-card-description";
-  description.textContent = addon.description;
-
-  const scopeInfo = doc.createElement("div");
-  scopeInfo.className = "addins-card-meta";
-  scopeInfo.textContent = formatAddonScopes(addon);
-
-  card.appendChild(head);
-  card.appendChild(description);
-  card.appendChild(scopeInfo);
-
-  const shouldShowCardStatusCopy =
-    !planned &&
-    Boolean(addon.statusMessage) &&
-    !(addon.status === "installed" && addon.activeOnPage);
-  if (shouldShowCardStatusCopy) {
-    const statusCopy = doc.createElement("div");
-    statusCopy.className = `addins-status-copy ${addon.status}`;
-    statusCopy.textContent = addon.statusMessage;
-    card.appendChild(statusCopy);
-  }
-
-  if (!planned) {
-    const actions = doc.createElement("div");
-    actions.className = "addins-card-actions";
-    const supportsFeatureToggle =
-      addon.status !== "not-installed" &&
-      (addon.capabilities?.includes("feature") ||
-        (!addon.activeOnPage && addon.installedSeenAt > 0));
-    const supportsPinning = addon.status !== "not-installed";
-
-    if (supportsFeatureToggle) {
-      const isDisabled = addon.status === "disabled";
-      const toggleBtn = createActionButton(
-        doc,
-        isDisabled ? "Enable" : "Disable",
-        "toggle-addon-feature",
-        addon.id,
-        isDisabled ? "addon-enable-btn" : "addon-disable-btn secondary",
-      );
-      // Robustness: attach direct click handler to card-level toggle so clicks
-      // work even if delegated listeners are not reachable in some scopes.
-      toggleBtn.addEventListener("click", async (ev) => {
-        try {
-          ev.stopPropagation();
-          if (!addon || addon.status === "not-installed") {
-            showToast("Add-on action failed: addon_not_registered");
-            return;
-          }
-          const action = addon.status === "disabled" ? "feature.enable" : "feature.disable";
-          const result = await invokeAddonCoreAction(addon.id, action, {});
-          if (!result?.ok) {
-            showToast(`Add-on action failed: ${result?.reason || "unknown"}`);
-            return;
-          }
-          updateRegisteredAddons(listKnownAddons());
-        } catch (err) {
-          console.warn("Card toggle handler failed:", err);
-        }
-      });
-      actions.appendChild(toggleBtn);
-    }
-
-    const openButton = createActionButton(doc, "Open", "open-addon-panel", addon.id);
-    actions.appendChild(openButton);
-    if (supportsPinning) {
-      actions.appendChild(
-        createActionButton(
-          doc,
-          pinned ? "Unpin Shortcut" : "Pin to Sidebar",
-          "toggle-addon-pin",
-          addon.id,
-          "secondary",
-        ),
-      );
-      if (pinned) {
-        actions.appendChild(
-          createActionButton(doc, "Move Up", "move-addon-pin-up", addon.id, "secondary"),
-        );
-        actions.appendChild(
-          createActionButton(doc, "Move Down", "move-addon-pin-down", addon.id, "secondary"),
-        );
-      }
-    }
-
-    if (addon.downloadUrl && addon.status === "not-installed") {
-      actions.appendChild(
-        createActionButton(doc, "Download", "open-addon-download", addon.id, "secondary"),
-      );
-    }
-
-    if (addon.status !== "not-installed" && !addon.activeOnPage) {
-      actions.appendChild(
-        createActionButton(doc, "Delete Trace", "delete-addon-trace", addon.id, "secondary"),
-      );
-    }
-
-    const moveUpButton = actions.querySelector('[data-addon-action="move-addon-pin-up"]');
-    const moveDownButton = actions.querySelector('[data-addon-action="move-addon-pin-down"]');
-    if (moveUpButton && moveDownButton) {
-      const canMove = pinned && pinnedCount > 1;
-      moveUpButton.disabled = !canMove || pinnedIndex <= 0;
-      moveDownButton.disabled = !canMove || pinnedIndex < 0 || pinnedIndex >= pinnedCount - 1;
-    }
-
-    card.appendChild(actions);
-  }
-
-  return card;
-}
-
-function syncAddonPanels(shadowRoot) {
-  const settingsMain = shadowRoot.querySelector(".settings-main");
-  if (!settingsMain) return;
-
-  settingsMain
-    .querySelectorAll(".settings-panel[data-addon-panel='true']")
-    .forEach((panel) => panel.remove());
-
-  getRegisteredAddons()
-    .filter((addon) => addon.status !== "not-installed")
-    .forEach((addon) => {
-      const panel = document.createElement("div");
-      panel.id = addon.panelId;
-      panel.className = "settings-panel";
-      panel.dataset.addonPanel = "true";
-      panel.dataset.addonId = addon.id;
-
-      const wrapper = document.createElement("div");
-      wrapper.className = "settings-wrapper-inner";
-
-      const header = document.createElement("div");
-      header.className = "config-header";
-      header.textContent = addon.panelTitle || addon.name;
-
-      const note = document.createElement("div");
-      note.className = "tag-priority-note";
-      const scopeText = formatAddonScopes(addon);
-      const panelText = addon.panelBody || `${addon.name} is connected to the new add-ons shell.`;
-      note.textContent = `${panelText} ${scopeText}`.trim();
-
-      if (addon.statusMessage) {
-        note.classList.add("settings-addon-status-note", addon.status);
-      }
-
-      const statusMeta = ADDON_STATUS_META[addon.status] || ADDON_STATUS_META.installed;
-      const statusRow = document.createElement("div");
-      statusRow.className = "addins-panel-status-row";
-      statusRow.appendChild(createBadge(document, statusMeta.label, statusMeta.badgeClass));
-      statusRow.appendChild(
-        createBadge(
-          document,
-          addon.trusted ? "Trusted" : "Untrusted",
-          addon.trusted ? "installed" : "disabled",
-        ),
-      );
-      if (addon.status !== "not-installed") {
-        statusRow.appendChild(
-          createBadge(
-            document,
-            addon.activeOnPage ? "Active Here" : "Idle Here",
-            addon.activeOnPage ? "running" : "disabled",
-          ),
-        );
-      }
-      if (addon.blocked) {
-        statusRow.appendChild(createBadge(document, "Blocked", "error"));
-      }
-      if (
-        addon.capabilities?.includes("feature") &&
-        (addon.status === "installed" || addon.status === "disabled")
-      ) {
-        const runningBadgeLabel = addon.status === "disabled" ? "Paused" : "Running";
-        const runningBadgeClass = addon.status === "disabled" ? "disabled" : "running";
-        statusRow.appendChild(createBadge(document, runningBadgeLabel, runningBadgeClass));
-      }
-      if (getPinnedAddonIds().includes(addon.id)) {
-        statusRow.appendChild(createBadge(document, "Pinned", "pinned"));
-      }
-
-      const actions = createAddonPanelActions(document, addon);
-
-      const statusMessageEl = document.createElement("div");
-      statusMessageEl.className = `addins-status-copy ${addon.status}`;
-      statusMessageEl.textContent =
-        addon.statusMessage ||
-        (addon.status === "disabled" ? "This add-on is currently disabled." : "Add-on is active.");
-      statusMessageEl.hidden = !addon.capabilities?.includes("feature") && !addon.statusMessage;
-
-      wrapper.appendChild(header);
-      wrapper.appendChild(note);
-      wrapper.appendChild(statusRow);
-      wrapper.appendChild(statusMessageEl);
-
-      const settingsContainer = document.createElement("div");
-      settingsContainer.className = "addins-panel-settings";
-      settingsContainer.dataset.addonId = addon.id;
-      wrapper.appendChild(settingsContainer);
-      void renderAddonPanelSettings(settingsContainer, addon);
-
-      wrapper.appendChild(actions);
-      panel.appendChild(wrapper);
-      settingsMain.appendChild(panel);
-    });
-}
-
-function renderAddinsOverview(shadowRoot) {
-  const installedList = shadowRoot.getElementById("addins-installed-list");
-  if (!installedList) return;
-
-  installedList.innerHTML = "";
-
-  const registeredAddons = getRegisteredAddons();
-  const pinnedIds = getPinnedAddonIds();
-  const addinsCatalogNote = shadowRoot.getElementById("addins-catalog-note");
-  const hasCatalogFallback = registeredAddons.some((addon) => addon.catalogFresh === false);
-
-  if (addinsCatalogNote) {
-    addinsCatalogNote.textContent = hasCatalogFallback
-      ? "Failed to fetch catalog. Showing fallback metadata with minimum information."
-      : "Trusted add-ons are listed here with install links and page-aware runtime status.";
-    addinsCatalogNote.classList.toggle("settings-addon-status-note", hasCatalogFallback);
-    addinsCatalogNote.classList.toggle("error", hasCatalogFallback);
-  }
-
-  if (registeredAddons.length === 0) {
-    const emptyState = document.createElement("div");
-    emptyState.className = "addins-empty-state";
-
-    const title = document.createElement("div");
-    title.className = "addins-empty-title";
-    title.textContent = "No trusted add-ons listed";
-
-    const copy = document.createElement("div");
-    copy.className = "addins-empty-copy";
-    copy.textContent = "Trusted add-ons will appear here with install links and runtime status.";
-
-    emptyState.appendChild(title);
-    emptyState.appendChild(copy);
-    installedList.appendChild(emptyState);
-  } else {
-    registeredAddons.forEach((addon) => {
-      const pinnedIndex = pinnedIds.indexOf(addon.id);
-      installedList.appendChild(
-        createAddonCard(document, addon, {
-          pinned: pinnedIndex >= 0,
-          pinnedIndex,
-          pinnedCount: pinnedIds.length,
-        }),
-      );
-    });
-  }
-}
-
-function syncPinnedAddonNav(shadowRoot) {
-  const pinnedGroup = shadowRoot.getElementById("settings-nav-pinned-group");
-  const pinnedItems = shadowRoot.getElementById("settings-nav-pinned-items");
-  if (!pinnedGroup || !pinnedItems) return;
-
-  pinnedItems.innerHTML = "";
-  const addonById = new Map(getRegisteredAddons().map((addon) => [addon.id, addon]));
-  const pinnedAddons = getPinnedAddonIds()
-    .map((id) => addonById.get(id))
-    .filter((addon) => addon && addon.status !== "not-installed");
-
-  pinnedGroup.hidden = pinnedAddons.length === 0;
-  pinnedAddons.forEach((addon) => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "settings-nav-item settings-nav-addon-item";
-    button.dataset.target = addon.panelId;
-    button.dataset.addonId = addon.id;
-    button.textContent = addon.name;
-    pinnedItems.appendChild(button);
-  });
 }
 
 function setActivePanel(
@@ -739,9 +236,9 @@ function syncSettingsSidebarNavigation(shadowRoot) {
   const shell = shadowRoot.querySelector(".settings-shell");
   const keepMobilePanelOpen = Boolean(shell?.classList?.contains("mobile-show-panel"));
 
-  syncAddonPanels(shadowRoot);
-  syncPinnedAddonNav(shadowRoot);
-  renderAddinsOverview(shadowRoot);
+  syncAddonPanels(shadowRoot, getRegisteredAddons, getPinnedAddonIds);
+  syncPinnedAddonNav(shadowRoot, getRegisteredAddons, getPinnedAddonIds);
+  renderAddinsOverview(shadowRoot, getRegisteredAddons, getPinnedAddonIds);
   setActivePanel(shadowRoot, activePanelId, {
     persist: false,
     resetScroll: false,

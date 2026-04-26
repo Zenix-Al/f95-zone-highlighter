@@ -1,3 +1,5 @@
+import { createEl } from "../../shared/createEl";
+
 export function createImageRepairUi({ addonId, toastId, wrapperId, toastUpdateInterval, metrics }) {
   const styleId = `${addonId}-style`;
 
@@ -42,34 +44,22 @@ export function createImageRepairUi({ addonId, toastId, wrapperId, toastUpdateIn
   let isToastUpdating = false;
   let pendingToastUpdate = false;
   let toastUpdateTimer = null;
-
   function injectUi() {
     if (document.getElementById(toastId)) return;
 
-    const spinner = document.createElement("span");
-    spinner.className = "img-retry-spinner";
+    const spinner = createEl("span", "img-retry-spinner");
 
-    const count = document.createElement("span");
-    count.className = "img-retry-count";
-    count.textContent = "0";
+    const count = createEl("span", "img-retry-count", "0");
 
-    const plural = document.createElement("span");
-    plural.className = "img-retry-plural";
+    const plural = createEl("span", "img-retry-plural");
 
-    const succeeded = document.createElement("span");
-    succeeded.className = "img-retry-succeeded";
-    succeeded.textContent = "0";
+    const succeeded = createEl("span", "img-retry-succeeded", "0");
 
-    const failed = document.createElement("span");
-    failed.className = "img-retry-failed";
-    failed.textContent = "0";
+    const failed = createEl("span", "img-retry-failed", "0");
 
-    const avg = document.createElement("span");
-    avg.className = "img-retry-avg";
-    avg.textContent = "0";
+    const avg = createEl("span", "img-retry-avg", "0");
 
-    const stats = document.createElement("div");
-    stats.className = "img-retry-stats";
+    const stats = createEl("div", "img-retry-stats");
     stats.append(
       document.createTextNode("Success: "),
       succeeded,
@@ -80,7 +70,7 @@ export function createImageRepairUi({ addonId, toastId, wrapperId, toastUpdateIn
       document.createTextNode(" ms"),
     );
 
-    const toast = document.createElement("div");
+    const toast = createEl("div");
     toast.id = toastId;
     toast.style.display = "none";
     toast.append(
@@ -107,35 +97,27 @@ export function createImageRepairUi({ addonId, toastId, wrapperId, toastUpdateIn
     pendingToastUpdate = false;
   }
 
+  let toastTimeout = null;
   function updateToast(retryingImages) {
     const toast = document.getElementById(toastId);
     if (!toast) return;
 
-    if (isToastUpdating) {
-      pendingToastUpdate = true;
+    if (retryingImages.size === 0) {
+      toast.style.display = "none";
       return;
     }
 
-    isToastUpdating = true;
+    toast.style.display = "flex";
+    toast.querySelector(".img-retry-count").textContent = retryingImages.size;
+    toast.querySelector(".img-retry-plural").textContent = retryingImages.size > 1 ? "s" : "";
 
-    if (retryingImages.size === 0) {
-      toast.style.display = "none";
-    } else {
-      toast.style.display = "flex";
-      toast.querySelector(".img-retry-count").textContent = retryingImages.size;
-      toast.querySelector(".img-retry-plural").textContent = retryingImages.size > 1 ? "s" : "";
+    // Update stats with small debounce
+    clearTimeout(toastTimeout);
+    toastTimeout = setTimeout(() => {
       toast.querySelector(".img-retry-succeeded").textContent = metrics.succeeded;
       toast.querySelector(".img-retry-failed").textContent = metrics.failed;
       toast.querySelector(".img-retry-avg").textContent = metrics.avgCache.toFixed(1);
-    }
-
-    toastUpdateTimer = setTimeout(() => {
-      isToastUpdating = false;
-      if (pendingToastUpdate) {
-        pendingToastUpdate = false;
-        updateToast(retryingImages);
-      }
-    }, toastUpdateInterval);
+    }, 120);
   }
 
   return {

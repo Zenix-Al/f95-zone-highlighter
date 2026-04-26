@@ -5,6 +5,7 @@ import {
   LIBRARY_MIGRATION_MARKER_KEY,
   LIBRARY_STORE_NAME,
 } from "../constants.js";
+import { storageGet, storageSet } from "../main.js";
 
 function storePayload(extra = {}) {
   return {
@@ -305,18 +306,13 @@ export function createLibraryService(bridge) {
   }
 
   async function runLegacyMigration() {
-    const markerResult = await bridge.invokeCoreAction("storage.get", {
-      key: LIBRARY_MIGRATION_MARKER_KEY,
-      defaultValue: false,
-    });
+    const markerResult = await storageGet(LIBRARY_MIGRATION_MARKER_KEY, false);
+
     if (markerResult?.ok && markerResult.value === true) {
       return { ok: true, migrated: 0, skipped: true };
     }
+    const legacyResult = await storageGet(LIBRARY_LEGACY_KEY, null);
 
-    const legacyResult = await bridge.invokeCoreAction("storage.get", {
-      key: LIBRARY_LEGACY_KEY,
-      defaultValue: null,
-    });
     const rawLegacy = legacyResult?.ok ? legacyResult.value : null;
 
     let migrated = 0;
@@ -327,11 +323,7 @@ export function createLibraryService(bridge) {
       const imported = await importEntries(Object.values(rawLegacy), { conflictPolicy: "newer" });
       migrated = Number(imported?.imported || 0);
     }
-
-    await bridge.invokeCoreAction("storage.set", {
-      key: LIBRARY_MIGRATION_MARKER_KEY,
-      value: true,
-    });
+    storageSet(LIBRARY_LEGACY_KEY, null);
 
     return { ok: true, migrated, skipped: false };
   }

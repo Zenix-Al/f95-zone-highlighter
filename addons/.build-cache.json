@@ -1,16 +1,24 @@
 {
-  "regular": {
-    "masked-direct-addon": "92767167e618c5763500e262394bde6e6f0bb851ec72d35eaadef482199125d8",
-    "image-repair-addon": "3797d37f7b9c1cc3e85b3265daeea4a75dc3849be98beb4976a5ac564c92c719",
-    "library-addon": "c359caabc83e81408691fec5bbafbbe34b403262d99c31cab1872642a8343cc9",
-    "latest-filters-addon": "337fb128d84f0045bd03b63b6c0e0879a31fb8a41959e4e174425c5ad0cfe390",
-    "halloween-theme-addon": "b91e72193ed38b82cc0b4886877297f4d75a2dd71852457fd8a2a4b4828281b2"
-  },
-  "release": {
-    "image-repair-addon": "a9610c96e437ada1c2880bdd8b7384414a36737ca31e54b44c29347644f87ca7",
-    "masked-direct-addon": "cc2bc32986cd3859256a949c080eb9c4ccbb750cddc656c0b8c98c2329480c3e",
-    "library-addon": "d2822c50d3b431e0d4c474cb7e5ffab0c64df700003705d699eb11a2e47cee95",
-    "latest-filters-addon": "6f0ef88dc2468ebb083a54bef9075d5d5e36cc4116d7706666cdb8acacb7ed33",
-    "halloween-theme-addon": "da8c6e0a85844b0d82340fd9c6acc890c5cffd106126ac2f09e7643a57ec174d"
+  "addons": {
+    "image-repair-addon": {
+      "regular": "fcdba04143102ee81ad5a4f9a6fe3bb1e1419db1b57ba209e0e522cd2c94bf74",
+      "release": "e6703eca1c7ee14936ac0c24c1292123a9087e5ae55e02d2a6cf0e6c882ed247"
+    },
+    "masked-direct-addon": {
+      "regular": "2ffc1a93e77d12e039e5fc2ea756b8f1894c5d8108a1e19eec4ba03039b9d759",
+      "release": "727ae07834e53450b15846301575d50b9c6019d531611a6b93c4f242723209f6"
+    },
+    "library-addon": {
+      "regular": "7408251b4e54c9d4ce30355cebe7f7abf37b7e0c06114b1d6417516e6f8bf017",
+      "release": "6c653dd1205e8f503117d8a7d3352725f9a9e1eba4eee786d20532d8d5d16aed"
+    },
+    "latest-filters-addon": {
+      "regular": "5004bfaadb7cec71c362eb5f891dbd5f436672d40a734e127069aabedc7c1e90",
+      "release": "fb02a73608043899a9ee624899d1007b5243973a39306771c181702bc4f119a9"
+    },
+    "halloween-theme-addon": {
+      "regular": "20d94f0e516d3ee09ab448d210a2f1906f75403a09e46a7a1a4454db7f1ae549",
+      "release": "d1853f9d3e08d54ac9b364adf82d7e995d511c5daece90d197402e9b85780fae"
+    }
   }
 }

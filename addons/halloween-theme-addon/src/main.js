@@ -1,3 +1,4 @@
+import { createEl } from "../../shared/createEl.js";
 import { ADDON_COMMAND_EVENT, getRuntimeConfig } from "./constants.js";
 import { createCoreBridge } from "./coreBridge.js";
 
@@ -5,6 +6,7 @@ const runtime = getRuntimeConfig();
 const bridge = createCoreBridge(runtime.addonId);
 
 const STYLE_ID = "f95ue-halloween-theme-style";
+
 const BG_CSS = `
   .p-body {
     background-image: url('https://f95zone.to/assets/halloween/web-left.png'),
@@ -15,13 +17,102 @@ const BG_CSS = `
 `;
 
 let isEnabled = true;
-let addonCommandHandlerBound = false;
 
 function statusMessage() {
-  return isEnabled ? "Halloween theme is active." : "Halloween theme add-on is disabled.";
+  return isEnabled
+    ? "Halloween theme is active."
+    : "Halloween theme disabled — refresh recommended.";
 }
 
-function registerAddon() {
+// ==================== THEME ====================
+function applyTheme() {
+  debugLog("Applying Halloween theme...");
+  // Swap logo
+  document.querySelectorAll("img").forEach((img) => {
+    if (!(img instanceof HTMLImageElement)) return;
+
+    const src = img.getAttribute("src") || "";
+    const srcset = img.getAttribute("srcset") || "";
+
+    if (src.includes("/assets/logo.png") && !img.dataset.origSrc) {
+      img.dataset.origSrc = src;
+      img.setAttribute("src", src.replace("/assets/logo.png", "/assets/halloween/logo.png"));
+    }
+    if (srcset.includes("/assets/logo.png") && !img.dataset.origSrcset) {
+      img.dataset.origSrcset = srcset;
+      img.setAttribute(
+        "srcset",
+        srcset.replaceAll("/assets/logo.png", "/assets/halloween/logo.png"),
+      );
+    }
+  });
+
+  // Add background style
+  if (!document.getElementById(STYLE_ID)) {
+    const style = createEl("style", null, null, STYLE_ID);
+    style.textContent = BG_CSS;
+    document.head.appendChild(style);
+  }
+}
+
+function teardownTheme() {
+  document.querySelectorAll("img").forEach((img) => {
+    if (img.dataset.origSrc) {
+      img.setAttribute("src", img.dataset.origSrc);
+      delete img.dataset.origSrc;
+    }
+    if (img.dataset.origSrcset) {
+      img.setAttribute("srcset", img.dataset.origSrcset);
+      delete img.dataset.origSrcset;
+    }
+  });
+
+  document.getElementById(STYLE_ID)?.remove();
+}
+
+// ==================== TOGGLE ====================
+function toggle(enabled) {
+  debugLog("Toggling Halloween theme:", enabled);
+  isEnabled = Boolean(enabled);
+
+  if (isEnabled) {
+    applyTheme();
+  } else {
+    teardownTheme();
+  }
+
+  bridge.dispatchCoreCommand("update-status", {
+    addonId: runtime.addonId,
+    status: isEnabled ? "installed" : "disabled",
+    statusMessage: statusMessage(),
+  });
+}
+
+// ==================== COMMAND LISTENER ====================
+function bindCommands() {
+  window.addEventListener(ADDON_COMMAND_EVENT, (e) => {
+    const d = e?.detail || {};
+    if (d.addonId !== runtime.addonId) return;
+
+    const cmd = String(d.command || "").trim();
+
+    if (cmd === "enable") toggle(true);
+    else if (cmd === "disable") toggle(false);
+    else if (cmd === "teardown") {
+      teardownTheme();
+      bridge.teardownComplete(d.reason || "teardown");
+    }
+  });
+}
+
+// ==================== BOOTSTRAP ====================
+async function bootstrap() {
+  const ping = await bridge.waitForCorePing();
+  if (!ping.ok && runtime.requiresCore) return;
+
+  bindCommands();
+
+  // Always register so it stays visible in the panel even when disabled
   bridge.dispatchCoreCommand("register", {
     addon: {
       id: runtime.addonId,
@@ -31,119 +122,13 @@ function registerAddon() {
       status: isEnabled ? "installed" : "disabled",
       statusMessage: statusMessage(),
       panelTitle: runtime.addonName,
-      panelBody: "Toggle this add-on to apply or remove the Halloween look.",
+      panelBody: "Toggle to apply/remove Halloween theme (refresh recommended)",
       capabilities: runtime.capabilities,
       pageScopes: ["thread", "latest", "download", "global"],
     },
   });
-}
 
-function pushStatusUpdate() {
-  bridge.dispatchCoreCommand("update-status", {
-    addonId: runtime.addonId,
-    status: isEnabled ? "installed" : "disabled",
-    statusMessage: statusMessage(),
-  });
-  registerAddon();
-}
-
-function swapLogoToHalloween(image) {
-  if (!(image instanceof HTMLImageElement)) return;
-
-  if (image.hasAttribute("src")) {
-    const src = String(image.getAttribute("src") || "");
-    if (src.includes("/assets/logo.png") && !image.dataset.f95ueThemeOrigSrc) {
-      image.dataset.f95ueThemeOrigSrc = src;
-      image.setAttribute("src", src.replace("/assets/logo.png", "/assets/halloween/logo.png"));
-    }
-  }
-
-  if (image.hasAttribute("srcset")) {
-    const srcset = String(image.getAttribute("srcset") || "");
-    if (srcset.includes("/assets/logo.png") && !image.dataset.f95ueThemeOrigSrcset) {
-      image.dataset.f95ueThemeOrigSrcset = srcset;
-      image.setAttribute(
-        "srcset",
-        srcset.replaceAll("/assets/logo.png", "/assets/halloween/logo.png"),
-      );
-    }
-  }
-}
-
-function restoreLogo(image) {
-  if (!(image instanceof HTMLImageElement)) return;
-
-  if (image.dataset.f95ueThemeOrigSrc) {
-    image.setAttribute("src", image.dataset.f95ueThemeOrigSrc);
-    delete image.dataset.f95ueThemeOrigSrc;
-  }
-
-  if (image.dataset.f95ueThemeOrigSrcset) {
-    image.setAttribute("srcset", image.dataset.f95ueThemeOrigSrcset);
-    delete image.dataset.f95ueThemeOrigSrcset;
-  }
-}
-
-function applyTheme() {
-  document.querySelectorAll("img").forEach(swapLogoToHalloween);
-
-  if (!document.getElementById(STYLE_ID)) {
-    const styleEl = document.createElement("style");
-    styleEl.id = STYLE_ID;
-    styleEl.textContent = BG_CSS;
-    document.head.appendChild(styleEl);
-  }
-}
-
-function teardownTheme() {
-  document.querySelectorAll("img").forEach(restoreLogo);
-  document.getElementById(STYLE_ID)?.remove();
-}
-
-function setEnabled(nextEnabled) {
-  isEnabled = Boolean(nextEnabled);
   if (isEnabled) applyTheme();
-  else teardownTheme();
-  pushStatusUpdate();
-}
-
-function bindAddonCommandListener() {
-  if (addonCommandHandlerBound) return;
-
-  window.addEventListener(ADDON_COMMAND_EVENT, (event) => {
-    const detail = event?.detail || {};
-    if (String(detail.addonId || "") !== runtime.addonId) return;
-
-    const command = String(detail.command || "").trim();
-    if (command === "enable") {
-      setEnabled(true);
-      return;
-    }
-    if (command === "disable") {
-      setEnabled(false);
-      return;
-    }
-    if (command === "teardown") {
-      teardownTheme();
-      bridge.teardownComplete(String(detail.reason || "teardown"));
-    }
-  });
-
-  addonCommandHandlerBound = true;
-}
-
-async function bootstrap() {
-  const ping = await bridge.waitForCorePing();
-  if (!ping.ok && runtime.requiresCore) {
-    return;
-  }
-
-  bindAddonCommandListener();
-  registerAddon();
-  if (isEnabled) {
-    applyTheme();
-  }
-  pushStatusUpdate();
 }
 
 void bootstrap();

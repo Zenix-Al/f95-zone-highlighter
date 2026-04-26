@@ -102,6 +102,7 @@ export function initAddonsBridgeServer({
   marker,
   devCommandEvent,
   apiVersion,
+  isServiceDisabled,
   onRegister,
   onUnregister,
   onUpdateStatus,
@@ -112,125 +113,17 @@ export function initAddonsBridgeServer({
     window.addEventListener(devCommandEvent, (event) => {
       const detail = event?.detail || {};
       const type = String(detail.type || "").trim();
-
-      if (type === "ping") {
-        const replyEvent = String(detail.replyEvent || "").trim();
-        if (!replyEvent) return;
-        window.dispatchEvent(
-          new CustomEvent(replyEvent, {
-            detail: {
-              ok: true,
-              apiVersion,
-            },
-          }),
-        );
-        return;
-      }
-
-      if (type === "register") {
-        const registerAddonId = String(detail.addon?.id || "").trim();
-        if (!registerAddonId) return;
-        if (
-          !checkRateLimit(
-            addonRegisterTimestamps,
-            registerAddonId,
-            REGISTER_RATE_WINDOW_MS,
-            REGISTER_RATE_MAX,
-          )
-        ) {
-          return;
-        }
-        onRegister?.(detail.addon || {});
-        return;
-      }
-
-      if (type === "unregister") {
-        const unregisterAddonId = String(detail.addonId || "").trim();
-        if (!unregisterAddonId) return;
-        if (
-          !checkRateLimit(
-            addonUnregisterTimestamps,
-            unregisterAddonId,
-            UNREGISTER_RATE_WINDOW_MS,
-            UNREGISTER_RATE_MAX,
-          )
-        ) {
-          return;
-        }
-        onUnregister?.(detail.addonId);
-        return;
-      }
-
-      if (type === "update-status") {
-        const updateAddonId = String(detail.addonId || "").trim();
-        if (
-          !checkRateLimit(
-            addonStatusTimestamps,
-            updateAddonId,
-            STATUS_UPDATE_RATE_WINDOW_MS,
-            STATUS_UPDATE_RATE_MAX,
-          )
-        ) {
-          return;
-        }
-        onUpdateStatus?.(detail.addonId, detail.status, detail.statusMessage || "");
-        return;
-      }
-
-      if (type === "teardown-complete") {
-        onTeardownComplete?.(detail.addonId, detail.reason || "");
-        return;
-      }
-
-      if (type === "core-action") {
-        const actionAddonId = String(detail.addonId || "").trim();
-        const replyEvent = String(detail.replyEvent || "").trim();
-        if (
-          !checkRateLimit(
-            addonActionTimestamps,
-            actionAddonId,
-            CORE_ACTION_RATE_WINDOW_MS,
-            CORE_ACTION_RATE_MAX,
-          )
-        ) {
-          if (replyEvent) {
-            window.dispatchEvent(
-              new CustomEvent(replyEvent, { detail: { ok: false, reason: "rate_limited" } }),
-            );
-          }
-          return;
-        }
-        if (!tryAcquireInflight(actionAddonId)) {
-          if (replyEvent) {
-            window.dispatchEvent(
-              new CustomEvent(replyEvent, {
-                detail: { ok: false, reason: "too_many_concurrent_requests" },
-              }),
-            );
-          }
-          return;
-        }
-        Promise.resolve(
-          onInvokeCoreAction?.(detail.addonId, detail.action, detail.payload || {}) || {
-            ok: false,
-            reason: "unsupported_action",
-          },
-        )
-          .then((result) => {
-            releaseInflight(actionAddonId);
-            if (replyEvent) {
-              window.dispatchEvent(new CustomEvent(replyEvent, { detail: result }));
-            }
-          })
-          .catch(() => {
-            releaseInflight(actionAddonId);
-            if (replyEvent) {
-              window.dispatchEvent(
-                new CustomEvent(replyEvent, { detail: { ok: false, reason: "internal_error" } }),
-              );
-            }
-          });
-      }
+      typeBridgeListener(
+        type,
+        detail,
+        apiVersion,
+        isServiceDisabled,
+        onRegister,
+        onUnregister,
+        onUpdateStatus,
+        onTeardownComplete,
+        onInvokeCoreAction,
+      );
     });
 
     isBridgeListenerBound = true;
@@ -240,4 +133,155 @@ export function initAddonsBridgeServer({
     marker,
     scriptContent: createBridgeScript(devCommandEvent, apiVersion),
   });
+}
+
+function typeBridgeListener(
+  type,
+  detail = {},
+  apiVersion,
+  isServiceDisabled,
+  onRegister,
+  onUnregister,
+  onUpdateStatus,
+  onTeardownComplete,
+  onInvokeCoreAction,
+) {
+  const serviceDisabled = typeof isServiceDisabled === "function" ? Boolean(isServiceDisabled()) : false;
+  if (serviceDisabled) {
+    if (type === "ping") {
+      const replyEvent = String(detail.replyEvent || "").trim();
+      if (!replyEvent) return;
+      window.dispatchEvent(
+        new CustomEvent(replyEvent, {
+          detail: { ok: false, reason: "addons_service_disabled", apiVersion },
+        }),
+      );
+      return;
+    }
+
+    if (type === "core-action") {
+      const replyEvent = String(detail.replyEvent || "").trim();
+      if (!replyEvent) return;
+      window.dispatchEvent(
+        new CustomEvent(replyEvent, {
+          detail: { ok: false, reason: "addons_service_disabled" },
+        }),
+      );
+      return;
+    }
+
+    if (type === "teardown-complete") {
+      onTeardownComplete?.(detail.addonId, detail.reason || "");
+    }
+
+    return;
+  }
+
+  let key = "";
+  if (type === "register") {
+    key = String(detail.addon?.id || "").trim();
+    if (!key) return;
+  } else if (type !== "ping") {
+    key = String(detail.addonId || "").trim();
+    if (!key) return;
+  }
+
+  switch (type) {
+    case "ping": {
+      const replyEvent = String(detail.replyEvent || "").trim();
+      if (!replyEvent) return;
+      window.dispatchEvent(
+        new CustomEvent(replyEvent, {
+          detail: {
+            ok: true,
+            apiVersion,
+          },
+        }),
+      );
+      break;
+    }
+    case "register": {
+      if (
+        !checkRateLimit(addonRegisterTimestamps, key, REGISTER_RATE_WINDOW_MS, REGISTER_RATE_MAX)
+      ) {
+        return;
+      }
+      onRegister?.(detail.addon || {});
+      break;
+    }
+    case "unregister": {
+      if (
+        !checkRateLimit(
+          addonUnregisterTimestamps,
+          key,
+          UNREGISTER_RATE_WINDOW_MS,
+          UNREGISTER_RATE_MAX,
+        )
+      ) {
+        return;
+      }
+      onUnregister?.(detail.addonId);
+      break;
+    }
+    case "update-status": {
+      if (
+        !checkRateLimit(
+          addonStatusTimestamps,
+          key,
+          STATUS_UPDATE_RATE_WINDOW_MS,
+          STATUS_UPDATE_RATE_MAX,
+        )
+      ) {
+        return;
+      }
+      onUpdateStatus?.(detail.addonId, detail.status, detail.statusMessage || "");
+      break;
+    }
+    case "teardown-complete": {
+      onTeardownComplete?.(detail.addonId, detail.reason || "");
+      break;
+    }
+    case "core-action": {
+      const replyEvent = String(detail.replyEvent || "").trim();
+      if (!replyEvent) return;
+      if (
+        !checkRateLimit(
+          addonActionTimestamps,
+          key,
+          CORE_ACTION_RATE_WINDOW_MS,
+          CORE_ACTION_RATE_MAX,
+        )
+      ) {
+        window.dispatchEvent(
+          new CustomEvent(replyEvent, { detail: { ok: false, reason: "rate_limited" } }),
+        );
+        return;
+      }
+      if (!tryAcquireInflight(key)) {
+        window.dispatchEvent(
+          new CustomEvent(replyEvent, {
+            detail: { ok: false, reason: "too_many_concurrent_requests" },
+          }),
+        );
+        return;
+      }
+      Promise.resolve(
+        onInvokeCoreAction?.(key, detail.action, detail.payload || {}) || {
+          ok: false,
+          reason: "unsupported_action",
+        },
+      )
+        .then((result) => {
+          releaseInflight(key);
+          window.dispatchEvent(new CustomEvent(replyEvent, { detail: result }));
+        })
+        .catch(() => {
+          releaseInflight(key);
+          window.dispatchEvent(
+            new CustomEvent(replyEvent, { detail: { ok: false, reason: "internal_error" } }),
+          );
+        });
+      break;
+    }
+  }
 }

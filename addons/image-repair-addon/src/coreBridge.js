@@ -1,3 +1,4 @@
+import { debugLog } from "../../shared/debugLog.js";
 import { CORE_EVENT, CORE_ACTION_TIMEOUT_MS, PING_TIMEOUT_MS } from "./constants.js";
 
 function randomId(prefix) {
@@ -19,12 +20,12 @@ export function createCoreBridge(addonId) {
         settled = true;
         clearTimeout(timer);
         window.removeEventListener(replyEvent, onReply);
-        console.info(`[${addonId}] Ping finished:`, result);
+        debugLog(`[${addonId}] Ping finished:`, result);
         resolve(result);
       };
 
       const onReply = (e) => {
-        console.info(`[${addonId}] Received ping reply from core:`, e?.detail);
+        debugLog(`[${addonId}] Received ping reply from core:`, e?.detail);
         finish({ ok: Boolean(e?.detail?.ok), apiVersion: String(e?.detail?.apiVersion || "") });
       };
 

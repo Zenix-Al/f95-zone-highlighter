@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.12 - small ui change
+
+- move script constants to state constants file for better organization and easier access across modules.
+- using createEl helper for consistent element creation and styling.
+
 ## v0.2.2 - tinyupdate
 
 - use `ui.confirm` from core instead of `window.confirm` for consistent dialog styling and behavior.

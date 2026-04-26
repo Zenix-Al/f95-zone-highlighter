@@ -1,6 +1,8 @@
 import { LIBRARY_MANAGER_PAGE_SIZE } from "../constants.js";
 import { escapeHtml } from "../../../shared/htmlUtils.js";
 import { createDialogMarkup, ensureStyle, getStyleText } from "./renderer.js";
+import { createEl } from "../../../shared/createEl.js";
+import { showToast } from "./showToast.js";
 
 const ROWS_STATUS_ID = "f95ue-library-rows-status";
 const SEARCH_DEBOUNCE_MS = 220;
@@ -32,52 +34,50 @@ function parseSearchQuery(rawValue) {
   const textParts = [];
   const tokens = [];
 
+  const tokenActions = {
+    pinned: () => tokens.push({ type: "pinned", value: true }),
+    "is:pinned": () => tokens.push({ type: "pinned", value: true }),
+    unpinned: () => tokens.push({ type: "pinned", value: false }),
+    "is:unpinned": () => tokens.push({ type: "pinned", value: false }),
+    "has:note": () => tokens.push({ type: "hasNote", value: true }),
+    note: () => tokens.push({ type: "hasNote", value: true }),
+    "has:no-note": () => tokens.push({ type: "hasNote", value: false }),
+    nonote: () => tokens.push({ type: "hasNote", value: false }),
+  };
+
   for (const part of parts) {
     const token = part.toLowerCase();
 
-    if (token === "pinned" || token === "is:pinned") {
-      tokens.push({ type: "pinned", value: true });
-      continue;
-    }
-    if (token === "unpinned" || token === "is:unpinned") {
-      tokens.push({ type: "pinned", value: false });
-      continue;
-    }
-    if (token === "has:note" || token === "note") {
-      tokens.push({ type: "hasNote", value: true });
-      continue;
-    }
-    if (token === "has:no-note" || token === "nonote") {
-      tokens.push({ type: "hasNote", value: false });
+    // Handle direct token matches
+    if (tokenActions[token]) {
+      tokenActions[token]();
       continue;
     }
 
+    // Handle prefix-based tokens
     if (token.startsWith("status:")) {
       const value = safeText(token.slice(7));
       if (value) tokens.push({ type: "status", value });
       continue;
-    }
-
-    if (token.startsWith("tag:")) {
+    } else if (token.startsWith("tag:")) {
       const value = safeText(token.slice(4));
       if (value) tokens.push({ type: "tag", value });
       continue;
-    }
-
-    if (token.startsWith("id:")) {
+    } else if (token.startsWith("id:")) {
       const value = safeText(token.slice(3));
       if (value) tokens.push({ type: "id", value });
       continue;
-    }
-
-    const scoreMatch = token.match(/^score(<=|>=|=|<|>)(\d+(?:\.\d+)?)$/);
-    if (scoreMatch) {
-      tokens.push({
-        type: "score",
-        operator: scoreMatch[1],
-        value: Number(scoreMatch[2]),
-      });
-      continue;
+    } else {
+      // Handle score conditions
+      const scoreMatch = token.match(/^score(<=|>=|=|<|>)(\d+(?:\.\d+)?)$/);
+      if (scoreMatch) {
+        tokens.push({
+          type: "score",
+          operator: scoreMatch[1],
+          value: Number(scoreMatch[2]),
+        });
+        continue;
+      }
     }
 
     textParts.push(part);
@@ -101,34 +101,29 @@ function matchesSearchTokens(entry, tokens = []) {
   const score = Number(entry?.userScore);
 
   for (const token of tokens) {
-    if (token.type === "pinned") {
-      if (Boolean(entry?.pinned) !== Boolean(token.value)) return false;
-      continue;
-    }
-
-    if (token.type === "hasNote") {
-      const hasNote = note.length > 0;
-      if (hasNote !== Boolean(token.value)) return false;
-      continue;
-    }
-
-    if (token.type === "status") {
-      if (status !== token.value) return false;
-      continue;
-    }
-
-    if (token.type === "tag") {
-      if (!tags.some((tag) => tag.includes(token.value))) return false;
-      continue;
-    }
-
-    if (token.type === "id") {
-      if (!threadId.includes(token.value)) return false;
-      continue;
-    }
-
-    if (token.type === "score") {
-      if (!compareNumber(score, token.operator, token.value)) return false;
+    switch (token.type) {
+      case "pinned":
+        if (Boolean(entry?.pinned) !== Boolean(token.value)) return false;
+        break;
+      case "hasNote": {
+        const hasNote = note.length > 0;
+        if (hasNote !== Boolean(token.value)) return false;
+        break;
+      }
+      case "status":
+        if (status !== token.value) return false;
+        break;
+      case "tag":
+        if (!tags.some((tag) => tag.includes(token.value))) return false;
+        break;
+      case "id":
+        if (!threadId.includes(token.value)) return false;
+        break;
+      case "score":
+        if (!compareNumber(score, token.operator, token.value)) return false;
+        break;
+      default:
+        break;
     }
   }
 
@@ -229,23 +224,6 @@ export function createLibraryManagerApp({
       const existing = document.getElementById(styleId);
       existing?.remove();
     }
-  }
-
-  function showToast(root, message, type = "info") {
-    const stack = root.querySelector('[data-role="toastStack"]');
-    if (!stack) return;
-
-    const toast = document.createElement("div");
-    toast.className = `f95ue-library-toast ${type}`;
-    toast.textContent = String(message || "");
-    stack.appendChild(toast);
-
-    window.requestAnimationFrame(() => toast.classList.add("show"));
-
-    window.setTimeout(() => {
-      toast.classList.remove("show");
-      window.setTimeout(() => toast.remove(), 180);
-    }, 2600);
   }
 
   async function askConfirm(
@@ -476,7 +454,7 @@ export function createLibraryManagerApp({
     try {
       parsed = JSON.parse(text);
     } catch {
-      showToast(root, "Invalid JSON file.", "error");
+      await showToast("Invalid JSON file.", "error");
       inputEl.value = "";
       return;
     }
@@ -545,8 +523,7 @@ export function createLibraryManagerApp({
     }
 
     const result = await library.importEntries(records, { conflictPolicy });
-    showToast(
-      root,
+    await showToast(
       `Import complete. Imported: ${result.imported}, skipped: ${result.skipped}.`,
       "success",
     );
@@ -565,218 +542,199 @@ export function createLibraryManagerApp({
 
     root.addEventListener("click", async (event) => {
       const button = event.target?.closest?.("button[data-action]");
-      if (!button) return;
-
       const action = String(button.dataset.action || "").trim();
-      if (action === "close") {
-        await close("addon-close");
-        return;
-      }
 
-      if (action === "toggle-detail") {
-        state.detailOpen = !state.detailOpen;
-        syncLayoutState(root);
-        return;
-      }
-
-      if (action === "detail-close") {
-        state.detailOpen = false;
-        syncLayoutState(root);
-        return;
-      }
-
-      if (action === "prev") {
-        if (state.page > 1) {
-          state.page -= 1;
+      if (!button) return;
+      const actionHandlers = {
+        close: async () => {
+          await close("addon-close");
+        },
+        "toggle-detail": () => {
+          state.detailOpen = !state.detailOpen;
+        },
+        "detail-close": () => {
+          state.detailOpen = false;
+        },
+        prev: async () => {
+          if (state.page > 1) {
+            state.page -= 1;
+            await reloadRows(root);
+          }
+        },
+        next: async () => {
+          const maxPage = Math.max(1, Math.ceil(state.rows.length / LIBRARY_MANAGER_PAGE_SIZE));
+          if (state.page < maxPage) {
+            state.page += 1;
+            await reloadRows(root);
+          }
+        },
+        remove: async () => {
+          const threadId = String(button.dataset.threadId || "").trim();
+          if (!threadId) return;
+          const ok = await askConfirm(root, {
+            title: "Remove Entry",
+            message: "Remove this entry from library?",
+            confirmText: "Remove",
+            danger: true,
+          });
+          if (!ok) return;
+          const result = await library.removeEntry(threadId);
+          if (!result?.ok) {
+            await showToast("Failed to remove entry.", "error");
+            return;
+          }
+          await showToast("Entry removed from library.", "success");
           await reloadRows(root);
-        }
-        return;
-      }
-
-      if (action === "next") {
-        const maxPage = Math.max(1, Math.ceil(state.rows.length / LIBRARY_MANAGER_PAGE_SIZE));
-        if (state.page < maxPage) {
-          state.page += 1;
+          if (typeof onMutated === "function") onMutated();
+        },
+        "clear-selection": async () => {
+          state.selectedIds = new Set();
           await reloadRows(root);
-        }
-        return;
-      }
+        },
+        "bulk-set-status": async () => {
+          const ids = [...state.selectedIds];
+          if (ids.length === 0) {
+            await showToast("Select at least one row first.", "error");
+            return;
+          }
+          const bulkStatusEl = root.querySelector('[data-field="bulkStatus"]');
+          const nextStatus = String(bulkStatusEl?.value || "saved").trim();
+          const result = await library.bulkUpdateStatus(ids, nextStatus);
+          await showToast(
+            `Bulk status updated: ${result.updated}, skipped: ${result.skipped}.`,
+            "success",
+          );
+          await reloadRows(root);
+          if (typeof onMutated === "function") onMutated();
+        },
+        "bulk-remove": async () => {
+          const ids = [...state.selectedIds];
+          if (ids.length === 0) {
+            await showToast("Select at least one row first.", "error");
+            return;
+          }
+          const ok = await askConfirm(root, {
+            title: "Remove Selected",
+            message: `Remove ${ids.length} selected entries? This cannot be undone.`,
+            confirmText: "Remove",
+            danger: true,
+          });
+          if (!ok) return;
+          const result = await library.bulkRemoveEntries(ids);
+          await showToast(
+            `Bulk removed: ${result.removed}, skipped: ${result.skipped}.`,
+            "success",
+          );
+          state.selectedIds = new Set();
+          await reloadRows(root);
+          if (typeof onMutated === "function") onMutated();
+        },
+        "detail-save": async () => {
+          const entry = getActiveEntry();
+          if (!entry) return;
+          const statusField = root.querySelector('[data-field="detail-status"]');
+          const scoreField = root.querySelector('[data-field="detail-userScore"]');
+          const pinnedField = root.querySelector('[data-field="detail-pinned"]');
+          const noteField = root.querySelector('[data-field="detail-note"]');
 
-      if (action === "remove") {
-        const threadId = String(button.dataset.threadId || "").trim();
-        if (!threadId) return;
-        const ok = await askConfirm(root, {
-          title: "Remove Entry",
-          message: "Remove this entry from library?",
-          confirmText: "Remove",
-          danger: true,
-        });
-        if (!ok) return;
-        const result = await library.removeEntry(threadId);
-        if (!result?.ok) {
-          showToast(root, "Failed to remove entry.", "error");
+          const userScoreRaw = String(scoreField?.value || "").trim();
+          const userScore = userScoreRaw ? Number(userScoreRaw) : null;
+          if (userScoreRaw && (!Number.isFinite(userScore) || userScore < 0 || userScore > 10)) {
+            await showToast("User score must be between 0 and 10.", "error");
+            return;
+          }
+          const normalizedUserScore = userScoreRaw ? Number(userScore.toFixed(1)) : null;
+
+          const result = await library.patchEntry(entry.threadId, {
+            userStatus: String(statusField?.value || entry.userStatus).trim() || "saved",
+            userScore: normalizedUserScore,
+            pinned: Boolean(pinnedField?.checked),
+            note: String(noteField?.value || "").trim(),
+          });
+          if (!result?.ok) {
+            await showToast(`Failed to save entry: ${result?.reason || "unknown"}`, "error");
+            return;
+          }
+
+          state.detailOpen = false;
+          await showToast("Entry saved.", "success");
+          await reloadRows(root);
+          if (typeof onMutated === "function") onMutated();
+        },
+        "detail-update-thread": async () => {
+          const entry = getActiveEntry();
+          if (!entry) return;
+
+          const snapshot = getLiveThreadSnapshot();
+          if (!snapshot || snapshot.threadId !== entry.threadId) {
+            await showToast("Update is only available on this entry's thread page.", "error");
+            return;
+          }
+
+          const result = await library.patchEntry(entry.threadId, {
+            url: String(snapshot.url || "").trim(),
+            title: String(snapshot.title || "").trim(),
+            canonicalTitle: String(snapshot.canonicalTitle || snapshot.title || "").trim(),
+            titleNormalized: String(snapshot.titleNormalized || snapshot.title || "")
+              .trim()
+              .toLowerCase(),
+            prefix: String(snapshot.prefix || "").trim(),
+            gameVersion: String(snapshot.gameVersion || "").trim(),
+            tags: Array.isArray(snapshot.tags) ? snapshot.tags : [],
+            sourcePage: "thread",
+          });
+
+          if (!result?.ok) {
+            await showToast(`Failed to update entry: ${result?.reason || "unknown"}`, "error");
+            return;
+          }
+
+          await showToast("Entry refreshed from current thread.", "success");
+          await reloadRows(root);
+          if (typeof onMutated === "function") onMutated();
           return;
-        }
-        showToast(root, "Entry removed from library.", "success");
-        await reloadRows(root);
-        if (typeof onMutated === "function") onMutated();
-        return;
-      }
-
-      if (action === "clear-selection") {
-        state.selectedIds = new Set();
-        await reloadRows(root);
-        return;
-      }
-
-      if (action === "bulk-set-status") {
-        const ids = [...state.selectedIds];
-        if (ids.length === 0) {
-          showToast(root, "Select at least one row first.", "error");
+        },
+        "detail-revert": () => {
+          renderDetailPanel(root);
           return;
-        }
-        const bulkStatusEl = root.querySelector('[data-field="bulkStatus"]');
-        const nextStatus = String(bulkStatusEl?.value || "saved").trim();
-        const result = await library.bulkUpdateStatus(ids, nextStatus);
-        showToast(
-          root,
-          `Bulk status updated: ${result.updated}, skipped: ${result.skipped}.`,
-          "success",
-        );
-        await reloadRows(root);
-        if (typeof onMutated === "function") onMutated();
-        return;
-      }
-
-      if (action === "bulk-remove") {
-        const ids = [...state.selectedIds];
-        if (ids.length === 0) {
-          showToast(root, "Select at least one row first.", "error");
+        },
+        export: async () => {
+          const scopeEl = root.querySelector('[data-field="exportScope"]');
+          const scope = String(scopeEl?.value || "all").trim();
+          const payload =
+            scope === "filtered"
+              ? {
+                  version: 1,
+                  exportedAt: new Date().toISOString(),
+                  records: [...state.rows],
+                }
+              : await library.exportEntries();
+          const filename = `f95ue-library-${new Date().toISOString().slice(0, 10)}.json`;
+          triggerJsonDownload(filename, payload);
           return;
-        }
-        const ok = await askConfirm(root, {
-          title: "Remove Selected",
-          message: `Remove ${ids.length} selected entries? This cannot be undone.`,
-          confirmText: "Remove",
-          danger: true,
-        });
-        if (!ok) return;
-        const result = await library.bulkRemoveEntries(ids);
-        showToast(root, `Bulk removed: ${result.removed}, skipped: ${result.skipped}.`, "success");
-        state.selectedIds = new Set();
-        await reloadRows(root);
-        if (typeof onMutated === "function") onMutated();
-        return;
-      }
-
-      if (action === "detail-save") {
-        const entry = getActiveEntry();
-        if (!entry) return;
-        const statusField = root.querySelector('[data-field="detail-status"]');
-        const scoreField = root.querySelector('[data-field="detail-userScore"]');
-        const pinnedField = root.querySelector('[data-field="detail-pinned"]');
-        const noteField = root.querySelector('[data-field="detail-note"]');
-
-        const userScoreRaw = String(scoreField?.value || "").trim();
-        const userScore = userScoreRaw ? Number(userScoreRaw) : null;
-        if (userScoreRaw && (!Number.isFinite(userScore) || userScore < 0 || userScore > 10)) {
-          showToast(root, "User score must be between 0 and 10.", "error");
+        },
+        "export-selected": async () => {
+          const ids = [...state.selectedIds];
+          if (ids.length === 0) {
+            await showToast("Select at least one row first.", "error");
+            return;
+          }
+          const selectedRows = state.rows.filter((entry) => state.selectedIds.has(entry.threadId));
+          const payload = {
+            version: 1,
+            exportedAt: new Date().toISOString(),
+            records: selectedRows,
+          };
+          const filename = `f95ue-library-selected-${new Date().toISOString().slice(0, 10)}.json`;
+          triggerJsonDownload(filename, payload);
           return;
-        }
-        const normalizedUserScore = userScoreRaw ? Number(userScore.toFixed(1)) : null;
-
-        const result = await library.patchEntry(entry.threadId, {
-          userStatus: String(statusField?.value || entry.userStatus).trim() || "saved",
-          userScore: normalizedUserScore,
-          pinned: Boolean(pinnedField?.checked),
-          note: String(noteField?.value || "").trim(),
-        });
-        if (!result?.ok) {
-          showToast(root, `Failed to save entry: ${result?.reason || "unknown"}`, "error");
-          return;
-        }
-
-        state.detailOpen = false;
-        showToast(root, "Entry saved.", "success");
-        await reloadRows(root);
-        if (typeof onMutated === "function") onMutated();
-        return;
-      }
-
-      if (action === "detail-update-thread") {
-        const entry = getActiveEntry();
-        if (!entry) return;
-
-        const snapshot = getLiveThreadSnapshot();
-        if (!snapshot || snapshot.threadId !== entry.threadId) {
-          showToast(root, "Update is only available on this entry's thread page.", "error");
-          return;
-        }
-
-        const result = await library.patchEntry(entry.threadId, {
-          url: String(snapshot.url || "").trim(),
-          title: String(snapshot.title || "").trim(),
-          canonicalTitle: String(snapshot.canonicalTitle || snapshot.title || "").trim(),
-          titleNormalized: String(snapshot.titleNormalized || snapshot.title || "")
-            .trim()
-            .toLowerCase(),
-          prefix: String(snapshot.prefix || "").trim(),
-          gameVersion: String(snapshot.gameVersion || "").trim(),
-          tags: Array.isArray(snapshot.tags) ? snapshot.tags : [],
-          sourcePage: "thread",
-        });
-
-        if (!result?.ok) {
-          showToast(root, `Failed to update entry: ${result?.reason || "unknown"}`, "error");
-          return;
-        }
-
-        showToast(root, "Entry refreshed from current thread.", "success");
-        await reloadRows(root);
-        if (typeof onMutated === "function") onMutated();
-        return;
-      }
-
-      if (action === "detail-revert") {
-        renderDetailPanel(root);
-        return;
-      }
-
-      if (action === "export") {
-        const scopeEl = root.querySelector('[data-field="exportScope"]');
-        const scope = String(scopeEl?.value || "all").trim();
-        const payload =
-          scope === "filtered"
-            ? {
-                version: 1,
-                exportedAt: new Date().toISOString(),
-                records: [...state.rows],
-              }
-            : await library.exportEntries();
-        const filename = `f95ue-library-${new Date().toISOString().slice(0, 10)}.json`;
-        triggerJsonDownload(filename, payload);
-        return;
-      }
-
-      if (action === "export-selected") {
-        const ids = [...state.selectedIds];
-        if (ids.length === 0) {
-          showToast(root, "Select at least one row first.", "error");
-          return;
-        }
-        const selectedRows = state.rows.filter((entry) => state.selectedIds.has(entry.threadId));
-        const payload = {
-          version: 1,
-          exportedAt: new Date().toISOString(),
-          records: selectedRows,
-        };
-        const filename = `f95ue-library-selected-${new Date().toISOString().slice(0, 10)}.json`;
-        triggerJsonDownload(filename, payload);
-        return;
-      }
-
-      if (action === "import") {
-        importInput?.click();
+        },
+        import: () => {
+          importInput?.click();
+        },
+      };
+      if (actionHandlers[action]) {
+        actionHandlers[action]();
       }
     });
 
@@ -792,9 +750,7 @@ export function createLibraryManagerApp({
         else state.selectedIds.delete(threadId);
         await reloadRows(root);
         return;
-      }
-
-      if (action === "toggle-all") {
+      } else if (action === "toggle-all") {
         const from = (state.page - 1) * LIBRARY_MANAGER_PAGE_SIZE;
         const pageRows = state.rows.slice(from, from + LIBRARY_MANAGER_PAGE_SIZE);
         const pageIds = pageRows.map((row) => row.threadId);
@@ -892,9 +848,8 @@ export function createLibraryManagerApp({
 
     if (!result?.ok) {
       dialogOpen = false;
-      await bridge.invokeCoreAction("toast.show", {
-        message: `Library manager failed to open (${result?.reason || "unknown"}).`,
-      });
+      showToast(`Library manager failed to open (${result?.reason || "unknown"}).`, "error");
+
       return;
     }
 
