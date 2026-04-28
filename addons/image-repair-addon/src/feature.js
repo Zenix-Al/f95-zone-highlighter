@@ -1,8 +1,8 @@
 import { createQueue } from "./queue.js";
 
-export function createImageRepairFeature({
+// addons/image-repair-addon/src/feature.js
+export function createRetryManager({
   imageHost,
-  queueDelay,
   retryDelay,
   maxAttempts,
   isEnabled,
@@ -12,10 +12,9 @@ export function createImageRepairFeature({
   notifyMaxAttempts,
   ui,
 }) {
-  let imageQueue = null;
-  let retryingImages = new Set();
-
-  const notifInfo = { isErrorNotified: false, isCompleteNotified: false };
+  const retrying = new Set();
+  let queueTimer = null;
+  let notifInfo = { isErrorNotified: false, isCompleteNotified: false };
 
   function resetNotifInfo() {
     notifInfo.isErrorNotified = false;
@@ -23,33 +22,33 @@ export function createImageRepairFeature({
   }
 
   function markDone(img, success, duration) {
-    retryingImages.delete(img);
+    retrying.delete(img);
     img.dataset.retrying = "false";
     img.dataset.retryAttached = "true";
 
     if (success) {
       recordSuccess(duration);
-      if (retryingImages.size === 0 && !notifInfo.isCompleteNotified) {
+      if (retrying.size === 0 && !notifInfo.isCompleteNotified) {
         notifInfo.isCompleteNotified = true;
         notifyAllDone();
       }
     } else {
       recordFail();
     }
-
-    ui.updateToast(retryingImages);
+    ui.updateToast(retrying);
   }
 
-  function doRetry(img, start, attempt) {
-    retryingImages.add(img);
-    ui.updateToast(retryingImages);
+  function doRetry(img, startTime, attempt) {
+    retrying.add(img);
+    ui.updateToast(retrying);
+
     img.src = img.dataset.originalSrc + "?retry=" + Date.now();
 
     setTimeout(() => {
       if (!isEnabled()) return;
 
       if (img.complete && img.naturalWidth > 0) {
-        markDone(img, true, performance.now() - start);
+        markDone(img, true, performance.now() - startTime);
         return;
       }
 
@@ -62,106 +61,51 @@ export function createImageRepairFeature({
         return;
       }
 
-      doRetry(img, start, attempt + 1);
+      doRetry(img, startTime, attempt + 1);
     }, retryDelay);
   }
 
-  function handleImage(img) {
-    if (img.dataset.retryAttached || !String(img.src || "").startsWith(imageHost)) return;
+  function enqueue(img) {
+    if (img.dataset.retryAttached || !img.src?.startsWith(imageHost)) return;
 
     if (!img.dataset.originalSrc) {
       img.dataset.originalSrc = img.src;
     }
 
-    const start = performance.now();
-    let didRetry = false;
+    const startTime = performance.now();
 
-    function onLoad() {
-      retryingImages.delete(img);
-      img.dataset.retrying = "false";
-      img.dataset.retryAttached = "true";
-      if (!didRetry) return;
-
-      recordSuccess(performance.now() - start);
-
-      if (retryingImages.size === 0 && !notifInfo.isCompleteNotified) {
-        notifInfo.isCompleteNotified = true;
-        notifyAllDone();
-      }
-
-      ui.updateToast(retryingImages);
-    }
-
-    function onError() {
-      if (!isEnabled()) return;
-      if (img.dataset.retrying !== "true") {
-        didRetry = true;
-        img.dataset.retrying = "true";
-        doRetry(img, start, 0);
-      }
-    }
-
-    if (img.complete) {
-      if (img.naturalWidth > 0) onLoad();
-      else onError();
+    // If already broken, retry immediately
+    if (img.complete && img.naturalWidth === 0) {
+      doRetry(img, startTime, 0);
     } else {
-      img.addEventListener("load", onLoad, { once: true });
-      img.addEventListener("error", onError, { once: true });
-    }
-  }
-
-  function enqueueObservedNodes(nodes) {
-    if (!imageQueue) return;
-
-    for (const node of Array.isArray(nodes) ? nodes : []) {
-      if (!node || node.nodeType !== 1) continue;
-
-      if (node.tagName === "IMG") {
-        const src = String(node.src || "");
-        if (src.startsWith(imageHost) && !node.dataset.retryAttached) {
-          imageQueue.add(node, () => handleImage(node));
-        }
-        continue;
-      }
-
-      const imgs = node.querySelectorAll ? node.querySelectorAll("img") : [];
-      for (const img of imgs) {
-        const src = String(img.src || "");
-        if (src.startsWith(imageHost) && !img.dataset.retryAttached) {
-          imageQueue.add(img, () => handleImage(img));
-        }
-      }
+      // Otherwise wait for error
+      img.addEventListener(
+        "error",
+        () => {
+          if (img.dataset.retryAttached) return;
+          doRetry(img, startTime, 0);
+        },
+        { once: true },
+      );
     }
   }
 
   function enable() {
-    retryingImages = new Set();
+    retrying.clear();
     resetNotifInfo();
-    imageQueue = createQueue(queueDelay);
     ui.injectUi();
-
-    document.querySelectorAll("img").forEach((img) => {
-      const src = String(img.src || "");
-      if (src.startsWith(imageHost) && !img.dataset.retryAttached) {
-        imageQueue.add(img, () => handleImage(img));
-      }
-    });
-
-    ui.updateToast(retryingImages);
+    // Scan existing images
+    document.querySelectorAll("img").forEach(enqueue);
   }
 
   function disable() {
-    if (imageQueue) {
-      imageQueue.clear();
-      imageQueue = null;
-    }
-
+    retrying.clear();
     ui.destroyUi();
   }
 
   return {
     enable,
     disable,
-    enqueueObservedNodes,
+    enqueue, // used by observer
   };
 }

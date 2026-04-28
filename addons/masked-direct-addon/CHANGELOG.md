@@ -1,5 +1,9 @@
 # Changelog
 
+## nothing important changed yet, so this just notes for later
+
+- remove unecessary toast call when this addon failing.
+
 ## v0.2.9 - more host support + bugfixes
 
 - Added support for mediafire.com direct-download flow.

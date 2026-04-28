@@ -1,0 +1,67 @@
+{
+  "tags": [{ "id": 1, "name": "example" }],
+  "preferredTags": [2255, 191, 225, 30, 362, 924],
+  "excludedTags": [258, 360, 324, 2234],
+  "markedTags": [173, 392],
+  "color": {
+    "completed": "#388e3c",
+    "onhold": "#1976d2",
+    "abandoned": "#c9a300",
+    "highVersion": "#2e7d32",
+    "invalidVersion": "#a38400",
+    "tileInfo": "#9398a0",
+    "tileHeader": "#d9d9d9",
+    "preferred": "#7b1fa2",
+    "preferredText": "#ffffff",
+    "excluded": "#b71c1c",
+    "excludedText": "#ffffff",
+    "marked": "#4a4f55",
+    "markedText": "#ffffff"
+  },
+  "overlaySettings": {
+    "completed": true,
+    "onhold": true,
+    "abandoned": false,
+    "highVersion": true,
+    "invalidVersion": false,
+    "preferred": true,
+    "excluded": true,
+    "overlayText": true
+  },
+  "threadSettings": {
+    "marked": true,
+    "preferred": true,
+    "preferredShadow": false,
+    "excluded": true,
+    "excludedShadow": false,
+    "isWide": true,
+    "collapseSignature": true,
+    "threadOverlayToggle": true
+  },
+  "globalSettings": {
+    "configVisibility": false,
+    "closeNotifOnClick": true,
+    "enableCrossTabSync": true,
+    "allowUntrustedAddons": false,
+    "disableAddonsService": false,
+    "disableHelpMessage": true
+  },
+  "latestSettings": {
+    "autoRefresh": true,
+    "webNotif": true,
+    "minVersion": 0.5,
+    "wideLatest": true,
+    "denseLatestGrid": true,
+    "latestOverlayToggle": true,
+    "latestOverlayColorOrder": [
+      "excluded",
+      "preferred",
+      "completed",
+      "onhold",
+      "abandoned",
+      "highVersion",
+      "invalidVersion"
+    ],
+    "latestOverlayStyle": "strip"
+  }
+}

@@ -1,5 +1,5 @@
 import { sanitizeAddonId } from "./shared.js";
-
+import { debugLog } from "../../core/logger.js";
 // Minimal fallback used when the remote catalog resource fails to load.
 // Only id, name, downloadUrl, and trusted flag — all other fields will be "-".
 const CATALOG_FALLBACK = Object.freeze([
@@ -34,31 +34,46 @@ const BUILTIN_TRUSTED_ADDON_IDS = new Set(
 );
 
 // Try to load the catalog from the @resource declaration (fetched by the
-// userscript manager at install/update time from jsDelivr).
+// userscript manager at install/update time from jsDelivr.
 let TRUSTED_ADDON_CATALOG = CATALOG_FALLBACK;
 let _catalogFresh = false;
+let _catalogInitialized = false;
 
-try {
-  if (typeof GM_getResourceText === "function") {
+function getCatalogResource() {
+  try {
+    if (typeof GM_getResourceText !== "function") return;
     const raw = GM_getResourceText("trustedAddonCatalog");
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        TRUSTED_ADDON_CATALOG = Object.freeze(parsed.map((entry) => ({ ...entry })));
-        _catalogFresh = true;
-      }
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      TRUSTED_ADDON_CATALOG = Object.freeze(parsed.map((entry) => ({ ...entry })));
+      _catalogFresh = true;
     }
+  } catch (err) {
+    debugLog("Failed to load trusted addon catalog resource, using fallback", err);
   }
-} catch (err) {
-  console.warn("[catalog] Failed to load remote trusted catalog, using minimal fallback:", err);
+}
+
+export function initTrustedAddonCatalog() {
+  if (_catalogInitialized) return;
+  _catalogInitialized = true;
+  getCatalogResource();
+}
+
+function ensureCatalogInitialized() {
+  if (!_catalogInitialized) {
+    initTrustedAddonCatalog();
+  }
 }
 
 /** Returns true when the remote catalog was loaded successfully. */
 export function isCatalogFresh() {
+  ensureCatalogInitialized();
   return _catalogFresh;
 }
 
 export function listTrustedAddonCatalog() {
+  ensureCatalogInitialized();
   return TRUSTED_ADDON_CATALOG.map((entry) => ({ ...entry, id: sanitizeAddonId(entry.id) })).filter(
     (entry) => entry.id,
   );

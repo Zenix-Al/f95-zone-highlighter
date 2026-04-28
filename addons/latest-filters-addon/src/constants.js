@@ -1,5 +1,18 @@
 /* global __ADDON_ID__, __ADDON_NAME__, __ADDON_VERSION__, __ADDON_DESCRIPTION__, __ADDON_CAPABILITIES__, __ADDON_REQUIRES_CORE__ */
-
+export const state = {
+  isEnabled: true,
+  showPageButton: true,
+  presets: [],
+  searchQuery: "",
+  panelOpen: false,
+  rootEl: null,
+  dialogEl: null,
+  mountTimer: 0,
+  mountAttemptCount: 0,
+  locationListenerBound: false,
+  addonCommandHandlerBound: false,
+  presetsState: [],
+};
 export const CORE_EVENT = "f95ue:addons-dev-command";
 export const ADDON_COMMAND_EVENT = "f95ue:addon-command";
 
@@ -11,7 +24,9 @@ export const FILTER_SETTINGS_STORAGE_KEY = "settings";
 
 export const FILTER_SETTINGS_DEFAULT = {
   enabled: true,
-  showPageButton: true,
+  state: {
+    showPageButton: true,
+  },
 };
 
 export function getRuntimeConfig() {

@@ -58,6 +58,7 @@ async function importSettingsFromFile() {
     return;
   }
 
+  // Merge import into config (only update keys present in import, preserve everything else including addons)
   const updates = {};
   for (const key of EXPORTABLE_CONFIG_KEYS) {
     if (!Object.prototype.hasOwnProperty.call(payload, key)) continue;

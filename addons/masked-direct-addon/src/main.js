@@ -141,14 +141,14 @@ const threadPageController = createThreadPageController({
     directDownloadAttentionController.enableDirectDownloadAttentionListener({ isThreadPage }),
 });
 
-function showToast(message, duration = 2600) {
+function showToast(message, duration = 2600, type = "info") {
   // On f95zone pages the core is present — route through it so the toast uses
   // the same container and styling as the rest of the UI.
   // On download-host pages (gofile, pixeldrain, datanodes) the core is not
   // loaded, so fall back to the local addon toast.
   if (location.hostname.includes("f95zone.to")) {
     void bridge
-      .invokeCoreAction("toast.show", { message })
+      .invokeCoreAction("toast.show", { message, type })
       .then((result) => {
         if (!result?.ok) ui.showToast(message, duration);
       })

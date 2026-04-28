@@ -1,3 +1,5 @@
+import { createEl } from "../../../shared/createEl";
+
 const SHADOW_HOST_ID = "latest-highlighter-host";
 const ADDON_SLOT_ID = "f95ue-page-dock-addon-slot";
 const GROUP_ID = "f95ue-library-dock-group";
@@ -16,19 +18,18 @@ function ensureDockGroup() {
   let group = slot.querySelector(`#${GROUP_ID}`);
   if (group) return group;
 
-  group = document.createElement("div");
-  group.id = GROUP_ID;
-  group.className = "f95ue-page-dock-group";
+  group = createEl("div", "f95ue-page-dock-group", null, GROUP_ID);
 
-  const primaryButton = document.createElement("button");
-  primaryButton.id = PRIMARY_BUTTON_ID;
+  const primaryButton = createEl("button", "f95ue-page-dock-btn", null, PRIMARY_BUTTON_ID);
   primaryButton.type = "button";
-  primaryButton.className = "f95ue-page-dock-btn";
 
-  const managerButton = document.createElement("button");
-  managerButton.id = MANAGER_BUTTON_ID;
+  const managerButton = createEl(
+    "button",
+    "f95ue-page-dock-btn secondary",
+    "Library",
+    MANAGER_BUTTON_ID,
+  );
   managerButton.type = "button";
-  managerButton.textContent = "Library";
   managerButton.className = "f95ue-page-dock-btn secondary";
 
   group.appendChild(primaryButton);

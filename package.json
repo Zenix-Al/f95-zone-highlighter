@@ -5,6 +5,8 @@
   "scripts": {
     "build": "node build.js",
     "build:release": "node build.js --release",
+    "build:framework": "node framework/build.js",
+    "build:framework:release": "node framework/build.js --release",
     "build:quick": "npm run build:release && npm run build:addons:release",
     "build:addons": "node addons/build-addon.js --all",
     "build:addons:release": "node addons/build-addon.js --all --release",

@@ -1,5 +1,30 @@
 # Changelog
 
+### **[4.17.22 - Add colored toast support in core]**
+
+Small update to add colored toast support in core so add-ons can use the same consistent UI for their notifications instead of falling back to their own.
+
+### **[v4.17.19 - Config Transfer & Add-on UX Polish]**
+
+Quality of life update focusing on data transfer reliability and clearer add-on configuration access.
+
+**Config Transfer Improvements**
+
+- Fixed import/export validation for `latestOverlayStyle` field to properly accept "strip" or "border" string values instead of incorrectly expecting boolean.
+- Added `markedTags` to exportable configuration keys so marked tags are now included when exporting settings and can be restored on import.
+- Improved test data consistency between stored and exported configuration formats.
+
+**Add-on Service Optimizations**
+
+- Refined addon service code for better performance and maintainability.
+- Improved addon lifecycle handling.
+
+**Add-on UI Enhancements**
+
+- When viewing an add-on configuration panel, if the add-on is currently idle (not running on the current page), it now displays a helpful message indicating where the add-on is active instead of showing a blank panel.
+
+---
+
 ### **[4.17.1 - bugfix]**
 
 - forgot to increase z-index of drag ghost in the last update, fixed now. whoops.

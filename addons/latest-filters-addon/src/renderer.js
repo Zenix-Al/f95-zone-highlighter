@@ -10,6 +10,7 @@ import { escapeHtml } from "../../shared/htmlUtils.js";
 import panelCssTemplate from "./ui/panel.css";
 import panelHtmlTemplate from "./ui/panel.html";
 import dialogHtmlTemplate from "./ui/dialog.html";
+import { createEl } from "../../shared/createEl.js";
 
 // Shared CSS namespace prefix — must match the class names in createRootElement.
 const NS = "f95ue-lf";
@@ -31,8 +32,7 @@ export function getStyleText(rootId) {
  */
 export function ensureStyle(rootId, styleId) {
   if (document.getElementById(styleId)) return;
-  const style = document.createElement("style");
-  style.id = styleId;
+  const style = createEl("style", null, null, styleId);
   style.textContent = buildCss(rootId);
   document.head.append(style);
 }
@@ -46,9 +46,7 @@ export function ensureStyle(rootId, styleId) {
  * @returns {HTMLElement}
  */
 export function createRootElement(rootId) {
-  const section = document.createElement("div");
-  section.id = rootId;
-  section.className = "filter-block";
+  const section = createEl("section", "filter-block", null, rootId);
   section.innerHTML = panelHtmlTemplate;
   return section;
 }

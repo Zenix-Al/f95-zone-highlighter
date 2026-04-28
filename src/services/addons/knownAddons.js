@@ -3,6 +3,57 @@ function supportsCurrentPage(pageScopes = [], currentScopes = []) {
   return pageScopes.some((scope) => currentScopes.includes(scope));
 }
 
+function computeAddonStatus({
+  runtimeEntry,
+  metaEntry,
+  hasInstallSighting,
+  hasExplicitDesiredState,
+  desiredEnabled,
+  hasKnownScopeMeta,
+  scopeApplies,
+  catalogFresh,
+}) {
+  let status = runtimeEntry?.status || "disabled";
+  let statusMessage = runtimeEntry?.statusMessage || metaEntry?.statusMessage || "";
+
+  if (!runtimeEntry && hasInstallSighting && hasExplicitDesiredState) {
+    if (desiredEnabled === false) {
+      status = "disabled";
+      statusMessage =
+        String(metaEntry?.statusMessage || "").trim() ||
+        "Disabled from core. It will remain off when the add-on loads.";
+    } else {
+      status = "installed";
+      if (!hasKnownScopeMeta) {
+        statusMessage = String(metaEntry?.statusMessage || "").trim() || "";
+      } else if (!scopeApplies) {
+        statusMessage = "Enabled. This add-on only activates on supported pages.";
+      } else {
+        statusMessage =
+          String(metaEntry?.statusMessage || "").trim() ||
+          "Enabled from core. Waiting for the add-on to register on this page.";
+      }
+    }
+  } else if (!runtimeEntry && hasInstallSighting) {
+    if (!hasKnownScopeMeta) {
+      status = "installed";
+      statusMessage = "Installed. Runtime scope metadata is unavailable on this page.";
+    } else if (scopeApplies) {
+      status = "not-installed";
+      statusMessage =
+        "Not detected on this supported page. The add-on may be disabled or failed to load.";
+    } else {
+      status = "installed";
+      statusMessage = "Installed. This add-on only activates on supported pages.";
+    }
+  } else if (!runtimeEntry && !hasInstallSighting) {
+    status = "not-installed";
+    statusMessage = catalogFresh ? "" : "Catalog data unavailable - install info may be outdated.";
+  }
+
+  return { status, statusMessage };
+}
+
 export function buildKnownAddonsSnapshot({
   registered = [],
   catalog = [],
@@ -43,45 +94,16 @@ export function buildKnownAddonsSnapshot({
     const desiredEnabled = stateEntry?.enabled;
     const hasExplicitDesiredState = typeof desiredEnabled === "boolean";
 
-    let status = runtimeEntry?.status || "disabled";
-    let statusMessage = runtimeEntry?.statusMessage || metaEntry?.statusMessage || "";
-
-    if (!runtimeEntry && hasInstallSighting && hasExplicitDesiredState) {
-      if (desiredEnabled === false) {
-        status = "disabled";
-        statusMessage =
-          String(metaEntry?.statusMessage || "").trim() ||
-          "Disabled from core. It will remain off when the add-on loads.";
-      } else {
-        status = "installed";
-        if (!hasKnownScopeMeta) {
-          statusMessage = String(metaEntry?.statusMessage || "").trim() || "";
-        } else if (!scopeApplies) {
-          statusMessage = "Enabled. This add-on only activates on supported pages.";
-        } else {
-          statusMessage =
-            String(metaEntry?.statusMessage || "").trim() ||
-            "Enabled from core. Waiting for the add-on to register on this page.";
-        }
-      }
-    } else if (!runtimeEntry && hasInstallSighting) {
-      if (!hasKnownScopeMeta) {
-        status = "installed";
-        statusMessage = "Installed. Runtime scope metadata is unavailable on this page.";
-      } else if (scopeApplies) {
-        status = "not-installed";
-        statusMessage =
-          "Not detected on this supported page. The add-on may be disabled or failed to load.";
-      } else {
-        status = "installed";
-        statusMessage = "Installed. This add-on only activates on supported pages.";
-      }
-    } else if (!runtimeEntry && !hasInstallSighting) {
-      status = "not-installed";
-      statusMessage = catalogFresh
-        ? ""
-        : "Catalog data unavailable - install info may be outdated.";
-    }
+    const { status, statusMessage } = computeAddonStatus({
+      runtimeEntry,
+      metaEntry,
+      hasInstallSighting,
+      hasExplicitDesiredState,
+      desiredEnabled,
+      hasKnownScopeMeta,
+      scopeApplies,
+      catalogFresh,
+    });
 
     // When catalog is stale, fields that only come from the remote catalog show
     // "" as a placeholder so users know the info is not available.

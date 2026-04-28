@@ -1,0 +1,177 @@
+{
+  "addons": {
+    "trustedIds": ["image-repair-addon", "masked-direct-addon"],
+    "byAddon": {
+      "image-repair-addon": {
+        "state": {
+          "enabled": true
+        }
+      },
+      "masked-direct-addon": {
+        "state": {
+          "enabled": true,
+          "settings": {
+            "skipMaskedLink": true,
+            "directDownloadLinks": true,
+            "directDownloadPackages": {
+              "buzzheavier": true,
+              "gofile": true,
+              "pixeldrain": true,
+              "datanodes": true
+            }
+          }
+        }
+      },
+      "library-addon": {
+        "state": {
+          "libraryMigrationV1Done": true,
+          "settings": {
+            "enabled": true,
+            "showPageButtons": true
+          },
+          "enabled": true
+        }
+      },
+      "latest-filters-addon": {
+        "state": {
+          "presets": [
+            {
+              "id": "preset-1775566735423-4qmidt",
+              "name": "test",
+              "url": "https://f95zone.to/sam/latest_alpha/#/cat=games/page=1/tags=1507/notags=1434",
+              "normalizedUrl": "https://f95zone.to/sam/latest_alpha/",
+              "summary": "Base latest page",
+              "searchText": "test base latest page https://f95zone.to/sam/latest_alpha/",
+              "updatedAt": 1775566735423
+            }
+          ],
+          "enabled": true,
+          "settings": {
+            "enabled": true,
+            "showPageButton": true
+          }
+        }
+      }
+    },
+    "installedMeta": {
+      "image-repair-addon": {
+        "name": "F95UE Image Repair Add-on",
+        "version": "1.1.17",
+        "installedSeenAt": 1775306858623,
+        "lastSeenAt": 1776785527601
+      },
+      "masked-direct-addon": {
+        "name": "F95UE Masked + Direct Download Add-on",
+        "version": "0.2.9",
+        "installedSeenAt": 1775306858634,
+        "lastSeenAt": 1776996532542
+      },
+      "library-addon": {
+        "name": "F95UE Library Add-on",
+        "version": "0.2.2",
+        "installedSeenAt": 1775306858677,
+        "lastSeenAt": 1776996532507
+      },
+      "latest-filters-addon": {
+        "name": "F95UE Latest Filters Add-on",
+        "version": "0.3.9",
+        "installedSeenAt": 1775566638265,
+        "lastSeenAt": 1776991513861
+      }
+    }
+  },
+  "color": {
+    "completed": "#388e3c",
+    "onhold": "#1976d2",
+    "abandoned": "#c9a300",
+    "highVersion": "#2e7d32",
+    "invalidVersion": "#a38400",
+    "tileInfo": "#9398a0",
+    "tileHeader": "#d9d9d9",
+    "preferred": "#7b1fa2",
+    "preferredText": "#ffffff",
+    "excluded": "#b71c1c",
+    "excludedText": "#ffffff",
+    "marked": "#4a4f55",
+    "markedText": "#ffffff"
+  },
+  "configVisibility": true,
+  "directDownloadAttentionEvent": {
+    "ts": 1774003936490,
+    "id": "1774003936490-cnxnm5",
+    "host": "datanodes.to",
+    "code": "ready_not_found",
+    "message": "Datanodes automation failed: Ready state not detected.",
+    "href": "https://datanodes.to/download",
+    "targetTabId": "1774003270298-4d55xf",
+    "requestId": "1774003894582-u196le"
+  },
+  "excludedTags": [258, 360, 324, 2234],
+  "globalSettings": {
+    "configVisibility": false,
+    "closeNotifOnClick": true,
+    "enableCrossTabSync": true,
+    "allowUntrustedAddons": false,
+    "disableAddonsService": false,
+    "disableHelpMessage": true
+  },
+  "isImgRetryInjected": true,
+  "latestSettings": {
+    "autoRefresh": true,
+    "webNotif": true,
+    "minVersion": 0.5,
+    "wideLatest": true,
+    "denseLatestGrid": true,
+    "latestOverlayToggle": true,
+    "latestOverlayColorOrder": [
+      "excluded",
+      "preferred",
+      "completed",
+      "onhold",
+      "abandoned",
+      "highVersion",
+      "invalidVersion"
+    ],
+    "latestOverlayStyle": "strip"
+  },
+  "markedTags": [173, 392],
+  "metrics": {
+    "retried": 1760,
+    "succeeded": 6803,
+    "failed": 22,
+    "avgCache": 34663.99842064988,
+    "highest": 638499.1999999993,
+    "lowest": 0,
+    "mean": 319249.5999999996
+  },
+  "overlaySettings": {
+    "completed": true,
+    "onhold": true,
+    "abandoned": false,
+    "highVersion": true,
+    "invalidVersion": false,
+    "preferred": true,
+    "excluded": true,
+    "overlayText": true
+  },
+  "preferredTags": [2255, 191, 225, 30, 362, 924],
+  "savedNotifID": 117,
+  "settingsUiActivePanel": "settings-panel-general",
+  "settingsUiPinnedAddonIds": ["masked-direct-addon"],
+  "tags": [
+    {
+      "id": 2214,
+      "name": "example"
+    }
+  ],
+  "threadSettings": {
+    "marked": true,
+    "preferred": true,
+    "preferredShadow": false,
+    "excluded": true,
+    "excludedShadow": false,
+    "isWide": true,
+    "collapseSignature": true,
+    "threadOverlayToggle": true
+  }
+}

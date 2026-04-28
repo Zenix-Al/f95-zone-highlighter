@@ -1,4 +1,5 @@
 import stateManager from "../../config.js";
+import { createEl } from "../../core/dom.js";
 import { showToast } from "../../ui/components/toast.js";
 import {
   CONFIG_TRANSFER_DIALOG_ID,
@@ -23,10 +24,11 @@ export function ensureConfigTransferErrorElement() {
   let el = panel.querySelector(`#${CONFIG_TRANSFER_ERROR_ID}`);
   if (el) return el;
 
-  el = document.createElement("div");
-  el.id = CONFIG_TRANSFER_ERROR_ID;
-  el.className = "config-transfer-dialog-error";
-  el.style.display = "none";
+  el = createEl("div", {
+    id: CONFIG_TRANSFER_ERROR_ID,
+    className: "config-transfer-dialog-error",
+    style: { display: "none" },
+  });
 
   const actions = panel.querySelector(".config-dialog-actions");
   if (actions) {

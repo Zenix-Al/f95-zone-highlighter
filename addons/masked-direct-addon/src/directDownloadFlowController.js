@@ -92,12 +92,6 @@ export function createDirectDownloadFlowController({
     await clearProcessingDownloadTrigger(GMApi);
     await publishDirectDownloadAttention(hostLabel, text);
 
-    try {
-      await bridge.invokeCoreAction("toast.show", { message: text });
-    } catch {
-      // best effort
-    }
-
     bridge.dispatchCoreCommand("update-status", {
       addonId,
       status: "error",

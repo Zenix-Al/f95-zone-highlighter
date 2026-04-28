@@ -1,3 +1,5 @@
+import { showToast } from "./ui/showToast.js";
+import { debugLog } from "../../shared/debugLog.js";
 import {
   ADDON_COMMAND_EVENT,
   getRuntimeConfig,
@@ -15,8 +17,8 @@ import {
 } from "./ui/managerLauncher.js";
 
 const runtime = getRuntimeConfig();
-console.log(`[library-addon] Runtime config:`, runtime);
-const bridge = createCoreBridge(runtime.addonId);
+debugLog(`[library-addon] Runtime config:`, runtime);
+export const bridge = createCoreBridge(runtime.addonId);
 const library = createLibraryService(bridge);
 const LIBRARY_DOCK_MOUNT_ID = "library-dock-widget";
 
@@ -28,12 +30,12 @@ let currentSnapshot = null;
 let currentSaved = false;
 let dockMountClickHandler = null;
 
-async function storageGet(key, defaultValue = null) {
+export async function storageGet(key, defaultValue = null) {
   const result = await bridge.invokeCoreAction("storage.get", { key, defaultValue });
   return result?.ok ? result.value : defaultValue;
 }
 
-function storageSet(key, value) {
+export function storageSet(key, value) {
   return bridge.invokeCoreAction("storage.set", { key, value });
 }
 
@@ -174,27 +176,24 @@ function bindDockMountEvents() {
   }
 
   dockMountClickHandler = (event) => {
+    if (!isEnabled) return;
     const actionEl = resolveDockActionButton(event);
     if (!actionEl) return;
 
     const action = String(actionEl.dataset.action || "").trim();
     if (action === "open-library") {
-      if (!isEnabled) return;
       openManager();
-      return;
-    }
-    if (action === "toggle-thread") {
-      if (!isEnabled) return;
+    } else if (action === "toggle-thread") {
       void toggleCurrentThreadFromDock();
     }
   };
 
   window.addEventListener("click", dockMountClickHandler, true);
-  console.log(`[library-addon] dock click listener bound globally`);
+  debugLog(`[library-addon] dock click listener bound globally`);
 }
 
 async function mountDockWidget({ showPrimaryButton, isSaved }) {
-  console.log(
+  debugLog(
     `[library-addon] mountDockWidget called with showPrimaryButton=${showPrimaryButton}, isSaved=${isSaved}`,
   );
   const result = await bridge.invokeCoreAction("ui.mount", {
@@ -202,15 +201,15 @@ async function mountDockWidget({ showPrimaryButton, isSaved }) {
     slot: "page.dock",
     html: renderDockMarkup({ showPrimaryButton, isSaved }),
   });
-  console.log(`[library-addon] ui.mount result:`, result);
-  console.log(
+  debugLog(`[library-addon] ui.mount result:`, result);
+  debugLog(
     `[library-addon] Expected element ID: f95ue-addon-mount-${runtime.addonId}-${LIBRARY_DOCK_MOUNT_ID}`,
   );
   bindDockMountEvents();
 }
 
 async function mountQuickAddIfApplicable() {
-  console.log(
+  debugLog(
     `[library-addon] mountQuickAddIfApplicable called: isEnabled=${isEnabled}, showPageButtons=${showPageButtons}`,
   );
   if (!isEnabled || !showPageButtons) {
@@ -225,7 +224,7 @@ async function mountQuickAddIfApplicable() {
   if (!snapshot?.threadId) {
     currentSnapshot = null;
     currentSaved = false;
-    console.log(`[library-addon] mounting dock widget without primary button (not thread page)`);
+    debugLog(`[library-addon] mounting dock widget without primary button (not thread page)`);
     await mountDockWidget({ showPrimaryButton: false, isSaved: false });
     return;
   }
@@ -247,23 +246,24 @@ async function unmountQuickAdd() {
 async function toggleCurrentThreadFromDock() {
   const snapshot = currentSnapshot || getThreadSnapshot();
   if (!snapshot?.threadId) {
-    await bridge.invokeCoreAction("toast.show", {
-      message: "Open a thread page to save it into the library.",
-    });
+    showToast("Open a thread page to save it into the library.", "error");
+
     return;
   }
 
   const isSavedNow = await library.isSaved(snapshot.threadId);
   if (isSavedNow) {
     const removeResult = await library.removeEntry(snapshot.threadId);
-    await bridge.invokeCoreAction("toast.show", {
-      message: removeResult?.ok ? "Removed from library." : "Failed to remove entry.",
-    });
+    showToast(
+      removeResult?.ok ? "Removed from library." : "Failed to remove entry.",
+      removeResult?.ok ? "success" : "error",
+    );
   } else {
     const saveResult = await library.saveEntry(snapshot);
-    await bridge.invokeCoreAction("toast.show", {
-      message: saveResult?.ok ? "Saved to library." : "Failed to save entry.",
-    });
+    showToast(
+      saveResult?.ok ? "Saved to library." : "Failed to save entry.",
+      saveResult?.ok ? "success" : "error",
+    );
   }
 
   await mountQuickAddIfApplicable();
@@ -298,22 +298,21 @@ async function refreshRuntimeState() {
 
 async function saveCurrentThreadFromPanel() {
   if (!isEnabled) {
-    await bridge.invokeCoreAction("toast.show", { message: "Library add-on is disabled." });
+    showToast("Library add-on is disabled.", "error");
     return;
   }
 
   const snapshot = getThreadSnapshot();
   if (!snapshot?.threadId) {
-    await bridge.invokeCoreAction("toast.show", {
-      message: "Open a thread page to save it into the library.",
-    });
+    showToast("Open a thread page to save it into the library.", "error");
     return;
   }
 
   const saveResult = await library.saveEntry(snapshot);
-  await bridge.invokeCoreAction("toast.show", {
-    message: saveResult?.ok ? "Current thread saved to library." : "Failed to save current thread.",
-  });
+  showToast(
+    saveResult?.ok ? "Current thread saved to library." : "Failed to save current thread.",
+    saveResult?.ok ? "success" : "error",
+  );
 
   if (saveResult?.ok) {
     await refreshRuntimeState();
@@ -328,46 +327,36 @@ function bindAddonCommandListener() {
     if (String(detail.addonId || "") !== runtime.addonId) return;
 
     const command = String(detail.command || "").trim();
-    if (command === "enable") {
-      void setEnabled(true);
-      return;
-    }
-
-    if (command === "disable") {
-      void setEnabled(false);
-      return;
-    }
-
-    if (command === "refresh") {
-      void refreshRuntimeState();
-      return;
-    }
-
-    if (command === "toast") {
-      openManager();
-      return;
-    }
-
-    if (command === "dialog-closed") {
-      handleLibraryManagerDialogClosed(detail);
-      return;
-    }
-
-    if (command === "panel-action") {
-      const actionId = String(detail.actionId || "").trim();
-      if (actionId === "open-library") {
-        if (isEnabled) openManager();
-        return;
+    switch (command) {
+      case "enable":
+        void setEnabled(true);
+        break;
+      case "disable":
+        void setEnabled(false);
+        break;
+      case "refresh":
+        void refreshRuntimeState();
+        break;
+      case "toast":
+        openManager();
+        break;
+      case "dialog-closed":
+        handleLibraryManagerDialogClosed(detail);
+        break;
+      case "panel-action": {
+        const actionId = String(detail.actionId || "").trim();
+        if (actionId === "open-library") {
+          if (isEnabled) openManager();
+        } else if (actionId === "save-current-thread") {
+          void saveCurrentThreadFromPanel();
+        }
+        break;
       }
-
-      if (actionId === "save-current-thread") {
-        void saveCurrentThreadFromPanel();
-      }
-      return;
-    }
-
-    if (command === "teardown") {
-      void teardownAddon(String(detail.reason || "requested by core"));
+      case "teardown":
+        void teardownAddon(String(detail.reason || "requested by core"));
+        break;
+      default:
+        break;
     }
   };
 

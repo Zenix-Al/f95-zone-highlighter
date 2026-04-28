@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.3.10 - Toast and UI Improvements
+
+- using createEl to create ui elements for better consistency and future maintainability.
+- centralized toast calls and removal of redundant addon created showToast function in favor of core toast action for better consistency and styling across the UI.
+
 ## v0.2.2 - tinyupdate
 
 - use `ui.confirm` from core instead of `window.confirm` for consistent dialog styling and behavior.

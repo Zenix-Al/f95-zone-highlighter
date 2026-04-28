@@ -14,10 +14,15 @@ function ensureFallbackToastContainer() {
   return container;
 }
 
-export function showToast(message, duration = TOAST_DURATION) {
+export function showToast(message, duration = TOAST_DURATION, type = "info") {
   const shadowRoot = stateManager.get("shadowRoot");
   let container = null;
-
+  const colors = {
+    success: "#4CAF50",
+    error: "#F44336",
+    warning: "#FF9800",
+    info: "",
+  };
   if (shadowRoot?.getElementById) {
     container = shadowRoot.getElementById("toast-container");
     if (!container) {
@@ -28,7 +33,11 @@ export function showToast(message, duration = TOAST_DURATION) {
     container = ensureFallbackToastContainer();
   }
 
-  const toast = createEl("div", { className: "toast", text: message });
+  const toast = createEl("div", {
+    className: "toast",
+    text: message,
+    style: { backgroundColor: colors[type] || "" },
+  });
   container.appendChild(toast);
 
   // enforce limit

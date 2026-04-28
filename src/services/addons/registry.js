@@ -158,6 +158,13 @@ export function listRegisteredAddons() {
   return cloneRegistry();
 }
 
+export function getRegisteredAddon(addonId) {
+  const normalizedId = sanitizeAddonId(addonId);
+  if (!normalizedId) return null;
+  const entry = addonsRuntimeRegistry.find((addon) => addon.id === normalizedId);
+  return entry ? { ...entry } : null;
+}
+
 export function replaceRegisteredAddons(addons) {
   const normalized = Array.isArray(addons)
     ? addons.map((addon) => normalizeAddonEntry(addon)).filter(Boolean)

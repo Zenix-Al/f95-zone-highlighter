@@ -1,4 +1,4 @@
-import stateManager from "../config.js";
+import stateManager, { config } from "../config.js";
 import { showToast } from "../ui/components/toast.js";
 import { openConfirmDialog } from "../ui/components/dialog.js";
 import {
@@ -9,6 +9,7 @@ import {
   sanitizeAddonId,
 } from "./addons/shared.js";
 import {
+  getRegisteredAddon,
   listRegisteredAddons,
   registerAddon,
   reapplyAddonSecurityPolicies,
@@ -21,13 +22,18 @@ import {
   clearAddonState,
   ensureAddonStateBucket,
   getAddonState,
+  getInstalledAddonMeta,
   listInstalledAddonMeta,
   persistAddonsState,
   removeInstalledAddonMeta,
   setAddonStateValue,
   upsertInstalledAddonMeta,
 } from "./addons/state.js";
-import { isCatalogFresh, listTrustedAddonCatalog } from "./addons/catalog.js";
+import {
+  initTrustedAddonCatalog,
+  isCatalogFresh,
+  listTrustedAddonCatalog,
+} from "./addons/catalog.js";
 import {
   cleanupAddonObserverSubscriptions,
   unwatchAddonObserver,
@@ -69,6 +75,7 @@ const MAX_ADDON_UI_HTML_BYTES = 128 * 1024;
 const MAX_ADDON_STORAGE_VALUE_BYTES = 16 * 1024;
 const MAX_ADDON_STORAGE_TOTAL_BYTES = 64 * 1024;
 const ADDON_TEARDOWN_WATCHDOG_MS = 1200;
+const PAYLOAD_SIZE_ENCODER = typeof TextEncoder !== "undefined" ? new TextEncoder() : null;
 
 export { listRegisteredAddons, replaceRegisteredAddons, registerAddon, subscribeAddonsRegistry };
 export { getAddonState, setAddonStateValue, clearAddonState };
@@ -82,16 +89,27 @@ const addonLifecycle = createAddonLifecycleOrchestrator({
   eventName: ADDON_COMMAND_EVENT,
 });
 
+export function isAddonsServiceDisabled() {
+  return Boolean(config.globalSettings?.disableAddonsService);
+}
+
 export function notifyAllAddonsBeforePageChange() {
   addonLifecycle.notifyAllBeforePageChange();
 }
 
 function getCurrentPageScopes() {
+  // Return all currently active state keys as addon scopes
+  // Addons can subscribe to any state key names they care about
   const scopes = [];
-  if (stateManager.get("isThread")) scopes.push("thread");
-  if (stateManager.get("isLatest")) scopes.push("latest");
-  if (stateManager.get("isDownloadPage")) scopes.push("download");
-  if (stateManager.get("isRecaptchaFrame")) scopes.push("recaptcha");
+  const stateKeys = stateManager.getKnownPaths();
+  for (const key of stateKeys) {
+    if (!key.startsWith("isPageType") && key !== "isDomainMatch") {
+      continue;
+    }
+    if (stateManager.get(key)) {
+      scopes.push(key);
+    }
+  }
   return scopes;
 }
 
@@ -114,6 +132,20 @@ export function listKnownAddons() {
 
 export function refreshAddonSecurityPolicies() {
   return reapplyAddonSecurityPolicies();
+}
+
+export function disableAddonsService() {
+  const registered = listRegisteredAddons();
+
+  for (const addon of registered) {
+    if (!addon?.id) continue;
+    addonLifecycle.requestTeardown(addon.id, "service-disabled");
+  }
+
+  // Stop reporting runtime entries immediately; remaining UI/observer cleanup is best-effort.
+  replaceRegisteredAddons([]);
+
+  return { ok: true };
 }
 
 export async function removeAddonInstallationTrace(addonId) {
@@ -141,120 +173,112 @@ export function unregisterAddon(addonId) {
 
 function measurePayloadBytes(payload) {
   try {
-    return JSON.stringify(payload || null).length;
+    const json = JSON.stringify(payload ?? null);
+    if (PAYLOAD_SIZE_ENCODER) return PAYLOAD_SIZE_ENCODER.encode(json).length;
+    // Best-effort fallback (UTF-16 code units, not bytes).
+    return json.length;
   } catch {
     return MAX_ADDON_IDB_PAYLOAD_BYTES + 1;
   }
 }
 
-export async function invokeAddonCoreAction(addonId, action, payload = {}) {
-  const normalizedId = sanitizeAddonId(addonId);
-  if (!normalizedId) return { ok: false, reason: "invalid_addon_id" };
+function isFeatureToggleAction(action) {
+  return action === "feature.enable" || action === "feature.disable";
+}
 
-  const addon = listRegisteredAddons().find((entry) => entry.id === normalizedId);
-  const installedMeta = listInstalledAddonMeta()[normalizedId] || null;
+async function processUnregisteredAddonAction(addonId, action, installedMeta) {
+  if (!isFeatureToggleAction(action)) return { ok: false, reason: "addon_not_registered" };
+  if (!installedMeta?.installedSeenAt) return { ok: false, reason: "addon_not_registered" };
 
-  if (!addon) {
-    if (action === "feature.enable" || action === "feature.disable") {
-      if (!installedMeta?.installedSeenAt) return { ok: false, reason: "addon_not_registered" };
+  const enabled = action === "feature.enable";
+  const nextStatusMessage = enabled
+    ? ""
+    : "Disabled from core. It will remain off when the add-on loads.";
 
-      const enabled = action === "feature.enable";
-      const nextStatusMessage = enabled
-        ? ""
-        : "Disabled from core. It will remain off when the add-on loads.";
+  const stateBucket = ensureAddonStateBucket(addonId);
+  stateBucket.enabled = enabled;
 
-      const stateBucket = ensureAddonStateBucket(normalizedId);
-      stateBucket.enabled = enabled;
-
-      const persisted = await persistAddonsState();
-      const persistedMeta = await upsertInstalledAddonMeta(normalizedId, {
-        statusMessage: nextStatusMessage,
-      });
-      if (!persisted.ok || !persistedMeta.ok) return { ok: false, reason: "storage_error" };
-
-      if (!enabled) {
-        addonLifecycle.emitLifecycleCommand(normalizedId, "before-disable");
-        addonLifecycle.requestTeardown(normalizedId, "disable");
-      }
-
-      return { ok: true, value: { deferred: true, enabled } };
-    }
-
-    return { ok: false, reason: "addon_not_registered" };
-  }
-
-  if (action === "addon.access") {
-    return {
-      ok: true,
-      value: {
-        blocked: Boolean(addon.blocked),
-        trusted: Boolean(addon.trusted),
-        capabilities: Array.isArray(addon.capabilities) ? [...addon.capabilities] : [],
-      },
-    };
-  }
-
-  if (addon.blocked) return { ok: false, reason: "addon_blocked" };
-
-  const allowed = new Set(Array.isArray(addon.capabilities) ? addon.capabilities : []);
-  if (!isAddonActionAllowed(allowed, action)) return { ok: false, reason: "permission_denied" };
-  const result = await invokeRegisteredAddonCoreAction({
-    addonId: normalizedId,
-    action,
-    payload,
-    allowed,
-    deps: {
-      showToast,
-      emitAddonLifecycleCommand: addonLifecycle.emitLifecycleCommand,
-      requestAddonTeardown: addonLifecycle.requestTeardown,
-      cancelAddonTeardown: addonLifecycle.cancelTeardown,
-      updateAddonStatus,
-      ensureAddonStateBucket,
-      persistAddonsState,
-      upsertInstalledAddonMeta,
-      measurePayloadBytes,
-      idbGetForAddon,
-      idbPutForAddon,
-      idbDeleteForAddon,
-      idbBulkPutForAddon,
-      idbQueryForAddon,
-      idbCountForAddon,
-      watchAddonObserver,
-      unwatchAddonObserver,
-      sanitizeDockButtons,
-      setAddonDockButtons,
-      removeAddonDockButtons,
-      sanitizeAddonMountId,
-      mountAddonUi,
-      updateAddonUi,
-      unmountAddonUi,
-      sanitizeAddonDialogId,
-      openAddonDialog,
-      closeAddonDialog,
-      openConfirmDialog,
-      sanitizeAddonStyleId,
-      registerAddonStyle,
-      unregisterAddonStyle,
-      emitAddonCommand: (addonId, command, detail = {}) =>
-        emitAddonCommand(addonId, command, detail, ADDON_COMMAND_EVENT),
-    },
-    limits: {
-      maxAddonStorageValueBytes: MAX_ADDON_STORAGE_VALUE_BYTES,
-      maxAddonStorageTotalBytes: MAX_ADDON_STORAGE_TOTAL_BYTES,
-      maxAddonIdbPayloadBytes: MAX_ADDON_IDB_PAYLOAD_BYTES,
-      maxAddonIdbBulkItems: MAX_ADDON_IDB_BULK_ITEMS,
-      maxAddonUiHtmlBytes: MAX_ADDON_UI_HTML_BYTES,
-      maxAddonStyleTextBytes: MAX_ADDON_STYLE_TEXT_BYTES,
-    },
+  const persisted = await persistAddonsState();
+  const persistedMeta = await upsertInstalledAddonMeta(addonId, {
+    statusMessage: nextStatusMessage,
   });
+  if (!persisted.ok || !persistedMeta.ok) return { ok: false, reason: "storage_error" };
 
+  if (!enabled) {
+    addonLifecycle.emitLifecycleCommand(addonId, "before-disable");
+    addonLifecycle.requestTeardown(addonId, "disable");
+  }
+
+  return { ok: true, value: { deferred: true, enabled } };
+}
+
+function getAddonAccessResponse(addon) {
+  return {
+    ok: true,
+    value: {
+      blocked: Boolean(addon.blocked),
+      trusted: Boolean(addon.trusted),
+      capabilities: Array.isArray(addon.capabilities) ? [...addon.capabilities] : [],
+    },
+  };
+}
+
+function getAddonPermissions(addon) {
+  return new Set(Array.isArray(addon.capabilities) ? addon.capabilities : []);
+}
+
+const ADDON_CORE_ACTION_LIMITS = {
+  maxAddonStorageValueBytes: MAX_ADDON_STORAGE_VALUE_BYTES,
+  maxAddonStorageTotalBytes: MAX_ADDON_STORAGE_TOTAL_BYTES,
+  maxAddonIdbPayloadBytes: MAX_ADDON_IDB_PAYLOAD_BYTES,
+  maxAddonIdbBulkItems: MAX_ADDON_IDB_BULK_ITEMS,
+  maxAddonUiHtmlBytes: MAX_ADDON_UI_HTML_BYTES,
+  maxAddonStyleTextBytes: MAX_ADDON_STYLE_TEXT_BYTES,
+};
+
+const ADDON_CORE_ACTION_DEPS = Object.freeze({
+  showToast,
+  emitAddonLifecycleCommand: addonLifecycle.emitLifecycleCommand,
+  requestAddonTeardown: addonLifecycle.requestTeardown,
+  cancelAddonTeardown: addonLifecycle.cancelTeardown,
+  updateAddonStatus,
+  ensureAddonStateBucket,
+  persistAddonsState,
+  upsertInstalledAddonMeta,
+  measurePayloadBytes,
+  idbGetForAddon,
+  idbPutForAddon,
+  idbDeleteForAddon,
+  idbBulkPutForAddon,
+  idbQueryForAddon,
+  idbCountForAddon,
+  watchAddonObserver,
+  unwatchAddonObserver,
+  sanitizeDockButtons,
+  setAddonDockButtons,
+  removeAddonDockButtons,
+  sanitizeAddonMountId,
+  mountAddonUi,
+  updateAddonUi,
+  unmountAddonUi,
+  sanitizeAddonDialogId,
+  openAddonDialog,
+  closeAddonDialog,
+  openConfirmDialog,
+  sanitizeAddonStyleId,
+  registerAddonStyle,
+  unregisterAddonStyle,
+  emitAddonCommand,
+});
+
+function warnOnUnsupportedUiAction(result, addonId, action) {
   if (
     result?.reason === "unsupported_action" &&
     typeof action === "string" &&
     action.startsWith("ui.")
   ) {
     console.warn(
-      `[addonsService] Addon "${normalizedId}" called unrecognized UI action "${action}". ` +
+      `[addonsService] Addon "${addonId}" called unrecognized UI action "${action}". ` +
         `Migrate direct style injection to ui.style.register({ styleId, cssText }).`,
     );
   }
@@ -262,11 +286,47 @@ export async function invokeAddonCoreAction(addonId, action, payload = {}) {
   return result;
 }
 
+export async function invokeAddonCoreAction(addonId, action, payload = {}) {
+  const normalizedId = sanitizeAddonId(addonId);
+  if (!normalizedId) return { ok: false, reason: "invalid_addon_id" };
+
+  const addon = getRegisteredAddon(normalizedId);
+  const installedMeta = getInstalledAddonMeta(normalizedId);
+
+  if (!addon) {
+    return await processUnregisteredAddonAction(normalizedId, action, installedMeta);
+  }
+
+  if (action === "addon.access") {
+    return getAddonAccessResponse(addon);
+  }
+
+  if (addon.blocked) return { ok: false, reason: "addon_blocked" };
+
+  const allowed = getAddonPermissions(addon);
+  if (!isAddonActionAllowed(allowed, action)) return { ok: false, reason: "permission_denied" };
+
+  const result = await invokeRegisteredAddonCoreAction({
+    addonId: normalizedId,
+    action,
+    payload,
+    allowed,
+    deps: ADDON_CORE_ACTION_DEPS,
+    limits: ADDON_CORE_ACTION_LIMITS,
+  });
+
+  return warnOnUnsupportedUiAction(result, normalizedId, action);
+}
+
 export function initAddonsConsoleBridge() {
+  if (isAddonsServiceDisabled()) return false;
+
+  initTrustedAddonCatalog();
   return initAddonsBridgeServer({
     marker: ADDONS_DEV_BRIDGE_MARKER,
     devCommandEvent: ADDONS_DEV_COMMAND_EVENT,
     apiVersion: ADDONS_API_VERSION,
+    isServiceDisabled: isAddonsServiceDisabled,
     onRegister: (addon) => {
       const snapshot = registerAddon(addon || {});
       const addonId = sanitizeAddonId(addon?.id);

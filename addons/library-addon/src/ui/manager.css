@@ -421,50 +421,6 @@ __ROOT__ .f95ue-library-more-grid label {
   color: #aab5c2;
 }
 
-__ROOT__ .f95ue-library-toast-stack {
-  position: absolute;
-  top: 54px;
-  right: 14px;
-  z-index: 5;
-  display: grid;
-  gap: 8px;
-  pointer-events: none;
-}
-
-__ROOT__ .f95ue-library-toast {
-  min-width: 220px;
-  max-width: min(420px, 65vw);
-  padding: 8px 10px;
-  border-radius: 8px;
-  border: 1px solid #3f4043;
-  background: #1b1e23;
-  color: #e6e9ee;
-  font-size: 12px;
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.3);
-  opacity: 0;
-  transform: translateY(-6px);
-  transition:
-    opacity 0.16s ease,
-    transform 0.16s ease;
-}
-
-__ROOT__ .f95ue-library-toast.show {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-__ROOT__ .f95ue-library-toast.error {
-  border-color: rgba(183, 28, 28, 0.45);
-  background: rgba(183, 28, 28, 0.18);
-  color: #ffd1d1;
-}
-
-__ROOT__ .f95ue-library-toast.success {
-  border-color: rgba(56, 142, 60, 0.45);
-  background: rgba(56, 142, 60, 0.2);
-  color: #d8f2da;
-}
-
 __ROOT__ .f95ue-library-confirm-backdrop {
   position: absolute;
   inset: 0;

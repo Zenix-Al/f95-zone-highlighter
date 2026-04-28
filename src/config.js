@@ -64,6 +64,7 @@ export const defaultGlobalSettings = {
   closeNotifOnClick: true,
   enableCrossTabSync: false,
   allowUntrustedAddons: false,
+  disableAddonsService: false,
   disableHelpMessage: false,
 };
 

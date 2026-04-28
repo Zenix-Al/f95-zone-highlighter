@@ -5,7 +5,12 @@ import {
   defaultOverlaySettings,
   defaultThreadSetting,
 } from "../../config.js";
-import { isValidColor, isValidTag, isValidVersion } from "../../utils/validators.js";
+import {
+  isValidColor,
+  isValidTag,
+  isValidVersion,
+  isValidLatestOverlayStyle,
+} from "../../utils/validators.js";
 import { isValidOverlayColorOrder } from "../latest-overlay/overlayOrder.js";
 import { EXPORTABLE_CONFIG_KEYS } from "./constants.js";
 import { hasOnlyKnownKeys, isPlainObject, isPositiveInteger } from "./helpers.js";
@@ -118,6 +123,12 @@ function validateLatestSection(latestSettings) {
       }
       continue;
     }
+    if (key === "latestOverlayStyle") {
+      if (!isValidLatestOverlayStyle(value)) {
+        return "latestSettings.latestOverlayStyle must be 'strip' or 'border'.";
+      }
+      continue;
+    }
     if (typeof value !== "boolean") {
       return `latestSettings.${key} must be boolean.`;
     }
@@ -143,7 +154,7 @@ export function validateImportedPayload(payload) {
       continue;
     }
 
-    if (key === "preferredTags" || key === "excludedTags") {
+    if (key === "preferredTags" || key === "excludedTags" || key === "markedTags") {
       if (!Array.isArray(value)) return `'${key}' must be an array.`;
       const err = validateTagIdArray(key, value);
       if (err) return err;

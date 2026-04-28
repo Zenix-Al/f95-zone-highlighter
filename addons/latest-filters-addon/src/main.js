@@ -4,6 +4,7 @@ import {
   FILTER_SETTINGS_DEFAULT,
   FILTER_SETTINGS_STORAGE_KEY,
   getRuntimeConfig,
+  state,
 } from "./constants.js";
 import { createCoreBridge } from "./coreBridge.js";
 import {
@@ -35,20 +36,6 @@ const DIALOG_ID = "latest-filters-manager";
 const MAX_MOUNT_ATTEMPTS = 20;
 const PRESETS_LOCAL_STORAGE_KEY = `addon:${runtime.addonId}:presets`;
 
-// ─── Module state ─────────────────────────────────────────────────────────────
-
-let isEnabled = true;
-let showPageButton = true;
-let addonCommandHandlerBound = false;
-let rootEl = null;
-let mountAttemptCount = 0;
-let mountTimer = 0;
-let presetsState = [];
-let searchQuery = "";
-let panelOpen = false;
-let dialogEl = null;
-let locationListenerBound = false;
-
 // ─── Storage helpers ──────────────────────────────────────────────────────────
 
 function storageGet(key, defaultValue = null) {
@@ -69,11 +56,15 @@ function showToast(message) {
 
 function normalizeSettings(value) {
   const source = value && typeof value === "object" ? value : {};
+  const sourceState = source.state && typeof source.state === "object" ? source.state : {};
   return {
     ...FILTER_SETTINGS_DEFAULT,
     ...source,
     enabled: source.enabled !== false,
-    showPageButton: source.showPageButton !== false,
+    state: {
+      ...FILTER_SETTINGS_DEFAULT.state,
+      showPageButton: sourceState.showPageButton !== false,
+    },
   };
 }
 
@@ -102,38 +93,38 @@ async function loadPresets() {
   } else {
     stored = await storageGet(FILTER_PRESETS_STORAGE_KEY, []);
   }
-  presetsState = normalizePresets(stored);
-  return presetsState;
+  state.presetsState = normalizePresets(stored);
+  return state.presetsState;
 }
 
 async function persistPresets(nextPresets) {
-  presetsState = normalizePresets(nextPresets);
+  state.presetsState = normalizePresets(nextPresets);
   if (typeof GM !== "undefined" && typeof GM.setValue === "function") {
     try {
-      await GM.setValue(PRESETS_LOCAL_STORAGE_KEY, presetsState);
+      await GM.setValue(PRESETS_LOCAL_STORAGE_KEY, state.presetsState);
     } catch {
-      await storageSet(FILTER_PRESETS_STORAGE_KEY, presetsState);
+      await storageSet(FILTER_PRESETS_STORAGE_KEY, state.presetsState);
     }
   } else {
-    await storageSet(FILTER_PRESETS_STORAGE_KEY, presetsState);
+    await storageSet(FILTER_PRESETS_STORAGE_KEY, state.presetsState);
   }
-  return presetsState;
+  return state.presetsState;
 }
 
 function getCurrentPreset() {
   const currentUrl = normalizeLatestUrl(location.href);
-  return presetsState.find((preset) => preset.normalizedUrl === currentUrl) || null;
+  return state.presetsState.find((preset) => preset.normalizedUrl === currentUrl) || null;
 }
 
 function handleLocationStateChange() {
-  if (!isEnabled) return;
+  if (!state.isEnabled) return;
 
   if (!isLatestPage()) {
     removeRoot();
     return;
   }
 
-  if (!rootEl && showPageButton) {
+  if (!state.rootEl && state.showPageButton) {
     scheduleMount();
     return;
   }
@@ -142,17 +133,17 @@ function handleLocationStateChange() {
 }
 
 function bindLocationStateListener() {
-  if (locationListenerBound) return;
+  if (state.locationListenerBound) return;
   window.addEventListener("hashchange", handleLocationStateChange);
   window.addEventListener("popstate", handleLocationStateChange);
-  locationListenerBound = true;
+  state.locationListenerBound = true;
 }
 
 function unbindLocationStateListener() {
-  if (!locationListenerBound) return;
+  if (!state.locationListenerBound) return;
   window.removeEventListener("hashchange", handleLocationStateChange);
   window.removeEventListener("popstate", handleLocationStateChange);
-  locationListenerBound = false;
+  state.locationListenerBound = false;
 }
 
 // ─── Renderer adapter ─────────────────────────────────────────────────────────
@@ -161,8 +152,10 @@ function unbindLocationStateListener() {
 function getPanelRenderArgs() {
   const currentPreset = getCurrentPreset();
   return {
-    presets: presetsState,
-    searchQuery,
+    presets: state.presetsState,
+    state: {
+      searchQuery: state.searchQuery,
+    },
     currentPresetId: currentPreset?.id ?? null,
     currentPresetName: currentPreset?.name ?? null,
     currentSummary: currentPreset ? currentPreset.summary : summarizeUrl(location.href),
@@ -170,13 +163,13 @@ function getPanelRenderArgs() {
 }
 
 function repaintPanel() {
-  if (!dialogEl) return;
-  renderPanelContent(dialogEl, getPanelRenderArgs());
+  if (!state.dialogEl) return;
+  renderPanelContent(state.dialogEl, getPanelRenderArgs());
 }
 
 function repaintVisibility() {
-  if (!rootEl) return;
-  syncPanelVisibility(rootEl, panelOpen);
+  if (!state.rootEl) return;
+  syncPanelVisibility(state.rootEl, state.panelOpen);
 }
 
 // ─── Panel lifecycle ──────────────────────────────────────────────────────────
@@ -186,28 +179,28 @@ function getAnchor() {
 }
 
 function removeRoot() {
-  if (mountTimer) {
-    clearTimeout(mountTimer);
-    mountTimer = 0;
+  if (state.mountTimer) {
+    clearTimeout(state.mountTimer);
+    state.mountTimer = 0;
   }
 
   void bridge.invokeCoreAction("ui.unmount", { mountId: MOUNT_ID });
   void bridge.invokeCoreAction("ui.dialog.close", { dialogId: DIALOG_ID, reason: "remove-root" });
 
-  if (rootEl?.parentNode) rootEl.parentNode.removeChild(rootEl);
+  if (state.rootEl?.parentNode) state.rootEl.parentNode.removeChild(state.rootEl);
   const mountedRoot = document.getElementById(ROOT_ID);
   if (mountedRoot?.parentNode) mountedRoot.parentNode.removeChild(mountedRoot);
 
-  rootEl = null;
-  dialogEl = null;
-  panelOpen = false;
+  state.rootEl = null;
+  state.dialogEl = null;
+  state.panelOpen = false;
 }
 
 async function mountPageUi(forcePanelOnly = false) {
   removeRoot();
 
-  if (!isEnabled || !isLatestPage()) return false;
-  if (!showPageButton && !forcePanelOnly) return false;
+  if (!state.isEnabled || !isLatestPage()) return false;
+  if (!state.showPageButton && !forcePanelOnly) return false;
 
   const styleText = getStyleText(ROOT_ID);
   const styleRegisterResult = await bridge.invokeCoreAction("ui.style.register", {
@@ -218,7 +211,7 @@ async function mountPageUi(forcePanelOnly = false) {
     ensureStyle(ROOT_ID, STYLE_ID);
   }
 
-  const panelOnly = forcePanelOnly || !showPageButton;
+  const panelOnly = forcePanelOnly || !state.showPageButton;
   const mountResult = await bridge.invokeCoreAction("ui.mount", {
     mountId: MOUNT_ID,
     slot: "latest.filters.after-title",
@@ -230,14 +223,14 @@ async function mountPageUi(forcePanelOnly = false) {
     const anchor = getAnchor();
     if (!anchor) return false;
 
-    rootEl = createRootElement(ROOT_ID);
+    state.rootEl = createstate.rootElement(ROOT_ID);
     if (panelOnly) {
-      rootEl.classList.add("is-panel-only");
+      state.rootEl.classList.add("is-panel-only");
     }
-    anchor.after(rootEl);
+    anchor.after(state.rootEl);
   } else {
-    rootEl = document.getElementById(ROOT_ID);
-    if (!rootEl) return false;
+    state.rootEl = document.getElementById(ROOT_ID);
+    if (!state.rootEl) return false;
   }
 
   bindRootEvents();
@@ -247,31 +240,24 @@ async function mountPageUi(forcePanelOnly = false) {
 }
 
 function scheduleMount() {
-  if (mountTimer) {
-    clearTimeout(mountTimer);
-    mountTimer = 0;
-  }
-
-  mountAttemptCount = 0;
+  if (state.mountTimer) clearTimeout(state.mountTimer);
+  state.mountAttemptCount = 0;
 
   const tryMount = async () => {
     const mounted = await mountPageUi();
     if (mounted) return;
 
-    mountAttemptCount += 1;
+    state.mountAttemptCount++;
     if (
-      mountAttemptCount >= MAX_MOUNT_ATTEMPTS ||
-      !isEnabled ||
-      !showPageButton ||
+      state.mountAttemptCount >= MAX_MOUNT_ATTEMPTS ||
+      !state.isEnabled ||
+      !state.showPageButton ||
       !isLatestPage()
     ) {
       return;
     }
 
-    mountTimer = window.setTimeout(() => {
-      mountTimer = 0;
-      void tryMount();
-    }, 500);
+    state.mountTimer = setTimeout(tryMount, 500);
   };
 
   void tryMount();
@@ -280,7 +266,7 @@ function scheduleMount() {
 // ─── Panel state ──────────────────────────────────────────────────────────────
 
 function openPanel() {
-  if (!rootEl || panelOpen) return;
+  if (!state.rootEl || state.panelOpen) return;
 
   bridge
     .invokeCoreAction("ui.dialog.open", {
@@ -292,28 +278,28 @@ function openPanel() {
     })
     .then((result) => {
       if (!result?.ok) {
-        panelOpen = false;
+        state.panelOpen = false;
         repaintVisibility();
         console.warn(`[${runtime.addonId}] ui.dialog.open failed:`, result);
         void showToast(`Saved Filters dialog failed to open (${result?.reason || "unknown"}).`);
         return;
       }
 
-      panelOpen = true;
+      state.panelOpen = true;
       repaintVisibility();
 
       const contentId = String(result?.value?.contentId || "").trim();
-      dialogEl = contentId ? document.getElementById(contentId) : null;
-      if (!dialogEl) return;
+      state.dialogEl = contentId ? document.getElementById(contentId) : null;
+      if (!state.dialogEl) return;
 
       bindDialogEvents();
       repaintPanel();
-      dialogEl.querySelector("[data-role='search']")?.focus();
+      state.dialogEl.querySelector("[data-role='search']")?.focus();
     });
 }
 
 function closePanel() {
-  if (!panelOpen && !dialogEl) return;
+  if (!state.panelOpen && !state.dialogEl) return;
 
   void bridge.invokeCoreAction("ui.dialog.close", {
     dialogId: DIALOG_ID,
@@ -322,7 +308,7 @@ function closePanel() {
 }
 
 function togglePanel() {
-  if (panelOpen || dialogEl) {
+  if (state.panelOpen || state.dialogEl) {
     closePanel();
     return;
   }
@@ -332,15 +318,15 @@ function togglePanel() {
 // ─── Preset actions ───────────────────────────────────────────────────────────
 
 function getPresetById(presetId) {
-  return presetsState.find((preset) => preset.id === presetId) || null;
+  return state.presetsState.find((preset) => preset.id === presetId) || null;
 }
 
 function makeDefaultPresetName() {
-  return `Saved Filter ${presetsState.length + 1}`;
+  return `Saved Filter ${state.presetsState.length + 1}`;
 }
 
 async function saveCurrentFilter() {
-  const nameInput = dialogEl?.querySelector("[data-role='save-name']");
+  const nameInput = state.dialogEl?.querySelector("[data-role='save-name']");
   const requestedName = normalizeText(nameInput?.value);
   const currentUrl = location.href;
   const normalizedUrl = normalizeLatestUrl(currentUrl);
@@ -352,14 +338,14 @@ async function saveCurrentFilter() {
 
   const currentPreset = getCurrentPreset();
   const nextName = requestedName || currentPreset?.name || makeDefaultPresetName();
-  const byName = presetsState.find(
+  const byName = state.presetsState.find(
     (preset) => preset.name.toLowerCase() === nextName.toLowerCase(),
   );
 
   let nextPresets;
   let message;
   if (byName) {
-    nextPresets = presetsState.map((preset) =>
+    nextPresets = state.presetsState.map((preset) =>
       preset.id === byName.id
         ? normalizePreset({ ...preset, name: nextName, url: currentUrl, updatedAt: Date.now() })
         : preset,
@@ -373,7 +359,7 @@ async function saveCurrentFilter() {
         url: currentUrl,
         updatedAt: Date.now(),
       }),
-      ...presetsState,
+      ...state.presetsState,
     ];
     message = `Saved ${nextName}.`;
   }
@@ -394,7 +380,7 @@ async function updatePresetFromCurrent(presetId) {
     return;
   }
 
-  const nextPresets = presetsState.map((entry) =>
+  const nextPresets = state.presetsState.map((entry) =>
     entry.id === presetId
       ? normalizePreset({ ...entry, url: currentUrl, updatedAt: Date.now() })
       : entry,
@@ -417,7 +403,7 @@ async function deletePreset(presetId) {
   });
   if (!confirmResult?.ok || !confirmResult?.value?.confirmed) return;
 
-  const nextPresets = presetsState.filter((entry) => entry.id !== presetId);
+  const nextPresets = state.presetsState.filter((entry) => entry.id !== presetId);
   await persistPresets(nextPresets);
   repaintPanel();
   await showToast(`Deleted ${preset.name}.`);
@@ -457,7 +443,7 @@ function applyPreset(presetId) {
 // ─── Event binding ────────────────────────────────────────────────────────────
 
 function bindRootEvents() {
-  rootEl.addEventListener("click", (event) => {
+  state.rootEl.addEventListener("click", (event) => {
     const actionEl = event.target?.closest?.("[data-action]");
     if (!actionEl) return;
 
@@ -471,9 +457,9 @@ function bindRootEvents() {
 }
 
 function bindDialogEvents() {
-  if (!dialogEl) return;
+  if (!state.dialogEl) return;
 
-  dialogEl.addEventListener("click", (event) => {
+  state.dialogEl.addEventListener("click", (event) => {
     const actionEl = event.target?.closest?.("[data-action]");
     if (!actionEl) return;
 
@@ -508,15 +494,19 @@ function bindDialogEvents() {
     }
   });
 
-  dialogEl.addEventListener("input", (event) => {
+  let searchTimeout = null;
+  state.dialogEl.addEventListener("input", (event) => {
     const input = event.target;
-    if (input instanceof HTMLInputElement && input.dataset.role === "search") {
-      searchQuery = input.value.trim();
+    if (input.dataset.role !== "search") return;
+
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+      state.searchQuery = input.value.trim();
       repaintPanel();
-    }
+    }, 180);
   });
 
-  dialogEl.addEventListener("keydown", (event) => {
+  state.dialogEl.addEventListener("keydown", (event) => {
     const input = event.target;
     if (
       event.key === "Enter" &&
@@ -532,14 +522,14 @@ function bindDialogEvents() {
 // ─── Core registration ────────────────────────────────────────────────────────
 
 function statusMessage() {
-  if (!isEnabled) return "Latest Filters add-on is installed but disabled.";
-  if (!showPageButton)
+  if (!state.isEnabled) return "Latest Filters add-on is installed but disabled.";
+  if (!state.showPageButton)
     return "Saved filters are available from the add-on panel; the latest-page button is hidden.";
   return "One saved-filters button is available on Latest Updates pages.";
 }
 
 function getPanelBody() {
-  return showPageButton
+  return state.showPageButton
     ? "Use the Saved Filters button on Latest Updates to open a searchable list of saved presets, see the active preset, and save/apply/update/delete entries."
     : "The page button is hidden. Use the action below while on Latest Updates to open the saved-filters panel.";
 }
@@ -551,7 +541,7 @@ function registerAddon() {
       name: runtime.addonName,
       version: runtime.addonVersion,
       description: runtime.addonDescription,
-      status: isEnabled ? "installed" : "disabled",
+      status: state.isEnabled ? "installed" : "disabled",
       statusMessage: statusMessage(),
       panelTitle: runtime.addonName,
       panelBody: getPanelBody(),
@@ -562,7 +552,7 @@ function registerAddon() {
       panelSettingsDefaults: FILTER_SETTINGS_DEFAULT,
       panelSettings: [
         {
-          path: "showPageButton",
+          path: "state.showPageButton",
           text: "Show page button",
         },
       ],
@@ -582,7 +572,7 @@ function registerAddon() {
 function pushStatusUpdate() {
   bridge.dispatchCoreCommand("update-status", {
     addonId: runtime.addonId,
-    status: isEnabled ? "installed" : "disabled",
+    status: state.isEnabled ? "installed" : "disabled",
     statusMessage: statusMessage(),
   });
   registerAddon();
@@ -592,12 +582,12 @@ function pushStatusUpdate() {
 
 async function refreshRuntimeState() {
   const settings = await loadSettings();
-  isEnabled = settings.enabled !== false;
-  showPageButton = settings.showPageButton !== false;
+  state.isEnabled = settings.enabled !== false;
+  state.showPageButton = settings.state.showPageButton !== false;
   await loadPresets();
 
   removeRoot();
-  if (isEnabled && showPageButton && isLatestPage()) {
+  if (state.isEnabled && state.showPageButton && isLatestPage()) {
     scheduleMount();
   }
 
@@ -605,12 +595,12 @@ async function refreshRuntimeState() {
 }
 
 function setEnabled(nextEnabled) {
-  isEnabled = Boolean(nextEnabled);
-  void saveSettings({ enabled: isEnabled });
+  state.isEnabled = Boolean(nextEnabled);
+  void saveSettings({ enabled: state.isEnabled });
 
-  if (!isEnabled) {
+  if (!state.isEnabled) {
     removeRoot();
-  } else if (showPageButton && isLatestPage()) {
+  } else if (state.showPageButton && isLatestPage()) {
     scheduleMount();
   }
 
@@ -618,7 +608,7 @@ function setEnabled(nextEnabled) {
 }
 
 async function openFiltersFromPanel() {
-  if (!isEnabled) {
+  if (!state.isEnabled) {
     await showToast("Latest Filters add-on is disabled.");
     return;
   }
@@ -627,22 +617,22 @@ async function openFiltersFromPanel() {
     return;
   }
   await loadPresets();
-  if (!rootEl) {
-    const mounted = await mountPageUi(!showPageButton);
+  if (!state.rootEl) {
+    const mounted = await mountPageUi(!state.showPageButton);
     if (!mounted) {
       scheduleMount();
       await showToast("Saved Filters is still mounting on the page.");
       return;
     }
   }
-  if (rootEl) {
+  if (state.rootEl) {
     repaintPanel();
     openPanel();
   }
 }
 
 function bindAddonCommandListener() {
-  if (addonCommandHandlerBound) return;
+  if (state.addonCommandHandlerBound) return;
 
   window.addEventListener(ADDON_COMMAND_EVENT, (event) => {
     const detail = event?.detail || {};
@@ -663,8 +653,8 @@ function bindAddonCommandListener() {
     }
     if (command === "dialog-closed") {
       if (String(detail.dialogId || "") !== DIALOG_ID) return;
-      panelOpen = false;
-      dialogEl = null;
+      state.panelOpen = false;
+      state.dialogEl = null;
       repaintVisibility();
       return;
     }
@@ -688,7 +678,7 @@ function bindAddonCommandListener() {
     }
   });
 
-  addonCommandHandlerBound = true;
+  state.addonCommandHandlerBound = true;
 }
 
 function reportAddonBroken(error) {

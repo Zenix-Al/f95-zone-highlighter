@@ -1,4 +1,5 @@
 import stateManager from "../../config.js";
+import { createEl } from "../../core/dom.js";
 import { ADDON_COMMAND_EVENT } from "./shared.js";
 
 const ADDON_DOCK_SLOT_ID = "f95ue-page-dock-addon-slot";
@@ -77,27 +78,35 @@ function renderAddonDockGroup(addonId, buttons) {
   const groupId = buildDockGroupId(addonId);
   let group = slot.querySelector(`#${groupId}`);
   if (!group) {
-    group = document.createElement("div");
-    group.id = groupId;
-    group.className = "f95ue-page-dock-group";
-    group.dataset.addonId = addonId;
-    slot.appendChild(group);
+    group = createEl("div", {
+      className: "f95ue-page-dock-group",
+      attrs: {
+        id: groupId,
+        "data-addon-id": addonId,
+      },
+      mount: slot,
+    });
   }
 
   group.innerHTML = "";
 
   buttons.forEach((entry) => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "f95ue-page-dock-btn";
+    const button = createEl("button", {
+      attrs: {
+        type: "button",
+        className: "f95ue-page-dock-btn",
+        "data-addon-id": addonId,
+        "data-action-id": entry.id,
+      },
+      text: entry.label,
+      mount: group,
+    });
     if (entry.variant === "secondary") {
       button.classList.add("secondary");
     } else if (entry.variant === "saved") {
       button.classList.add("saved");
     }
     button.disabled = Boolean(entry.disabled);
-    button.dataset.addonId = addonId;
-    button.dataset.actionId = entry.id;
     button.textContent = entry.label;
     if (entry.title) {
       button.title = entry.title;
@@ -189,12 +198,17 @@ function ensureAddonDialogHost() {
   let host = document.getElementById(ADDON_DIALOG_HOST_ID);
   if (host) return host;
 
-  host = document.createElement("div");
-  host.id = ADDON_DIALOG_HOST_ID;
-  host.style.position = "fixed";
-  host.style.inset = "0";
-  host.style.zIndex = "12040";
-  host.style.pointerEvents = "none";
+  host = createEl("div", {
+    attrs: {
+      id: ADDON_DIALOG_HOST_ID,
+    },
+    style: {
+      position: "fixed",
+      inset: "0",
+      zIndex: "12040",
+      pointerEvents: "none",
+    },
+  });
   document.body.appendChild(host);
   return host;
 }
@@ -203,10 +217,13 @@ function ensureAddonPanelHost() {
   let host = document.getElementById(ADDON_PANEL_HOST_ID);
   if (host) return host;
 
-  host = document.createElement("div");
-  host.id = ADDON_PANEL_HOST_ID;
-  host.dataset.addonSlot = "page.panel";
-  document.body.appendChild(host);
+  host = createEl("div", {
+    attrs: {
+      id: ADDON_PANEL_HOST_ID,
+      "data-addon-slot": "page.panel",
+    },
+    mount: document.body,
+  });
   return host;
 }
 
@@ -214,14 +231,19 @@ function ensureAddonFloatingHost() {
   let host = document.getElementById(ADDON_FLOATING_HOST_ID);
   if (host) return host;
 
-  host = document.createElement("div");
-  host.id = ADDON_FLOATING_HOST_ID;
-  host.dataset.addonSlot = "page.floating";
-  host.style.position = "fixed";
-  host.style.inset = "0";
-  host.style.zIndex = "9000";
-  host.style.pointerEvents = "auto";
-  document.body.appendChild(host);
+  host = createEl("div", {
+    attrs: {
+      id: ADDON_FLOATING_HOST_ID,
+      "data-addon-slot": "page.floating",
+    },
+    style: {
+      position: "fixed",
+      inset: "0",
+      zIndex: "9000",
+      pointerEvents: "auto",
+    },
+    mount: document.body,
+  });
   return host;
 }
 
@@ -498,11 +520,19 @@ export function mountAddonUi(addonId, payload = {}) {
     return { ok: true, value: { updated: true, mountId } };
   }
 
-  const mountEl = document.createElement("div");
-  mountEl.id = `f95ue-addon-mount-${addonId}-${mountId}`;
-  mountEl.dataset.addonId = addonId;
-  mountEl.dataset.addonMountId = mountId;
-  if (String(slot || "").trim().toLowerCase() === "page.dock") {
+  const mountEl = createEl("div", {
+    attrs: {
+      id: `f95ue-addon-mount-${addonId}-${mountId}`,
+      className: "f95ue-addon-mount",
+      "data-addon-id": addonId,
+      "data-addon-mount-id": mountId,
+    },
+  });
+  if (
+    String(slot || "")
+      .trim()
+      .toLowerCase() === "page.dock"
+  ) {
     mountEl.style.display = "contents";
   }
   mountEl.innerHTML = html;
@@ -542,34 +572,49 @@ export function openAddonDialog(addonId, payload = {}) {
 
   closeAddonDialogInternal(addonId, dialogId, "replace");
 
-  const overlayEl = document.createElement("div");
-  overlayEl.className = "f95ue-addon-dialog-overlay";
-  overlayEl.dataset.addonId = addonId;
-  overlayEl.dataset.dialogId = dialogId;
-  overlayEl.style.position = "fixed";
-  overlayEl.style.inset = "0";
-  overlayEl.style.display = "flex";
-  overlayEl.style.alignItems = surfaceMetrics.overlayAlignItems;
-  overlayEl.style.justifyContent = "center";
-  overlayEl.style.padding = surfaceMetrics.overlayPadding;
-  overlayEl.style.background = "rgba(7, 9, 13, 0.56)";
-  overlayEl.style.pointerEvents = "auto";
+  const overlayEl = createEl("div", {
+    className: "f95ue-addon-dialog-overlay",
+    attrs: {
+      "data-addon-id": addonId,
+      "data-dialog-id": dialogId,
+    },
+    style: {
+      position: "fixed",
+      inset: "0",
+      display: "flex",
+      alignItems: surfaceMetrics.overlayAlignItems,
+      justifyContent: "center",
+      padding: surfaceMetrics.overlayPadding,
+      background: "rgba(7, 9, 13, 0.56)",
+      pointerEvents: "auto",
+    },
+  });
 
-  const surfaceEl = document.createElement("div");
-  surfaceEl.className = "f95ue-addon-dialog-surface";
-  surfaceEl.dataset.addonId = addonId;
-  surfaceEl.dataset.dialogId = dialogId;
-  surfaceEl.setAttribute("role", "dialog");
-  surfaceEl.setAttribute("aria-modal", "true");
-  surfaceEl.setAttribute("aria-label", title || "Dialog");
-  surfaceEl.tabIndex = -1;
-  surfaceEl.style.width = surfaceMetrics.width;
-  surfaceEl.style.maxHeight = surfaceMetrics.maxHeight;
-  surfaceEl.style.overflow = "auto";
+  const surfaceEl = createEl("div", {
+    className: "f95ue-addon-dialog-surface",
+    attrs: {
+      "data-addon-id": addonId,
+      "data-dialog-id": dialogId,
+      role: "dialog",
+      "aria-modal": "true",
+      "aria-label": title || "Dialog",
+      tabIndex: -1,
+    },
+    style: {
+      width: surfaceMetrics.width,
+      maxHeight: surfaceMetrics.maxHeight,
+      overflow: "auto",
+    },
+  });
 
-  const contentEl = document.createElement("div");
-  contentEl.className = "f95ue-addon-dialog-content";
-  contentEl.id = `f95ue-addon-dialog-content-${addonId}-${dialogId}`;
+  const contentEl = createEl("div", {
+    className: "f95ue-addon-dialog-content",
+    attrs: {
+      id: `f95ue-addon-dialog-content-${addonId}-${dialogId}`,
+      "data-addon-id": addonId,
+      "data-dialog-id": dialogId,
+    },
+  });
   contentEl.innerHTML = html;
 
   surfaceEl.appendChild(contentEl);

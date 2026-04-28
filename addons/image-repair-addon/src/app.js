@@ -9,7 +9,8 @@ import {
 } from "./constants.js";
 import { createCoreBridge } from "./coreBridge.js";
 import { createImageRepairUi } from "./ui.js";
-import { createImageRepairFeature } from "./feature.js";
+import { createRetryManager } from "./feature.js";
+import { debugLog } from "../../shared/debugLog.js";
 
 function notify(title, body) {
   if (!("Notification" in window)) return;
@@ -32,7 +33,41 @@ function createStatusMessages() {
   };
 }
 
+async function waitForPageReady() {
+  // Wait for document.readyState to be complete
+  if (document.readyState !== "complete") {
+    await new Promise((resolve) => {
+      window.addEventListener("load", resolve, { once: true });
+    });
+  }
+
+  // Also wait for F95Zone's loading overlay to disappear (if present)
+  // F95Zone shows a loading indicator during navigation
+  const checkLoadingOverlay = () => {
+    const overlay = document.querySelector(
+      "[data-loading='true'], .page-loading, .overlay-loading",
+    );
+    return !overlay || overlay.style.display === "none" || overlay.style.opacity === "0";
+  };
+
+  if (!checkLoadingOverlay()) {
+    await new Promise((resolve) => {
+      const maxWait = 10000; // Max 10 seconds
+      const startTime = Date.now();
+      const checkInterval = setInterval(() => {
+        if (checkLoadingOverlay() || Date.now() - startTime > maxWait) {
+          clearInterval(checkInterval);
+          resolve();
+        }
+      }, 100);
+    });
+  }
+
+  debugLog("Image Repair", "Page is fully ready for image observation.");
+}
+
 export function startImageRepairAddon() {
+  debugLog("Image Repair Add-on initializing...");
   const runtime = getRuntimeConfig();
   const bridge = createCoreBridge(runtime.addonId);
   const observerId = "image-repair-direct-observer";
@@ -65,24 +100,23 @@ export function startImageRepairAddon() {
     });
   }
 
-  const feature = createImageRepairFeature({
+  const feature = createRetryManager({
     imageHost: IMAGE_HOST,
-    queueDelay: QUEUE_DELAY,
     retryDelay: RETRY_DELAY,
     maxAttempts: MAX_ATTEMPTS,
     isEnabled: () => isEnabled,
-    recordSuccess(duration) {
+    recordSuccess: (duration) => {
       metrics.succeeded += 1;
       metrics.avgCache =
         (metrics.avgCache * (metrics.succeeded - 1) + duration) / metrics.succeeded;
     },
-    recordFail() {
+    recordFail: () => {
       metrics.failed += 1;
     },
-    notifyAllDone() {
+    notifyAllDone: () => {
       notify("Images Reloaded", "All images have finished reloading.");
     },
-    notifyMaxAttempts(maxAttemptsValue) {
+    notifyMaxAttempts: (maxAttemptsValue) => {
       notify(
         "Reload Warning",
         `Some images failed to reload after ${maxAttemptsValue} attempts. You may need to refresh.`,
@@ -90,20 +124,12 @@ export function startImageRepairAddon() {
     },
     ui,
   });
-
-  async function startDirectObserver() {
-    if (isObserverWatching) return;
-    const result = await bridge.invokeCoreAction("observer.watch", {
-      observerId,
-      srcPrefix: IMAGE_HOST,
-    });
-    isObserverWatching = Boolean(result?.ok);
-  }
-
-  async function stopDirectObserver() {
-    if (!isObserverWatching) return;
-    await bridge.invokeCoreAction("observer.unwatch", { observerId });
-    isObserverWatching = false;
+  async function toggleObserver(enabled) {
+    if (enabled) {
+      await bridge.invokeCoreAction("observer.watch", { observerId, srcPrefix: IMAGE_HOST });
+    } else {
+      await bridge.invokeCoreAction("observer.unwatch", { observerId });
+    }
   }
 
   async function storageGet(key, defaultValue = null) {
@@ -153,11 +179,13 @@ export function startImageRepairAddon() {
     if (isEnabled) {
       await registerUiStyle();
       feature.enable();
-      await startDirectObserver();
+      await toggleObserver(true);
+      debugLog(runtime.addonId, "Add-on enabled via command.", { data: { nextEnabled } });
     } else {
       feature.disable();
-      await stopDirectObserver();
+      await toggleObserver(false);
       await unregisterUiStyle();
+      debugLog(runtime.addonId, "Add-on disabled via command.", { data: { nextEnabled } });
     }
 
     pushStatusUpdate();
@@ -172,7 +200,7 @@ export function startImageRepairAddon() {
 
   async function teardownAddon(reason = "teardown") {
     feature.disable();
-    await stopDirectObserver();
+    await toggleObserver(false);
     await unregisterUiStyle();
     unbindAddonCommandListener();
     bridge.dispatchCoreCommand("teardown-complete", {
@@ -242,16 +270,16 @@ export function startImageRepairAddon() {
   }
 
   async function bootstrap() {
+    debugLog(runtime.addonId, "Bootstrapping add-on...");
     const ping = await bridge.waitForCorePing();
     if (!ping.ok && runtime.requiresCore) {
-      console.info(`[${runtime.addonId}] F95UE core not detected; add-on skipped.`);
-      console.info(`ping status: ${JSON.stringify(ping)}, `);
+      debugLog(runtime.addonId, "F95UE core not detected; add-on skipped.", { data: { ping } });
       return;
     }
-
+    debugLog(runtime.addonId, "F95UE core detected and responsive.", { data: { ping } });
     // Register first so permission-checked storage actions can resolve this add-on.
     registerAddon();
-
+    debugLog(runtime.addonId, "Add-on registered with core.", { data: { ping } });
     try {
       const stored = await storageGet("enabled", true);
       isEnabled = stored !== false && stored !== "false";
@@ -259,14 +287,21 @@ export function startImageRepairAddon() {
       bindAddonCommandListener();
 
       if (isEnabled) {
+        // Wait for page to fully load before enabling observer
+        await waitForPageReady();
+
         await registerUiStyle();
         feature.enable();
-        await startDirectObserver();
+        await toggleObserver(true);
+        debugLog(runtime.addonId, "Add-on initialized and enabled.", { data: { stored } });
       } else {
-        await stopDirectObserver();
+        await toggleObserver(false);
         await unregisterUiStyle();
         // Sync panel status after applying persisted disabled state.
         pushStatusUpdate();
+        debugLog(runtime.addonId, "Add-on initialized but disabled (per stored setting).", {
+          data: { stored },
+        });
       }
 
       installConsoleHelper();
