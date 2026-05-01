@@ -1,4 +1,4 @@
-import stateManager from "../../config.js";
+import { stateManager } from "../../config.js";
 import { debugLog } from "../../core/logger";
 import { addObserverCallback, removeObserverCallback } from "../../core/observer";
 import { refreshCaches } from "./overlayCache.js";

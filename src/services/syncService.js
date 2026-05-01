@@ -1,4 +1,4 @@
-import stateManager, { config, crossTabKeys } from "../config.js";
+import { stateManager, config, crossTabKeys } from "../config.js";
 import { applyEffects } from "../ui/renderers/applyEffects";
 import { metaRegistry } from "../ui/settings/metaRegistry";
 import { createFeature } from "../core/featureFactory.js";

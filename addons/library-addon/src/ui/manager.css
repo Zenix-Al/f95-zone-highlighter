@@ -340,6 +340,73 @@ __ROOT__ .f95ue-library-table-wrap tr.is-active {
   background: rgba(137, 56, 57, 0.24);
 }
 
+__ROOT__ .f95ue-chip-list {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+  max-width: 100%;
+}
+
+__ROOT__ .f95ue-chip {
+  display: inline-flex;
+  align-items: center;
+  height: 18px;
+  padding: 0 7px;
+  border-radius: 999px;
+  border: 1px solid #3a3f47;
+  background: #23262b;
+  color: #e6e9ee;
+  font-size: 11px;
+  line-height: 18px;
+  white-space: nowrap;
+  user-select: none;
+}
+
+__ROOT__ .f95ue-chip.is-overflow {
+  display: none;
+}
+
+__ROOT__ .f95ue-chip--count {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: #cbd3dd;
+}
+
+__ROOT__ .f95ue-chip-list:hover .f95ue-chip.is-overflow,
+__ROOT__ .f95ue-chip-list:focus-within .f95ue-chip.is-overflow {
+  display: inline-flex;
+}
+
+__ROOT__ .f95ue-chip-list:hover .f95ue-chip--count,
+__ROOT__ .f95ue-chip-list:focus-within .f95ue-chip--count {
+  display: none;
+}
+
+__ROOT__ .f95ue-chip--status {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+__ROOT__ .f95ue-chip--status[data-status="saved"] {
+  background: rgba(176, 179, 184, 0.16);
+  color: #d7dde6;
+}
+
+__ROOT__ .f95ue-chip--status[data-status="playing"] {
+  background: rgba(33, 150, 243, 0.22);
+  color: #cfe8ff;
+}
+
+__ROOT__ .f95ue-chip--status[data-status="completed"] {
+  background: rgba(76, 175, 80, 0.22);
+  color: #d6ffd9;
+}
+
+__ROOT__ .f95ue-chip--status[data-status="dropped"] {
+  background: rgba(244, 67, 54, 0.22);
+  color: #ffd0cd;
+}
+
 __ROOT__ .f95ue-library-manager-window button {
   border: 1px solid #893839;
   background: #893839;

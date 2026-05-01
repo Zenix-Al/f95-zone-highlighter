@@ -1,4 +1,4 @@
-import stateManager, { helpMessages, config } from "../../config.js";
+import { stateManager, helpMessages, config } from "../../config.js";
 import { debugLog } from "../../core/logger.js";
 
 let helpMsgInterval = null;

@@ -1,7 +1,7 @@
 import { config } from "../../config.js";
 import { debugLog } from "../../core/logger";
 import { SELECTORS } from "../../config/selectors.js";
-import TIMINGS from "../../config/timings.js";
+import { TIMINGS } from "../../config/timings.js";
 import { buildOrderedOverlayMatches } from "./overlayOrder.js";
 import { cache, refreshCaches } from "./overlayCache.js";
 

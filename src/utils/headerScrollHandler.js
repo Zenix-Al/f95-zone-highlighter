@@ -1,3 +1,5 @@
+import { addListener, removeListener } from "../core/listenerRegistry";
+
 /**
  * Creates a reusable scroll handler to hide/show an element (usually the header)
  * based on scroll direction and position.
@@ -27,12 +29,13 @@ function createHeaderScrollHandler({ threshold, hiddenClassName }) {
     if (scrollHandler) return;
     lastScrollY = window.scrollY;
     scrollHandler = handler;
-    window.addEventListener("scroll", scrollHandler, { passive: true });
+    addListener("scroll", window, "scrollHandler", scrollHandler);
   }
 
   function disable() {
     if (!scrollHandler) return;
-    window.removeEventListener("scroll", scrollHandler);
+    removeListener("scroll");
+
     scrollHandler = null;
     document.documentElement.classList.remove(hiddenClassName);
   }

@@ -1,7 +1,7 @@
 import { debugLog } from "./logger.js";
 import { removeAllListeners } from "./listenerRegistry.js";
 import { removeAllObserverCallbacks } from "./observer.js";
-import resourceManager from "./resourceManager.js";
+import { resourceManager } from "./resourceManager.js";
 import { clearAllStyles } from "./styleRegistry.js";
 import { notifyAllAddonsBeforePageChange } from "../services/addonsService.js";
 

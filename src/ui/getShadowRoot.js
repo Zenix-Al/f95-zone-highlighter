@@ -1,4 +1,4 @@
-import stateManager from "../config.js";
+import { stateManager } from "../config.js";
 
 export function getShadowRoot() {
   return stateManager.get("shadowRoot");

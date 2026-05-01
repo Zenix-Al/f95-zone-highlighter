@@ -1,4 +1,4 @@
-import stateManager, { config } from "../config.js";
+import { stateManager, config } from "../config.js";
 import { ensurePageBridge, requestPageBridge } from "../core/pageBridge.js";
 import { renderList } from "../ui/components/tag-search";
 

@@ -1,5 +1,5 @@
-import stateManager from "../config.js";
-import resourceManager from "./resourceManager.js";
+import { stateManager } from "../config.js";
+import { resourceManager } from "./resourceManager.js";
 
 const styles = new Map();
 

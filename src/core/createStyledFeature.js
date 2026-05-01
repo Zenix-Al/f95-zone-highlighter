@@ -22,6 +22,7 @@ export const createStyledFeature = (
     styleId,
     styleCss,
     styleTarget = "document",
+    settingsUi,
     enable,
     disable,
   },
@@ -31,6 +32,7 @@ export const createStyledFeature = (
     configPath,
     isEnabled,
     isApplicable,
+    settingsUi,
     enable: () => {
       acquireStyle(resolvedStyleId, styleCss, styleTarget);
       return enable ? enable() : null;

@@ -1,4 +1,4 @@
-import stateManager, { config } from "../../config.js";
+import { stateManager, config } from "../../config.js";
 import { saveConfigKeys } from "../../services/settingsService";
 import { debugLog } from "../../core/logger";
 import { addObserverCallback, removeObserverCallback } from "../../core/observer.js";

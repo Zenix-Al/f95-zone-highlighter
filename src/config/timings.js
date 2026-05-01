@@ -28,5 +28,3 @@ export const TIMINGS = {
   IMAGE_RETRY_MAX_ATTEMPTS: 10,
   AUTO_RETRY_TIMEOUT: 60000,
 };
-
-export default TIMINGS;

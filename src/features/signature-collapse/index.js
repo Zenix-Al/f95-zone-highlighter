@@ -3,6 +3,7 @@ import { addListener, removeListener } from "../../core/listenerRegistry.js";
 import { debugLog } from "../../core/logger.js";
 import { SELECTORS } from "../../config/selectors.js";
 import featureCss from "./style.css";
+import { createEnabledDisabledToast } from "../../ui/settings/metaFactory.js";
 
 const DELEGATED_LISTENER_ID = "signature-collapse-delegated-click";
 
@@ -52,4 +53,20 @@ export const signatureCollapseFeature = createStyledFeature("Signature Collapse"
   styleCss: featureCss,
   enable: enableSignatureCollapse,
   disable: disableSignatureCollapse,
+  settingsUi: {
+    id: "signature-collapse",
+    sectionId: "thread",
+    metaMaps: [
+      {
+        signatureCollapseToggle: {
+          type: "toggle",
+          text: "Collapsable Signatures",
+          tooltip: "Make user signatures collapsable in threads",
+          config: "threadSettings.collapseSignature",
+          custom: () => signatureCollapseFeature.toggle(signatureCollapseFeature.isEnabled()),
+          toast: createEnabledDisabledToast("Signature collapse"),
+        },
+      },
+    ],
+  },
 });

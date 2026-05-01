@@ -1,5 +1,5 @@
-import stateManager from "../../config.js";
-import TIMINGS from "../../config/timings.js";
+import { stateManager } from "../../config.js";
+import { TIMINGS } from "../../config/timings.js";
 import { createEl } from "../../core/dom.js";
 
 const MAX_TOASTS = 4;

@@ -1,5 +1,5 @@
-import createStateManager from "./core/StateManager.js";
-import TIMINGS from "./config/timings.js";
+import { createStateManager } from "./core/StateManager.js";
+import { TIMINGS } from "./config/timings.js";
 
 export const validVersions = ["full", "final"];
 
@@ -137,11 +137,10 @@ const runtimeState = {
   latestOverlayStatus: "IDLE",
 };
 
-const stateManager = createStateManager(runtimeState, {
+export const stateManager = createStateManager(runtimeState, {
   warnUnknown: true,
   name: "RuntimeState",
 });
-export default stateManager;
 
 export const STATUS = Object.freeze({
   PREFERRED: "preferred",

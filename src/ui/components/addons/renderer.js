@@ -360,6 +360,9 @@ export async function renderAddonPanelSettings(container, addon) {
   settings.forEach((entry) => {
     const path = String(entry?.path || "").trim();
     const label = String(entry?.text || "").trim();
+    const settingType = String(entry?.type || "toggle")
+      .trim()
+      .toLowerCase();
     if (!path || !label) return;
 
     const row = createEl("div", {
@@ -384,21 +387,44 @@ export async function renderAddonPanelSettings(container, addon) {
       });
     }
 
-    const toggle = createEl("input", {
-      attrs: {
-        type: "checkbox",
+    if (settingType === "number") {
+      const attrs = {
+        type: "number",
         "data-addon-action": "toggle-addon-setting",
         "data-addon-id": addon.id,
         "data-addon-setting-path": path,
-      },
-      mount: row,
-    });
+      };
+      if (Number.isFinite(entry?.min)) attrs.min = String(entry.min);
+      if (Number.isFinite(entry?.max)) attrs.max = String(entry.max);
+      if (Number.isFinite(entry?.step)) attrs.step = String(entry.step);
 
-    toggle.checked = getSettingByPath(current, path) !== false;
+      const input = createEl("input", {
+        attrs,
+        mount: row,
+      });
+      let currentValue = getSettingByPath(current, path);
+      if (!Number.isFinite(currentValue)) {
+        currentValue = getSettingByPath(addon.panelSettingsDefaults, path);
+      }
+      if (Number.isFinite(currentValue)) {
+        input.value = String(currentValue);
+      }
+    } else {
+      const toggle = createEl("input", {
+        attrs: {
+          type: "checkbox",
+          "data-addon-action": "toggle-addon-setting",
+          "data-addon-id": addon.id,
+          "data-addon-setting-path": path,
+        },
+        mount: row,
+      });
+      toggle.checked = getSettingByPath(current, path) !== false;
+    }
   });
 }
 
-function getSettingByPath(obj, path) {
+export function getSettingByPath(obj, path) {
   if (!obj || typeof obj !== "object" || !path) return undefined;
   return path.split(".").reduce((acc, key) => acc?.[key], obj);
 }

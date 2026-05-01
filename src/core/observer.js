@@ -1,6 +1,6 @@
 let observer = null;
 import { safeExecute } from "./safeExecute.js";
-import resourceManager from "./resourceManager.js";
+import { resourceManager } from "./resourceManager.js";
 import { debugLog } from "./logger.js";
 const callbacks = new Map();
 
@@ -225,7 +225,9 @@ function masterCallback(mutationsList, obs) {
     if (tickDuration >= OBSERVER_PROFILE_SLOW_TICK_MS) {
       observerProfileState.slowTicks += 1;
       if (isObserverProfilingEnabled()) {
-        console.warn(`[F95UE ObserverProfiler] Slow MutationObserver tick: ${tickDuration.toFixed(2)}ms`);
+        console.warn(
+          `[F95UE ObserverProfiler] Slow MutationObserver tick: ${tickDuration.toFixed(2)}ms`,
+        );
       }
       debugLog("ObserverProfiler", `Slow MutationObserver tick: ${tickDuration.toFixed(2)}ms`, {
         level: "warn",

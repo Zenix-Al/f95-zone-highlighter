@@ -1,8 +1,17 @@
 # Changelog
 
-### **[4.17.22 - Add colored toast support in core]**
+### **[4.18.0 - Rendering system and code optimization]**
 
-Small update to add colored toast support in core so add-ons can use the same consistent UI for their notifications instead of falling back to their own.
+The size of the script now is reduced by 20%.
+
+- Every features now can sent their own meta to get rendered instead of previous approach where you have to manually add it config meta.
+- Optimized and cleaned up the ui rendering system, now it should be more efficient and easier to maintain.
+- Remove export default in the codebase, now all modules are imported and exported as named, as the side effect, the final code is smaller and more tree-shakeable, and also it should be more clear to see what is imported and exported in each module.
+
+### **[4.17.27 - toast and addon ui render]**
+
+- added colored toast support in core so add-ons can use the same consistent UI for their notifications instead of falling back to their own.
+- Added input type for number, used in add-on settings rendering.
 
 ### **[v4.17.19 - Config Transfer & Add-on UX Polish]**
 

@@ -6,11 +6,11 @@
     },
     "masked-direct-addon": {
       "regular": "2ffc1a93e77d12e039e5fc2ea756b8f1894c5d8108a1e19eec4ba03039b9d759",
-      "release": "727ae07834e53450b15846301575d50b9c6019d531611a6b93c4f242723209f6"
+      "release": "71f05cd61727aca7e4f253d160562bd001a22da90773f75b3266aadcdd0555da"
     },
     "library-addon": {
       "regular": "7408251b4e54c9d4ce30355cebe7f7abf37b7e0c06114b1d6417516e6f8bf017",
-      "release": "6c653dd1205e8f503117d8a7d3352725f9a9e1eba4eee786d20532d8d5d16aed"
+      "release": "53506e087f49628afb1db5f54a6c74efd491f09bbdb58a19f5d37819c3f3dfe4"
     },
     "latest-filters-addon": {
       "regular": "5004bfaadb7cec71c362eb5f891dbd5f436672d40a734e127069aabedc7c1e90",

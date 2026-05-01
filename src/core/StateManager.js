@@ -54,7 +54,7 @@ function createSerializableSnapshot(source) {
   return clone(source);
 }
 
-const createStateManager = (initialState = {}, options = {}) => {
+export const createStateManager = (initialState = {}, options = {}) => {
   const {
     knownPaths = null,
     warnUnknown = false,
@@ -65,9 +65,7 @@ const createStateManager = (initialState = {}, options = {}) => {
   let state = JSON.parse(JSON.stringify(initialState)); // Deep copy
   const subscriptions = new Map();
 
-  const known = knownPaths
-    ? new Set(knownPaths)
-    : buildKnownPathsFromObject(initialState);
+  const known = knownPaths ? new Set(knownPaths) : buildKnownPathsFromObject(initialState);
 
   const isKnownPath = (path) => known.size === 0 || known.has(path);
 
@@ -130,5 +128,3 @@ const createStateManager = (initialState = {}, options = {}) => {
     getKnownPaths,
   };
 };
-
-export default createStateManager;

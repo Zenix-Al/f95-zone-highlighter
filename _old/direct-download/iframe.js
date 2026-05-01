@@ -1,5 +1,5 @@
 import { debugLog } from "../../core/logger";
-import TIMINGS from "../../config/timings.js";
+import { TIMINGS } from "../../config/timings.js";
 
 export function injectFrame(url, options = {}) {
   // Option defaults:

@@ -2,7 +2,7 @@ import { injectButton } from "./components/configButton";
 import { updateButtonVisibility } from "./components/configButton";
 import { injectCSS } from "./helpers/cssInjector";
 import { updateColorStyle } from "./helpers/updateColorStyle";
-import stateManager, { config } from "../config.js";
+import { stateManager, config } from "../config.js";
 import { crossTabSyncFeature } from "../services/syncService";
 import { createEl } from "../core/dom.js";
 

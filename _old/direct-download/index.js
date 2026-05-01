@@ -1,4 +1,4 @@
-import stateManager from "../../config.js";
+import { stateManager } from "../../config.js";
 import { showToast } from "../../ui/components/toast";
 import { debugLog } from "../../core/logger";
 import { disableMsgEventHandler, handleMsgEvent } from "./msgHandler";

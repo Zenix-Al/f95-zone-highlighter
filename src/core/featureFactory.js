@@ -1,5 +1,5 @@
 import { debugLog } from "./logger.js";
-import stateManager, { config } from "../config.js";
+import { stateManager, config } from "../config.js";
 import { setFeatureStatus, pushRuntimeError } from "./featureHealth.js";
 import { showToast } from "../ui/components/toast.js";
 import { getByPath } from "../utils/objectPath.js";
@@ -50,7 +50,7 @@ function reportLifecycleFailure(name, action, err) {
  */
 export const createFeature = (
   name,
-  { enable, disable, configPath, isEnabled: customIsEnabled, isApplicable },
+  { enable, disable, configPath, isEnabled: customIsEnabled, isApplicable, settingsUi = null },
 ) => {
   let opInProgress = false;
   let pendingDesired = null;
@@ -76,7 +76,10 @@ export const createFeature = (
 
   function queueDesiredState(action) {
     pendingDesired = action;
-    debugLog(name, `${action === "enable" ? "Enable" : "Disable"} deferred — operation in progress.`);
+    debugLog(
+      name,
+      `${action === "enable" ? "Enable" : "Disable"} deferred — operation in progress.`,
+    );
   }
 
   function finalizeTransition(action, timer, finished) {
@@ -98,7 +101,10 @@ export const createFeature = (
     const finished = { value: false };
     const timer = setTimeout(() => {
       if (!finished.value) {
-        debugLog(name, `${action === "enable" ? "Enable" : "Disable"} operation timed out — marking as failing.`);
+        debugLog(
+          name,
+          `${action === "enable" ? "Enable" : "Disable"} operation timed out — marking as failing.`,
+        );
         setFeatureStatus(name, "failing", timeoutDetails);
         opInProgress = false;
       }
@@ -121,6 +127,7 @@ export const createFeature = (
 
   const feature = {
     name: name,
+    settingsUi: settingsUi && typeof settingsUi === "object" ? settingsUi : null,
     enable: function () {
       debugLog(name, "Enable requested");
       if (!canRunOnCurrentPage()) {

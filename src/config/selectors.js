@@ -82,5 +82,3 @@ export const SELECTORS = {
     TOGGLE_CLASS: "latest-signature-toggle",
   },
 };
-
-export default SELECTORS;
