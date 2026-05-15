@@ -1,7 +1,7 @@
-import stateManager, { cache, colorState, config } from "../../config.js";
+import { stateManager, cache, colorState, config } from "../../config.js";
 import { showToast } from "../../ui/components/toast";
 import { injectFrame } from "./iframe.js";
-import resourceManager from "../../core/resourceManager.js";
+import { resourceManager } from "../../core/resourceManager.js";
 import { addListener, removeListener } from "../../core/listenerRegistry.js";
 import { getDirectDownloadHostContext } from "./hostPackages.js";
 import { markDirectDownloadHostFailure, markDirectDownloadHostSuccess } from "./hostBreaker.js";

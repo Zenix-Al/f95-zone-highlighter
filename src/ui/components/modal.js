@@ -1,4 +1,4 @@
-import stateManager from "../../config.js";
+import { stateManager } from "../../config.js";
 import ui_html from "../assets/ui.html";
 import { initModalUi } from "../settings/index.js";
 import { startHelpMessageCycle, stopHelpMessageCycle } from "./helpMessage.js";

@@ -41,6 +41,7 @@ const ADDON_SETTINGS_KEY = "settings";
 const ADDON_SETTINGS_DEFAULT = Object.freeze({
   skipMaskedLink: true,
   directDownloadLinks: true,
+  downloadPageCloseDelayMs: 3500,
   directDownloadPackages: {
     buzzheavier: true,
     gofile: true,
@@ -63,6 +64,16 @@ const ADDON_PANEL_SETTINGS = Object.freeze([
     text: "Direct Download Links",
     tooltip:
       "Enable direct download links for supported file hosts. Works independently outside of masked links.",
+  },
+  {
+    id: "downloadPageCloseDelayMs",
+    path: "downloadPageCloseDelayMs",
+    text: "Download page close delay (ms)",
+    tooltip:
+      "Adjust the delay before closing download-host tabs. Increase if the download dialog doesn't appear before the tab closes (slow connection). Decrease on fast connections. Range: 500-10000ms.",
+    type: "number",
+    min: 500,
+    max: 10000,
   },
   {
     id: "buzzheavier",
@@ -127,6 +138,8 @@ const directDownloadFlowController = createDirectDownloadFlowController({
   ownerTabId: directDownloadAttentionController.localAttentionTabId,
   originTabQueryKey: directDownloadAttentionController.originTabQueryKey,
   getDownloadHost: () => downloadPageController?.getDownloadHost?.() || "",
+  getDownloadPageCloseDelayMs: () =>
+    settingsCache?.downloadPageCloseDelayMs ?? ADDON_SETTINGS_DEFAULT.downloadPageCloseDelayMs,
 });
 const threadPageController = createThreadPageController({
   addTeardown,
@@ -258,6 +271,8 @@ function reportAddonHealthy() {
   directDownloadFlowController.reportAddonHealthy({
     isEnabled,
     statusMessage: statusMessage(),
+    downloadPageCloseDelayMs:
+      settingsCache?.downloadPageCloseDelayMs ?? ADDON_SETTINGS_DEFAULT.downloadPageCloseDelayMs,
   });
 }
 
@@ -272,6 +287,9 @@ async function readThreadFlags(force = false) {
   settingsCache = {
     skipMaskedLink: parsed.skipMaskedLink !== false,
     directDownloadLinks: parsed.directDownloadLinks !== false,
+    downloadPageCloseDelayMs: Number.isFinite(parsed.downloadPageCloseDelayMs)
+      ? Math.max(500, Math.min(10000, parsed.downloadPageCloseDelayMs))
+      : ADDON_SETTINGS_DEFAULT.downloadPageCloseDelayMs,
     directDownloadPackages: {
       buzzheavier: parsed.directDownloadPackages?.buzzheavier !== false,
       gofile: parsed.directDownloadPackages?.gofile !== false,

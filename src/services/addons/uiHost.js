@@ -1,4 +1,4 @@
-import stateManager from "../../config.js";
+import { stateManager } from "../../config.js";
 import { createEl } from "../../core/dom.js";
 import { ADDON_COMMAND_EVENT } from "./shared.js";
 

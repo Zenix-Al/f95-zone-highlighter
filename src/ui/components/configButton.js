@@ -1,4 +1,4 @@
-import stateManager, { config } from "../../config.js";
+import { stateManager, config } from "../../config.js";
 import { openModal } from "./modal.js";
 
 const PAGE_DOCK_ID = "f95ue-page-dock";

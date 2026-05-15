@@ -1,4 +1,4 @@
-import stateManager, { config } from "../config.js";
+import { config, stateManager } from "../config.js";
 import { debugLog } from "../core/logger.js";
 
 export function checkTags() {

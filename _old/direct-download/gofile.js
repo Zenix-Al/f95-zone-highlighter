@@ -1,6 +1,6 @@
 ﻿import { config } from "../../config";
 import { debugLog } from "../../core/logger";
-import TIMINGS from "../../config/timings.js";
+import { TIMINGS } from "../../config/timings.js";
 import { SELECTORS } from "../../config/selectors.js";
 import { showToast } from "../../ui/components/toast.js";
 import { handleDirectDownloadFailure } from "./attention.js";

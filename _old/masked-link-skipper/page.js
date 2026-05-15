@@ -1,6 +1,6 @@
 import { resolveMaskedLink } from "./resolver.js";
 import { SELECTORS } from "../../config/selectors.js";
-import TIMINGS from "../../config/timings.js";
+import { TIMINGS } from "../../config/timings.js";
 import { queryFirstBySelectors } from "../../utils/selectorQuery.js";
 
 /**

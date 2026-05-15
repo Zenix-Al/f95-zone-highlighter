@@ -2,8 +2,9 @@ import { createFeature } from "../../core/featureFactory.js";
 import { config } from "../../config.js";
 import { addObserverCallback, removeObserverCallback } from "../../core/observer.js";
 import { SELECTORS } from "../../config/selectors.js";
-import TIMINGS from "../../config/timings.js";
+import { TIMINGS } from "../../config/timings.js";
 import { debugLog } from "../../core/logger.js";
+import { createEnabledDisabledToast, createToggleSetting } from "../../ui/settings/metaFactory.js";
 
 /**
  * Main handler to synchronize the state of on-page UI controls
@@ -87,4 +88,33 @@ export const latestControlFeature = createFeature("Latest Controls Sync", {
   isApplicable: ({ stateManager }) => stateManager.get("isLatest"),
   enable: enable,
   disable: disable,
+  settingsUi: {
+    id: "latest-control",
+    sectionId: "latest",
+    metaMaps: [
+      {
+        autoRefresh: createToggleSetting({
+          text: "Auto Refresh",
+          tooltip: "Auto activate in site auto refresh for the Latest Updates page",
+          config: "latestSettings.autoRefresh",
+          custom: () => {
+            latestControlFeature.sync();
+          },
+          toast: createEnabledDisabledToast("Auto Refresh"),
+        }),
+      },
+      {
+        webNotif: createToggleSetting({
+          text: "Web Notifications",
+          tooltip:
+            "Auto activate in site web notifications for new threads (site might ask for permission)",
+          config: "latestSettings.webNotif",
+          custom: () => {
+            latestControlFeature.sync();
+          },
+          toast: createEnabledDisabledToast("Web Notifications"),
+        }),
+      },
+    ],
+  },
 });

@@ -1,8 +1,9 @@
 # Changelog
 
-## nothing important changed yet, so this just notes for later
+## v0.3.7 - confiureablee auto close
 
 - remove unecessary toast call when this addon failing.
+- add configureable auto close timing and increase the default auto close tab to 3500ms to avoid tab cosed too fast.
 
 ## v0.2.9 - more host support + bugfixes
 

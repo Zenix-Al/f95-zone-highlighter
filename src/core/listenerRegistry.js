@@ -1,5 +1,5 @@
 import { debugLog } from "./logger";
-import resourceManager from "./resourceManager.js";
+import { resourceManager } from "./resourceManager.js";
 
 const listeners = new Map();
 

@@ -1,5 +1,5 @@
 import { debugLog } from "../../core/logger";
-import TIMINGS from "../../config/timings.js";
+import { TIMINGS } from "../../config/timings.js";
 
 async function probeUrlWithTimeout(url, timeout = TIMINGS.DOWNLOAD_TIMEOUT) {
   const supportsAbort = typeof AbortController === "function";

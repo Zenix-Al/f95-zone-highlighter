@@ -8,17 +8,28 @@
       "author": "X Death",
       "entry": "addons/image-repair-addon/src/main.js",
       "outfile": "addons/image-repair-addon/dist/image-repair-addon.user.js",
-      "matches": ["*://f95zone.to/threads/*"],
-      "grants": ["none"],
+      "matches": [
+        "*://f95zone.to/threads/*"
+      ],
+      "grants": [
+        "none"
+      ],
       "runAt": "document-idle",
       "requiresCore": true,
-      "capabilities": ["toast", "feature", "storage", "observer", "ui", "ui.style"]
+      "capabilities": [
+        "toast",
+        "feature",
+        "storage",
+        "observer",
+        "ui",
+        "ui.style"
+      ]
     },
     {
       "id": "masked-direct-addon",
       "name": "F95UE Masked + Direct Download Add-on",
       "description": "Combines masked-link skipper and direct-download flows into one trusted add-on.",
-      "version": "0.3.5",
+      "version": "0.3.7",
       "author": "X Death",
       "entry": "addons/masked-direct-addon/src/main.js",
       "outfile": "addons/masked-direct-addon/dist/masked-direct-addon.user.js",
@@ -42,18 +53,28 @@
       ],
       "runAt": "document-idle",
       "requiresCore": true,
-      "capabilities": ["toast", "feature", "storage", "ui", "ui.style"]
+      "capabilities": [
+        "toast",
+        "feature",
+        "storage",
+        "ui",
+        "ui.style"
+      ]
     },
     {
       "id": "library-addon",
       "name": "F95UE Library Add-on",
       "description": "Quick-add threads to a personal library and manage entries with a dedicated add-on UI.",
-      "version": "0.3.9",
+      "version": "0.3.36",
       "author": "X Death",
       "entry": "addons/library-addon/src/main.js",
       "outfile": "addons/library-addon/dist/library-addon.user.js",
-      "matches": ["*://f95zone.to/*"],
-      "grants": ["none"],
+      "matches": [
+        "*://f95zone.to/*"
+      ],
+      "grants": [
+        "none"
+      ],
       "runAt": "document-idle",
       "requiresCore": true,
       "capabilities": [
@@ -75,11 +96,24 @@
       "author": "X Death",
       "entry": "addons/latest-filters-addon/src/main.js",
       "outfile": "addons/latest-filters-addon/dist/latest-filters-addon.user.js",
-      "matches": ["*://f95zone.to/sam/latest_alpha/*"],
-      "grants": ["GM.getValue", "GM.setValue"],
+      "matches": [
+        "*://f95zone.to/sam/latest_alpha/*"
+      ],
+      "grants": [
+        "GM.getValue",
+        "GM.setValue"
+      ],
       "runAt": "document-idle",
       "requiresCore": true,
-      "capabilities": ["toast", "feature", "storage", "ui", "ui.style", "ui.mount", "ui.dialog"]
+      "capabilities": [
+        "toast",
+        "feature",
+        "storage",
+        "ui",
+        "ui.style",
+        "ui.mount",
+        "ui.dialog"
+      ]
     },
     {
       "id": "halloween-theme-addon",
@@ -89,11 +123,17 @@
       "author": "X Death",
       "entry": "addons/halloween-theme-addon/src/main.js",
       "outfile": "addons/halloween-theme-addon/dist/halloween-theme-addon.user.js",
-      "matches": ["*://f95zone.to/*"],
-      "grants": ["none"],
+      "matches": [
+        "*://f95zone.to/*"
+      ],
+      "grants": [
+        "none"
+      ],
       "runAt": "document-idle",
       "requiresCore": true,
-      "capabilities": ["feature"]
+      "capabilities": [
+        "feature"
+      ]
     }
   ]
 }

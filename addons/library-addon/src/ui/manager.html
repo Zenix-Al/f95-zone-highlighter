@@ -32,9 +32,6 @@
         <option value="title:asc">Title (A-Z)</option>
         <option value="title:desc">Title (Z-A)</option>
       </select>
-      <button type="button" class="ghost" data-action="toggle-detail" data-role="toggleDetail">
-        Details
-      </button>
     </div>
 
     <div class="f95ue-library-actions">
@@ -78,6 +75,11 @@
             <option value="dropped">dropped</option>
           </select>
           <button type="button" data-action="bulk-set-status">Apply Status</button>
+          <select data-field="bulkPin">
+            <option value="pin">Pin</option>
+            <option value="unpin">Unpin</option>
+          </select>
+          <button type="button" class="ghost" data-action="bulk-set-pin">Apply Pin</button>
           <button type="button" class="danger" data-action="bulk-remove">Remove Selected</button>
           <button type="button" class="ghost" data-action="clear-selection">Clear</button>
         </div>
@@ -92,8 +94,11 @@
                 <th>Status</th>
                 <th>Rating</th>
                 <th>Updated</th>
+                <th>Prefixes</th>
                 <th>Version</th>
+                <th>Developer</th>
                 <th>Tags</th>
+                <th>Note</th>
                 <th>Action</th>
               </tr>
             </thead>
@@ -101,11 +106,6 @@
           </table>
         </div>
       </div>
-
-      <aside class="f95ue-library-detail-panel" data-role="detail" aria-live="polite">
-        <div class="detail-title">Details Editor</div>
-        <div class="detail-empty">Select a row to edit note, status, score, and pin.</div>
-      </aside>
     </div>
 
     <div class="f95ue-library-footer">

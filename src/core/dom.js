@@ -1,6 +1,6 @@
-import stateManager from "../config.js";
+import { stateManager } from "../config.js";
 import { debugLog } from "./logger.js";
-import TIMINGS from "../config/timings.js";
+import { TIMINGS } from "../config/timings.js";
 
 export function waitFor(
   conditionFn,

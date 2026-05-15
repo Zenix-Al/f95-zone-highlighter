@@ -1,5 +1,4 @@
 import { openConfigTransferDialog } from "../../features/config-transfer/index.js";
-import { toggleNoticeDismissal } from "../../features/dismiss-notification";
 import { crossTabSyncFeature } from "../../services/syncService";
 import {
   disableAddonsService,
@@ -11,6 +10,7 @@ import { createEnabledDisabledToast, createToggleSetting } from "./metaFactory";
 import { showFeatureHealthBox } from "../components/featureHealth/index.js";
 import { syncHelpMessageFooter } from "../components/helpMessage.js";
 import { openConfirmDialog } from "../components/dialog.js";
+import { contributeToSection } from "../settingsRuntime/sectionsRegistry.js";
 
 export const globalSettingsMeta = {
   configVisibility: createToggleSetting({
@@ -22,15 +22,6 @@ export const globalSettingsMeta = {
       enabled: "shown",
       disabled: "hidden",
     }),
-  }),
-  noticeDismissal: createToggleSetting({
-    text: "Enable notification dismissal",
-    tooltip: "Allow closing notifications by clicking a close button",
-    config: "globalSettings.closeNotifOnClick",
-    custom: () => {
-      toggleNoticeDismissal();
-    },
-    toast: createEnabledDisabledToast("Notification dismissal"),
   }),
   enableCrossTabSync: createToggleSetting({
     text: "Sync settings across tabs",
@@ -129,3 +120,4 @@ export const globalSettingsMeta = {
     }),
   }),
 };
+contributeToSection("global", globalSettingsMeta);

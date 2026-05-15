@@ -35,12 +35,3 @@ export function isValidLatestOverlayColorOrder(order) {
 export function isValidLatestOverlayStyle(style) {
   return typeof style === "string" && (style === "strip" || style === "border");
 }
-
-export default {
-  isValidTag,
-  isValidColor,
-  isValidVersion,
-  isPositiveInteger,
-  isValidLatestOverlayColorOrder,
-  isValidLatestOverlayStyle,
-};

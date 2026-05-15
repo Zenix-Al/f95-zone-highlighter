@@ -1,4 +1,4 @@
-import stateManager from "../../config.js";
+import { stateManager } from "../../config.js";
 import { closeModal } from "./modal";
 import { resetColor } from "./settingsActions.js";
 

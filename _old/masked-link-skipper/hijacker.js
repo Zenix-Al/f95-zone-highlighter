@@ -1,4 +1,4 @@
-import stateManager, { config } from "../../config.js";
+import { stateManager, config } from "../../config.js";
 import { showToast } from "../../ui/components/toast.js";
 import { routeDownloadUrl, isSupportedDownloadLink } from "../../services/downloadRouter.js";
 import { resolveMaskedLink } from "./resolver.js";

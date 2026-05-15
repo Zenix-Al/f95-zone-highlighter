@@ -1,7 +1,7 @@
 import { createEl } from "../../../core/dom.js";
 import { showToast } from "../../components/toast";
 import { getRuntimeErrors, getAllFeatureStatuses } from "../../../core/featureHealth.js";
-import stateManager from "../../../config.js";
+import { stateManager } from "../../../config.js";
 import { listKnownAddons } from "../../../services/addonsService.js";
 
 async function copyTextToClipboard(text) {

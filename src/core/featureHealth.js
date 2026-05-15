@@ -65,14 +65,3 @@ export function getAllFeatureStatuses() {
 export function clearFeatureStatus(id) {
   if (id) statuses.delete(id);
 }
-
-export default {
-  setFeatureStatus,
-  pushFeatureError,
-  getFeatureErrors,
-  pushRuntimeError,
-  getRuntimeErrors,
-  getFeatureStatus,
-  getAllFeatureStatuses,
-  clearFeatureStatus,
-};

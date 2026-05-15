@@ -3,6 +3,7 @@ import {
   debouncedProcessThreadTags,
 } from "../../core/tasksRegistry";
 import { updateColorStyle } from "../helpers/updateColorStyle";
+import { contributeToSection } from "../settingsRuntime/sectionsRegistry";
 import { buildSettingsMap, createColorSetting } from "./metaFactory";
 
 const executeBothQueuedTasks = () => {
@@ -50,3 +51,5 @@ export const colorSettingsDisabledMeta = {
     text: "Color settings are disabled because Overlay is turned off in Overall Settings.",
   },
 };
+
+contributeToSection("color", colorSettingsMeta);

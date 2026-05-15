@@ -1,5 +1,5 @@
 import { config } from "../../config.js";
-import TIMINGS from "../../config/timings.js";
+import { TIMINGS } from "../../config/timings.js";
 import { SELECTORS } from "../../config/selectors.js";
 import { debugLog } from "../../core/logger.js";
 import { showToast } from "../../ui/components/toast.js";

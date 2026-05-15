@@ -98,8 +98,3 @@ export function playToggled() {
     [0.06, "blip", "Bb5", 0.11, 0.65],
   ]);
 }
-export default {
-  midiPlay,
-  playModalOpen,
-  playModalClose,
-};

@@ -2,6 +2,7 @@ import {
   clearProcessingDownloadTrigger,
   setProcessingDownloadTrigger,
 } from "./processingDownloadTrigger.js";
+import { TIMINGS } from "./constants.js";
 
 export function createDirectDownloadFlowController({
   addonId,
@@ -15,6 +16,7 @@ export function createDirectDownloadFlowController({
   ownerTabId,
   originTabQueryKey,
   getDownloadHost,
+  getDownloadPageCloseDelayMs,
 }) {
   function isSupportedHost(hostname) {
     const host = String(hostname || "").toLowerCase();
@@ -99,7 +101,7 @@ export function createDirectDownloadFlowController({
     });
   }
 
-  function reportAddonHealthy({ isEnabled, statusMessage }) {
+  function reportAddonHealthy({ isEnabled, statusMessage, downloadPageCloseDelayMs }) {
     void clearProcessingDownloadTrigger(GMApi);
     bridge.dispatchCoreCommand("update-status", {
       addonId,
@@ -108,7 +110,10 @@ export function createDirectDownloadFlowController({
     });
 
     if (getDownloadHost()) {
-      setTimeout(() => window.close(), 1200);
+      const delay =
+        downloadPageCloseDelayMs ??
+        (typeof getDownloadPageCloseDelayMs === "function" ? getDownloadPageCloseDelayMs() : 3500);
+      setTimeout(() => window.close(), delay);
     }
   }
 

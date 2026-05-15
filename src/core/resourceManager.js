@@ -47,5 +47,4 @@ class ResourceManager {
   }
 }
 
-const resourceManager = new ResourceManager();
-export default resourceManager;
+export const resourceManager = new ResourceManager();
