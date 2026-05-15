@@ -12,10 +12,17 @@ export function createInitialState() {
     page: 1,
     rows: [],
     selectedIds: new Set(),
-    activeId: "",
-    detailOpen: false,
     isLoading: false,
     errorMessage: "",
+    tagConfig: null,
+
+    liveThreadId: "",
+    openStatusMenuId: "",
+    openRowMenuId: "",
+
+    editingNoteId: "",
+    noteDraftById: new Map(),
+    noteSaveTimers: new Map(),
   };
 }
 

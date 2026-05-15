@@ -185,6 +185,8 @@ function bindDockMountEvents() {
       openManager();
     } else if (action === "toggle-thread") {
       void toggleCurrentThreadFromDock();
+    } else if (action === "update-thread") {
+      void updateCurrentThreadFromDock();
     }
   };
 
@@ -265,6 +267,45 @@ async function toggleCurrentThreadFromDock() {
       saveResult?.ok ? "success" : "error",
     );
   }
+
+  await mountQuickAddIfApplicable();
+}
+
+async function updateCurrentThreadFromDock() {
+  const snapshot = currentSnapshot || getThreadSnapshot();
+  if (!snapshot?.threadId) {
+    showToast("Open a thread page to update it from the library.", "error");
+    return;
+  }
+
+  const isSavedNow = await library.isSaved(snapshot.threadId);
+  if (!isSavedNow) {
+    showToast("Save this thread first before updating.", "error");
+    return;
+  }
+
+  const result = await library.patchEntry(snapshot.threadId, {
+    url: String(snapshot.url || "").trim(),
+    title: String(snapshot.title || "").trim(),
+    canonicalTitle: String(snapshot.canonicalTitle || snapshot.title || "").trim(),
+    titleNormalized: String(snapshot.titleNormalized || snapshot.title || "")
+      .trim()
+      .toLowerCase(),
+    prefix: String(snapshot.prefix || "").trim(),
+    gameVersion: String(snapshot.gameVersion || "").trim(),
+    prefixes: Array.isArray(snapshot.prefixes) ? snapshot.prefixes : [],
+    developer: String(snapshot.developer || "").trim(),
+    threadRating: Number.isFinite(Number(snapshot.threadRating))
+      ? Number(snapshot.threadRating)
+      : null,
+    tags: Array.isArray(snapshot.tags) ? snapshot.tags : [],
+    sourcePage: "thread",
+  });
+
+  showToast(
+    result?.ok ? "Updated from this thread." : `Failed to update: ${result?.reason || "unknown"}`,
+    result?.ok ? "success" : "error",
+  );
 
   await mountQuickAddIfApplicable();
 }

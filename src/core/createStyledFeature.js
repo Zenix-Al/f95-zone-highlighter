@@ -13,7 +13,7 @@ function resolveStyleId(name, explicitId) {
   return `feature-${slug || "unnamed"}`;
 }
 
-export const createStyledFeature = (
+export function createStyledFeature(
   name,
   {
     configPath,
@@ -26,7 +26,7 @@ export const createStyledFeature = (
     enable,
     disable,
   },
-) => {
+) {
   const resolvedStyleId = resolveStyleId(name, styleId);
   return createFeature(name, {
     configPath,
@@ -46,4 +46,4 @@ export const createStyledFeature = (
       return result;
     },
   });
-};
+}

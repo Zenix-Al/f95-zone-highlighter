@@ -8,6 +8,7 @@ import { initUiPhaseIfApplicable } from "./ui";
 import { loadFeatures } from "./loader";
 import { addListener } from "./core/listenerRegistry.js";
 import { teardownAll } from "./core/teardown.js";
+import { initGlobalErrorListeners } from "./core/featureFactory.js";
 
 function registerGlobalTeardownHooks() {
   addListener("global-teardown-pagehide", window, "pagehide", () => teardownAll("pagehide"));
@@ -21,6 +22,10 @@ async function bootstrap() {
     {
       name: "registerGlobalTeardownHooks",
       run: () => registerGlobalTeardownHooks(),
+    },
+    {
+      name: "initGlobalErrorListeners",
+      run: () => initGlobalErrorListeners(),
     },
     {
       name: "loadData",

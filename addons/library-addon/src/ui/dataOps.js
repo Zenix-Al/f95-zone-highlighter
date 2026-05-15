@@ -4,7 +4,7 @@
  */
 
 import { LIBRARY_MANAGER_PAGE_SIZE } from "../constants.js";
-import { parseSearchQuery, matchesSearchTokens, safeText } from "./helpers.js";
+import { parseSearchQuery, matchesSearchTokens, buildTagChipItems } from "./helpers.js";
 import { renderRows, updatePageInfo, updateStatusLine } from "./renderers.js";
 
 export async function reloadRows(root, state, api, library, ROWS_STATUS_ID) {
@@ -44,10 +44,7 @@ export async function reloadRows(root, state, api, library, ROWS_STATUS_ID) {
   // Clean up selections
   const availableIds = new Set(state.rows.map((entry) => entry.threadId));
   state.selectedIds = new Set([...state.selectedIds].filter((id) => availableIds.has(id)));
-
-  if (state.activeId && !availableIds.has(state.activeId)) {
-    state.activeId = "";
-  }
+  if (state.editingNoteId && !availableIds.has(state.editingNoteId)) state.editingNoteId = "";
 
   // Handle pagination
   const maxPage = Math.max(1, Math.ceil(state.rows.length / LIBRARY_MANAGER_PAGE_SIZE));
@@ -59,7 +56,10 @@ export async function reloadRows(root, state, api, library, ROWS_STATUS_ID) {
   const from = (state.page - 1) * LIBRARY_MANAGER_PAGE_SIZE;
   const pageRows = state.rows.slice(from, from + LIBRARY_MANAGER_PAGE_SIZE);
 
-  renderRows(tbody, pageRows, state.selectedIds, state.activeId);
+  renderRows(tbody, pageRows, state.selectedIds, state, {
+    tagConfig: state.tagConfig,
+    tagItemsForEntry: (entry) => buildTagChipItems(entry?.tags, state.tagConfig),
+  });
   updatePageInfo(root, state);
   updateStatusLine(root, state, ROWS_STATUS_ID);
 }

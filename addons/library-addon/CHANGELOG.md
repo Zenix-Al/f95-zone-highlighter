@@ -1,5 +1,27 @@
 # Changelog
 
+## v0.3.36 - Inline Editing Refactor
+
+- Removed the Details Editor panel and moved editing directly into the table.
+- Change status in-place from the Status chip dropdown.
+- Edit notes inline with auto-save (debounced) to keep things fast.
+- Added a compact row actions menu (⋮) with Update (when on the same thread) and Remove.
+- Developer chip now supports quick copy.
+
+## v0.3.30 - hotfix
+
+- Fix the get prefix function failed to recognize some prefixes such as Java.
+
+## v0.3.28 - Thread Metadata + Better Table UI
+
+- Fixed thread title parsing so the saved title no longer includes prefix labels (e.g. "RPGM", "Completed").
+- Added Prefixes, Version, and Developer columns, rendered as compact chips for easier scanning.
+- Tags are now rendered as chips and respect your core tag preferences/colors (preferred / excluded / marked).
+- Added a Note column with a short preview + hover to read the full note.
+- Added an Update button in the page dock so you can refresh a saved thread from the thread page without opening the manager.
+
+Note : core v4.18.5 or above required for tag color support
+
 ## v0.3.10 - Toast and UI Improvements
 
 - using createEl to create ui elements for better consistency and future maintainability.

@@ -13,24 +13,58 @@ function getText(selector) {
   return String(node?.textContent || "").trim();
 }
 
-function parseVersionFromTitleNode(titleNode) {
+function getPlainTitleTextFromTitleNode(titleNode) {
   if (!titleNode) return "";
 
   const textParts = [];
   titleNode.childNodes.forEach((node) => {
-    if (node.nodeType === Node.TEXT_NODE && String(node.textContent || "").trim()) {
-      textParts.push(String(node.textContent || "").trim());
+    if (node.nodeType === Node.TEXT_NODE) {
+      const text = String(node.textContent || "").trim();
+      if (text) textParts.push(text);
     }
   });
 
-  let remainingText = textParts.join(" ");
-  const authorMatch = remainingText.match(/\[([^\]]+)\]$/);
-  if (authorMatch) {
-    remainingText = remainingText.substring(0, authorMatch.index).trim();
+  return textParts.join(" ").replace(/\s+/g, " ").trim();
+}
+
+function parseBracketSuffixParts(text, { limit = 3 } = {}) {
+  const parts = [];
+  let remaining = String(text || "").trim();
+
+  while (parts.length < limit) {
+    const match = remaining.match(/\[([^\]]+)\]\s*$/);
+    if (!match?.[1]) break;
+    parts.push(String(match[1]).trim());
+    remaining = remaining.slice(0, match.index).trim();
   }
 
-  const versionMatch = remainingText.match(/\[([^\]]+)\]$/);
-  return versionMatch?.[1] ? String(versionMatch[1]).trim() : "";
+  return { parts, remaining };
+}
+
+function parseTitlePrefixes(titleNode) {
+  if (!titleNode) return [];
+
+  const seen = new Set();
+  const prefixes = [];
+
+  titleNode.querySelectorAll("a.labelLink span").forEach((node) => {
+    const label = String(node?.textContent || "").trim();
+    if (!label) return;
+    const key = label.toLowerCase();
+    if (seen.has(key)) return;
+    seen.add(key);
+
+    const classList = [...(node.classList || [])];
+    const colorClass =
+      classList.find((cls) => cls.startsWith("label--")) ||
+      classList.find((cls) => cls.startsWith("pre-")) ||
+      "";
+    const color = colorClass ? colorClass.replace(/^(label--|pre-)/, "") : "";
+
+    prefixes.push({ label, color });
+  });
+
+  return prefixes;
 }
 
 function getTags() {
@@ -48,6 +82,14 @@ function getTags() {
   return [...values];
 }
 
+function parseThreadRating() {
+  const node = document.querySelector('select[name="rating"][data-initial-rating]');
+  const raw = String(node?.getAttribute?.("data-initial-rating") || "").trim();
+  if (!raw) return null;
+  const value = Number(raw);
+  return Number.isFinite(value) ? value : null;
+}
+
 export function isThreadPage() {
   return location.hostname.includes("f95zone.to") && location.pathname.startsWith("/threads/");
 }
@@ -59,9 +101,19 @@ export function getThreadSnapshot() {
   if (!threadId) return null;
 
   const titleNode = document.querySelector("h1.p-title-value");
-  const title = getText("h1.p-title-value") || document.title.replace(/\s*\|\s*F95zone.*$/i, "");
-  const prefix = getText("h1.p-title-value a.labelLink") || "";
-  const gameVersion = parseVersionFromTitleNode(titleNode);
+  const titleText =
+    getPlainTitleTextFromTitleNode(titleNode) ||
+    document.title.replace(/\s*\|\s*F95zone.*$/i, "").trim();
+  const prefixes = parseTitlePrefixes(titleNode);
+  const { parts: bracketParts } = parseBracketSuffixParts(titleText, { limit: 2 });
+  const developer = bracketParts[0] || "";
+  const gameVersion = bracketParts[1] || "";
+
+  const title = titleText
+    .replace(/\s*\[(v[\d.]+\|?.*?)\]/gi, "") // remove version brackets
+    .replace(/\s*\[([^\]]+)\]\s*$/gi, "") // remove last bracket (usually dev)
+    .trim();
+  const prefix = prefixes[0]?.label ? String(prefixes[0].label).trim() : "";
 
   return {
     threadId,
@@ -72,13 +124,16 @@ export function getThreadSnapshot() {
       .trim()
       .toLowerCase(),
     prefix,
+    prefixes,
     gameVersion,
+    developer,
+    threadRating: parseThreadRating(),
     tags: getTags(),
     userStatus: "saved",
     note: "",
     userScore: null,
     pinned: false,
-    schemaVersion: 1,
+    schemaVersion: 3,
     sourcePage: "thread",
     createdAt: Date.now(),
     updatedAt: Date.now(),

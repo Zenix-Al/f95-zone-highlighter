@@ -6,6 +6,7 @@ export const ACTION_CAPABILITY_ALTERNATIVES = Object.freeze({
   "storage.get": ["storage"],
   "storage.set": ["storage"],
   "storage.getUsage": ["storage"],
+  "config.getTagPrefs": ["storage"],
   "idb.get": ["idb"],
   "idb.put": ["idb"],
   "idb.delete": ["idb"],
@@ -136,6 +137,8 @@ export async function invokeRegisteredAddonCoreAction({
         maxAddonStorageTotalBytes,
         ensureAddonStateBucket,
       ),
+    "config.getTagPrefs": async () =>
+      actionConfigGetTagPrefs(measurePayloadBytes, maxAddonStorageValueBytes),
     "idb.get": async (payload) =>
       actionIdbGet(addonId, payload, measurePayloadBytes, maxAddonIdbPayloadBytes, idbGetForAddon),
     "idb.put": async (payload) =>
@@ -349,6 +352,34 @@ function actionStorageGetUsage(
       totalLimitBytes: maxAddonStorageTotalBytes,
     },
   };
+}
+
+async function actionConfigGetTagPrefs(measurePayloadBytes, maxPayloadBytes) {
+  try {
+    const [tags, preferredTags, excludedTags, markedTags, color] = await Promise.all([
+      GM.getValue("tags", []),
+      GM.getValue("preferredTags", []),
+      GM.getValue("excludedTags", []),
+      GM.getValue("markedTags", []),
+      GM.getValue("color", {}),
+    ]);
+
+    const value = {
+      tags: Array.isArray(tags) ? tags : [],
+      preferredTags: Array.isArray(preferredTags) ? preferredTags : [],
+      excludedTags: Array.isArray(excludedTags) ? excludedTags : [],
+      markedTags: Array.isArray(markedTags) ? markedTags : [],
+      color: color && typeof color === "object" ? color : {},
+    };
+
+    if (measurePayloadBytes(value) > maxPayloadBytes) {
+      return { ok: false, reason: "payload_too_large" };
+    }
+
+    return { ok: true, value };
+  } catch {
+    return { ok: false, reason: "storage_error" };
+  }
 }
 
 async function actionIdbGet(

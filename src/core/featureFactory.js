@@ -8,7 +8,7 @@ import { getByPath } from "../utils/objectPath.js";
 // health diagnostic can surface runtime failures that happen outside the
 // feature lifecycle (e.g. inside requestAnimationFrame / queueMicrotask).
 let _globalListenerRegistered = false;
-function ensureGlobalListeners() {
+export function initGlobalErrorListeners() {
   if (_globalListenerRegistered) return;
   _globalListenerRegistered = true;
 
@@ -23,7 +23,6 @@ function ensureGlobalListeners() {
     pushRuntimeError(`Unhandled: ${msg}`);
   });
 }
-ensureGlobalListeners();
 
 const OP_TIMEOUT = 15000;
 
@@ -48,10 +47,10 @@ function reportLifecycleFailure(name, action, err) {
  * ensure all features follow a consistent lifecycle (enable, disable, toggle)
  * and have a uniform way of checking if they are enabled via configuration.
  */
-export const createFeature = (
+export function createFeature(
   name,
   { enable, disable, configPath, isEnabled: customIsEnabled, isApplicable, settingsUi = null },
-) => {
+) {
   let opInProgress = false;
   let pendingDesired = null;
 
@@ -198,4 +197,4 @@ export const createFeature = (
   }
 
   return feature;
-};
+}

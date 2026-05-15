@@ -4,6 +4,10 @@ import {
   updateRegisteredAddons,
 } from "../components/addons/settingsController.js";
 
+// Ensure base (non-feature) settings are registered.
+import "./globalSettings.js";
+import "./colorSettings.js";
+
 import { ensureSettingsUiPrefsLoaded } from "../settingsRuntime/prefs.js";
 import {
   bindModalUiOnce,

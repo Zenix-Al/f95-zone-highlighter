@@ -65,7 +65,7 @@
       "id": "library-addon",
       "name": "F95UE Library Add-on",
       "description": "Quick-add threads to a personal library and manage entries with a dedicated add-on UI.",
-      "version": "0.3.15",
+      "version": "0.3.36",
       "author": "X Death",
       "entry": "addons/library-addon/src/main.js",
       "outfile": "addons/library-addon/dist/library-addon.user.js",

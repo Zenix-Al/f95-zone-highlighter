@@ -1,5 +1,9 @@
 # Changelog
 
+### **[4.18.5 - New api to get tags data for addon services]**
+
+- Added a new core action `ui.getTagsData` to get the current tags data, including preferred/excluded/marked tags and their colors, so add-on services can use the same data as core to render their UI or do other things.
+
 ### **[4.18.0 - Rendering system and code optimization]**
 
 The size of the script now is reduced by 20%.

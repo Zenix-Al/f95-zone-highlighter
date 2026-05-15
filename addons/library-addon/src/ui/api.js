@@ -5,6 +5,10 @@
 
 export function createApiLayer(bridge, library) {
   return {
+    invokeCoreAction: async (action, payload) => {
+      return await bridge.invokeCoreAction(action, payload);
+    },
+
     registerStyle: async (styleId, cssText) => {
       const result = await bridge.invokeCoreAction("ui.style.register", {
         styleId,

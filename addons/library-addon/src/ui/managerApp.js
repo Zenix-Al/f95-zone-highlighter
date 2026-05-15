@@ -3,7 +3,6 @@
  * Orchestrates all modules to create a functional library manager
  */
 
-import { LIBRARY_MANAGER_PAGE_SIZE } from "../constants.js";
 import { createDialogMarkup, ensureStyle, getStyleText } from "./renderer.js";
 import { showToast } from "./showToast.js";
 
@@ -13,7 +12,7 @@ import { createApiLayer } from "./api.js";
 import { createHandlers } from "./handlers.js";
 import { bindEvents } from "./eventBinder.js";
 import { reloadRows } from "./dataOps.js";
-import { renderDetailPanel, syncLayoutState } from "./renderers.js";
+import { buildTagConfig } from "./helpers.js";
 
 const ROWS_STATUS_ID = "f95ue-library-rows-status";
 
@@ -33,12 +32,6 @@ export function createLibraryManagerApp({
 
   // Create API layer
   const api = createApiLayer(bridge, library);
-
-  // Helpers to get entries and create confirmation dialogs
-  function getActiveEntry() {
-    if (!state.activeId) return null;
-    return state.rows.find((entry) => entry.threadId === state.activeId) || null;
-  }
 
   function getLiveThreadSnapshot() {
     if (typeof getCurrentThreadSnapshot !== "function") return null;
@@ -66,12 +59,6 @@ export function createLibraryManagerApp({
     return appContext.dialogRoot && document.contains(appContext.dialogRoot)
       ? appContext.dialogRoot
       : null;
-  }
-
-  // Helper to render detail panel and update layout
-  function renderDetailPanelAndLayout(root) {
-    syncLayoutState(root, state);
-    renderDetailPanel(root, state, getActiveEntry, getLiveThreadSnapshot);
   }
 
   // Register/unregister styles
@@ -106,19 +93,16 @@ export function createLibraryManagerApp({
 
   // Create handlers with dependencies
   const deps = {
-    reloadRowsFn: (root) => reloadRows(root, state, api, library, ROWS_STATUS_ID),
+    reloadRowsFn: (root) => {
+      state.liveThreadId = String(getLiveThreadSnapshot()?.threadId || "").trim();
+      return reloadRows(root, state, api, library, ROWS_STATUS_ID);
+    },
     onMutatedFn: onMutated,
-    getActiveEntryFn: getActiveEntry,
     getLiveThreadSnapshotFn: getLiveThreadSnapshot,
     closeDialogFn: close,
     library,
     getRootFn: () => appContext.dialogRoot,
     askConfirmFn: askConfirm,
-    renderDetailPanelFn: () => {
-      if (appContext.dialogRoot) {
-        renderDetailPanelAndLayout(appContext.dialogRoot);
-      }
-    },
   };
 
   const handlers = createHandlers(state, api, deps);
@@ -143,14 +127,19 @@ export function createLibraryManagerApp({
 
     if (!appContext.dialogRoot) return;
 
+    // Load tag preference config from core (shared with main script).
+    const tagPrefsResult = await api.invokeCoreAction("config.getTagPrefs", {});
+    const tagPrefs = tagPrefsResult?.ok ? tagPrefsResult.value : null;
+    state.tagConfig = buildTagConfig(tagPrefs || {});
+
     // Update deps with actual root
     deps.root = appContext.dialogRoot;
 
     // Setup event listeners
     bindEvents(appContext.dialogRoot, state, handlers, deps);
-    syncLayoutState(appContext.dialogRoot, state);
 
     // Load initial data
+    state.liveThreadId = String(getLiveThreadSnapshot()?.threadId || "").trim();
     await reloadRows(appContext.dialogRoot, state, api, library, ROWS_STATUS_ID);
     appContext.dialogRoot.querySelector(".f95ue-library-manager-window")?.focus();
   }
