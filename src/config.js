@@ -27,6 +27,8 @@ export const defaultOverlaySettings = {
   preferred: true,
   excluded: true,
   overlayText: true,
+  ratingHighlight: true,
+  engagementHighlight: true,
 };
 
 export const defaultThreadSetting = {
@@ -57,6 +59,8 @@ export const defaultLatestSettings = {
     "invalidVersion",
   ],
   latestOverlayStyle: "strip",
+  ratingHighlightThreshold: 3,
+  engagementRatioThreshold: 50,
 };
 
 export const defaultGlobalSettings = {

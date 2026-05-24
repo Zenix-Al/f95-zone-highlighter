@@ -4,6 +4,11 @@ import { SELECTORS } from "../../config/selectors.js";
 import { TIMINGS } from "../../config/timings.js";
 import { buildOrderedOverlayMatches } from "./overlayOrder.js";
 import { cache, refreshCaches } from "./overlayCache.js";
+import {
+  getTileHighlightClasses,
+  applyHighlightClasses,
+  removeHighlightClasses,
+} from "./ratingEngagementHighlight.js";
 
 // ---------------------------------------------------------------------------
 // Generation counter — incremented on enable/disable to cancel stale work.
@@ -134,6 +139,9 @@ export function resetTile(tile) {
   tile.classList.remove("custom-overlay-border");
   tile.removeAttribute("style");
 
+  // Remove rating and engagement highlight classes
+  removeHighlightClasses(tile);
+
   removeOverlayLabel(tile);
   tile.dataset.modified = "";
   debugLog("Tile Reset", "Reset a tile to its original state.");
@@ -167,6 +175,10 @@ export function clearAllOverlayStyles() {
       // Remove overlay label and modified flag
       const overlay = tile.querySelector(".custom-overlay-reason");
       if (overlay) overlay.remove();
+
+      // Remove rating and engagement highlight classes
+      removeHighlightClasses(tile);
+
       tile.dataset.modified = "";
     } catch (err) {
       debugLog(
@@ -326,7 +338,14 @@ function buildTilePatch(tile, reset, generation) {
   labels.push(...orderedMatches.labels);
   colors.push(...orderedMatches.colors);
 
-  if (colors.length === 0) {
+  // Get rating and engagement highlight classes (only if enabled in config)
+  let highlightClasses = { ratingClass: null, engagementClass: null };
+  if (config.overlaySettings.ratingHighlight || config.overlaySettings.engagementHighlight) {
+    highlightClasses = getTileHighlightClasses(tile);
+    debugLog("Latest overlay tile patch", "Determined highlight classes:", { highlightClasses });
+  }
+
+  if (colors.length === 0 && !highlightClasses.ratingClass && !highlightClasses.engagementClass) {
     if (wasModified) return { type: "reset", tile };
     return null;
   }
@@ -336,6 +355,7 @@ function buildTilePatch(tile, reset, generation) {
     tile,
     gradient: getGradientForColors(colors, "45deg"),
     label: labels[0] || "",
+    highlightClasses,
   };
 }
 
@@ -368,6 +388,11 @@ function applyTilePatch(patch, generation) {
     addOverlayLabel(patch.tile, patch.label);
   } else {
     removeOverlayLabel(patch.tile);
+  }
+
+  // Apply rating and engagement highlight classes
+  if (patch.highlightClasses) {
+    applyHighlightClasses(patch.tile, patch.highlightClasses);
   }
 
   patch.tile.dataset.modified = "true";

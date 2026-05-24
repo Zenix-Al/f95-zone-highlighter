@@ -133,42 +133,58 @@ export async function processGofileDownload({ showToast, notifyMainFailure, repo
       check();
     });
 
-  await waitForContentReady();
+  try {
+    console.info("[Gofile] Waiting for content to load...");
+    await waitForContentReady();
+    console.info("[Gofile] Content loaded successfully");
+  } catch (err) {
+    const errMsg = String(err?.message || "Unknown error");
+    console.error("[Gofile] Content loading failed:", errMsg);
+    await notifyMainFailure("gofile.io", "Failed to load file list: " + errMsg);
+    return;
+  }
+
   await sleep(TIMINGS.GOFILE_POST_READY_WAIT);
 
   const alertEl = document.querySelector(SELECTORS.GOFILE.ALERT);
   if (alertEl && getComputedStyle(alertEl).display !== "none") {
+    console.warn("[Gofile] Host reports file unavailable");
     await notifyMainFailure("gofile.io", "Host reports file unavailable.");
     return;
   }
 
   const itemsList = document.querySelector(SELECTORS.GOFILE.ITEMS_LIST);
   if (!itemsList) {
+    console.error("[Gofile] File list not found");
     await notifyMainFailure("gofile.io", "File list not found.");
     return;
   }
 
   const itemElements = itemsList.querySelectorAll("[data-item-id]");
   if (itemElements.length !== 1) {
+    console.warn("[Gofile] Expected exactly 1 file, found:", itemElements.length);
     await notifyMainFailure("gofile.io", "Automation requires exactly one file.");
     return;
   }
 
   const contentId = itemElements[0].getAttribute("data-item-id");
   if (!contentId) {
+    console.error("[Gofile] Missing content id attribute");
     await notifyMainFailure("gofile.io", "Missing content id.");
     return;
   }
 
+  console.info("[Gofile] Attempting to trigger download for content id:", contentId);
   const bridgeResult = await invokeGofileDownloadContent(contentId);
+
   if (bridgeResult.ok) {
+    console.info("[Gofile] Download triggered successfully");
     showToast("Gofile download triggered.");
     reportAddonHealthy();
     return;
   }
 
-  await notifyMainFailure(
-    "gofile.io",
-    `downloadContent bridge unavailable (${bridgeResult.reason || "unknown"}).`,
-  );
+  const failureReason = `downloadContent bridge unavailable (${bridgeResult.reason || "unknown"})`;
+  console.error("[Gofile] Download trigger failed:", failureReason);
+  await notifyMainFailure("gofile.io", failureReason);
 }

@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.3.14 - Fix download detector
+
+- Download detector now wont close tab when its not triggered by this addon.
+
+## v0.3.12 - Fix delay config and improve download handling
+
+- add download detector to close the tab after download is triggered.
+- fix the delay config for auto close, now it should work as expected.
+- fix datanodes steps to trigger download more reliably.
+
 ## v0.3.7 - confiureablee auto close
 
 - remove unecessary toast call when this addon failing.

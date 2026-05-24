@@ -1,5 +1,14 @@
 # Changelog
 
+### **[4.18.26 - Latest overlay rating & engagement highlight]**
+
+- Added rating + engagement ratio highlighting on Latest page tiles. (Its configureable)
+- Fixed Latest overlay settings not instantly taking effect in some cases (circular import causing reprocess effect not to run).
+
+### **[4.18.6 - Dock fix]**
+
+- Fix dock CSS, now it did not block any element behind it.
+
 ### **[4.18.5 - New api to get tags data for addon services]**
 
 - Added a new core action `ui.getTagsData` to get the current tags data, including preferred/excluded/marked tags and their colors, so add-on services can use the same data as core to render their UI or do other things.

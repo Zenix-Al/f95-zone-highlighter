@@ -1,8 +1,15 @@
 import {
   clearProcessingDownloadTrigger,
+  readProcessingDownloadTrigger,
   setProcessingDownloadTrigger,
 } from "./processingDownloadTrigger.js";
-import { TIMINGS } from "./constants.js";
+import {
+  DIRECT_DOWNLOAD_ROUTE_REQUEST_ID_KEY,
+  DIRECT_DOWNLOAD_ROUTE_TS_KEY,
+  TIMINGS,
+} from "./constants.js";
+import { storeDownloadPageCloseDelay } from "./gmStorageHelper.js";
+import { smartCloseWhenReady } from "./downloadDetector.js";
 
 export function createDirectDownloadFlowController({
   addonId,
@@ -42,11 +49,20 @@ export function createDirectDownloadFlowController({
 
     const supported = isSupportedHost(host);
     let safeUrl = supported ? withAutomationMarker(normalized) : normalized;
+    let requestId = "";
     if (supported && safeUrl) {
       try {
         const parsed = new URL(safeUrl);
         if (!parsed.searchParams.get(originTabQueryKey)) {
           parsed.searchParams.set(originTabQueryKey, ownerTabId);
+        }
+        if (!parsed.searchParams.get(DIRECT_DOWNLOAD_ROUTE_TS_KEY)) {
+          parsed.searchParams.set(DIRECT_DOWNLOAD_ROUTE_TS_KEY, String(Date.now()));
+        }
+        const existingRequestId = String(parsed.searchParams.get(DIRECT_DOWNLOAD_ROUTE_REQUEST_ID_KEY) || "").trim();
+        requestId = existingRequestId || `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        if (!existingRequestId) {
+          parsed.searchParams.set(DIRECT_DOWNLOAD_ROUTE_REQUEST_ID_KEY, requestId);
         }
         safeUrl = parsed.href;
       } catch {
@@ -56,10 +72,17 @@ export function createDirectDownloadFlowController({
     if (!safeUrl) return;
 
     if (supported) {
+      // Get the configured delay and store it in GM storage for the download page to access
+      const delay =
+        typeof getDownloadPageCloseDelayMs === "function" ? getDownloadPageCloseDelayMs() : 3500;
+      await storeDownloadPageCloseDelay(GMApi, delay);
+      console.info("[DirectDownload] Stored close delay in GM storage: " + delay + "ms");
+
       await setProcessingDownloadTrigger(GMApi, {
         host,
         sourceUrl: safeUrl,
         ownerTabId,
+        requestId,
       });
     }
 
@@ -88,11 +111,12 @@ export function createDirectDownloadFlowController({
     window.location.assign(safeUrl);
   }
 
-  async function notifyMainFailure(hostLabel, message) {
+  async function notifyMainFailure(hostLabel, message, errorCode = "") {
     const text = `Direct download (${hostLabel}) failed: ${String(message || "unknown error")}`;
     showToast(text, 4200);
+    const trigger = await readProcessingDownloadTrigger(GMApi);
     await clearProcessingDownloadTrigger(GMApi);
-    await publishDirectDownloadAttention(hostLabel, text);
+    await publishDirectDownloadAttention(hostLabel, message, errorCode, trigger.requestId);
 
     bridge.dispatchCoreCommand("update-status", {
       addonId,
@@ -113,7 +137,12 @@ export function createDirectDownloadFlowController({
       const delay =
         downloadPageCloseDelayMs ??
         (typeof getDownloadPageCloseDelayMs === "function" ? getDownloadPageCloseDelayMs() : 3500);
-      setTimeout(() => window.close(), delay);
+
+      console.info("[DirectDownload] Using smart close with delay: " + delay + "ms");
+
+      // Use smart close with download detection
+      // This will close immediately if download is detected, or after delay if not
+      void smartCloseWhenReady(delay, showToast, originTabQueryKey);
     }
   }
 

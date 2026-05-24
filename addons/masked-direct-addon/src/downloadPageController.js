@@ -1,4 +1,5 @@
 import { AUTOMATION_MARKER_KEY } from "./constants.js";
+import { DIRECT_DOWNLOAD_ROUTE_TS_KEY, DIRECT_DOWNLOAD_ROUTE_TTL_MS } from "./constants.js";
 import {
   isProcessingDownloadTriggerActive,
   readProcessingDownloadTrigger,
@@ -27,13 +28,16 @@ export function createDownloadPageController({
     if (!host || !getIsEnabled() || getIsBlockedByCore()) return false;
     let marker = "";
     let originTabId = "";
+    let routeTs = 0;
     try {
       const parsed = new URL(location.href);
       marker = String(parsed.searchParams.get(AUTOMATION_MARKER_KEY) || "").trim();
       originTabId = String(parsed.searchParams.get(originTabQueryKey) || "").trim();
+      routeTs = Number(parsed.searchParams.get(DIRECT_DOWNLOAD_ROUTE_TS_KEY) || 0);
     } catch {
       marker = "";
       originTabId = "";
+      routeTs = 0;
     }
 
     const trigger = await readProcessingDownloadTrigger(GMApi);
@@ -43,8 +47,13 @@ export function createDownloadPageController({
       if (hostMatches && tabMatches) return true;
     }
 
-    const hasRouteMarkerFallback = marker === "1" && Boolean(originTabId);
-    if (hasRouteMarkerFallback) return true;
+    const hasFreshRouteMarkerFallback =
+      marker === "1" &&
+      Boolean(originTabId) &&
+      Number.isFinite(routeTs) &&
+      routeTs > 0 &&
+      Date.now() - routeTs <= DIRECT_DOWNLOAD_ROUTE_TTL_MS;
+    if (hasFreshRouteMarkerFallback) return true;
 
     return false;
   }

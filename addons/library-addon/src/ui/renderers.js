@@ -222,7 +222,8 @@ export function updatePageInfo(root, state) {
   const toggleAll = root.querySelector('[data-action="toggle-all"]');
 
   if (pageInfo) {
-    const maxPage = Math.max(1, Math.ceil(state.rows.length / LIBRARY_MANAGER_PAGE_SIZE));
+    const pageSize = Math.max(1, Number(state.pageSize || LIBRARY_MANAGER_PAGE_SIZE));
+    const maxPage = Math.max(1, Math.ceil(state.rows.length / pageSize));
     pageInfo.textContent = `Page ${state.page} / ${maxPage} (${state.rows.length} rows)`;
   }
 
@@ -231,8 +232,9 @@ export function updatePageInfo(root, state) {
   }
 
   if (toggleAll) {
-    const from = (state.page - 1) * LIBRARY_MANAGER_PAGE_SIZE;
-    const pageRows = state.rows.slice(from, from + LIBRARY_MANAGER_PAGE_SIZE);
+    const pageSize = Math.max(1, Number(state.pageSize || LIBRARY_MANAGER_PAGE_SIZE));
+    const from = (state.page - 1) * pageSize;
+    const pageRows = state.rows.slice(from, from + pageSize);
     const pageIds = pageRows.map((row) => row.threadId);
     const allSelected = pageIds.length > 0 && pageIds.every((id) => state.selectedIds.has(id));
     toggleAll.checked = allSelected;

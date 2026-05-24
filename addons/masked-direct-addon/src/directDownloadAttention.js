@@ -1,6 +1,8 @@
-const DIRECT_DOWNLOAD_ATTENTION_KEY = "f95ue.addon.directDownloadAttentionEvent";
+const DIRECT_DOWNLOAD_ATTENTION_KEY = "directDownloadAttentionEvent";
 const DIRECT_DOWNLOAD_TAB_ID_KEY = "f95ue.addon.directDownload.tabId";
 const ORIGIN_TAB_QUERY_KEY = "f95ue_tab";
+const DIRECT_DOWNLOAD_ATTENTION_TTL_MS = 2 * 60 * 1000;
+const DIRECT_DOWNLOAD_ROUTE_REQUEST_ID_KEY = "f95ue_dd_req";
 
 function getLocalAttentionTabId() {
   try {
@@ -35,6 +37,8 @@ export function createDirectDownloadAttentionController({ addTeardown, showToast
 
     const ts = Number(payload.ts || 0);
     if (Number.isFinite(ts) && ts > 0) {
+      const ageMs = Date.now() - ts;
+      if (Number.isFinite(ageMs) && ageMs > DIRECT_DOWNLOAD_ATTENTION_TTL_MS) return;
       if (ts <= lastAttentionTs) return;
       lastAttentionTs = ts;
     }
@@ -48,20 +52,38 @@ export function createDirectDownloadAttentionController({ addTeardown, showToast
     showToast(`Direct Download: ${message}`, 6000);
   }
 
-  async function publishDirectDownloadAttention(host, message) {
+  async function publishDirectDownloadAttention(host, message, errorCode = "", requestIdOverride = "") {
     if (!GMApi || typeof GMApi.setValue !== "function") return;
+    let requestId = String(requestIdOverride || "").trim();
+    try {
+      if (!requestId) {
+        requestId = String(
+          new URL(location.href).searchParams.get(DIRECT_DOWNLOAD_ROUTE_REQUEST_ID_KEY) || "",
+        ).trim();
+      }
+    } catch {
+      // keep requestId as-is
+    }
     const payload = {
       ts: Date.now(),
       id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       host: String(host || "unknown"),
+      code: String(errorCode || "unknown_error"),
       message: String(message || "Direct download needs manual action."),
       href: location.href,
-      targetTabId: getOriginTabIdFromLocation() || null,
+      targetTabId: getOriginTabIdFromLocation() || "",
+      requestId: requestId || `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     };
     try {
       await GMApi.setValue(DIRECT_DOWNLOAD_ATTENTION_KEY, payload);
-    } catch {
-      // best effort
+      console.info(
+        "[Attention] Published event:",
+        payload.code,
+        "to target tab:",
+        payload.targetTabId,
+      );
+    } catch (err) {
+      console.warn("[Attention] Failed to publish event:", err);
     }
   }
 

@@ -69,13 +69,13 @@ export async function clearProcessingDownloadTrigger(GMApi) {
 
 export async function setProcessingDownloadTrigger(
   GMApi,
-  { host = "", sourceUrl = "", ownerTabId = "" } = {},
+  { host = "", sourceUrl = "", ownerTabId = "", requestId = "" } = {},
 ) {
   if (!GMApi || typeof GMApi.setValue !== "function") return;
   const now = Date.now();
   const payload = {
     active: true,
-    requestId: `${now}-${Math.random().toString(36).slice(2, 8)}`,
+    requestId: String(requestId || "").trim() || `${now}-${Math.random().toString(36).slice(2, 8)}`,
     ownerTabId: String(ownerTabId || "").trim(),
     host: String(host || "")
       .trim()

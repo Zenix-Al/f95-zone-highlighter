@@ -10,6 +10,7 @@ export function createInitialState() {
     sortBy: "updatedAt",
     sortDir: "desc",
     page: 1,
+    pageSize: 50,
     rows: [],
     selectedIds: new Set(),
     isLoading: false,

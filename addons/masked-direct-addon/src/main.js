@@ -13,6 +13,7 @@ import { createThreadPageController } from "./threadPageController.js";
 import { createDirectDownloadAttentionController } from "./directDownloadAttention.js";
 import { createDownloadPageController } from "./downloadPageController.js";
 import { createDirectDownloadFlowController } from "./directDownloadFlowController.js";
+import { getDownloadPageCloseDelay } from "./gmStorageHelper.js";
 
 const runtime = {
   addonId: typeof __ADDON_ID__ === "string" ? __ADDON_ID__ : "masked-direct-addon",
@@ -183,6 +184,7 @@ downloadPageController = createDownloadPageController({
         showToast,
         notifyMainFailure: directDownloadFlowController.notifyMainFailure,
         reportAddonHealthy,
+        getDownloadCloseDelay: getDownloadCloseDelayForHandler,
       }),
     "pixeldrain.com": () =>
       processPixeldrainDownload({
@@ -190,12 +192,14 @@ downloadPageController = createDownloadPageController({
         showToast,
         notifyMainFailure: directDownloadFlowController.notifyMainFailure,
         reportAddonHealthy,
+        getDownloadCloseDelay: getDownloadCloseDelayForHandler,
       }),
     "gofile.io": () =>
       processGofileDownload({
         showToast,
         notifyMainFailure: directDownloadFlowController.notifyMainFailure,
         reportAddonHealthy,
+        getDownloadCloseDelay: getDownloadCloseDelayForHandler,
       }),
     "datanodes.to": () =>
       processDatanodesDownload({
@@ -203,12 +207,14 @@ downloadPageController = createDownloadPageController({
         notifyMainFailure: directDownloadFlowController.notifyMainFailure,
         reportAddonHealthy,
         stageStore: datanodesStageStore,
+        getDownloadCloseDelay: getDownloadCloseDelayForHandler,
       }),
     "mediafire.com": () =>
       processMediafireDownload({
         showToast,
         notifyMainFailure: directDownloadFlowController.notifyMainFailure,
         reportAddonHealthy,
+        getDownloadCloseDelay: getDownloadCloseDelayForHandler,
       }),
   },
   originTabQueryKey: directDownloadAttentionController.originTabQueryKey,
@@ -274,6 +280,25 @@ function reportAddonHealthy() {
     downloadPageCloseDelayMs:
       settingsCache?.downloadPageCloseDelayMs ?? ADDON_SETTINGS_DEFAULT.downloadPageCloseDelayMs,
   });
+}
+
+/**
+ * Helper for handlers to get the download page close delay.
+ * On download host pages (different domains), use GM storage instead of settingsCache.
+ * @returns {Promise<number>} The close delay in milliseconds
+ */
+async function getDownloadCloseDelayForHandler() {
+  // Try to get from settings cache first (origin tab)
+  if (settingsCache?.downloadPageCloseDelayMs) {
+    return settingsCache.downloadPageCloseDelayMs;
+  }
+
+  // Fallback: Try to get from GM storage (for download host pages on different domains)
+  const gmDelay = await getDownloadPageCloseDelay(
+    GM,
+    ADDON_SETTINGS_DEFAULT.downloadPageCloseDelayMs,
+  );
+  return gmDelay;
 }
 
 async function readThreadFlags(force = false) {

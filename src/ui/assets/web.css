@@ -28,3 +28,39 @@ div#latest-page_items-wrap_inner
 div#latest-page_items-wrap_inner div.resource-tile a.resource-tile_link {
   color: var(--tile-header-color);
 }
+
+/* ============================================================================
+   Rating & Engagement Ratio Highlights (Text Color Only)
+   ============================================================================ */
+
+/* Rating Highlight - Applied to .resource-tile_info-meta_rating element */
+.resource-tile_info-meta_rating.engagement-rating-green {
+  color: #4caf50;
+  font-weight: 700;
+}
+
+.resource-tile_info-meta_rating.engagement-rating-yellow {
+  color: #ffc107;
+  font-weight: 700;
+}
+
+.resource-tile_info-meta_rating.engagement-rating-red {
+  color: #f44336;
+  font-weight: 700;
+}
+
+/* Engagement Ratio Highlight - Applied to .resource-tile_info-meta_likes element */
+.resource-tile_info-meta_likes.engagement-ratio-green {
+  color: #4caf50;
+  font-weight: 700;
+}
+
+.resource-tile_info-meta_likes.engagement-ratio-yellow {
+  color: #ff9800;
+  font-weight: 700;
+}
+
+.resource-tile_info-meta_likes.engagement-ratio-red {
+  color: #f44336;
+  font-weight: 700;
+}
