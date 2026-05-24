@@ -167,6 +167,17 @@ export function bindEvents(root, state, handlers, deps) {
     });
   }
 
+  // Page size selection
+  const pageSizeSelect = root.querySelector('[data-field="pageSize"]');
+  if (pageSizeSelect) {
+    pageSizeSelect.addEventListener("change", async () => {
+      const nextSize = Math.max(1, Number(pageSizeSelect.value || 50));
+      state.pageSize = Number.isFinite(nextSize) ? nextSize : state.pageSize || 50;
+      state.page = 1;
+      await reloadRowsFn(root);
+    });
+  }
+
   // Tooltip flip handling (chips + note preview)
   root.addEventListener("pointerenter", (event) => {
     const chipList = event.target?.closest?.(".f95ue-chip-list");

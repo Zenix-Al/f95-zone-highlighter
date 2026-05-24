@@ -47,14 +47,15 @@ export async function reloadRows(root, state, api, library, ROWS_STATUS_ID) {
   if (state.editingNoteId && !availableIds.has(state.editingNoteId)) state.editingNoteId = "";
 
   // Handle pagination
-  const maxPage = Math.max(1, Math.ceil(state.rows.length / LIBRARY_MANAGER_PAGE_SIZE));
+  const pageSize = Math.max(1, Number(state.pageSize || LIBRARY_MANAGER_PAGE_SIZE));
+  const maxPage = Math.max(1, Math.ceil(state.rows.length / pageSize));
   if (state.page > maxPage) {
     state.page = maxPage;
   }
 
   // Render current page
-  const from = (state.page - 1) * LIBRARY_MANAGER_PAGE_SIZE;
-  const pageRows = state.rows.slice(from, from + LIBRARY_MANAGER_PAGE_SIZE);
+  const from = (state.page - 1) * pageSize;
+  const pageRows = state.rows.slice(from, from + pageSize);
 
   renderRows(tbody, pageRows, state.selectedIds, state, {
     tagConfig: state.tagConfig,

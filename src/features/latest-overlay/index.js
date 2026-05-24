@@ -16,6 +16,12 @@ import {
 import { normalizeOverlayColorOrder } from "./overlayOrder.js";
 import featureCss from "./style.css";
 
+function effectReprocessAllTiles() {
+  // Avoid capturing an undefined function reference during module init if there’s
+  // a circular load between `tasksRegistry` and `latest-overlay`.
+  debouncedProcessAllTilesReset();
+}
+
 function runEnableLatestOverlay() {
   enableLatestOverlay();
 }
@@ -32,57 +38,77 @@ export const overlaySettingsMeta = {
     text: "Completed",
     tooltip: "Show overlay for completed threads",
     config: "overlaySettings.completed",
-    custom: debouncedProcessAllTilesReset,
+    custom: effectReprocessAllTiles,
     toast: createEnabledDisabledToast("Completed"),
   }),
   onhold: createToggleSetting({
     text: "On Hold",
     tooltip: "Show overlay for threads on hold",
     config: "overlaySettings.onhold",
-    custom: debouncedProcessAllTilesReset,
+    custom: effectReprocessAllTiles,
     toast: createEnabledDisabledToast("On Hold"),
   }),
   abandoned: createToggleSetting({
     text: "Abandoned",
     tooltip: "Show overlay for abandoned threads",
     config: "overlaySettings.abandoned",
-    custom: debouncedProcessAllTilesReset,
+    custom: effectReprocessAllTiles,
     toast: createEnabledDisabledToast("Abandoned"),
   }),
   highVersion: createToggleSetting({
     text: "High Version tag",
     tooltip: "Show overlay for game threads with higher version than your set minimum",
     config: "overlaySettings.highVersion",
-    custom: debouncedProcessAllTilesReset,
+    custom: effectReprocessAllTiles,
     toast: createEnabledDisabledToast("High Version"),
   }),
   invalidVersion: createToggleSetting({
     text: "Invalid Version tag",
     tooltip: "Show overlay for threads with invalid version format",
     config: "overlaySettings.invalidVersion",
-    custom: debouncedProcessAllTilesReset,
+    custom: effectReprocessAllTiles,
     toast: createEnabledDisabledToast("Invalid Version"),
   }),
   preferred: createToggleSetting({
     text: "Preferred",
     tooltip: "Show overlay for threads you've marked as preferred",
     config: "overlaySettings.preferred",
-    custom: debouncedProcessAllTilesReset,
+    custom: effectReprocessAllTiles,
     toast: createEnabledDisabledToast("Preferred"),
   }),
   excluded: createToggleSetting({
     text: "Excluded",
     tooltip: "Show overlay for threads you've marked as excluded",
     config: "overlaySettings.excluded",
-    custom: debouncedProcessAllTilesReset,
+    custom: effectReprocessAllTiles,
     toast: createEnabledDisabledToast("Excluded"),
   }),
   overlayText: createToggleSetting({
     text: "Text overlay on tiles",
     tooltip: "Display status text directly over the thread thumbnail",
     config: "overlaySettings.overlayText",
-    custom: debouncedProcessAllTilesReset,
+    custom: effectReprocessAllTiles,
     toast: createEnabledDisabledToast("Overlay Text"),
+  }),
+  _header_engagement: {
+    type: "header",
+    text: "Rating & Engagement Highlights",
+  },
+  ratingHighlight: createToggleSetting({
+    text: "Highlight rating",
+    tooltip:
+      "Color-code thread ratings based on threshold (green = above, yellow = medium, red = low)",
+    config: "overlaySettings.ratingHighlight",
+    custom: effectReprocessAllTiles,
+    toast: createEnabledDisabledToast("Rating Highlight"),
+  }),
+  engagementHighlight: createToggleSetting({
+    text: "Highlight engagement ratio",
+    tooltip:
+      "Color-code engagement based on likes-to-views ratio (likes per 1000 views) using the threshold below",
+    config: "overlaySettings.engagementHighlight",
+    custom: effectReprocessAllTiles,
+    toast: createEnabledDisabledToast("Engagement Highlight"),
   }),
 };
 const OVERLAY_KEY_LABELS = {
@@ -111,7 +137,7 @@ async function openOverlayColorOrderEditor() {
 
   config.latestSettings.latestOverlayColorOrder = result;
   await saveConfigKeys({ latestSettings: config.latestSettings });
-  debouncedProcessAllTilesReset();
+  effectReprocessAllTiles();
   showToast("Overlay color order updated.");
 }
 
@@ -137,7 +163,7 @@ const minVersionSetting = {
     step: 0.1,
   },
   effects: {
-    custom: debouncedProcessAllTilesReset,
+    custom: effectReprocessAllTiles,
     toast: (v) => `Min Version set to ${v}`,
   },
 };
@@ -150,8 +176,43 @@ const latestOverlayColorOrderSetting = {
     custom: openOverlayColorOrderEditor,
   },
 };
+const othersOverlaySettingsHeader = {
+  type: "header",
+  text: "Other Overlay Settings",
+};
+const ratingThresholdSetting = {
+  type: "number",
+  text: "Rating highlight threshold",
+  tooltip:
+    "Rating values above this are green, above half are yellow, below are red (e.g., 4 = above 4 is green, above 2 is yellow)",
+  config: "latestSettings.ratingHighlightThreshold",
+  input: {
+    min: 0.5,
+    step: 0.5,
+  },
+  effects: {
+    custom: effectReprocessAllTiles,
+    toast: (v) => `Rating threshold set to ${v}`,
+  },
+};
+const engagementRatioThresholdSetting = {
+  type: "number",
+  text: "Engagement ratio threshold",
+  tooltip:
+    "Engagement ratio (likes per 1000 views) above this is green, above half is yellow, below is red (e.g., 6 = above 6 is green, above 3 is yellow)",
+  config: "latestSettings.engagementRatioThreshold",
+  input: {
+    min: 0.5,
+    step: 0.5,
+  },
+  effects: {
+    custom: effectReprocessAllTiles,
+    toast: (v) => `Engagement ratio threshold set to ${v}`,
+  },
+};
 const latestOverlaySettingsDialogMeta = {
   latestOverlayToggle: latestOverlayToggleSetting,
+  _header_visibility: overlaySettingsMeta._header_visibility,
   completed: overlaySettingsMeta.completed,
   onhold: overlaySettingsMeta.onhold,
   abandoned: overlaySettingsMeta.abandoned,
@@ -160,6 +221,12 @@ const latestOverlaySettingsDialogMeta = {
   preferred: overlaySettingsMeta.preferred,
   excluded: overlaySettingsMeta.excluded,
   overlayText: overlaySettingsMeta.overlayText,
+  _header_engagement: overlaySettingsMeta._header_engagement,
+  ratingHighlight: overlaySettingsMeta.ratingHighlight,
+  ratingThreshold: ratingThresholdSetting,
+  engagementHighlight: overlaySettingsMeta.engagementHighlight,
+  engagementRatioThreshold: engagementRatioThresholdSetting,
+  _header_others: othersOverlaySettingsHeader,
   minVersion: minVersionSetting,
   latestOverlayColorOrder: latestOverlayColorOrderSetting,
   overlayStyle: {
@@ -173,7 +240,7 @@ const latestOverlaySettingsDialogMeta = {
     ],
     effects: {
       custom: (v) => {
-        debouncedProcessAllTilesReset();
+        effectReprocessAllTiles();
         showToast(`Overlay style saved: ${v}`);
       },
     },

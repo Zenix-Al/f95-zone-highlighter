@@ -31,7 +31,8 @@ export function createHandlers(state, api, deps) {
 
   const nextHandler = async () => {
     const root = getRootFn();
-    const maxPage = Math.max(1, Math.ceil(state.rows.length / LIBRARY_MANAGER_PAGE_SIZE));
+    const pageSize = Math.max(1, Number(state.pageSize || LIBRARY_MANAGER_PAGE_SIZE));
+    const maxPage = Math.max(1, Math.ceil(state.rows.length / pageSize));
     if (state.page < maxPage) {
       state.page += 1;
       await reloadRowsFn(root);
@@ -110,8 +111,9 @@ export function createHandlers(state, api, deps) {
 
   const toggleAllHandler = async () => {
     const root = getRootFn();
-    const from = (state.page - 1) * LIBRARY_MANAGER_PAGE_SIZE;
-    const pageRows = state.rows.slice(from, from + LIBRARY_MANAGER_PAGE_SIZE);
+    const pageSize = Math.max(1, Number(state.pageSize || LIBRARY_MANAGER_PAGE_SIZE));
+    const from = (state.page - 1) * pageSize;
+    const pageRows = state.rows.slice(from, from + pageSize);
     const pageIds = pageRows.map((row) => row.threadId);
     const toggleAllCheckbox = root.querySelector('[data-action="toggle-all"]');
 

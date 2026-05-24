@@ -756,7 +756,8 @@
   gap: 8px;
   max-width: calc(100vw - 12px);
   padding-left: 8px;
-  pointer-events: auto;
+  /* Don't block clicks on the page behind the dock (only the buttons should be clickable). */
+  pointer-events: none;
 }
 
 #f95ue-page-dock-main-slot,
@@ -793,6 +794,7 @@
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   opacity: 0.75;
+  pointer-events: auto;
   transition:
     opacity 0.25s ease,
     transform 0.25s ease,

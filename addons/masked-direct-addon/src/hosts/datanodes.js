@@ -63,9 +63,20 @@ export async function processDatanodesDownload({
 }) {
   console.info("Starting datanodes.to download flow...");
   const DATANODES_MAX_FREE_CLICKS = 3;
-  const DATANODES_RETRY_DELAY = Math.max(1200, TIMINGS.DATANODES_POLL_INTERVAL * 2);
-  const DATANODES_AFTER_METHOD_FREE_DELAY = Math.max(1200, TIMINGS.DATANODES_POLL_INTERVAL * 4);
+  const DATANODES_RETRY_DELAY = Math.max(5000, TIMINGS.DATANODES_POLL_INTERVAL);
+  const DATANODES_AFTER_METHOD_FREE_DELAY = Math.max(5000, TIMINGS.DATANODES_POLL_INTERVAL);
   const DATANODES_BEFORE_DOWNLOAD_CLICK_DELAY = 1000;
+  const DATANODES_PROCESS_MAX_TIMEOUT = 40000; // 40 second safety timeout for entire process
+  const PROCESS_START_TIME = Date.now();
+
+  function checkTimeoutExceeded(label) {
+    const elapsed = Date.now() - PROCESS_START_TIME;
+    if (elapsed > DATANODES_PROCESS_MAX_TIMEOUT) {
+      throw new Error(
+        `timeout::Datanodes automation exceeded ${DATANODES_PROCESS_MAX_TIMEOUT}ms timeout at ${label}.`,
+      );
+    }
+  }
 
   function isDisabled(element) {
     if (!element) return true;
@@ -236,14 +247,19 @@ export async function processDatanodesDownload({
   }
 
   async function runMethodFreePhase() {
+    console.info("[Datanodes] Waiting for ready state badge...");
     const isReady = await waitForReadyState();
     if (!isReady) {
+      console.warn("[Datanodes] Ready state badge not found");
       showToast("Datanodes: ready state not found — skipping free-method step.");
       return { skipped: true };
     }
+    console.info("[Datanodes] Ready state badge found");
+    checkTimeoutExceeded("runMethodFreePhase_ready_badge");
 
     let methodFreeButton = null;
     try {
+      console.info("[Datanodes] Searching for free-method button...");
       methodFreeButton = await waitForButton({
         getCandidate: getMethodFreeButton,
         interval: 100,
@@ -251,14 +267,18 @@ export async function processDatanodesDownload({
         errorMessage: "Datanodes automation failed: Continue button not found.",
       });
     } catch {
+      console.warn("[Datanodes] Free-method button not found");
       showToast("Datanodes: free-method button not found — skipping step.");
       return { skipped: true };
     }
 
     if (!methodFreeButton) {
+      console.warn("[Datanodes] Free-method button is null");
       showToast("Datanodes: free-method button missing — skipping step.");
       return { skipped: true };
     }
+    console.info("[Datanodes] Free-method button found, starting clicks...");
+    checkTimeoutExceeded("runMethodFreePhase_button_found");
 
     stageStore.write(DATANODES_STAGE_AFTER_FREE);
 
@@ -270,59 +290,86 @@ export async function processDatanodesDownload({
     });
 
     if (!result.progressed) {
+      console.warn("[Datanodes] Failed to click method-free button");
       stageStore.clear();
       showToast("Datanodes: could not click continue button — skipping step.");
       return { skipped: true };
     }
+    console.info("[Datanodes] Method-free phase completed successfully");
+    checkTimeoutExceeded("runMethodFreePhase_complete");
 
     return { skipped: false };
   }
 
   async function runPreDownloadPhase() {
-    if (stageStore.read() === DATANODES_STAGE_AFTER_FREE) {
+    console.info("[Datanodes] Starting pre-download phase...");
+    checkTimeoutExceeded("runPreDownloadPhase_start");
+
+    // Check if we're in a resumed state from a previous attempt
+    const resumeStage = stageStore.read();
+    if (resumeStage === DATANODES_STAGE_AFTER_FREE) {
+      console.info("[Datanodes] Resuming from previous free-method phase, skipping to download...");
       return;
     }
 
+    console.info("[Datanodes] Running method-free phase...");
     const freeResult = await runMethodFreePhase();
+    checkTimeoutExceeded("runMethodFreePhase_complete");
+
     if (freeResult?.skipped) {
+      console.info(
+        "[Datanodes] Method-free phase was skipped, proceeding to download phase anyway...",
+      );
       return;
     }
 
+    console.info("[Datanodes] Method-free phase completed, waiting before download phase...");
     await sleep(DATANODES_AFTER_METHOD_FREE_DELAY);
   }
 
   async function runDownloadPhase() {
+    console.info("[Datanodes] Starting download phase...");
+    checkTimeoutExceeded("runDownloadPhase_start");
+
     await sleep(DATANODES_BEFORE_DOWNLOAD_CLICK_DELAY);
 
     let button2First = null;
     try {
+      console.info("[Datanodes] Waiting for first download button...");
       button2First = await waitForButton({
         getCandidate: getStartPhaseDownloadButton,
         errorCode: "second_button_not_found",
         errorMessage: "Datanodes automation failed: Download button not found.",
       });
     } catch {
+      console.warn("[Datanodes] First download button not found");
       showToast("Datanodes: download button not found — skipping download step.");
       return { skipped: true };
     }
 
     if (!clickActionButton(button2First)) {
+      console.warn("[Datanodes] Failed to click first download button");
       showToast("Datanodes: first download click failed — skipping.");
       return { skipped: true };
     }
+    console.info("[Datanodes] First download click successful, countdown phase started");
     showToast("Datanodes countdown started...");
 
     await sleep(Math.max(1000, DATANODES_RETRY_DELAY));
+    checkTimeoutExceeded("runDownloadPhase_after_first_click");
 
     const postFirstClickButton = getConfirmPhaseDownloadButton();
     if (postFirstClickButton && hasButtonText(postFirstClickButton, "download")) {
+      console.info("[Datanodes] Clicking secondary download button...");
       clickActionButton(postFirstClickButton);
     }
 
     await sleep(TIMINGS.DATANODES_SECOND_CLICK_DELAY);
+    checkTimeoutExceeded("runDownloadPhase_before_confirm_wait");
 
     let button2Second = null;
     try {
+      console.info("[Datanodes] Waiting for confirm button after countdown...");
       button2Second = await waitForButton({
         getCandidate: getConfirmPhaseDownloadButton,
         timeout: TIMINGS.DATANODES_BUTTON_WAIT_TIMEOUT,
@@ -330,14 +377,19 @@ export async function processDatanodesDownload({
         errorMessage: "Datanodes automation failed: Confirm button not available after countdown.",
       });
     } catch {
+      console.warn("[Datanodes] Confirm button not available after countdown");
       showToast("Datanodes: confirm button not available — skipping final step.");
       return { skipped: true };
     }
 
     if (!clickActionButton(button2Second)) {
+      console.warn("[Datanodes] Failed to click confirm button");
       showToast("Datanodes: confirm click failed — skipping.");
       return { skipped: true };
     }
+    checkTimeoutExceeded("runDownloadPhase_after_confirm_click");
+
+    console.info("[Datanodes] Download triggered successfully!");
     showToast("Datanodes download triggered.");
     stageStore.clear();
     reportAddonHealthy();
@@ -345,12 +397,26 @@ export async function processDatanodesDownload({
   }
 
   try {
+    console.info("[Datanodes] Process started, timeout: " + DATANODES_PROCESS_MAX_TIMEOUT + "ms");
     await runPreDownloadPhase();
+    checkTimeoutExceeded("after_runPreDownloadPhase");
     await runDownloadPhase();
+    console.info("[Datanodes] Process completed successfully");
   } catch (error) {
-    await notifyMainFailure(
-      "datanodes.to",
-      String(error?.message || "Datanodes automation failed."),
-    );
+    const errorStr = String(error?.message || "Datanodes automation failed");
+    console.error("[Datanodes] Process failed:", errorStr);
+
+    // Extract error code if in format "code::message"
+    const parts = errorStr.split("::");
+    const errorCode = parts.length > 1 ? parts[0] : "unknown";
+    const errorMessage = parts.length > 1 ? parts.slice(1).join("::") : errorStr;
+
+    // Don't notify if timeout occurred (script was interrupted)
+    if (errorCode !== "timeout") {
+      await notifyMainFailure("datanodes.to", errorMessage);
+    } else {
+      showToast("Datanodes: automation process exceeded maximum timeout.");
+      console.error("[Datanodes] Process timeout exceeded at: " + errorMessage);
+    }
   }
 }
