@@ -1,4 +1,4 @@
-import { config } from "../../config.js";
+import { config, defaultLatestSettings, defaultOverlaySettings } from "../../config.js";
 import { createStyledFeature } from "../../core/createStyledFeature.js";
 import { debouncedProcessAllTilesReset } from "../../core/tasksRegistry.js";
 import { checkOverlaySettings } from "../../services/safetyService.js";
@@ -210,6 +210,157 @@ const engagementRatioThresholdSetting = {
     toast: (v) => `Engagement ratio threshold set to ${v}`,
   },
 };
+
+// Score weight settings for each overlay type
+const scoringWeightsHeader = {
+  type: "header",
+  text: "Scoring Weights",
+};
+const tagWeightsHeader = {
+  type: "header",
+  text: "Tags Weights",
+};
+
+const enableScoreWeights = {
+  type: "toggle",
+  text: "Enable score weights",
+  tooltip: "Apply custom weights to how different tags affect the tile score",
+  config: "latestSettings.enableScoreWeights",
+  effects: {
+    custom: effectReprocessAllTiles,
+    toast: (v) => `Score weights ${v ? "enabled" : "disabled"}`,
+  },
+};
+export const ratingWeightSetting = {
+  type: "number",
+  text: "Rating Pillar Weight",
+  tooltip: "Importance of Site Rating in the final 0-10 score calculation.",
+  config: "latestSettings.priorityWeights.rating",
+  input: { min: 0, step: 1 },
+  effects: {
+    custom: effectReprocessAllTiles,
+    toast: (v) => `Rating weight set to ${v}`,
+  },
+};
+
+export const engagementWeightSetting = {
+  type: "number",
+  text: "Engagement Pillar Weight",
+  tooltip: "Importance of Community Engagement in the final 0-10 score calculation.",
+  config: "latestSettings.priorityWeights.engagement",
+  input: { min: 0, step: 1 },
+  effects: {
+    custom: effectReprocessAllTiles,
+    toast: (v) => `Engagement weight set to ${v}`,
+  },
+};
+
+export const tagWeightSetting = {
+  type: "number",
+  text: "Tags Pillar Weight",
+  tooltip:
+    "Importance of Tag states (preferred, excluded, etc.) in the final 0-10 score calculation.",
+  config: "latestSettings.priorityWeights.tags",
+  input: { min: 0, step: 1 },
+  effects: {
+    custom: effectReprocessAllTiles,
+    toast: (v) => `Tags weight set to ${v}`,
+  },
+};
+export const modifierPreferredSetting = {
+  type: "number",
+  text: "Preferred Tag Modifier",
+  tooltip: "Score increase added for each matching preferred tag.",
+  config: "latestSettings.tagModifiers.preferred",
+  input: { step: 0.1 },
+  effects: { custom: effectReprocessAllTiles, toast: (v) => `Preferred modifier: ${v}` },
+};
+
+export const modifierCompletedSetting = {
+  type: "number",
+  text: "Completed Tag Modifier",
+  tooltip: "Score increase added for each completed tag.",
+  config: "latestSettings.tagModifiers.completed",
+  input: { step: 0.1 },
+  effects: { custom: effectReprocessAllTiles, toast: (v) => `Completed modifier: ${v}` },
+};
+
+export const modifierHighVersionSetting = {
+  type: "number",
+  text: "High Version Tag Modifier",
+  tooltip: "Score increase added for high version tags.",
+  config: "latestSettings.tagModifiers.highVersion",
+  input: { step: 0.1 },
+  effects: { custom: effectReprocessAllTiles, toast: (v) => `High version modifier: ${v}` },
+};
+export const modifierIncompleteSetting = {
+  type: "number",
+  text: "Incomplete Tag Modifier",
+  tooltip: "Score penalty if a card did not fall to complete or high version.",
+  config: "latestSettings.tagModifiers.incomplete",
+  input: { step: 0.1 },
+  effects: { custom: effectReprocessAllTiles, toast: (v) => `Incomplete modifier: ${v}` },
+};
+export const modifierOnholdSetting = {
+  type: "number",
+  text: "On-Hold Tag Modifier",
+  tooltip: "Score penalty added for on-hold tags.",
+  config: "latestSettings.tagModifiers.onhold",
+  input: { step: 0.1 },
+  effects: { custom: effectReprocessAllTiles, toast: (v) => `On-hold modifier: ${v}` },
+};
+
+export const modifierAbandonedSetting = {
+  type: "number",
+  text: "Abandoned Tag Modifier",
+  tooltip: "Score penalty added for abandoned tags.",
+  config: "latestSettings.tagModifiers.abandoned",
+  input: { step: 0.1 },
+  effects: { custom: effectReprocessAllTiles, toast: (v) => `Abandoned modifier: ${v}` },
+};
+
+export const modifierExcludedSetting = {
+  type: "number",
+  text: "Excluded Tag Modifier",
+  tooltip: "Heavy score penalty added for excluded tags.",
+  config: "latestSettings.tagModifiers.excluded",
+  input: { step: 0.1 },
+  effects: { custom: effectReprocessAllTiles, toast: (v) => `Excluded modifier: ${v}` },
+};
+
+export const modifierInvalidVersionSetting = {
+  type: "number",
+  text: "Invalid Version Modifier",
+  tooltip: "Modifier for invalid versions (usually 0.0).",
+  config: "latestSettings.tagModifiers.invalidVersion",
+  input: { step: 0.1 },
+  effects: { custom: effectReprocessAllTiles, toast: (v) => `Invalid version modifier: ${v}` },
+};
+export const resetLatestOverlaySettingsButton = {
+  type: "button",
+  text: "Reset to defaults",
+  buttonText: "Reset",
+  tooltip: "Reset all latest overlay settings to default values",
+  effects: {
+    custom: resetConfigToDefaults,
+  },
+};
+export const overlayStyleSetting = {
+  type: "select",
+  text: "Overlay style",
+  tooltip: "Choose how overlay colors are applied to tiles (strip or border)",
+  config: "latestSettings.latestOverlayStyle",
+  options: [
+    { key: "strip", label: "Bottom strip" },
+    { key: "border", label: "Colored border" },
+  ],
+  effects: {
+    custom: (v) => {
+      effectReprocessAllTiles();
+      showToast(`Overlay style saved: ${v}`);
+    },
+  },
+};
 const latestOverlaySettingsDialogMeta = {
   latestOverlayToggle: latestOverlayToggleSetting,
   _header_visibility: overlaySettingsMeta._header_visibility,
@@ -226,28 +377,30 @@ const latestOverlaySettingsDialogMeta = {
   ratingThreshold: ratingThresholdSetting,
   engagementHighlight: overlaySettingsMeta.engagementHighlight,
   engagementRatioThreshold: engagementRatioThresholdSetting,
+  _header_weights: scoringWeightsHeader,
+  enableScoreWeights: enableScoreWeights,
+  ratingWeight: ratingWeightSetting,
+  engagementWeight: engagementWeightSetting,
+  tagWeight: tagWeightSetting,
+  _header_tag_weights: tagWeightsHeader,
+  modifierPreferred: modifierPreferredSetting,
+  modifierCompleted: modifierCompletedSetting,
+  modifierHighVersion: modifierHighVersionSetting,
+  modifierIncomplete: modifierIncompleteSetting,
+  modifierOnhold: modifierOnholdSetting,
+  modifierAbandoned: modifierAbandonedSetting,
+  modifierExcluded: modifierExcludedSetting,
+  modifierInvalidVersion: modifierInvalidVersionSetting,
   _header_others: othersOverlaySettingsHeader,
   minVersion: minVersionSetting,
   latestOverlayColorOrder: latestOverlayColorOrderSetting,
-  overlayStyle: {
-    type: "select",
-    text: "Overlay style",
-    tooltip: "Choose how overlay colors are applied to tiles (strip or border)",
-    config: "latestSettings.latestOverlayStyle",
-    options: [
-      { key: "strip", label: "Bottom strip" },
-      { key: "border", label: "Colored border" },
-    ],
-    effects: {
-      custom: (v) => {
-        effectReprocessAllTiles();
-        showToast(`Overlay style saved: ${v}`);
-      },
-    },
-  },
+  overlayStyle: overlayStyleSetting,
+  resetButton: resetLatestOverlaySettingsButton,
 };
+let latestOverlaySettingsDialog = null;
+
 function openLatestOverlaySettingsDialog() {
-  openSettingsDialog({
+  latestOverlaySettingsDialog = openSettingsDialog({
     title: "Latest Overlay Settings",
     description: "Configure overlay toggle, labels, filters, and color order.",
     metaMap: latestOverlaySettingsDialogMeta,
@@ -280,3 +433,39 @@ export const latestOverlayFeature = createStyledFeature("Latest Overlay", {
 
 // Re-export helpers and lifecycle functions for other parts of the app
 export { reprocessAllTiles, resetTile, processTile };
+
+let resetConfigConfirmUntil = 0;
+function resetConfigToDefaults() {
+  const now = Date.now();
+  if (now > resetConfigConfirmUntil) {
+    resetConfigConfirmUntil = now + 3000;
+    showToast("Press reset again within 3s to confirm.");
+    return;
+  }
+  resetConfigConfirmUntil = 0;
+
+  Object.assign(config.overlaySettings, defaultOverlaySettings);
+  config.latestSettings.latestOverlayToggle = defaultLatestSettings.latestOverlayToggle;
+  config.latestSettings.minVersion = defaultLatestSettings.minVersion;
+  config.latestSettings.latestOverlayColorOrder = [
+    ...defaultLatestSettings.latestOverlayColorOrder,
+  ];
+  config.latestSettings.latestOverlayStyle = defaultLatestSettings.latestOverlayStyle;
+  config.latestSettings.ratingHighlightThreshold = defaultLatestSettings.ratingHighlightThreshold;
+  config.latestSettings.engagementRatioThreshold = defaultLatestSettings.engagementRatioThreshold;
+  config.latestSettings.enableScoreWeights = defaultLatestSettings.enableScoreWeights;
+  config.latestSettings.priorityWeights = { ...defaultLatestSettings.priorityWeights };
+  config.latestSettings.tagModifiers = { ...defaultLatestSettings.tagModifiers };
+  config.latestSettings.ratingImpactWeight = defaultLatestSettings.ratingImpactWeight;
+  config.latestSettings.engagementImpactWeight = defaultLatestSettings.engagementImpactWeight;
+
+  saveConfigKeys({
+    latestSettings: config.latestSettings,
+    overlaySettings: config.overlaySettings,
+  });
+  latestOverlaySettingsDialog?.close();
+  latestOverlaySettingsDialog = null;
+  checkOverlaySettings();
+  effectReprocessAllTiles();
+  showToast("Latest overlay settings have been reset to default.");
+}

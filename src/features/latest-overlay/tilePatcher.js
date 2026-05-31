@@ -9,6 +9,7 @@ import {
   applyHighlightClasses,
   removeHighlightClasses,
 } from "./ratingEngagementHighlight.js";
+import { calculateTileScore, applyScoreDisplay, removeScoreDisplay } from "./scoreCalculator.js";
 
 // ---------------------------------------------------------------------------
 // Generation counter — incremented on enable/disable to cancel stale work.
@@ -81,28 +82,38 @@ export function clearMutationState() {
 // ---------------------------------------------------------------------------
 // DOM read helpers — extract data from tile elements.
 // ---------------------------------------------------------------------------
-function getTileTags(tile) {
-  return (tile.getAttribute("data-tags") || "")
-    .split(",")
-    .map((id) => Number(id.trim()))
-    .filter(Number.isFinite);
-}
 
-function getVersionText(tile) {
-  const versionEl = tile.querySelector(SELECTORS.TILE.VERSION);
-  return String(versionEl?.textContent || "")
-    .toLowerCase()
-    .trim();
-}
+function extractTileState(tile) {
+  // Read highlight classes safely (from ratingEngagementHighlight.js)
+  const highlights = getTileHighlightClasses(tile);
 
-function getLabelText(tile) {
-  const labelWrap = tile.querySelector(SELECTORS.TILE.LABEL_WRAP);
-  const labelEl = labelWrap?.querySelector('[class^="label--"]');
-  return String(labelEl?.textContent || "")
-    .toLowerCase()
-    .trim();
-}
+  return {
+    element: tile, // Keep the reference so we know who to update later
+    wasModified: tile.dataset.modified === "true",
+    isConnected: tile.isConnected,
 
+    // Extracted raw data
+    tags: (tile.getAttribute("data-tags") || "")
+      .split(",")
+      .map((id) => Number(id.trim()))
+      .filter(Number.isFinite),
+
+    versionText: String(tile.querySelector(SELECTORS.TILE.VERSION)?.textContent || "")
+      .toLowerCase()
+      .trim(),
+
+    labelText: String(
+      tile.querySelector(SELECTORS.TILE.LABEL_WRAP)?.querySelector('[class^="label--"]')
+        ?.textContent || "",
+    )
+      .toLowerCase()
+      .trim(),
+
+    ratingClass: highlights.ratingClass,
+    engagementClass: highlights.engagementClass,
+    views: highlights.views,
+  };
+}
 // ---------------------------------------------------------------------------
 // DOM write helpers — apply / remove overlay elements.
 // ---------------------------------------------------------------------------
@@ -142,6 +153,9 @@ export function resetTile(tile) {
   // Remove rating and engagement highlight classes
   removeHighlightClasses(tile);
 
+  // Remove score display
+  removeScoreDisplay(tile);
+
   removeOverlayLabel(tile);
   tile.dataset.modified = "";
   debugLog("Tile Reset", "Reset a tile to its original state.");
@@ -178,6 +192,9 @@ export function clearAllOverlayStyles() {
 
       // Remove rating and engagement highlight classes
       removeHighlightClasses(tile);
+
+      // Remove score display
+      removeScoreDisplay(tile);
 
       tile.dataset.modified = "";
     } catch (err) {
@@ -225,12 +242,16 @@ function getGradientForColors(colors, direction = "45deg") {
 // ---------------------------------------------------------------------------
 function processTag(tileTagIds, excludedTagsArr, preferredTagsArr) {
   if (!Array.isArray(tileTagIds) || tileTagIds.length === 0) {
-    return { isExcludedTag: false, isPreferredTag: false };
+    return { isExcludedTag: false, isPreferredTag: false, excludedCount: 0, preferredCount: 0 };
   }
 
   const tileTagSet = new Set(tileTagIds);
   let isExcludedTag = false;
   let isPreferredTag = false;
+
+  // New counters to track the total matches
+  let excludedCount = 0;
+  let preferredCount = 0;
 
   const excludedOrder =
     Array.isArray(excludedTagsArr) && excludedTagsArr.length
@@ -239,12 +260,21 @@ function processTag(tileTagIds, excludedTagsArr, preferredTagsArr) {
   for (const rawId of excludedOrder) {
     const id = Number(rawId);
     if (!Number.isFinite(id) || !tileTagSet.has(id)) continue;
-    isExcludedTag = cache.tagIdToName
-      ? cache.tagIdToName.get(id)
-      : config.tags.find((t) => t.id == id)?.name;
-    if (isExcludedTag) {
-      debugLog("Tile Processing", `Matched excluded Tag: '${isExcludedTag}' (ID: ${id}) on tile.`);
-      break;
+
+    // 1. Increment the count for every single match found
+    excludedCount++;
+
+    // 2. Only fetch the name for the FIRST match (maintaining priority for your UI badge)
+    if (!isExcludedTag) {
+      isExcludedTag = cache.tagIdToName
+        ? cache.tagIdToName.get(id)
+        : config.tags.find((t) => t.id == id)?.name;
+      if (isExcludedTag) {
+        debugLog(
+          "Tile Processing",
+          `Matched primary excluded Tag: '${isExcludedTag}' (ID: ${id}) on tile.`,
+        );
+      }
     }
   }
 
@@ -255,31 +285,42 @@ function processTag(tileTagIds, excludedTagsArr, preferredTagsArr) {
   for (const rawId of preferredOrder) {
     const id = Number(rawId);
     if (!Number.isFinite(id) || !tileTagSet.has(id)) continue;
-    isPreferredTag = cache.tagIdToName
-      ? cache.tagIdToName.get(id)
-      : config.tags.find((t) => t.id == id)?.name;
-    if (isPreferredTag) {
-      debugLog(
-        "Tile Processing",
-        `Matched preferred Tag: '${isPreferredTag}' (ID: ${id}) on tile.`,
-      );
-      break;
+
+    // 1. Increment the count for every single match found
+    preferredCount++;
+
+    // 2. Only fetch the name for the FIRST match
+    if (!isPreferredTag) {
+      isPreferredTag = cache.tagIdToName
+        ? cache.tagIdToName.get(id)
+        : config.tags.find((t) => t.id == id)?.name;
+      if (isPreferredTag) {
+        debugLog(
+          "Tile Processing",
+          `Matched primary preferred Tag: '${isPreferredTag}' (ID: ${id}) on tile.`,
+        );
+      }
     }
   }
 
-  return { isExcludedTag: isExcludedTag || false, isPreferredTag: isPreferredTag || false };
+  // Return both the primary text labels AND the total numeric counts
+  return {
+    isExcludedTag: isExcludedTag || false,
+    isPreferredTag: isPreferredTag || false,
+    excludedCount,
+    preferredCount,
+  };
 }
 
 // ---------------------------------------------------------------------------
 // Tile patch build / apply — core overlay coloring logic.
 // ---------------------------------------------------------------------------
-function buildTilePatch(tile, reset, generation) {
-  if (generation !== generationCounter || !tile?.isConnected) return null;
+function buildTilePatch(tileState, reset, generation) {
+  if (generation !== generationCounter || !tileState.isConnected) return null;
 
-  const wasModified = tile.dataset.modified === "true";
-  if (!reset && wasModified) return null;
+  if (!reset && tileState.wasModified) return null;
 
-  const body = tile.querySelector(SELECTORS.TILE.BODY);
+  const body = tileState.element.querySelector(SELECTORS.TILE.BODY);
   if (!body) return null;
 
   const colors = [];
@@ -287,24 +328,34 @@ function buildTilePatch(tile, reset, generation) {
   const overlayMatches = {};
   const { overlayFlags } = cache;
 
+  // 1. Process Tags using in-memory array
+  // Initialize tracking variables for this specific tile
+  let totalPreferred = 0;
+  let totalExcluded = 0;
+
+  // main overlay logic
   if (overlayFlags.excluded || overlayFlags.preferred) {
-    const tileTags = getTileTags(tile);
-    const { isExcludedTag, isPreferredTag } = processTag(
-      tileTags,
+    // Destructure the labels along with the newly created counts
+    const { isExcludedTag, isPreferredTag, excludedCount, preferredCount } = processTag(
+      tileState.tags, // Using memory snapshot
       overlayFlags.excluded ? config.excludedTags : null,
       overlayFlags.preferred ? config.preferredTags : null,
     );
 
     if (overlayFlags.excluded && isExcludedTag) {
       overlayMatches.excluded = { label: isExcludedTag, color: config.color.excluded };
+      totalExcluded = excludedCount; // Store number for calculation
     }
+
     if (overlayFlags.preferred && isPreferredTag) {
       overlayMatches.preferred = { label: isPreferredTag, color: config.color.preferred };
+      totalPreferred = preferredCount; // Store number for calculation
     }
   }
 
+  // 2. Process Status Labels using in-memory string
   if (overlayFlags.completed || overlayFlags.onhold || overlayFlags.abandoned) {
-    const labelText = getLabelText(tile);
+    const labelText = tileState.labelText; // Using memory snapshot
     if (config.overlaySettings.completed && labelText === "completed") {
       overlayMatches.completed = { label: "Completed", color: config.color.completed };
     } else if (config.overlaySettings.onhold && labelText === "onhold") {
@@ -314,15 +365,16 @@ function buildTilePatch(tile, reset, generation) {
     }
   }
 
+  // 3. Process Version using in-memory string
   if (overlayFlags.highVersion || overlayFlags.invalidVersion) {
-    const versionText = getVersionText(tile);
+    const versionText = tileState.versionText; // Using memory snapshot
     const match = versionText.match(/(\d+\.\d+)/);
     const versionNumber = match ? parseFloat(match[1]) : null;
     const isInvalidVersion =
       versionNumber !== null && versionNumber < config.latestSettings.minVersion;
     const isHighVersion =
       (versionNumber !== null && versionNumber >= config.latestSettings.minVersion) ||
-      ["full", "final"].some((valid) => versionText.toLowerCase().includes(valid));
+      ["full", "final"].some((valid) => versionText.includes(valid));
 
     if (config.overlaySettings.highVersion && isHighVersion) {
       overlayMatches.highVersion = { label: "High Version", color: config.color.highVersion };
@@ -338,24 +390,34 @@ function buildTilePatch(tile, reset, generation) {
   labels.push(...orderedMatches.labels);
   colors.push(...orderedMatches.colors);
 
-  // Get rating and engagement highlight classes (only if enabled in config)
-  let highlightClasses = { ratingClass: null, engagementClass: null };
-  if (config.overlaySettings.ratingHighlight || config.overlaySettings.engagementHighlight) {
-    highlightClasses = getTileHighlightClasses(tile);
-    debugLog("Latest overlay tile patch", "Determined highlight classes:", { highlightClasses });
-  }
-
-  if (colors.length === 0 && !highlightClasses.ratingClass && !highlightClasses.engagementClass) {
-    if (wasModified) return { type: "reset", tile };
+  // If no visual adjustments or highlights apply, determine action
+  if (colors.length === 0 && !tileState.ratingClass && !tileState.engagementClass) {
+    if (tileState.wasModified) return { type: "reset", tile: tileState.element };
     return null;
   }
 
+  // 4. Calculate score purely from the snapshot strings
+  let score = 0;
+  if (config.latestSettings.enableScoreWeights) {
+    score = calculateTileScore(
+      overlayMatches,
+      tileState.ratingClass,
+      tileState.engagementClass,
+      totalPreferred,
+      totalExcluded,
+      tileState.views,
+    );
+  }
   return {
     type: "apply",
-    tile,
+    tile: tileState.element, // Return live DOM reference for the Write phase
     gradient: getGradientForColors(colors, "45deg"),
     label: labels[0] || "",
-    highlightClasses,
+    highlightClasses: {
+      ratingClass: tileState.ratingClass,
+      engagementClass: tileState.engagementClass,
+    },
+    score,
   };
 }
 
@@ -395,6 +457,11 @@ function applyTilePatch(patch, generation) {
     applyHighlightClasses(patch.tile, patch.highlightClasses);
   }
 
+  // Apply score display
+  if (patch.score && patch.score > 0) {
+    applyScoreDisplay(patch.tile, patch.score);
+  }
+
   patch.tile.dataset.modified = "true";
 }
 
@@ -431,7 +498,8 @@ function processTilesBatch(tiles, reset, generation) {
 
   const patches = [];
   for (const tile of tiles) {
-    const patch = buildTilePatch(tile, reset, generation);
+    const tileState = extractTileState(tile);
+    const patch = buildTilePatch(tileState, reset, generation);
     if (patch) patches.push(patch);
   }
   if (patches.length === 0) return;
@@ -444,7 +512,9 @@ function processTilesBatch(tiles, reset, generation) {
 // ---------------------------------------------------------------------------
 export function processTile(tile, reset = false) {
   const generation = generationCounter;
-  const patch = buildTilePatch(tile, reset, generation);
+  const tileState = extractTileState(tile);
+
+  const patch = buildTilePatch(tileState, reset, generation);
   if (!patch) return;
   requestAnimationFrame(() => applyTilePatch(patch, generation));
 }

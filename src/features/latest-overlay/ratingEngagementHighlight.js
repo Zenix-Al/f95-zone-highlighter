@@ -30,42 +30,101 @@ export function extractEngagementData(tile) {
   return { likes, views };
 }
 
-function extractLikes(tile) {
-  const likesEl = tile.querySelector(SELECTORS.RATING_ENGAGEMENT.LIKES);
-  if (!likesEl) return null;
-  const likes = parseInt(likesEl.textContent?.trim(), 10);
-  return Number.isFinite(likes) ? likes : null;
-}
+/**
+ * Core utility to safely parse formatted forum metrics (e.g., "1,500", "12.7K", "2.1M")
+ * @param {Element|null} element - The DOM element containing text
+ * @returns {number|null} Clean floating point number or null
+ */
+function parseMetricText(element) {
+  if (!element) return null;
 
-function extractViews(tile) {
-  const viewsEl = tile.querySelector(SELECTORS.RATING_ENGAGEMENT.VIEWS);
-  if (!viewsEl) return null;
-  const viewsText = viewsEl.textContent?.trim() || "";
+  // Strip out formatting commas and force uppercase to match suffixes cleanly
+  let text = element.textContent?.trim().replace(/,/g, "").toUpperCase() || "";
+  if (!text || text === "-") return null;
 
-  // Handle formats like "513K", "2M", "1.5K", etc.
-  let views;
-  if (viewsText.endsWith("K")) {
-    views = parseFloat(viewsText) * 1000;
-  } else if (viewsText.endsWith("M")) {
-    views = parseFloat(viewsText) * 1000000;
+  let value;
+  if (text.endsWith("K")) {
+    value = parseFloat(text) * 1000;
+  } else if (text.endsWith("M")) {
+    value = parseFloat(text) * 1000000;
   } else {
-    views = parseInt(viewsText, 10);
+    value = parseFloat(text);
   }
 
-  return Number.isFinite(views) && views > 0 ? views : null;
+  return Number.isFinite(value) && value >= 0 ? value : null;
 }
 
 /**
- * Calculate engagement ratio (likes per 1000 views)
+ * Extract likes from tile element, now fully supporting shorthand suffixes
+ * @param {Element} tile - The tile DOM element
+ * @returns {number|null} Normalized likes count or null
+ */
+function extractLikes(tile) {
+  const likesEl = tile.querySelector(SELECTORS.RATING_ENGAGEMENT.LIKES);
+  return parseMetricText(likesEl);
+}
+
+/**
+ * Extract views from tile element, now fully supporting shorthand suffixes
+ * @param {Element} tile - The tile DOM element
+ * @returns {number|null} Normalized views count or null
+ */
+function extractViews(tile) {
+  const viewsEl = tile.querySelector(SELECTORS.RATING_ENGAGEMENT.VIEWS);
+  const views = parseMetricText(viewsEl);
+  // Keep your safety check ensuring views are strictly greater than 0
+  return views && views > 0 ? views : null;
+}
+
+/**
+ * Calculate engagement ratio using a bounded volume adjustment curve.
+ * Calibrated specifically for a baseline configuration threshold of 50.
  * @param {number} likes
  * @param {number} views
- * @returns {number|null} Engagement ratio or null
+ * @returns {number|null} Engagement ratio score (0 to 100+)
+ */
+/**
+ * BRACKET-AWARE ENGAGEMENT SCALE ENGINE
+ * Intentionally isolates and balances ultra-high traffic brackets
+ * to protect legacy favorites while maintaining the solid low-to-mid accuracy.
  */
 export function calculateEngagementRatio(likes, views) {
-  if (!Number.isFinite(likes) || !Number.isFinite(views) || views === 0) {
+  if (!Number.isFinite(likes) || !Number.isFinite(views) || views <= 0 || likes <= 0) {
     return null;
   }
-  return (likes / views) * 100000;
+
+  // 1. Core Conversion Value (Scaled up for calculation clarity)
+  const basePct = (likes / views) * 100;
+
+  // 2. Bracket-Aware Multiplier Assignment
+  // Dynamically expands metrics to match target platform tiers based on total traffic scale.
+  let bracketMultiplier;
+  let flatBonus = 0;
+
+  if (views >= 20000000) {
+    // Ultra-Massive Tier (20M+ Views): High lurker dilution protection
+    bracketMultiplier = 3800;
+    flatBonus = 22; // Elevates the floor for verified large community hubs
+  } else if (views >= 1000000) {
+    // Mega Tier (1M to 20M Views)
+    bracketMultiplier = 1200;
+    flatBonus = 12;
+  } else if (views >= 100000) {
+    // Standard Hot Tier (100K to 1M Views)
+    bracketMultiplier = 450;
+    flatBonus = 5;
+  } else {
+    // Fresh/Low Volume Tier (Below 100K Views)
+    bracketMultiplier = 180;
+    // Low volume floor protection to match successful Log 1 metrics
+    flatBonus = (100000 - views) / 2000;
+  }
+
+  // 3. Compute final adjusted matrix score
+  const finalScore = basePct * bracketMultiplier + flatBonus;
+
+  // Clamped firmly to fit neatly into your standard config max boundaries
+  return parseFloat(Math.min(Math.max(finalScore, 0), 100).toFixed(2));
 }
 
 /**
@@ -150,7 +209,7 @@ export function getTileHighlightClasses(tile) {
     }
   }
 
-  return { ratingClass, engagementClass };
+  return { ratingClass, engagementClass, views };
 }
 
 /**
