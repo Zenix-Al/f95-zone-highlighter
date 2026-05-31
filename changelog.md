@@ -1,5 +1,17 @@
 # Changelog
 
+## [4.19.0 - Bugfix & balance latest overlay]
+
+- fix bug where latest overlay "rating and engagement highlight" get view count wrong.
+- improve the main calculation for "rating and engagement highlight" to make it more balanced, based on view volume.
+- improve the calculation for "thread score" logic
+
+### **[4.18.45 - latest overlay improvements and performance optimizations]**
+
+- add tile caching to reduce dom moddification from dom to ram, massively increase the performance of latest overlay, especially on large pages.
+- added tile scoring, combine with many calculation and it'll rendered on top of the tile
+- added reset button for latest overlay settings, because now overlay settings is daunting to configure, so reset button is a must have.
+
 ### **[4.18.26 - Latest overlay rating & engagement highlight]**
 
 - Added rating + engagement ratio highlighting on Latest page tiles. (Its configureable)

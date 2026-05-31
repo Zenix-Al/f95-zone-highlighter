@@ -194,6 +194,26 @@ function mergeWithDefault(saved, defaultObj) {
   return result;
 }
 
+/**
+ * Deep merge for nested objects (used for latestSettings which has priorityWeights and tagModifiers)
+ */
+function deepMergeLatestSettings(saved, defaultObj) {
+  const source = normalizeObject(saved);
+  const result = { ...defaultObj };
+
+  for (const key of Object.keys(source)) {
+    if (key in result) {
+      // For objects like priorityWeights and tagModifiers, do a shallow merge of their contents
+      if (key === "priorityWeights" || key === "tagModifiers") {
+        result[key] = { ...result[key], ...normalizeObject(source[key]) };
+      } else {
+        result[key] = source[key];
+      }
+    }
+  }
+  return result;
+}
+
 export async function loadData() {
   let parsed = {};
   try {
@@ -211,7 +231,7 @@ export async function loadData() {
     color: mergeWithDefault(parsed.color, defaultColors),
     overlaySettings: mergeWithDefault(parsed.overlaySettings, defaultOverlaySettings),
     threadSettings: sanitizeThreadSettings(parsed.threadSettings),
-    latestSettings: mergeWithDefault(parsed.latestSettings, defaultLatestSettings),
+    latestSettings: deepMergeLatestSettings(parsed.latestSettings, defaultLatestSettings),
     globalSettings: mergeWithDefault(parsed.globalSettings, defaultGlobalSettings),
     metrics: mergeWithDefault(parsed.metrics, defaultMetrics),
     addons: sanitizeAddonsSettings(parsed.addons),

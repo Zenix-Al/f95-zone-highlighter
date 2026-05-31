@@ -41,7 +41,21 @@ export const defaultThreadSetting = {
   collapseSignature: false,
   threadOverlayToggle: true,
 };
-
+export const defaultPriorityWeights = {
+  rating: 2.5, // Important, but doesn't overrule your specific tag rules
+  engagement: 1.5, // Provides a nice, subtle tie-breaker for active threads
+  tags: 6.0, // Explicitly dominant—your personal taste rules the feed
+};
+export const defaultTagModifiers = {
+  preferred: 0.25, // Match your fallback to maintain headroom and prevent flatlines
+  completed: 0.25, // Perfect ceiling separation for the ultimate milestone
+  highVersion: 0.12, // Keeps major updates high, but strictly below completed games
+  incomplete: -0.12, // Pulls average, untagged games down to a sensible mid-tier rank
+  onhold: -0.2, // Noticeable penalty to push stalled projects down your feed
+  abandoned: -0.4, // Severe penalty to clear out dead/dropped content
+  excluded: -0.55, // Absolute kill-switch—guarantees excluded items stay buried
+  invalidVersion: 0.22, // Neutral baseline fallback
+};
 export const defaultLatestSettings = {
   autoRefresh: false,
   webNotif: false,
@@ -61,6 +75,11 @@ export const defaultLatestSettings = {
   latestOverlayStyle: "strip",
   ratingHighlightThreshold: 3,
   engagementRatioThreshold: 50,
+  enableScoreWeights: true,
+  priorityWeights: { ...defaultPriorityWeights },
+  tagModifiers: { ...defaultTagModifiers },
+  ratingImpactWeight: 0.4,
+  engagementImpactWeight: 0.3,
 };
 
 export const defaultGlobalSettings = {

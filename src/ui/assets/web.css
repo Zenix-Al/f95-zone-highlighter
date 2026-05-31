@@ -64,3 +64,19 @@ div#latest-page_items-wrap_inner div.resource-tile a.resource-tile_link {
   color: #f44336;
   font-weight: 700;
 }
+
+/* ============================================================================
+   Tile Score Display (Color & Styling)
+   ============================================================================ */
+
+.tile-score-display.tile-score-green {
+  color: #4caf50;
+}
+
+.tile-score-display.tile-score-yellow {
+  color: #ff9800;
+}
+
+.tile-score-display.tile-score-red {
+  color: #f44336;
+}
