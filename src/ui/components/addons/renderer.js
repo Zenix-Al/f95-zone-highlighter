@@ -177,13 +177,13 @@ export function createAddonCard(doc, addon, options = {}) {
   head.appendChild(badges);
   card.appendChild(head);
 
-  const description = createEl("div", {
+  createEl("div", {
     className: "addins-card-description",
     text: addon.description,
     mount: card,
   });
 
-  const scopeInfo = createEl("div", {
+  createEl("div", {
     className: "addins-card-meta",
     text: formatAddonScopes(addon),
     mount: card,
@@ -195,7 +195,7 @@ export function createAddonCard(doc, addon, options = {}) {
     !(addon.status === "installed" && addon.activeOnPage);
 
   if (shouldShowCardStatusCopy) {
-    const statusCopy = createEl("div", {
+    createEl("div", {
       className: `addins-status-copy ${addon.status}`,
       text: addon.statusMessage,
       mount: card,
@@ -325,13 +325,13 @@ export async function renderAddonPanelSettings(container, addon) {
   container.hidden = false;
   container.innerHTML = "";
 
-  const title = createEl("div", {
+  createEl("div", {
     className: "feature-health-title",
     text: addon.panelSettingsTitle || "Add-on Settings",
     mount: container,
   });
 
-  const desc = createEl("div", {
+  createEl("div", {
     className: "tag-priority-note",
     text:
       addon.panelSettingsDescription || "Configure this add-on behavior for your current profile.",
@@ -344,7 +344,7 @@ export async function renderAddonPanelSettings(container, addon) {
   });
 
   if (!valueResult?.ok) {
-    const error = createEl("div", {
+    createEl("div", {
       className: "addins-status-copy error",
       text: `Settings unavailable: ${valueResult?.reason || "unknown_error"}`,
       mount: container,
@@ -377,7 +377,7 @@ export async function renderAddonPanelSettings(container, addon) {
 
     const tooltip = String(entry?.tooltip || "").trim();
     if (tooltip) {
-      const tip = createEl("span", {
+      createEl("span", {
         className: "setting-tooltip-badge",
         text: "?",
         attrs: {

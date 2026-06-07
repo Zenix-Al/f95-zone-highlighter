@@ -105,7 +105,7 @@ export function syncAddonPanels(shadowRoot, getRegisteredAddons, getPinnedAddonI
       const actions = createAddonPanelActions(doc, addon);
       wrapper.appendChild(actions);
 
-      const statusMessageEl = createEl("div", {
+      createEl("div", {
         className: `addins-status-copy ${addon.status}`,
         text:
           addon.statusMessage ||
@@ -147,7 +147,7 @@ export function renderAddinsOverview(shadowRoot, getRegisteredAddons, getPinnedA
   const hasCatalogFallback = registeredAddons.some((addon) => addon.catalogFresh === false);
 
   if (isAddonsServiceDisabled()) {
-    const disabledBanner = createEl("div", {
+    createEl("div", {
       className: "settings-addon-status-note error",
       text: "⚠️ Add-ons service is disabled. No add-ons will be loaded or executed.",
       mount: installedList,
@@ -203,8 +203,6 @@ export function syncPinnedAddonNav(shadowRoot, getRegisteredAddons, getPinnedAdd
   const pinnedGroup = shadowRoot.getElementById("settings-nav-pinned-group");
   const pinnedItems = shadowRoot.getElementById("settings-nav-pinned-items");
   if (!pinnedGroup || !pinnedItems) return;
-
-  const doc = shadowRoot.ownerDocument || shadowRoot.host?.ownerDocument || document;
 
   pinnedItems.innerHTML = "";
   const addonById = new Map(getRegisteredAddons().map((addon) => [addon.id, addon]));

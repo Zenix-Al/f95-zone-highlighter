@@ -4,7 +4,32 @@
  */
 
 import { safeText, triggerJsonDownload } from "./helpers.js";
+import {
+  finishImportProgress,
+  isImportCancelled,
+  openImportProgress,
+  updateImportProgress,
+} from "./importProgress.js";
 import { showToast } from "./showToast.js";
+
+function wait(ms) {
+  return new Promise((resolve) => setTimeout(resolve, Math.max(0, Number(ms) || 0)));
+}
+
+async function reloadAfterImport(root, reloadRowsFn, attempts = 3) {
+  let lastError = null;
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    if (attempt > 0) await wait(1200 * attempt);
+    try {
+      const reloaded = await reloadRowsFn(root);
+      if (reloaded !== false) return true;
+      lastError = new Error("reload_failed");
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError || new Error("reload_failed");
+}
 
 export async function handleImportFile(
   inputEl,
@@ -40,12 +65,16 @@ export async function handleImportFile(
     .toLowerCase();
 
   const existingRows = await library.getAllEntries("updatedAt", "desc");
-  const existingIds = new Set(
-    (Array.isArray(existingRows) ? existingRows : []).map((entry) => safeText(entry?.threadId)),
+  const existingById = new Map(
+    (Array.isArray(existingRows) ? existingRows : []).map((entry) => [
+      safeText(entry?.threadId),
+      entry,
+    ]),
   );
   const importIds = new Set();
   let added = 0;
   let updates = 0;
+  let conflictSkips = 0;
   let invalid = 0;
   let duplicatesInFile = 0;
 
@@ -60,8 +89,19 @@ export async function handleImportFile(
       return;
     }
     importIds.add(threadId);
-    if (existingIds.has(threadId)) updates += 1;
-    else added += 1;
+    const existing = existingById.get(threadId);
+    if (!existing) {
+      added += 1;
+      return;
+    }
+
+    const incomingUpdatedAt = Number(record?.updatedAt || 0);
+    const existingUpdatedAt = Number(existing?.updatedAt || 0);
+    const canUpdate =
+      conflictPolicy === "replace" ||
+      (conflictPolicy === "newer" && incomingUpdatedAt > existingUpdatedAt);
+    if (canUpdate) updates += 1;
+    else conflictSkips += 1;
   });
 
   const policyHint =
@@ -77,7 +117,8 @@ export async function handleImportFile(
     message: [
       "Import preview:",
       `- New records: ${added}`,
-      `- Existing IDs in file: ${updates}`,
+      `- Existing records to update: ${updates}`,
+      `- Existing records skipped by policy: ${conflictSkips}`,
       `- Invalid records (missing threadId): ${invalid}`,
       `- Duplicate IDs inside file: ${duplicatesInFile}`,
       "",
@@ -91,14 +132,35 @@ export async function handleImportFile(
     return;
   }
 
-  const result = await library.importEntries(records, { conflictPolicy });
+  await openImportProgress(records.length);
+  const result = await library.importEntries(records, {
+    conflictPolicy,
+    shouldCancel: isImportCancelled,
+    onProgress: updateImportProgress,
+  });
+  await finishImportProgress(result.cancelled ? "import-cancelled" : "import-complete");
+  const detail = [
+    `added: ${result.added}`,
+    `updated: ${result.updated}`,
+    `conflict-skipped: ${result.skippedExisting + result.skippedNotNewer}`,
+    `invalid: ${result.skippedInvalid}`,
+    `failed: ${result.failed}`,
+  ].join(", ");
+  const failureDetail = Object.entries(result.failureReasons || {})
+    .map(([reason, count]) => `${reason}: ${count}`)
+    .join(", ");
   await showToast(
-    `Import complete. Imported: ${result.imported}, skipped: ${result.skipped}.`,
-    "success",
+    `${result.cancelled ? "Import stopped" : "Import complete"}. ${detail}.${failureDetail ? ` Failures: ${failureDetail}.` : ""}`,
+    result.failed > 0 || result.cancelled ? "error" : "success",
   );
   inputEl.value = "";
 
-  await reloadRowsFn(root);
+  await wait(750);
+  try {
+    await reloadAfterImport(root, reloadRowsFn);
+  } catch {
+    await showToast("Import finished, but refreshing the table is still being rate-limited.", "error");
+  }
   if (typeof onMutatedFn === "function") onMutatedFn();
 }
 

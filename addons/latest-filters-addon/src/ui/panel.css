@@ -239,6 +239,32 @@ __ROOT__.is-panel-only .f95ue-lf-content {
   overflow-wrap: anywhere;
 }
 
+.f95ue-addon-dialog-content .f95ue-lf-summary-part,
+.f95ue-addon-dialog-content .f95ue-lf-tag-list {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.f95ue-addon-dialog-content .f95ue-lf-summary-separator {
+  margin: 0 5px;
+  color: #7f8795;
+}
+
+.f95ue-addon-dialog-content .f95ue-lf-tag-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 19px;
+  padding: 1px 7px;
+  border: 1px solid #454b55;
+  border-radius: 999px;
+  background: #292d34;
+  color: #dce2ec;
+  font-size: 11px;
+  line-height: 1.2;
+}
+
 @media (max-width: 700px) {
   .f95ue-addon-dialog-content .f95ue-lf-dialog {
     width: 100%;

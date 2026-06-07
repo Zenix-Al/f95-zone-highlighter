@@ -14,6 +14,7 @@ import {
   normalizePreset,
   normalizePresets,
   summarizeUrl,
+  summarizeUrlParts,
 } from "./presets.js";
 import {
   createDialogMarkup,
@@ -50,6 +51,35 @@ function storageSet(key, value) {
 
 function showToast(message) {
   return bridge.invokeCoreAction("toast.show", { message });
+}
+
+async function loadTagPrefs() {
+  const result = await bridge.invokeCoreAction("config.getTagPrefs", {});
+  if (!result?.ok) {
+    state.tagPrefs = null;
+    state.tagPrefsLoaded = false;
+    state.tagPrefsError = String(result?.reason || "unknown");
+    console.warn(`[${runtime.addonId}] Failed to load tag preferences:`, result);
+    return null;
+  }
+
+  const value = result.value && typeof result.value === "object" ? result.value : {};
+  state.tagPrefs = {
+    tags: Array.isArray(value.tags) ? value.tags : [],
+    preferredTags: Array.isArray(value.preferredTags) ? value.preferredTags : [],
+    excludedTags: Array.isArray(value.excludedTags) ? value.excludedTags : [],
+    markedTags: Array.isArray(value.markedTags) ? value.markedTags : [],
+    color: value.color && typeof value.color === "object" ? value.color : {},
+  };
+  state.tagPrefsLoaded = true;
+  state.tagPrefsError = "";
+  console.debug(`[${runtime.addonId}] Loaded tag preferences.`, {
+    tags: state.tagPrefs.tags.length,
+    preferredTags: state.tagPrefs.preferredTags.length,
+    excludedTags: state.tagPrefs.excludedTags.length,
+    markedTags: state.tagPrefs.markedTags.length,
+  });
+  return state.tagPrefs;
 }
 
 // ─── Settings ─────────────────────────────────────────────────────────────────
@@ -159,6 +189,10 @@ function getPanelRenderArgs() {
     currentPresetId: currentPreset?.id ?? null,
     currentPresetName: currentPreset?.name ?? null,
     currentSummary: currentPreset ? currentPreset.summary : summarizeUrl(location.href),
+    currentSummaryParts: currentPreset
+      ? currentPreset.summaryParts
+      : summarizeUrlParts(location.href),
+    tagPrefs: state.tagPrefs,
   };
 }
 
@@ -380,6 +414,14 @@ async function updatePresetFromCurrent(presetId) {
     return;
   }
 
+  const confirmResult = await bridge.invokeCoreAction("ui.confirm", {
+    title: "Update Saved Filter",
+    description: `Replace saved filter '${preset.name}' with the current Latest Updates filters?`,
+    confirmLabel: "Update",
+    cancelLabel: "Cancel",
+  });
+  if (!confirmResult?.ok || !confirmResult?.value?.confirmed) return;
+
   const nextPresets = state.presetsState.map((entry) =>
     entry.id === presetId
       ? normalizePreset({ ...entry, url: currentUrl, updatedAt: Date.now() })
@@ -584,7 +626,7 @@ async function refreshRuntimeState() {
   const settings = await loadSettings();
   state.isEnabled = settings.enabled !== false;
   state.showPageButton = settings.state.showPageButton !== false;
-  await loadPresets();
+  await Promise.all([loadPresets(), loadTagPrefs()]);
 
   removeRoot();
   if (state.isEnabled && state.showPageButton && isLatestPage()) {

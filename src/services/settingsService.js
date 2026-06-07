@@ -110,6 +110,14 @@ function sanitizeAddonsSettings(value) {
   };
 }
 
+function sanitizePrefixCatalog(value) {
+  const source = normalizeObject(value);
+  return {
+    items: normalizeArray(source.items),
+    categories: normalizeObject(source.categories),
+  };
+}
+
 function sanitizePersistedUpdate(key, value) {
   switch (key) {
     case "color":
@@ -225,6 +233,7 @@ export async function loadData() {
 
   const result = {
     tags: normalizeArray(parsed.tags),
+    prefixes: sanitizePrefixCatalog(parsed.prefixes),
     preferredTags: normalizeArray(parsed.preferredTags),
     excludedTags: normalizeArray(parsed.excludedTags),
     markedTags: normalizeArray(parsed.markedTags),

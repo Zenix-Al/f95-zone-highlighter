@@ -2,7 +2,9 @@ import {
   defaultColors,
   defaultGlobalSettings,
   defaultLatestSettings,
+  defaultPriorityWeights,
   defaultOverlaySettings,
+  defaultTagModifiers,
   defaultThreadSetting,
 } from "../../config.js";
 import {
@@ -110,7 +112,23 @@ function validateLatestSection(latestSettings) {
   const unknownKey = hasOnlyKnownKeys(latestSettings, Object.keys(defaultLatestSettings));
   if (unknownKey) return `latestSettings.${unknownKey} is not supported.`;
 
+  const booleanKeys = [
+    "autoRefresh",
+    "webNotif",
+    "wideLatest",
+    "denseLatestGrid",
+    "latestOverlayToggle",
+    "enableScoreWeights",
+  ];
+
   for (const [key, value] of Object.entries(latestSettings)) {
+    if (booleanKeys.includes(key)) {
+      if (typeof value !== "boolean") {
+        return `latestSettings.${key} must be boolean.`;
+      }
+      continue;
+    }
+
     if (key === "minVersion") {
       if (!isValidVersion(value)) {
         return "latestSettings.minVersion must be a number >= 0.";
@@ -129,8 +147,51 @@ function validateLatestSection(latestSettings) {
       }
       continue;
     }
-    if (typeof value !== "boolean") {
-      return `latestSettings.${key} must be boolean.`;
+
+    if (key === "ratingHighlightThreshold" || key === "engagementRatioThreshold") {
+      if (typeof value !== "number" || !Number.isFinite(value) || value < 0) {
+        return `latestSettings.${key} must be a number >= 0.`;
+      }
+      continue;
+    }
+
+    if (key === "ratingImpactWeight" || key === "engagementImpactWeight") {
+      if (typeof value !== "number" || !Number.isFinite(value) || value < 0) {
+        return `latestSettings.${key} must be a number >= 0.`;
+      }
+      continue;
+    }
+
+    if (key === "priorityWeights") {
+      if (!isPlainObject(value)) {
+        return "latestSettings.priorityWeights must be an object.";
+      }
+      const unknownWeightKey = hasOnlyKnownKeys(value, Object.keys(defaultPriorityWeights));
+      if (unknownWeightKey) {
+        return `latestSettings.priorityWeights.${unknownWeightKey} is not supported.`;
+      }
+      for (const [weightKey, weightValue] of Object.entries(value)) {
+        if (typeof weightValue !== "number" || !Number.isFinite(weightValue)) {
+          return `latestSettings.priorityWeights.${weightKey} must be a finite number.`;
+        }
+      }
+      continue;
+    }
+
+    if (key === "tagModifiers") {
+      if (!isPlainObject(value)) {
+        return "latestSettings.tagModifiers must be an object.";
+      }
+      const unknownModifierKey = hasOnlyKnownKeys(value, Object.keys(defaultTagModifiers));
+      if (unknownModifierKey) {
+        return `latestSettings.tagModifiers.${unknownModifierKey} is not supported.`;
+      }
+      for (const [modifierKey, modifierValue] of Object.entries(value)) {
+        if (typeof modifierValue !== "number" || !Number.isFinite(modifierValue)) {
+          return `latestSettings.tagModifiers.${modifierKey} must be a finite number.`;
+        }
+      }
+      continue;
     }
   }
   return "";

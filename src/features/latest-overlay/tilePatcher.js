@@ -1,7 +1,8 @@
-import { config } from "../../config.js";
+import { config, stateManager } from "../../config.js";
 import { debugLog } from "../../core/logger";
 import { SELECTORS } from "../../config/selectors.js";
 import { TIMINGS } from "../../config/timings.js";
+import { runFrameBudgeted } from "../../core/frameBudget.js";
 import { buildOrderedOverlayMatches } from "./overlayOrder.js";
 import { cache, refreshCaches } from "./overlayCache.js";
 import {
@@ -10,6 +11,12 @@ import {
   removeHighlightClasses,
 } from "./ratingEngagementHighlight.js";
 import { calculateTileScore, applyScoreDisplay, removeScoreDisplay } from "./scoreCalculator.js";
+
+const DEFAULT_LATEST_OVERLAY_CATEGORY = "games";
+
+function getCurrentLatestOverlayCategory() {
+  return stateManager.get("latestOverlayPageCategory") || DEFAULT_LATEST_OVERLAY_CATEGORY;
+}
 
 // ---------------------------------------------------------------------------
 // Generation counter — incremented on enable/disable to cancel stale work.
@@ -83,14 +90,16 @@ export function clearMutationState() {
 // DOM read helpers — extract data from tile elements.
 // ---------------------------------------------------------------------------
 
-function extractTileState(tile) {
+function extractTileState(tile, pageCategory = DEFAULT_LATEST_OVERLAY_CATEGORY) {
   // Read highlight classes safely (from ratingEngagementHighlight.js)
-  const highlights = getTileHighlightClasses(tile);
+  const highlights = getTileHighlightClasses(tile, pageCategory);
+  const isGameCategory = pageCategory === "games";
 
   return {
     element: tile, // Keep the reference so we know who to update later
     wasModified: tile.dataset.modified === "true",
     isConnected: tile.isConnected,
+    pageCategory,
 
     // Extracted raw data
     tags: (tile.getAttribute("data-tags") || "")
@@ -98,20 +107,25 @@ function extractTileState(tile) {
       .map((id) => Number(id.trim()))
       .filter(Number.isFinite),
 
-    versionText: String(tile.querySelector(SELECTORS.TILE.VERSION)?.textContent || "")
-      .toLowerCase()
-      .trim(),
+    versionText: isGameCategory
+      ? String(tile.querySelector(SELECTORS.TILE.VERSION)?.textContent || "")
+          .toLowerCase()
+          .trim()
+      : "",
 
-    labelText: String(
-      tile.querySelector(SELECTORS.TILE.LABEL_WRAP)?.querySelector('[class^="label--"]')
-        ?.textContent || "",
-    )
-      .toLowerCase()
-      .trim(),
+    labelText: isGameCategory
+      ? String(
+          tile.querySelector(SELECTORS.TILE.LABEL_WRAP)?.querySelector('[class^="label--"]')
+            ?.textContent || "",
+        )
+          .toLowerCase()
+          .trim()
+      : "",
 
     ratingClass: highlights.ratingClass,
     engagementClass: highlights.engagementClass,
     views: highlights.views,
+    time: highlights.time,
   };
 }
 // ---------------------------------------------------------------------------
@@ -327,6 +341,7 @@ function buildTilePatch(tileState, reset, generation) {
   const labels = [];
   const overlayMatches = {};
   const { overlayFlags } = cache;
+  const isGameCategory = tileState.pageCategory === "games";
 
   // 1. Process Tags using in-memory array
   // Initialize tracking variables for this specific tile
@@ -354,7 +369,7 @@ function buildTilePatch(tileState, reset, generation) {
   }
 
   // 2. Process Status Labels using in-memory string
-  if (overlayFlags.completed || overlayFlags.onhold || overlayFlags.abandoned) {
+  if (isGameCategory && (overlayFlags.completed || overlayFlags.onhold || overlayFlags.abandoned)) {
     const labelText = tileState.labelText; // Using memory snapshot
     if (config.overlaySettings.completed && labelText === "completed") {
       overlayMatches.completed = { label: "Completed", color: config.color.completed };
@@ -366,7 +381,7 @@ function buildTilePatch(tileState, reset, generation) {
   }
 
   // 3. Process Version using in-memory string
-  if (overlayFlags.highVersion || overlayFlags.invalidVersion) {
+  if (isGameCategory && (overlayFlags.highVersion || overlayFlags.invalidVersion)) {
     const versionText = tileState.versionText; // Using memory snapshot
     const match = versionText.match(/(\d+\.\d+)/);
     const versionNumber = match ? parseFloat(match[1]) : null;
@@ -406,6 +421,8 @@ function buildTilePatch(tileState, reset, generation) {
       totalPreferred,
       totalExcluded,
       tileState.views,
+      tileState.time,
+      tileState.pageCategory,
     );
   }
   return {
@@ -469,36 +486,24 @@ function applyTilePatch(patch, generation) {
 // Frame-budgeted batch processing — spreads DOM writes across animation frames.
 // ---------------------------------------------------------------------------
 function applyPatchesWithFrameBudget(patches, generation) {
-  const frameBudget = TIMINGS.LATEST_OVERLAY_FRAME_BUDGET_MS;
-  const minChunk = TIMINGS.LATEST_OVERLAY_MIN_CHUNK;
-  let index = 0;
-
-  const step = () => {
-    if (generation !== generationCounter) return;
-
-    const start = performance.now();
-    let processed = 0;
-
-    while (index < patches.length) {
-      applyTilePatch(patches[index], generation);
-      index += 1;
-      processed += 1;
-
-      if (processed >= minChunk && performance.now() - start >= frameBudget) break;
-    }
-
-    if (index < patches.length) requestAnimationFrame(step);
-  };
-
-  requestAnimationFrame(step);
+  void runFrameBudgeted(
+    patches,
+    (patch) => applyTilePatch(patch, generation),
+    {
+      budgetMs: TIMINGS.LATEST_OVERLAY_FRAME_BUDGET_MS,
+      minChunk: TIMINGS.LATEST_OVERLAY_MIN_CHUNK,
+      shouldContinue: () => generation === generationCounter,
+    },
+  );
 }
 
 function processTilesBatch(tiles, reset, generation) {
   if (generation !== generationCounter) return;
+  const pageCategory = getCurrentLatestOverlayCategory();
 
   const patches = [];
   for (const tile of tiles) {
-    const tileState = extractTileState(tile);
+    const tileState = extractTileState(tile, pageCategory);
     const patch = buildTilePatch(tileState, reset, generation);
     if (patch) patches.push(patch);
   }
@@ -512,7 +517,8 @@ function processTilesBatch(tiles, reset, generation) {
 // ---------------------------------------------------------------------------
 export function processTile(tile, reset = false) {
   const generation = generationCounter;
-  const tileState = extractTileState(tile);
+  const pageCategory = getCurrentLatestOverlayCategory();
+  const tileState = extractTileState(tile, pageCategory);
 
   const patch = buildTilePatch(tileState, reset, generation);
   if (!patch) return;

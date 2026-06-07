@@ -111,6 +111,7 @@ export const defaultMetrics = {
 // It is initialized with default values and can be updated from storage.
 export let config = {
   tags: [],
+  prefixes: { items: [], categories: {} },
   preferredTags: [],
   excludedTags: [],
   markedTags: [],
@@ -158,6 +159,7 @@ const runtimeState = {
   isNoticeDismissalEnabled: false,
   isRecaptchaFrame: false,
   latestOverlayStatus: "IDLE",
+  latestOverlayPageCategory: "games",
 };
 
 export const stateManager = createStateManager(runtimeState, {
