@@ -1,5 +1,11 @@
 # Changelog
 
+## [4.19.4 - Latest Overlay Score Calculation adjustment]
+
+- adjusted scoring system, now it determine thread confidence to adjust how a rating and engagement score contribute to the final score based on view and age. this prevent new thread get judged too early and prevent old thread get judged based on engagement.
+- adjusted rating and engagement calculation for 100k - 1M view bracket, now it should be more balanced and not always gives yellow rating anymore.
+- added support for other category, now it should be more accurate for non-game category.
+
 ## [4.19.0 - Bugfix & balance latest overlay]
 
 - fix bug where latest overlay "rating and engagement highlight" get view count wrong.

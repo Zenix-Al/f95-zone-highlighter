@@ -3,6 +3,9 @@ import {
   LIBRARY_INDEXES,
   LIBRARY_LEGACY_KEY,
   LIBRARY_MIGRATION_MARKER_KEY,
+  LIBRARY_IMPORT_MAX_RETRIES,
+  LIBRARY_IMPORT_RETRY_DELAY_MS,
+  LIBRARY_IMPORT_THROTTLE_MS,
   LIBRARY_STORE_NAME,
 } from "../constants.js";
 import { storageGet, storageSet } from "../main.js";
@@ -23,6 +26,28 @@ export function createLibraryService(bridge) {
     title: "titleNormalized",
     status: "userStatus",
   };
+  const TRANSIENT_CORE_REASONS = new Set([
+    "rate_limited",
+    "too_many_concurrent_requests",
+    "timeout",
+  ]);
+
+  function wait(ms) {
+    return new Promise((resolve) => setTimeout(resolve, Math.max(0, Number(ms) || 0)));
+  }
+
+  async function invokeImportAction(action, payload, shouldCancel) {
+    let result = null;
+    for (let attempt = 0; attempt <= LIBRARY_IMPORT_MAX_RETRIES; attempt += 1) {
+      if (shouldCancel?.()) return { ok: false, reason: "cancelled" };
+      result = await bridge.invokeCoreAction(action, payload);
+      if (result?.ok || !TRANSIENT_CORE_REASONS.has(String(result?.reason || ""))) return result;
+      if (attempt < LIBRARY_IMPORT_MAX_RETRIES) {
+        await wait(LIBRARY_IMPORT_RETRY_DELAY_MS * (attempt + 1));
+      }
+    }
+    return result;
+  }
 
   function normalizeList(value) {
     if (!Array.isArray(value)) return [];
@@ -181,21 +206,30 @@ export function createLibraryService(bridge) {
     return result.value || null;
   }
 
-  async function saveEntry(record) {
-    const normalized = normalizeRecord({ ...record, updatedAt: Date.now() });
+  async function saveEntry(record, options = {}) {
+    const preserveUpdatedAt = Boolean(options.preserveUpdatedAt);
+    const skipExistingLookup = Boolean(options.skipExistingLookup);
+    const normalized = normalizeRecord(
+      preserveUpdatedAt ? record : { ...record, updatedAt: Date.now() },
+    );
 
     if (!normalized.threadId) {
       return { ok: false, reason: "thread_id_required" };
     }
 
-    const existing = await getEntry(normalized.threadId);
-    if (existing?.createdAt) {
-      normalized.createdAt = existing.createdAt;
-    } else if (!normalized.createdAt) {
-      normalized.createdAt = Date.now();
+    if (!skipExistingLookup) {
+      const existing = await getEntry(normalized.threadId);
+      if (existing?.createdAt) {
+        normalized.createdAt = existing.createdAt;
+      } else if (!normalized.createdAt) {
+        normalized.createdAt = Date.now();
+      }
     }
 
-    return bridge.invokeCoreAction("idb.put", storePayload({ value: normalized }));
+    const payload = storePayload({ value: normalized });
+    return options.importAction
+      ? invokeImportAction("idb.put", payload, options.shouldCancel)
+      : bridge.invokeCoreAction("idb.put", payload);
   }
 
   function removeEntry(threadId) {
@@ -237,7 +271,10 @@ export function createLibraryService(bridge) {
         offset,
       }),
     );
-    if (!result?.ok || !Array.isArray(result.value)) return [];
+    if (!result?.ok) {
+      throw new Error(String(result?.reason || "query_failed"));
+    }
+    if (!Array.isArray(result.value)) return [];
 
     return result.value.map(normalizeRecord).filter((entry) => matchesFilters(entry, options));
   }
@@ -273,25 +310,99 @@ export function createLibraryService(bridge) {
       .trim()
       .toLowerCase();
     let imported = 0;
+    let added = 0;
+    let updated = 0;
     let skipped = 0;
+    let skippedInvalid = 0;
+    let skippedExisting = 0;
+    let skippedNotNewer = 0;
+    let failed = 0;
+    const failureReasons = {};
+    const shouldCancel = typeof options.shouldCancel === "function" ? options.shouldCancel : () => false;
+    const onProgress = typeof options.onProgress === "function" ? options.onProgress : () => {};
+    let processed = 0;
+    let cancelled = false;
 
+    function recordFailure(reason) {
+      const normalizedReason = String(reason || "unknown");
+      failureReasons[normalizedReason] = Number(failureReasons[normalizedReason] || 0) + 1;
+      skipped += 1;
+      failed += 1;
+    }
+
+    function reportProgress() {
+      onProgress({
+        processed,
+        total: list.length,
+        added,
+        updated,
+        skipped,
+        failed,
+        cancelled,
+      });
+    }
+
+    reportProgress();
     for (const raw of list) {
+      if (shouldCancel()) {
+        cancelled = true;
+        break;
+      }
       const next = normalizeRecord(raw);
       if (!next.threadId) {
         skipped += 1;
+        skippedInvalid += 1;
+        processed += 1;
+        reportProgress();
         continue;
       }
 
-      const existing = await getEntry(next.threadId);
+      const getResult = await invokeImportAction(
+        "idb.get",
+        storePayload({ key: next.threadId }),
+        shouldCancel,
+      );
+      if (getResult?.reason === "cancelled") {
+        cancelled = true;
+        break;
+      }
+      if (!getResult?.ok) {
+        recordFailure(getResult?.reason);
+        processed += 1;
+        reportProgress();
+        await wait(LIBRARY_IMPORT_THROTTLE_MS);
+        continue;
+      }
+      const existing = getResult.value || null;
       if (!existing) {
-        const putResult = await saveEntry(next);
-        if (putResult?.ok) imported += 1;
-        else skipped += 1;
+        const putResult = await saveEntry(next, {
+          preserveUpdatedAt: true,
+          skipExistingLookup: true,
+          importAction: true,
+          shouldCancel,
+        });
+        if (putResult?.reason === "cancelled") {
+          cancelled = true;
+          break;
+        }
+        if (putResult?.ok) {
+          imported += 1;
+          added += 1;
+        } else {
+          recordFailure(putResult?.reason);
+        }
+        processed += 1;
+        reportProgress();
+        await wait(LIBRARY_IMPORT_THROTTLE_MS);
         continue;
       }
 
       if (conflictPolicy === "skip") {
         skipped += 1;
+        skippedExisting += 1;
+        processed += 1;
+        reportProgress();
+        await wait(LIBRARY_IMPORT_THROTTLE_MS);
         continue;
       }
 
@@ -300,16 +411,54 @@ export function createLibraryService(bridge) {
         const incomingUpdatedAt = Number(next.updatedAt || 0);
         if (incomingUpdatedAt <= existingUpdatedAt) {
           skipped += 1;
+          skippedNotNewer += 1;
+          processed += 1;
+          reportProgress();
+          await wait(LIBRARY_IMPORT_THROTTLE_MS);
           continue;
         }
       }
 
-      const putResult = await saveEntry({ ...existing, ...next, createdAt: existing.createdAt });
-      if (putResult?.ok) imported += 1;
-      else skipped += 1;
+      const putResult = await saveEntry(
+        { ...existing, ...next, createdAt: existing.createdAt },
+        {
+          preserveUpdatedAt: true,
+          skipExistingLookup: true,
+          importAction: true,
+          shouldCancel,
+        },
+      );
+      if (putResult?.reason === "cancelled") {
+        cancelled = true;
+        break;
+      }
+      if (putResult?.ok) {
+        imported += 1;
+        updated += 1;
+      } else {
+        recordFailure(putResult?.reason);
+      }
+      processed += 1;
+      reportProgress();
+      await wait(LIBRARY_IMPORT_THROTTLE_MS);
     }
+    reportProgress();
 
-    return { ok: true, imported, skipped };
+    return {
+      ok: failed === 0,
+      imported,
+      added,
+      updated,
+      skipped,
+      skippedInvalid,
+      skippedExisting,
+      skippedNotNewer,
+      failed,
+      failureReasons,
+      cancelled,
+      processed,
+      total: list.length,
+    };
   }
 
   async function patchEntry(threadId, patch = {}) {

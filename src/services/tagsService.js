@@ -1,9 +1,11 @@
 import { stateManager, config } from "../config.js";
 import { ensurePageBridge, requestPageBridge } from "../core/pageBridge.js";
+import { runFrameBudgeted } from "../core/frameBudget.js";
 import { renderList } from "../ui/components/tag-search";
 
 import { checkTags } from "./safetyService";
 import { saveConfigKeys } from "./settingsService";
+import { updatePrefixes } from "./prefixService.js";
 import { debugLog } from "../core/logger";
 
 const LATEST_TAGS_BRIDGE_REQUEST_EVENT = "f95ue:latest-tags-request";
@@ -44,31 +46,29 @@ function toTagsOrderString(tags) {
   );
 }
 
-function normalizeTagsFromLatestUpdates(rawTags) {
+async function normalizeTagsFromLatestUpdatesBudgeted(rawTags) {
   if (!rawTags) return [];
 
+  const entries = Array.isArray(rawTags) ? rawTags : Object.entries(rawTags);
   const tagById = new Map();
-  const upsert = (idRaw, nameRaw) => {
-    const id = Number(idRaw);
-    const name = String(nameRaw || "").trim();
-    if (!Number.isFinite(id) || !name) return;
-    if (!tagById.has(id)) tagById.set(id, { id, name });
-  };
-
-  if (Array.isArray(rawTags)) {
-    rawTags.forEach((entry) => {
-      if (!entry) return;
+  await runFrameBudgeted(
+    entries,
+    (entry) => {
+      let idRaw;
+      let nameRaw;
       if (Array.isArray(entry)) {
-        upsert(entry[0], entry[1]);
-        return;
+        [idRaw, nameRaw] = entry;
+      } else if (entry && typeof entry === "object") {
+        idRaw = entry.id;
+        nameRaw = entry.name;
       }
-      if (typeof entry === "object") {
-        upsert(entry.id, entry.name);
-      }
-    });
-  } else if (typeof rawTags === "object") {
-    Object.entries(rawTags).forEach(([id, name]) => upsert(id, name));
-  }
+
+      const id = Number(idRaw);
+      const name = String(nameRaw || "").trim();
+      if (Number.isFinite(id) && name && !tagById.has(id)) tagById.set(id, { id, name });
+    },
+    { budgetMs: 4, minChunk: 50 },
+  );
 
   return [...tagById.values()].sort((a, b) => {
     const byName = a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
@@ -116,9 +116,9 @@ function ensureLatestTagsPageBridge() {
   });
 }
 
-function readLatestTagsFromWindow() {
+async function readLatestTagsFromWindow() {
   const latest = typeof window !== "undefined" ? window.latestUpdates || null : null;
-  const tags = normalizeTagsFromLatestUpdates(latest?.tags);
+  const tags = await normalizeTagsFromLatestUpdatesBudgeted(latest?.tags);
   return { ok: tags.length > 0, source: "window", reason: tags.length ? "" : "window_empty", tags };
 }
 
@@ -137,7 +137,7 @@ function readLatestTagsViaPageBridge(timeoutMs = 1200) {
     requestEvent: LATEST_TAGS_BRIDGE_REQUEST_EVENT,
     resultEvent: LATEST_TAGS_BRIDGE_RESULT_EVENT,
     timeoutMs,
-  }).then((result) => {
+  }).then(async (result) => {
     if (!result.received) {
       return {
         ok: false,
@@ -148,7 +148,7 @@ function readLatestTagsViaPageBridge(timeoutMs = 1200) {
     }
 
     const detail = result.detail || {};
-    const tags = normalizeTagsFromLatestUpdates(detail.tags);
+    const tags = await normalizeTagsFromLatestUpdatesBudgeted(detail.tags);
     return {
       ok: Boolean(detail.ok) && tags.length > 0,
       source: "pageBridge",
@@ -209,7 +209,7 @@ function readLatestTagsViaPageBridge(timeoutMs = 1200) {
 // }
 
 async function refreshTagsFromLatestUpdates() {
-  const directResult = readLatestTagsFromWindow();
+  const directResult = await readLatestTagsFromWindow();
   const result = directResult.ok ? directResult : await readLatestTagsViaPageBridge();
   const newTags = result.tags;
 
@@ -296,7 +296,19 @@ export async function updateTags() {
   stateManager.set("tagsUpdateStatus", "UPDATING");
 
   try {
-    await refreshTagsFromLatestUpdates();
+    const [tagUpdateResult, prefixUpdateResult] = await Promise.allSettled([
+      refreshTagsFromLatestUpdates(),
+      updatePrefixes(),
+    ]);
+    if (tagUpdateResult.status === "rejected") throw tagUpdateResult.reason;
+
+    const prefixResult =
+      prefixUpdateResult.status === "fulfilled" ? prefixUpdateResult.value : null;
+    if (prefixUpdateResult.status === "rejected") {
+      debugLog("Prefix Update", `Prefix refresh failed: ${prefixUpdateResult.reason}`, {
+        level: "warn",
+      });
+    }
 
     const pruneResult = buildPrunedTagLists();
     await applyPrunedTagLists(pruneResult);
@@ -304,7 +316,12 @@ export async function updateTags() {
     checkTags(); // Safety check for empty tags
     stateManager.set("tagsUpdateStatus", "COMPLETE");
     debugLog("Tag Update", "Finished updating tags. Status: COMPLETE");
-    return { pruned: pruneResult.hasChanged, count: pruneResult.prunedCount };
+    return {
+      pruned: pruneResult.hasChanged,
+      count: pruneResult.prunedCount,
+      prefixesUpdated: Boolean(prefixResult?.updated),
+      prefixCount: Number(prefixResult?.count || 0),
+    };
   } catch (error) {
     debugLog("Tag Update", `An error occurred during tag update: ${error}`, "error");
     // Reset to IDLE on error to allow a potential retry later

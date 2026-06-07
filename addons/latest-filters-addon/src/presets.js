@@ -95,8 +95,8 @@ export function normalizeLatestUrl(rawUrl) {
   }
 }
 
-/** Returns a human-readable filter description for the given Latest Updates URL. */
-export function summarizeUrl(rawUrl) {
+/** Returns structured filter fields for rendering and summarization. */
+export function summarizeUrlParts(rawUrl) {
   try {
     const url = new URL(rawUrl, location.origin);
     const grouped = new Map();
@@ -111,11 +111,11 @@ export function summarizeUrl(rawUrl) {
     const items = [];
     for (const [key, values] of grouped.entries()) {
       const label = prettifyKey(key);
-      const joined = values
-        .map((v) => decodeURIComponent(String(v || "")).replace(/\+/g, " "))
-        .filter(Boolean)
-        .join(", ");
-      items.push(joined ? `${label}: ${joined}` : label);
+      const normalizedValues = values
+        .flatMap((value) => (key === "tags" ? String(value || "").split(",") : [value]))
+        .map((v) => decodeURIComponent(String(v || "")).replace(/\+/g, " ").trim())
+        .filter(Boolean);
+      items.push({ key, label, values: normalizedValues });
     }
 
     const hashSegments = parseHashSegments(url.hash).filter(
@@ -124,20 +124,31 @@ export function summarizeUrl(rawUrl) {
     for (const segment of hashSegments) {
       const label = prettifyKey(segment.key);
       if (!segment.value) {
-        items.push(label);
+        items.push({ key: segment.key, label, values: [] });
         continue;
       }
       const values = String(segment.value)
         .split(",")
         .map((v) => decodeURIComponent(v).replace(/\+/g, " ").trim())
         .filter(Boolean);
-      items.push(values.length > 0 ? `${label}: ${values.join(", ")}` : label);
+      items.push({ key: segment.key, label, values });
     }
 
-    return items.length > 0 ? items.join(" | ") : "Base latest page";
+    return items;
   } catch {
-    return "Base latest page";
+    return [];
   }
+}
+
+/** Returns a human-readable filter description for the given Latest Updates URL. */
+export function summarizeUrl(rawUrl) {
+  const parts = summarizeUrlParts(rawUrl);
+  if (parts.length === 0) return "Base latest page";
+  return parts
+    .map((part) =>
+      part.values.length > 0 ? `${part.label}: ${part.values.join(", ")}` : part.label,
+    )
+    .join(" | ");
 }
 
 // ─── Preset normalization ─────────────────────────────────────────────────────
@@ -158,6 +169,7 @@ export function normalizePreset(record, index = 0) {
   const name = normalizeText(record?.name) || `Saved Filter ${index + 1}`;
   const updatedAt = Number(record?.updatedAt) || Date.now();
   const summary = summarizeUrl(url);
+  const summaryParts = summarizeUrlParts(url);
   const searchText = [name, summary, normalizedUrl].join(" ").toLowerCase();
 
   return {
@@ -166,6 +178,7 @@ export function normalizePreset(record, index = 0) {
     url,
     normalizedUrl,
     summary,
+    summaryParts,
     searchText,
     updatedAt,
   };

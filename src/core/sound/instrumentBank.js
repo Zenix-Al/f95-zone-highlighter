@@ -346,7 +346,7 @@ export function makeElectricClick() {
 }
 
 export function makeZapActivate() {
-  return (ctx, when, dur, vel = 1, params = {}) => {
+  return (ctx, when, dur, vel = 1) => {
     const now = when;
     const osc = ctx.createOscillator();
     osc.type = "triangle";
@@ -367,7 +367,7 @@ export function makeZapActivate() {
 }
 
 export function makeHumDeactivate() {
-  return (ctx, when, dur, vel = 1, params = {}) => {
+  return (ctx, when, dur, vel = 1) => {
     const now = when;
     const osc = ctx.createOscillator();
     osc.type = "sine";

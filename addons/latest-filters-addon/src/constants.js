@@ -12,6 +12,9 @@ export const state = {
   locationListenerBound: false,
   addonCommandHandlerBound: false,
   presetsState: [],
+  tagPrefs: null,
+  tagPrefsLoaded: false,
+  tagPrefsError: "",
 };
 export const CORE_EVENT = "f95ue:addons-dev-command";
 export const ADDON_COMMAND_EVENT = "f95ue:addon-command";

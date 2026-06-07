@@ -14,6 +14,7 @@ export async function reloadRows(root, state, api, library, ROWS_STATUS_ID) {
   if (!tbody || !statusLine) return;
 
   const parsedSearch = parseSearchQuery(state.search);
+  let loadSucceeded = true;
   state.isLoading = true;
   state.errorMessage = "";
 
@@ -35,7 +36,7 @@ export async function reloadRows(root, state, api, library, ROWS_STATUS_ID) {
       ? incomingRows.filter((entry) => matchesSearchTokens(entry, parsedSearch.tokens))
       : incomingRows;
   } catch (error) {
-    state.rows = [];
+    loadSucceeded = false;
     state.errorMessage = String(error?.message || "Failed to load library.");
   }
 
@@ -63,6 +64,7 @@ export async function reloadRows(root, state, api, library, ROWS_STATUS_ID) {
   });
   updatePageInfo(root, state);
   updateStatusLine(root, state, ROWS_STATUS_ID);
+  return loadSucceeded;
 }
 
 export function setupLoadingUI(root, state, ROWS_STATUS_ID) {

@@ -15,10 +15,15 @@ import {
   handleLibraryManagerDialogClosed,
   openLibraryManager,
 } from "./ui/managerLauncher.js";
+import {
+  configureImportProgress,
+  handleImportProgressDialogClosed,
+} from "./ui/importProgress.js";
 
 const runtime = getRuntimeConfig();
 debugLog(`[library-addon] Runtime config:`, runtime);
 export const bridge = createCoreBridge(runtime.addonId);
+configureImportProgress(bridge);
 const library = createLibraryService(bridge);
 const LIBRARY_DOCK_MOUNT_ID = "library-dock-widget";
 
@@ -383,6 +388,7 @@ function bindAddonCommandListener() {
         break;
       case "dialog-closed":
         handleLibraryManagerDialogClosed(detail);
+        handleImportProgressDialogClosed(detail);
         break;
       case "panel-action": {
         const actionId = String(detail.actionId || "").trim();

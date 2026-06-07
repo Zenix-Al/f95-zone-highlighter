@@ -60,7 +60,7 @@
       flatBonus = 12;
     } else if (views >= 100000) {
       // Standard Hot Tier (100K to 1M Views)
-      bracketMultiplier = 450;
+      bracketMultiplier = 600;
       flatBonus = 5;
     } else {
       // Fresh/Low Volume Tier (Below 100K Views)

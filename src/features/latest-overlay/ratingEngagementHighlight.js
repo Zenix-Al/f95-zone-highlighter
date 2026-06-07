@@ -1,6 +1,18 @@
 import { config } from "../../config.js";
 import { debugLog } from "../../core/logger.js";
 import { SELECTORS } from "../../config/selectors.js";
+import { LATEST_OVERLAY_SCORING } from "../../config/latestOverlayScoring.js";
+
+const DEFAULT_LATEST_CATEGORY = "games";
+const RATING_SUPPORTED_CATEGORIES = new Set(["games", "animations"]);
+
+function normalizeLatestCategory(pageCategory) {
+  return String(pageCategory || DEFAULT_LATEST_CATEGORY).trim().toLowerCase();
+}
+
+function isRatingSupportedForCategory(pageCategory) {
+  return RATING_SUPPORTED_CATEGORIES.has(normalizeLatestCategory(pageCategory));
+}
 
 /**
  * Extract rating value from tile element
@@ -19,6 +31,62 @@ export function extractRating(tile) {
   return Number.isFinite(rating) ? rating : null;
 }
 
+export function extractDaysElapsed(tile) {
+  // 1. Target the parent container you already defined
+  const timeContainer = tile.querySelector(SELECTORS.RATING_ENGAGEMENT.TIME);
+  if (!timeContainer) return null;
+
+  // 2. Find the active inner span element
+  const span = timeContainer.querySelector("span");
+  if (!span) return null;
+
+  // 3. Build resilient class/text context (some layouts use singular forms or date_yesterday)
+  const text = span.textContent?.trim().toLowerCase() || "";
+  const rawValue = parseInt(text, 10);
+  const classTokens = Array.from(span.classList);
+  const className = span.className || "";
+  const hasClassFragment = (fragment) =>
+    className.includes(fragment) || classTokens.some((token) => token.includes(fragment));
+  const numericValue = Number.isFinite(rawValue) && rawValue > 0 ? rawValue : 1;
+
+  // 4. Handle special "today/yesterday" classes first
+  if (hasClassFragment("date_yesterday")) return 1;
+  if (hasClassFragment("date_today")) return 1;
+
+  // 5. Handle supported unit classes (both singular and plural variants)
+  if (hasClassFragment("tile-date_years") || hasClassFragment("tile-date_year")) {
+    return numericValue * 365;
+  }
+  if (hasClassFragment("tile-date_months") || hasClassFragment("tile-date_month")) {
+    return numericValue * 30;
+  }
+  if (hasClassFragment("tile-date_weeks") || hasClassFragment("tile-date_week")) {
+    return numericValue * 7;
+  }
+  if (hasClassFragment("tile-date_days") || hasClassFragment("tile-date_day")) {
+    return numericValue;
+  }
+  if (
+    hasClassFragment("tile-date_mins") ||
+    hasClassFragment("tile-date_min") ||
+    hasClassFragment("tile-date_hours") ||
+    hasClassFragment("tile-date_hour")
+  ) {
+    return 1;
+  }
+
+  // 6. Text fallback for inconsistent markup
+  if (text.includes("yesterday")) return 1;
+  if (text.includes("today") || text.includes("just now")) return 1;
+  if (text.includes("hour") || text.includes("min")) return 1;
+  if (text.includes("week")) return numericValue * 7;
+  if (text.includes("month")) return numericValue * 30;
+  if (text.includes("year")) return numericValue * 365;
+  if (text.includes("day")) return numericValue;
+
+  return Number.isFinite(rawValue) ? rawValue : null;
+}
+
 /**
  * Extract likes and views from tile element
  * @param {Element} tile - The tile DOM element
@@ -27,7 +95,8 @@ export function extractRating(tile) {
 export function extractEngagementData(tile) {
   const likes = extractLikes(tile);
   const views = extractViews(tile);
-  return { likes, views };
+  const time = extractDaysElapsed(tile);
+  return { likes, views, time };
 }
 
 /**
@@ -87,9 +156,17 @@ function extractViews(tile) {
  * BRACKET-AWARE ENGAGEMENT SCALE ENGINE
  * Intentionally isolates and balances ultra-high traffic brackets
  * to protect legacy favorites while maintaining the solid low-to-mid accuracy.
+ * fine tune needed to fit your specific threshold and distribution patterns.
  */
 export function calculateEngagementRatio(likes, views) {
-  if (!Number.isFinite(likes) || !Number.isFinite(views) || views <= 0 || likes <= 0) {
+  const ratioConfig = LATEST_OVERLAY_SCORING.engagementRatio;
+
+  if (
+    !Number.isFinite(likes) ||
+    !Number.isFinite(views) ||
+    views <= ratioConfig.minViews ||
+    likes <= ratioConfig.minLikes
+  ) {
     return null;
   }
 
@@ -101,30 +178,34 @@ export function calculateEngagementRatio(likes, views) {
   let bracketMultiplier;
   let flatBonus = 0;
 
-  if (views >= 20000000) {
+  if (views >= ratioConfig.ultraMassiveTier.minViews) {
     // Ultra-Massive Tier (20M+ Views): High lurker dilution protection
-    bracketMultiplier = 3800;
-    flatBonus = 22; // Elevates the floor for verified large community hubs
-  } else if (views >= 1000000) {
+    bracketMultiplier = ratioConfig.ultraMassiveTier.bracketMultiplier;
+    flatBonus = ratioConfig.ultraMassiveTier.flatBonus; // Elevates the floor for verified large community hubs
+  } else if (views >= ratioConfig.megaTier.minViews) {
     // Mega Tier (1M to 20M Views)
-    bracketMultiplier = 1200;
-    flatBonus = 12;
-  } else if (views >= 100000) {
+    bracketMultiplier = ratioConfig.megaTier.bracketMultiplier;
+    flatBonus = ratioConfig.megaTier.flatBonus;
+  } else if (views >= ratioConfig.hotTier.minViews) {
     // Standard Hot Tier (100K to 1M Views)
-    bracketMultiplier = 450;
-    flatBonus = 5;
+    bracketMultiplier = ratioConfig.hotTier.bracketMultiplier;
+    flatBonus = ratioConfig.hotTier.flatBonus;
   } else {
     // Fresh/Low Volume Tier (Below 100K Views)
-    bracketMultiplier = 180;
+    bracketMultiplier = ratioConfig.lowVolumeTier.bracketMultiplier;
     // Low volume floor protection to match successful Log 1 metrics
-    flatBonus = (100000 - views) / 2000;
+    flatBonus = (ratioConfig.lowVolumeBaselineViews - views) / ratioConfig.lowVolumeBonusDivisor;
   }
 
   // 3. Compute final adjusted matrix score
   const finalScore = basePct * bracketMultiplier + flatBonus;
 
   // Clamped firmly to fit neatly into your standard config max boundaries
-  return parseFloat(Math.min(Math.max(finalScore, 0), 100).toFixed(2));
+  return parseFloat(
+    Math.min(Math.max(finalScore, ratioConfig.clampMin), ratioConfig.clampMax).toFixed(
+      ratioConfig.precision,
+    ),
+  );
 }
 
 /**
@@ -185,16 +266,22 @@ export function getEngagementHighlightClass(ratio, threshold) {
  * @param {Element} tile - The tile DOM element
  * @returns {Object} {ratingClass: string|null, engagementClass: string|null}
  */
-export function getTileHighlightClasses(tile) {
-  const rating = extractRating(tile);
-  debugLog("Latest overlay rating engagement", "extracted rating:", { rating });
-  const { likes, views } = extractEngagementData(tile);
+export function getTileHighlightClasses(tile, pageCategory = "games") {
+  const normalizedCategory = normalizeLatestCategory(pageCategory);
+  const canUseRating = isRatingSupportedForCategory(normalizedCategory);
+  const rating = canUseRating ? extractRating(tile) : null;
+  debugLog("Latest overlay rating engagement", "extracted rating:", {
+    rating,
+    pageCategory: normalizedCategory,
+    canUseRating,
+  });
+  const { likes, views, time } = extractEngagementData(tile);
   debugLog("Latest overlay rating engagement", "extracted likes and views:", { likes, views });
   let ratingClass = null;
   let engagementClass = null;
 
   // Check if rating highlight is enabled
-  if (config.overlaySettings.ratingHighlight && rating !== null) {
+  if (config.overlaySettings.ratingHighlight && canUseRating && rating !== null) {
     // Get rating threshold from config
     const ratingThreshold = config.latestSettings.ratingHighlightThreshold;
     ratingClass = getRatingHighlightClass(rating, ratingThreshold);
@@ -209,7 +296,7 @@ export function getTileHighlightClasses(tile) {
     }
   }
 
-  return { ratingClass, engagementClass, views };
+  return { ratingClass, engagementClass, views, time, pageCategory: normalizedCategory };
 }
 
 /**

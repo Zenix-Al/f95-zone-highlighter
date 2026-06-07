@@ -15,6 +15,60 @@ import { createEl } from "../../shared/createEl.js";
 // Shared CSS namespace prefix — must match the class names in createRootElement.
 const NS = "f95ue-lf";
 
+function buildTagRenderConfig(tagPrefs) {
+  const source = tagPrefs && typeof tagPrefs === "object" ? tagPrefs : {};
+  const byId = new Map();
+  (Array.isArray(source.tags) ? source.tags : []).forEach((tag) => {
+    const id = Number(tag?.id);
+    const name = String(tag?.name || "").trim();
+    if (Number.isFinite(id) && name) byId.set(id, name);
+  });
+  const toIdSet = (value) =>
+    new Set((Array.isArray(value) ? value : []).map(Number).filter(Number.isFinite));
+  return {
+    byId,
+    preferred: toIdSet(source.preferredTags),
+    excluded: toIdSet(source.excludedTags),
+    marked: toIdSet(source.markedTags),
+    color: source.color && typeof source.color === "object" ? source.color : {},
+  };
+}
+
+function renderTagChip(rawId, config) {
+  const id = Number(rawId);
+  const label = Number.isFinite(id) ? config.byId.get(id) || String(rawId) : String(rawId);
+  let state = "";
+  if (Number.isFinite(id)) {
+    if (config.preferred.has(id)) state = "preferred";
+    else if (config.excluded.has(id)) state = "excluded";
+    else if (config.marked.has(id)) state = "marked";
+  }
+  const background = state ? String(config.color[state] || "").trim() : "";
+  const foreground = state ? String(config.color[`${state}Text`] || "").trim() : "";
+  const style =
+    background || foreground
+      ? ` style="${background ? `background:${escapeHtml(background)};border-color:${escapeHtml(background)};` : ""}${foreground ? `color:${escapeHtml(foreground)};` : ""}"`
+      : "";
+  return `<span class="${NS}-tag-chip"${state ? ` data-state="${state}"` : ""}${style}>${escapeHtml(label)}</span>`;
+}
+
+function renderSummary(parts, fallbackSummary, tagPrefs) {
+  if (!Array.isArray(parts) || parts.length === 0) return escapeHtml(fallbackSummary);
+  const tagConfig = buildTagRenderConfig(tagPrefs);
+  return parts
+    .map((part) => {
+      const key = String(part?.key || "").toLowerCase();
+      const label = escapeHtml(part?.label || key);
+      const values = Array.isArray(part?.values) ? part.values : [];
+      if (key === "tags" && values.length > 0) {
+        return `<span class="${NS}-summary-part"><span class="${NS}-summary-label">${label}:</span><span class="${NS}-tag-list">${values.map((value) => renderTagChip(value, tagConfig)).join("")}</span></span>`;
+      }
+      const text = values.length > 0 ? `${part?.label}: ${values.join(", ")}` : part?.label;
+      return `<span class="${NS}-summary-part">${escapeHtml(text)}</span>`;
+    })
+    .join(`<span class="${NS}-summary-separator">|</span>`);
+}
+
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 function buildCss(rootId) {
@@ -71,7 +125,7 @@ export function createDialogMarkup() {
  * @param {string|null}  currentPresetId - id of the currently-applied preset, or null
  * @returns {string} HTML string
  */
-export function buildPresetRowsMarkup(presets, searchQuery, currentPresetId) {
+export function buildPresetRowsMarkup(presets, searchQuery, currentPresetId, tagPrefs) {
   const query = String(searchQuery || "")
     .toLowerCase()
     .trim();
@@ -91,7 +145,7 @@ export function buildPresetRowsMarkup(presets, searchQuery, currentPresetId) {
             <div class="${NS}-row-title">${escapeHtml(preset.name)}</div>
             ${isCurrent ? `<span class="${NS}-pill">Current</span>` : ""}
           </div>
-          <div class="${NS}-summary">${escapeHtml(preset.summary)}</div>
+          <div class="${NS}-summary">${renderSummary(preset.summaryParts, preset.summary, tagPrefs)}</div>
           <div class="${NS}-row-actions">
             <button type="button" data-action="apply" data-preset-id="${id}">Apply</button>
             <button type="button" data-action="update" data-preset-id="${id}">Update</button>
@@ -117,7 +171,15 @@ export function buildPresetRowsMarkup(presets, searchQuery, currentPresetId) {
  */
 export function renderPanelContent(
   rootEl,
-  { currentPresetName, currentSummary, presets, searchQuery, currentPresetId },
+  {
+    currentPresetName,
+    currentSummary,
+    currentSummaryParts,
+    presets,
+    searchQuery,
+    currentPresetId,
+    tagPrefs,
+  },
 ) {
   const currentLabel = currentPresetName
     ? `Current applied filter: <strong>${escapeHtml(currentPresetName)}</strong>`
@@ -127,10 +189,10 @@ export function renderPanelContent(
   const resultsEl = rootEl.querySelector("[data-role='results']");
 
   if (currentEl) {
-    currentEl.innerHTML = `${currentLabel}<br><span>${escapeHtml(currentSummary)}</span>`;
+    currentEl.innerHTML = `${currentLabel}<br><span class="${NS}-summary">${renderSummary(currentSummaryParts, currentSummary, tagPrefs)}</span>`;
   }
   if (resultsEl) {
-    resultsEl.innerHTML = buildPresetRowsMarkup(presets, searchQuery, currentPresetId);
+    resultsEl.innerHTML = buildPresetRowsMarkup(presets, searchQuery, currentPresetId, tagPrefs);
   }
 }
 

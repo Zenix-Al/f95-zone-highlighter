@@ -2,6 +2,8 @@
 import { debugLog } from "./core/logger";
 import { safeExecute } from "./core/safeExecute.js";
 import { registerFeature } from "./core/featureCatalog.js";
+import { runFrameBudgeted } from "./core/frameBudget.js";
+import { TIMINGS } from "./config/timings.js";
 import { contributeToSection } from "./ui/settingsRuntime/sectionsRegistry.js";
 
 // Features
@@ -41,20 +43,27 @@ function registerFeatureSettingsUi(feature) {
 
 featureRegistry.forEach(registerFeatureSettingsUi);
 
-function runFeatureRegistry(features) {
+async function runFeatureRegistry(features) {
   if (!Array.isArray(features) || features.length === 0) return;
-  for (const feature of features) {
-    safeExecute(() => {
-      if (!feature || typeof feature !== "object") return;
-      if (typeof feature.isEnabled !== "function" || typeof feature.enable !== "function") return;
-      if (feature.isEnabled()) {
-        feature.enable();
-      }
-    });
-  }
+  await runFrameBudgeted(
+    features,
+    (feature) =>
+      safeExecute(() => {
+        if (!feature || typeof feature !== "object") return;
+        if (typeof feature.isEnabled !== "function" || typeof feature.enable !== "function") return;
+        if (feature.isEnabled()) {
+          feature.enable();
+        }
+      }),
+    {
+      budgetMs: TIMINGS.LOADER_FEATURE_FRAME_BUDGET_MS,
+      minChunk: TIMINGS.LOADER_FEATURE_MIN_CHUNK,
+      startOnNextFrame: false,
+    },
+  );
 }
 
-export function loadFeatures() {
+export async function loadFeatures() {
   debugLog("Loader", "Running unified feature registry...");
-  safeExecute(() => runFeatureRegistry(featureRegistry));
+  await runFeatureRegistry(featureRegistry);
 }

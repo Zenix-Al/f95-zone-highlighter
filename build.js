@@ -2,7 +2,7 @@ const esbuild = require("esbuild");
 const fs = require("fs");
 const path = require("path");
 
-const { stripCssComments } = require("./build/stripCssComments");
+const { stripCssComments } = require("./stripCssComments");
 const { stripDebugLogs } = require("./stripDebugLogs");
 let terser = null;
 try {

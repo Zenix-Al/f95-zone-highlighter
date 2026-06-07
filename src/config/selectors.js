@@ -14,6 +14,7 @@ export const SELECTORS = {
     RATING: ".resource-tile_info-meta_rating",
     LIKES: ".resource-tile_info-meta_likes",
     VIEWS: ".resource-tile_info-meta_views",
+    TIME: ".resource-tile_info-meta_time",
   },
   TAG_PICKER: {
     INPUT: ".selectize-input.items.not-full",

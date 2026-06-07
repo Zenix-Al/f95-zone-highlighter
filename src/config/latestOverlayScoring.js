@@ -1,0 +1,103 @@
+export const LATEST_OVERLAY_SCORING = Object.freeze({
+  engagementRatio: Object.freeze({
+    minLikes: 0,
+    minViews: 0,
+    lowVolumeBaselineViews: 100000,
+    lowVolumeBonusDivisor: 2000,
+    clampMin: 0,
+    clampMax: 100,
+    precision: 2,
+    ultraMassiveTier: Object.freeze({
+      minViews: 20000000,
+      bracketMultiplier: 3800,
+      flatBonus: 22,
+    }),
+    megaTier: Object.freeze({
+      minViews: 1000000,
+      bracketMultiplier: 1200,
+      flatBonus: 12,
+    }),
+    hotTier: Object.freeze({
+      minViews: 100000,
+      bracketMultiplier: 600,
+      flatBonus: 6,
+    }),
+    lowVolumeTier: Object.freeze({
+      bracketMultiplier: 180,
+    }),
+  }),
+  scoreCalculator: Object.freeze({
+    ratingGrade: Object.freeze({
+      green: 1.0,
+      yellow: 0.5,
+      red: 0.0,
+    }),
+    threadConfidence: Object.freeze({
+      minDaysElapsed: 1,
+      viewsToMonthFactor: 30,
+      defaultEngagementConfidence: 0.75,
+      lowVelocityMaxViewsPerMonth: 2500,
+      lowVelocityConfidence: 0.0,
+      nicheVelocityMaxViewsPerMonth: 10000,
+      nicheVelocityConfidence: 0.3,
+      healthyVelocityMaxViewsPerMonth: 30000,
+      healthyVelocityConfidence: 0.75,
+      nonGameProfiles: Object.freeze({
+        utilityCategories: Object.freeze(["assets", "mods", "comics"]),
+        utilityVelocityProfile: Object.freeze({
+          defaultEngagementConfidence: 0.95,
+          lowVelocityMaxViewsPerMonth: 5000,
+          lowVelocityConfidence: 0.6,
+          nicheVelocityMaxViewsPerMonth: 18000,
+          nicheVelocityConfidence: 0.8,
+          healthyVelocityMaxViewsPerMonth: 55000,
+          healthyVelocityConfidence: 0.95,
+        }),
+        standardVelocityProfile: Object.freeze({
+          defaultEngagementConfidence: 0.95,
+          lowVelocityMaxViewsPerMonth: 5000,
+          lowVelocityConfidence: 0.25,
+          nicheVelocityMaxViewsPerMonth: 18000,
+          nicheVelocityConfidence: 0.55,
+          healthyVelocityMaxViewsPerMonth: 55000,
+          healthyVelocityConfidence: 0.95,
+        }),
+      }),
+      defaultRatingConfidence: 1.0,
+      dayOneMaxDays: 1,
+      dayOneLowViewsThreshold: 50000,
+      dayOneLowViewsConfidence: 0.2,
+      dayThreeMaxDays: 3,
+      dayThreeLowViewsThreshold: 100000,
+      dayThreeLowViewsConfidence: 0.5,
+    }),
+    weightFloors: Object.freeze({
+      pillarMinMultiplier: 0.1,
+    }),
+    nonGameWeighting: Object.freeze({
+      engagementWeightMultiplier: 3,
+    }),
+    achievedThresholds: Object.freeze({
+      rating: 1.0,
+      engagement: 0.7,
+    }),
+    tagGrade: Object.freeze({
+      neutralBaseline: 0.5,
+      partialAchievedRatio: 0.7,
+      min: 0,
+      max: 1,
+    }),
+    finalScore: Object.freeze({
+      scale: 10,
+      completenessBase: 0.45,
+      completenessWeight: 0.55,
+      clampMin: 0,
+      clampMax: 10,
+      precision: 1,
+    }),
+    colorThresholds: Object.freeze({
+      greenMin: 7,
+      yellowMin: 4,
+    }),
+  }),
+});
