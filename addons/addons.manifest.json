@@ -4,7 +4,7 @@
       "id": "image-repair-addon",
       "name": "F95UE Image Repair Add-on",
       "description": "Automatically retries broken attachment images on F95Zone threads.",
-      "version": "0.2.1",
+      "version": "0.2.2",
       "author": "X Death",
       "entry": "addons/image-repair-addon/src/main.js",
       "outfile": "addons/image-repair-addon/dist/image-repair-addon.user.js",
@@ -29,7 +29,7 @@
       "id": "masked-direct-addon",
       "name": "F95UE Masked + Direct Download Add-on",
       "description": "Combines masked-link skipper and direct-download flows into one trusted add-on.",
-      "version": "0.3.16",
+      "version": "0.3.17",
       "author": "X Death",
       "entry": "addons/masked-direct-addon/src/main.js",
       "outfile": "addons/masked-direct-addon/dist/masked-direct-addon.user.js",
@@ -65,7 +65,7 @@
       "id": "library-addon",
       "name": "F95UE Library Add-on",
       "description": "Quick-add threads to a personal library and manage entries with a dedicated add-on UI.",
-      "version": "0.3.44",
+      "version": "0.3.50",
       "author": "X Death",
       "entry": "addons/library-addon/src/main.js",
       "outfile": "addons/library-addon/dist/library-addon.user.js",
@@ -89,10 +89,38 @@
       ]
     },
     {
+      "id": "example-addon",
+      "name": "F95UE Example Add-on",
+      "description": "Core API playground demonstrating every current addon-facing action through api modules.",
+      "version": "0.2.5",
+      "author": "X Death",
+      "entry": "addons/example-addon/src/main.js",
+      "outfile": "addons/example-addon/dist/example-addon.user.js",
+      "matches": [
+        "*://f95zone.to/*"
+      ],
+      "grants": [
+        "none"
+      ],
+      "runAt": "document-idle",
+      "requiresCore": true,
+      "capabilities": [
+        "toast",
+        "feature",
+        "storage",
+        "observer",
+        "idb",
+        "ui.style",
+        "ui.mount",
+        "ui.dialog",
+        "ui.dock"
+      ]
+    },
+    {
       "id": "latest-filters-addon",
       "name": "F95UE Latest Filters Add-on",
       "description": "Adds one Saved Filters button on Latest Updates with a searchable preset list and active filter tracking.",
-      "version": "0.3.16",
+      "version": "0.3.17",
       "author": "X Death",
       "entry": "addons/latest-filters-addon/src/main.js",
       "outfile": "addons/latest-filters-addon/dist/latest-filters-addon.user.js",
@@ -119,7 +147,7 @@
       "id": "halloween-theme-addon",
       "name": "F95UE Halloween Theme Add-on",
       "description": "Forces Halloween logo/background theme with simple apply and teardown lifecycle.",
-      "version": "2.0.11",
+      "version": "2.0.12",
       "author": "X Death",
       "entry": "addons/halloween-theme-addon/src/main.js",
       "outfile": "addons/halloween-theme-addon/dist/halloween-theme-addon.user.js",

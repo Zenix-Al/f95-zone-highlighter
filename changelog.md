@@ -1,5 +1,15 @@
 # Changelog
 
+## [4.19.13 - maintain addon code and expose addon throttle api]
+
+- maintain the addon codebase and fix bugs in the addon service, now it should be more stable and reliable.
+- expose addon throttle api, for future addon update plan to return the throttle config so addon can adjust their behavior based on the throttle status, for example, they can reduce the frequency of their requests or do some other things to avoid being auto-disabled.
+
+## [4.19.6 - Add prefixes retrieval and core frame budgeting]
+
+- add prefixes retrival, for now its not used for anything, but in the future it can be used to add more features.
+- implement core frame budgeting to improve performance under heavy load.
+
 ## [4.19.4 - Latest Overlay Score Calculation adjustment]
 
 - adjusted scoring system, now it determine thread confidence to adjust how a rating and engagement score contribute to the final score based on view and age. this prevent new thread get judged too early and prevent old thread get judged based on engagement.

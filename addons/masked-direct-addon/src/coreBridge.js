@@ -65,5 +65,8 @@ export function createCoreBridge(addonId) {
     getAddonAccess() {
       return invokeCoreAction("addon.access", {});
     },
+    getCoreThrottle() {
+      return invokeCoreAction("addon.throttle", {});
+    },
   };
 }

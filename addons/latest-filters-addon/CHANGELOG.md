@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.16 - small ui change
+
+- Add confirmation before updateing a preset to prevent accidental overwrites.
+- Changed how tag rendered instead of just number, now they are rendered as chips and respect the core tag preferences/colors (preferred / excluded / marked) for better visual consistency across the UI.
+
 ## 0.3.12 - small ui change
 
 - move script constants to state constants file for better organization and easier access across modules.

@@ -91,10 +91,23 @@ export const defaultGlobalSettings = {
   disableHelpMessage: false,
 };
 
+export const defaultAddonsApiThrottleSettings = {
+  coreActionWindowMs: 5000,
+  coreActionRateMax: 100,
+  coreActionMaxConcurrent: 12,
+};
+
+export const defaultAddonsServiceSettings = {
+  apiThrottle: { ...defaultAddonsApiThrottleSettings },
+};
+
 export const defaultAddonsSettings = {
-  trustedIds: ["image-repair-addon", "masked-direct-addon"],
+  trustedIds: ["image-repair-addon", "masked-direct-addon", "example-addon"],
   byAddon: {},
   installedMeta: {},
+  service: {
+    apiThrottle: { ...defaultAddonsApiThrottleSettings },
+  },
 };
 
 export const defaultMetrics = {
@@ -125,6 +138,9 @@ export let config = {
     trustedIds: [...defaultAddonsSettings.trustedIds],
     byAddon: { ...defaultAddonsSettings.byAddon },
     installedMeta: { ...defaultAddonsSettings.installedMeta },
+    service: {
+      apiThrottle: { ...defaultAddonsServiceSettings.apiThrottle },
+    },
   },
   savedNotifID: null,
 };

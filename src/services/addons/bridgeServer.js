@@ -1,8 +1,8 @@
 import { ensurePageBridge } from "../../core/pageBridge.js";
 
 const CORE_ACTION_RATE_WINDOW_MS = 5000;
-const CORE_ACTION_RATE_MAX = 25;
-const CORE_ACTION_MAX_CONCURRENT = 6;
+const CORE_ACTION_RATE_MAX = 100;
+const CORE_ACTION_MAX_CONCURRENT = 12;
 const STATUS_UPDATE_RATE_WINDOW_MS = 5000;
 const STATUS_UPDATE_RATE_MAX = 10;
 const REGISTER_RATE_WINDOW_MS = 30000;
@@ -32,9 +32,9 @@ function checkRateLimit(map, key, windowMs, maxCount) {
   return true;
 }
 
-function tryAcquireInflight(addonId) {
+function tryAcquireInflight(addonId, maxConcurrent = CORE_ACTION_MAX_CONCURRENT) {
   const count = addonInflight.get(addonId) || 0;
-  if (count >= CORE_ACTION_MAX_CONCURRENT) return false;
+  if (count >= maxConcurrent) return false;
   addonInflight.set(addonId, count + 1);
   return true;
 }
@@ -103,6 +103,7 @@ export function initAddonsBridgeServer({
   devCommandEvent,
   apiVersion,
   isServiceDisabled,
+  getCoreActionThrottleConfig,
   onRegister,
   onUnregister,
   onUpdateStatus,
@@ -113,14 +114,15 @@ export function initAddonsBridgeServer({
     window.addEventListener(devCommandEvent, (event) => {
       const detail = event?.detail || {};
       const type = String(detail.type || "").trim();
-      typeBridgeListener(
-        type,
-        detail,
-        apiVersion,
-        isServiceDisabled,
-        onRegister,
-        onUnregister,
-        onUpdateStatus,
+        typeBridgeListener(
+          type,
+          detail,
+          apiVersion,
+          isServiceDisabled,
+          getCoreActionThrottleConfig,
+          onRegister,
+          onUnregister,
+          onUpdateStatus,
         onTeardownComplete,
         onInvokeCoreAction,
       );
@@ -140,6 +142,7 @@ function typeBridgeListener(
   detail = {},
   apiVersion,
   isServiceDisabled,
+  getCoreActionThrottleConfig,
   onRegister,
   onUnregister,
   onUpdateStatus,
@@ -242,14 +245,22 @@ function typeBridgeListener(
       break;
     }
     case "core-action": {
+      const throttleConfig =
+        typeof getCoreActionThrottleConfig === "function"
+          ? getCoreActionThrottleConfig()
+          : {
+              windowMs: CORE_ACTION_RATE_WINDOW_MS,
+              maxCount: CORE_ACTION_RATE_MAX,
+              maxConcurrent: CORE_ACTION_MAX_CONCURRENT,
+            };
       const replyEvent = String(detail.replyEvent || "").trim();
       if (!replyEvent) return;
       if (
         !checkRateLimit(
           addonActionTimestamps,
           key,
-          CORE_ACTION_RATE_WINDOW_MS,
-          CORE_ACTION_RATE_MAX,
+          throttleConfig.windowMs,
+          throttleConfig.maxCount,
         )
       ) {
         window.dispatchEvent(
@@ -257,7 +268,7 @@ function typeBridgeListener(
         );
         return;
       }
-      if (!tryAcquireInflight(key)) {
+      if (!tryAcquireInflight(key, throttleConfig.maxConcurrent)) {
         window.dispatchEvent(
           new CustomEvent(replyEvent, {
             detail: { ok: false, reason: "too_many_concurrent_requests" },

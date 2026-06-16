@@ -761,22 +761,25 @@
 }
 
 #f95ue-page-dock-main-slot,
-#f95ue-page-dock-addon-slot,
 .f95ue-page-dock-group {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.f95ue-page-dock-group {
+#f95ue-page-dock-addon-slot {
+  display: flex;
   flex-direction: column;
   align-items: flex-start;
-}
-
-#f95ue-page-dock-addon-slot {
+  gap: 8px;
   min-width: 0;
   overflow: visible;
   margin-bottom: 8px;
+}
+
+.f95ue-page-dock-group {
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 #tag-config-button {

@@ -1,4 +1,5 @@
 import { stateManager } from "../../../config.js";
+import { addListener } from "../../../core/listenerRegistry";
 import { showToast } from "../toast.js";
 import { openConfirmDialog } from "../dialog.js";
 import { ADDON_COMMAND_EVENT } from "../../../services/addons/shared.js";
@@ -8,7 +9,7 @@ import {
   removeAddonInstallationTrace,
   subscribeAddonsRegistry,
 } from "../../../services/addonsService.js";
-import { ADDON_STATUS_META, getSettingByPath } from "./renderer.js";
+import { ADDON_STATUS_META, getSettingByPath } from "./index.js";
 import {
   persistSettingsUiValue,
   SETTINGS_PINNED_ADDONS_STORAGE_KEY,
@@ -118,7 +119,7 @@ export function movePinnedAddon(addonId, direction) {
   return reordered;
 }
 
-export function updateRegisteredAddons(addons, { syncNavigation } = {}) {
+export function updateRegisteredAddons(addons, { refreshAddonsUi } = {}) {
   const source = Array.isArray(addons) && addons.length > 0 ? addons : listKnownAddons();
   const normalized = source.map(normalizeAddonEntry).filter(Boolean);
   const byId = new Map(normalized.map((addon) => [addon.id, addon]));
@@ -134,8 +135,8 @@ export function updateRegisteredAddons(addons, { syncNavigation } = {}) {
   stateManager.set("settingsPinnedAddonIds", nextPins);
   void persistSettingsUiValue(SETTINGS_PINNED_ADDONS_STORAGE_KEY, nextPins);
 
-  if (typeof syncNavigation === "function") {
-    syncNavigation();
+  if (typeof refreshAddonsUi === "function") {
+    refreshAddonsUi();
   }
 }
 
@@ -150,38 +151,34 @@ export function initAddonsRegistryBridge({ onRegistryUpdate } = {}) {
 
 export function initAddinsPanelActions(
   shadowRoot,
-  { setActivePanel, syncSettingsSidebarNavigation },
+  { setActivePanel, refreshAddonsUi },
 ) {
   const addinsPanel = shadowRoot.getElementById("settings-panel-addins");
   const settingsMain = shadowRoot.querySelector(".settings-main");
-  if (!addinsPanel || !settingsMain || addinsPanel.dataset.initBound) return;
+  if (!addinsPanel || !settingsMain || settingsMain.dataset.addinsActionsBound) return;
 
-  addinsPanel.addEventListener("click", async (event) => {
-    const actionButton = event.target?.closest?.("[data-addon-action][data-addon-id]");
-    if (!actionButton) return;
+  const rerenderAddonsUi = () => {
+    if (typeof refreshAddonsUi === "function") {
+      refreshAddonsUi();
+    }
+  };
 
-    const addonId = String(actionButton.dataset.addonId || "").trim();
-    if (!addonId) return;
-
-    if (actionButton.dataset.addonAction === "open-addon-panel") {
+  const clickActionHandlers = {
+    "open-addon-panel": async ({ addonId }) => {
       const addon = getAddonById(addonId);
       if (addon?.status === "not-installed") {
         showToast("Install this add-on before opening its panel.");
         return;
       }
       setActivePanel(buildAddonPanelId(addonId));
-      return;
-    }
-
-    if (actionButton.dataset.addonAction === "open-addon-download") {
-      const addon = getRegisteredAddons().find((a) => a.id === addonId);
+    },
+    "open-addon-download": async ({ addonId }) => {
+      const addon = getRegisteredAddons().find((entry) => entry.id === addonId);
       if (addon?.downloadUrl) {
         window.open(addon.downloadUrl, "_blank", "noopener,noreferrer");
       }
-      return;
-    }
-
-    if (actionButton.dataset.addonAction === "toggle-addon-pin") {
+    },
+    "toggle-addon-pin": async ({ addonId }) => {
       const addon = getAddonById(addonId);
       if (!addon || addon.status === "not-installed") {
         showToast("Install this add-on before pinning it.");
@@ -198,33 +195,27 @@ export function initAddinsPanelActions(
       const orderedPins = [...nextPins];
       stateManager.set("settingsPinnedAddonIds", orderedPins);
       await persistSettingsUiValue(SETTINGS_PINNED_ADDONS_STORAGE_KEY, orderedPins);
-      syncSettingsSidebarNavigation();
-      return;
-    }
-
-    if (actionButton.dataset.addonAction === "move-addon-pin-up") {
+      rerenderAddonsUi();
+    },
+    "move-addon-pin-up": async ({ addonId }) => {
       const addon = getAddonById(addonId);
       if (!addon || addon.status === "not-installed") return;
 
       const nextPins = movePinnedAddon(addonId, "up");
       stateManager.set("settingsPinnedAddonIds", nextPins);
       await persistSettingsUiValue(SETTINGS_PINNED_ADDONS_STORAGE_KEY, nextPins);
-      syncSettingsSidebarNavigation();
-      return;
-    }
-
-    if (actionButton.dataset.addonAction === "move-addon-pin-down") {
+      rerenderAddonsUi();
+    },
+    "move-addon-pin-down": async ({ addonId }) => {
       const addon = getAddonById(addonId);
       if (!addon || addon.status === "not-installed") return;
 
       const nextPins = movePinnedAddon(addonId, "down");
       stateManager.set("settingsPinnedAddonIds", nextPins);
       await persistSettingsUiValue(SETTINGS_PINNED_ADDONS_STORAGE_KEY, nextPins);
-      syncSettingsSidebarNavigation();
-      return;
-    }
-
-    if (actionButton.dataset.addonAction === "toggle-addon-feature") {
+      rerenderAddonsUi();
+    },
+    "toggle-addon-feature": async ({ addonId }) => {
       const addon = getAddonById(addonId);
       if (!addon || addon.status === "not-installed") {
         showToast("Add-on action failed: addon_not_registered");
@@ -237,11 +228,10 @@ export function initAddinsPanelActions(
         showToast(`Add-on action failed: ${result.reason || "unknown"}`);
         return;
       }
-      updateRegisteredAddons(listKnownAddons(), { syncNavigation: syncSettingsSidebarNavigation });
-      return;
-    }
 
-    if (actionButton.dataset.addonAction === "delete-addon-trace") {
+      updateRegisteredAddons(listKnownAddons(), { refreshAddonsUi });
+    },
+    "delete-addon-trace": async ({ addonId }) => {
       const addon = getAddonById(addonId);
       if (!addon || addon.status === "not-installed") {
         showToast("Nothing to delete.");
@@ -262,31 +252,25 @@ export function initAddinsPanelActions(
       if (!confirmed) return;
 
       removeAddonInstallationTrace(addonId);
-      updateRegisteredAddons(listKnownAddons(), { syncNavigation: syncSettingsSidebarNavigation });
+      updateRegisteredAddons(listKnownAddons(), { refreshAddonsUi });
       showToast("Add-on trace deleted.");
-      return;
-    }
-
-    if (actionButton.dataset.addonAction === "back-to-addins") {
+    },
+    "back-to-addins": async () => {
       setActivePanel("settings-panel-addins");
-      return;
-    }
-
-    if (actionButton.dataset.addonAction === "trigger-addon-toast") {
+    },
+    "trigger-addon-toast": async ({ addonId, actionButton }) => {
       const message = String(actionButton.dataset.toastMessage || "").trim();
       if (!message) return;
       const result = await invokeAddonCoreAction(addonId, "toast.show", { message });
       if (!result.ok) {
         showToast(`Add-in action failed: ${result.reason || "unknown"}`);
       }
-      return;
-    }
-
-    if (actionButton.dataset.addonAction === "trigger-addon-command") {
+    },
+    "trigger-addon-command": async ({ addonId, actionButton }) => {
       const addon = getAddonById(addonId);
-      const actionId = String(actionButton.dataset.addonCommandId || "").trim();
+      const addonCommandId = String(actionButton.dataset.addonCommandId || "").trim();
       const requiresActivePage = actionButton.dataset.requiresActivePage !== "0";
-      if (!actionId) return;
+      if (!addonCommandId) return;
 
       if (requiresActivePage && !addon?.activeOnPage) {
         showToast("This add-on is idle on this page.");
@@ -298,14 +282,28 @@ export function initAddinsPanelActions(
           detail: {
             addonId,
             command: "panel-action",
-            actionId,
+            actionId: addonCommandId,
           },
         }),
       );
-    }
+    },
+  };
+
+  addListener("settings-addins-main-click", settingsMain, "click", async (event) => {
+    const actionButton = event.target?.closest?.("[data-addon-action][data-addon-id]");
+    if (!actionButton) return;
+
+    const addonId = String(actionButton.dataset.addonId || "").trim();
+    if (!addonId) return;
+
+    const addonAction = String(actionButton.dataset.addonAction || "").trim();
+    const handler = clickActionHandlers[addonAction];
+    if (!handler) return;
+
+    await handler({ actionButton, addonId });
   });
 
-  settingsMain.addEventListener("change", async (event) => {
+  addListener("settings-addins-main-change", settingsMain, "change", async (event) => {
     const control = event.target?.closest?.(
       "[data-addon-action='toggle-addon-setting'][data-addon-id]",
     );
@@ -366,5 +364,5 @@ export function initAddinsPanelActions(
     }
   });
 
-  addinsPanel.dataset.initBound = "1";
+  settingsMain.dataset.addinsActionsBound = "1";
 }

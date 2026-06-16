@@ -12,7 +12,6 @@ export const LIBRARY_STORAGE_KEY = "settings";
 export const LIBRARY_LEGACY_KEY = "libraryRecords";
 export const LIBRARY_MIGRATION_MARKER_KEY = "libraryMigrationV1Done";
 export const LIBRARY_MANAGER_PAGE_SIZE = 50;
-export const LIBRARY_IMPORT_THROTTLE_MS = 500;
 export const LIBRARY_IMPORT_RETRY_DELAY_MS = 1200;
 export const LIBRARY_IMPORT_MAX_RETRIES = 3;
 export const LIBRARY_SETTINGS_DEFAULT = {

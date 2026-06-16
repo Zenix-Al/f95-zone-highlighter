@@ -1,4 +1,4 @@
-import { stateManager, config } from "../config.js";
+import { stateManager, config, defaultAddonsApiThrottleSettings } from "../config.js";
 import { showToast } from "../ui/components/toast.js";
 import { openConfirmDialog } from "../ui/components/dialog.js";
 import {
@@ -91,6 +91,36 @@ const addonLifecycle = createAddonLifecycleOrchestrator({
 
 export function isAddonsServiceDisabled() {
   return Boolean(config.globalSettings?.disableAddonsService);
+}
+
+function clampAddonsServiceNumber(value, fallback, { min = 0, max = Number.MAX_SAFE_INTEGER } = {}) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return fallback;
+  if (parsed < min) return min;
+  if (parsed > max) return max;
+  return parsed;
+}
+
+function getAddonsCoreActionThrottleConfig() {
+  const throttle = config.addons?.service?.apiThrottle || {};
+
+  return {
+    windowMs: clampAddonsServiceNumber(
+      throttle.coreActionWindowMs,
+      defaultAddonsApiThrottleSettings.coreActionWindowMs,
+      { min: 250, max: 60000 },
+    ),
+    maxCount: clampAddonsServiceNumber(
+      throttle.coreActionRateMax,
+      defaultAddonsApiThrottleSettings.coreActionRateMax,
+      { min: 1, max: 1000 },
+    ),
+    maxConcurrent: clampAddonsServiceNumber(
+      throttle.coreActionMaxConcurrent,
+      defaultAddonsApiThrottleSettings.coreActionMaxConcurrent,
+      { min: 1, max: 100 },
+    ),
+  };
 }
 
 export function notifyAllAddonsBeforePageChange() {
@@ -223,6 +253,44 @@ function getAddonAccessResponse(addon) {
   };
 }
 
+function getAddonThrottleResponse() {
+  const coreAction = getAddonsCoreActionThrottleConfig();
+  const sustainedRequestsPerSecond =
+    coreAction.windowMs > 0
+      ? Number(((coreAction.maxCount / coreAction.windowMs) * 1000).toFixed(3))
+      : 0;
+  const suggestedMinIntervalMs =
+    coreAction.maxCount > 0 ? Math.ceil(coreAction.windowMs / coreAction.maxCount) : 0;
+
+  return {
+    ok: true,
+    value: {
+      coreAction: {
+        windowMs: coreAction.windowMs,
+        maxCount: coreAction.maxCount,
+        maxConcurrent: coreAction.maxConcurrent,
+        sustainedRequestsPerSecond,
+        suggestedMinIntervalMs,
+      },
+      payloadLimits: {
+        storage: {
+          maxValueBytes: MAX_ADDON_STORAGE_VALUE_BYTES,
+          maxTotalBytes: MAX_ADDON_STORAGE_TOTAL_BYTES,
+          maxTagPrefsPayloadBytes: MAX_ADDON_STORAGE_VALUE_BYTES,
+        },
+        idb: {
+          maxPayloadBytes: MAX_ADDON_IDB_PAYLOAD_BYTES,
+          maxBulkItems: MAX_ADDON_IDB_BULK_ITEMS,
+        },
+        ui: {
+          maxHtmlBytes: MAX_ADDON_UI_HTML_BYTES,
+          maxStyleTextBytes: MAX_ADDON_STYLE_TEXT_BYTES,
+        },
+      },
+    },
+  };
+}
+
 function getAddonPermissions(addon) {
   return new Set(Array.isArray(addon.capabilities) ? addon.capabilities : []);
 }
@@ -289,6 +357,9 @@ function warnOnUnsupportedUiAction(result, addonId, action) {
 export async function invokeAddonCoreAction(addonId, action, payload = {}) {
   const normalizedId = sanitizeAddonId(addonId);
   if (!normalizedId) return { ok: false, reason: "invalid_addon_id" };
+  if (action === "addon.throttle") {
+    return getAddonThrottleResponse();
+  }
 
   const addon = getRegisteredAddon(normalizedId);
   const installedMeta = getInstalledAddonMeta(normalizedId);
@@ -327,12 +398,26 @@ export function initAddonsConsoleBridge() {
     devCommandEvent: ADDONS_DEV_COMMAND_EVENT,
     apiVersion: ADDONS_API_VERSION,
     isServiceDisabled: isAddonsServiceDisabled,
+    getCoreActionThrottleConfig: getAddonsCoreActionThrottleConfig,
     onRegister: (addon) => {
       const snapshot = registerAddon(addon || {});
       const addonId = sanitizeAddonId(addon?.id);
       if (!addonId) return;
 
       const registered = snapshot.find((entry) => entry.id === addonId);
+      if (registered) {
+        void upsertInstalledAddonMeta(addonId, {
+          name: registered.name,
+          version: registered.version,
+          description: registered.description,
+          pageScopes: registered.pageScopes,
+          capabilities: registered.capabilities,
+          panelTitle: registered.panelTitle,
+          panelBody: registered.panelBody,
+          statusMessage: registered.statusMessage,
+        });
+      }
+
       if (registered?.blocked) {
         window.dispatchEvent(
           new CustomEvent(ADDON_COMMAND_EVENT, {

@@ -1,4 +1,4 @@
-import { showToast } from "./ui/showToast.js";
+import { showToast } from "./ui/utils/showToast.js";
 import { debugLog } from "../../shared/debugLog.js";
 import {
   ADDON_COMMAND_EVENT,
@@ -9,16 +9,16 @@ import {
 import { createCoreBridge } from "./coreBridge.js";
 import { createLibraryService } from "./library/service.js";
 import { getThreadSnapshot, isThreadPage } from "./thread/detector.js";
-import { renderDockMarkup } from "./ui/dockRenderer.js";
+import { renderDockMarkup } from "./ui/components/dock/dockRenderer.js";
 import {
   closeLibraryManager,
   handleLibraryManagerDialogClosed,
   openLibraryManager,
-} from "./ui/managerLauncher.js";
+} from "./ui/manager/managerLauncher.js";
 import {
   configureImportProgress,
   handleImportProgressDialogClosed,
-} from "./ui/importProgress.js";
+} from "./ui/application/importProgressController.js";
 
 const runtime = getRuntimeConfig();
 debugLog(`[library-addon] Runtime config:`, runtime);

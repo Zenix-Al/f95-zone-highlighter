@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.3.50 - Import update and maintain codebase
+
+- Updated the import process to use the new core import API which provides better feedback and error handling during import.
+- Updated import flow to more robustly handle large imports, now importing is 100x faster and more reliable.
+- Refactored the codebase to improve maintainability and readability, including better separation of concerns and more consistent coding style.
+
+## v0.3.44 - Import fix
+
+- Fixed an issue with import function where not all threads were being imported due to throttle core api. Now added a delay ensure the core did not throttle the import process.
+- Added an import dialog during importing to provide feedback and prevent user from closing the page during the import process.
+
 ## v0.3.36 - Inline Editing Refactor
 
 - Removed the Details Editor panel and moved editing directly into the table.

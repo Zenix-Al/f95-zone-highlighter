@@ -1,0 +1,220 @@
+.f95ue-addon-dialog-surface[data-addon-id="example-addon"] {
+  border: 1px solid #2a3340;
+  border-radius: 14px;
+  background: #11161d;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+}
+
+.f95ue-addon-dialog-content[data-addon-id="example-addon"][data-dialog-id="example-addon-panel-dialog"] {
+  padding: 18px 20px 20px;
+  color: #f5f7fb;
+  box-sizing: border-box;
+}
+
+.f95ue-addon-dialog-content[data-addon-id="example-addon"][data-dialog-id="example-addon-dialog"] {
+  padding: 14px 16px;
+  color: #f5f7fb;
+  box-sizing: border-box;
+}
+
+.f95ue-example-panel {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow: visible;
+  padding: 0;
+  color: #f5f7fb;
+  font: 13px/1.45 Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.f95ue-example-panel h2,
+.f95ue-example-panel h3,
+.f95ue-example-dialog h3 {
+  margin: 0;
+}
+
+.f95ue-example-panel h2 {
+  font-size: 28px;
+  line-height: 1.15;
+}
+
+.f95ue-example-panel p,
+.f95ue-example-dialog p {
+  margin: 0;
+  color: #cbd5e1;
+}
+
+.f95ue-example-panel code,
+.f95ue-example-dialog code {
+  padding: 1px 5px;
+  border-radius: 5px;
+  background: rgba(30, 41, 59, 0.9);
+  color: #f8fafc;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 0.92em;
+}
+
+.f95ue-example-panel-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.f95ue-example-header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.f95ue-example-header-copy {
+  display: grid;
+  gap: 6px;
+}
+
+.f95ue-example-note {
+  color: #fca5a5;
+  font-size: 12px;
+}
+
+.f95ue-example-section {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.f95ue-example-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.f95ue-example-button {
+  appearance: none;
+  border: 1px solid #525866;
+  border-radius: 8px;
+  background: #1f2937;
+  color: #f8fafc;
+  cursor: pointer;
+  padding: 7px 10px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.f95ue-example-button.secondary {
+  background: #111827;
+}
+
+.f95ue-example-button:hover,
+.f95ue-example-button:focus-visible {
+  background: #374151;
+}
+
+.f95ue-example-button.danger {
+  border-color: #7f1d1d;
+  background: #7f1d1d;
+}
+
+.f95ue-example-button.danger:hover,
+.f95ue-example-button.danger:focus-visible {
+  background: #991b1b;
+}
+
+.f95ue-example-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.f95ue-example-result {
+  margin-top: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.82);
+  color: #dbeafe;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 11px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.f95ue-example-log {
+  max-height: 180px;
+  overflow: auto;
+  padding-left: 18px;
+}
+
+.f95ue-example-log li + li {
+  margin-top: 6px;
+}
+
+.f95ue-example-extra {
+  position: fixed;
+  right: 16px;
+  top: 16px;
+  z-index: 10025;
+  padding: 10px 12px;
+  border: 1px solid #14532d;
+  border-radius: 10px;
+  background: rgba(20, 83, 45, 0.92);
+  color: #f0fdf4;
+  font-weight: 700;
+}
+
+.f95ue-example-dialog {
+  display: grid;
+  gap: 10px;
+  color: #f5f7fb;
+}
+
+.f95ue-example-inline-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: #cbd5e1;
+  font-size: 12px;
+}
+
+.f95ue-example-progress {
+  display: grid;
+  gap: 10px;
+}
+
+.f95ue-example-progress-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: #f5f7fb;
+}
+
+.f95ue-example-progress progress {
+  width: 100%;
+  height: 14px;
+}
+
+.f95ue-example-progress-detail {
+  color: #dbeafe;
+  font-size: 12px;
+  font-family: Consolas, "Courier New", monospace;
+}
+
+.f95ue-example-progress-note {
+  color: #94a3b8;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+@media (max-width: 780px) {
+  .f95ue-addon-dialog-content[data-addon-id="example-addon"][data-dialog-id="example-addon-panel-dialog"] {
+    padding: 14px;
+  }
+
+  .f95ue-example-header-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .f95ue-example-button.secondary[data-example-action="panel-close"] {
+    align-self: flex-start;
+  }
+}

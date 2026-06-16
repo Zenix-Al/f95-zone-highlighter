@@ -7,14 +7,15 @@ import {
 // Ensure base (non-feature) settings are registered.
 import "./globalSettings.js";
 import "./colorSettings.js";
+import "../../services/addons/settingsUi.js";
 
 import { ensureSettingsUiPrefsLoaded } from "../settingsRuntime/prefs.js";
 import {
   bindModalUiOnce,
   ensureModalSkeletonInjected,
+  refreshModalAddonsUi,
   refreshModalDynamicSections,
 } from "./modalLifecycle.js";
-import { syncSettingsSidebarNavigation } from "./navigation.js";
 
 // Base (non-feature) settings.
 
@@ -28,9 +29,9 @@ export async function initModalUi() {
   initAddonsRegistryBridge({
     onRegistryUpdate: (addons) => {
       updateRegisteredAddons(addons, {
-        syncNavigation: () => {
+        refreshAddonsUi: () => {
           const sr = stateManager.get("shadowRoot");
-          if (sr) syncSettingsSidebarNavigation(sr);
+          if (sr) refreshModalAddonsUi(sr);
         },
       });
     },

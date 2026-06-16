@@ -3,16 +3,19 @@ import { addListener } from "../../core/listenerRegistry";
 import { handleModalClick, handleOutsideSearchClick } from "../components/listeners";
 import { injectModal } from "../components/modal";
 import {
+  getPinnedAddonIds,
+  getRegisteredAddons,
   initAddinsPanelActions,
   updateRegisteredAddons,
 } from "../components/addons/settingsController.js";
+import { refreshAddonsUi } from "../renderers/addonsRenderer.js";
 import { ensureTagsPanelDataLoaded, initTagsPanelUi } from "./tagsSettings.js";
 import { renderAllSettingsSections } from "../settingsRuntime/sectionsRegistry.js";
 import {
-  initSettingsSidebarNavigation,
+  initSettingsPanelNavigation,
   setActivePanel,
-  syncSettingsSidebarNavigation,
-} from "./navigation.js";
+  syncActiveSettingsPanel,
+} from "./panelNavigation.js";
 
 export function ensureModalSkeletonInjected() {
   if (stateManager.get("modalInjected")) return stateManager.get("shadowRoot");
@@ -22,14 +25,22 @@ export function ensureModalSkeletonInjected() {
   return stateManager.get("shadowRoot");
 }
 
+export function refreshModalAddonsUi(shadowRoot) {
+  refreshAddonsUi(shadowRoot, {
+    getRegisteredAddons,
+    getPinnedAddonIds,
+    syncActiveSettingsPanel,
+  });
+}
+
 export function bindModalUiOnce(shadowRoot) {
   const host = shadowRoot?.host;
   if (!shadowRoot || !host || host.dataset.settingsUiBound) return;
 
-  initSettingsSidebarNavigation(shadowRoot);
+  initSettingsPanelNavigation(shadowRoot);
   initAddinsPanelActions(shadowRoot, {
     setActivePanel: (panelId) => setActivePanel(shadowRoot, panelId),
-    syncSettingsSidebarNavigation: () => syncSettingsSidebarNavigation(shadowRoot),
+    refreshAddonsUi: () => refreshModalAddonsUi(shadowRoot),
   });
 
   initTagsPanelUi(shadowRoot);
@@ -45,8 +56,7 @@ export function bindModalUiOnce(shadowRoot) {
 
 export function refreshModalDynamicSections(shadowRoot) {
   if (!shadowRoot) return;
-  updateRegisteredAddons(null, { syncNavigation: () => syncSettingsSidebarNavigation(shadowRoot) });
-  syncSettingsSidebarNavigation(shadowRoot);
+  updateRegisteredAddons(null, { refreshAddonsUi: () => refreshModalAddonsUi(shadowRoot) });
   renderAllSettingsSections();
   ensureTagsPanelDataLoaded();
 }
