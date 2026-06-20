@@ -71,6 +71,8 @@ const {
 const { coerceSettingValue } = loadModule("src/ui/renderers/coerceSettingValue.js");
 const { setByPath } = loadModule("src/utils/objectPath.js");
 const { flushQueuedToasts, showToast } = loadModule("src/ui/components/toast.js");
+const { isAddonOwnedObserverNode } = loadModule("src/services/addons/observer.js");
+const { createAddonDockGroup } = loadModule("src/ui/components/addons/addonDockGroup.js");
 const { normalizePrefixesFromLatestUpdates } = loadModule("src/services/prefixService.js");
 const {
   buildLatestRecordMap,
@@ -81,6 +83,22 @@ const { buildPrefixStatusMap } = loadModule("src/features/latest-overlay/overlay
 const { getRecordHighlightClasses } = loadModule(
   "src/features/latest-overlay/ratingEngagementHighlight.js",
 );
+
+runTest("add-on observers ignore nodes mounted inside their own UI", () => {
+  const addonRoot = {
+    nodeType: 1,
+    parentElement: null,
+    getAttribute: (name) => (name === "data-addon-id" ? "example-addon" : null),
+  };
+  const child = {
+    nodeType: 1,
+    parentElement: addonRoot,
+    getAttribute: () => null,
+  };
+
+  assert.strictEqual(isAddonOwnedObserverNode(child, "example-addon"), true);
+  assert.strictEqual(isAddonOwnedObserverNode(child, "different-addon"), false);
+});
 
 function createFakeElement(tagName, doc) {
   const classes = new Set();
@@ -166,6 +184,19 @@ function resetFastCaptureHarness() {
   resetFastCaptureAdapterForTests();
   resetFastCaptureStoreForTests();
 }
+
+runTest("add-on dock buttons receive the core dock style class", () => {
+  const doc = createFakeDocument();
+  const slot = createFakeElement("div", doc);
+  slot.querySelector = () => null;
+
+  const group = createAddonDockGroup(slot, "example-addon", [
+    { id: "open", label: "Open", variant: "secondary" },
+  ]);
+
+  assert.strictEqual(group.children[0].className, "f95ue-page-dock-btn");
+  assert.strictEqual(group.children[0].classList.contains("secondary"), true);
+});
 
 runTest("StateManager blocks unknown set paths when knownPaths is provided", () => {
   const manager = createStateManager(
@@ -548,7 +579,7 @@ runTest("fast capture handles xhr capture while allowing one feature failure wit
 
   assert.strictEqual(captured, 1);
   assert.strictEqual(getFastCaptureSnapshot("valid-capture").status, "captured");
-  assert.strictEqual(getFastCaptureSnapshot("broken-capture").status, "error");
+  assert.strictEqual(getFastCaptureSnapshot("broken-capture").status, "idle");
 });
 
 runTest("fast capture recovers after malformed matching JSON", () => {
@@ -574,7 +605,7 @@ runTest("fast capture recovers after malformed matching JSON", () => {
     processCompletedFastCapture("fetch", "https://f95zone.to/latest_data.php", "not-json"),
     0,
   );
-  assert.strictEqual(getFastCaptureSnapshot("recoverable-capture").status, "error");
+  assert.strictEqual(getFastCaptureSnapshot("recoverable-capture").status, "idle");
 
   assert.strictEqual(
     processCompletedFastCapture(
@@ -585,6 +616,38 @@ runTest("fast capture recovers after malformed matching JSON", () => {
     1,
   );
   assert.deepStrictEqual(getFastCaptureData("recoverable-capture"), { ok: true });
+});
+
+runTest("malformed latest responses preserve the last valid fast capture", () => {
+  resetFastCaptureHarness();
+
+  registerFastCaptureFeatures([
+    {
+      name: "Latest Capture",
+      featureKey: "latest-malformed-capture",
+      bootstrapMode: "fast",
+      fastCapture: {
+        urlIncludes: ["latest_data.php"],
+        dataPath: "msg.data",
+        transport: "fetch",
+        mode: "latest",
+      },
+      isApplicable: () => true,
+    },
+  ]);
+
+  processCompletedFastCapture(
+    "fetch",
+    "https://f95zone.to/latest_data.php",
+    JSON.stringify({ msg: { data: [{ id: 1 }] } }),
+  );
+
+  assert.strictEqual(
+    processCompletedFastCapture("fetch", "https://f95zone.to/latest_data.php", "not-json"),
+    0,
+  );
+  assert.strictEqual(getFastCaptureSnapshot("latest-malformed-capture").status, "captured");
+  assert.deepStrictEqual(getFastCaptureData("latest-malformed-capture"), [{ id: 1 }]);
 });
 
 runTest("fast capture subscribers receive captured snapshots", () => {

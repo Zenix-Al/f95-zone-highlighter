@@ -323,7 +323,7 @@ async function setEnabled(nextEnabled) {
     await mountQuickAddIfApplicable();
   } else {
     await unmountQuickAdd();
-    closeLibraryManager("disabled");
+    await closeLibraryManager("disabled");
   }
 
   pushStatusUpdate();
@@ -421,7 +421,7 @@ function unbindAddonCommandListener() {
 
 async function teardownAddon(reason) {
   await unmountQuickAdd();
-  closeLibraryManager(reason);
+  await closeLibraryManager(reason);
   if (reason !== "disable") {
     unbindAddonCommandListener();
   }

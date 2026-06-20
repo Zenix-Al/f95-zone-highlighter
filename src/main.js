@@ -45,6 +45,9 @@ async function ensureConfigLoaded() {
 }
 
 async function runFastBootstrap() {
+  // Add-ons start at document-idle and immediately ping the core. Bind the
+  // shared bridge before config/UI/body work so that ping cannot race startup.
+  
   detectPage();
   loadFastBootstrapFeatures();
 
@@ -70,6 +73,10 @@ async function runFastBootstrap() {
       run: ensureConfigLoaded,
       fallbackValue: null,
     },
+    {
+      name: "initAddonsConsoleBridge",
+      run: () => initAddonsConsoleBridge(),
+    }
   ]);
 }
 
@@ -91,10 +98,6 @@ async function runBodyBootstrap() {
     {
       name: "flushQueuedToasts",
       run: () => flushQueuedToasts(),
-    },
-    {
-      name: "initAddonsConsoleBridge",
-      run: () => initAddonsConsoleBridge(),
     },
     {
       name: "loadBodyBootstrapFeatures",

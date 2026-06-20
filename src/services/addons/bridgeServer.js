@@ -9,6 +9,13 @@ const REGISTER_RATE_WINDOW_MS = 30000;
 const REGISTER_RATE_MAX = 5;
 const UNREGISTER_RATE_WINDOW_MS = 10000;
 const UNREGISTER_RATE_MAX = 5;
+const UNTHROTTLED_CLEANUP_ACTIONS = new Set([
+  "observer.unwatch",
+  "ui.dialog.close",
+  "ui.dock.removeButtons",
+  "ui.style.unregister",
+  "ui.unmount",
+]);
 
 const addonActionTimestamps = new Map();
 const addonInflight = new Map();
@@ -255,7 +262,10 @@ function typeBridgeListener(
             };
       const replyEvent = String(detail.replyEvent || "").trim();
       if (!replyEvent) return;
+      const action = String(detail.action || "").trim();
+      const isCleanupAction = UNTHROTTLED_CLEANUP_ACTIONS.has(action);
       if (
+        !isCleanupAction &&
         !checkRateLimit(
           addonActionTimestamps,
           key,
@@ -268,7 +278,7 @@ function typeBridgeListener(
         );
         return;
       }
-      if (!tryAcquireInflight(key, throttleConfig.maxConcurrent)) {
+      if (!isCleanupAction && !tryAcquireInflight(key, throttleConfig.maxConcurrent)) {
         window.dispatchEvent(
           new CustomEvent(replyEvent, {
             detail: { ok: false, reason: "too_many_concurrent_requests" },
@@ -277,17 +287,17 @@ function typeBridgeListener(
         return;
       }
       Promise.resolve(
-        onInvokeCoreAction?.(key, detail.action, detail.payload || {}) || {
+        onInvokeCoreAction?.(key, action, detail.payload || {}) || {
           ok: false,
           reason: "unsupported_action",
         },
       )
         .then((result) => {
-          releaseInflight(key);
+          if (!isCleanupAction) releaseInflight(key);
           window.dispatchEvent(new CustomEvent(replyEvent, { detail: result }));
         })
         .catch(() => {
-          releaseInflight(key);
+          if (!isCleanupAction) releaseInflight(key);
           window.dispatchEvent(
             new CustomEvent(replyEvent, { detail: { ok: false, reason: "internal_error" } }),
           );

@@ -138,6 +138,7 @@ export function renderExamplePanel(state) {
           renderButton("idb-put", "idb.put"),
           renderButton("idb-get", "idb.get"),
           renderButton("idb-bulk-put", "idb.bulkPut demo"),
+          renderButton("idb-bulk-delete", "idb.bulkDelete demo records", "danger"),
           renderButton("idb-query", "idb.query"),
           renderButton("idb-count", "idb.count"),
           renderButton("idb-delete", "idb.delete"),

@@ -22,6 +22,7 @@ import {
   EXAMPLE_STYLE_ID,
 } from "../constants.js";
 import {
+  bulkDeleteRecords,
   bulkPutRecords,
   countRecords,
   deleteRecord,
@@ -198,6 +199,22 @@ export function createExampleAddonApp({ core, runtime }) {
   function createIdbBulkPayload(entries) {
     return buildIdbPayload({
       entries: entries.map((value) => ({ value })),
+    });
+  }
+
+  function createIdbBulkDeletePayload(keys) {
+    return buildIdbPayload({ keys });
+  }
+
+  function createIdbRowsPreview(rows) {
+    return (Array.isArray(rows) ? rows : []).map((row) => {
+      const value = row?.value && typeof row.value === "object" ? row.value : row;
+      if (!value || typeof value !== "object" || typeof value.body !== "string") return row;
+      const previewValue = {
+        ...value,
+        body: `${value.body.slice(0, 80)}... [${value.body.length} characters]`,
+      };
+      return row?.value && typeof row.value === "object" ? { ...row, value: previewValue } : previewValue;
     });
   }
 
@@ -536,7 +553,7 @@ export function createExampleAddonApp({ core, runtime }) {
 
   async function closeExampleDialog(reason = "example-close") {
     const result = await closeDialog(core, EXAMPLE_DIALOG_ID, reason);
-    state.ui.dialogOpen = false;
+    if (result?.ok) state.ui.dialogOpen = false;
     return result;
   }
 
@@ -561,7 +578,7 @@ export function createExampleAddonApp({ core, runtime }) {
 
   async function closeExamplePanel(reason = "example-panel-close") {
     const result = await closeDialog(core, EXAMPLE_PANEL_DIALOG_ID, reason);
-    state.ui.panelOpen = false;
+    if (result?.ok) state.ui.panelOpen = false;
     return result;
   }
 
@@ -578,14 +595,16 @@ export function createExampleAddonApp({ core, runtime }) {
       await unwatchObserver(core, EXAMPLE_OBSERVER_ID);
       state.observer.isWatching = false;
     }
-    await closeExampleDialog(reason);
-    await closeExamplePanel(reason);
+    const dialogCloseResult = await closeExampleDialog(reason);
+    const panelCloseResult = await closeExamplePanel(reason);
     await removeDockButtons(core);
     state.ui.dockButtonsActive = false;
     await unmountExtra();
     await unmountDockLauncher();
-    await unregisterStyle(core, EXAMPLE_STYLE_ID);
-    state.ui.styleRegistered = false;
+    if (dialogCloseResult?.ok && panelCloseResult?.ok) {
+      const styleResult = await unregisterStyle(core, EXAMPLE_STYLE_ID);
+      if (styleResult?.ok) state.ui.styleRegistered = false;
+    }
   }
 
   async function enableUi() {
@@ -740,6 +759,27 @@ export function createExampleAddonApp({ core, runtime }) {
         setLastResult(action, result);
         break;
       }
+      case "idb-bulk-delete": {
+        const queryResult = await queryRecords(
+          core,
+          buildIdbPayload({ limit: 500, includeKeys: true }),
+        );
+        if (!queryResult?.ok) {
+          setLastResult(action, queryResult);
+          break;
+        }
+        const keys = (Array.isArray(queryResult.value) ? queryResult.value : [])
+          .map((entry) => entry?.key)
+          .filter((key) => String(key || "").startsWith("dummy-bulk-"));
+        const result = await bulkDeleteRecords(core, createIdbBulkDeletePayload(keys));
+        if (result?.ok) {
+          state.idb.rows = [];
+          const countResult = await countRecords(core, buildIdbPayload({}));
+          state.idb.count = countResult?.ok ? Number(countResult.value || 0) : state.idb.count;
+        }
+        setLastResult(action, result);
+        break;
+      }
       case "bulk-import-cancel": {
         requestBulkImportCancellation();
         setLastResult(action, { ok: true, value: "cancellation requested" });
@@ -755,7 +795,9 @@ export function createExampleAddonApp({ core, runtime }) {
             includeKeys: true,
           }),
         );
-        state.idb.rows = result?.ok ? result.value : [{ error: result?.reason || "unknown" }];
+        state.idb.rows = result?.ok
+          ? createIdbRowsPreview(result.value)
+          : [{ error: result?.reason || "unknown" }];
         setLastResult(action, result);
         break;
       }

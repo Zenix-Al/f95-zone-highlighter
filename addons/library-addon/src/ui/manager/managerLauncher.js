@@ -21,8 +21,8 @@ export function openLibraryManager({ bridge, addonId, library, onMutated, getCur
 }
 
 export function closeLibraryManager(reason = "addon-close") {
-  if (!managerApp) return;
-  void managerApp.close(reason);
+  if (!managerApp) return Promise.resolve({ ok: true, value: { alreadyClosed: true } });
+  return managerApp.close(reason);
 }
 
 export function handleLibraryManagerDialogClosed(detail) {

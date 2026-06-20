@@ -1,5 +1,16 @@
 # Changelog
 
+## [5.0.8 - Add-on API Improvements]
+
+- Add `idb.bulkDelete` to the add-on API and a cleanup action to the Example add-on so bulk demo records do not pile up permanently.
+- Prevent add-on observers from receiving mutations created by their own hosted UI, avoiding self-triggered render loops.
+- Fix core-rendered add-on dock buttons missing their dock style class.
+
+## [5.0.5 - Fix addon ui and remove warning fastcapture]
+
+- Fix a bug where addon fails to close their ui because the core race condition when closing ui. My bad, i was using uglified version for testing and it hide the issue until i test it with non-uglified version, now it should be fixed.
+- Remove the warning for fast capture when the response is invalid json.
+
 ## [5.0.0 - Core Refactor & New network listener API]
 
 ### Core Changes

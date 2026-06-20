@@ -396,7 +396,7 @@ export function unregisterAddonStyle(addonId, styleId = "") {
 export function cleanupAddonUi(addonId) {
   addonDockButtonsState.delete(addonId);
   removeAddonDockGroup(addonId);
-  removeAddonRegisteredStyles(addonId);
-  removeAddonMounts(addonId);
   removeAddonDialogs(addonId);
+  removeAddonMounts(addonId);
+  removeAddonRegisteredStyles(addonId);
 }

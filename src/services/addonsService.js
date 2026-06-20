@@ -60,6 +60,7 @@ import {
   updateAddonUi,
 } from "./addons/uiHost.js";
 import {
+  idbBulkDeleteForAddon,
   idbBulkPutForAddon,
   idbCountForAddon,
   idbDeleteForAddon,
@@ -318,6 +319,7 @@ const ADDON_CORE_ACTION_DEPS = Object.freeze({
   idbPutForAddon,
   idbDeleteForAddon,
   idbBulkPutForAddon,
+  idbBulkDeleteForAddon,
   idbQueryForAddon,
   idbCountForAddon,
   watchAddonObserver,

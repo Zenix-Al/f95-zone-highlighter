@@ -1,5 +1,4 @@
 import { getByPath } from "../../utils/objectPath.js";
-import { showToast } from "../../ui/components/toast.js";
 import { debugLog } from "../../core/logger.js";
 import {
   getFastCaptureSnapshot,
@@ -98,14 +97,15 @@ function syncRules() {
   if (transportInitialized) syncPageCaptureRules(bridgeRules());
 }
 
-function reportError(entry, url, transport, errorMessage) {
+function reportError(entry, url, transport, errorMessage, { updateSnapshot = true } = {}) {
   const message = String(errorMessage || "capture_failed").trim();
-  setFastCaptureError(entry.featureKey, { sourceUrl: url, transport, errorMessage: message });
+  if (updateSnapshot) {
+    setFastCaptureError(entry.featureKey, { sourceUrl: url, transport, errorMessage: message });
+  }
   debugLog(LOG_CHANNEL, "Capture failed", {
     data: { featureKey: entry.featureKey, featureName: entry.featureName, url, transport, message },
     level: "warn",
   });
-  showToast(`${entry.featureName} fast capture failed: ${message}`, undefined, "warning");
 }
 
 function reportSuccess(entry, url, transport, data) {
@@ -152,7 +152,11 @@ export function processCompletedFastCapture(transport, url, responseText) {
   try {
     payload = JSON.parse(String(responseText || ""));
   } catch {
-    for (const entry of matches) reportError(entry, normalizedUrl, normalizedTransport, "invalid_json_response");
+    for (const entry of matches) {
+      reportError(entry, normalizedUrl, normalizedTransport, "invalid_json_response", {
+        updateSnapshot: false,
+      });
+    }
     return 0;
   }
 
@@ -160,7 +164,9 @@ export function processCompletedFastCapture(transport, url, responseText) {
   for (const entry of matches) {
     const data = getByPath(payload, entry.dataPath);
     if (typeof data === "undefined") {
-      reportError(entry, normalizedUrl, normalizedTransport, `missing_data_path:${entry.dataPath}`);
+      reportError(entry, normalizedUrl, normalizedTransport, `missing_data_path:${entry.dataPath}`, {
+        updateSnapshot: false,
+      });
       continue;
     }
     reportSuccess(entry, normalizedUrl, normalizedTransport, data);

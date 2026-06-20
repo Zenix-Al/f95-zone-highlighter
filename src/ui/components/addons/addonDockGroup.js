@@ -24,9 +24,9 @@ export function createAddonDockGroup(slot, addonId, buttons, { onAction } = {}) 
 
   buttons.forEach((entry) => {
     const button = createEl("button", {
+      className: "f95ue-page-dock-btn",
       attrs: {
         type: "button",
-        className: "f95ue-page-dock-btn",
         "data-addon-id": addonId,
         "data-action-id": entry.id,
       },

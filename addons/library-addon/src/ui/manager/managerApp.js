@@ -84,13 +84,16 @@ export function createLibraryManagerApp({
   async function close(reason = "addon-close") {
     if (!appContext.dialogOpen && !appContext.dialogRoot) {
       await unregisterStyle();
-      return;
+      return { ok: true, value: { alreadyClosed: true } };
     }
 
-    await api.closeDialog(dialogId, reason);
+    const result = await api.closeDialog(dialogId, reason);
+    if (!result?.ok) return result;
+
     appContext.dialogOpen = false;
     appContext.dialogRoot = null;
     await unregisterStyle();
+    return result;
   }
 
   // Create handlers with dependencies

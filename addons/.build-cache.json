@@ -1,7 +1,7 @@
 {
   "addons": {
     "library-addon": {
-      "regular": "e8cb789e5db0e2900be6a8190c561965e641e6bada69189be71427295d50ccd8",
+      "regular": "1f43c2137436da01b1a2d85090588327bb2683c4a54f84a3984e97fa52c77912",
       "release": "324a656fa73b9d5644961df994099d13b9e1d33a5aad201bc8cb68313b7b5c60"
     },
     "image-repair-addon": {
@@ -21,7 +21,7 @@
       "regular": "20d94f0e516d3ee09ab448d210a2f1906f75403a09e46a7a1a4454db7f1ae549"
     },
     "example-addon": {
-      "regular": "feb35ad886369a48585139b31af9a8916fdc3bf8717b7797d50d510714e290c9"
+      "regular": "a7daca52c3102ad23358b8ca565b811cd2e8330f4f5adf33d76f19bad615b6f5"
     }
   }
 }

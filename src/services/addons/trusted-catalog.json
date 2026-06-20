@@ -32,7 +32,7 @@
     "description": "Core API playground demonstrating every current addon-facing action through api modules.",
     "version": "0.2.5",
     "pageScopes": ["thread", "latest", "download"],
-    "downloadUrl": "",
+    "downloadUrl": "https://greasyfork.org/en/scripts/583616-f95ue-example-add-on",
     "trusted": true
   },
   {

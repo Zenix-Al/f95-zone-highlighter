@@ -14,6 +14,10 @@ export function bulkPutRecords(core, payload) {
   return core.invokeCoreAction("idb.bulkPut", payload || {});
 }
 
+export function bulkDeleteRecords(core, payload) {
+  return core.invokeCoreAction("idb.bulkDelete", payload || {});
+}
+
 export function queryRecords(core, payload) {
   return core.invokeCoreAction("idb.query", payload || {});
 }

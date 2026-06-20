@@ -206,6 +206,14 @@ export function idbBulkPutForAddon(addonId, payload = {}) {
   });
 }
 
+export function idbBulkDeleteForAddon(addonId, payload = {}) {
+  const keys = Array.isArray(payload?.keys) ? payload.keys : [];
+  return withStore(addonId, payload, "readwrite", (store) => {
+    const deletes = keys.map((key) => requestToPromise(store.delete(key)));
+    return Promise.all(deletes);
+  });
+}
+
 export function idbCountForAddon(addonId, payload = {}) {
   return withStore(addonId, payload, "readonly", (store) => {
     const keyRange = normalizeKeyRange(payload?.query);
