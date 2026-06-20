@@ -6,6 +6,8 @@
 - Updated import flow to more robustly handle large imports, now importing is 100x faster and more reliable.
 - Refactored the codebase to improve maintainability and readability, including better separation of concerns and more consistent coding style.
 
+Note : core v4.19.18 or above Might be required for the new import API, but the old import method is still supported as a fallback.
+
 ## v0.3.44 - Import fix
 
 - Fixed an issue with import function where not all threads were being imported due to throttle core api. Now added a delay ensure the core did not throttle the import process.

@@ -293,6 +293,14 @@ export const modifierHighVersionSetting = {
   input: { step: 0.1 },
   effects: { custom: effectReprocessAllTiles, toast: (v) => `High version modifier: ${v}` },
 };
+export const modifierIncompleteSetting = {
+  type: "number",
+  text: "Incomplete Tag Modifier",
+  tooltip: "Score penalty if a card did not fall to complete or high version.",
+  config: "latestSettings.tagModifiers.incomplete",
+  input: { step: 0.1 },
+  effects: { custom: effectReprocessAllTiles, toast: (v) => `Incomplete modifier: ${v}` },
+};
 export const modifierOnholdSetting = {
   type: "number",
   text: "On-Hold Tag Modifier",
@@ -378,6 +386,7 @@ const latestOverlaySettingsDialogMeta = {
   modifierPreferred: modifierPreferredSetting,
   modifierCompleted: modifierCompletedSetting,
   modifierHighVersion: modifierHighVersionSetting,
+  modifierIncomplete: modifierIncompleteSetting,
   modifierOnhold: modifierOnholdSetting,
   modifierAbandoned: modifierAbandonedSetting,
   modifierExcluded: modifierExcludedSetting,
@@ -398,17 +407,8 @@ function openLatestOverlaySettingsDialog() {
   });
 }
 export const latestOverlayFeature = createStyledFeature("Latest Overlay", {
-  id: "latest-raw-capture",
   configPath: "latestSettings.latestOverlayToggle",
   isApplicable: ({ stateManager }) => stateManager.get("isLatest"),
-  bootstrapMode: "fast",
-  fastCapture: {
-    urlIncludes: "latest_data.php",
-    dataPath: "msg.data",
-    transport: "any",
-    mode: "latest",
-    ttlMs: 30000,
-  },
   styleCss: featureCss,
   enable: runEnableLatestOverlay,
   disable: runDisableLatestOverlay,
@@ -456,6 +456,9 @@ function resetConfigToDefaults() {
   config.latestSettings.enableScoreWeights = defaultLatestSettings.enableScoreWeights;
   config.latestSettings.priorityWeights = { ...defaultLatestSettings.priorityWeights };
   config.latestSettings.tagModifiers = { ...defaultLatestSettings.tagModifiers };
+  config.latestSettings.ratingImpactWeight = defaultLatestSettings.ratingImpactWeight;
+  config.latestSettings.engagementImpactWeight = defaultLatestSettings.engagementImpactWeight;
+
   saveConfigKeys({
     latestSettings: config.latestSettings,
     overlaySettings: config.overlaySettings,

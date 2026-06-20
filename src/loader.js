@@ -3,6 +3,10 @@ import { debugLog } from "./core/logger";
 import { safeExecute } from "./core/safeExecute.js";
 import { registerFeature } from "./core/featureCatalog.js";
 import { runFrameBudgeted } from "./core/frameBudget.js";
+import {
+  refreshFastCaptureFeatures,
+  registerFastCaptureFeatures,
+} from "./core/fastCaptureAdapter.js";
 import { TIMINGS } from "./config/timings.js";
 import { contributeToSection } from "./ui/settingsRuntime/sectionsRegistry.js";
 
@@ -43,6 +47,14 @@ function registerFeatureSettingsUi(feature) {
 
 featureRegistry.forEach(registerFeatureSettingsUi);
 
+function getFastBootstrapFeatures() {
+  return featureRegistry.filter((feature) => feature?.bootstrapMode === "fast");
+}
+
+function getBodyBootstrapFeatures() {
+  return [...featureRegistry];
+}
+
 async function runFeatureRegistry(features) {
   if (!Array.isArray(features) || features.length === 0) return;
   await runFrameBudgeted(
@@ -63,7 +75,22 @@ async function runFeatureRegistry(features) {
   );
 }
 
+export function loadFastBootstrapFeatures() {
+  const features = getFastBootstrapFeatures();
+  debugLog("Loader", `Registering ${features.length} fast bootstrap feature(s)...`);
+  return registerFastCaptureFeatures(features);
+}
+
+export function refreshFastBootstrapFeatures() {
+  return refreshFastCaptureFeatures(getFastBootstrapFeatures());
+}
+
+export async function loadBodyBootstrapFeatures() {
+  const features = getBodyBootstrapFeatures();
+  debugLog("Loader", `Running ${features.length} body bootstrap feature(s)...`);
+  await runFeatureRegistry(features);
+}
+
 export async function loadFeatures() {
-  debugLog("Loader", "Running unified feature registry...");
-  await runFeatureRegistry(featureRegistry);
+  await loadBodyBootstrapFeatures();
 }

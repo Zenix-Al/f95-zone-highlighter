@@ -25,6 +25,11 @@ export function waitFor(
 }
 export function detectPage() {
   const path = location.pathname;
+  stateManager.set("isF95Zone", false);
+  stateManager.set("isThread", false);
+  stateManager.set("isLatest", false);
+  stateManager.set("isMaskedLink", false);
+  stateManager.set("isRecaptchaFrame", false);
   if (window.location.hostname.includes("f95zone.to")) {
     stateManager.set("isF95Zone", true);
   }
@@ -52,6 +57,12 @@ export function waitForBody(callback) {
   } else {
     requestAnimationFrame(() => waitForBody(callback));
   }
+}
+
+export function waitForBodyReady() {
+  return new Promise((resolve) => {
+    waitForBody(resolve);
+  });
 }
 /**
  * Quick & flexible DOM element factory.

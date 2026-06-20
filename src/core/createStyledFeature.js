@@ -16,6 +16,7 @@ function resolveStyleId(name, explicitId) {
 export function createStyledFeature(
   name,
   {
+    id,
     configPath,
     isEnabled,
     isApplicable,
@@ -23,16 +24,21 @@ export function createStyledFeature(
     styleCss,
     styleTarget = "document",
     settingsUi,
+    bootstrapMode,
+    fastCapture,
     enable,
     disable,
   },
 ) {
   const resolvedStyleId = resolveStyleId(name, styleId);
   return createFeature(name, {
+    id,
     configPath,
     isEnabled,
     isApplicable,
     settingsUi,
+    bootstrapMode,
+    fastCapture,
     enable: () => {
       acquireStyle(resolvedStyleId, styleCss, styleTarget);
       return enable ? enable() : null;

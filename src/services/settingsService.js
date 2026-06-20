@@ -27,7 +27,16 @@ function sanitizeColorSection(value) {
 }
 
 function sanitizeLatestSettings(value) {
-  const merged = { ...defaultLatestSettings, ...(value || {}) };
+  const source = normalizeObject(value);
+  const merged = mergeWithDefault(source, defaultLatestSettings);
+  merged.priorityWeights = mergeWithDefault(
+    source.priorityWeights,
+    defaultLatestSettings.priorityWeights,
+  );
+  merged.tagModifiers = mergeWithDefault(
+    source.tagModifiers,
+    defaultLatestSettings.tagModifiers,
+  );
   if (!isValidVersion(merged.minVersion)) {
     merged.minVersion = defaultLatestSettings.minVersion;
   }
@@ -307,7 +316,7 @@ function deepMergeLatestSettings(saved, defaultObj) {
     if (key in result) {
       // For objects like priorityWeights and tagModifiers, do a shallow merge of their contents
       if (key === "priorityWeights" || key === "tagModifiers") {
-        result[key] = { ...result[key], ...normalizeObject(source[key]) };
+        result[key] = mergeWithDefault(source[key], result[key]);
       } else {
         result[key] = source[key];
       }

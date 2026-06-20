@@ -4,9 +4,6 @@ export const SELECTORS = {
     ROOT: ".resource-tile",
     CLASS: "resource-tile",
     BODY: ".resource-tile_body",
-    INFO_META: ".resource-tile_info-meta",
-    VERSION: ".resource-tile_label-version",
-    LABEL_WRAP: ".resource-tile_label-wrap_right",
     THUMB_WRAP: ".resource-tile_thumb-wrap",
     MODIFIED_SELECTOR: ".resource-tile[data-modified='true']",
   },
@@ -14,7 +11,6 @@ export const SELECTORS = {
     RATING: ".resource-tile_info-meta_rating",
     LIKES: ".resource-tile_info-meta_likes",
     VIEWS: ".resource-tile_info-meta_views",
-    TIME: ".resource-tile_info-meta_time",
   },
   TAG_PICKER: {
     INPUT: ".selectize-input.items.not-full",

@@ -1,5 +1,6 @@
 import { config, defaultPriorityWeights, defaultTagModifiers } from "../../config.js";
 import { SELECTORS } from "../../config/selectors.js";
+import { debugLog } from "../../core/logger.js";
 import { LATEST_OVERLAY_SCORING } from "../../config/latestOverlayScoring.js";
 
 /**
@@ -154,9 +155,25 @@ export function calculateTileScore(
   const isGameCategory = normalizedCategory === "games";
   const isRatingCategory = normalizedCategory === "games" || normalizedCategory === "animations";
 
+  debugLog("Latest overlay score calculation", {
+    engagementClass,
+    ratingClass,
+    preferredCount,
+    excludedCount,
+    pageCategory: normalizedCategory,
+    overlayMatches,
+  });
+
   const scoreConfig = LATEST_OVERLAY_SCORING.scoreCalculator;
   const priorities = config.latestSettings?.priorityWeights || defaultPriorityWeights;
   const tagModifiers = config.latestSettings?.tagModifiers || defaultTagModifiers;
+
+  debugLog("Score calculation - Config Check", {
+    configPriorities: config.latestSettings?.priorityWeights,
+    configTagModifiers: config.latestSettings?.tagModifiers,
+    usedPriorities: priorities,
+    usedTagModifiers: tagModifiers,
+  });
 
   let totalWeightedScore = 0;
   let totalConfiguredWeight = 0;
@@ -224,6 +241,12 @@ export function calculateTileScore(
     // If user has no preferred/excluded config and no status signal exists,
     // skip tags pillar entirely so it cannot cap the final score.
     if (!hasTagConfig && !hasStatusSignal) {
+      debugLog("Tags pillar skipped", {
+        hasTagConfig,
+        hasStatusSignal,
+        preferredCount,
+        excludedCount,
+      });
       return finalizeScore(
         totalWeightedScore,
         totalConfiguredWeight,
@@ -332,6 +355,14 @@ function finalizeScore(
     scoreConfig.finalScore.clampMin,
     Math.min(scoreConfig.finalScore.clampMax, finalScore),
   );
+
+  debugLog("Score breakdown", {
+    baseScore: baseScore.toFixed(2),
+    completeness: completeness.toFixed(3),
+    finalScore: finalScore.toFixed(scoreConfig.finalScore.precision),
+    configured: totalConfiguredWeight.toFixed(1),
+    achieved: totalAchievedWeight.toFixed(1),
+  });
 
   return parseFloat(finalScore.toFixed(scoreConfig.finalScore.precision));
 }

@@ -155,13 +155,6 @@ function validateLatestSection(latestSettings) {
       continue;
     }
 
-    if (key === "ratingImpactWeight" || key === "engagementImpactWeight") {
-      if (typeof value !== "number" || !Number.isFinite(value) || value < 0) {
-        return `latestSettings.${key} must be a number >= 0.`;
-      }
-      continue;
-    }
-
     if (key === "priorityWeights") {
       if (!isPlainObject(value)) {
         return "latestSettings.priorityWeights must be an object.";
