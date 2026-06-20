@@ -19,7 +19,7 @@
 // @grant        GM_openInTab
 // @grant        GM_addValueChangeListener
 // @grant        GM_removeValueChangeListener
-// @run-at       document-idle
+// @run-at       document-start
 // @license      GPL-3.0-or-later
 // @homepageURL  https://f95zone.to/threads/f95zone-latest.250836/
 // @supportURL   https://f95zone.to/threads/f95zone-latest.250836/

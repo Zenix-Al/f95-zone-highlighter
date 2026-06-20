@@ -19,6 +19,9 @@ function loadModule(relativePath) {
     bundle: true,
     format: "cjs",
     platform: "node",
+    define: {
+      __F95UE_DEBUG__: "false",
+    },
     outfile: outFile,
     logLevel: "silent",
   });
@@ -42,15 +45,158 @@ function runTest(name, testFn) {
   }
 }
 
-const { default: createStateManager } = loadModule("src/core/StateManager.js");
+const { createStateManager } = loadModule("src/core/StateManager.js");
+const {
+  createFeature,
+  normalizeFeatureBootstrapMode,
+  normalizeFastCaptureConfig,
+} = loadModule("src/core/featureFactory.js");
 const {
   OVERLAY_COLOR_ORDER_KEYS,
   normalizeOverlayColorOrder,
   buildOrderedOverlayMatches,
 } = loadModule("src/features/latest-overlay/overlayOrder.js");
+const {
+  getFastCaptureData,
+  getFastCaptureSnapshot,
+  hasFastCaptureData,
+  matchesFastCaptureUrl,
+  processCompletedFastCapture,
+  refreshFastCaptureFeatures,
+  registerFastCaptureFeatures,
+  resetFastCaptureAdapterForTests,
+  resetFastCaptureStoreForTests,
+  subscribeFastCapture,
+} = loadModule("src/core/fastCapture.js");
 const { coerceSettingValue } = loadModule("src/ui/renderers/coerceSettingValue.js");
 const { setByPath } = loadModule("src/utils/objectPath.js");
-const { normalizeDirectDownloadHealth } = loadModule("src/features/direct-download/hostBreaker.js");
+const { flushQueuedToasts, showToast } = loadModule("src/ui/components/toast.js");
+const { isAddonOwnedObserverNode } = loadModule("src/services/addons/observer.js");
+const { createAddonDockGroup } = loadModule("src/ui/components/addons/addonDockGroup.js");
+const { normalizePrefixesFromLatestUpdates } = loadModule("src/services/prefixService.js");
+const {
+  buildLatestRecordMap,
+  calculateRecordAgeDays,
+  normalizeLatestRecord,
+} = loadModule("src/features/latest-overlay/latestDataIndex.js");
+const { buildPrefixStatusMap } = loadModule("src/features/latest-overlay/overlayCache.js");
+const { getRecordHighlightClasses } = loadModule(
+  "src/features/latest-overlay/ratingEngagementHighlight.js",
+);
+
+runTest("add-on observers ignore nodes mounted inside their own UI", () => {
+  const addonRoot = {
+    nodeType: 1,
+    parentElement: null,
+    getAttribute: (name) => (name === "data-addon-id" ? "example-addon" : null),
+  };
+  const child = {
+    nodeType: 1,
+    parentElement: addonRoot,
+    getAttribute: () => null,
+  };
+
+  assert.strictEqual(isAddonOwnedObserverNode(child, "example-addon"), true);
+  assert.strictEqual(isAddonOwnedObserverNode(child, "different-addon"), false);
+});
+
+function createFakeElement(tagName, doc) {
+  const classes = new Set();
+  const attrs = Object.create(null);
+  const element = {
+    tagName: String(tagName || "").toUpperCase(),
+    ownerDocument: doc,
+    children: [],
+    style: {},
+    textContent: "",
+    parentNode: null,
+    appendChild(child) {
+      if (!child) return child;
+      child.parentNode = this;
+      this.children.push(child);
+      if (child.id) {
+        doc.__nodesById[child.id] = child;
+      }
+      return child;
+    },
+    setAttribute(name, value) {
+      attrs[name] = String(value);
+      if (name === "id") {
+        this.id = String(value);
+        doc.__nodesById[this.id] = this;
+      }
+    },
+    remove() {
+      if (!this.parentNode) return;
+      const index = this.parentNode.children.indexOf(this);
+      if (index >= 0) {
+        this.parentNode.children.splice(index, 1);
+      }
+      if (this.id) {
+        delete doc.__nodesById[this.id];
+      }
+      this.parentNode = null;
+    },
+    classList: {
+      add(name) {
+        classes.add(String(name));
+      },
+      remove(name) {
+        classes.delete(String(name));
+      },
+      contains(name) {
+        return classes.has(String(name));
+      },
+    },
+  };
+
+  Object.defineProperty(element, "firstElementChild", {
+    get() {
+      return this.children[0] || null;
+    },
+  });
+
+  return element;
+}
+
+function createFakeDocument({ withBody = false } = {}) {
+  const doc = {
+    __nodesById: Object.create(null),
+    body: null,
+    documentElement: null,
+    getElementById(id) {
+      return this.__nodesById[String(id)] || null;
+    },
+    createElement(tagName) {
+      return createFakeElement(tagName, doc);
+    },
+  };
+
+  doc.documentElement = createFakeElement("html", doc);
+  if (withBody) {
+    doc.body = createFakeElement("body", doc);
+  }
+
+  return doc;
+}
+
+function resetFastCaptureHarness() {
+  resetFastCaptureAdapterForTests();
+  resetFastCaptureStoreForTests();
+}
+
+runTest("add-on dock buttons receive the core dock style class", () => {
+  const doc = createFakeDocument();
+  const slot = createFakeElement("div", doc);
+  slot.querySelector = () => null;
+
+  const group = createAddonDockGroup(slot, "example-addon", [
+    { id: "open", label: "Open", variant: "secondary" },
+  ]);
+
+  assert.strictEqual(group.children[0].className, "f95ue-page-dock-btn");
+  assert.strictEqual(group.children[0].classList.contains("secondary"), true);
+});
 
 runTest("StateManager blocks unknown set paths when knownPaths is provided", () => {
   const manager = createStateManager(
@@ -80,24 +226,6 @@ runTest("StateManager getState handles circular runtime values without throwing"
   assert.strictEqual(manager.set("shadowRoot", circular), true);
   const snapshot = manager.getState();
   assert.deepStrictEqual(snapshot, { shadowRoot: { self: null } });
-});
-
-runTest("normalizeDirectDownloadHealth clamps invalid host breaker values", () => {
-  const normalized = normalizeDirectDownloadHealth({
-    gofile: {
-      failCount: -99,
-      autoDisabled: "yes",
-      noticeDismissed: 1,
-      lastError: 42,
-      updatedAt: -2,
-    },
-  });
-
-  assert.strictEqual(normalized.gofile.failCount, 0);
-  assert.strictEqual(normalized.gofile.autoDisabled, true);
-  assert.strictEqual(normalized.gofile.noticeDismissed, true);
-  assert.strictEqual(normalized.gofile.lastError, "");
-  assert.strictEqual(normalized.gofile.updatedAt, 0);
 });
 
 runTest("normalizeOverlayColorOrder restores missing keys and removes duplicates", () => {
@@ -138,6 +266,453 @@ runTest("coerceSettingValue validates color values", () => {
 
   assert.strictEqual(coerceSettingValue(meta, "#abcdef", "#123456"), "#abcdef");
   assert.strictEqual(coerceSettingValue(meta, "invalid", "#123456"), "#123456");
+});
+
+runTest("prefix normalization retains complete records inside category groups", () => {
+  const result = normalizePrefixesFromLatestUpdates({
+    games: [
+      {
+        id: 1,
+        name: "Engine",
+        prefixes: [{ id: 7, name: "Ren&#039;Py", class: "pre-renpy" }],
+      },
+    ],
+  });
+
+  assert.deepStrictEqual(result.categories.games[0], {
+    id: 1,
+    name: "Engine",
+    prefixes: [{ id: 7, name: "Ren&#039;Py", class: "pre-renpy" }],
+    prefixIds: [7],
+  });
+  assert.deepStrictEqual(result.items, [
+    { id: 7, name: "Ren&#039;Py", class: "pre-renpy" },
+  ]);
+});
+
+runTest("latest records retain complete payload fields and index by thread id", () => {
+  const raw = {
+    thread_id: "291307",
+    title: "Sunset Rose",
+    creator: "Lewdlab",
+    version: "v0.2",
+    views: "201089",
+    likes: 297,
+    prefixes: [7, "22"],
+    tags: [75, "107"],
+    rating: "3.5",
+    watched: false,
+    ignored: false,
+    new: true,
+    ts: 1781926200,
+    future_field: { preserved: true },
+  };
+  const record = normalizeLatestRecord(raw);
+  const index = buildLatestRecordMap([raw]);
+
+  assert.strictEqual(record.thread_id, 291307);
+  assert.deepStrictEqual(record.prefixes, [7, 22]);
+  assert.deepStrictEqual(record.tags, [75, 107]);
+  assert.strictEqual(record.rating, 3.5);
+  assert.strictEqual(record.new, true);
+  assert.deepStrictEqual(record.future_field, { preserved: true });
+  assert.strictEqual(index.get(291307).title, "Sunset Rose");
+});
+
+runTest("latest record age uses capture timestamp and clamps fresh records to one day", () => {
+  assert.strictEqual(calculateRecordAgeDays({ ts: 1000 }, 1000 * 1000 + 3600000), 1);
+  assert.strictEqual(calculateRecordAgeDays({ ts: 1000 }, 1000 * 1000 + 172800000), 2);
+});
+
+runTest("captured metrics drive rating and engagement highlights without DOM reads", () => {
+  const classes = getRecordHighlightClasses(
+    {
+      rating: 3.5,
+      likes: 297,
+      views: 201089,
+      ts: 1781926200,
+    },
+    1781936304553,
+    "games",
+  );
+
+  assert.strictEqual(classes.ratingClass, "engagement-rating-green");
+  assert.ok(classes.engagementClass);
+  assert.strictEqual(classes.views, 201089);
+  assert.strictEqual(classes.time, 1);
+});
+
+runTest("prefix status map resolves complete records and legacy id references", () => {
+  const complete = buildPrefixStatusMap({
+    items: [],
+    categories: {
+      games: [
+        {
+          id: 4,
+          name: "Status",
+          prefixes: [
+            { id: 18, name: "Completed" },
+            { id: 20, name: "On Hold" },
+            { id: 22, name: "Abandoned" },
+          ],
+        },
+      ],
+    },
+  });
+  const legacy = buildPrefixStatusMap({
+    items: [{ id: 22, name: "Abandoned" }],
+    categories: { games: [{ name: "Status", prefixIds: [22] }] },
+  });
+
+  assert.strictEqual(complete.get(18), "completed");
+  assert.strictEqual(complete.get(20), "onhold");
+  assert.strictEqual(complete.get(22), "abandoned");
+  assert.strictEqual(legacy.get(22), "abandoned");
+});
+
+runTest("feature metadata defaults to waitForBody and stable slug id", () => {
+  const feature = createFeature("Fancy Feature", {
+    enable: () => null,
+    disable: () => null,
+  });
+
+  assert.strictEqual(normalizeFeatureBootstrapMode(undefined), "waitForBody");
+  assert.strictEqual(feature.bootstrapMode, "waitForBody");
+  assert.strictEqual(feature.featureKey, "fancy-feature");
+});
+
+runTest("feature fast capture metadata normalizes urlIncludes and defaults", () => {
+  const normalized = normalizeFastCaptureConfig({
+    urlIncludes: "latest_data.php",
+    dataPath: "msg.data",
+  });
+
+  assert.deepStrictEqual(normalized, {
+    urlIncludes: ["latest_data.php"],
+    dataPath: "msg.data",
+    transport: "any",
+    mode: "oncePerDocument",
+    ttlMs: 0,
+  });
+});
+
+runTest("feature fast capture accepts latest mode and ttl", () => {
+  assert.deepStrictEqual(
+    normalizeFastCaptureConfig({
+      urlIncludes: "latest_data.php",
+      dataPath: "msg.data",
+      mode: "latest",
+      ttlMs: 30000,
+    }),
+    {
+      urlIncludes: ["latest_data.php"],
+      dataPath: "msg.data",
+      transport: "any",
+      mode: "latest",
+      ttlMs: 30000,
+    },
+  );
+});
+
+runTest("matchesFastCaptureUrl supports string and array urlIncludes", () => {
+  assert.strictEqual(
+    matchesFastCaptureUrl("https://example.com/latest_data.php?page=1", "latest_data.php"),
+    true,
+  );
+  assert.strictEqual(
+    matchesFastCaptureUrl("https://example.com/api/feed", ["latest_data.php", "/api/feed"]),
+    true,
+  );
+  assert.strictEqual(matchesFastCaptureUrl("https://example.com/api/feed", "/missing"), false);
+});
+
+runTest("fast capture handles fetch success and disables once-captured listeners", () => {
+  resetFastCaptureHarness();
+
+  registerFastCaptureFeatures([
+    {
+      name: "Latest Raw Capture",
+      featureKey: "latest-raw-capture",
+      bootstrapMode: "fast",
+      fastCapture: {
+        urlIncludes: ["latest_data.php"],
+        dataPath: "msg.data",
+        transport: "fetch",
+        once: true,
+      },
+      isApplicable: () => true,
+    },
+  ]);
+
+  const captured = processCompletedFastCapture(
+    "fetch",
+    "https://f95zone.to/latest_data.php?page=1",
+    JSON.stringify({ msg: { data: [{ id: 1 }] } }),
+  );
+  const snapshot = getFastCaptureSnapshot("latest-raw-capture");
+
+  assert.strictEqual(captured, 1);
+  assert.strictEqual(snapshot.status, "captured");
+  assert.deepStrictEqual(getFastCaptureData("latest-raw-capture"), [{ id: 1 }]);
+  assert.strictEqual(hasFastCaptureData("latest-raw-capture"), true);
+  assert.strictEqual(
+    processCompletedFastCapture(
+      "fetch",
+      "https://f95zone.to/latest_data.php?page=2",
+      JSON.stringify({ msg: { data: [{ id: 2 }] } }),
+    ),
+    0,
+  );
+});
+
+runTest("latest mode overwrites the snapshot on every matching response", () => {
+  resetFastCaptureHarness();
+  registerFastCaptureFeatures([
+    {
+      name: "Latest Capture",
+      featureKey: "latest-capture",
+      bootstrapMode: "fast",
+      fastCapture: {
+        urlIncludes: ["latest_data.php"],
+        dataPath: "msg.data",
+        transport: "fetch",
+        mode: "latest",
+        ttlMs: 30000,
+      },
+      isApplicable: () => true,
+    },
+  ]);
+
+  processCompletedFastCapture(
+    "fetch",
+    "https://f95zone.to/latest_data.php?page=1",
+    JSON.stringify({ msg: { data: [{ id: 1 }] } }),
+  );
+  processCompletedFastCapture(
+    "fetch",
+    "https://f95zone.to/latest_data.php?page=2",
+    JSON.stringify({ msg: { data: [{ id: 2 }] } }),
+  );
+
+  const snapshot = getFastCaptureSnapshot("latest-capture");
+  assert.deepStrictEqual(snapshot.data, [{ id: 2 }]);
+  assert.strictEqual(snapshot.mode, "latest");
+  assert.ok(snapshot.expiresAt > snapshot.capturedAt);
+});
+
+runTest("oncePerRoute capture reactivates on a route generation change", () => {
+  resetFastCaptureHarness();
+  const feature = {
+    name: "Route Capture",
+    featureKey: "route-capture",
+    bootstrapMode: "fast",
+    fastCapture: {
+      urlIncludes: ["latest_data.php"],
+      dataPath: "msg.data",
+      transport: "fetch",
+      mode: "oncePerRoute",
+    },
+    isApplicable: () => true,
+  };
+  registerFastCaptureFeatures([feature]);
+  processCompletedFastCapture(
+    "fetch",
+    "https://f95zone.to/latest_data.php?page=1",
+    JSON.stringify({ msg: { data: [1] } }),
+  );
+  assert.strictEqual(
+    processCompletedFastCapture(
+      "fetch",
+      "https://f95zone.to/latest_data.php?page=2",
+      JSON.stringify({ msg: { data: [2] } }),
+    ),
+    0,
+  );
+
+  refreshFastCaptureFeatures([feature]);
+  assert.strictEqual(
+    processCompletedFastCapture(
+      "fetch",
+      "https://f95zone.to/latest_data.php?page=2",
+      JSON.stringify({ msg: { data: [2] } }),
+    ),
+    1,
+  );
+});
+
+runTest("fast capture handles xhr capture while allowing one feature failure without breaking another", () => {
+  resetFastCaptureHarness();
+  global.document = { body: null };
+
+  registerFastCaptureFeatures([
+    {
+      name: "Valid Capture",
+      featureKey: "valid-capture",
+      bootstrapMode: "fast",
+      fastCapture: {
+        urlIncludes: ["latest_data.php"],
+        dataPath: "msg.data",
+        transport: "xhr",
+        once: true,
+      },
+      isApplicable: () => true,
+    },
+    {
+      name: "Broken Capture",
+      featureKey: "broken-capture",
+      bootstrapMode: "fast",
+      fastCapture: {
+        urlIncludes: ["latest_data.php"],
+        dataPath: "msg.missing",
+        transport: "xhr",
+        once: true,
+      },
+      isApplicable: () => true,
+    },
+  ]);
+
+  const captured = processCompletedFastCapture(
+    "xhr",
+    "https://f95zone.to/latest_data.php?cmd=refresh",
+    JSON.stringify({ msg: { data: ["ok"] } }),
+  );
+
+  assert.strictEqual(captured, 1);
+  assert.strictEqual(getFastCaptureSnapshot("valid-capture").status, "captured");
+  assert.strictEqual(getFastCaptureSnapshot("broken-capture").status, "idle");
+});
+
+runTest("fast capture recovers after malformed matching JSON", () => {
+  resetFastCaptureHarness();
+  global.document = { body: null };
+
+  registerFastCaptureFeatures([
+    {
+      name: "Recoverable Capture",
+      featureKey: "recoverable-capture",
+      bootstrapMode: "fast",
+      fastCapture: {
+        urlIncludes: ["latest_data.php"],
+        dataPath: "msg.data",
+        transport: "fetch",
+        once: true,
+      },
+      isApplicable: () => true,
+    },
+  ]);
+
+  assert.strictEqual(
+    processCompletedFastCapture("fetch", "https://f95zone.to/latest_data.php", "not-json"),
+    0,
+  );
+  assert.strictEqual(getFastCaptureSnapshot("recoverable-capture").status, "idle");
+
+  assert.strictEqual(
+    processCompletedFastCapture(
+      "fetch",
+      "https://f95zone.to/latest_data.php",
+      JSON.stringify({ msg: { data: { ok: true } } }),
+    ),
+    1,
+  );
+  assert.deepStrictEqual(getFastCaptureData("recoverable-capture"), { ok: true });
+});
+
+runTest("malformed latest responses preserve the last valid fast capture", () => {
+  resetFastCaptureHarness();
+
+  registerFastCaptureFeatures([
+    {
+      name: "Latest Capture",
+      featureKey: "latest-malformed-capture",
+      bootstrapMode: "fast",
+      fastCapture: {
+        urlIncludes: ["latest_data.php"],
+        dataPath: "msg.data",
+        transport: "fetch",
+        mode: "latest",
+      },
+      isApplicable: () => true,
+    },
+  ]);
+
+  processCompletedFastCapture(
+    "fetch",
+    "https://f95zone.to/latest_data.php",
+    JSON.stringify({ msg: { data: [{ id: 1 }] } }),
+  );
+
+  assert.strictEqual(
+    processCompletedFastCapture("fetch", "https://f95zone.to/latest_data.php", "not-json"),
+    0,
+  );
+  assert.strictEqual(getFastCaptureSnapshot("latest-malformed-capture").status, "captured");
+  assert.deepStrictEqual(getFastCaptureData("latest-malformed-capture"), [{ id: 1 }]);
+});
+
+runTest("fast capture subscribers receive captured snapshots", () => {
+  resetFastCaptureHarness();
+  global.document = { body: null };
+
+  const seen = [];
+  const unsubscribe = subscribeFastCapture("subscriber-capture", (snapshot) => {
+    seen.push(snapshot);
+  });
+
+  registerFastCaptureFeatures([
+    {
+      name: "Subscriber Capture",
+      featureKey: "subscriber-capture",
+      bootstrapMode: "fast",
+      fastCapture: {
+        urlIncludes: ["latest_data.php"],
+        dataPath: "msg.data",
+        transport: "fetch",
+        once: true,
+      },
+      isApplicable: () => true,
+    },
+  ]);
+
+  processCompletedFastCapture(
+    "fetch",
+    "https://f95zone.to/latest_data.php",
+    JSON.stringify({ msg: { data: { hello: "world" } } }),
+  );
+  unsubscribe();
+
+  assert.strictEqual(seen.length, 1);
+  assert.strictEqual(seen[0].status, "captured");
+  assert.deepStrictEqual(seen[0].data, { hello: "world" });
+});
+
+runTest("toast queue accepts pre-body calls and flushes in order after body exists", () => {
+  const previousDocument = global.document;
+  const previousRequestAnimationFrame = global.requestAnimationFrame;
+
+  try {
+    const docWithoutBody = createFakeDocument({ withBody: false });
+    global.document = docWithoutBody;
+    global.requestAnimationFrame = (callback) => callback();
+
+    showToast("first toast");
+    showToast("second toast");
+
+    const docWithBody = createFakeDocument({ withBody: true });
+    global.document = docWithBody;
+
+    const flushed = flushQueuedToasts();
+    const container = docWithBody.getElementById("toast-container");
+
+    assert.strictEqual(flushed, 2);
+    assert.ok(container);
+    assert.strictEqual(container.children.length, 2);
+    assert.strictEqual(container.children[0].textContent, "first toast");
+    assert.strictEqual(container.children[1].textContent, "second toast");
+  } finally {
+    global.document = previousDocument;
+    global.requestAnimationFrame = previousRequestAnimationFrame;
+  }
 });
 
 console.log(`\nTest results: ${passed} passed, ${failed} failed`);

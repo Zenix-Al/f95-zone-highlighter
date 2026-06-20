@@ -11,6 +11,7 @@ export const ACTION_CAPABILITY_ALTERNATIVES = Object.freeze({
   "idb.put": ["idb"],
   "idb.delete": ["idb"],
   "idb.bulkPut": ["idb"],
+  "idb.bulkDelete": ["idb"],
   "idb.query": ["idb"],
   "idb.count": ["idb"],
   "observer.watch": ["observer"],
@@ -61,6 +62,7 @@ export async function invokeRegisteredAddonCoreAction({
     idbPutForAddon,
     idbDeleteForAddon,
     idbBulkPutForAddon,
+    idbBulkDeleteForAddon,
     idbQueryForAddon,
     idbCountForAddon,
     watchAddonObserver,
@@ -159,6 +161,15 @@ export async function invokeRegisteredAddonCoreAction({
         maxAddonIdbPayloadBytes,
         maxAddonIdbBulkItems,
         idbBulkPutForAddon,
+      ),
+    "idb.bulkDelete": async (payload) =>
+      actionIdbBulkDelete(
+        addonId,
+        payload,
+        measurePayloadBytes,
+        maxAddonIdbPayloadBytes,
+        maxAddonIdbBulkItems,
+        idbBulkDeleteForAddon,
       ),
     "idb.query": async (payload) =>
       actionIdbQuery(
@@ -466,6 +477,30 @@ async function actionIdbBulkPut(
   try {
     await idbBulkPutForAddon(addonId, { ...payload, entries });
     return { ok: true, value: entries.length };
+  } catch (error) {
+    console.warn("[addonsService] idb core-action failed:", error);
+    return { ok: false, reason: "idb_error" };
+  }
+}
+
+async function actionIdbBulkDelete(
+  addonId,
+  payload,
+  measurePayloadBytes,
+  maxAddonIdbPayloadBytes,
+  maxAddonIdbBulkItems,
+  idbBulkDeleteForAddon,
+) {
+  if (measurePayloadBytes(payload) > maxAddonIdbPayloadBytes) {
+    return { ok: false, reason: "payload_too_large" };
+  }
+  const keys = Array.isArray(payload?.keys) ? payload.keys : [];
+  if (keys.length > maxAddonIdbBulkItems) {
+    return { ok: false, reason: "too_many_items" };
+  }
+  try {
+    await idbBulkDeleteForAddon(addonId, { ...payload, keys });
+    return { ok: true, value: keys.length };
   } catch (error) {
     console.warn("[addonsService] idb core-action failed:", error);
     return { ok: false, reason: "idb_error" };

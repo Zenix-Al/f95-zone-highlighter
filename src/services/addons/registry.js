@@ -5,11 +5,55 @@ import {
   sanitizeAddonIdList,
   VALID_ADDON_STATUSES,
 } from "./shared.js";
-import { upsertInstalledAddonMeta } from "./state.js";
 import { getTrustedCatalogEntry, isBuiltinTrustedAddonId } from "./catalog.js";
 
 const REGISTRY_LISTENERS = new Set();
 let addonsRuntimeRegistry = [];
+
+function clonePlainValue(value) {
+  if (Array.isArray(value)) {
+    return value.map((entry) => clonePlainValue(entry));
+  }
+
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, entry]) => [key, clonePlainValue(entry)]),
+    );
+  }
+
+  return value;
+}
+
+function cloneAddonEntry(addon) {
+  if (!addon || typeof addon !== "object") return addon;
+
+  return {
+    ...addon,
+    panelSettingsDefaults:
+      addon.panelSettingsDefaults && typeof addon.panelSettingsDefaults === "object"
+        ? clonePlainValue(addon.panelSettingsDefaults)
+        : null,
+    panelSettings: Array.isArray(addon.panelSettings)
+      ? addon.panelSettings.map((entry) => clonePlainValue(entry))
+      : [],
+    panelActions: Array.isArray(addon.panelActions)
+      ? addon.panelActions.map((entry) => clonePlainValue(entry))
+      : [],
+    pageScopes: Array.isArray(addon.pageScopes) ? [...addon.pageScopes] : [],
+    requestedCapabilities: Array.isArray(addon.requestedCapabilities)
+      ? [...addon.requestedCapabilities]
+      : [],
+    capabilities: Array.isArray(addon.capabilities) ? [...addon.capabilities] : [],
+  };
+}
+
+function createRegistrySnapshot() {
+  return addonsRuntimeRegistry.map((addon) => cloneAddonEntry(addon));
+}
+
+function findRegistryIndex(addonId) {
+  return addonsRuntimeRegistry.findIndex((addon) => addon.id === addonId);
+}
 
 function normalizeAddonEntry(addon, existingAddon = null) {
   if (!addon || typeof addon !== "object") return null;
@@ -92,15 +136,15 @@ function normalizeAddonEntry(addon, existingAddon = null) {
       ).trim() || "",
     panelSettingsDefaults:
       addon.panelSettingsDefaults && typeof addon.panelSettingsDefaults === "object"
-        ? addon.panelSettingsDefaults
+        ? clonePlainValue(addon.panelSettingsDefaults)
         : existingAddon?.panelSettingsDefaults &&
             typeof existingAddon.panelSettingsDefaults === "object"
-          ? existingAddon.panelSettingsDefaults
+          ? clonePlainValue(existingAddon.panelSettingsDefaults)
           : null,
     panelSettings: Array.isArray(addon.panelSettings)
-      ? addon.panelSettings
+      ? addon.panelSettings.map((entry) => clonePlainValue(entry))
       : Array.isArray(existingAddon?.panelSettings)
-        ? existingAddon.panelSettings
+        ? existingAddon.panelSettings.map((entry) => clonePlainValue(entry))
         : [],
     panelActions: panelActions
       .map((entry) => {
@@ -133,12 +177,8 @@ function normalizeAddonEntry(addon, existingAddon = null) {
   };
 }
 
-function cloneRegistry() {
-  return addonsRuntimeRegistry.map((addon) => ({ ...addon }));
-}
-
 function emitRegistryChange() {
-  const snapshot = cloneRegistry();
+  const snapshot = createRegistrySnapshot();
   REGISTRY_LISTENERS.forEach((listener) => {
     try {
       listener(snapshot);
@@ -149,20 +189,21 @@ function emitRegistryChange() {
 }
 
 function replaceRegistry(addons) {
-  addonsRuntimeRegistry = Array.isArray(addons) ? addons.map((addon) => ({ ...addon })) : [];
+  addonsRuntimeRegistry = Array.isArray(addons) ? addons.map((addon) => cloneAddonEntry(addon)) : [];
   emitRegistryChange();
-  return cloneRegistry();
+  return createRegistrySnapshot();
 }
 
 export function listRegisteredAddons() {
-  return cloneRegistry();
+  return createRegistrySnapshot();
 }
 
 export function getRegisteredAddon(addonId) {
   const normalizedId = sanitizeAddonId(addonId);
   if (!normalizedId) return null;
-  const entry = addonsRuntimeRegistry.find((addon) => addon.id === normalizedId);
-  return entry ? { ...entry } : null;
+  const index = findRegistryIndex(normalizedId);
+  if (index < 0) return null;
+  return cloneAddonEntry(addonsRuntimeRegistry[index]);
 }
 
 export function replaceRegisteredAddons(addons) {
@@ -173,55 +214,52 @@ export function replaceRegisteredAddons(addons) {
 }
 
 export function registerAddon(addon) {
-  const current = cloneRegistry();
-  const existingIndex = current.findIndex((entry) => entry.id === sanitizeAddonId(addon?.id));
-  const existingAddon = existingIndex >= 0 ? current[existingIndex] : null;
+  const normalizedId = sanitizeAddonId(addon?.id);
+  const existingIndex = normalizedId ? findRegistryIndex(normalizedId) : -1;
+  const existingAddon = existingIndex >= 0 ? addonsRuntimeRegistry[existingIndex] : null;
   const normalized = normalizeAddonEntry(addon, existingAddon);
-  if (!normalized) return cloneRegistry();
+  if (!normalized) return createRegistrySnapshot();
 
   if (existingIndex >= 0) {
-    current[existingIndex] = normalized;
+    addonsRuntimeRegistry[existingIndex] = normalized;
   } else {
-    current.push(normalized);
+    addonsRuntimeRegistry.push(normalized);
   }
 
-  void upsertInstalledAddonMeta(normalized.id, {
-    name: normalized.name,
-    version: normalized.version,
-    description: normalized.description,
-    pageScopes: normalized.pageScopes,
-    capabilities: normalized.capabilities,
-    panelTitle: normalized.panelTitle,
-    panelBody: normalized.panelBody,
-    statusMessage: normalized.statusMessage,
-  });
-
-  return replaceRegistry(current);
+  emitRegistryChange();
+  return createRegistrySnapshot();
 }
 
 export function unregisterAddon(addonId) {
   const normalizedId = sanitizeAddonId(addonId);
-  if (!normalizedId) return cloneRegistry();
-  return replaceRegistry(cloneRegistry().filter((addon) => addon.id !== normalizedId));
+  if (!normalizedId) return createRegistrySnapshot();
+
+  const index = findRegistryIndex(normalizedId);
+  if (index < 0) return createRegistrySnapshot();
+
+  addonsRuntimeRegistry.splice(index, 1);
+  emitRegistryChange();
+  return createRegistrySnapshot();
 }
 
 export function updateAddonStatus(addonId, status, statusMessage = "") {
   const normalizedId = sanitizeAddonId(addonId);
-  if (!normalizedId) return cloneRegistry();
+  if (!normalizedId) return createRegistrySnapshot();
 
-  const current = cloneRegistry();
-  const index = current.findIndex((addon) => addon.id === normalizedId);
-  if (index < 0) return current;
+  const index = findRegistryIndex(normalizedId);
+  if (index < 0) return createRegistrySnapshot();
 
-  const nextStatus = VALID_ADDON_STATUSES.has(status) ? status : current[index].status;
-  current[index] = {
-    ...current[index],
+  const currentAddon = addonsRuntimeRegistry[index];
+  const nextStatus = VALID_ADDON_STATUSES.has(status) ? status : currentAddon.status;
+  addonsRuntimeRegistry[index] = {
+    ...currentAddon,
     status: nextStatus,
     statusMessage: String(statusMessage || "").trim(),
     updatedAt: Date.now(),
   };
 
-  return replaceRegistry(current);
+  emitRegistryChange();
+  return createRegistrySnapshot();
 }
 
 export function subscribeAddonsRegistry(listener) {
@@ -230,7 +268,7 @@ export function subscribeAddonsRegistry(listener) {
   }
 
   REGISTRY_LISTENERS.add(listener);
-  listener(cloneRegistry());
+  listener(createRegistrySnapshot());
 
   return () => {
     REGISTRY_LISTENERS.delete(listener);
@@ -238,7 +276,7 @@ export function subscribeAddonsRegistry(listener) {
 }
 
 export function reapplyAddonSecurityPolicies() {
-  const normalized = cloneRegistry()
+  const normalized = addonsRuntimeRegistry
     .map((addon) => normalizeAddonEntry(addon, addon))
     .filter(Boolean);
   return replaceRegistry(normalized);

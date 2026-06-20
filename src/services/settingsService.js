@@ -1,6 +1,8 @@
 import {
   config,
+  defaultAddonsApiThrottleSettings,
   defaultAddonsSettings,
+  defaultAddonsServiceSettings,
   defaultColors,
   defaultGlobalSettings,
   defaultLatestSettings,
@@ -25,7 +27,16 @@ function sanitizeColorSection(value) {
 }
 
 function sanitizeLatestSettings(value) {
-  const merged = { ...defaultLatestSettings, ...(value || {}) };
+  const source = normalizeObject(value);
+  const merged = mergeWithDefault(source, defaultLatestSettings);
+  merged.priorityWeights = mergeWithDefault(
+    source.priorityWeights,
+    defaultLatestSettings.priorityWeights,
+  );
+  merged.tagModifiers = mergeWithDefault(
+    source.tagModifiers,
+    defaultLatestSettings.tagModifiers,
+  );
   if (!isValidVersion(merged.minVersion)) {
     merged.minVersion = defaultLatestSettings.minVersion;
   }
@@ -44,7 +55,41 @@ function sanitizeThreadSettings(value) {
   return merged;
 }
 
-function sanitizeAddonsSettings(value) {
+function clampFiniteNumber(value, fallback, { min = 0, max = Number.MAX_SAFE_INTEGER } = {}) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return fallback;
+  if (parsed < min) return min;
+  if (parsed > max) return max;
+  return parsed;
+}
+
+function sanitizeAddonsServiceSettings(value) {
+  const source = normalizeObject(value);
+  const apiThrottleSource = normalizeObject(source.apiThrottle);
+
+  return {
+    ...defaultAddonsServiceSettings,
+    apiThrottle: {
+      coreActionWindowMs: clampFiniteNumber(
+        apiThrottleSource.coreActionWindowMs,
+        defaultAddonsApiThrottleSettings.coreActionWindowMs,
+        { min: 250, max: 60000 },
+      ),
+      coreActionRateMax: clampFiniteNumber(
+        apiThrottleSource.coreActionRateMax,
+        defaultAddonsApiThrottleSettings.coreActionRateMax,
+        { min: 1, max: 1000 },
+      ),
+      coreActionMaxConcurrent: clampFiniteNumber(
+        apiThrottleSource.coreActionMaxConcurrent,
+        defaultAddonsApiThrottleSettings.coreActionMaxConcurrent,
+        { min: 1, max: 100 },
+      ),
+    },
+  };
+}
+
+function normalizeAddonsSettings(value) {
   const source = normalizeObject(value);
   const byAddonSource = normalizeObject(source.byAddon);
   const installedMetaSource = normalizeObject(source.installedMeta);
@@ -107,7 +152,65 @@ function sanitizeAddonsSettings(value) {
     trustedIds,
     byAddon,
     installedMeta,
+    service: sanitizeAddonsServiceSettings(source.service),
   };
+}
+
+function compactAddonsSettingsForStorage(value) {
+  const normalized = normalizeAddonsSettings(value);
+  const compacted = {};
+
+  const defaultTrustedIds = JSON.stringify(defaultAddonsSettings.trustedIds);
+  const normalizedTrustedIds = JSON.stringify(normalized.trustedIds);
+  if (normalizedTrustedIds !== defaultTrustedIds) {
+    compacted.trustedIds = [...normalized.trustedIds];
+  }
+
+  const byAddon = {};
+  for (const [addonId, addonEntry] of Object.entries(normalized.byAddon)) {
+    const state = normalizeObject(addonEntry?.state);
+    if (Object.keys(state).length === 0) continue;
+    byAddon[addonId] = { state };
+  }
+  if (Object.keys(byAddon).length > 0) {
+    compacted.byAddon = byAddon;
+  }
+
+  const installedMeta = {};
+  for (const [addonId, metaEntry] of Object.entries(normalized.installedMeta)) {
+    const meta = normalizeObject(metaEntry);
+    const nextMeta = {};
+
+    const name = String(meta.name || "").trim();
+    const version = String(meta.version || "").trim();
+    const installedSeenAt = Number(meta.installedSeenAt || 0);
+    const lastSeenAt = Number(meta.lastSeenAt || 0);
+
+    if (name) nextMeta.name = name;
+    if (version) nextMeta.version = version;
+    if (Number.isFinite(installedSeenAt) && installedSeenAt > 0) {
+      nextMeta.installedSeenAt = installedSeenAt;
+    }
+    if (Number.isFinite(lastSeenAt) && lastSeenAt > 0) {
+      nextMeta.lastSeenAt = lastSeenAt;
+    }
+
+    if (Object.keys(nextMeta).length === 0) continue;
+    installedMeta[addonId] = nextMeta;
+  }
+  if (Object.keys(installedMeta).length > 0) {
+    compacted.installedMeta = installedMeta;
+  }
+
+  const normalizedApiThrottle = JSON.stringify(normalized.service.apiThrottle);
+  const defaultApiThrottle = JSON.stringify(defaultAddonsServiceSettings.apiThrottle);
+  if (normalizedApiThrottle !== defaultApiThrottle) {
+    compacted.service = {
+      apiThrottle: { ...normalized.service.apiThrottle },
+    };
+  }
+
+  return compacted;
 }
 
 function sanitizePrefixCatalog(value) {
@@ -133,7 +236,7 @@ function sanitizePersistedUpdate(key, value) {
     case "metrics":
       return { ...defaultMetrics, ...normalizeObject(value) };
     case "addons":
-      return sanitizeAddonsSettings(value);
+      return compactAddonsSettingsForStorage(value);
     default:
       return value;
   }
@@ -213,7 +316,7 @@ function deepMergeLatestSettings(saved, defaultObj) {
     if (key in result) {
       // For objects like priorityWeights and tagModifiers, do a shallow merge of their contents
       if (key === "priorityWeights" || key === "tagModifiers") {
-        result[key] = { ...result[key], ...normalizeObject(source[key]) };
+        result[key] = mergeWithDefault(source[key], result[key]);
       } else {
         result[key] = source[key];
       }
@@ -243,7 +346,7 @@ export async function loadData() {
     latestSettings: deepMergeLatestSettings(parsed.latestSettings, defaultLatestSettings),
     globalSettings: mergeWithDefault(parsed.globalSettings, defaultGlobalSettings),
     metrics: mergeWithDefault(parsed.metrics, defaultMetrics),
-    addons: sanitizeAddonsSettings(parsed.addons),
+    addons: normalizeAddonsSettings(parsed.addons),
     savedNotifID: parsed.savedNotifID || null,
   };
 

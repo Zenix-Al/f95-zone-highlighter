@@ -33,6 +33,7 @@ export function normalizePrefixesFromLatestUpdates(rawPrefixes) {
         group = {
           id: Number.isFinite(groupId) ? groupId : null,
           name: groupName,
+          prefixes: [],
           prefixIds: [],
         };
         groupByKey.set(groupKey, group);
@@ -43,13 +44,9 @@ export function normalizePrefixesFromLatestUpdates(rawPrefixes) {
         const name = normalizeText(prefixRaw?.name);
         if (!Number.isFinite(id) || !name) continue;
 
-        if (!prefixById.has(id)) {
-          prefixById.set(id, {
-            id,
-            name,
-            class: normalizeText(prefixRaw?.class),
-          });
-        }
+        const prefix = { id, name, class: normalizeText(prefixRaw?.class) };
+        if (!prefixById.has(id)) prefixById.set(id, prefix);
+        if (!group.prefixes.some((item) => item.id === id)) group.prefixes.push(prefix);
         if (!group.prefixIds.includes(id)) group.prefixIds.push(id);
       }
     }
@@ -88,6 +85,7 @@ async function normalizePrefixesFromLatestUpdatesBudgeted(rawPrefixes) {
         group = {
           id: Number.isFinite(groupId) ? groupId : null,
           name: groupName,
+          prefixes: [],
           prefixIds: [],
         };
         groupByKey.set(groupKey, group);
@@ -104,9 +102,9 @@ async function normalizePrefixesFromLatestUpdatesBudgeted(rawPrefixes) {
       const id = Number(prefixRaw?.id);
       const name = normalizeText(prefixRaw?.name);
       if (!Number.isFinite(id) || !name) return;
-      if (!prefixById.has(id)) {
-        prefixById.set(id, { id, name, class: normalizeText(prefixRaw?.class) });
-      }
+      const prefix = { id, name, class: normalizeText(prefixRaw?.class) };
+      if (!prefixById.has(id)) prefixById.set(id, prefix);
+      if (!group.prefixes.some((item) => item.id === id)) group.prefixes.push(prefix);
       if (!group.prefixIds.includes(id)) group.prefixIds.push(id);
     },
     { budgetMs: 4, minChunk: 25 },

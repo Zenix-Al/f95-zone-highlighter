@@ -39,6 +39,28 @@ Example capability currently implemented:
 
 - `toast` -> allows `core-action: "toast.show"`
 
+Read-only core meta actions also available through `core-action`:
+
+- `addon.access` -> returns add-on access state and granted capabilities
+- `addon.throttle` -> returns the live core-action throttle config so add-ons can pace requests
+
+Example:
+
+```js
+const throttleResult = await bridge.getCoreThrottle();
+if (throttleResult?.ok) {
+	const { coreAction } = throttleResult.value || {};
+	console.log(coreAction);
+	// {
+	//   windowMs,
+	//   maxCount,
+	//   maxConcurrent,
+	//   sustainedRequestsPerSecond,
+	//   suggestedMinIntervalMs
+	// }
+}
+```
+
 ## Core Requirement
 
 Add-ons in this workspace can mark `requiresCore: true` in manifest. These add-ons exit early if core is not detected.

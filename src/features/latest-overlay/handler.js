@@ -1,19 +1,23 @@
 import { stateManager } from "../../config.js";
 import { debugLog } from "../../core/logger";
 import { addObserverCallback, removeObserverCallback } from "../../core/observer";
-import { refreshCaches } from "./overlayCache.js";
+import { getFastCaptureSnapshot, subscribeFastCapture } from "../../core/fastCapture.js";
 import {
+  getCurrentGeneration,
   incrementGeneration,
   clearMutationState,
   processMutations,
   hasTileMutations,
   processAllTiles,
   reprocessAllTiles,
-  resetAllTiles,
-  resetTile,
   processTile,
-} from "./tilePatcher.js";
+} from "./tileProcessor.js";
+import { resetAllTiles, resetTile } from "./tilePatcher.js";
 import { setupHoverListener, teardownHoverListener } from "./hoverTagHandler.js";
+import {
+  LATEST_DATA_CAPTURE_KEY,
+  latestDataIndex,
+} from "./latestDataIndex.js";
 
 export { reprocessAllTiles, resetTile, processTile, processAllTiles };
 
@@ -26,6 +30,48 @@ const KNOWN_LATEST_OVERLAY_CATEGORIES = new Set([
   "mods",
 ]);
 let latestOverlayLastHash = String(window.location?.hash || "");
+let unsubscribeLatestData = null;
+
+function applyLatestDataSnapshot(snapshot, { processVisibleTiles = true } = {}) {
+  const startedAt = performance.now();
+  if (!latestDataIndex.replaceSnapshot(snapshot)) {
+    debugLog("latest-overlay", "Snapshot unavailable", {
+      data: { status: snapshot?.status || "missing", processVisibleTiles },
+    });
+    return false;
+  }
+  debugLog("latest-overlay", "Snapshot indexed", {
+    data: {
+      records: latestDataIndex.records.size,
+      transport: latestDataIndex.transport,
+      sourceUrl: latestDataIndex.sourceUrl,
+      snapshotAgeMs: Math.max(0, Date.now() - latestDataIndex.capturedAt),
+      indexingMs: Number((performance.now() - startedAt).toFixed(2)),
+      processVisibleTiles,
+    },
+  });
+  if (processVisibleTiles) {
+    const generation = incrementGeneration();
+    processAllTiles(false, generation, "snapshot");
+  }
+  return true;
+}
+
+function subscribeLatestData() {
+  unsubscribeLatestData?.();
+  unsubscribeLatestData = subscribeFastCapture(LATEST_DATA_CAPTURE_KEY, (snapshot) => {
+    applyLatestDataSnapshot(snapshot);
+  });
+  applyLatestDataSnapshot(getFastCaptureSnapshot(LATEST_DATA_CAPTURE_KEY), {
+    processVisibleTiles: false,
+  });
+}
+
+function unsubscribeLatestDataCapture() {
+  unsubscribeLatestData?.();
+  unsubscribeLatestData = null;
+  latestDataIndex.clear();
+}
 
 function getCategoryFromLatestHash() {
   const hash = String(window.location?.hash || "");
@@ -56,11 +102,11 @@ function updateLatestOverlayPageCategory() {
   stateManager.set("latestOverlayPageCategory", nextCategory);
 
   if (KNOWN_LATEST_OVERLAY_CATEGORIES.has(nextCategory)) {
-    debugLog("Latest Overlay", `Detected latest category: ${nextCategory}`, {
+    debugLog("latest-overlay", "Latest category changed", {
       data: { previous: prevCategory || null, current: nextCategory },
     });
   } else {
-    debugLog("Latest Overlay", `Detected custom latest category: ${nextCategory}`, {
+    debugLog("latest-overlay", "Unknown latest category detected", {
       level: "warn",
       data: {
         previous: prevCategory || null,
@@ -87,57 +133,72 @@ function hasRelevantLatestOverlayChanges(mutationsList) {
 }
 
 export function enableLatestOverlay() {
-  if (stateManager.get("latestOverlayStatus") !== "IDLE") {
+  const currentStatus = stateManager.get("latestOverlayStatus");
+  
+  // If tearing down, wait for it to complete before enabling
+  if (currentStatus === "TEARING_DOWN") {
+    debugLog("latest-overlay", "Enable requested while tearing down - deferring...");
+    setTimeout(() => enableLatestOverlay(), 50);
     return;
   }
 
-  debugLog("Latest Overlay", "Initializing feature...");
+  // If already active, skip
+  if (currentStatus === "ACTIVE") {
+    return;
+  }
+
+  debugLog("latest-overlay", "Enable started", {
+    data: {
+      snapshotStatus: getFastCaptureSnapshot(LATEST_DATA_CAPTURE_KEY).status,
+      visibleTiles: document.getElementsByClassName("resource-tile").length,
+      navigationElapsedMs: Number(performance.now().toFixed(2)),
+    },
+  });
   stateManager.set("latestOverlayStatus", "INITIALIZING");
   latestOverlayLastHash = String(window.location?.hash || "");
   updateLatestOverlayPageCategory();
 
   const currentGeneration = incrementGeneration();
-  refreshCaches();
+  subscribeLatestData();
 
-  processAllTiles(false, currentGeneration);
+  processAllTiles(false, currentGeneration, "enable");
   addObserverCallback(
     "latest-overlay",
     (mutationsList) => {
       updateLatestOverlayPageCategory();
-      processMutations(mutationsList, currentGeneration);
+      processMutations(mutationsList, getCurrentGeneration());
     },
     { filter: hasRelevantLatestOverlayChanges },
   );
 
   setupHoverListener();
   stateManager.set("latestOverlayStatus", "ACTIVE");
-  debugLog("Latest Overlay", "Feature is now ACTIVE.");
+  debugLog("latest-overlay", "Enable completed", {
+    data: { generation: currentGeneration, navigationElapsedMs: Number(performance.now().toFixed(2)) },
+  });
 }
 
 export function disableLatestOverlay() {
-  if (
-    stateManager.get("latestOverlayStatus") === "IDLE" ||
-    stateManager.get("latestOverlayStatus") === "TEARING_DOWN"
-  ) {
-    debugLog(
-      "Latest Overlay",
-      `Disable called but feature is already in state: ${stateManager.get("latestOverlayStatus")}. Aborting.`,
-    );
+  const currentStatus = stateManager.get("latestOverlayStatus");
+  
+  // Allow disable from any active state (idempotent)
+  if (currentStatus === "IDLE" || currentStatus === "TEARING_DOWN") {
     return;
   }
 
-  debugLog("Latest Overlay", "Disabling feature...");
+  debugLog("latest-overlay", "Disable started");
   stateManager.set("latestOverlayStatus", "TEARING_DOWN");
 
   incrementGeneration();
   clearMutationState();
+  unsubscribeLatestDataCapture();
   teardownHoverListener();
 
   removeObserverCallback("latest-overlay");
-  debugLog("Latest Overlay", "Observer callback for 'latest-overlay' removed.");
+  debugLog("latest-overlay", "Mutation observer removed");
 
   resetAllTiles();
 
   stateManager.set("latestOverlayStatus", "IDLE");
-  debugLog("Latest Overlay", "Disable complete. State is now IDLE.");
+  debugLog("latest-overlay", "Disable completed");
 }

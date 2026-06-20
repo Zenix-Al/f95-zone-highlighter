@@ -1,6 +1,7 @@
 function supportsCurrentPage(pageScopes = [], currentScopes = []) {
   if (!Array.isArray(pageScopes) || pageScopes.length === 0) return true;
-  return pageScopes.some((scope) => currentScopes.includes(scope));
+  const scopes = currentScopes instanceof Set ? currentScopes : new Set(currentScopes);
+  return pageScopes.some((scope) => scopes.has(scope));
 }
 
 function computeAddonStatus({
@@ -63,7 +64,9 @@ export function buildKnownAddonsSnapshot({
   getAddonState = () => ({}),
 }) {
   const byRegistered = new Map(registered.map((addon) => [addon.id, addon]));
+  const catalogById = new Map(catalog.map((entry) => [entry.id, entry]));
   const catalogIds = new Set(catalog.map((entry) => entry.id));
+  const currentScopesSet = new Set(currentScopes);
   const allIds = new Set([
     ...catalog.map((entry) => entry.id),
     ...Object.keys(installedMeta || {}),
@@ -73,7 +76,7 @@ export function buildKnownAddonsSnapshot({
   const merged = [];
   for (const id of allIds) {
     const runtimeEntry = byRegistered.get(id) || null;
-    const catalogEntry = catalog.find((entry) => entry.id === id) || null;
+    const catalogEntry = catalogById.get(id) || null;
     const metaEntry = installedMeta[id] || null;
 
     // Runtime registration takes priority for pageScopes; catalog is fallback.
@@ -88,7 +91,7 @@ export function buildKnownAddonsSnapshot({
       (Array.isArray(runtimeEntry?.pageScopes) && runtimeEntry.pageScopes.length > 0) ||
       (Array.isArray(metaEntry?.pageScopes) && metaEntry.pageScopes.length > 0) ||
       (Array.isArray(catalogEntry?.pageScopes) && catalogEntry.pageScopes.length > 0);
-    const scopeApplies = supportsCurrentPage(pageScopes, currentScopes);
+    const scopeApplies = supportsCurrentPage(pageScopes, currentScopesSet);
     const hasInstallSighting = Boolean(metaEntry?.installedSeenAt);
     const stateEntry = getAddonState(id);
     const desiredEnabled = stateEntry?.enabled;

@@ -1,7 +1,7 @@
 import { config } from "../../config.js";
-import { debugLog } from "../../core/logger.js";
 import { SELECTORS } from "../../config/selectors.js";
 import { LATEST_OVERLAY_SCORING } from "../../config/latestOverlayScoring.js";
+import { calculateRecordAgeDays } from "./latestDataIndex.js";
 
 const DEFAULT_LATEST_CATEGORY = "games";
 const RATING_SUPPORTED_CATEGORIES = new Set(["games", "animations"]);
@@ -12,137 +12,6 @@ function normalizeLatestCategory(pageCategory) {
 
 function isRatingSupportedForCategory(pageCategory) {
   return RATING_SUPPORTED_CATEGORIES.has(normalizeLatestCategory(pageCategory));
-}
-
-/**
- * Extract rating value from tile element
- * Handles "-" as no rating, returns null in that case
- * @param {Element} tile - The tile DOM element
- * @returns {number|null} Rating value or null if not found or is "-"
- */
-export function extractRating(tile) {
-  debugLog("Latest overlay rating engagement", "extracting rating from tile:", { tile });
-  const ratingEl = tile.querySelector(SELECTORS.RATING_ENGAGEMENT.RATING);
-  if (!ratingEl) return null;
-  debugLog("Latest overlay rating engagement", "extracting rating from element:", { ratingEl });
-  const text = ratingEl.textContent?.trim();
-  if (text === "-") return null; // No rating yet
-  const rating = parseFloat(text);
-  return Number.isFinite(rating) ? rating : null;
-}
-
-export function extractDaysElapsed(tile) {
-  // 1. Target the parent container you already defined
-  const timeContainer = tile.querySelector(SELECTORS.RATING_ENGAGEMENT.TIME);
-  if (!timeContainer) return null;
-
-  // 2. Find the active inner span element
-  const span = timeContainer.querySelector("span");
-  if (!span) return null;
-
-  // 3. Build resilient class/text context (some layouts use singular forms or date_yesterday)
-  const text = span.textContent?.trim().toLowerCase() || "";
-  const rawValue = parseInt(text, 10);
-  const classTokens = Array.from(span.classList);
-  const className = span.className || "";
-  const hasClassFragment = (fragment) =>
-    className.includes(fragment) || classTokens.some((token) => token.includes(fragment));
-  const numericValue = Number.isFinite(rawValue) && rawValue > 0 ? rawValue : 1;
-
-  // 4. Handle special "today/yesterday" classes first
-  if (hasClassFragment("date_yesterday")) return 1;
-  if (hasClassFragment("date_today")) return 1;
-
-  // 5. Handle supported unit classes (both singular and plural variants)
-  if (hasClassFragment("tile-date_years") || hasClassFragment("tile-date_year")) {
-    return numericValue * 365;
-  }
-  if (hasClassFragment("tile-date_months") || hasClassFragment("tile-date_month")) {
-    return numericValue * 30;
-  }
-  if (hasClassFragment("tile-date_weeks") || hasClassFragment("tile-date_week")) {
-    return numericValue * 7;
-  }
-  if (hasClassFragment("tile-date_days") || hasClassFragment("tile-date_day")) {
-    return numericValue;
-  }
-  if (
-    hasClassFragment("tile-date_mins") ||
-    hasClassFragment("tile-date_min") ||
-    hasClassFragment("tile-date_hours") ||
-    hasClassFragment("tile-date_hour")
-  ) {
-    return 1;
-  }
-
-  // 6. Text fallback for inconsistent markup
-  if (text.includes("yesterday")) return 1;
-  if (text.includes("today") || text.includes("just now")) return 1;
-  if (text.includes("hour") || text.includes("min")) return 1;
-  if (text.includes("week")) return numericValue * 7;
-  if (text.includes("month")) return numericValue * 30;
-  if (text.includes("year")) return numericValue * 365;
-  if (text.includes("day")) return numericValue;
-
-  return Number.isFinite(rawValue) ? rawValue : null;
-}
-
-/**
- * Extract likes and views from tile element
- * @param {Element} tile - The tile DOM element
- * @returns {Object} {likes: number|null, views: number|null}
- */
-export function extractEngagementData(tile) {
-  const likes = extractLikes(tile);
-  const views = extractViews(tile);
-  const time = extractDaysElapsed(tile);
-  return { likes, views, time };
-}
-
-/**
- * Core utility to safely parse formatted forum metrics (e.g., "1,500", "12.7K", "2.1M")
- * @param {Element|null} element - The DOM element containing text
- * @returns {number|null} Clean floating point number or null
- */
-function parseMetricText(element) {
-  if (!element) return null;
-
-  // Strip out formatting commas and force uppercase to match suffixes cleanly
-  let text = element.textContent?.trim().replace(/,/g, "").toUpperCase() || "";
-  if (!text || text === "-") return null;
-
-  let value;
-  if (text.endsWith("K")) {
-    value = parseFloat(text) * 1000;
-  } else if (text.endsWith("M")) {
-    value = parseFloat(text) * 1000000;
-  } else {
-    value = parseFloat(text);
-  }
-
-  return Number.isFinite(value) && value >= 0 ? value : null;
-}
-
-/**
- * Extract likes from tile element, now fully supporting shorthand suffixes
- * @param {Element} tile - The tile DOM element
- * @returns {number|null} Normalized likes count or null
- */
-function extractLikes(tile) {
-  const likesEl = tile.querySelector(SELECTORS.RATING_ENGAGEMENT.LIKES);
-  return parseMetricText(likesEl);
-}
-
-/**
- * Extract views from tile element, now fully supporting shorthand suffixes
- * @param {Element} tile - The tile DOM element
- * @returns {number|null} Normalized views count or null
- */
-function extractViews(tile) {
-  const viewsEl = tile.querySelector(SELECTORS.RATING_ENGAGEMENT.VIEWS);
-  const views = parseMetricText(viewsEl);
-  // Keep your safety check ensuring views are strictly greater than 0
-  return views && views > 0 ? views : null;
 }
 
 /**
@@ -260,39 +129,30 @@ export function getEngagementHighlightClass(ratio, threshold) {
   }
 }
 
-/**
- * Get highlight information for a tile
- * Returns the appropriate CSS classes and metadata
- * @param {Element} tile - The tile DOM element
- * @returns {Object} {ratingClass: string|null, engagementClass: string|null}
- */
-export function getTileHighlightClasses(tile, pageCategory = "games") {
+export function getRecordHighlightClasses(record, capturedAt, pageCategory = "games") {
   const normalizedCategory = normalizeLatestCategory(pageCategory);
   const canUseRating = isRatingSupportedForCategory(normalizedCategory);
-  const rating = canUseRating ? extractRating(tile) : null;
-  debugLog("Latest overlay rating engagement", "extracted rating:", {
-    rating,
-    pageCategory: normalizedCategory,
-    canUseRating,
-  });
-  const { likes, views, time } = extractEngagementData(tile);
-  debugLog("Latest overlay rating engagement", "extracted likes and views:", { likes, views });
+  const rating = canUseRating && Number.isFinite(record?.rating) ? record.rating : null;
+  const likes = Number.isFinite(record?.likes) ? record.likes : null;
+  const views = Number.isFinite(record?.views) && record.views > 0 ? record.views : null;
+  const time = calculateRecordAgeDays(record, capturedAt);
   let ratingClass = null;
   let engagementClass = null;
 
-  // Check if rating highlight is enabled
-  if (config.overlaySettings.ratingHighlight && canUseRating && rating !== null) {
-    // Get rating threshold from config
-    const ratingThreshold = config.latestSettings.ratingHighlightThreshold;
-    ratingClass = getRatingHighlightClass(rating, ratingThreshold);
+  if (config.overlaySettings.ratingHighlight && rating !== null) {
+    ratingClass = getRatingHighlightClass(
+      rating,
+      config.latestSettings.ratingHighlightThreshold,
+    );
   }
 
-  // Check if engagement highlight is enabled
   if (config.overlaySettings.engagementHighlight && likes !== null && views !== null) {
     const ratio = calculateEngagementRatio(likes, views);
     if (ratio !== null) {
-      const engagementThreshold = config.latestSettings.engagementRatioThreshold;
-      engagementClass = getEngagementHighlightClass(ratio, engagementThreshold);
+      engagementClass = getEngagementHighlightClass(
+        ratio,
+        config.latestSettings.engagementRatioThreshold,
+      );
     }
   }
 
@@ -304,7 +164,7 @@ export function getTileHighlightClasses(tile, pageCategory = "games") {
  * Rating class applied to .resource-tile_info-meta_rating
  * Engagement class applied to .resource-tile_info-meta_likes
  * @param {Element} tile - The tile DOM element
- * @param {Object} classes - {ratingClass, engagementClass} from getTileHighlightClasses
+ * @param {Object} classes - Data-derived rating and engagement classes
  */
 export function applyHighlightClasses(tile, classes) {
   const allClasses = [

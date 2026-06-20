@@ -1,4 +1,5 @@
 export function ensurePageBridge({ marker, scriptContent }) {
+  if (typeof document === "undefined") return false;
   if (!document?.documentElement) return false;
   if (document.documentElement.dataset[marker] === "1") return true;
 
@@ -61,4 +62,22 @@ export function requestPageBridge({ requestEvent, resultEvent, detail = null, ti
       });
     }
   });
+}
+
+export function dispatchPageBridgeEvent(eventName, detail = null) {
+  if (typeof window === "undefined" || !eventName) return false;
+  try {
+    window.dispatchEvent(new CustomEvent(eventName, { detail }));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function subscribePageBridgeEvent(eventName, callback) {
+  if (typeof window === "undefined" || !eventName || typeof callback !== "function") {
+    return () => {};
+  }
+  window.addEventListener(eventName, callback);
+  return () => window.removeEventListener(eventName, callback);
 }

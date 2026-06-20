@@ -1,5 +1,44 @@
 # Changelog
 
+## [5.0.8 - Add-on API Improvements]
+
+- Add `idb.bulkDelete` to the add-on API and a cleanup action to the Example add-on so bulk demo records do not pile up permanently.
+- Prevent add-on observers from receiving mutations created by their own hosted UI, avoiding self-triggered render loops.
+- Fix core-rendered add-on dock buttons missing their dock style class.
+
+## [5.0.5 - Fix addon ui and remove warning fastcapture]
+
+- Fix a bug where addon fails to close their ui because the core race condition when closing ui. My bad, i was using uglified version for testing and it hide the issue until i test it with non-uglified version, now it should be fixed.
+- Remove the warning for fast capture when the response is invalid json.
+
+## [5.0.0 - Core Refactor & New network listener API]
+
+### Core Changes
+- Refactor the core to run on document-start and separate the bootstrap to 2 type. one is fastBootstrap which only include the core framework and run on document-start, and the other is wait for body bootstrap which run on document-end and include all the features, this should make the core more stable and faster to load, and also make it more reliable for features that need to run on document-start.
+- Add fast capture, a network listener for features(for now) to listen to incoming fetch/XHR request and capture the request data. a feature needs to subscribe with the url in order to receive the data. I promise i wont abuse this service. always check the github repo for the latest update and see if i do something bad with this api, if i do, report it immidiately.
+
+### Feature updates
+- Latest overlay now use the new network listener api to capture the data, this should make it more reliable and faster, with reduced cpu usage and also make it more accurate because it can capture the data from the source. (known issue, this fast capture had 70% success rate on the first capture, it'll fall to recovery mode and try to manually fetch the data, which have below 300ms delay. it only happened on the first capture. if you felt uncomfortble with this, give me feedback so i can revert to the original dom method.)
+- Improved prefix retrieval, now it takes full data, for now it used for latest overlay.
+
+Note: this update is a major refactor, in my fast smoke test, i did not found any issues. if you find any bug or issue, please report it to me so i can fix it as soon as possible.
+
+## [4.19.18 - Add-on Throttle API & bugfix]
+
+- Add another object inside throttle payload for the size limit.
+- Fix a bug when other addon also using dock button, instead of showing above it, it show right beside it because styling issue.
+- Add trusted catalog for example-addon for testing purpose so i can make addon more reliable and test the throttle api.
+
+## [4.19.13 - maintain addon code and expose addon throttle api]
+
+- maintain the addon codebase and fix bugs in the addon service, now it should be more stable and reliable.
+- expose addon throttle api, for future addon update plan to return the throttle config so addon can adjust their behavior based on the throttle status, for example, they can reduce the frequency of their requests or do some other things to avoid being auto-disabled.
+
+## [4.19.6 - Add prefixes retrieval and core frame budgeting]
+
+- add prefixes retrival, for now its not used for anything, but in the future it can be used to add more features.
+- implement core frame budgeting to improve performance under heavy load.
+
 ## [4.19.4 - Latest Overlay Score Calculation adjustment]
 
 - adjusted scoring system, now it determine thread confidence to adjust how a rating and engagement score contribute to the final score based on view and age. this prevent new thread get judged too early and prevent old thread get judged based on engagement.

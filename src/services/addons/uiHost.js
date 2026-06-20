@@ -1,29 +1,24 @@
 import { stateManager } from "../../config.js";
-import { createEl } from "../../core/dom.js";
-import { ADDON_COMMAND_EVENT } from "./shared.js";
-
-const ADDON_DOCK_SLOT_ID = "f95ue-page-dock-addon-slot";
-const ADDON_DIALOG_HOST_ID = "f95ue-addon-dialog-host";
-const ADDON_PANEL_HOST_ID = "f95ue-addon-panel-host";
-const ADDON_FLOATING_HOST_ID = "f95ue-addon-floating-host";
+import { emitAddonCommand } from "./lifecycle.js";
+import {
+  buildAddonDockGroupId,
+  createAddonDialogElements,
+  createAddonDockGroup,
+  createAddonMountElement,
+  createAddonStyleElement,
+  ensureAddonDialogHost,
+  focusAddonDialog,
+  getAddonDockSlotElement,
+  insertAddonMountElement,
+  resolveAddonMountHost,
+  trapAddonDialogFocus,
+} from "../../ui/components/addons/index.js";
 
 const addonDockButtonsState = new Map();
 const addonStyleRegistry = new Map();
 const addonMountRegistry = new Map();
 const addonDialogRegistry = new Map();
 let addonDockFlushTimer = 0;
-
-function emitAddonCommand(addonId, command, detail = {}) {
-  window.dispatchEvent(
-    new CustomEvent(ADDON_COMMAND_EVENT, {
-      detail: {
-        addonId,
-        command,
-        ...detail,
-      },
-    }),
-  );
-}
 
 export function sanitizeDockButtons(input) {
   if (!Array.isArray(input)) return [];
@@ -53,19 +48,13 @@ export function sanitizeDockButtons(input) {
 }
 
 function getDockSlotElement() {
-  const shadowRoot = stateManager.get("shadowRoot");
-  if (!shadowRoot?.getElementById) return null;
-  return shadowRoot.getElementById(ADDON_DOCK_SLOT_ID);
-}
-
-function buildDockGroupId(addonId) {
-  return `f95ue-addon-dock-${String(addonId || "")}`;
+  return getAddonDockSlotElement(stateManager.get("shadowRoot"));
 }
 
 function removeAddonDockGroup(addonId) {
   const slot = getDockSlotElement();
   if (!slot) return;
-  const group = slot.querySelector(`#${buildDockGroupId(addonId)}`);
+  const group = slot.querySelector(`#${buildAddonDockGroupId(addonId)}`);
   if (group?.parentNode) {
     group.parentNode.removeChild(group);
   }
@@ -75,50 +64,9 @@ function renderAddonDockGroup(addonId, buttons) {
   const slot = getDockSlotElement();
   if (!slot) return false;
 
-  const groupId = buildDockGroupId(addonId);
-  let group = slot.querySelector(`#${groupId}`);
-  if (!group) {
-    group = createEl("div", {
-      className: "f95ue-page-dock-group",
-      attrs: {
-        id: groupId,
-        "data-addon-id": addonId,
-      },
-      mount: slot,
-    });
-  }
-
-  group.innerHTML = "";
-
-  buttons.forEach((entry) => {
-    const button = createEl("button", {
-      attrs: {
-        type: "button",
-        className: "f95ue-page-dock-btn",
-        "data-addon-id": addonId,
-        "data-action-id": entry.id,
-      },
-      text: entry.label,
-      mount: group,
-    });
-    if (entry.variant === "secondary") {
-      button.classList.add("secondary");
-    } else if (entry.variant === "saved") {
-      button.classList.add("saved");
-    }
-    button.disabled = Boolean(entry.disabled);
-    button.textContent = entry.label;
-    if (entry.title) {
-      button.title = entry.title;
-    }
-
-    button.addEventListener("click", () => {
-      emitAddonCommand(addonId, "dock-action", { actionId: entry.id });
-    });
-
-    group.appendChild(button);
+  createAddonDockGroup(slot, addonId, buttons, {
+    onAction: (actionId) => emitAddonCommand(addonId, "dock-action", { actionId }),
   });
-
   return true;
 }
 
@@ -194,150 +142,11 @@ function getAddonDialogBucket(addonId) {
   return addonDialogRegistry.get(addonId);
 }
 
-function ensureAddonDialogHost() {
-  let host = document.getElementById(ADDON_DIALOG_HOST_ID);
-  if (host) return host;
-
-  host = createEl("div", {
-    attrs: {
-      id: ADDON_DIALOG_HOST_ID,
-    },
-    style: {
-      position: "fixed",
-      inset: "0",
-      zIndex: "12040",
-      pointerEvents: "none",
-    },
-  });
-  document.body.appendChild(host);
-  return host;
-}
-
-function ensureAddonPanelHost() {
-  let host = document.getElementById(ADDON_PANEL_HOST_ID);
-  if (host) return host;
-
-  host = createEl("div", {
-    attrs: {
-      id: ADDON_PANEL_HOST_ID,
-      "data-addon-slot": "page.panel",
-    },
-    mount: document.body,
-  });
-  return host;
-}
-
-function ensureAddonFloatingHost() {
-  let host = document.getElementById(ADDON_FLOATING_HOST_ID);
-  if (host) return host;
-
-  host = createEl("div", {
-    attrs: {
-      id: ADDON_FLOATING_HOST_ID,
-      "data-addon-slot": "page.floating",
-    },
-    style: {
-      position: "fixed",
-      inset: "0",
-      zIndex: "9000",
-      pointerEvents: "auto",
-    },
-    mount: document.body,
-  });
-  return host;
-}
-
-function listFocusableInDialog(rootEl) {
-  if (!rootEl) return [];
-  return [...rootEl.querySelectorAll("button, [href], input, select, textarea, [tabindex]")].filter(
-    (node) => {
-      if (!(node instanceof HTMLElement)) return false;
-      if (node.tabIndex < 0) return false;
-      if (node.hasAttribute("disabled")) return false;
-      return node.offsetParent !== null || node === document.activeElement;
-    },
-  );
-}
-
-function trapDialogFocus(event, surfaceEl) {
-  if (event.key !== "Tab") return;
-  const focusable = listFocusableInDialog(surfaceEl);
-  if (focusable.length === 0) {
-    event.preventDefault();
-    surfaceEl?.focus();
-    return;
-  }
-
-  const first = focusable[0];
-  const last = focusable[focusable.length - 1];
-  const active = document.activeElement;
-
-  if (!event.shiftKey && active === last) {
-    event.preventDefault();
-    first.focus();
-    return;
-  }
-
-  if (event.shiftKey && active === first) {
-    event.preventDefault();
-    last.focus();
-  }
-}
-
 function dispatchAddonDialogClosed(addonId, dialogId, reason) {
   emitAddonCommand(addonId, "dialog-closed", {
     dialogId,
     reason: String(reason || ""),
   });
-}
-
-function resolveAddonDialogSurfaceMetrics(payload = {}) {
-  const requestedSize = String(payload?.size || payload?.dialogSize || "")
-    .trim()
-    .toLowerCase();
-
-  if (requestedSize === "full") {
-    return {
-      width: "calc(100vw - 24px)",
-      maxHeight: "calc(100vh - 24px)",
-      overlayPadding: "12px",
-      overlayAlignItems: "center",
-    };
-  }
-
-  if (requestedSize === "xl") {
-    return {
-      width: "min(1320px, calc(100vw - 24px))",
-      maxHeight: "calc(100vh - 32px)",
-      overlayPadding: "16px",
-      overlayAlignItems: "center",
-    };
-  }
-
-  if (requestedSize === "lg") {
-    return {
-      width: "min(1040px, calc(100vw - 24px))",
-      maxHeight: "calc(100vh - 48px)",
-      overlayPadding: "40px 16px 16px",
-      overlayAlignItems: "flex-start",
-    };
-  }
-
-  if (requestedSize === "sm") {
-    return {
-      width: "min(520px, calc(100vw - 24px))",
-      maxHeight: "calc(100vh - 96px)",
-      overlayPadding: "72px 16px 16px",
-      overlayAlignItems: "flex-start",
-    };
-  }
-
-  return {
-    width: "min(720px, calc(100vw - 24px))",
-    maxHeight: "calc(100vh - 96px)",
-    overlayPadding: "72px 16px 16px",
-    overlayAlignItems: "flex-start",
-  };
 }
 
 function closeAddonDialogInternal(addonId, dialogId, reason = "close") {
@@ -384,31 +193,6 @@ function getAddonMountBucket(addonId) {
   return addonMountRegistry.get(addonId);
 }
 
-function resolveAddonMountHost(slot) {
-  const normalizedSlot = String(slot || "")
-    .trim()
-    .toLowerCase();
-  if (!normalizedSlot || normalizedSlot === "body") return document.body;
-  if (normalizedSlot === "latest.filters.after-title") {
-    return document.querySelector(".content-block_filter-title");
-  }
-  if (normalizedSlot === "page.dock") return getDockSlotElement();
-  if (normalizedSlot === "page.panel") return ensureAddonPanelHost();
-  if (normalizedSlot === "page.floating") return ensureAddonFloatingHost();
-  if (normalizedSlot.startsWith("selector:")) {
-    const selector = String(slot || "")
-      .slice("selector:".length)
-      .trim();
-    if (!selector) return null;
-    try {
-      return document.querySelector(selector);
-    } catch {
-      return null;
-    }
-  }
-  return null;
-}
-
 function removeAddonMounts(addonId, mountId = "") {
   const bucket = addonMountRegistry.get(addonId);
   if (!bucket || bucket.size === 0) return { removed: 0 };
@@ -433,29 +217,6 @@ function removeAddonMounts(addonId, mountId = "") {
   });
   addonMountRegistry.delete(addonId);
   return { removed };
-}
-
-function insertAddonMountElement(host, mountEl, position) {
-  const normalizedPosition = String(position || "append")
-    .trim()
-    .toLowerCase();
-
-  if (normalizedPosition === "before") {
-    host.parentNode?.insertBefore(mountEl, host);
-    return;
-  }
-
-  if (normalizedPosition === "after") {
-    host.parentNode?.insertBefore(mountEl, host.nextSibling || null);
-    return;
-  }
-
-  if (normalizedPosition === "prepend") {
-    host.insertBefore(mountEl, host.firstChild || null);
-    return;
-  }
-
-  host.appendChild(mountEl);
 }
 
 function removeAddonRegisteredStyles(addonId, styleId = "") {
@@ -509,7 +270,7 @@ export function mountAddonUi(addonId, payload = {}) {
   const slot = String(payload?.slot || "body");
   const position = String(payload?.position || "append");
 
-  const host = resolveAddonMountHost(slot);
+  const host = resolveAddonMountHost(slot, { shadowRoot: stateManager.get("shadowRoot") });
   if (!host) return { ok: false, reason: "mount_slot_not_found" };
 
   const bucket = getAddonMountBucket(addonId);
@@ -520,22 +281,12 @@ export function mountAddonUi(addonId, payload = {}) {
     return { ok: true, value: { updated: true, mountId } };
   }
 
-  const mountEl = createEl("div", {
-    attrs: {
-      id: `f95ue-addon-mount-${addonId}-${mountId}`,
-      className: "f95ue-addon-mount",
-      "data-addon-id": addonId,
-      "data-addon-mount-id": mountId,
-    },
+  const mountEl = createAddonMountElement({
+    addonId,
+    mountId,
+    html,
+    slot,
   });
-  if (
-    String(slot || "")
-      .trim()
-      .toLowerCase() === "page.dock"
-  ) {
-    mountEl.style.display = "contents";
-  }
-  mountEl.innerHTML = html;
 
   insertAddonMountElement(host, mountEl, position);
   bucket.set(mountId, mountEl);
@@ -565,60 +316,20 @@ export function openAddonDialog(addonId, payload = {}) {
   const title = String(payload?.title || "Dialog").trim();
   const closeOnEsc = payload?.closeOnEsc !== false;
   const closeOnBackdrop = payload?.closeOnBackdrop !== false;
-  const surfaceMetrics = resolveAddonDialogSurfaceMetrics(payload);
 
   const host = ensureAddonDialogHost();
   const bucket = getAddonDialogBucket(addonId);
 
   closeAddonDialogInternal(addonId, dialogId, "replace");
 
-  const overlayEl = createEl("div", {
-    className: "f95ue-addon-dialog-overlay",
-    attrs: {
-      "data-addon-id": addonId,
-      "data-dialog-id": dialogId,
-    },
-    style: {
-      position: "fixed",
-      inset: "0",
-      display: "flex",
-      alignItems: surfaceMetrics.overlayAlignItems,
-      justifyContent: "center",
-      padding: surfaceMetrics.overlayPadding,
-      background: "rgba(7, 9, 13, 0.56)",
-      pointerEvents: "auto",
-    },
+  const { overlayEl, surfaceEl, contentEl } = createAddonDialogElements({
+    addonId,
+    dialogId,
+    title,
+    html,
+    payload,
   });
 
-  const surfaceEl = createEl("div", {
-    className: "f95ue-addon-dialog-surface",
-    attrs: {
-      "data-addon-id": addonId,
-      "data-dialog-id": dialogId,
-      role: "dialog",
-      "aria-modal": "true",
-      "aria-label": title || "Dialog",
-      tabIndex: -1,
-    },
-    style: {
-      width: surfaceMetrics.width,
-      maxHeight: surfaceMetrics.maxHeight,
-      overflow: "auto",
-    },
-  });
-
-  const contentEl = createEl("div", {
-    className: "f95ue-addon-dialog-content",
-    attrs: {
-      id: `f95ue-addon-dialog-content-${addonId}-${dialogId}`,
-      "data-addon-id": addonId,
-      "data-dialog-id": dialogId,
-    },
-  });
-  contentEl.innerHTML = html;
-
-  surfaceEl.appendChild(contentEl);
-  overlayEl.appendChild(surfaceEl);
   host.appendChild(overlayEl);
 
   overlayEl.addEventListener("click", (event) => {
@@ -634,7 +345,7 @@ export function openAddonDialog(addonId, payload = {}) {
       closeAddonDialogInternal(addonId, dialogId, "escape");
       return;
     }
-    trapDialogFocus(event, surfaceEl);
+    trapAddonDialogFocus(event, surfaceEl);
   });
 
   bucket.set(dialogId, {
@@ -645,14 +356,7 @@ export function openAddonDialog(addonId, payload = {}) {
     closeOnBackdrop,
   });
 
-  window.setTimeout(() => {
-    const focusable = listFocusableInDialog(surfaceEl);
-    if (focusable.length > 0) {
-      focusable[0].focus();
-      return;
-    }
-    surfaceEl.focus();
-  }, 0);
+  focusAddonDialog(surfaceEl);
 
   return {
     ok: true,
@@ -678,11 +382,7 @@ export function registerAddonStyle(addonId, payload = {}) {
     return { ok: true, value: { updated: true, styleId } };
   }
 
-  const styleEl = document.createElement("style");
-  styleEl.id = `f95ue-addon-style-${addonId}-${styleId}`;
-  styleEl.dataset.addonId = addonId;
-  styleEl.dataset.addonStyleId = styleId;
-  styleEl.textContent = cssText;
+  const styleEl = createAddonStyleElement(addonId, styleId, cssText);
   document.head.appendChild(styleEl);
   bucket.set(styleId, styleEl);
 
@@ -696,7 +396,7 @@ export function unregisterAddonStyle(addonId, styleId = "") {
 export function cleanupAddonUi(addonId) {
   addonDockButtonsState.delete(addonId);
   removeAddonDockGroup(addonId);
-  removeAddonRegisteredStyles(addonId);
-  removeAddonMounts(addonId);
   removeAddonDialogs(addonId);
+  removeAddonMounts(addonId);
+  removeAddonRegisteredStyles(addonId);
 }

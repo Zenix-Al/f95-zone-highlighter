@@ -27,6 +27,15 @@
     "trusted": true
   },
   {
+    "id": "example-addon",
+    "name": "Example Add-on",
+    "description": "Core API playground demonstrating every current addon-facing action through api modules.",
+    "version": "0.2.5",
+    "pageScopes": ["thread", "latest", "download"],
+    "downloadUrl": "https://greasyfork.org/en/scripts/583616-f95ue-example-add-on",
+    "trusted": true
+  },
+  {
     "id": "latest-filters-addon",
     "name": "Latest Filters Add-on",
     "description": "Adds one saved-filters button on Latest Updates with a searchable preset list and active filter tracking.",

@@ -22,6 +22,12 @@ const CATALOG_FALLBACK = Object.freeze([
     trusted: true,
   },
   {
+    id: "example-addon",
+    name: "Example Add-on",
+    downloadUrl: "",
+    trusted: true,
+  },
+  {
     id: "latest-filters-addon",
     name: "Latest Filters Add-on",
     downloadUrl: "",
@@ -36,8 +42,25 @@ const BUILTIN_TRUSTED_ADDON_IDS = new Set(
 // Try to load the catalog from the @resource declaration (fetched by the
 // userscript manager at install/update time from jsDelivr.
 let TRUSTED_ADDON_CATALOG = CATALOG_FALLBACK;
+let NORMALIZED_TRUSTED_ADDON_CATALOG = CATALOG_FALLBACK.map((entry) => ({
+  ...entry,
+  id: sanitizeAddonId(entry.id),
+})).filter((entry) => entry.id);
+let TRUSTED_ADDON_CATALOG_BY_ID = new Map(
+  NORMALIZED_TRUSTED_ADDON_CATALOG.map((entry) => [entry.id, entry]),
+);
 let _catalogFresh = false;
 let _catalogInitialized = false;
+
+function rebuildNormalizedCatalogCache() {
+  NORMALIZED_TRUSTED_ADDON_CATALOG = TRUSTED_ADDON_CATALOG.map((entry) => ({
+    ...entry,
+    id: sanitizeAddonId(entry.id),
+  })).filter((entry) => entry.id);
+  TRUSTED_ADDON_CATALOG_BY_ID = new Map(
+    NORMALIZED_TRUSTED_ADDON_CATALOG.map((entry) => [entry.id, entry]),
+  );
+}
 
 function getCatalogResource() {
   try {
@@ -47,6 +70,7 @@ function getCatalogResource() {
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed) && parsed.length > 0) {
       TRUSTED_ADDON_CATALOG = Object.freeze(parsed.map((entry) => ({ ...entry })));
+      rebuildNormalizedCatalogCache();
       _catalogFresh = true;
     }
   } catch (err) {
@@ -74,15 +98,15 @@ export function isCatalogFresh() {
 
 export function listTrustedAddonCatalog() {
   ensureCatalogInitialized();
-  return TRUSTED_ADDON_CATALOG.map((entry) => ({ ...entry, id: sanitizeAddonId(entry.id) })).filter(
-    (entry) => entry.id,
-  );
+  return NORMALIZED_TRUSTED_ADDON_CATALOG.map((entry) => ({ ...entry }));
 }
 
 export function getTrustedCatalogEntry(addonId) {
   const id = sanitizeAddonId(addonId);
   if (!id) return null;
-  return listTrustedAddonCatalog().find((entry) => entry.id === id) || null;
+  ensureCatalogInitialized();
+  const entry = TRUSTED_ADDON_CATALOG_BY_ID.get(id);
+  return entry ? { ...entry } : null;
 }
 
 export function isBuiltinTrustedAddonId(addonId) {

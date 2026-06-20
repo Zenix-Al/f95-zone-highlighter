@@ -1,15 +1,9 @@
 import { openConfigTransferDialog } from "../../features/config-transfer/index.js";
 import { crossTabSyncFeature } from "../../services/syncService";
-import {
-  disableAddonsService,
-  initAddonsConsoleBridge,
-  refreshAddonSecurityPolicies,
-} from "../../services/addonsService.js";
 import { updateButtonVisibility } from "../components/configButton";
 import { createEnabledDisabledToast, createToggleSetting } from "./metaFactory";
 import { showFeatureHealthBox } from "../components/featureHealth/index.js";
 import { syncHelpMessageFooter } from "../components/helpMessage.js";
-import { openConfirmDialog } from "../components/dialog.js";
 import { contributeToSection } from "../settingsRuntime/sectionsRegistry.js";
 
 export const globalSettingsMeta = {
@@ -32,60 +26,6 @@ export const globalSettingsMeta = {
       crossTabSyncFeature.toggle(crossTabSyncFeature.isEnabled());
     },
     toast: createEnabledDisabledToast("(experimental)Cross-tab settings sync"),
-  }),
-  disableAddonsService: createToggleSetting({
-    text: "Disable add-ons service",
-    tooltip:
-      "Disable the add-ons bridge/API entirely. Running add-ons on this page may keep running until you refresh.",
-    config: "globalSettings.disableAddonsService",
-    beforeChange: async ({ previousValue, nextValue }) => {
-      if (previousValue === true || nextValue !== true) {
-        return true;
-      }
-      return openConfirmDialog({
-        title: "Disable add-ons service?",
-        description:
-          "This disables the add-ons API/bridge. Add-ons already running on this page may need a refresh to fully stop.",
-        confirmLabel: "Disable service",
-        cancelLabel: "Cancel",
-      });
-    },
-    custom: (value) => {
-      if (value) {
-        disableAddonsService();
-        return;
-      }
-      initAddonsConsoleBridge();
-    },
-    toast: (value) =>
-      value
-        ? "Add-ons service disabled. Refresh the page to fully unload running add-ons."
-        : "Add-ons service enabled. Refresh the page to load add-ons.",
-  }),
-  allowUntrustedAddons: createToggleSetting({
-    text: "Allow untrusted add-ons",
-    tooltip:
-      "Allow unknown add-ons to access addons api. Not recommended unless you know what you're doing",
-    config: "globalSettings.allowUntrustedAddons",
-    beforeChange: async ({ previousValue, nextValue }) => {
-      if (previousValue === true || nextValue !== true) {
-        return true;
-      }
-      return openConfirmDialog({
-        title: "Allow untrusted add-ons?",
-        description:
-          "This enables unknown scripts to access your add-ons API. Only continue if you fully trust the scripts you install.",
-        confirmLabel: "I understand, enable",
-        cancelLabel: "Cancel",
-      });
-    },
-    custom: () => {
-      refreshAddonSecurityPolicies();
-    },
-    toast: createEnabledDisabledToast("Untrusted add-ons", {
-      enabled: "allowed with limited API",
-      disabled: "blocked unless trusted",
-    }),
   }),
   configTransfer: {
     type: "button",

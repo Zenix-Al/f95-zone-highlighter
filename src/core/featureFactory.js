@@ -25,6 +25,9 @@ export function initGlobalErrorListeners() {
 }
 
 const OP_TIMEOUT = 15000;
+const FEATURE_BOOTSTRAP_MODES = new Set(["waitForBody", "fast"]);
+const FAST_CAPTURE_TRANSPORTS = new Set(["xhr", "fetch", "any"]);
+const FAST_CAPTURE_MODES = new Set(["latest", "oncePerRoute", "oncePerDocument"]);
 
 function isPromiseLike(value) {
   return Boolean(value) && typeof value.then === "function";
@@ -34,12 +37,64 @@ function getErrorMessage(err) {
   return err?.message || String(err);
 }
 
-function reportLifecycleFailure(name, action, err) {
+function reportLifecycleFailure(featureId, name, action, err) {
   const message = getErrorMessage(err);
+  debugLog(featureId, "Lifecycle transition failed", {
+    data: { action, error: message },
+    level: "error",
+  });
   setFeatureStatus(name, "failing", message);
   try {
     showToast(`${name} failed to ${action}: ${message}`);
   } catch {}
+}
+
+function slugifyFeatureKey(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+export function resolveFeatureId(name, explicitId = "", settingsUi = null) {
+  const explicit = slugifyFeatureKey(explicitId);
+  if (explicit) return explicit;
+
+  const settingsId = slugifyFeatureKey(settingsUi?.id);
+  if (settingsId) return settingsId;
+
+  return slugifyFeatureKey(name) || "unnamed-feature";
+}
+
+export function normalizeFeatureBootstrapMode(value) {
+  return FEATURE_BOOTSTRAP_MODES.has(value) ? value : "waitForBody";
+}
+
+function normalizeFastCaptureUrlIncludes(value) {
+  const entries = Array.isArray(value) ? value : [value];
+  const normalized = entries.map((entry) => String(entry || "").trim()).filter(Boolean);
+  return normalized.length > 0 ? normalized : [];
+}
+
+export function normalizeFastCaptureConfig(value) {
+  if (!value || typeof value !== "object") return null;
+
+  const urlIncludes = normalizeFastCaptureUrlIncludes(value.urlIncludes);
+  const dataPath = String(value.dataPath || "").trim();
+  if (urlIncludes.length === 0 || !dataPath) return null;
+
+  const transport = FAST_CAPTURE_TRANSPORTS.has(value.transport) ? value.transport : "any";
+  const legacyMode = value.once === false ? "latest" : "oncePerDocument";
+  const mode = FAST_CAPTURE_MODES.has(value.mode) ? value.mode : legacyMode;
+
+  return {
+    urlIncludes,
+    dataPath,
+    transport,
+    mode,
+    ttlMs: Math.max(0, Number(value.ttlMs) || 0),
+  };
 }
 
 /**
@@ -49,17 +104,33 @@ function reportLifecycleFailure(name, action, err) {
  */
 export function createFeature(
   name,
-  { enable, disable, configPath, isEnabled: customIsEnabled, isApplicable, settingsUi = null },
+  {
+    id,
+    enable,
+    disable,
+    configPath,
+    isEnabled: customIsEnabled,
+    isApplicable,
+    settingsUi = null,
+    bootstrapMode = "waitForBody",
+    fastCapture = null,
+  },
 ) {
   let opInProgress = false;
   let pendingDesired = null;
+  const featureId = resolveFeatureId(name, id, settingsUi);
+  const normalizedBootstrapMode = normalizeFeatureBootstrapMode(bootstrapMode);
+  const normalizedFastCapture = normalizeFastCaptureConfig(fastCapture);
 
   function canRunOnCurrentPage() {
     if (typeof isApplicable !== "function") return true;
     try {
       return Boolean(isApplicable({ stateManager, config }));
     } catch (err) {
-      debugLog(name, `Applicability check failed: ${err?.message || String(err)}`);
+      debugLog(featureId, "Applicability check failed", {
+        data: { error: err?.message || String(err) },
+        level: "warn",
+      });
       return false;
     }
   }
@@ -76,7 +147,7 @@ export function createFeature(
   function queueDesiredState(action) {
     pendingDesired = action;
     debugLog(
-      name,
+      featureId,
       `${action === "enable" ? "Enable" : "Disable"} deferred — operation in progress.`,
     );
   }
@@ -101,7 +172,7 @@ export function createFeature(
     const timer = setTimeout(() => {
       if (!finished.value) {
         debugLog(
-          name,
+          featureId,
           `${action === "enable" ? "Enable" : "Disable"} operation timed out — marking as failing.`,
         );
         setFeatureStatus(name, "failing", timeoutDetails);
@@ -115,7 +186,7 @@ export function createFeature(
         if (isPromiseLike(result)) await result;
         setFeatureStatus(name, successStatus);
       } catch (err) {
-        reportLifecycleFailure(name, action, err);
+        reportLifecycleFailure(featureId, name, action, err);
       } finally {
         finalizeTransition(action, timer, finished);
       }
@@ -125,12 +196,16 @@ export function createFeature(
   }
 
   const feature = {
+    id: featureId,
+    featureKey: featureId,
     name: name,
+    bootstrapMode: normalizedBootstrapMode,
+    fastCapture: normalizedFastCapture,
     settingsUi: settingsUi && typeof settingsUi === "object" ? settingsUi : null,
     enable: function () {
-      debugLog(name, "Enable requested");
+      debugLog(featureId, "Enable requested");
       if (!canRunOnCurrentPage()) {
-        debugLog(name, "Enable skipped - page mismatch.");
+        debugLog(featureId, "Enable skipped - page mismatch.");
         setFeatureStatus(name, "disabled", "page mismatch");
         return;
       }
@@ -143,7 +218,7 @@ export function createFeature(
       runTransition("enable", enable, "running", "enable timeout");
     },
     disable: function () {
-      debugLog(name, "Disable requested");
+      debugLog(featureId, "Disable requested");
       if (opInProgress) {
         queueDesiredState("disable");
         return;
@@ -157,7 +232,7 @@ export function createFeature(
         pendingDesired = null;
         // best-effort: if op in progress, mark as failing and continue
         if (opInProgress) {
-          debugLog(name, "Forced toggle requested while operation in progress.");
+          debugLog(featureId, "Forced toggle requested while operation in progress.");
         }
       }
       shouldEnable ? this.enable() : this.disable();
@@ -181,7 +256,10 @@ export function createFeature(
      */
     reportError: function (err, phase = "runtime") {
       const message = err?.message || String(err);
-      debugLog(name, `Runtime error [${phase}]: ${message}`);
+      debugLog(featureId, "Runtime error", {
+        data: { phase, error: message },
+        level: "error",
+      });
       setFeatureStatus(name, "failing", `[${phase}] ${message}`);
       try {
         showToast(`${name} error: ${message}`);

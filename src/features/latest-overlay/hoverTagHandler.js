@@ -66,7 +66,10 @@ export function setupHoverListener() {
       applyIfFound();
       setTimeout(applyIfFound, 50);
     } catch (err) {
-      debugLog("Latest Overlay", "tileHoverListener error", err);
+      debugLog("latest-overlay", "Hover tag processing failed", {
+        data: { error: err?.message || String(err) },
+        level: "error",
+      });
     }
   };
 

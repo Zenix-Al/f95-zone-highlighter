@@ -20,6 +20,23 @@ function getAddonObserverSubscriptionCount(addonId) {
   return count;
 }
 
+export function isAddonOwnedObserverNode(node, addonId) {
+  let current = node?.nodeType === 1 ? node : null;
+  while (current) {
+    if (String(current.getAttribute?.("data-addon-id") || "") === addonId) return true;
+    current = current.parentElement || current.getRootNode?.()?.host || null;
+  }
+  return false;
+}
+
+function matchesObserverNode(node, addonId, srcPrefix) {
+  if (node?.nodeType !== 1 || isAddonOwnedObserverNode(node, addonId)) return false;
+  if (!srcPrefix) return true;
+  if (node.tagName === "IMG" && String(node.src || "").startsWith(srcPrefix)) return true;
+  const imgs = node.querySelectorAll ? node.querySelectorAll("img") : [];
+  return [...imgs].some((img) => String(img.src || "").startsWith(srcPrefix));
+}
+
 export function cleanupAddonObserverSubscriptions(addonId) {
   const normalizedId = sanitizeAddonId(addonId);
   if (!normalizedId) return;
@@ -54,16 +71,7 @@ export function watchAddonObserver(addonId, payload = {}) {
   const filter = (mutationsList) => {
     for (const mutation of mutationsList) {
       for (const node of mutation.addedNodes || []) {
-        if (node.nodeType !== 1) continue;
-
-        if (!srcPrefix) return true;
-
-        if (node.tagName === "IMG" && String(node.src || "").startsWith(srcPrefix)) return true;
-
-        const imgs = node.querySelectorAll ? node.querySelectorAll("img") : [];
-        for (const img of imgs) {
-          if (String(img.src || "").startsWith(srcPrefix)) return true;
-        }
+        if (matchesObserverNode(node, normalizedId, srcPrefix)) return true;
       }
     }
     return false;
@@ -76,7 +84,7 @@ export function watchAddonObserver(addonId, payload = {}) {
     for (const mutation of mutationsList) {
       if (mutation.type !== "childList") continue;
       for (const node of mutation.addedNodes || []) {
-        if (node.nodeType !== 1 || seen.has(node)) continue;
+        if (!matchesObserverNode(node, normalizedId, srcPrefix) || seen.has(node)) continue;
         seen.add(node);
         nodes.push(node);
       }

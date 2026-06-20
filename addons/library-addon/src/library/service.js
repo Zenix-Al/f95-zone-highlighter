@@ -1,209 +1,19 @@
-import {
-  LIBRARY_DB_NAME,
-  LIBRARY_INDEXES,
-  LIBRARY_LEGACY_KEY,
-  LIBRARY_MIGRATION_MARKER_KEY,
-  LIBRARY_IMPORT_MAX_RETRIES,
-  LIBRARY_IMPORT_RETRY_DELAY_MS,
-  LIBRARY_IMPORT_THROTTLE_MS,
-  LIBRARY_STORE_NAME,
-} from "../constants.js";
+import { LIBRARY_LEGACY_KEY, LIBRARY_MIGRATION_MARKER_KEY } from "../constants.js";
+import { createLibraryApiClient, resolveImportThrottleInfo } from "../api/library/index.js";
+import { executeLibraryImport, previewLibraryImport } from "./importWorkflow.js";
+import { getSortConfig, matchesLibraryFilters } from "./querying.js";
+import { normalizeRecord } from "./recordModel.js";
 import { storageGet, storageSet } from "../main.js";
 
-function storePayload(extra = {}) {
-  return {
-    dbName: LIBRARY_DB_NAME,
-    storeName: LIBRARY_STORE_NAME,
-    keyPath: "threadId",
-    indexes: LIBRARY_INDEXES,
-    ...extra,
-  };
-}
-
 export function createLibraryService(bridge) {
-  const SORT_TO_INDEX = {
-    updatedAt: "updatedAt",
-    title: "titleNormalized",
-    status: "userStatus",
-  };
-  const TRANSIENT_CORE_REASONS = new Set([
-    "rate_limited",
-    "too_many_concurrent_requests",
-    "timeout",
-  ]);
+  const api = createLibraryApiClient(bridge);
 
-  function wait(ms) {
-    return new Promise((resolve) => setTimeout(resolve, Math.max(0, Number(ms) || 0)));
-  }
-
-  async function invokeImportAction(action, payload, shouldCancel) {
-    let result = null;
-    for (let attempt = 0; attempt <= LIBRARY_IMPORT_MAX_RETRIES; attempt += 1) {
-      if (shouldCancel?.()) return { ok: false, reason: "cancelled" };
-      result = await bridge.invokeCoreAction(action, payload);
-      if (result?.ok || !TRANSIENT_CORE_REASONS.has(String(result?.reason || ""))) return result;
-      if (attempt < LIBRARY_IMPORT_MAX_RETRIES) {
-        await wait(LIBRARY_IMPORT_RETRY_DELAY_MS * (attempt + 1));
-      }
-    }
-    return result;
-  }
-
-  function normalizeList(value) {
-    if (!Array.isArray(value)) return [];
-    return value
-      .map((entry) =>
-        String(entry || "")
-          .trim()
-          .toLowerCase(),
-      )
-      .filter(Boolean);
-  }
-
-  function normalizePrefixes(value, fallbackPrefix = "") {
-    const list = Array.isArray(value) ? value : [];
-    const normalized = [];
-
-    for (const item of list) {
-      if (!item) continue;
-      if (typeof item === "string") {
-        const label = String(item || "").trim();
-        if (label) normalized.push({ label, color: "" });
-        continue;
-      }
-      if (typeof item === "object") {
-        const label = String(item.label || "").trim();
-        if (!label) continue;
-        const color = String(item.color || "").trim();
-        normalized.push({ label, color });
-      }
-    }
-
-    if (normalized.length === 0) {
-      const legacy = String(fallbackPrefix || "").trim();
-      if (legacy) return [{ label: legacy, color: "" }];
-    }
-
-    return normalized;
-  }
-
-  function deriveMetaFromTitle(title) {
-    const parts = [];
-    let remaining = String(title || "").trim();
-    while (parts.length < 2) {
-      const match = remaining.match(/\[([^\]]+)\]\s*$/);
-      if (!match?.[1]) break;
-      parts.push(String(match[1]).trim());
-      remaining = remaining.slice(0, match.index).trim();
-    }
-    return {
-      developer: parts[0] || "",
-      gameVersion: parts[1] || "",
-    };
-  }
-
-  function normalizeRecord(record) {
-    const now = Date.now();
-    const title = String(record?.title || "").trim();
-    const prefix = String(record?.prefix || "").trim();
-    const derived = deriveMetaFromTitle(title);
-    const gameVersion = String(record?.gameVersion || "").trim() || derived.gameVersion;
-    const developer = String(record?.developer || "").trim() || derived.developer;
-    const threadRatingRaw = record?.threadRating;
-    const threadRatingNum =
-      threadRatingRaw === null || typeof threadRatingRaw === "undefined"
-        ? null
-        : Number(threadRatingRaw);
-    const threadRating = Number.isFinite(threadRatingNum) ? threadRatingNum : null;
-    return {
-      threadId: String(record?.threadId || "").trim(),
-      url: String(record?.url || "").trim(),
-      title,
-      canonicalTitle: String(record?.canonicalTitle || title).trim(),
-      titleNormalized: String(record?.titleNormalized || title)
-        .trim()
-        .toLowerCase(),
-      prefix,
-      prefixes: normalizePrefixes(record?.prefixes, prefix),
-      gameVersion,
-      developer,
-      threadRating,
-      tags: normalizeList(record?.tags),
-      userStatus: String(record?.userStatus || "saved").trim() || "saved",
-      note: String(record?.note || "").trim(),
-      userScore: record?.userScore ?? null,
-      pinned: Boolean(record?.pinned),
-      schemaVersion: Number(record?.schemaVersion || 3),
-      sourcePage: String(record?.sourcePage || "thread").trim() || "thread",
-      createdAt: Number(record?.createdAt || now),
-      updatedAt: Number(record?.updatedAt || now),
-    };
-  }
-
-  function getSortConfig(sortBy = "updatedAt", sortDir = "desc") {
-    const index = SORT_TO_INDEX[String(sortBy || "").trim()] || "updatedAt";
-    const direction = String(sortDir || "desc").toLowerCase() === "asc" ? "next" : "prev";
-    return { index, direction };
-  }
-
-  function matchesFilters(record, filters = {}) {
-    const search = String(filters.search || "")
-      .trim()
-      .toLowerCase();
-    const status = String(filters.status || "")
-      .trim()
-      .toLowerCase();
-    const tag = String(filters.tag || "")
-      .trim()
-      .toLowerCase();
-    const prefix = String(filters.prefix || "")
-      .trim()
-      .toLowerCase();
-
-    if (status && status !== "all" && String(record?.userStatus || "").toLowerCase() !== status) {
-      return false;
-    }
-
-    if (tag && !normalizeList(record?.tags).includes(tag)) {
-      return false;
-    }
-
-    if (
-      prefix &&
-      String(record?.prefix || "")
-        .trim()
-        .toLowerCase() !== prefix
-    ) {
-      return false;
-    }
-
-    if (!search) return true;
-    const haystack = [
-      record?.title,
-      record?.canonicalTitle,
-      record?.prefix,
-      ...(Array.isArray(record?.prefixes) ? record.prefixes.map((p) => p?.label) : []),
-      record?.gameVersion,
-      record?.developer,
-      record?.threadRating,
-      record?.url,
-    ]
-      .concat(Array.isArray(record?.tags) ? record.tags : [])
-      .concat([record?.threadId])
-      .map((part) => String(part || "").toLowerCase())
-      .join(" ");
-    return haystack.includes(search);
+  async function getImportThrottleInfo() {
+    return resolveImportThrottleInfo(await api.getCoreThrottleInfo());
   }
 
   async function getEntry(threadId) {
-    const result = await bridge.invokeCoreAction(
-      "idb.get",
-      storePayload({
-        key: String(threadId || "").trim(),
-      }),
-    );
-    if (!result?.ok) return null;
-    return result.value || null;
+    return api.getEntry(threadId);
   }
 
   async function saveEntry(record, options = {}) {
@@ -226,19 +36,14 @@ export function createLibraryService(bridge) {
       }
     }
 
-    const payload = storePayload({ value: normalized });
-    return options.importAction
-      ? invokeImportAction("idb.put", payload, options.shouldCancel)
-      : bridge.invokeCoreAction("idb.put", payload);
+    return api.putEntry(normalized, {
+      importAction: options.importAction,
+      shouldCancel: options.shouldCancel,
+    });
   }
 
   function removeEntry(threadId) {
-    return bridge.invokeCoreAction(
-      "idb.delete",
-      storePayload({
-        key: String(threadId || "").trim(),
-      }),
-    );
+    return api.deleteEntry(threadId);
   }
 
   async function isSaved(threadId) {
@@ -247,14 +52,11 @@ export function createLibraryService(bridge) {
   }
 
   function listRecent(limit = 200) {
-    return bridge.invokeCoreAction(
-      "idb.query",
-      storePayload({
-        index: "updatedAt",
-        direction: "prev",
-        limit,
-      }),
-    );
+    return api.queryEntries({
+      index: "updatedAt",
+      direction: "prev",
+      limit,
+    });
   }
 
   async function queryEntries(options = {}) {
@@ -262,21 +64,20 @@ export function createLibraryService(bridge) {
     const offset = Math.max(0, Number(options.offset || 0));
     const { index, direction } = getSortConfig(options.sortBy, options.sortDir);
 
-    const result = await bridge.invokeCoreAction(
-      "idb.query",
-      storePayload({
-        index,
-        direction,
-        limit,
-        offset,
-      }),
-    );
+    const result = await api.queryEntries({
+      index,
+      direction,
+      limit,
+      offset,
+    });
     if (!result?.ok) {
       throw new Error(String(result?.reason || "query_failed"));
     }
     if (!Array.isArray(result.value)) return [];
 
-    return result.value.map(normalizeRecord).filter((entry) => matchesFilters(entry, options));
+    return result.value
+      .map(normalizeRecord)
+      .filter((entry) => matchesLibraryFilters(entry, options));
   }
 
   async function getAllEntries(sortBy = "updatedAt", sortDir = "desc") {
@@ -304,161 +105,55 @@ export function createLibraryService(bridge) {
     };
   }
 
-  async function importEntries(records, options = {}) {
+  async function previewImport(records, options = {}) {
     const list = Array.isArray(records) ? records : [];
     const conflictPolicy = String(options.conflictPolicy || "newer")
       .trim()
       .toLowerCase();
-    let imported = 0;
-    let added = 0;
-    let updated = 0;
-    let skipped = 0;
-    let skippedInvalid = 0;
-    let skippedExisting = 0;
-    let skippedNotNewer = 0;
-    let failed = 0;
-    const failureReasons = {};
+    const existingEntries = Array.isArray(options.existingEntries)
+      ? options.existingEntries
+      : await getAllEntries("updatedAt", "desc");
+    const throttleInfo =
+      options.throttleInfo && typeof options.throttleInfo === "object"
+        ? resolveImportThrottleInfo(options.throttleInfo)
+        : await getImportThrottleInfo();
+
+    return previewLibraryImport({
+      records: list,
+      conflictPolicy,
+      existingEntries,
+      throttleInfo,
+      normalizeRecord,
+      createEntriesPayload: (entries) => api.createEntriesPayload(entries),
+    });
+  }
+
+  async function saveImportOperation(operation, shouldCancel) {
+    return saveEntry(operation?.value, {
+      preserveUpdatedAt: true,
+      skipExistingLookup: true,
+      importAction: true,
+      shouldCancel,
+    });
+  }
+
+  async function importEntries(records, options = {}) {
+    const list = Array.isArray(records) ? records : [];
+    const plan =
+      options.plan && typeof options.plan === "object" && Array.isArray(options.plan.operations)
+        ? options.plan
+        : await previewImport(list, options);
     const shouldCancel = typeof options.shouldCancel === "function" ? options.shouldCancel : () => false;
     const onProgress = typeof options.onProgress === "function" ? options.onProgress : () => {};
-    let processed = 0;
-    let cancelled = false;
 
-    function recordFailure(reason) {
-      const normalizedReason = String(reason || "unknown");
-      failureReasons[normalizedReason] = Number(failureReasons[normalizedReason] || 0) + 1;
-      skipped += 1;
-      failed += 1;
-    }
-
-    function reportProgress() {
-      onProgress({
-        processed,
-        total: list.length,
-        added,
-        updated,
-        skipped,
-        failed,
-        cancelled,
-      });
-    }
-
-    reportProgress();
-    for (const raw of list) {
-      if (shouldCancel()) {
-        cancelled = true;
-        break;
-      }
-      const next = normalizeRecord(raw);
-      if (!next.threadId) {
-        skipped += 1;
-        skippedInvalid += 1;
-        processed += 1;
-        reportProgress();
-        continue;
-      }
-
-      const getResult = await invokeImportAction(
-        "idb.get",
-        storePayload({ key: next.threadId }),
-        shouldCancel,
-      );
-      if (getResult?.reason === "cancelled") {
-        cancelled = true;
-        break;
-      }
-      if (!getResult?.ok) {
-        recordFailure(getResult?.reason);
-        processed += 1;
-        reportProgress();
-        await wait(LIBRARY_IMPORT_THROTTLE_MS);
-        continue;
-      }
-      const existing = getResult.value || null;
-      if (!existing) {
-        const putResult = await saveEntry(next, {
-          preserveUpdatedAt: true,
-          skipExistingLookup: true,
-          importAction: true,
-          shouldCancel,
-        });
-        if (putResult?.reason === "cancelled") {
-          cancelled = true;
-          break;
-        }
-        if (putResult?.ok) {
-          imported += 1;
-          added += 1;
-        } else {
-          recordFailure(putResult?.reason);
-        }
-        processed += 1;
-        reportProgress();
-        await wait(LIBRARY_IMPORT_THROTTLE_MS);
-        continue;
-      }
-
-      if (conflictPolicy === "skip") {
-        skipped += 1;
-        skippedExisting += 1;
-        processed += 1;
-        reportProgress();
-        await wait(LIBRARY_IMPORT_THROTTLE_MS);
-        continue;
-      }
-
-      if (conflictPolicy === "newer") {
-        const existingUpdatedAt = Number(existing.updatedAt || 0);
-        const incomingUpdatedAt = Number(next.updatedAt || 0);
-        if (incomingUpdatedAt <= existingUpdatedAt) {
-          skipped += 1;
-          skippedNotNewer += 1;
-          processed += 1;
-          reportProgress();
-          await wait(LIBRARY_IMPORT_THROTTLE_MS);
-          continue;
-        }
-      }
-
-      const putResult = await saveEntry(
-        { ...existing, ...next, createdAt: existing.createdAt },
-        {
-          preserveUpdatedAt: true,
-          skipExistingLookup: true,
-          importAction: true,
-          shouldCancel,
-        },
-      );
-      if (putResult?.reason === "cancelled") {
-        cancelled = true;
-        break;
-      }
-      if (putResult?.ok) {
-        imported += 1;
-        updated += 1;
-      } else {
-        recordFailure(putResult?.reason);
-      }
-      processed += 1;
-      reportProgress();
-      await wait(LIBRARY_IMPORT_THROTTLE_MS);
-    }
-    reportProgress();
-
-    return {
-      ok: failed === 0,
-      imported,
-      added,
-      updated,
-      skipped,
-      skippedInvalid,
-      skippedExisting,
-      skippedNotNewer,
-      failed,
-      failureReasons,
-      cancelled,
-      processed,
-      total: list.length,
-    };
+    return executeLibraryImport({
+      records: list,
+      plan,
+      shouldCancel,
+      onProgress,
+      bulkPutEntries: (entries, cancelCheck) => api.bulkPutEntries(entries, cancelCheck),
+      saveOperation: saveImportOperation,
+    });
   }
 
   async function patchEntry(threadId, patch = {}) {
@@ -519,7 +214,6 @@ export function createLibraryService(bridge) {
       return { ok: true, migrated: 0, skipped: true };
     }
     const legacyResult = await storageGet(LIBRARY_LEGACY_KEY, null);
-
     const rawLegacy = legacyResult?.ok ? legacyResult.value : null;
 
     let migrated = 0;
@@ -527,7 +221,9 @@ export function createLibraryService(bridge) {
       const imported = await importEntries(rawLegacy, { conflictPolicy: "newer" });
       migrated = Number(imported?.imported || 0);
     } else if (rawLegacy && typeof rawLegacy === "object") {
-      const imported = await importEntries(Object.values(rawLegacy), { conflictPolicy: "newer" });
+      const imported = await importEntries(Object.values(rawLegacy), {
+        conflictPolicy: "newer",
+      });
       migrated = Number(imported?.imported || 0);
     }
     storageSet(LIBRARY_LEGACY_KEY, null);
@@ -544,6 +240,7 @@ export function createLibraryService(bridge) {
     queryEntries,
     getAllEntries,
     exportEntries,
+    previewImport,
     importEntries,
     patchEntry,
     bulkUpdateStatus,
