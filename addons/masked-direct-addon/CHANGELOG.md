@@ -1,5 +1,33 @@
 # Changelog
 
+## v0.3.29 - Add Workupload support
+
+- Add Workupload direct-download routing for `workupload.com/file/*` pages.
+- Preserve add-on automation markers when moving from Workupload file pages to `/start/*`.
+- Leave Workupload start pages open and warn the user when the download cannot be confirmed before timeout.
+
+## v0.3.26 - Park Vik1ngFile host research
+
+- Remove Vik1ngFile from active host metadata, userscript matches, settings, and public supported-host docs.
+- Keep the Vik1ngFile host source parked for future research, because the current host flow is gated by Cloudflare human verification and should not be advertised as supported automation.
+
+## v0.3.23 - Centralize supported host metadata
+
+- Add a supported-host metadata registry for canonical host matching, setting defaults, and settings UI rows.
+- Move direct-download host handler wiring into a host handler registry.
+- Stop hardcoding supported host branches in main settings, download-page detection, and direct-download routing.
+
+## v0.3.22 - Share host DOM helpers
+
+- Move repeated host text and element-state helpers into `src/hosts/shared/dom.js`.
+- Reuse the shared helpers in Datanodes and Vik1ngFile host handlers.
+
+## v0.3.21 - Adopt Vik1ngFile host support
+
+- Add `vik1ngfile.site/f/*` direct-download automation behind its own host toggle.
+- Add extra MediaFire fallback selectors from the reference downloader script.
+- Keep MediaFire folder-page UI out of the add-on because folder picking is separate from masked/direct host automation.
+
 ## v0.3.20 - Fix direct download and part ways with core for toast
 
 - Add Buzzheavier short-domain support for `bzzhr.to`.

@@ -40,7 +40,7 @@ You can enable or disable these individually from the main config panel:
   Save threads to your personal library with notes, ratings, status tracking, advanced search, pinning, and full import/export
 
 - **[Masked + Direct Download Add-on](https://greasyfork.org/en/scripts/572503-f95ue-masked-direct-download-add-on)**  
-  "Resolve" buttons on masked links + smart automation for Buzzheavier, Gofile, Pixeldrain, and Datanodes
+  "Resolve" buttons on masked links + smart automation for Buzzheavier, Gofile, Pixeldrain, Datanodes, MediaFire, and Workupload
 
 - **[Latest Filters Add-on](https://greasyfork.org/en/scripts/573076-f95ue-latest-filters-add-on)**  
   Adds saved filters on the Latest Updates page with searchable presets and active filter tracking
@@ -53,7 +53,7 @@ You can enable or disable these individually from the main config panel:
 
 ### Direct Download Support
 
-Handled by the **Masked + Direct Download Add-on** (Buzzheavier, Gofile, Pixeldrain, Datanodes)
+Handled by the **Masked + Direct Download Add-on** (Buzzheavier, Gofile, Pixeldrain, Datanodes, MediaFire, Workupload)
 
 **Author:** X Death  
 **Contributor:** Edexal

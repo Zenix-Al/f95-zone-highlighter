@@ -1,15 +1,8 @@
 export const ADDON_COMMAND_EVENT = "f95ue:addon-command";
 export const RESOLVE_BTN_CLASS = "f95ue-addon-resolve-btn";
-export const MASKED_LINK_SELECTOR = 'a[href^="/masked/"], a[href^="https://f95zone.to/masked/"]';
+export const MASKED_LINK_SELECTOR =
+  'a[href^="/masked/"], a[href^="https://f95zone.to/masked/"]';
 export const F95_CAPTCHA_SITEKEY = "6LcwQ5kUAAAAAAI-_CXQtlnhdMjmFDt-MruZ2gov";
-export const DIRECT_HOSTS = [
-  "buzzheavier.com",
-  "bzzhr.to",
-  "gofile.io",
-  "pixeldrain.com",
-  "datanodes.to",
-  "mediafire.com",
-];
 export const AUTOMATION_MARKER_KEY = "f95ue_dd";
 export const DIRECT_DOWNLOAD_ROUTE_TS_KEY = "f95ue_dd_ts";
 export const DIRECT_DOWNLOAD_ROUTE_REQUEST_ID_KEY = "f95ue_dd_req";
@@ -44,6 +37,8 @@ export const TIMINGS = Object.freeze({
   DATANODES_CONFIRM_AFTER_CLICK_DELAY: 1000,
   DATANODES_SKIPPED_STEP_SETTLE_DELAY: 1500,
   DOWNLOAD_PAGE_CLOSE_DELAY: 3500,
+  WORKUPLOAD_DOWNLOAD_BUTTON_WAIT_TIMEOUT: 15000,
+  WORKUPLOAD_DOWNLOAD_START_SETTLE_DELAY: 500,
 });
 
 export const SELECTORS = Object.freeze({
@@ -79,12 +74,30 @@ export const SELECTORS = Object.freeze({
       "a#downloadButton",
       '#download_link a[aria-label="Download file"]',
       "#download_link a.input.popsok",
+      ".download_link .input",
+      ".js-shared-status-edit",
+    ],
+  },
+  WORKUPLOAD: {
+    DOWNLOAD_BUTTON_CANDIDATES: [
+      ".download a[href]",
+      "a.btn-prio[href]",
+      'a[href^="/start/"]',
     ],
   },
   MASKED_PAGE: {
-    CONTINUE_BTN_CANDIDATES: [".host_link", "a.host_link", ".leaving a[href]", "#leaving a[href]"],
+    CONTINUE_BTN_CANDIDATES: [
+      ".host_link",
+      "a.host_link",
+      ".leaving a[href]",
+      "#leaving a[href]",
+    ],
     LEAVING_CANDIDATES: [".leaving", "#leaving", ".leaving-page"],
-    LEAVING_TEXT_CANDIDATES: [".leaving-text", ".leaving .leaving-text", ".leaving p"],
+    LEAVING_TEXT_CANDIDATES: [
+      ".leaving-text",
+      ".leaving .leaving-text",
+      ".leaving p",
+    ],
     IDS: {
       LOADING: "loading",
       CAPTCHA: "captcha",

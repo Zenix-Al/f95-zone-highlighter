@@ -5,6 +5,13 @@ import {
   SELECTORS,
 } from "../constants.js";
 import { queryAllBySelectors, sleep } from "../utils.js";
+import {
+  isCountdownText,
+  isElementDisabled,
+  isElementReadyForClick,
+  isElementVisible,
+  normalizeText,
+} from "./shared/dom.js";
 
 const DATANODES_STAGE_MAX_AGE =
   TIMINGS.DATANODES_TOTAL_FLOW_TIMEOUT + TIMINGS.DATANODES_SKIPPED_STEP_SETTLE_DELAY;
@@ -169,26 +176,6 @@ export async function processDatanodesDownload({
     }
   }
 
-  function isDisabled(element) {
-    if (!element) return true;
-    if (element.disabled) return true;
-    const ariaDisabled = String(element.getAttribute("aria-disabled") || "").toLowerCase();
-    return ariaDisabled === "true";
-  }
-
-  function isVisible(element) {
-    if (!element || !element.isConnected) return false;
-    const style = getComputedStyle(element);
-    return style.display !== "none" && style.visibility !== "hidden";
-  }
-
-  function normalizeText(value) {
-    return String(value || "")
-      .replace(/\s+/g, " ")
-      .trim()
-      .toLowerCase();
-  }
-
   function isMethodFreeButton(element) {
     if (!element) return false;
     return (
@@ -198,7 +185,7 @@ export async function processDatanodesDownload({
   }
 
   function isPrimaryDownloadButton(element) {
-    if (!element || !element.isConnected || isDisabled(element)) return false;
+    if (!element || !element.isConnected || isElementDisabled(element)) return false;
     if (isMethodFreeButton(element)) return false;
     const text = normalizeText(element.textContent);
     if (!text.includes("download")) return false;
@@ -206,22 +193,14 @@ export async function processDatanodesDownload({
     return true;
   }
 
-  function isCountdownText(text) {
-    return /\b\d+\s*s\b/.test(text);
-  }
-
   function hasButtonText(element, text) {
     return normalizeText(element?.textContent).includes(text);
-  }
-
-  function isReadyForClick(element) {
-    return Boolean(element && element.isConnected && !isDisabled(element));
   }
 
   function getMethodFreeButton() {
     const buttons = queryAllBySelectors(SELECTORS.DATANODES.METHOD_FREE_BUTTON_CANDIDATES);
     for (const button of buttons) {
-      if (!button || !button.isConnected || isDisabled(button)) continue;
+      if (!button || !button.isConnected || isElementDisabled(button)) continue;
       if (!isMethodFreeButton(button)) continue;
       return button;
     }
@@ -244,7 +223,7 @@ export async function processDatanodesDownload({
 
     const buttons = Array.from(document.querySelectorAll("button"));
     for (const button of buttons) {
-      if (!isReadyForClick(button)) continue;
+      if (!isElementReadyForClick(button)) continue;
       if (isMethodFreeButton(button)) continue;
       const text = normalizeText(button.textContent);
       if (!text) continue;
@@ -269,7 +248,7 @@ export async function processDatanodesDownload({
   function hasReadyBadge() {
     const elements = document.querySelectorAll("span,div,strong,b");
     for (const el of elements) {
-      if (!isVisible(el)) continue;
+      if (!isElementVisible(el)) continue;
       const text = normalizeText(el.textContent);
       if (text === "ready") return true;
     }
@@ -294,7 +273,7 @@ export async function processDatanodesDownload({
     );
 
     for (const el of candidates) {
-      if (!isVisible(el)) continue;
+      if (!isElementVisible(el)) continue;
 
       const text = normalizeText(el.textContent);
       const ariaValue = Number(el.getAttribute("aria-valuenow") || NaN);
