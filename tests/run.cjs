@@ -52,6 +52,13 @@ const {
   normalizeFastCaptureConfig,
 } = loadModule("src/core/featureFactory.js");
 const {
+  getAllFeatureStatuses,
+  getRuntimeErrors,
+  reportFeatureFailure,
+  reportFeatureWarning,
+  reportRuntimeError,
+} = loadModule("src/core/featureHealth.js");
+const {
   OVERLAY_COLOR_ORDER_KEYS,
   normalizeOverlayColorOrder,
   buildOrderedOverlayMatches,
@@ -414,6 +421,30 @@ runTest("feature fast capture accepts latest mode and ttl", () => {
   );
 });
 
+runTest("feature health helpers record failure warning and runtime phases", () => {
+  const failureDetails = reportFeatureFailure(
+    "Health Helper Failure Test",
+    new Error("boom"),
+    "unit.failure",
+  );
+  const warningDetails = reportFeatureWarning(
+    "Health Helper Warning Test",
+    "soft boom",
+    "unit.warning",
+  );
+  const runtimeDetails = reportRuntimeError("loose boom", "unit.runtime");
+  const statuses = getAllFeatureStatuses();
+  const runtimeErrors = getRuntimeErrors();
+
+  assert.strictEqual(failureDetails, "[unit.failure] boom");
+  assert.strictEqual(statuses["Health Helper Failure Test"].status, "failing");
+  assert.strictEqual(statuses["Health Helper Failure Test"].details, "[unit.failure] boom");
+  assert.strictEqual(warningDetails, "[unit.warning] soft boom");
+  assert.strictEqual(statuses["Health Helper Warning Test"].status, "degraded");
+  assert.strictEqual(runtimeDetails, "[unit.runtime] loose boom");
+  assert.ok(runtimeErrors.some((entry) => entry.details === "[unit.runtime] loose boom"));
+});
+
 runTest("matchesFastCaptureUrl supports string and array urlIncludes", () => {
   assert.strictEqual(
     matchesFastCaptureUrl("https://example.com/latest_data.php?page=1", "latest_data.php"),
@@ -681,9 +712,45 @@ runTest("fast capture subscribers receive captured snapshots", () => {
   );
   unsubscribe();
 
+  assert.strictEqual(seen.length, 2);
+  assert.strictEqual(seen[0].status, "idle");
+  assert.strictEqual(seen[1].status, "captured");
+  assert.deepStrictEqual(seen[1].data, { hello: "world" });
+});
+
+runTest("fast capture subscribers receive cached snapshot on subscribe", () => {
+  resetFastCaptureHarness();
+
+  registerFastCaptureFeatures([
+    {
+      name: "Cached Capture",
+      featureKey: "cached-capture",
+      bootstrapMode: "fast",
+      fastCapture: {
+        urlIncludes: ["latest_data.php"],
+        dataPath: "msg.data",
+        transport: "fetch",
+        mode: "latest",
+      },
+      isApplicable: () => true,
+    },
+  ]);
+
+  processCompletedFastCapture(
+    "fetch",
+    "https://f95zone.to/latest_data.php",
+    JSON.stringify({ msg: { data: [{ id: 7 }] } }),
+  );
+
+  const seen = [];
+  const unsubscribe = subscribeFastCapture("cached-capture", (snapshot) => {
+    seen.push(snapshot);
+  });
+  unsubscribe();
+
   assert.strictEqual(seen.length, 1);
   assert.strictEqual(seen[0].status, "captured");
-  assert.deepStrictEqual(seen[0].data, { hello: "world" });
+  assert.deepStrictEqual(seen[0].data, [{ id: 7 }]);
 });
 
 runTest("toast queue accepts pre-body calls and flushes in order after body exists", () => {

@@ -1,3 +1,5 @@
+import { reportFeatureWarning } from "../../core/featureHealth.js";
+
 const fastCaptureStore = new Map();
 const fastCaptureSubscribers = new Map();
 
@@ -49,10 +51,12 @@ function notifyFastCaptureSubscribers(key, snapshot) {
   const subscribers = fastCaptureSubscribers.get(key);
   if (!subscribers || subscribers.size === 0) return;
 
-  for (const callback of subscribers) {
+  for (const entry of subscribers) {
     try {
-      callback(cloneSnapshot(snapshot));
-    } catch {}
+      entry.callback(cloneSnapshot(snapshot));
+    } catch (error) {
+      reportFeatureWarning(entry.healthId, error, `fastCapture.subscriber:${key}`);
+    }
   }
 }
 
@@ -115,7 +119,11 @@ export function hasFastCaptureData(key) {
   return snapshot.status === "captured";
 }
 
-export function subscribeFastCapture(key, callback) {
+export function subscribeFastCapture(
+  key,
+  callback,
+  { emitCurrent = true, subscriberId = "", healthId = "" } = {},
+) {
   const normalizedKey = String(key || "").trim();
   if (!normalizedKey || typeof callback !== "function") {
     return () => {};
@@ -127,12 +135,25 @@ export function subscribeFastCapture(key, callback) {
     fastCaptureSubscribers.set(normalizedKey, subscribers);
   }
 
-  subscribers.add(callback);
+  const entry = {
+    callback,
+    healthId: String(healthId || subscriberId || normalizedKey || "Fast Capture").trim(),
+  };
+
+  subscribers.add(entry);
+
+  if (emitCurrent) {
+    try {
+      callback(getFastCaptureSnapshot(normalizedKey));
+    } catch (error) {
+      reportFeatureWarning(entry.healthId, error, `fastCapture.subscriber:${normalizedKey}`);
+    }
+  }
 
   return () => {
     const currentSubscribers = fastCaptureSubscribers.get(normalizedKey);
     if (!currentSubscribers) return;
-    currentSubscribers.delete(callback);
+    currentSubscribers.delete(entry);
     if (currentSubscribers.size === 0) {
       fastCaptureSubscribers.delete(normalizedKey);
     }

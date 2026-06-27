@@ -128,20 +128,16 @@ export function notifyAllAddonsBeforePageChange() {
   addonLifecycle.notifyAllBeforePageChange();
 }
 
+const CORE_PAGE_SCOPE_FLAGS = Object.freeze([
+  ["f95zone", "isF95Zone"],
+  ["thread", "isThread"],
+  ["latest", "isLatest"],
+]);
+
 function getCurrentPageScopes() {
-  // Return all currently active state keys as addon scopes
-  // Addons can subscribe to any state key names they care about
-  const scopes = [];
-  const stateKeys = stateManager.getKnownPaths();
-  for (const key of stateKeys) {
-    if (!key.startsWith("isPageType") && key !== "isDomainMatch") {
-      continue;
-    }
-    if (stateManager.get(key)) {
-      scopes.push(key);
-    }
-  }
-  return scopes;
+  return CORE_PAGE_SCOPE_FLAGS.filter(([, stateKey]) => stateManager.get(stateKey)).map(
+    ([scope]) => scope,
+  );
 }
 
 export function listKnownAddons() {

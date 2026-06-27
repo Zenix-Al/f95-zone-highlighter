@@ -97,6 +97,7 @@ export function enableNoticeDismissal() {
   // Observe for new notices being added to the DOM
   addObserverCallback("dismiss-notification", processMutations, {
     filter: hasNoticeMutations,
+    healthId: "Dismiss Notification",
   });
   debugLog("enableNoticeDismissal", "Dismissal feature initialized and observing for new notices");
 }

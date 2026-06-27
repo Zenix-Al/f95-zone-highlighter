@@ -104,7 +104,7 @@ export function watchAddonObserver(addonId, payload = {}) {
     );
   };
 
-  addObserverCallback(callbackId, callback, { filter });
+  addObserverCallback(callbackId, callback, { filter, healthId: "Add-ons Service" });
   OBSERVER_SUBSCRIPTIONS.set(key, {
     addonId: normalizedId,
     observerId,

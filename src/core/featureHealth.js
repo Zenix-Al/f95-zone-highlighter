@@ -6,22 +6,59 @@ const runtimeErrors = [];
 
 const MAX_PER_FEATURE_ERRORS = 10;
 const MAX_RUNTIME_ERRORS = 20;
+const KNOWN_STATUSES = new Set(["running", "disabled", "degraded", "failing", "unknown"]);
 
 function now() {
   return new Date().toISOString();
 }
 
+function normalizeStatus(status) {
+  return KNOWN_STATUSES.has(status) ? status : "unknown";
+}
+
+function getErrorMessage(error) {
+  if (error?.message) return String(error.message);
+  if (typeof error === "string") return error;
+  return String(error ?? "Unknown error");
+}
+
+function formatDetails(error, phase = "") {
+  const message = getErrorMessage(error);
+  const normalizedPhase = String(phase || "").trim();
+  return normalizedPhase ? `[${normalizedPhase}] ${message}` : message;
+}
+
 export function setFeatureStatus(id, status, details = null) {
   if (!id) return;
   statuses.set(id, {
-    status,
+    status: normalizeStatus(status),
     details: details ? String(details) : null,
     lastUpdated: now(),
   });
   // Accumulate history for every failure so clicking "Run check" later still shows them
-  if (status === "failing" && details) {
+  if ((status === "failing" || status === "degraded") && details) {
     pushFeatureError(id, details);
   }
+}
+
+export function reportFeatureFailure(id, error, phase = "runtime") {
+  if (!id) return "";
+  const details = formatDetails(error, phase);
+  setFeatureStatus(id, "failing", details);
+  return details;
+}
+
+export function reportFeatureWarning(id, error, phase = "runtime") {
+  if (!id) return "";
+  const details = formatDetails(error, phase);
+  setFeatureStatus(id, "degraded", details);
+  return details;
+}
+
+export function reportRuntimeError(error, phase = "runtime") {
+  const details = formatDetails(error, phase);
+  pushRuntimeError(details);
+  return details;
 }
 
 /** Append a runtime error entry for a known feature without changing its status. */

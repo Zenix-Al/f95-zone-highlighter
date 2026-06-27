@@ -1,6 +1,10 @@
 import { debugLog } from "./logger.js";
 import { stateManager, config } from "../config.js";
-import { setFeatureStatus, pushRuntimeError } from "./featureHealth.js";
+import {
+  setFeatureStatus,
+  reportFeatureFailure,
+  reportRuntimeError,
+} from "./featureHealth.js";
 import { showToast } from "../ui/components/toast.js";
 import { getByPath } from "../utils/objectPath.js";
 
@@ -13,14 +17,11 @@ export function initGlobalErrorListeners() {
   _globalListenerRegistered = true;
 
   window.addEventListener("error", (event) => {
-    const msg = event?.message ? String(event.message) : "Unknown error";
-    pushRuntimeError(msg);
+    reportRuntimeError(event?.error || event?.message || "Unknown error", "window.error");
   });
 
   window.addEventListener("unhandledrejection", (event) => {
-    const reason = event?.reason;
-    const msg = reason?.message ? String(reason.message) : String(reason ?? "Unknown rejection");
-    pushRuntimeError(`Unhandled: ${msg}`);
+    reportRuntimeError(event?.reason ?? "Unknown rejection", "unhandledrejection");
   });
 }
 
@@ -43,7 +44,7 @@ function reportLifecycleFailure(featureId, name, action, err) {
     data: { action, error: message },
     level: "error",
   });
-  setFeatureStatus(name, "failing", message);
+  reportFeatureFailure(name, err, action);
   try {
     showToast(`${name} failed to ${action}: ${message}`);
   } catch {}
@@ -175,7 +176,7 @@ export function createFeature(
           featureId,
           `${action === "enable" ? "Enable" : "Disable"} operation timed out — marking as failing.`,
         );
-        setFeatureStatus(name, "failing", timeoutDetails);
+        reportFeatureFailure(name, timeoutDetails, action);
         opInProgress = false;
       }
     }, OP_TIMEOUT);
@@ -260,7 +261,7 @@ export function createFeature(
         data: { phase, error: message },
         level: "error",
       });
-      setFeatureStatus(name, "failing", `[${phase}] ${message}`);
+      reportFeatureFailure(name, err, phase);
       try {
         showToast(`${name} error: ${message}`);
       } catch {}

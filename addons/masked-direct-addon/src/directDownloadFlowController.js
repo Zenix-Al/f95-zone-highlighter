@@ -20,6 +20,7 @@ export function createDirectDownloadFlowController({
   withAutomationMarker,
   showToast,
   publishDirectDownloadAttention,
+  publishDirectDownloadEvent,
   ownerTabId,
   originTabQueryKey,
   getDownloadHost,
@@ -29,6 +30,7 @@ export function createDirectDownloadFlowController({
     const host = String(hostname || "").toLowerCase();
     return (
       host.includes("buzzheavier.com") ||
+      host.includes("bzzhr.to") ||
       host.includes("gofile.io") ||
       host.includes("pixeldrain.com") ||
       host.includes("datanodes.to") ||
@@ -48,6 +50,8 @@ export function createDirectDownloadFlowController({
     }
 
     const supported = isSupportedHost(host);
+    const automationHost =
+      host.includes("buzzheavier.com") || host.includes("bzzhr.to") ? "buzzheavier.com" : host;
     let safeUrl = supported ? withAutomationMarker(normalized) : normalized;
     let requestId = "";
     if (supported && safeUrl) {
@@ -79,7 +83,7 @@ export function createDirectDownloadFlowController({
       console.info("[DirectDownload] Stored close delay in GM storage: " + delay + "ms");
 
       await setProcessingDownloadTrigger(GMApi, {
-        host,
+        host: automationHost,
         sourceUrl: safeUrl,
         ownerTabId,
         requestId,
@@ -118,25 +122,43 @@ export function createDirectDownloadFlowController({
     await clearProcessingDownloadTrigger(GMApi);
     await publishDirectDownloadAttention(hostLabel, message, errorCode, trigger.requestId);
 
-    bridge.dispatchCoreCommand("update-status", {
-      addonId,
-      status: "error",
-      statusMessage: text,
-    });
+    if (!getDownloadHost()) {
+      bridge.dispatchCoreCommand("update-status", {
+        addonId,
+        status: "error",
+        statusMessage: text,
+      });
+    }
   }
 
   function reportAddonHealthy({ isEnabled, statusMessage, downloadPageCloseDelayMs }) {
-    void clearProcessingDownloadTrigger(GMApi);
-    bridge.dispatchCoreCommand("update-status", {
-      addonId,
-      status: isEnabled ? "installed" : "disabled",
-      statusMessage,
-    });
+    const downloadHost = getDownloadHost();
+    if (!downloadHost) {
+      void clearProcessingDownloadTrigger(GMApi);
+      bridge.dispatchCoreCommand("update-status", {
+        addonId,
+        status: isEnabled ? "installed" : "disabled",
+        statusMessage,
+      });
+    }
 
-    if (getDownloadHost()) {
+    if (downloadHost) {
       const delay =
         downloadPageCloseDelayMs ??
         (typeof getDownloadPageCloseDelayMs === "function" ? getDownloadPageCloseDelayMs() : 3500);
+
+      void (async () => {
+        const trigger = await readProcessingDownloadTrigger(GMApi);
+        await clearProcessingDownloadTrigger(GMApi);
+        if (typeof publishDirectDownloadEvent === "function") {
+          await publishDirectDownloadEvent({
+            type: "success",
+            host: downloadHost,
+            message: "Download triggered.",
+            requestId: trigger.requestId,
+          });
+        }
+      })();
 
       console.info("[DirectDownload] Using smart close with delay: " + delay + "ms");
 

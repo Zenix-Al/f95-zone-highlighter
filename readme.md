@@ -1,43 +1,47 @@
 # F95Zone Ultimate Enhancer
 
-All-in-one userscript for F95Zone with a modular feature framework.
+All-in-one userscript for F95Zone with a lean core and official add-on support.
 
 - Install: https://greasyfork.org/en/scripts/546518-f95zone-ultimate-enhancer
 - Built output: `dist/f95zone-ultimate-enhancer.user.js`
 
-## What The Script Does
+## What The Core Script Does
 
 ### Global features
 
-- Notification dismiss (close F95 notices with an `x` button)
+- Notification dismissal
 - Shadow DOM config UI (isolated styling)
-- Tag management (search, preferred/excluded lists, drag reorder)
+- Tag management (search, preferred/excluded/marked lists, drag reorder)
 - Color customization
 - Optional cross-tab settings sync
-- Feature health diagnostic
+- Feature health diagnostics
 
 ### Latest Updates page features
 
-- Auto refresh sync
+- Auto-refresh sync
 - Web notifications sync
-- Wide Latest Page (remove width cap)
+- Wide Latest page
 - Dense Latest Grid
-- Latest page overlay (status/tag/version)
+- Latest overlay (status/tag/version)
+- Intelligent overlay scoring
+- Hover tag coloring from preferred/excluded rules
 - Overlay color order editor
 
 ### Thread page features
 
-- Skip Masked Link
-- Direct Download Links (works with masked-link resolution)
 - Wide thread
-- Image Retry
 - Collapsible signatures
 - Thread overlay
 
-### Direct download support
+### Official add-ons
 
-- Automated host flows: `buzzheavier.com`, `gofile.io`, `pixeldrain.com`, `datanodes.to`
-- Destination retry handling: `trashbytes.net`
+Specialized features are handled by optional add-ons:
+
+- **Image Repair Add-on** - retries broken attachment images.
+- **Library Add-on** - saves threads to a personal library with notes, ratings, status tracking, search, pinning, and import/export.
+- **Masked + Direct Download Add-on** - resolves masked links and automates supported download hosts.
+
+Direct download support is handled by the Masked + Direct Download Add-on for Buzzheavier, Gofile, Pixeldrain, and Datanodes.
 
 ## Framework Architecture
 

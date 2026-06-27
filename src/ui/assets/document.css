@@ -1,0 +1,17 @@
+:root {
+  --completed-color: #388e3c;
+  --onhold-color: #1976d2;
+  --abandoned-color: #c9a300;
+  --high-version-color: #2e7d32;
+  --invalid-version-color: #a38400;
+  --tile-info-color: #9398a0;
+  --tile-header-color: #d9d9d9;
+  --preferred-color: #7b1fa2;
+  --preferred-text-color: #ffffff;
+  --excluded-color: #b71c1c;
+  --excluded-text-color: #ffffff;
+  --neutral-color: #37383a;
+  --neutral-text-color: #9398a0;
+  --preferred-shadow: 0 0 2px 1px #fff;
+  --excluded-shadow: 0 0 2px 1px #fff;
+}

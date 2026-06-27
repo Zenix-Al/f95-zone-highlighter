@@ -17,8 +17,10 @@ import {
 const addonDockButtonsState = new Map();
 const addonStyleRegistry = new Map();
 const addonMountRegistry = new Map();
+const pendingAddonMounts = new Map();
 const addonDialogRegistry = new Map();
 let addonDockFlushTimer = 0;
+let addonMountFlushTimer = 0;
 
 export function sanitizeDockButtons(input) {
   if (!Array.isArray(input)) return [];
@@ -193,7 +195,86 @@ function getAddonMountBucket(addonId) {
   return addonMountRegistry.get(addonId);
 }
 
+function pendingMountKey(addonId, mountId) {
+  return `${addonId}::${mountId}`;
+}
+
+function tryMountAddonUi(addonId, payload = {}) {
+  const mountId = sanitizeAddonMountId(payload?.mountId || payload?.id || "");
+  const html = String(payload?.html || payload?.template || "");
+  const slot = String(payload?.slot || "body");
+  const position = String(payload?.position || "append");
+
+  const host = resolveAddonMountHost(slot, { shadowRoot: stateManager.get("shadowRoot") });
+  if (!host) return { ok: false, reason: "mount_slot_not_found" };
+
+  const bucket = getAddonMountBucket(addonId);
+  const existing = bucket.get(mountId);
+
+  if (existing) {
+    existing.innerHTML = html;
+    return { ok: true, value: { updated: true, mountId } };
+  }
+
+  const mountEl = createAddonMountElement({
+    addonId,
+    mountId,
+    html,
+    slot,
+  });
+
+  insertAddonMountElement(host, mountEl, position);
+  bucket.set(mountId, mountEl);
+
+  return { ok: true, value: { updated: false, mountId } };
+}
+
+function flushPendingAddonMounts() {
+  if (pendingAddonMounts.size === 0) return true;
+
+  for (const [key, entry] of pendingAddonMounts) {
+    const result = tryMountAddonUi(entry.addonId, entry.payload);
+    if (result?.ok) {
+      pendingAddonMounts.delete(key);
+    }
+  }
+
+  return pendingAddonMounts.size === 0;
+}
+
+function scheduleAddonMountFlush() {
+  if (addonMountFlushTimer) return;
+
+  let remainingAttempts = 40;
+  const tick = () => {
+    addonMountFlushTimer = 0;
+
+    if (flushPendingAddonMounts()) {
+      return;
+    }
+
+    remainingAttempts -= 1;
+    if (remainingAttempts <= 0) {
+      pendingAddonMounts.clear();
+      return;
+    }
+    addonMountFlushTimer = window.setTimeout(tick, 250);
+  };
+
+  addonMountFlushTimer = window.setTimeout(tick, 0);
+}
+
 function removeAddonMounts(addonId, mountId = "") {
+  for (const key of [...pendingAddonMounts.keys()]) {
+    const entry = pendingAddonMounts.get(key);
+    if (!entry || entry.addonId !== addonId) continue;
+    const pendingMountId = sanitizeAddonMountId(entry.payload?.mountId || entry.payload?.id || "");
+    if (mountId && pendingMountId !== mountId) {
+      continue;
+    }
+    pendingAddonMounts.delete(key);
+  }
+
   const bucket = addonMountRegistry.get(addonId);
   if (!bucket || bucket.size === 0) return { removed: 0 };
 
@@ -268,30 +349,20 @@ export function mountAddonUi(addonId, payload = {}) {
   const mountId = sanitizeAddonMountId(payload?.mountId || payload?.id || "");
   const html = String(payload?.html || payload?.template || "");
   const slot = String(payload?.slot || "body");
-  const position = String(payload?.position || "append");
 
-  const host = resolveAddonMountHost(slot, { shadowRoot: stateManager.get("shadowRoot") });
-  if (!host) return { ok: false, reason: "mount_slot_not_found" };
+  const result = tryMountAddonUi(addonId, payload);
+  if (result?.ok) return result;
 
-  const bucket = getAddonMountBucket(addonId);
-  const existing = bucket.get(mountId);
-
-  if (existing) {
-    existing.innerHTML = html;
-    return { ok: true, value: { updated: true, mountId } };
+  if (result?.reason === "mount_slot_not_found" && slot.trim().toLowerCase() === "page.dock") {
+    pendingAddonMounts.set(pendingMountKey(addonId, mountId), {
+      addonId,
+      payload: { ...payload, mountId, html, slot },
+    });
+    scheduleAddonMountFlush();
+    return { ok: true, value: { pending: true, mountId } };
   }
 
-  const mountEl = createAddonMountElement({
-    addonId,
-    mountId,
-    html,
-    slot,
-  });
-
-  insertAddonMountElement(host, mountEl, position);
-  bucket.set(mountId, mountEl);
-
-  return { ok: true, value: { updated: false, mountId } };
+  return result;
 }
 
 export function updateAddonUi(addonId, payload = {}) {
@@ -300,6 +371,21 @@ export function updateAddonUi(addonId, payload = {}) {
 
   const bucket = addonMountRegistry.get(addonId);
   const mountEl = bucket?.get(mountId);
+  const pendingKey = pendingMountKey(addonId, mountId);
+  if (!mountEl && pendingAddonMounts.has(pendingKey)) {
+    const pending = pendingAddonMounts.get(pendingKey);
+    pendingAddonMounts.set(pendingKey, {
+      ...pending,
+      payload: {
+        ...pending.payload,
+        ...payload,
+        mountId,
+        html,
+      },
+    });
+    scheduleAddonMountFlush();
+    return { ok: true, value: { pending: true, mountId } };
+  }
   if (!mountEl) return { ok: false, reason: "mount_not_found" };
 
   mountEl.innerHTML = html;

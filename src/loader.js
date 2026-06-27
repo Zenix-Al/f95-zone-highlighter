@@ -1,8 +1,8 @@
 // src/loader.js
 import { debugLog } from "./core/logger";
-import { safeExecute } from "./core/safeExecute.js";
 import { registerFeature } from "./core/featureCatalog.js";
 import { runFrameBudgeted } from "./core/frameBudget.js";
+import { reportFeatureFailure } from "./core/featureHealth.js";
 import {
   refreshFastCaptureFeatures,
   registerFastCaptureFeatures,
@@ -52,6 +52,8 @@ function getFastBootstrapFeatures() {
 }
 
 function getBodyBootstrapFeatures() {
+  // Fast bootstrap only registers early capture rules. The feature lifecycle
+  // still runs after body is ready so DOM observers/subscriptions can start.
   return [...featureRegistry];
 }
 
@@ -59,14 +61,18 @@ async function runFeatureRegistry(features) {
   if (!Array.isArray(features) || features.length === 0) return;
   await runFrameBudgeted(
     features,
-    (feature) =>
-      safeExecute(() => {
+    (feature) => {
+      try {
         if (!feature || typeof feature !== "object") return;
         if (typeof feature.isEnabled !== "function" || typeof feature.enable !== "function") return;
         if (feature.isEnabled()) {
           feature.enable();
         }
-      }),
+      } catch (error) {
+        reportFeatureFailure(feature?.name || "Feature Loader", error, "loader.enable");
+        console.error(`[Loader] Failed to enable ${feature?.name || "feature"}:`, error);
+      }
+    },
     {
       budgetMs: TIMINGS.LOADER_FEATURE_FRAME_BUDGET_MS,
       minChunk: TIMINGS.LOADER_FEATURE_MIN_CHUNK,

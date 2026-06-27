@@ -28,8 +28,6 @@ export function detectPage() {
   stateManager.set("isF95Zone", false);
   stateManager.set("isThread", false);
   stateManager.set("isLatest", false);
-  stateManager.set("isMaskedLink", false);
-  stateManager.set("isRecaptchaFrame", false);
   if (window.location.hostname.includes("f95zone.to")) {
     stateManager.set("isF95Zone", true);
   }
@@ -37,18 +35,10 @@ export function detectPage() {
     stateManager.set("isThread", true);
   } else if (path.startsWith("/sam/latest_alpha")) {
     stateManager.set("isLatest", true);
-  } else if (path.startsWith("/masked")) {
-    stateManager.set("isMaskedLink", true);
-  } else if (
-    (location.hostname.includes("google.com") || location.hostname.includes("recaptcha.net")) &&
-    path.startsWith("/recaptcha/")
-  ) {
-    // Check if we are inside a reCaptcha iframe
-    stateManager.set("isRecaptchaFrame", true);
   }
   debugLog(
     "PageDetect",
-    `isF95Zone: ${stateManager.get("isF95Zone")}, isThread: ${stateManager.get("isThread")}, isLatest: ${stateManager.get("isLatest")}, isMaskedLink: ${stateManager.get("isMaskedLink")}, isDownloadPage: ${stateManager.get("isDownloadPage")}, isRecaptchaFrame: ${stateManager.get("isRecaptchaFrame")}`,
+    `isF95Zone: ${stateManager.get("isF95Zone")}, isThread: ${stateManager.get("isThread")}, isLatest: ${stateManager.get("isLatest")}`,
   );
 }
 export function waitForBody(callback) {

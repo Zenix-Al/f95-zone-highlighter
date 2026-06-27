@@ -20,15 +20,16 @@ export async function processBuzzheavierDownload({
   notifyMainFailure,
   reportAddonHealthy,
 }) {
+  const hostLabel = location.hostname.includes("bzzhr.to") ? "bzzhr.to" : "buzzheavier.com";
   const button = queryFirstBySelectors(SELECTORS.BUZZHEAVIER.DOWNLOAD_BUTTON_CANDIDATES);
   if (!(button instanceof HTMLAnchorElement)) {
-    await notifyMainFailure("buzzheavier.com", "Download button not found.");
+    await notifyMainFailure(hostLabel, "Download button not found.");
     return;
   }
 
   const endpoint = toDownloadEndpoint(button);
   if (!endpoint) {
-    await notifyMainFailure("buzzheavier.com", "Download endpoint not found.");
+    await notifyMainFailure(hostLabel, "Download endpoint not found.");
     return;
   }
 
@@ -43,11 +44,11 @@ export async function processBuzzheavierDownload({
     });
     const text = await response.text();
     if (!response.ok || /could not be found/i.test(text)) {
-      await notifyMainFailure("buzzheavier.com", "Host reported missing or unavailable file.");
+      await notifyMainFailure(hostLabel, "Host reported missing or unavailable file.");
       return;
     }
   } catch {
-    await notifyMainFailure("buzzheavier.com", "Failed to contact download endpoint.");
+    await notifyMainFailure(hostLabel, "Failed to contact download endpoint.");
     return;
   }
 

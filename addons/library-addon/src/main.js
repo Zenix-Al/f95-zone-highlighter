@@ -35,6 +35,19 @@ let currentSnapshot = null;
 let currentSaved = false;
 let dockMountClickHandler = null;
 
+function wait(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function waitForCoreReady() {
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    const ping = await bridge.waitForCorePing(1800 + attempt * 500);
+    if (ping.ok) return ping;
+    await wait(250 + attempt * 250);
+  }
+  return { ok: false, apiVersion: "" };
+}
+
 export async function storageGet(key, defaultValue = null) {
   const result = await bridge.invokeCoreAction("storage.get", { key, defaultValue });
   return result?.ok ? result.value : defaultValue;
@@ -444,7 +457,7 @@ function reportAddonBroken(err) {
 }
 
 async function bootstrap() {
-  const ping = await bridge.waitForCorePing();
+  const ping = await waitForCoreReady();
   if (!ping.ok && runtime.requiresCore) {
     console.info(`[${runtime.addonId}] F95UE core not detected; add-on skipped.`);
     return;

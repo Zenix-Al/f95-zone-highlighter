@@ -1,5 +1,8 @@
+import { reportFeatureFailure } from "./featureHealth.js";
+
 function logBootstrapError(step, error) {
   console.error(`[Bootstrap] ${step} failed:`, error);
+  reportFeatureFailure("Bootstrap", error, step);
 }
 
 export async function runBootstrapStep(step, fn, fallbackValue = undefined) {

@@ -12,13 +12,6 @@ export const SELECTORS = {
     LIKES: ".resource-tile_info-meta_likes",
     VIEWS: ".resource-tile_info-meta_views",
   },
-  TAG_PICKER: {
-    INPUT: ".selectize-input.items.not-full",
-    DROPDOWN: ".selectize-dropdown.single.filter-tags-select",
-    OPTION: ".option",
-    SELECTED_WRAP: ".filter-tags-selected-wrap.selectize-selected",
-    SELECTED_TAG: "span[data-tag]",
-  },
   LATEST_CONTROL: {
     IDS: {
       AUTO_REFRESH: "controls_auto-refresh",

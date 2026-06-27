@@ -1,22 +1,15 @@
 // ==UserScript==
 // @name         {{NAME}}
 // @version      {{VERSION}}
-// @description  All-in-one F95Zone beast: thread highlighting, custom tags & colors, wide layout, auto-refresh latest, masked-link bypass, image fix, notifs & more
+// @description  Core F95Zone enhancer: latest/thread overlays, custom tags & colors, wide layout, auto-refresh, notifs, diagnostics & add-on bridge
 // @author       X Death
 // @contributor  Edexal (GM storage, change listener & summarize UI element)
 // @match        *://f95zone.to/*
-// @match        *://buzzheavier.com/*
-// @match        *://gofile.io/d/*
-// @match        *://pixeldrain.com/*
-// @match        *://datanodes.to/download
-// @match        *://www.mediafire.com/file/*
-// @match        *://mediafire.com/file/*
 // @icon         https://f95zone.to/data/avatars/l/1963/1963870.jpg
 // @resource     trustedAddonCatalog https://cdn.jsdelivr.net/gh/Zenix-Al/f95-zone-highlighter@main/src/services/addons/trusted-catalog.json
 // @grant        GM_getResourceText
 // @grant        GM.setValue
 // @grant        GM.getValue
-// @grant        GM_openInTab
 // @grant        GM_addValueChangeListener
 // @grant        GM_removeValueChangeListener
 // @run-at       document-start
