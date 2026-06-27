@@ -1,7 +1,4 @@
 import { createStateManager } from "./core/StateManager.js";
-import { TIMINGS } from "./config/timings.js";
-
-export const validVersions = ["full", "final"];
 
 export const defaultColors = {
   completed: "#388e3c",
@@ -154,23 +151,12 @@ const runtimeState = {
   settingsPinnedAddonIds: [],
   registeredAddons: [],
   tagsUpdateStatus: "IDLE",
-  globalSettingsRendered: false,
-  colorRendered: false,
-  overlayRendered: false,
-  threadSettingsRendered: false,
   tagsUpdateRan: false,
   isThread: false,
   isLatest: false,
-  isDownloadPage: false,
   isF95Zone: false,
-  firstLoad: true,
-  isMaskedLink: false,
-  isMaskedLinkApplied: false,
-  isProcessingTiles: false,
   isCrossTabSyncInitialized: false,
-  isMsgEventHandlerApplied: false,
   isNoticeDismissalEnabled: false,
-  isRecaptchaFrame: false,
   latestOverlayStatus: "IDLE",
   latestOverlayPageCategory: "games",
 };
@@ -196,13 +182,6 @@ export const crossTabKeys = {
   addons: true,
 };
 
-export const cache = new Map();
-export const colorState = {
-  PENDING: { color: "#FFA500" },
-  SUCCESS: { color: "#4CAF50" },
-  FAILED: { color: "#F44336" },
-};
-export const timeoutMS = TIMINGS.DOWNLOAD_TIMEOUT;
 // Contains jokes plus practical usage hints.
 export const helpMessages = [
   "type /help if you're lost, or just moan really loud",

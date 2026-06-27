@@ -1,7 +1,7 @@
 let observer = null;
-import { safeExecute } from "./safeExecute.js";
 import { resourceManager } from "./resourceManager.js";
 import { debugLog } from "./logger.js";
+import { reportFeatureFailure } from "./featureHealth.js";
 const callbacks = new Map();
 
 const OBSERVER_PROFILE_FLAG = "__F95UE_OBSERVER_PROFILE__";
@@ -118,6 +118,12 @@ function maybeFlushObserverProfileWindow(now) {
   resetObserverProfileState();
 }
 
+function reportObserverError(healthId, phase, error) {
+  const details = reportFeatureFailure(healthId, error, phase);
+  console.error(`[Observer] ${phase} failed for ${healthId}:`, error);
+  return details;
+}
+
 export function getObserverProfileSnapshot() {
   const callbackSummary = {};
   for (const [id, stats] of observerProfileState.perCallback.entries()) {
@@ -186,14 +192,19 @@ function masterCallback(mutationsList, obs) {
     );
   }
 
-  for (const [id, { callback, filter }] of callbacks.entries()) {
+  for (const [id, { callback, filter, healthId }] of callbacks.entries()) {
     let callbackStats = null;
     if (profiling) {
       callbackStats = getOrCreateCallbackProfile(id);
     }
 
     if (typeof filter === "function") {
-      const shouldRun = safeExecute(filter, null, mutationsList, obs);
+      let shouldRun = false;
+      try {
+        shouldRun = filter(mutationsList, obs);
+      } catch (error) {
+        reportObserverError(healthId, `observer.filter:${id}`, error);
+      }
       if (!shouldRun) {
         if (profiling) {
           observerProfileState.callbacksFilteredOut += 1;
@@ -204,7 +215,11 @@ function masterCallback(mutationsList, obs) {
     }
 
     const callbackStart = profiling ? nowMs() : 0;
-    safeExecute(callback, null, mutationsList, obs);
+    try {
+      callback(mutationsList, obs);
+    } catch (error) {
+      reportObserverError(healthId, `observer.callback:${id}`, error);
+    }
 
     if (profiling) {
       const callbackDuration = nowMs() - callbackStart;
@@ -268,6 +283,7 @@ export function addObserverCallback(id, callback, options = {}) {
   callbacks.set(id, {
     callback,
     filter: typeof options.filter === "function" ? options.filter : null,
+    healthId: String(options.healthId || id || "observer").trim(),
   });
   resourceManager.register(`observer:${id}`, () => removeObserverCallback(id));
   startObserver();

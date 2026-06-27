@@ -19,10 +19,15 @@ import { initRouteObserver } from "./core/routeObserver.js";
 let globalTeardownHooksRegistered = false;
 let configLoadPromise = null;
 
+function handlePageHide(event) {
+  if (event?.persisted === true) return;
+  teardownAll("pagehide");
+}
+
 function registerGlobalTeardownHooks() {
   if (globalTeardownHooksRegistered) return;
   globalTeardownHooksRegistered = true;
-  addListener("global-teardown-pagehide", window, "pagehide", () => teardownAll("pagehide"));
+  addListener("global-teardown-pagehide", window, "pagehide", handlePageHide);
   addListener("global-teardown-beforeunload", window, "beforeunload", () =>
     teardownAll("beforeunload"),
   );
@@ -45,10 +50,11 @@ async function ensureConfigLoaded() {
 }
 
 async function runFastBootstrap() {
-  // Add-ons start at document-idle and immediately ping the core. Bind the
-  // shared bridge before config/UI/body work so that ping cannot race startup.
-  
+  // Start config loading immediately so service-level gates such as
+  // disableAddonsService are known before the addon bridge is exposed.
+
   detectPage();
+  const configReady = ensureConfigLoaded();
   loadFastBootstrapFeatures();
 
   await runBootstrapPipeline([
@@ -70,7 +76,7 @@ async function runFastBootstrap() {
     },
     {
       name: "loadData",
-      run: ensureConfigLoaded,
+      run: () => configReady,
       fallbackValue: null,
     },
     {

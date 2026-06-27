@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.3.52 - Improve UI lifecycle
+
+- addon now retry when fail to attach ui.
+
 ## v0.3.51 - Improve UI lifecycle
 
 - ui.close now wait core response for successful close.

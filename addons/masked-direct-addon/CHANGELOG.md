@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.3.20 - Fix direct download and part ways with core for toast
+
+- Add Buzzheavier short-domain support for `bzzhr.to`.
+- Rework direct-download notifications. It now uses this add-on own GM storage event bus and only asks core for local toast display on F95 pages.
+- Send direct-download success/failure toasts back to the originating F95 tab instead of relying on download host pages to update core status.
+- Reinforce Datanodes flow again. The main problem was the first step silently failing when the target element was not there yet; now it waits for page readiness and target buttons more carefully before continuing.
+
 ## v0.3.14 - Fix download detector
 
 - Download detector now wont close tab when its not triggered by this addon.

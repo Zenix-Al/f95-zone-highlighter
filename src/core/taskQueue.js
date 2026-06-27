@@ -1,4 +1,5 @@
 import { debugLog } from "./logger";
+import { reportFeatureWarning } from "./featureHealth.js";
 
 /**
  * Creates a new Task Queue to process items sequentially with a delay.
@@ -7,7 +8,7 @@ import { debugLog } from "./logger";
  * @param {string} options.name - A name for debugging purposes.
  * @returns {{add: function, stop: function, start: function, clear: function, size: function}}
  */
-export function createTaskQueue({ delay = 100, name = "UnnamedQueue" }) {
+export function createTaskQueue({ delay = 100, name = "UnnamedQueue", healthId = name }) {
   const queue = new Map(); // Map<key, { task: Function, generation: number }>
   let isProcessing = false;
   let timer = null;
@@ -30,6 +31,7 @@ export function createTaskQueue({ delay = 100, name = "UnnamedQueue" }) {
       await task(); // Execute the task (can be async)
     } catch (e) {
       console.error(`[${name}] Task failed:`, e);
+      reportFeatureWarning(healthId, e, `taskQueue:${name}`);
     }
 
     // Schedule the next one

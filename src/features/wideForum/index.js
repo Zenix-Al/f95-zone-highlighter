@@ -6,6 +6,7 @@ import { createEnabledDisabledToast } from "../../ui/settings/metaFactory.js";
 
 function enableWideForum() {
   const root = document.documentElement;
+  root.classList.add("wide-forum-enabled");
   document
     .querySelectorAll(SELECTORS.WIDE_FORUM.P_BODY_INNER)
     .forEach((el) => el.classList.add("no-max-width"));
@@ -15,6 +16,7 @@ function enableWideForum() {
 
 function disableWideForum() {
   const root = document.documentElement;
+  root.classList.remove("wide-forum-enabled");
   document
     .querySelectorAll(SELECTORS.WIDE_FORUM.P_BODY_INNER)
     .forEach((el) => el.classList.remove("no-max-width"));

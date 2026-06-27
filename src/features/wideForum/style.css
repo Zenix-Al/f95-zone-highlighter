@@ -2,6 +2,10 @@
   max-width: none !important;
 }
 
+.wide-forum-enabled .p-body-inner {
+  max-width: none !important;
+}
+
 .thread-scroll-hide .p-navSticky {
   transition: transform 0.25s ease;
   will-change: transform;

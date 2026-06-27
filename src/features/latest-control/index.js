@@ -75,6 +75,7 @@ function enable() {
   syncLatestControls();
   addObserverCallback("sync-latest-controls", processMutations, {
     filter: hasLatestControlMutations,
+    healthId: "Latest Controls Sync",
   });
 }
 

@@ -80,7 +80,7 @@ const ADDON_PANEL_SETTINGS = Object.freeze([
     id: "buzzheavier",
     path: "directDownloadPackages.buzzheavier",
     text: "Buzzheavier",
-    tooltip: "Enable direct download automation for buzzheavier.com",
+    tooltip: "Enable direct download automation for buzzheavier.com and bzzhr.to",
   },
   {
     id: "gofile",
@@ -125,6 +125,12 @@ const directDownloadAttentionController = createDirectDownloadAttentionControlle
   addTeardown,
   showToast,
   GMApi: GM,
+  addValueChangeListener: typeof GM_addValueChangeListener === "function"
+    ? GM_addValueChangeListener
+    : null,
+  removeValueChangeListener: typeof GM_removeValueChangeListener === "function"
+    ? GM_removeValueChangeListener
+    : null,
 });
 let downloadPageController = null;
 const directDownloadFlowController = createDirectDownloadFlowController({
@@ -136,6 +142,7 @@ const directDownloadFlowController = createDirectDownloadFlowController({
   withAutomationMarker,
   showToast,
   publishDirectDownloadAttention: directDownloadAttentionController.publishDirectDownloadAttention,
+  publishDirectDownloadEvent: directDownloadAttentionController.publishDirectDownloadEvent,
   ownerTabId: directDownloadAttentionController.localAttentionTabId,
   originTabQueryKey: directDownloadAttentionController.originTabQueryKey,
   getDownloadHost: () => downloadPageController?.getDownloadHost?.() || "",
@@ -152,7 +159,9 @@ const threadPageController = createThreadPageController({
   isHostAllowedInSettings,
   ensureButtonStyle: () => ui.ensureLocalButtonStyle(),
   enableAttentionListener: () =>
-    directDownloadAttentionController.enableDirectDownloadAttentionListener({ isThreadPage }),
+    directDownloadAttentionController.enableDirectDownloadAttentionListener({
+      shouldListen: isF95AddonPage,
+    }),
 });
 
 function showToast(message, duration = 2600, type = "info") {
@@ -207,6 +216,7 @@ downloadPageController = createDownloadPageController({
         notifyMainFailure: directDownloadFlowController.notifyMainFailure,
         reportAddonHealthy,
         stageStore: datanodesStageStore,
+        settings: settingsCache || {},
         getDownloadCloseDelay: getDownloadCloseDelayForHandler,
       }),
     "mediafire.com": () =>
@@ -234,6 +244,10 @@ function isThreadPage() {
   return location.hostname.includes("f95zone.to") && location.pathname.startsWith("/threads");
 }
 
+function isF95AddonPage() {
+  return location.hostname.includes("f95zone.to") && !maskedPageController.isRecaptchaFrame();
+}
+
 function isRelevantPage() {
   return Boolean(
     isThreadPage() ||
@@ -249,7 +263,7 @@ function isHostAllowedInSettings(hostname, flags) {
   if (hostname.includes("gofile.io")) {
     return packages.gofile !== false;
   }
-  if (hostname.includes("buzzheavier.com")) {
+  if (hostname.includes("buzzheavier.com") || hostname.includes("bzzhr.to")) {
     return packages.buzzheavier !== false;
   }
   if (hostname.includes("pixeldrain.com")) {
@@ -332,6 +346,12 @@ function applyCurrentPageBehavior() {
   if (!isEnabled || isBlockedByCore) return;
 
   try {
+    if (isF95AddonPage()) {
+      directDownloadAttentionController.enableDirectDownloadAttentionListener({
+        shouldListen: isF95AddonPage,
+      });
+    }
+
     if (isThreadPage()) {
       threadPageController.enableThreadHooks({
         isEnabled,

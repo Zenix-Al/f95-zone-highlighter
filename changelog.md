@@ -1,5 +1,18 @@
 # Changelog
 
+## [5.0.20 - Back-forward navigation fix]
+
+- Fix core disappearing after browser back/forward restore by skipping global teardown when `pagehide` is only moving the page into the back-forward cache.
+
+## [5.0.19 - bootstrap fix, fastCapture fix, and more]
+
+- Fix 2 bootstrap side effects that cause some feature did not runs properly.
+- Fix fastCapture after fixing 2 bootstrap side effects because previously it dependent on latest-overlay feature. now it should be independent and can run on any page.
+- Clean up the codebase and remove unused code, now the codebase should be more maintainable.
+- Core now is exclusive only to run on F95Zone. core now will not treat masked-direct-addon as golden boy anymore. this is a good thing because the concern now not convoluted. for the addon update, read their own changelog.
+
+Note : this update might broke old masked-direct-addon alert system.
+
 ## [5.0.8 - Add-on API Improvements]
 
 - Add `idb.bulkDelete` to the add-on API and a cleanup action to the Example add-on so bulk demo records do not pile up permanently.

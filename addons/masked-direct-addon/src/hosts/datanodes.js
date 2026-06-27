@@ -7,9 +7,7 @@ import {
 import { queryAllBySelectors, sleep } from "../utils.js";
 
 const DATANODES_STAGE_MAX_AGE =
-  TIMINGS.DATANODES_BUTTON_WAIT_TIMEOUT +
-  Math.max(6000, TIMINGS.DATANODES_SECOND_CLICK_DELAY) +
-  19000;
+  TIMINGS.DATANODES_TOTAL_FLOW_TIMEOUT + TIMINGS.DATANODES_SKIPPED_STEP_SETTLE_DELAY;
 
 export function createDatanodesStageStore() {
   function clear() {
@@ -55,25 +53,118 @@ export function createDatanodesStageStore() {
   return { read, write, clear };
 }
 
+function getDatanodesTiming(settings = {}) {
+  const datanodes = settings?.directDownload?.datanodes || settings?.datanodes || {};
+
+  function numberValue(key, fallback) {
+    const value = Number(datanodes[key]);
+    return Number.isFinite(value) && value >= 0 ? value : fallback;
+  }
+
+  function booleanValue(key, fallback) {
+    const value = datanodes[key];
+    return typeof value === "boolean" ? value : fallback;
+  }
+
+  return {
+    pollInterval: numberValue("pollInterval", TIMINGS.DATANODES_POLL_INTERVAL || 250),
+    totalFlowTimeout: numberValue(
+      "totalFlowTimeout",
+      TIMINGS.DATANODES_TOTAL_FLOW_TIMEOUT || 90000,
+    ),
+    pageReadyWaitTimeout: numberValue(
+      "pageReadyWaitTimeout",
+      TIMINGS.DATANODES_PAGE_READY_WAIT_TIMEOUT || 30000,
+    ),
+    pageReadySettleDelay: numberValue(
+      "pageReadySettleDelay",
+      TIMINGS.DATANODES_PAGE_READY_SETTLE_DELAY || 1200,
+    ),
+    methodFreePreWait: numberValue(
+      "methodFreePreWait",
+      TIMINGS.DATANODES_METHOD_FREE_PRE_WAIT || 500,
+    ),
+    methodFreeWaitTimeout: numberValue(
+      "methodFreeWaitTimeout",
+      TIMINGS.DATANODES_METHOD_FREE_WAIT_TIMEOUT || 25000,
+    ),
+    methodFreeFoundSettleDelay: numberValue(
+      "methodFreeFoundSettleDelay",
+      TIMINGS.DATANODES_METHOD_FREE_FOUND_SETTLE_DELAY || 700,
+    ),
+    methodFreeAfterClickDelay: numberValue(
+      "methodFreeAfterClickDelay",
+      TIMINGS.DATANODES_METHOD_FREE_AFTER_CLICK_DELAY || 5000,
+    ),
+    methodFreeMaxClicks: numberValue(
+      "methodFreeMaxClicks",
+      TIMINGS.DATANODES_METHOD_FREE_MAX_CLICKS || 3,
+    ),
+    downloadPreWait: numberValue("downloadPreWait", TIMINGS.DATANODES_DOWNLOAD_PRE_WAIT || 1000),
+    downloadWaitTimeout: numberValue(
+      "downloadWaitTimeout",
+      TIMINGS.DATANODES_DOWNLOAD_WAIT_TIMEOUT || 25000,
+    ),
+    downloadFoundSettleDelay: numberValue(
+      "downloadFoundSettleDelay",
+      TIMINGS.DATANODES_DOWNLOAD_FOUND_SETTLE_DELAY || 700,
+    ),
+    downloadAfterClickDelay: numberValue(
+      "downloadAfterClickDelay",
+      TIMINGS.DATANODES_DOWNLOAD_AFTER_CLICK_DELAY || 5000,
+    ),
+    secondaryDownloadEnabled: booleanValue(
+      "secondaryDownloadEnabled",
+      TIMINGS.DATANODES_SECONDARY_DOWNLOAD_ENABLED ?? true,
+    ),
+    secondaryDownloadPreWait: numberValue(
+      "secondaryDownloadPreWait",
+      TIMINGS.DATANODES_SECONDARY_DOWNLOAD_PRE_WAIT || 7000,
+    ),
+    secondaryDownloadFoundSettleDelay: numberValue(
+      "secondaryDownloadFoundSettleDelay",
+      TIMINGS.DATANODES_SECONDARY_DOWNLOAD_FOUND_SETTLE_DELAY || 500,
+    ),
+    secondaryDownloadAfterClickDelay: numberValue(
+      "secondaryDownloadAfterClickDelay",
+      TIMINGS.DATANODES_SECONDARY_DOWNLOAD_AFTER_CLICK_DELAY || 1000,
+    ),
+    confirmPreWait: numberValue("confirmPreWait", TIMINGS.DATANODES_CONFIRM_PRE_WAIT || 7000),
+    confirmWaitTimeout: numberValue(
+      "confirmWaitTimeout",
+      TIMINGS.DATANODES_CONFIRM_WAIT_TIMEOUT || 30000,
+    ),
+    confirmFoundSettleDelay: numberValue(
+      "confirmFoundSettleDelay",
+      TIMINGS.DATANODES_CONFIRM_FOUND_SETTLE_DELAY || 700,
+    ),
+    confirmAfterClickDelay: numberValue(
+      "confirmAfterClickDelay",
+      TIMINGS.DATANODES_CONFIRM_AFTER_CLICK_DELAY || 1000,
+    ),
+    skippedStepSettleDelay: numberValue(
+      "skippedStepSettleDelay",
+      TIMINGS.DATANODES_SKIPPED_STEP_SETTLE_DELAY || 1500,
+    ),
+  };
+}
+
 export async function processDatanodesDownload({
   showToast,
   notifyMainFailure,
   reportAddonHealthy,
   stageStore,
+  settings = {},
 }) {
   console.info("Starting datanodes.to download flow...");
-  const DATANODES_MAX_FREE_CLICKS = 3;
-  const DATANODES_RETRY_DELAY = Math.max(5000, TIMINGS.DATANODES_POLL_INTERVAL);
-  const DATANODES_AFTER_METHOD_FREE_DELAY = Math.max(5000, TIMINGS.DATANODES_POLL_INTERVAL);
-  const DATANODES_BEFORE_DOWNLOAD_CLICK_DELAY = 1000;
-  const DATANODES_PROCESS_MAX_TIMEOUT = 40000; // 40 second safety timeout for entire process
-  const PROCESS_START_TIME = Date.now();
 
-  function checkTimeoutExceeded(label) {
-    const elapsed = Date.now() - PROCESS_START_TIME;
-    if (elapsed > DATANODES_PROCESS_MAX_TIMEOUT) {
+  const timing = getDatanodesTiming(settings);
+  const flowStartedAt = Date.now();
+
+  function checkTimeoutExceeded(stage) {
+    if (Date.now() - flowStartedAt > timing.totalFlowTimeout) {
       throw new Error(
-        `timeout::Datanodes automation exceeded ${DATANODES_PROCESS_MAX_TIMEOUT}ms timeout at ${label}.`,
+        `timeout::Datanodes automation exceeded ${timing.totalFlowTimeout}ms timeout at ${stage}.`,
       );
     }
   }
@@ -185,30 +276,109 @@ export async function processDatanodesDownload({
     return false;
   }
 
-  async function waitForReadyState(timeout = TIMINGS.DATANODES_BUTTON_WAIT_TIMEOUT) {
-    if (hasReadyBadge()) return true;
-    const startedAt = Date.now();
-    while (Date.now() - startedAt < timeout) {
-      await sleep(TIMINGS.DATANODES_POLL_INTERVAL);
-      if (hasReadyBadge()) return true;
+  function hasDatanodesProgressComplete() {
+    const candidates = document.querySelectorAll(
+      [
+        "[aria-valuenow]",
+        "[role='progressbar']",
+        "progress",
+        ".progress",
+        ".progress-bar",
+        "[class*='progress']",
+        "[class*='percent']",
+        "span",
+        "div",
+        "strong",
+        "b",
+      ].join(","),
+    );
+
+    for (const el of candidates) {
+      if (!isVisible(el)) continue;
+
+      const text = normalizeText(el.textContent);
+      const ariaValue = Number(el.getAttribute("aria-valuenow") || NaN);
+      const value = Number(el.getAttribute("value") || NaN);
+      const max = Number(el.getAttribute("max") || NaN);
+
+      if (text.includes("100%")) return true;
+      if (text === "ready") return true;
+      if (Number.isFinite(ariaValue) && ariaValue >= 100) return true;
+      if (Number.isFinite(value) && Number.isFinite(max) && max > 0 && value >= max) return true;
     }
+
     return false;
   }
 
-  async function waitForButton({
+  async function waitForDatanodesSoftReady() {
+    console.info("[Datanodes] Waiting for soft ready signal.");
+
+    const startedAt = Date.now();
+    while (Date.now() - startedAt < timing.pageReadyWaitTimeout) {
+      if (
+        hasReadyBadge() ||
+        hasDatanodesProgressComplete() ||
+        getMethodFreeButton() ||
+        getStartPhaseDownloadButton()
+      ) {
+        console.info("[Datanodes] Soft ready signal detected.");
+        if (timing.pageReadySettleDelay > 0) {
+          await sleep(timing.pageReadySettleDelay);
+        }
+        return true;
+      }
+
+      await sleep(timing.pollInterval);
+    }
+
+    console.info("[Datanodes] Soft ready signal not found. Continuing anyway.");
+    return false;
+  }
+
+  async function waitForCandidate({
+    label,
     getCandidate,
-    interval = TIMINGS.DATANODES_POLL_INTERVAL,
-    timeout = TIMINGS.DATANODES_BUTTON_WAIT_TIMEOUT,
-    errorCode = "button_not_found",
-    errorMessage = "Datanodes automation failed: Button not found.",
+    timeout,
+    interval,
+    preWait = 0,
+    foundSettleDelay = 0,
   }) {
+    if (preWait > 0) {
+      console.info(`[Datanodes] ${label}: pre-wait ${preWait}ms.`);
+      await sleep(preWait);
+    }
+
     const startedAt = Date.now();
     while (Date.now() - startedAt < timeout) {
       const candidate = getCandidate();
-      if (candidate) return candidate;
+
+      if (candidate) {
+        console.info(`[Datanodes] ${label}: candidate found.`);
+        if (foundSettleDelay > 0) {
+          await sleep(foundSettleDelay);
+        }
+        return candidate;
+      }
+
       await sleep(interval);
     }
-    throw new Error(`${errorCode}::${errorMessage}`);
+
+    console.info(`[Datanodes] ${label}: candidate not found after ${timeout}ms.`);
+    return null;
+  }
+
+  async function settleAfterSkippedStep(reason) {
+    console.info("[Datanodes] Step skipped intentionally:", reason);
+    showToast(`Datanodes: ${reason.replace(/_/g, " ")}; continuing.`, 2600);
+
+    if (timing.skippedStepSettleDelay > 0) {
+      await sleep(timing.skippedStepSettleDelay);
+    }
+
+    return {
+      skipped: true,
+      reason,
+    };
   }
 
   function clickActionButton(button) {
@@ -247,176 +417,190 @@ export async function processDatanodesDownload({
   }
 
   async function runMethodFreePhase() {
-    console.info("[Datanodes] Waiting for ready state badge...");
-    const isReady = await waitForReadyState();
-    if (!isReady) {
-      console.warn("[Datanodes] Ready state badge not found");
-      showToast("Datanodes: ready state not found — skipping free-method step.");
-      return { skipped: true };
-    }
-    console.info("[Datanodes] Ready state badge found");
-    checkTimeoutExceeded("runMethodFreePhase_ready_badge");
+    console.info("[Datanodes] Starting method-free phase.");
 
-    let methodFreeButton = null;
-    try {
-      console.info("[Datanodes] Searching for free-method button...");
-      methodFreeButton = await waitForButton({
-        getCandidate: getMethodFreeButton,
-        interval: 100,
-        errorCode: "free_not_found",
-        errorMessage: "Datanodes automation failed: Continue button not found.",
-      });
-    } catch {
-      console.warn("[Datanodes] Free-method button not found");
-      showToast("Datanodes: free-method button not found — skipping step.");
-      return { skipped: true };
-    }
+    await waitForDatanodesSoftReady();
+    checkTimeoutExceeded("runMethodFreePhase_after_soft_ready");
+
+    const methodFreeButton = await waitForCandidate({
+      label: "method_free",
+      getCandidate: getMethodFreeButton,
+      timeout: timing.methodFreeWaitTimeout,
+      interval: timing.pollInterval,
+      preWait: timing.methodFreePreWait,
+      foundSettleDelay: timing.methodFreeFoundSettleDelay,
+    });
 
     if (!methodFreeButton) {
-      console.warn("[Datanodes] Free-method button is null");
-      showToast("Datanodes: free-method button missing — skipping step.");
-      return { skipped: true };
+      return settleAfterSkippedStep("method_free_missing");
     }
-    console.info("[Datanodes] Free-method button found, starting clicks...");
-    checkTimeoutExceeded("runMethodFreePhase_button_found");
 
     stageStore.write(DATANODES_STAGE_AFTER_FREE);
 
     const result = await clickButtonWithRetries({
       getCandidate: getMethodFreeButton,
-      maxClicks: DATANODES_MAX_FREE_CLICKS,
-      delayMs: DATANODES_RETRY_DELAY,
+      maxClicks: timing.methodFreeMaxClicks,
+      delayMs: timing.methodFreeAfterClickDelay,
       successToast: "Datanodes continue flow started...",
     });
 
     if (!result.progressed) {
-      console.warn("[Datanodes] Failed to click method-free button");
       stageStore.clear();
-      showToast("Datanodes: could not click continue button — skipping step.");
-      return { skipped: true };
+      return settleAfterSkippedStep("method_free_click_failed");
     }
-    console.info("[Datanodes] Method-free phase completed successfully");
+
+    console.info("[Datanodes] Method-free phase completed.");
     checkTimeoutExceeded("runMethodFreePhase_complete");
 
     return { skipped: false };
   }
 
   async function runPreDownloadPhase() {
-    console.info("[Datanodes] Starting pre-download phase...");
+    console.info("[Datanodes] Starting pre-download phase.");
     checkTimeoutExceeded("runPreDownloadPhase_start");
 
-    // Check if we're in a resumed state from a previous attempt
     const resumeStage = stageStore.read();
     if (resumeStage === DATANODES_STAGE_AFTER_FREE) {
-      console.info("[Datanodes] Resuming from previous free-method phase, skipping to download...");
+      console.info("[Datanodes] Resuming from previous method-free phase.");
       return;
     }
 
-    console.info("[Datanodes] Running method-free phase...");
-    const freeResult = await runMethodFreePhase();
+    const result = await runMethodFreePhase();
     checkTimeoutExceeded("runMethodFreePhase_complete");
 
-    if (freeResult?.skipped) {
-      console.info(
-        "[Datanodes] Method-free phase was skipped, proceeding to download phase anyway...",
-      );
+    if (result?.skipped) {
+      console.info("[Datanodes] Method-free phase skipped intentionally:", result.reason);
       return;
     }
 
-    console.info("[Datanodes] Method-free phase completed, waiting before download phase...");
-    await sleep(DATANODES_AFTER_METHOD_FREE_DELAY);
+    if (timing.methodFreeAfterClickDelay > 0) {
+      console.info("[Datanodes] Waiting after method-free phase:", timing.methodFreeAfterClickDelay);
+      await sleep(timing.methodFreeAfterClickDelay);
+    }
+  }
+
+  async function runOptionalSecondaryDownloadPhase() {
+    console.info("[Datanodes] Starting optional secondary-download phase.");
+
+    const secondaryButton = await waitForCandidate({
+      label: "secondary_download_button",
+      getCandidate: () => {
+        const button = getConfirmPhaseDownloadButton();
+        return button && hasButtonText(button, "download") ? button : null;
+      },
+      timeout: Math.max(1000, timing.secondaryDownloadPreWait),
+      interval: timing.pollInterval,
+      preWait: 0,
+      foundSettleDelay: timing.secondaryDownloadFoundSettleDelay,
+    });
+
+    if (!secondaryButton) {
+      console.info("[Datanodes] Optional secondary-download button not found. Continuing.");
+      return {
+        skipped: true,
+        reason: "secondary_download_missing",
+      };
+    }
+
+    clickActionButton(secondaryButton);
+
+    if (timing.secondaryDownloadAfterClickDelay > 0) {
+      await sleep(timing.secondaryDownloadAfterClickDelay);
+    }
+
+    return {
+      skipped: false,
+    };
   }
 
   async function runDownloadPhase() {
-    console.info("[Datanodes] Starting download phase...");
+    console.info("[Datanodes] Starting download phase.");
     checkTimeoutExceeded("runDownloadPhase_start");
 
-    await sleep(DATANODES_BEFORE_DOWNLOAD_CLICK_DELAY);
+    const firstDownloadButton = await waitForCandidate({
+      label: "first_download_button",
+      getCandidate: getStartPhaseDownloadButton,
+      timeout: timing.downloadWaitTimeout,
+      interval: timing.pollInterval,
+      preWait: timing.downloadPreWait,
+      foundSettleDelay: timing.downloadFoundSettleDelay,
+    });
 
-    let button2First = null;
-    try {
-      console.info("[Datanodes] Waiting for first download button...");
-      button2First = await waitForButton({
-        getCandidate: getStartPhaseDownloadButton,
-        errorCode: "second_button_not_found",
-        errorMessage: "Datanodes automation failed: Download button not found.",
-      });
-    } catch {
-      console.warn("[Datanodes] First download button not found");
-      showToast("Datanodes: download button not found — skipping download step.");
-      return { skipped: true };
+    if (!firstDownloadButton) {
+      return settleAfterSkippedStep("first_download_button_missing");
     }
 
-    if (!clickActionButton(button2First)) {
-      console.warn("[Datanodes] Failed to click first download button");
-      showToast("Datanodes: first download click failed — skipping.");
-      return { skipped: true };
+    if (!clickActionButton(firstDownloadButton)) {
+      return settleAfterSkippedStep("first_download_click_failed");
     }
-    console.info("[Datanodes] First download click successful, countdown phase started");
+
+    console.info("[Datanodes] First download button clicked.");
     showToast("Datanodes countdown started...");
 
-    await sleep(Math.max(1000, DATANODES_RETRY_DELAY));
+    if (timing.downloadAfterClickDelay > 0) {
+      await sleep(timing.downloadAfterClickDelay);
+    }
+
     checkTimeoutExceeded("runDownloadPhase_after_first_click");
 
-    const postFirstClickButton = getConfirmPhaseDownloadButton();
-    if (postFirstClickButton && hasButtonText(postFirstClickButton, "download")) {
-      console.info("[Datanodes] Clicking secondary download button...");
-      clickActionButton(postFirstClickButton);
+    if (timing.secondaryDownloadEnabled) {
+      await runOptionalSecondaryDownloadPhase();
     }
 
-    await sleep(TIMINGS.DATANODES_SECOND_CLICK_DELAY);
-    checkTimeoutExceeded("runDownloadPhase_before_confirm_wait");
+    const confirmButton = await waitForCandidate({
+      label: "confirm_button",
+      getCandidate: getConfirmPhaseDownloadButton,
+      timeout: timing.confirmWaitTimeout,
+      interval: timing.pollInterval,
+      preWait: timing.confirmPreWait,
+      foundSettleDelay: timing.confirmFoundSettleDelay,
+    });
 
-    let button2Second = null;
-    try {
-      console.info("[Datanodes] Waiting for confirm button after countdown...");
-      button2Second = await waitForButton({
-        getCandidate: getConfirmPhaseDownloadButton,
-        timeout: TIMINGS.DATANODES_BUTTON_WAIT_TIMEOUT,
-        errorCode: "second_click_not_ready",
-        errorMessage: "Datanodes automation failed: Confirm button not available after countdown.",
-      });
-    } catch {
-      console.warn("[Datanodes] Confirm button not available after countdown");
-      showToast("Datanodes: confirm button not available — skipping final step.");
-      return { skipped: true };
+    if (!confirmButton) {
+      return settleAfterSkippedStep("confirm_button_missing");
     }
 
-    if (!clickActionButton(button2Second)) {
-      console.warn("[Datanodes] Failed to click confirm button");
-      showToast("Datanodes: confirm click failed — skipping.");
-      return { skipped: true };
+    if (!clickActionButton(confirmButton)) {
+      return settleAfterSkippedStep("confirm_click_failed");
     }
-    checkTimeoutExceeded("runDownloadPhase_after_confirm_click");
 
-    console.info("[Datanodes] Download triggered successfully!");
-    showToast("Datanodes download triggered.");
+    if (timing.confirmAfterClickDelay > 0) {
+      await sleep(timing.confirmAfterClickDelay);
+    }
+
+    console.info("[Datanodes] Confirm button clicked. Download should be triggered.");
     stageStore.clear();
     reportAddonHealthy();
-    return { skipped: false };
+
+    return {
+      skipped: false,
+    };
   }
 
+  console.info("[Datanodes] Timing config:", timing);
+
   try {
-    console.info("[Datanodes] Process started, timeout: " + DATANODES_PROCESS_MAX_TIMEOUT + "ms");
     await runPreDownloadPhase();
     checkTimeoutExceeded("after_runPreDownloadPhase");
+
     await runDownloadPhase();
-    console.info("[Datanodes] Process completed successfully");
+    checkTimeoutExceeded("after_runDownloadPhase");
+
+    console.info("[Datanodes] Flow ended.");
   } catch (error) {
-    const errorStr = String(error?.message || "Datanodes automation failed");
-    console.error("[Datanodes] Process failed:", errorStr);
+    const message = String(error?.message || "Datanodes automation failed");
+    console.error("[Datanodes] Process failed:", message);
 
-    // Extract error code if in format "code::message"
-    const parts = errorStr.split("::");
-    const errorCode = parts.length > 1 ? parts[0] : "unknown";
-    const errorMessage = parts.length > 1 ? parts.slice(1).join("::") : errorStr;
+    const parts = message.split("::");
+    const code = parts.length > 1 ? parts[0] : "unknown";
+    const detail = parts.length > 1 ? parts.slice(1).join("::") : message;
 
-    // Don't notify if timeout occurred (script was interrupted)
-    if (errorCode !== "timeout") {
-      await notifyMainFailure("datanodes.to", errorMessage);
-    } else {
+    if (code === "timeout") {
       showToast("Datanodes: automation process exceeded maximum timeout.");
-      console.error("[Datanodes] Process timeout exceeded at: " + errorMessage);
+      console.error("[Datanodes] Timeout detail:", detail);
+      return;
     }
+
+    await notifyMainFailure("datanodes.to", detail);
   }
 }

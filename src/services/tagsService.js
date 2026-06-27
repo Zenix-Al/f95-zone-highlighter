@@ -158,56 +158,6 @@ function readLatestTagsViaPageBridge(timeoutMs = 1200) {
   });
 }
 
-/*
-  Legacy DOM picker method (kept for rollback/reference):
-
-  - Click picker input to populate dropdown options.
-  - Read unselected options from dropdown + selected chips from selected wrap.
-  - Merge by id to build full tag list.
-
-  This was replaced by latestUpdates.tags because it is more complete/reliable on Latest pages.
-*/
-// async function refreshTagsFromPicker() {
-//   const selector = document.querySelector(SELECTORS.TAG_PICKER.INPUT);
-//   const dropdown = document.querySelector(SELECTORS.TAG_PICKER.DROPDOWN);
-//   const selectedWrap = document.querySelector(SELECTORS.TAG_PICKER.SELECTED_WRAP);
-//
-//   if (!selector || (!dropdown && !selectedWrap)) return;
-//   selector.click();
-//
-//   // Wait for dropdown options to populate.
-//   if (dropdown) {
-//     await waitFor(
-//       () => dropdown.querySelectorAll(SELECTORS.TAG_PICKER.OPTION).length > 0,
-//       TIMINGS.TILE_POPULATE_CHECK_INTERVAL,
-//       TIMINGS.SELECTOR_WAIT_TIMEOUT,
-//     );
-//   }
-//
-//   const tagById = new Map();
-//
-//   if (dropdown) {
-//     [...dropdown.querySelectorAll(SELECTORS.TAG_PICKER.OPTION)].forEach((opt) => {
-//       const id = parseInt(opt.getAttribute("data-value"), 10);
-//       const name = opt.querySelector(".tag-name")?.textContent.trim() || "";
-//       if (!Number.isFinite(id) || !name) return;
-//       tagById.set(id, { id, name });
-//     });
-//   }
-//
-//   if (selectedWrap) {
-//     [...selectedWrap.querySelectorAll(SELECTORS.TAG_PICKER.SELECTED_TAG)].forEach((el) => {
-//       const id = parseInt(el.getAttribute("data-tag"), 10);
-//       const name = el.textContent?.trim() || "";
-//       if (!Number.isFinite(id) || !name) return;
-//       if (!tagById.has(id)) tagById.set(id, { id, name });
-//     });
-//   }
-//
-//   const newTags = [...tagById.values()];
-//   if (newTags.length === 0) return;
-// }
-
 async function refreshTagsFromLatestUpdates() {
   const directResult = await readLatestTagsFromWindow();
   const result = directResult.ok ? directResult : await readLatestTagsViaPageBridge();

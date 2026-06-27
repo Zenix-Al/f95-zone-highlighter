@@ -59,12 +59,15 @@ function applyLatestDataSnapshot(snapshot, { processVisibleTiles = true } = {}) 
 
 function subscribeLatestData() {
   unsubscribeLatestData?.();
-  unsubscribeLatestData = subscribeFastCapture(LATEST_DATA_CAPTURE_KEY, (snapshot) => {
-    applyLatestDataSnapshot(snapshot);
-  });
-  applyLatestDataSnapshot(getFastCaptureSnapshot(LATEST_DATA_CAPTURE_KEY), {
-    processVisibleTiles: false,
-  });
+  let isInitialSnapshot = true;
+  unsubscribeLatestData = subscribeFastCapture(
+    LATEST_DATA_CAPTURE_KEY,
+    (snapshot) => {
+      applyLatestDataSnapshot(snapshot, { processVisibleTiles: !isInitialSnapshot });
+      isInitialSnapshot = false;
+    },
+    { healthId: "Latest Overlay" },
+  );
 }
 
 function unsubscribeLatestDataCapture() {
@@ -168,7 +171,7 @@ export function enableLatestOverlay() {
       updateLatestOverlayPageCategory();
       processMutations(mutationsList, getCurrentGeneration());
     },
-    { filter: hasRelevantLatestOverlayChanges },
+    { filter: hasRelevantLatestOverlayChanges, healthId: "Latest Overlay" },
   );
 
   setupHoverListener();

@@ -55,7 +55,7 @@ export function showFeatureHealthBox(providedStatuses, providedReportText) {
     }
 
     function summarizeFeatureStatuses(statusesArg) {
-      const counts = { running: 0, disabled: 0, failing: 0, unknown: 0 };
+      const counts = { running: 0, disabled: 0, degraded: 0, failing: 0, unknown: 0 };
       for (const id in statusesArg) {
         const status = statusesArg[id]?.status || "unknown";
         if (counts[status] === undefined) counts.unknown++;
@@ -101,7 +101,7 @@ export function showFeatureHealthBox(providedStatuses, providedReportText) {
         "Feature Health Diagnostic",
         `Timestamp: ${new Date().toISOString()}`,
         `Page: ${window.location.href}`,
-        `Summary: running=${countsArg.running}, disabled=${countsArg.disabled}, failing=${countsArg.failing}, unknown=${countsArg.unknown}`,
+        `Summary: running=${countsArg.running}, disabled=${countsArg.disabled}, degraded=${countsArg.degraded}, failing=${countsArg.failing}, unknown=${countsArg.unknown}`,
         `Add-ons (installed): total=${addonCountsArg.totalInstalled}, healthy=${addonCountsArg.healthy}, failing=${addonCountsArg.failing}, degraded=${addonCountsArg.degraded}, scoped-to-page=${addonCountsArg.scopeMatchesPage}, active-here=${addonCountsArg.activeOnPage}`,
         "",
       ];
@@ -157,7 +157,7 @@ export function showFeatureHealthBox(providedStatuses, providedReportText) {
     const reportText =
       providedReportText || formatFeatureHealthReport(statuses, counts, addonEntries, addonCounts);
     showToast(
-      `Feature health - running: ${counts.running}, disabled: ${counts.disabled}, failing: ${counts.failing}, unknown: ${counts.unknown} | add-ons installed: ${addonCounts.totalInstalled}, healthy: ${addonCounts.healthy}, failing: ${addonCounts.failing}, degraded: ${addonCounts.degraded}`,
+      `Feature health - running: ${counts.running}, disabled: ${counts.disabled}, degraded: ${counts.degraded}, failing: ${counts.failing}, unknown: ${counts.unknown} | add-ons installed: ${addonCounts.totalInstalled}, healthy: ${addonCounts.healthy}, failing: ${addonCounts.failing}, degraded: ${addonCounts.degraded}`,
     );
 
     const shadow = stateManager.get("shadowRoot") || window.__LATEST_HIGHLIGHTER_SHADOW__ || null;
