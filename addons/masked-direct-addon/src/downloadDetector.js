@@ -55,7 +55,9 @@ export function createContentDispositionDetector() {
           const originalOnReadyStateChange = this.onreadystatechange;
           this.onreadystatechange = function () {
             if (this.readyState === 4) {
-              const disposition = this.getResponseHeader?.("content-disposition");
+              const disposition = this.getResponseHeader?.(
+                "content-disposition",
+              );
               if (disposition?.toLowerCase?.().includes("attachment")) {
                 onDownload();
               }
@@ -125,7 +127,10 @@ export function createBlobDetector() {
         if (tag?.toLowerCase?.() === "a") {
           const originalSetAttribute = el.setAttribute;
           el.setAttribute = function (name, value) {
-            if (name?.toLowerCase?.() === "href" && value?.startsWith?.("blob:")) {
+            if (
+              name?.toLowerCase?.() === "href" &&
+              value?.startsWith?.("blob:")
+            ) {
               onDownload();
             }
             return originalSetAttribute.apply(this, arguments);
@@ -194,8 +199,7 @@ export async function waitForDownloadDetection(onDetect, timeout = 5000) {
 
 /**
  * Smart page close with download detection.
- * Respects user's configured delay but closes immediately if download is detected.
- * ALWAYS closes the page after delay OR on download detection.
+ * Respects user's configured delay and closes immediately if download is detected.
  *
  * @param {number} userConfiguredDelayMs - User's max timeout (ms)
  * @param {Function} showToast - Optional toast callback for logging
@@ -204,6 +208,10 @@ export async function smartCloseWhenReady(
   userConfiguredDelayMs = 3500,
   showToast,
   originTabQueryKey = "f95ue_tab",
+  {
+    closeOnTimeout = true,
+    timeoutMessage = "Download was not confirmed before timeout.",
+  } = {},
 ) {
   // SECURITY: Only close if this tab was opened by our addon
   // Check if both automation marker + origin tab marker exist in URL
@@ -211,11 +219,17 @@ export async function smartCloseWhenReady(
   try {
     const url = new URL(location.href);
     const hasOriginTabId = Boolean(url.searchParams.get(originTabQueryKey));
-    const hasAutomationMarker = String(url.searchParams.get(AUTOMATION_MARKER_KEY) || "").trim() === "1";
-    const routeTs = Number(url.searchParams.get(DIRECT_DOWNLOAD_ROUTE_TS_KEY) || 0);
+    const hasAutomationMarker =
+      String(url.searchParams.get(AUTOMATION_MARKER_KEY) || "").trim() === "1";
+    const routeTs = Number(
+      url.searchParams.get(DIRECT_DOWNLOAD_ROUTE_TS_KEY) || 0,
+    );
     const hasFreshRouteTs =
-      Number.isFinite(routeTs) && routeTs > 0 && Date.now() - routeTs <= DIRECT_DOWNLOAD_ROUTE_TTL_MS;
-    isAddonManagedTab = hasOriginTabId && hasAutomationMarker && hasFreshRouteTs;
+      Number.isFinite(routeTs) &&
+      routeTs > 0 &&
+      Date.now() - routeTs <= DIRECT_DOWNLOAD_ROUTE_TTL_MS;
+    isAddonManagedTab =
+      hasOriginTabId && hasAutomationMarker && hasFreshRouteTs;
     console.info(
       "[Download Detector] Tab opened by addon:",
       isAddonManagedTab,
@@ -229,8 +243,12 @@ export async function smartCloseWhenReady(
   }
 
   if (!isAddonManagedTab) {
-    console.warn("[Download Detector] Tab was NOT opened by addon, will NOT close");
-    console.warn("[Download Detector] This prevents accidental closure of manually opened tabs");
+    console.warn(
+      "[Download Detector] Tab was NOT opened by addon, will NOT close",
+    );
+    console.warn(
+      "[Download Detector] This prevents accidental closure of manually opened tabs",
+    );
     return;
   }
 
@@ -247,7 +265,11 @@ export async function smartCloseWhenReady(
 
   try {
     detector.start();
-    console.info("[Download Detector] Started monitoring, delay: " + userConfiguredDelayMs + "ms");
+    console.info(
+      "[Download Detector] Started monitoring, delay: " +
+        userConfiguredDelayMs +
+        "ms",
+    );
 
     const startTime = Date.now();
     while (!downloadDetected) {
@@ -256,7 +278,9 @@ export async function smartCloseWhenReady(
       // Check for download detection
       if (detector.detected()) {
         downloadDetected = true;
-        console.info("[Download Detector] Download DETECTED after " + elapsed + "ms");
+        console.info(
+          "[Download Detector] Download DETECTED after " + elapsed + "ms",
+        );
         onDownloadDetected();
         break;
       }
@@ -264,7 +288,10 @@ export async function smartCloseWhenReady(
       // Check if timeout reached
       if (elapsed >= userConfiguredDelayMs) {
         console.info(
-          "[Download Detector] Timeout reached (" + userConfiguredDelayMs + "ms), will close",
+          "[Download Detector] Timeout reached (" +
+            userConfiguredDelayMs +
+            "ms), closeOnTimeout=" +
+            closeOnTimeout,
         );
         break;
       }
@@ -273,9 +300,15 @@ export async function smartCloseWhenReady(
     }
 
     if (downloadDetected) {
-      console.info("[Download Detector] Proceeding to close (download detected)");
+      console.info(
+        "[Download Detector] Proceeding to close (download detected)",
+      );
     } else {
-      console.info("[Download Detector] Proceeding to close (timeout)");
+      console.info(
+        closeOnTimeout
+          ? "[Download Detector] Proceeding to close (timeout)"
+          : "[Download Detector] Download not confirmed; leaving page open",
+      );
     }
   } catch (err) {
     console.error("[Download Detector] Error during monitoring:", err);
@@ -288,7 +321,13 @@ export async function smartCloseWhenReady(
     }
   }
 
-  // CRITICAL: Always close, regardless of detection or errors
+  if (!downloadDetected && !closeOnTimeout) {
+    if (showToast) {
+      showToast(timeoutMessage, 6000, "warning");
+    }
+    return false;
+  }
+
   console.info("[Download Detector] Executing window.close()");
   try {
     setTimeout(() => window.close(), 100); // slight delay to avoid closing the tab too fast for the browser to process
@@ -303,4 +342,6 @@ export async function smartCloseWhenReady(
   } catch {
     // best effort
   }
+
+  return downloadDetected;
 }

@@ -4,6 +4,7 @@ import {
   isProcessingDownloadTriggerActive,
   readProcessingDownloadTrigger,
 } from "./processingDownloadTrigger.js";
+import { normalizeDirectDownloadHost } from "./hosts/metadata.js";
 
 export function createDownloadPageController({
   addonId,
@@ -15,13 +16,7 @@ export function createDownloadPageController({
   originTabQueryKey,
 }) {
   function getDownloadHost() {
-    const host = String(location.hostname || "").toLowerCase();
-    if (host.includes("buzzheavier.com") || host.includes("bzzhr.to")) return "buzzheavier.com";
-    if (host.includes("gofile.io")) return "gofile.io";
-    if (host.includes("pixeldrain.com")) return "pixeldrain.com";
-    if (host.includes("datanodes.to")) return "datanodes.to";
-    if (host.includes("mediafire.com")) return "mediafire.com";
-    return "";
+    return normalizeDirectDownloadHost(location.hostname);
   }
 
   async function shouldRunHostAutomation(host) {

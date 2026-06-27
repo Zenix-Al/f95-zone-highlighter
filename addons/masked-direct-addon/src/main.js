@@ -3,11 +3,14 @@ import { createCoreBridge } from "./coreBridge.js";
 import { ADDON_COMMAND_EVENT, RESOLVE_BTN_CLASS } from "./constants.js";
 import { createDebugLog, normalizeUrl, withAutomationMarker } from "./utils.js";
 import { createAddonUi } from "./ui.js";
-import { processPixeldrainDownload } from "./hosts/pixeldrain.js";
-import { processGofileDownload } from "./hosts/gofile.js";
-import { createDatanodesStageStore, processDatanodesDownload } from "./hosts/datanodes.js";
-import { processBuzzheavierDownload } from "./hosts/buzzheavier.js";
-import { processMediafireDownload } from "./hosts/mediafire.js";
+import { createDatanodesStageStore } from "./hosts/datanodes.js";
+import { createDirectDownloadHostHandlers } from "./hosts/handlers.js";
+import {
+  coerceDirectDownloadPackages,
+  createDirectDownloadPackageDefaults,
+  createDirectDownloadPanelSettings,
+  isDirectDownloadHostEnabled,
+} from "./hosts/metadata.js";
 import { createMaskedPageController } from "./maskedPageController.js";
 import { createThreadPageController } from "./threadPageController.js";
 import { createDirectDownloadAttentionController } from "./directDownloadAttention.js";
@@ -16,15 +19,21 @@ import { createDirectDownloadFlowController } from "./directDownloadFlowControll
 import { getDownloadPageCloseDelay } from "./gmStorageHelper.js";
 
 const runtime = {
-  addonId: typeof __ADDON_ID__ === "string" ? __ADDON_ID__ : "masked-direct-addon",
+  addonId:
+    typeof __ADDON_ID__ === "string" ? __ADDON_ID__ : "masked-direct-addon",
   addonName:
-    typeof __ADDON_NAME__ === "string" ? __ADDON_NAME__ : "Masked + Direct Download Add-on",
-  addonVersion: typeof __ADDON_VERSION__ === "string" ? __ADDON_VERSION__ : "0.1.0",
+    typeof __ADDON_NAME__ === "string"
+      ? __ADDON_NAME__
+      : "Masked + Direct Download Add-on",
+  addonVersion:
+    typeof __ADDON_VERSION__ === "string" ? __ADDON_VERSION__ : "0.1.0",
   addonDescription:
     typeof __ADDON_DESCRIPTION__ === "string"
       ? __ADDON_DESCRIPTION__
       : "Combines masked-link skipper with direct-download routing and host handlers.",
-  capabilities: Array.isArray(__ADDON_CAPABILITIES__) ? __ADDON_CAPABILITIES__ : [],
+  capabilities: Array.isArray(__ADDON_CAPABILITIES__)
+    ? __ADDON_CAPABILITIES__
+    : [],
   requiresCore: Boolean(__ADDON_REQUIRES_CORE__),
 };
 
@@ -43,13 +52,7 @@ const ADDON_SETTINGS_DEFAULT = Object.freeze({
   skipMaskedLink: true,
   directDownloadLinks: true,
   downloadPageCloseDelayMs: 3500,
-  directDownloadPackages: {
-    buzzheavier: true,
-    gofile: true,
-    pixeldrain: true,
-    datanodes: true,
-    mediafire: true,
-  },
+  directDownloadPackages: createDirectDownloadPackageDefaults(),
 });
 const ADDON_PANEL_SETTINGS = Object.freeze([
   {
@@ -76,36 +79,7 @@ const ADDON_PANEL_SETTINGS = Object.freeze([
     min: 500,
     max: 10000,
   },
-  {
-    id: "buzzheavier",
-    path: "directDownloadPackages.buzzheavier",
-    text: "Buzzheavier",
-    tooltip: "Enable direct download automation for buzzheavier.com and bzzhr.to",
-  },
-  {
-    id: "gofile",
-    path: "directDownloadPackages.gofile",
-    text: "Gofile package",
-    tooltip: "Enable direct download automation for gofile.io",
-  },
-  {
-    id: "pixeldrain",
-    path: "directDownloadPackages.pixeldrain",
-    text: "Pixeldrain",
-    tooltip: "Enable direct download automation for pixeldrain.com",
-  },
-  {
-    id: "datanodes",
-    path: "directDownloadPackages.datanodes",
-    text: "Datanodes",
-    tooltip: "Enable direct download automation for datanodes.to",
-  },
-  {
-    id: "mediafire",
-    path: "directDownloadPackages.mediafire",
-    text: "MediaFire",
-    tooltip: "Enable direct download automation for mediafire.com",
-  },
+  ...createDirectDownloadPanelSettings(),
 ]);
 function addTeardown(fn) {
   if (typeof fn === "function") teardownFns.push(fn);
@@ -121,17 +95,20 @@ const maskedPageController = createMaskedPageController({
   readThreadFlags,
   normalizeUrl,
 });
-const directDownloadAttentionController = createDirectDownloadAttentionController({
-  addTeardown,
-  showToast,
-  GMApi: GM,
-  addValueChangeListener: typeof GM_addValueChangeListener === "function"
-    ? GM_addValueChangeListener
-    : null,
-  removeValueChangeListener: typeof GM_removeValueChangeListener === "function"
-    ? GM_removeValueChangeListener
-    : null,
-});
+const directDownloadAttentionController =
+  createDirectDownloadAttentionController({
+    addTeardown,
+    showToast,
+    GMApi: GM,
+    addValueChangeListener:
+      typeof GM_addValueChangeListener === "function"
+        ? GM_addValueChangeListener
+        : null,
+    removeValueChangeListener:
+      typeof GM_removeValueChangeListener === "function"
+        ? GM_removeValueChangeListener
+        : null,
+  });
 let downloadPageController = null;
 const directDownloadFlowController = createDirectDownloadFlowController({
   addonId: runtime.addonId,
@@ -141,13 +118,16 @@ const directDownloadFlowController = createDirectDownloadFlowController({
   normalizeUrl,
   withAutomationMarker,
   showToast,
-  publishDirectDownloadAttention: directDownloadAttentionController.publishDirectDownloadAttention,
-  publishDirectDownloadEvent: directDownloadAttentionController.publishDirectDownloadEvent,
+  publishDirectDownloadAttention:
+    directDownloadAttentionController.publishDirectDownloadAttention,
+  publishDirectDownloadEvent:
+    directDownloadAttentionController.publishDirectDownloadEvent,
   ownerTabId: directDownloadAttentionController.localAttentionTabId,
   originTabQueryKey: directDownloadAttentionController.originTabQueryKey,
   getDownloadHost: () => downloadPageController?.getDownloadHost?.() || "",
   getDownloadPageCloseDelayMs: () =>
-    settingsCache?.downloadPageCloseDelayMs ?? ADDON_SETTINGS_DEFAULT.downloadPageCloseDelayMs,
+    settingsCache?.downloadPageCloseDelayMs ??
+    ADDON_SETTINGS_DEFAULT.downloadPageCloseDelayMs,
 });
 const threadPageController = createThreadPageController({
   addTeardown,
@@ -187,46 +167,15 @@ downloadPageController = createDownloadPageController({
   GMApi: GM,
   getIsBlockedByCore: () => isBlockedByCore,
   getIsEnabled: () => isEnabled,
-  handlers: {
-    "buzzheavier.com": () =>
-      processBuzzheavierDownload({
-        showToast,
-        notifyMainFailure: directDownloadFlowController.notifyMainFailure,
-        reportAddonHealthy,
-        getDownloadCloseDelay: getDownloadCloseDelayForHandler,
-      }),
-    "pixeldrain.com": () =>
-      processPixeldrainDownload({
-        debugLog,
-        showToast,
-        notifyMainFailure: directDownloadFlowController.notifyMainFailure,
-        reportAddonHealthy,
-        getDownloadCloseDelay: getDownloadCloseDelayForHandler,
-      }),
-    "gofile.io": () =>
-      processGofileDownload({
-        showToast,
-        notifyMainFailure: directDownloadFlowController.notifyMainFailure,
-        reportAddonHealthy,
-        getDownloadCloseDelay: getDownloadCloseDelayForHandler,
-      }),
-    "datanodes.to": () =>
-      processDatanodesDownload({
-        showToast,
-        notifyMainFailure: directDownloadFlowController.notifyMainFailure,
-        reportAddonHealthy,
-        stageStore: datanodesStageStore,
-        settings: settingsCache || {},
-        getDownloadCloseDelay: getDownloadCloseDelayForHandler,
-      }),
-    "mediafire.com": () =>
-      processMediafireDownload({
-        showToast,
-        notifyMainFailure: directDownloadFlowController.notifyMainFailure,
-        reportAddonHealthy,
-        getDownloadCloseDelay: getDownloadCloseDelayForHandler,
-      }),
-  },
+  handlers: createDirectDownloadHostHandlers({
+    debugLog,
+    showToast,
+    notifyMainFailure: directDownloadFlowController.notifyMainFailure,
+    reportAddonHealthy,
+    stageStore: datanodesStageStore,
+    getSettings: () => settingsCache || {},
+    getDownloadCloseDelay: getDownloadCloseDelayForHandler,
+  }),
   originTabQueryKey: directDownloadAttentionController.originTabQueryKey,
 });
 
@@ -241,11 +190,17 @@ function clearTeardowns() {
 }
 
 function isThreadPage() {
-  return location.hostname.includes("f95zone.to") && location.pathname.startsWith("/threads");
+  return (
+    location.hostname.includes("f95zone.to") &&
+    location.pathname.startsWith("/threads")
+  );
 }
 
 function isF95AddonPage() {
-  return location.hostname.includes("f95zone.to") && !maskedPageController.isRecaptchaFrame();
+  return (
+    location.hostname.includes("f95zone.to") &&
+    !maskedPageController.isRecaptchaFrame()
+  );
 }
 
 function isRelevantPage() {
@@ -258,24 +213,7 @@ function isRelevantPage() {
 }
 
 function isHostAllowedInSettings(hostname, flags) {
-  const packages = flags?.directDownloadPackages;
-  if (!packages || typeof packages !== "object") return true;
-  if (hostname.includes("gofile.io")) {
-    return packages.gofile !== false;
-  }
-  if (hostname.includes("buzzheavier.com") || hostname.includes("bzzhr.to")) {
-    return packages.buzzheavier !== false;
-  }
-  if (hostname.includes("pixeldrain.com")) {
-    return packages.pixeldrain !== false;
-  }
-  if (hostname.includes("datanodes.to")) {
-    return packages.datanodes !== false;
-  }
-  if (hostname.includes("mediafire.com")) {
-    return packages.mediafire !== false;
-  }
-  return true;
+  return isDirectDownloadHostEnabled(hostname, flags?.directDownloadPackages);
 }
 
 function statusMessage() {
@@ -287,12 +225,14 @@ function statusMessage() {
     : "Masked/direct add-on is currently disabled.";
 }
 
-function reportAddonHealthy() {
+function reportAddonHealthy(options = {}) {
   directDownloadFlowController.reportAddonHealthy({
     isEnabled,
     statusMessage: statusMessage(),
     downloadPageCloseDelayMs:
-      settingsCache?.downloadPageCloseDelayMs ?? ADDON_SETTINGS_DEFAULT.downloadPageCloseDelayMs,
+      settingsCache?.downloadPageCloseDelayMs ??
+      ADDON_SETTINGS_DEFAULT.downloadPageCloseDelayMs,
+    ...options,
   });
 }
 
@@ -322,20 +262,17 @@ async function readThreadFlags(force = false) {
   }
 
   const result = await storageGet(ADDON_SETTINGS_KEY, ADDON_SETTINGS_DEFAULT);
-  const parsed = result && typeof result === "object" ? result : ADDON_SETTINGS_DEFAULT;
+  const parsed =
+    result && typeof result === "object" ? result : ADDON_SETTINGS_DEFAULT;
   settingsCache = {
     skipMaskedLink: parsed.skipMaskedLink !== false,
     directDownloadLinks: parsed.directDownloadLinks !== false,
     downloadPageCloseDelayMs: Number.isFinite(parsed.downloadPageCloseDelayMs)
       ? Math.max(500, Math.min(10000, parsed.downloadPageCloseDelayMs))
       : ADDON_SETTINGS_DEFAULT.downloadPageCloseDelayMs,
-    directDownloadPackages: {
-      buzzheavier: parsed.directDownloadPackages?.buzzheavier !== false,
-      gofile: parsed.directDownloadPackages?.gofile !== false,
-      pixeldrain: parsed.directDownloadPackages?.pixeldrain !== false,
-      datanodes: parsed.directDownloadPackages?.datanodes !== false,
-      mediafire: parsed.directDownloadPackages?.mediafire !== false,
-    },
+    directDownloadPackages: coerceDirectDownloadPackages(
+      parsed.directDownloadPackages,
+    ),
   };
   settingsCacheTs = now;
   return settingsCache;
@@ -368,7 +305,9 @@ function applyCurrentPageBehavior() {
       maskedPageController.handleRecaptcha();
     }
   } catch (err) {
-    const message = err?.message ? String(err.message) : String(err ?? "Unknown error");
+    const message = err?.message
+      ? String(err.message)
+      : String(err ?? "Unknown error");
     console.error(`[${runtime.addonId}] Page behavior setup error:`, err);
     bridge.dispatchCoreCommand("update-status", {
       addonId: runtime.addonId,
@@ -419,7 +358,10 @@ function pushStatusUpdate() {
 }
 
 async function storageGet(key, defaultValue) {
-  const result = await bridge.invokeCoreAction("storage.get", { key, defaultValue });
+  const result = await bridge.invokeCoreAction("storage.get", {
+    key,
+    defaultValue,
+  });
   if (!result?.ok) return defaultValue;
   return typeof result.value === "undefined" ? defaultValue : result.value;
 }
@@ -448,7 +390,10 @@ async function unregisterUiStyle() {
       styleId: ui.styleId,
     });
     if (!result?.ok) {
-      console.warn(`[${runtime.addonId}] Failed to unregister UI style:`, result);
+      console.warn(
+        `[${runtime.addonId}] Failed to unregister UI style:`,
+        result,
+      );
     }
   } catch (err) {
     console.warn(`[${runtime.addonId}] Error unregistering UI style:`, err);
@@ -607,7 +552,9 @@ async function bootstrap() {
   }
 
   if (recaptchaFrame) {
-    console.info(`[${runtime.addonId}] Running recaptcha iframe hooks without core ping.`);
+    console.info(
+      `[${runtime.addonId}] Running recaptcha iframe hooks without core ping.`,
+    );
     applyCurrentPageBehavior();
     return;
   }
@@ -629,7 +576,9 @@ async function bootstrap() {
   }
 
   if (!ping.ok && runtime.requiresCore) {
-    console.info(`[${runtime.addonId}] F95UE core not detected; add-on skipped.`);
+    console.info(
+      `[${runtime.addonId}] F95UE core not detected; add-on skipped.`,
+    );
     console.info(`status: ${JSON.stringify(ping)}`);
     return;
   }

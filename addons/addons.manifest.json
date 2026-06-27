@@ -8,12 +8,8 @@
       "author": "X Death",
       "entry": "addons/image-repair-addon/src/main.js",
       "outfile": "addons/image-repair-addon/dist/image-repair-addon.user.js",
-      "matches": [
-        "*://f95zone.to/threads/*"
-      ],
-      "grants": [
-        "none"
-      ],
+      "matches": ["*://f95zone.to/threads/*"],
+      "grants": ["none"],
       "runAt": "document-idle",
       "requiresCore": true,
       "capabilities": [
@@ -29,7 +25,7 @@
       "id": "masked-direct-addon",
       "name": "F95UE Masked + Direct Download Add-on",
       "description": "Combines masked-link skipper and direct-download flows into one trusted add-on.",
-      "version": "0.3.20",
+      "version": "0.3.29",
       "author": "X Death",
       "entry": "addons/masked-direct-addon/src/main.js",
       "outfile": "addons/masked-direct-addon/dist/masked-direct-addon.user.js",
@@ -44,7 +40,11 @@
         "*://pixeldrain.com/*",
         "*://datanodes.to/*",
         "*://www.mediafire.com/file/*",
-        "*://mediafire.com/file/*"
+        "*://mediafire.com/file/*",
+        "*://workupload.com/file/*",
+        "*://workupload.com/start/*",
+        "*://*.workupload.com/file/*",
+        "*://*.workupload.com/start/*"
       ],
       "grants": [
         "GM_openInTab",
@@ -55,13 +55,7 @@
       ],
       "runAt": "document-idle",
       "requiresCore": true,
-      "capabilities": [
-        "toast",
-        "feature",
-        "storage",
-        "ui",
-        "ui.style"
-      ]
+      "capabilities": ["toast", "feature", "storage", "ui", "ui.style"]
     },
     {
       "id": "library-addon",
@@ -71,12 +65,8 @@
       "author": "X Death",
       "entry": "addons/library-addon/src/main.js",
       "outfile": "addons/library-addon/dist/library-addon.user.js",
-      "matches": [
-        "*://f95zone.to/*"
-      ],
-      "grants": [
-        "none"
-      ],
+      "matches": ["*://f95zone.to/*"],
+      "grants": ["none"],
       "runAt": "document-idle",
       "requiresCore": true,
       "capabilities": [
@@ -98,12 +88,8 @@
       "author": "X Death",
       "entry": "addons/example-addon/src/main.js",
       "outfile": "addons/example-addon/dist/example-addon.user.js",
-      "matches": [
-        "*://f95zone.to/*"
-      ],
-      "grants": [
-        "none"
-      ],
+      "matches": ["*://f95zone.to/*"],
+      "grants": ["none"],
       "runAt": "document-idle",
       "requiresCore": true,
       "capabilities": [
@@ -126,13 +112,8 @@
       "author": "X Death",
       "entry": "addons/latest-filters-addon/src/main.js",
       "outfile": "addons/latest-filters-addon/dist/latest-filters-addon.user.js",
-      "matches": [
-        "*://f95zone.to/sam/latest_alpha/*"
-      ],
-      "grants": [
-        "GM.getValue",
-        "GM.setValue"
-      ],
+      "matches": ["*://f95zone.to/sam/latest_alpha/*"],
+      "grants": ["GM.getValue", "GM.setValue"],
       "runAt": "document-idle",
       "requiresCore": true,
       "capabilities": [
@@ -153,17 +134,11 @@
       "author": "X Death",
       "entry": "addons/halloween-theme-addon/src/main.js",
       "outfile": "addons/halloween-theme-addon/dist/halloween-theme-addon.user.js",
-      "matches": [
-        "*://f95zone.to/*"
-      ],
-      "grants": [
-        "none"
-      ],
+      "matches": ["*://f95zone.to/*"],
+      "grants": ["none"],
       "runAt": "document-idle",
       "requiresCore": true,
-      "capabilities": [
-        "feature"
-      ]
+      "capabilities": ["feature"]
     }
   ]
 }

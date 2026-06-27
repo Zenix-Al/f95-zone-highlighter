@@ -41,7 +41,7 @@ Specialized features are handled by optional add-ons:
 - **Library Add-on** - saves threads to a personal library with notes, ratings, status tracking, search, pinning, and import/export.
 - **Masked + Direct Download Add-on** - resolves masked links and automates supported download hosts.
 
-Direct download support is handled by the Masked + Direct Download Add-on for Buzzheavier, Gofile, Pixeldrain, and Datanodes.
+Direct download support is handled by the Masked + Direct Download Add-on for Buzzheavier, Gofile, Pixeldrain, Datanodes, MediaFire, and Workupload.
 
 ## Framework Architecture
 
