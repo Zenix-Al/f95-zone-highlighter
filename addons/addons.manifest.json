@@ -25,7 +25,7 @@
       "id": "masked-direct-addon",
       "name": "F95UE Masked + Direct Download Add-on",
       "description": "Combines masked-link skipper and direct-download flows into one trusted add-on.",
-      "version": "0.3.29",
+      "version": "0.3.39",
       "author": "X Death",
       "entry": "addons/masked-direct-addon/src/main.js",
       "outfile": "addons/masked-direct-addon/dist/masked-direct-addon.user.js",

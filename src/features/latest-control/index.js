@@ -86,6 +86,7 @@ function disable() {
 
 export const latestControlFeature = createFeature("Latest Controls Sync", {
   isEnabled: () => config.latestSettings.autoRefresh || config.latestSettings.webNotif,
+  pageScopes: ["isLatest"],
   isApplicable: ({ stateManager }) => stateManager.get("isLatest"),
   enable: enable,
   disable: disable,

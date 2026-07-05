@@ -130,6 +130,7 @@ function openThreadOverlaySettingsDialog() {
 }
 export const threadOverlayFeature = createStyledFeature("Thread Overlay", {
   configPath: "threadSettings.threadOverlayToggle",
+  pageScopes: ["isThread"],
   isApplicable: ({ stateManager }) => stateManager.get("isThread"),
   styleCss: featureCss,
   enable: enableThreadOverlay,

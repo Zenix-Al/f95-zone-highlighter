@@ -10,6 +10,7 @@ import {
   DIRECT_DOWNLOAD_ROUTE_TS_KEY,
   DIRECT_DOWNLOAD_ROUTE_TTL_MS,
 } from "./constants.js";
+import { hasFreshRouteContext } from "./routeContext.js";
 
 const DETECTOR_TIMEOUT_MS = 100; // Poll interval
 
@@ -230,6 +231,9 @@ export async function smartCloseWhenReady(
       Date.now() - routeTs <= DIRECT_DOWNLOAD_ROUTE_TTL_MS;
     isAddonManagedTab =
       hasOriginTabId && hasAutomationMarker && hasFreshRouteTs;
+    if (!isAddonManagedTab) {
+      isAddonManagedTab = hasFreshRouteContext(originTabQueryKey);
+    }
     console.info(
       "[Download Detector] Tab opened by addon:",
       isAddonManagedTab,

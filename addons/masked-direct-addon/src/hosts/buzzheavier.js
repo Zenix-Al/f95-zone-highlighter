@@ -1,18 +1,14 @@
 import { SELECTORS, TIMINGS } from "../constants.js";
 import { queryFirstBySelectors, sleep } from "../utils.js";
+import { clickElement, getElementAttributeUrl } from "./shared/dom.js";
 
 function toDownloadEndpoint(button) {
   if (!(button instanceof HTMLAnchorElement)) return "";
-  const source =
-    button.getAttribute("hx-get") ||
-    button.getAttribute("data-hx-get") ||
-    button.getAttribute("href");
-  if (!source) return "";
-  try {
-    return new URL(source, window.location.origin).href;
-  } catch {
-    return "";
-  }
+  return getElementAttributeUrl(
+    button,
+    ["hx-get", "data-hx-get", "href"],
+    window.location.origin,
+  );
 }
 
 export async function processBuzzheavierDownload({
@@ -20,8 +16,12 @@ export async function processBuzzheavierDownload({
   notifyMainFailure,
   reportAddonHealthy,
 }) {
-  const hostLabel = location.hostname.includes("bzzhr.to") ? "bzzhr.to" : "buzzheavier.com";
-  const button = queryFirstBySelectors(SELECTORS.BUZZHEAVIER.DOWNLOAD_BUTTON_CANDIDATES);
+  const hostLabel = location.hostname.includes("bzzhr.to")
+    ? "bzzhr.to"
+    : "buzzheavier.com";
+  const button = queryFirstBySelectors(
+    SELECTORS.BUZZHEAVIER.DOWNLOAD_BUTTON_CANDIDATES,
+  );
   if (!(button instanceof HTMLAnchorElement)) {
     await notifyMainFailure(hostLabel, "Download button not found.");
     return;
@@ -44,7 +44,10 @@ export async function processBuzzheavierDownload({
     });
     const text = await response.text();
     if (!response.ok || /could not be found/i.test(text)) {
-      await notifyMainFailure(hostLabel, "Host reported missing or unavailable file.");
+      await notifyMainFailure(
+        hostLabel,
+        "Host reported missing or unavailable file.",
+      );
       return;
     }
   } catch {
@@ -52,7 +55,10 @@ export async function processBuzzheavierDownload({
     return;
   }
 
-  button.click();
+  if (!clickElement(button)) {
+    await notifyMainFailure(hostLabel, "Unable to trigger download button.");
+    return;
+  }
   showToast("Buzzheavier download triggered.");
   await sleep(Math.max(250, TIMINGS.POLL_INTERVAL));
   reportAddonHealthy();

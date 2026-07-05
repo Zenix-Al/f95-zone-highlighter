@@ -7,6 +7,8 @@ export const AUTOMATION_MARKER_KEY = "f95ue_dd";
 export const DIRECT_DOWNLOAD_ROUTE_TS_KEY = "f95ue_dd_ts";
 export const DIRECT_DOWNLOAD_ROUTE_REQUEST_ID_KEY = "f95ue_dd_req";
 export const DIRECT_DOWNLOAD_ROUTE_TTL_MS = 2 * 60 * 1000;
+export const DIRECT_DOWNLOAD_ROUTE_CONTEXT_KEY =
+  "f95ue.addon.maskedDirect.routeContext";
 export const DATANODES_STAGE_KEY = "f95ue.datanodes.stage";
 export const DATANODES_STAGE_AFTER_FREE = "after_free";
 

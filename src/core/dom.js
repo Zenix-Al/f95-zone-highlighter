@@ -1,5 +1,3 @@
-import { stateManager } from "../config.js";
-import { debugLog } from "./logger.js";
 import { TIMINGS } from "../config/timings.js";
 
 export function waitFor(
@@ -23,24 +21,7 @@ export function waitFor(
     check();
   });
 }
-export function detectPage() {
-  const path = location.pathname;
-  stateManager.set("isF95Zone", false);
-  stateManager.set("isThread", false);
-  stateManager.set("isLatest", false);
-  if (window.location.hostname.includes("f95zone.to")) {
-    stateManager.set("isF95Zone", true);
-  }
-  if (path.startsWith("/threads")) {
-    stateManager.set("isThread", true);
-  } else if (path.startsWith("/sam/latest_alpha")) {
-    stateManager.set("isLatest", true);
-  }
-  debugLog(
-    "PageDetect",
-    `isF95Zone: ${stateManager.get("isF95Zone")}, isThread: ${stateManager.get("isThread")}, isLatest: ${stateManager.get("isLatest")}`,
-  );
-}
+
 export function waitForBody(callback) {
   if (document.body) {
     callback();

@@ -1,4 +1,7 @@
-const DIRECT_DOWNLOAD_EVENT_KEY = "f95ue.addon.maskedDirect.directDownloadEvent";
+import { getRouteOriginTabId, getRouteRequestId } from "./routeContext.js";
+
+const DIRECT_DOWNLOAD_EVENT_KEY =
+  "f95ue.addon.maskedDirect.directDownloadEvent";
 const DIRECT_DOWNLOAD_TAB_ID_KEY = "f95ue.addon.directDownload.tabId";
 const ORIGIN_TAB_QUERY_KEY = "f95ue_tab";
 const DIRECT_DOWNLOAD_EVENT_TTL_MS = 2 * 60 * 1000;
@@ -17,11 +20,7 @@ function getLocalAttentionTabId() {
 }
 
 function getOriginTabIdFromLocation() {
-  try {
-    return String(new URL(location.href).searchParams.get(ORIGIN_TAB_QUERY_KEY) || "").trim();
-  } catch {
-    return "";
-  }
+  return getRouteOriginTabId(ORIGIN_TAB_QUERY_KEY);
 }
 
 function createEventId() {
@@ -50,8 +49,9 @@ export function createDirectDownloadAttentionController({
     const ts = Number(payload.ts || 0);
     if (Number.isFinite(ts) && ts > 0) {
       const ageMs = Date.now() - ts;
-      if (Number.isFinite(ageMs) && ageMs > DIRECT_DOWNLOAD_EVENT_TTL_MS) return false;
-      if (ts <= lastEventTs) return false;
+      if (Number.isFinite(ageMs) && ageMs > DIRECT_DOWNLOAD_EVENT_TTL_MS)
+        return false;
+      if (ts < lastEventTs) return false;
       lastEventTs = ts;
     }
 
@@ -67,7 +67,9 @@ export function createDirectDownloadAttentionController({
 
     const type = String(payload.type || "attention").trim();
     const host = String(payload.host || "unknown").trim();
-    const message = String(payload.message || "Direct download needs manual action.").trim();
+    const message = String(
+      payload.message || "Direct download needs manual action.",
+    ).trim();
     if (!message) return;
 
     if (type === "success") {
@@ -90,11 +92,16 @@ export function createDirectDownloadAttentionController({
     try {
       if (!resolvedRequestId) {
         resolvedRequestId = String(
-          new URL(location.href).searchParams.get(DIRECT_DOWNLOAD_ROUTE_REQUEST_ID_KEY) || "",
+          new URL(location.href).searchParams.get(
+            DIRECT_DOWNLOAD_ROUTE_REQUEST_ID_KEY,
+          ) || "",
         ).trim();
       }
     } catch {
       // keep requestId as-is
+    }
+    if (!resolvedRequestId) {
+      resolvedRequestId = getRouteRequestId();
     }
     const payload = {
       ts: Date.now(),
@@ -121,7 +128,12 @@ export function createDirectDownloadAttentionController({
     }
   }
 
-  function publishDirectDownloadAttention(host, message, errorCode = "", requestId = "") {
+  function publishDirectDownloadAttention(
+    host,
+    message,
+    errorCode = "",
+    requestId = "",
+  ) {
     return publishDirectDownloadEvent({
       type: "failure",
       host,

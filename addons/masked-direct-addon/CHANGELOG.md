@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.3.39 - Improve Datanodes reliability and parallel direct-download handling
+
+- Share host DOM helpers across direct-download hosts.
+- Add parallel direct-download handling for Datanodes and other hosts that support multiple download buttons on the same page, so when multiple process download buttons are clicked, the add-on will handle them in parallel.
+
 ## v0.3.29 - Add Workupload support
 
 - Add Workupload direct-download routing for `workupload.com/file/*` pages.

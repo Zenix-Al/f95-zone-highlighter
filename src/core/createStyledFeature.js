@@ -26,6 +26,7 @@ export function createStyledFeature(
     settingsUi,
     bootstrapMode,
     fastCapture,
+    pageScopes,
     enable,
     disable,
   },
@@ -39,6 +40,7 @@ export function createStyledFeature(
     settingsUi,
     bootstrapMode,
     fastCapture,
+    pageScopes,
     enable: () => {
       acquireStyle(resolvedStyleId, styleCss, styleTarget);
       return enable ? enable() : null;
