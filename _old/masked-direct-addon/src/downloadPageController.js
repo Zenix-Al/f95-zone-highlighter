@@ -10,7 +10,6 @@ import {
 } from "./processingDownloadTrigger.js";
 import { normalizeDirectDownloadHost } from "./hosts/metadata.js";
 import { writeRouteContext } from "./routeContext.js";
-import { sleep } from "./utils.js";
 
 const STRIPPED_MARKER_RECOVERY_TTL_MS = 45 * 1000;
 const STRIPPED_MARKER_IDENTIFIER_WAIT_TIMEOUT_MS = 15 * 1000;
@@ -205,7 +204,7 @@ async function waitForStrippedMarkerIdentifierTrigger(host, triggers) {
       pageIdentifier,
     });
     if (trigger) return trigger;
-    await sleep(STRIPPED_MARKER_IDENTIFIER_POLL_MS);
+    await delay(STRIPPED_MARKER_IDENTIFIER_POLL_MS);
   }
 
   return null;
@@ -236,6 +235,10 @@ function getRecoverableStrippedMarkerSourceGroups(host, triggers) {
   }
 
   return sourceGroups;
+}
+
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function normalizeDirectDownloadHostFromUrl(url) {

@@ -1,5 +1,5 @@
-import { SELECTORS } from "../constants.js";
-import { queryFirstBySelectors } from "../utils.js";
+import { SELECTORS, TIMINGS } from "../constants.js";
+import { queryFirstBySelectors, sleep } from "../utils.js";
 import { clickElement, getElementAttributeUrl } from "./shared/dom.js";
 
 function toDownloadEndpoint(button) {
@@ -60,5 +60,6 @@ export async function processBuzzheavierDownload({
     return;
   }
   showToast("Buzzheavier download triggered.");
+  await sleep(Math.max(250, TIMINGS.POLL_INTERVAL));
   reportAddonHealthy();
 }

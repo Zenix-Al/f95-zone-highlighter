@@ -33,7 +33,6 @@ export function createDirectDownloadAttentionController({
   GMApi,
   addValueChangeListener,
   removeValueChangeListener,
-  closeManagedTab,
 }) {
   let eventListenerId = null;
   let lastEventTs = 0;
@@ -67,14 +66,6 @@ export function createDirectDownloadAttentionController({
     if (!shouldAcceptEvent(payload, remote)) return;
 
     const type = String(payload.type || "attention").trim();
-    if (type === "close-tab") {
-      const requestId = String(payload.requestId || "").trim();
-      if (typeof closeManagedTab === "function") {
-        closeManagedTab(requestId);
-      }
-      return;
-    }
-
     const host = String(payload.host || "unknown").trim();
     const message = String(
       payload.message || "Direct download needs manual action.",

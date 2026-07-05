@@ -9,10 +9,8 @@ import {
   AUTOMATION_MARKER_KEY,
   DIRECT_DOWNLOAD_ROUTE_TS_KEY,
   DIRECT_DOWNLOAD_ROUTE_TTL_MS,
-  TIMINGS,
 } from "./constants.js";
 import { hasFreshRouteContext } from "./routeContext.js";
-import { sleep } from "./utils.js";
 
 const DETECTOR_TIMEOUT_MS = 100; // Poll interval
 
@@ -191,7 +189,7 @@ export async function waitForDownloadDetection(onDetect, timeout = 5000) {
         break;
       }
       detectionListener();
-      await sleep(DETECTOR_TIMEOUT_MS);
+      await new Promise((resolve) => setTimeout(resolve, DETECTOR_TIMEOUT_MS));
     }
 
     return downloadDetected;
@@ -214,7 +212,6 @@ export async function smartCloseWhenReady(
   {
     closeOnTimeout = true,
     timeoutMessage = "Download was not confirmed before timeout.",
-    requestManagedTabClose = null,
   } = {},
 ) {
   // SECURITY: Only close if this tab was opened by our addon
@@ -266,7 +263,7 @@ export async function smartCloseWhenReady(
   const onDownloadDetected = () => {
     downloadDetected = true;
     if (showToast) {
-      showToast("Download confirmed, closing page shortly...");
+      showToast("Download confirmed, closing page...");
     }
   };
 
@@ -303,7 +300,7 @@ export async function smartCloseWhenReady(
         break;
       }
 
-      await sleep(POLL_INTERVAL);
+      await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL));
     }
 
     if (downloadDetected) {
@@ -333,27 +330,6 @@ export async function smartCloseWhenReady(
       showToast(timeoutMessage, 6000, "warning");
     }
     return false;
-  }
-
-  if (downloadDetected && TIMINGS.DOWNLOAD_DETECTED_CLOSE_GRACE_DELAY > 0) {
-    console.info(
-      "[Download Detector] Waiting " +
-        TIMINGS.DOWNLOAD_DETECTED_CLOSE_GRACE_DELAY +
-        "ms before closing after detection",
-    );
-    await sleep(TIMINGS.DOWNLOAD_DETECTED_CLOSE_GRACE_DELAY);
-  }
-
-  if (typeof requestManagedTabClose === "function") {
-    try {
-      await requestManagedTabClose({ downloadDetected });
-      console.info("[Download Detector] Requested managed tab close");
-    } catch (err) {
-      console.warn(
-        "[Download Detector] Managed tab close request failed:",
-        err,
-      );
-    }
   }
 
   console.info("[Download Detector] Executing window.close()");

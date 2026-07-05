@@ -23,7 +23,6 @@ export function createDirectDownloadFlowController({
   showToast,
   publishDirectDownloadAttention,
   publishDirectDownloadEvent,
-  registerManagedTab,
   ownerTabId,
   originTabQueryKey,
   getDownloadHost,
@@ -96,14 +95,11 @@ export function createDirectDownloadFlowController({
     }
 
     if (supported && typeof openInTab === "function") {
-      const tab = openInTab(safeUrl, {
+      openInTab(safeUrl, {
         active: false,
         insert: true,
         setParent: true,
       });
-      if (requestId && typeof registerManagedTab === "function") {
-        registerManagedTab(requestId, tab);
-      }
       return;
     }
 
@@ -177,8 +173,11 @@ export function createDirectDownloadFlowController({
           : 3500);
 
       const publishSuccess = async () => {
-        const routeRequestId = await resolveCurrentRequestId();
-        const requestId = routeRequestId;
+        const routeRequestId = getCurrentRouteRequestId();
+        const trigger = await readProcessingDownloadTrigger(GMApi, {
+          requestId: routeRequestId,
+        });
+        const requestId = routeRequestId || trigger.requestId;
         await clearProcessingDownloadTrigger(GMApi, { requestId });
         if (typeof publishDirectDownloadEvent === "function") {
           await publishDirectDownloadEvent({
@@ -189,29 +188,6 @@ export function createDirectDownloadFlowController({
           });
         }
         clearRouteContext();
-      };
-
-      const resolveCurrentRequestId = async () => {
-        if (resolvedRequestId) return resolvedRequestId;
-        const routeRequestId = getCurrentRouteRequestId();
-        const trigger = await readProcessingDownloadTrigger(GMApi, {
-          requestId: routeRequestId,
-        });
-        resolvedRequestId = routeRequestId || trigger.requestId;
-        return resolvedRequestId;
-      };
-
-      let resolvedRequestId = "";
-      const requestManagedTabClose = async () => {
-        const requestId = await resolveCurrentRequestId();
-        if (typeof publishDirectDownloadEvent === "function") {
-          await publishDirectDownloadEvent({
-            type: "close-tab",
-            host: downloadHost,
-            message: "",
-            requestId,
-          });
-        }
       };
 
       console.info(
@@ -225,7 +201,6 @@ export function createDirectDownloadFlowController({
         {
           closeOnTimeout,
           timeoutMessage,
-          requestManagedTabClose,
         },
       );
 

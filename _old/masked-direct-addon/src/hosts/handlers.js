@@ -1,5 +1,5 @@
 import { processBuzzheavierDownload } from "./buzzheavier.js";
-import { processDatanodesDownload } from "./datanodes/index.js";
+import { processDatanodesDownload } from "./datanodes.js";
 import { processGofileDownload } from "./gofile.js";
 import { processMediafireDownload } from "./mediafire.js";
 import { processPixeldrainDownload } from "./pixeldrain.js";
@@ -10,6 +10,7 @@ export function createDirectDownloadHostHandlers({
   showToast,
   notifyMainFailure,
   reportAddonHealthy,
+  stageStore,
   getSettings,
   getDownloadCloseDelay,
 }) {
@@ -31,6 +32,7 @@ export function createDirectDownloadHostHandlers({
     "datanodes.to": () =>
       processDatanodesDownload({
         ...common,
+        stageStore,
         settings: typeof getSettings === "function" ? getSettings() : {},
       }),
     "mediafire.com": () => processMediafireDownload(common),
