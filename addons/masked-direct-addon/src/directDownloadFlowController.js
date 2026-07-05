@@ -11,6 +11,7 @@ import {
 import { storeDownloadPageCloseDelay } from "./gmStorageHelper.js";
 import { smartCloseWhenReady } from "./downloadDetector.js";
 import { normalizeDirectDownloadHost } from "./hosts/metadata.js";
+import { clearRouteContext, getRouteRequestId } from "./routeContext.js";
 
 export function createDirectDownloadFlowController({
   addonId,
@@ -123,14 +124,19 @@ export function createDirectDownloadFlowController({
   async function notifyMainFailure(hostLabel, message, errorCode = "") {
     const text = `Direct download (${hostLabel}) failed: ${String(message || "unknown error")}`;
     showToast(text, 4200);
-    const trigger = await readProcessingDownloadTrigger(GMApi);
-    await clearProcessingDownloadTrigger(GMApi);
+    const routeRequestId = getCurrentRouteRequestId();
+    const trigger = await readProcessingDownloadTrigger(GMApi, {
+      requestId: routeRequestId,
+    });
+    const requestId = routeRequestId || trigger.requestId;
+    await clearProcessingDownloadTrigger(GMApi, { requestId });
     await publishDirectDownloadAttention(
       hostLabel,
       message,
       errorCode,
-      trigger.requestId,
+      requestId,
     );
+    clearRouteContext();
 
     if (!getDownloadHost()) {
       bridge.dispatchCoreCommand("update-status", {
@@ -167,16 +173,21 @@ export function createDirectDownloadFlowController({
           : 3500);
 
       const publishSuccess = async () => {
-        const trigger = await readProcessingDownloadTrigger(GMApi);
-        await clearProcessingDownloadTrigger(GMApi);
+        const routeRequestId = getCurrentRouteRequestId();
+        const trigger = await readProcessingDownloadTrigger(GMApi, {
+          requestId: routeRequestId,
+        });
+        const requestId = routeRequestId || trigger.requestId;
+        await clearProcessingDownloadTrigger(GMApi, { requestId });
         if (typeof publishDirectDownloadEvent === "function") {
           await publishDirectDownloadEvent({
             type: "success",
             host: downloadHost,
             message: "Download triggered.",
-            requestId: trigger.requestId,
+            requestId,
           });
         }
+        clearRouteContext();
       };
 
       console.info(
@@ -205,14 +216,19 @@ export function createDirectDownloadFlowController({
           return;
         }
 
-        const trigger = await readProcessingDownloadTrigger(GMApi);
-        await clearProcessingDownloadTrigger(GMApi);
+        const routeRequestId = getCurrentRouteRequestId();
+        const trigger = await readProcessingDownloadTrigger(GMApi, {
+          requestId: routeRequestId,
+        });
+        const requestId = routeRequestId || trigger.requestId;
+        await clearProcessingDownloadTrigger(GMApi, { requestId });
         await publishDirectDownloadAttention(
           downloadHost,
           timeoutMessage,
           "download_not_confirmed",
-          trigger.requestId,
+          requestId,
         );
+        clearRouteContext();
       })();
     }
   }
@@ -223,4 +239,8 @@ export function createDirectDownloadFlowController({
     reportAddonHealthy,
     routeToDirectDownload,
   };
+}
+
+function getCurrentRouteRequestId() {
+  return getRouteRequestId();
 }

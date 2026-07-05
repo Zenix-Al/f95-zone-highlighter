@@ -1,5 +1,7 @@
-const DIRECT_DOWNLOAD_TRIGGER_KEY = "f95ue.addon.maskedDirect.processingDownload";
+const DIRECT_DOWNLOAD_TRIGGER_KEY =
+  "f95ue.addon.maskedDirect.processingDownload";
 const DIRECT_DOWNLOAD_TRIGGER_TTL_MS = 2 * 60 * 1000;
+const DIRECT_DOWNLOAD_TRIGGER_MAX_ITEMS = 20;
 
 export function createInactiveProcessingDownloadTrigger() {
   return {
@@ -29,8 +31,10 @@ export function normalizeProcessingDownloadTrigger(raw) {
     sourceUrl: String(raw.sourceUrl || "").trim(),
   };
 
-  if (!Number.isFinite(trigger.createdAt) || trigger.createdAt <= 0) trigger.createdAt = 0;
-  if (!Number.isFinite(trigger.expiresAt) || trigger.expiresAt <= 0) trigger.expiresAt = 0;
+  if (!Number.isFinite(trigger.createdAt) || trigger.createdAt <= 0)
+    trigger.createdAt = 0;
+  if (!Number.isFinite(trigger.expiresAt) || trigger.expiresAt <= 0)
+    trigger.expiresAt = 0;
 
   if (!isProcessingDownloadTriggerActive(trigger)) {
     return fallback;
@@ -39,29 +43,82 @@ export function normalizeProcessingDownloadTrigger(raw) {
   return trigger;
 }
 
+export function normalizeProcessingDownloadTriggers(raw) {
+  const source = Array.isArray(raw)
+    ? raw
+    : Array.isArray(raw?.items)
+      ? raw.items
+      : raw?.active
+        ? [raw]
+        : [];
+  const seen = new Set();
+  const result = [];
+
+  for (const item of source) {
+    const trigger = normalizeProcessingDownloadTrigger(item);
+    if (!isProcessingDownloadTriggerActive(trigger) || !trigger.requestId)
+      continue;
+    if (seen.has(trigger.requestId)) continue;
+    seen.add(trigger.requestId);
+    result.push(trigger);
+  }
+
+  return result
+    .sort((a, b) => a.createdAt - b.createdAt)
+    .slice(-DIRECT_DOWNLOAD_TRIGGER_MAX_ITEMS);
+}
+
 export function isProcessingDownloadTriggerActive(trigger) {
   return Boolean(trigger?.active && trigger.expiresAt > Date.now());
 }
 
-export async function readProcessingDownloadTrigger(GMApi) {
+export async function readProcessingDownloadTriggers(GMApi) {
   if (!GMApi || typeof GMApi.getValue !== "function") {
-    return createInactiveProcessingDownloadTrigger();
+    return [];
   }
   try {
-    const raw = await GMApi.getValue(
-      DIRECT_DOWNLOAD_TRIGGER_KEY,
-      createInactiveProcessingDownloadTrigger(),
-    );
-    return normalizeProcessingDownloadTrigger(raw);
+    const raw = await GMApi.getValue(DIRECT_DOWNLOAD_TRIGGER_KEY, {
+      items: [],
+    });
+    return normalizeProcessingDownloadTriggers(raw);
   } catch {
-    return createInactiveProcessingDownloadTrigger();
+    return [];
   }
 }
 
-export async function clearProcessingDownloadTrigger(GMApi) {
+export async function readProcessingDownloadTrigger(
+  GMApi,
+  { requestId = "" } = {},
+) {
+  const triggers = await readProcessingDownloadTriggers(GMApi);
+  const requestedId = String(requestId || "").trim();
+  if (requestedId) {
+    return (
+      triggers.find((trigger) => trigger.requestId === requestedId) ||
+      createInactiveProcessingDownloadTrigger()
+    );
+  }
+  return (
+    triggers[triggers.length - 1] || createInactiveProcessingDownloadTrigger()
+  );
+}
+
+export async function clearProcessingDownloadTrigger(
+  GMApi,
+  { requestId = "" } = {},
+) {
   if (!GMApi || typeof GMApi.setValue !== "function") return;
+  const requestedId = String(requestId || "").trim();
   try {
-    await GMApi.setValue(DIRECT_DOWNLOAD_TRIGGER_KEY, createInactiveProcessingDownloadTrigger());
+    if (!requestedId) {
+      await GMApi.setValue(DIRECT_DOWNLOAD_TRIGGER_KEY, { items: [] });
+      return;
+    }
+
+    const next = (await readProcessingDownloadTriggers(GMApi)).filter(
+      (trigger) => trigger.requestId !== requestedId,
+    );
+    await GMApi.setValue(DIRECT_DOWNLOAD_TRIGGER_KEY, { items: next });
   } catch {
     // best effort
   }
@@ -75,7 +132,9 @@ export async function setProcessingDownloadTrigger(
   const now = Date.now();
   const payload = {
     active: true,
-    requestId: String(requestId || "").trim() || `${now}-${Math.random().toString(36).slice(2, 8)}`,
+    requestId:
+      String(requestId || "").trim() ||
+      `${now}-${Math.random().toString(36).slice(2, 8)}`,
     ownerTabId: String(ownerTabId || "").trim(),
     host: String(host || "")
       .trim()
@@ -85,8 +144,39 @@ export async function setProcessingDownloadTrigger(
     sourceUrl: String(sourceUrl || ""),
   };
   try {
-    await GMApi.setValue(DIRECT_DOWNLOAD_TRIGGER_KEY, payload);
+    const existing = await readProcessingDownloadTriggers(GMApi);
+    const next = existing
+      .filter((trigger) => !isSameTriggerScope(trigger, payload))
+      .concat(payload)
+      .slice(-DIRECT_DOWNLOAD_TRIGGER_MAX_ITEMS);
+    await GMApi.setValue(DIRECT_DOWNLOAD_TRIGGER_KEY, { items: next });
   } catch {
     // best effort
+  }
+}
+
+function isSameTriggerScope(left, right) {
+  if (!left || !right) return false;
+  if (left.requestId === right.requestId) return true;
+  if (left.host !== right.host) return false;
+  if (left.ownerTabId !== right.ownerTabId) return false;
+  return getSourceKey(left.sourceUrl) === getSourceKey(right.sourceUrl);
+}
+
+function getSourceKey(sourceUrl) {
+  try {
+    const parsed = new URL(sourceUrl);
+    parsed.hash = "";
+    for (const key of [
+      "f95ue_dd",
+      "f95ue_tab",
+      "f95ue_dd_ts",
+      "f95ue_dd_req",
+    ]) {
+      parsed.searchParams.delete(key);
+    }
+    return parsed.href;
+  } catch {
+    return String(sourceUrl || "").trim();
   }
 }

@@ -8,8 +8,10 @@ import {
 import { queryAllBySelectors, sleep } from "../utils.js";
 import {
   getElementText,
+  getAnchorHref,
   isElementDisabled,
   isElementVisible,
+  waitForCandidate,
 } from "./shared/dom.js";
 
 const HOST_LABEL = "workupload.com";
@@ -29,14 +31,7 @@ function isWorkuploadStartPage() {
 }
 
 function getWorkuploadDownloadHref(anchor) {
-  if (!(anchor instanceof HTMLAnchorElement)) return "";
-  const href = String(anchor.getAttribute("href") || "").trim();
-  if (!href || href === "#") return "";
-  try {
-    return new URL(href, location.href).href;
-  } catch {
-    return "";
-  }
+  return getAnchorHref(anchor, location.href);
 }
 
 function isWorkuploadDownloadAnchor(anchor) {
@@ -70,13 +65,11 @@ function findWorkuploadDownloadAnchor() {
 async function waitForWorkuploadDownloadAnchor(
   timeoutMs = TIMINGS.WORKUPLOAD_DOWNLOAD_BUTTON_WAIT_TIMEOUT,
 ) {
-  const startedAt = Date.now();
-  while (Date.now() - startedAt < timeoutMs) {
-    const anchor = findWorkuploadDownloadAnchor();
-    if (anchor) return anchor;
-    await sleep(Math.max(250, TIMINGS.POLL_INTERVAL));
-  }
-  return null;
+  return waitForCandidate({
+    timeoutMs,
+    intervalMs: Math.max(250, TIMINGS.POLL_INTERVAL),
+    getCandidate: findWorkuploadDownloadAnchor,
+  });
 }
 
 function preserveAutomationMarkers(startHref) {

@@ -1,7 +1,8 @@
 import { config } from "./config.js";
 import { loadData } from "./services/settingsService";
 import { initAddonsConsoleBridge } from "./services/addonsService.js";
-import { detectPage, waitForBodyReady } from "./core/dom";
+import { waitForBodyReady } from "./core/dom";
+import { detectPage } from "./core/pageDetection.js";
 import { createBootstrapFailureHandler, runBootstrapPipeline } from "./core/bootstrap.js";
 
 import { initUiPhaseIfApplicable } from "./ui";
@@ -24,13 +25,17 @@ function handlePageHide(event) {
   teardownAll("pagehide");
 }
 
+function handlePageShow(event) {
+  if (!event.persisted) return;
+  detectPage();
+  refreshFastBootstrapFeatures();
+}
+
 function registerGlobalTeardownHooks() {
   if (globalTeardownHooksRegistered) return;
   globalTeardownHooksRegistered = true;
   addListener("global-teardown-pagehide", window, "pagehide", handlePageHide);
-  addListener("global-teardown-beforeunload", window, "beforeunload", () =>
-    teardownAll("beforeunload"),
-  );
+  addListener("global-pageshow", window, "pageshow", handlePageShow);
 }
 
 async function ensureConfigLoaded() {

@@ -115,6 +115,7 @@ export function createFeature(
     settingsUi = null,
     bootstrapMode = "waitForBody",
     fastCapture = null,
+    pageScopes = [],
   },
 ) {
   let opInProgress = false;
@@ -202,6 +203,9 @@ export function createFeature(
     name: name,
     bootstrapMode: normalizedBootstrapMode,
     fastCapture: normalizedFastCapture,
+    pageScopes: Array.isArray(pageScopes)
+      ? pageScopes.map((scope) => String(scope || "").trim()).filter(Boolean)
+      : [],
     settingsUi: settingsUi && typeof settingsUi === "object" ? settingsUi : null,
     enable: function () {
       debugLog(featureId, "Enable requested");

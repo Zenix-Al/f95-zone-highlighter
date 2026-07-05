@@ -400,6 +400,7 @@ function openLatestOverlaySettingsDialog() {
 export const latestOverlayFeature = createStyledFeature("Latest Overlay", {
   id: "latest-raw-capture",
   configPath: "latestSettings.latestOverlayToggle",
+  pageScopes: ["isLatest"],
   isApplicable: ({ stateManager }) => stateManager.get("isLatest"),
   bootstrapMode: "fast",
   fastCapture: {

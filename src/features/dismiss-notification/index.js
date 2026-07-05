@@ -8,6 +8,7 @@ import featureCss from "./style.css";
  */
 export const dismissNotificationFeature = createStyledFeature("Dismiss Notification", {
   configPath: "globalSettings.closeNotifOnClick",
+  pageScopes: ["isF95Zone"],
   isApplicable: ({ stateManager }) => stateManager.get("isF95Zone"),
   styleCss: featureCss,
   enable: () => {

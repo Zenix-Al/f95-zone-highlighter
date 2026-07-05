@@ -4,6 +4,7 @@ const path = require("path");
 
 const { stripCssComments } = require("./stripCssComments");
 const { stripDebugLogs } = require("./stripDebugLogs");
+const { generateFeatureManifest } = require("./scripts/featureManifest.cjs");
 let terser = null;
 try {
   terser = require("terser");
@@ -161,6 +162,10 @@ async function main() {
   const now = new Date().toISOString().replace("T", " ").substring(0, 19) + " UTC";
   const banner = `// Built on ${now} -- AUTO-GENERATED, edit from /src and rebuild`;
   const headerTemplate = readHeaderTemplate();
+  const manifest = generateFeatureManifest({ rootDir: __dirname });
+  console.log(
+    `Generated feature manifest: ${path.relative(__dirname, manifest.outputFile)} (${manifest.featureNames.length} feature(s))`,
+  );
 
   const baseBuildOptions = {
     entryPoints: ["src/main.js"],

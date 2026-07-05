@@ -1,6 +1,10 @@
 // src/loader.js
 import { debugLog } from "./core/logger";
-import { registerFeature } from "./core/featureCatalog.js";
+import {
+  listFeaturesByBootstrapMode,
+  listRegisteredFeatures,
+  registerFeature,
+} from "./core/featureCatalog.js";
 import { runFrameBudgeted } from "./core/frameBudget.js";
 import { reportFeatureFailure } from "./core/featureHealth.js";
 import {
@@ -9,26 +13,10 @@ import {
 } from "./core/fastCaptureAdapter.js";
 import { TIMINGS } from "./config/timings.js";
 import { contributeToSection } from "./ui/settingsRuntime/sectionsRegistry.js";
+import { generatedFeatures } from "./generated/features.generated.js";
+import { featureMatchesPageScopes } from "./core/featureScope.js";
 
-// Features
-import { dismissNotificationFeature } from "./features/dismiss-notification/index.js";
-import { latestOverlayFeature } from "./features/latest-overlay/index.js";
-import { wideLatestPageFeature, denseLatestGridFeature } from "./features/wide-latest/index.js";
-import { latestControlFeature } from "./features/latest-control/index.js";
-import { signatureCollapseFeature } from "./features/signature-collapse/index.js";
-import { threadOverlayFeature } from "./features/thread-overlay/index.js";
-import { wideForumFeature } from "./features/wideForum/index.js";
-
-const featureRegistry = [
-  wideLatestPageFeature,
-  denseLatestGridFeature,
-  latestOverlayFeature,
-  latestControlFeature,
-  threadOverlayFeature,
-  wideForumFeature,
-  signatureCollapseFeature,
-  dismissNotificationFeature,
-].map(registerFeature);
+const featureRegistry = generatedFeatures.map(registerFeature);
 
 function registerFeatureSettingsUi(feature) {
   const settingsUi = feature?.settingsUi;
@@ -47,14 +35,18 @@ function registerFeatureSettingsUi(feature) {
 
 featureRegistry.forEach(registerFeatureSettingsUi);
 
+export function isFeatureAllowedOnCurrentPage(feature) {
+  return featureMatchesPageScopes(feature);
+}
+
 function getFastBootstrapFeatures() {
-  return featureRegistry.filter((feature) => feature?.bootstrapMode === "fast");
+  return listFeaturesByBootstrapMode("fast").filter(isFeatureAllowedOnCurrentPage);
 }
 
 function getBodyBootstrapFeatures() {
   // Fast bootstrap only registers early capture rules. The feature lifecycle
   // still runs after body is ready so DOM observers/subscriptions can start.
-  return [...featureRegistry];
+  return listRegisteredFeatures();
 }
 
 async function runFeatureRegistry(features) {
@@ -65,7 +57,7 @@ async function runFeatureRegistry(features) {
       try {
         if (!feature || typeof feature !== "object") return;
         if (typeof feature.isEnabled !== "function" || typeof feature.enable !== "function") return;
-        if (feature.isEnabled()) {
+        if (isFeatureAllowedOnCurrentPage(feature) && feature.isEnabled()) {
           feature.enable();
         }
       } catch (error) {

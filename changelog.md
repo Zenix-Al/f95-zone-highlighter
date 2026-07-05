@@ -1,8 +1,12 @@
 # Changelog
 
-## [5.0.20 - Back-forward navigation fix]
+## [5.0.24 - Back-forward navigation fix and maintain codebase]
 
 - Fix core disappearing after browser back/forward restore by skipping global teardown when `pagehide` is only moving the page into the back-forward cache.
+- Remove `beforeunload` teardown to preserve restoreable page state and avoid destroying BFCache pages prematurely.
+- Use `pageshow` restore handling to refresh page detection and fast-bootstrap features safely when the browser restores a cached page.
+- Switch core feature loading to use `featureManifest` so loader no longer imports features manually; new features can be registered in the manifest and loaded automatically.
+- Move page detection configuration out of core and into config definitions so page rules are authored by config rather than hardcoded core logic.
 
 ## [5.0.19 - bootstrap fix, fastCapture fix, and more]
 
