@@ -1,5 +1,3 @@
-import { sleep } from "../../utils.js";
-
 export function normalizeText(value) {
   return String(value || "")
     .replace(/\s+/g, " ")
@@ -85,7 +83,7 @@ export async function waitForCandidate({
   while (Date.now() - startedAt < timeoutMs) {
     const candidate = getCandidate();
     if (candidate) return candidate;
-    await sleep(intervalMs);
+    await new Promise((resolve) => setTimeout(resolve, intervalMs));
   }
   return null;
 }

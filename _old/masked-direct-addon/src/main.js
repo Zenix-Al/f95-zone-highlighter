@@ -1,13 +1,9 @@
 /* global __ADDON_ID__, __ADDON_NAME__, __ADDON_VERSION__, __ADDON_DESCRIPTION__, __ADDON_CAPABILITIES__, __ADDON_REQUIRES_CORE__, GM_openInTab, GM, GM_addValueChangeListener, GM_removeValueChangeListener, grecaptcha */
 import { createCoreBridge } from "./coreBridge.js";
 import { ADDON_COMMAND_EVENT, RESOLVE_BTN_CLASS } from "./constants.js";
-import {
-  createDebugLog,
-  normalizeUrl,
-  sleep,
-  withAutomationMarker,
-} from "./utils.js";
+import { createDebugLog, normalizeUrl, withAutomationMarker } from "./utils.js";
 import { createAddonUi } from "./ui.js";
+import { createDatanodesStageStore } from "./hosts/datanodes.js";
 import { createDirectDownloadHostHandlers } from "./hosts/handlers.js";
 import {
   coerceDirectDownloadPackages,
@@ -85,42 +81,6 @@ const ADDON_PANEL_SETTINGS = Object.freeze([
   },
   ...createDirectDownloadPanelSettings(),
 ]);
-
-const managedDownloadTabs = new Map();
-
-function registerManagedDownloadTab(requestId, tab) {
-  const id = String(requestId || "").trim();
-  if (!id || !tab || typeof tab.close !== "function") return;
-  managedDownloadTabs.set(id, tab);
-  try {
-    const previousOnClose = tab.onclose;
-    tab.onclose = (...args) => {
-      managedDownloadTabs.delete(id);
-      if (typeof previousOnClose === "function") {
-        previousOnClose.apply(tab, args);
-      }
-    };
-  } catch {
-    // some userscript managers expose a read-only tab handle
-  }
-}
-
-function closeManagedDownloadTab(requestId) {
-  const id = String(requestId || "").trim();
-  if (!id) return false;
-  const tab = managedDownloadTabs.get(id);
-  if (!tab || typeof tab.close !== "function") return false;
-  try {
-    tab.close();
-    managedDownloadTabs.delete(id);
-    console.info("[DirectDownload] Closed managed tab:", id);
-    return true;
-  } catch (err) {
-    console.warn("[DirectDownload] Failed to close managed tab:", err);
-    return false;
-  }
-}
-
 function addTeardown(fn) {
   if (typeof fn === "function") teardownFns.push(fn);
 }
@@ -148,7 +108,6 @@ const directDownloadAttentionController =
       typeof GM_removeValueChangeListener === "function"
         ? GM_removeValueChangeListener
         : null,
-    closeManagedTab: closeManagedDownloadTab,
   });
 let downloadPageController = null;
 const directDownloadFlowController = createDirectDownloadFlowController({
@@ -163,7 +122,6 @@ const directDownloadFlowController = createDirectDownloadFlowController({
     directDownloadAttentionController.publishDirectDownloadAttention,
   publishDirectDownloadEvent:
     directDownloadAttentionController.publishDirectDownloadEvent,
-  registerManagedTab: registerManagedDownloadTab,
   ownerTabId: directDownloadAttentionController.localAttentionTabId,
   originTabQueryKey: directDownloadAttentionController.originTabQueryKey,
   getDownloadHost: () => downloadPageController?.getDownloadHost?.() || "",
@@ -202,6 +160,7 @@ function showToast(message, duration = 2600, type = "info") {
   }
   ui.showToast(message, duration);
 }
+const datanodesStageStore = createDatanodesStageStore();
 downloadPageController = createDownloadPageController({
   addonId: runtime.addonId,
   debugLog,
@@ -213,6 +172,7 @@ downloadPageController = createDownloadPageController({
     showToast,
     notifyMainFailure: directDownloadFlowController.notifyMainFailure,
     reportAddonHealthy,
+    stageStore: datanodesStageStore,
     getSettings: () => settingsCache || {},
     getDownloadCloseDelay: getDownloadCloseDelayForHandler,
   }),
@@ -600,11 +560,12 @@ async function bootstrap() {
   }
 
   // f95zone pages (thread, masked): require core.
+  const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
   let ping = { ok: false, apiVersion: "" };
   for (let i = 0; i < 3; i += 1) {
     ping = await bridge.waitForCorePing(2200 + i * 600);
     if (ping.ok) break;
-    await sleep(300 + i * 250);
+    await wait(300 + i * 250);
   }
 
   if (!ping.ok && runtime.requiresCore) {

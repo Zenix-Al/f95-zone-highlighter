@@ -1,11 +1,9 @@
 # Changelog
 
-## v0.3.44 - Improve Workupload and Datanodes download handling
+## v0.3.40 - Treat Workupload start page as handoff success
 
-- Treat Workupload `/start/*` pages as a successful download handoff instead of a detector failure.
-- Add managed tab closing for download-host tabs opened with `GM_openInTab`, with `window.close()` kept as a fallback.
-- Replace the staged Datanodes flow with an opportunistic frame-budgeted scanner that clicks the best visible download action.
-- Wait briefly after confirmed downloads before closing host tabs, giving browser dialogs and download managers time to attach.
+- Stop requiring detector confirmation on Workupload `/start/*` pages, because the host starts downloads through native browser behavior that the fetch/XHR detector cannot observe.
+- Delay Workupload `/start/*` success reporting slightly so the page has time to trigger its automatic download.
 
 ## v0.3.39 - Improve Datanodes reliability and parallel direct-download handling
 
