@@ -117,6 +117,7 @@ function validateLatestSection(latestSettings) {
     "webNotif",
     "wideLatest",
     "denseLatestGrid",
+    "latestAjaxErrorRecovery",
     "latestOverlayToggle",
     "enableScoreWeights",
   ];

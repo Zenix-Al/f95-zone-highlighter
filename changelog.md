@@ -1,5 +1,10 @@
 # Changelog
 
+## [5.0.25 - New feature: latest ajax error recovery]
+
+- Finally! after ages! new feature appear! latest overlay now can recover from ajax error, it was site bug if your connection is bad or the site is under heavy load, now latest overlay will try to recover from ajax error and retry to fetch the data.
+
+
 ## [5.0.24 - Back-forward navigation fix and maintain codebase]
 
 - Fix core disappearing after browser back/forward restore by skipping global teardown when `pagehide` is only moving the page into the back-forward cache.
