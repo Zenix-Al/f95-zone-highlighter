@@ -60,6 +60,7 @@ export const defaultLatestSettings = {
   minVersion: 0.5,
   wideLatest: false,
   denseLatestGrid: false,
+  latestAjaxErrorRecovery: true,
   latestOverlayToggle: true,
   latestOverlayColorOrder: [
     "excluded",

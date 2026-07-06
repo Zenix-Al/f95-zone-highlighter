@@ -106,6 +106,9 @@ const { getRecordHighlightClasses } = loadModule(
   "src/features/latest-overlay/ratingEngagementHighlight.js",
 );
 const { matchesPageDefinition } = loadModule("src/core/pageDetection.js");
+const { normalizeLatestAjaxErrorPayload, shouldRetryLatestAjaxError } = loadModule(
+  "src/features/latest-ajax-error-recovery/index.js",
+);
 const { __downloadPageControllerTestInternals } = loadModule(
   "addons/masked-direct-addon/src/downloadPageController.js",
 );
@@ -138,6 +141,26 @@ runTest("page definitions match configured hosts and paths", () => {
     matchesPageDefinition(pageDefinitions.isThread, threadLocation),
     true,
   );
+});
+
+runTest("latest ajax error shield normalizes undefined responseJSON", () => {
+  const jqXHR = {
+    status: 200,
+    responseText: "<html>not json</html>",
+    responseJSON: undefined,
+  };
+
+  assert.strictEqual(normalizeLatestAjaxErrorPayload(jqXHR, "fallback"), true);
+  assert.deepStrictEqual(jqXHR.responseJSON, { msg: "fallback" });
+  assert.strictEqual(jqXHR.responseJSON.hasOwnProperty("msg"), true);
+});
+
+runTest("latest ajax error recovery retries transient failures only", () => {
+  assert.strictEqual(shouldRetryLatestAjaxError("parsererror", { status: 200 }), true);
+  assert.strictEqual(shouldRetryLatestAjaxError("timeout", { status: 0 }), true);
+  assert.strictEqual(shouldRetryLatestAjaxError("error", { status: 503 }), true);
+  assert.strictEqual(shouldRetryLatestAjaxError("error", { status: 403 }), false);
+  assert.strictEqual(shouldRetryLatestAjaxError("error", { status: 429 }), false);
 });
 
 runTest(
@@ -218,6 +241,7 @@ runTest("generated feature manifest contains current feature exports", () => {
   const generated = fs.readFileSync(result.outputFile, "utf8");
 
   assert.ok(result.featureNames.includes("latestOverlayFeature"));
+  assert.ok(result.featureNames.includes("latestAjaxErrorRecoveryFeature"));
   assert.ok(result.featureNames.includes("wideLatestPageFeature"));
   assert.ok(result.featureNames.includes("denseLatestGridFeature"));
   assert.ok(result.featureNames.includes("threadOverlayFeature"));
