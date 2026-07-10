@@ -5,6 +5,10 @@ ehthumbs.db
 Icon?
 desktop.ini
 
+# Agent Rules (local configuration)
+.rules.md
+.copilot-rules.md
+
 # Node
 node_modules/
 npm-debug.log*
