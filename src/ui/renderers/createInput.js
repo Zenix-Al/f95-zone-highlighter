@@ -1,5 +1,5 @@
 import { attachDarkColorPicker } from "../components/darkColorPicker.js";
-import { createEl } from "../../core/dom.js";
+import { createEl } from "../../utils/dom.js";
 
 export function createInput(meta, id) {
   const input = createEl("input", { attrs: { id }, className: meta.className });

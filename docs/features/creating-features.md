@@ -55,13 +55,17 @@ export const myFeature = createStyledFeature("My Cool Feature", {
 });
 ```
 
-### 4. Add to the Catalog
-To make the bootstrap process aware of your feature, import and export it in `src/core/featureCatalog.js`.
+### 4. Feature discovery and manifest generation
 
-```javascript
-// src/core/featureCatalog.js
-export { myFeature } from "../features/my-new-feature/index.js";
-```
+Do not manually import or register features in `src/core/featureCatalog.js`. Features are discovered automatically by the manifest generator.
+
+Correct workflow:
+
+1. Export your feature from the feature module using a `*Feature` export name (for example `export const myFeature = createFeature(...)`).
+2. Run the manifest generator (`scripts/featureManifest.cjs`) during build or CI; it discovers `*Feature` exports and produces a generated features manifest.
+3. The generated manifest is imported by the loader at runtime, and the feature catalog stores the runtime registrations.
+
+This avoids brittle manual edits and reduces merge conflicts. See `scripts/featureManifest.cjs` for the discovery rules and naming conventions.
 
 ### 5. Define Default Config
 If your feature uses a `configPath`, ensure that configuration is defined in `src/config/defaults.js`.

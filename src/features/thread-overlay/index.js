@@ -11,7 +11,7 @@ import {
   createToggleSetting,
 } from "../../ui/settings/metaFactory.js";
 import { checkOverlaySettings } from "../../services/safetyService.js";
-import { debouncedProcessThreadTags } from "../../core/tasksRegistry.js";
+import { refreshThreadOverlayAfterSettingsChange } from "../../ui/settingsRuntime/effectTasks.js";
 
 function processThreadTag(tagElement) {
   const tagName = String(tagElement.innerHTML || "").trim();
@@ -58,7 +58,7 @@ function disableThreadOverlay() {
 const effectOverlayToggle = () => {
   checkOverlaySettings();
   if (!stateManager.get("isThread")) return;
-  debouncedProcessThreadTags();
+  refreshThreadOverlayAfterSettingsChange();
 };
 const THREAD_OVERLAY_TOGGLE_DEFS = [
   {
@@ -104,7 +104,7 @@ const threadOverlayToggleMeta = buildSettingsMap(
       text,
       tooltip,
       config,
-      custom: debouncedProcessThreadTags,
+      custom: refreshThreadOverlayAfterSettingsChange,
       toast: createEnabledDisabledToast(toastLabel),
     }),
   ]),

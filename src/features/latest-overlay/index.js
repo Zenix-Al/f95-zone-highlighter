@@ -1,6 +1,6 @@
 import { config, defaultLatestSettings, defaultOverlaySettings } from "../../config.js";
 import { createStyledFeature } from "../../core/createStyledFeature.js";
-import { debouncedProcessAllTilesReset } from "../../core/tasksRegistry.js";
+import { reprocessLatestTilesAfterSettingsChange } from "../../ui/settingsRuntime/effectTasks.js";
 import { checkOverlaySettings } from "../../services/safetyService.js";
 import { saveConfigKeys } from "../../services/settingsService.js";
 import { openReorderDialog, openSettingsDialog } from "../../ui/components/dialog.js";
@@ -18,8 +18,8 @@ import featureCss from "./style.css";
 
 function effectReprocessAllTiles() {
   // Avoid capturing an undefined function reference during module init if there’s
-  // a circular load between `tasksRegistry` and `latest-overlay`.
-  debouncedProcessAllTilesReset();
+  // a circular load between the settings-effect module and this feature.
+  reprocessLatestTilesAfterSettingsChange();
 }
 
 function runEnableLatestOverlay() {

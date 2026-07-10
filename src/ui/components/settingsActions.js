@@ -1,6 +1,6 @@
 import { config, defaultColors } from "../../config";
 import { reprocessAllTiles } from "../../features/latest-overlay/index.js";
-import { debouncedProcessThreadTags } from "../../core/tasksRegistry";
+import { refreshThreadOverlayAfterSettingsChange } from "../settingsRuntime/effectTasks.js";
 import { colorSettingsMeta } from "../settings/colorSettings";
 import { reRenderSettingsSection } from "../renderers/reRenderSetting";
 import { updateColorStyle } from "../helpers/updateColorStyle";
@@ -23,7 +23,7 @@ export function resetColor() {
   saveConfigKeys({ color: config.color });
 
   reprocessAllTiles();
-  debouncedProcessThreadTags();
+  refreshThreadOverlayAfterSettingsChange();
 
   reRenderSettingsSection("color-container", colorSettingsMeta);
   showToast("Colors have been reset to default");

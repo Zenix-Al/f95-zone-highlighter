@@ -1,4 +1,4 @@
-import { createEl } from "../../core/dom.js";
+import { createEl } from "../../utils/dom.js";
 
 export function createLabel(meta, id) {
   const label = createEl("label", { text: meta.text });

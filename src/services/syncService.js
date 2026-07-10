@@ -1,68 +1,51 @@
-import { stateManager, config, crossTabKeys } from "../config.js";
-import { applyEffects } from "../ui/renderers/applyEffects";
-import { metaRegistry } from "../ui/settings/metaRegistry";
+import { stateManager, config } from "../config.js";
 import { createFeature } from "../core/featureFactory.js";
+import { sanitizeConfig } from "../config/schema.js";
+import { storageAdapter } from "./storageAdapter.js";
+import { CONFIG_ENVELOPE_KEY } from "./settingsService.js";
+import { applyConfigChange } from "./configChangeApplication.js";
+import { reportFeatureWarning } from "../core/featureHealth.js";
 
-const listenerIds = [];
+let listenerId = null;
+let lastApplied = null;
 
-function initCrossTabSync() {
-  // Prevent adding listeners multiple times
-  if (stateManager.get("isCrossTabSyncInitialized")) return;
-
-  Object.keys(crossTabKeys).forEach((key) => {
-    const listenerId = GM_addValueChangeListener(key, (name, oldVal, newVal, remote) => {
-      if (!remote) return;
-      // The master switch for this feature is in globalSettings
-      if (!config.globalSettings.enableCrossTabSync) return;
-      handleSectionChange(key, oldVal, newVal);
-    });
-    listenerIds.push(listenerId);
-  });
+function compareEnvelope(a, b) {
+  const revision = Number(a?.revision || 0) - Number(b?.revision || 0);
+  if (revision) return revision;
+  const updatedAt = Number(a?.updatedAt || 0) - Number(b?.updatedAt || 0);
+  if (updatedAt) return updatedAt;
+  return String(a?.writerId || "").localeCompare(String(b?.writerId || ""));
 }
 
-function handleSectionChange(section, oldVal = {}, newVal = {}) {
-  const metaMap = metaRegistry[section];
-  if (!metaMap) return;
+function applyIncoming(envelope) {
+  if (!envelope?.data || (lastApplied && compareEnvelope(envelope, lastApplied) <= 0)) return false;
+  const validated = sanitizeConfig(envelope.data);
+  if (validated.issues.length > 0) { reportFeatureWarning("Sync", "invalid remote config", "validation"); return false; }
+  applyConfigChange(validated.data, { origin: "remote-sync" });
+  lastApplied = { revision: envelope.revision, updatedAt: envelope.updatedAt, writerId: envelope.writerId };
+  return true;
+}
 
-  Object.keys(newVal).forEach((subKey) => {
-    if (oldVal?.[subKey] === newVal[subKey]) return;
-
-    // 1. Update the local in-memory config with the new value from the other tab.
-    config[section][subKey] = newVal[subKey];
-
-    // 2. Find the corresponding UI metadata for this setting.
-    // We must search by the config path, as the meta key might not match the subKey.
-    const fullPath = `${section}.${subKey}`;
-    const metaEntry = Object.values(metaMap).find((meta) => meta.config === fullPath);
-    if (!metaEntry) return; // No UI effect to apply for this setting.
-
-    // 3. Trigger the same effects that would run if the user changed it in the local UI.
-    applyEffects(metaEntry, newVal[subKey]);
+function initCrossTabSync() {
+  if (listenerId !== null || !config.globalSettings.enableCrossTabSync) return;
+  listenerId = storageAdapter.subscribe(CONFIG_ENVELOPE_KEY, (_name, _oldValue, newValue, remote) => {
+    if (!remote || !config.globalSettings.enableCrossTabSync) return;
+    try { applyIncoming(newValue); } catch (error) { reportFeatureWarning("Sync", error, "remote-apply"); }
   });
+  stateManager.set("isCrossTabSyncInitialized", true);
 }
 
 function disableCrossTabSync() {
-  if (!stateManager.get("isCrossTabSyncInitialized")) return;
-
-  listenerIds.forEach(GM_removeValueChangeListener);
-  listenerIds.length = 0; // Clear the array of listener IDs
+  if (listenerId !== null) storageAdapter.unsubscribe(listenerId);
+  listenerId = null;
   stateManager.set("isCrossTabSyncInitialized", false);
 }
 
 const crossTabSyncFeature = createFeature("Cross Tab Sync", {
   configPath: "globalSettings.enableCrossTabSync",
-  enable: () => {
-    initCrossTabSync();
-    stateManager.set("isCrossTabSyncInitialized", true);
-  },
-  disable: () => {
-    disableCrossTabSync();
-  },
+  enable: initCrossTabSync,
+  disable: disableCrossTabSync,
 });
 
-// Backwards-compatible wrapper for existing callers that expect a simple toggle function.
-export function toggleCrossTabSync(enabled) {
-  crossTabSyncFeature.toggle(Boolean(enabled));
-}
-
-export { crossTabSyncFeature };
+export function toggleCrossTabSync(enabled) { return crossTabSyncFeature.toggle(Boolean(enabled)); }
+export { applyIncoming, compareEnvelope, crossTabSyncFeature };

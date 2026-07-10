@@ -1,0 +1,38 @@
+name: Validate source and documentation
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js 20 LTS
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Lint source
+        run: npm run lint
+      - name: Run tests
+        run: npm test
+      - name: Check whitespace errors
+        run: git diff --check
+      - name: Validate generated manifest metadata
+        run: npm run validate:manifest
+      - name: Check generated manifest drift
+        run: npm run check:manifest
+      - name: Check local documentation links and anchors
+        run: npm run check:docs
+      - name: Check source and documentation inventories
+        run: npm run check:inventory
+      - name: Run non-bumping build smoke test
+        run: npm run build:smoke
+      - name: Ensure checks did not change tracked files
+        run: git diff --exit-code

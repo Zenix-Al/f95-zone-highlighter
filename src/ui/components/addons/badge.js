@@ -1,4 +1,4 @@
-import { createEl } from "../../../core/dom.js";
+import { createEl } from "../../../utils/dom.js";
 
 export function createBadge(doc, text, className = "") {
   return createEl("span", {

@@ -1,4 +1,4 @@
-import { createEl } from "../../../core/dom.js";
+import { createEl } from "../../../utils/dom.js";
 
 export const ADDON_DOCK_SLOT_ID = "f95ue-page-dock-addon-slot";
 export const ADDON_DIALOG_HOST_ID = "f95ue-addon-dialog-host";

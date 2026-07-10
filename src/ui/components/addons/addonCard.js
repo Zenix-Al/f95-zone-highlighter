@@ -1,4 +1,4 @@
-import { createEl } from "../../../core/dom.js";
+import { createEl } from "../../../utils/dom.js";
 import { isAddonsServiceDisabled } from "../../../services/addonsService.js";
 import { createActionButton } from "./actionButton.js";
 import { formatAddonScopes } from "./addonScopes.js";

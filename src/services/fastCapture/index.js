@@ -1,14 +1,16 @@
+/** Public facade for fast-capture consumers and bootstrap orchestration. */
 export {
-  initFastCaptureAdapter,
   enqueueFastCaptureProcessing,
+  getFastCaptureDiagnostics,
+  initFastCaptureAdapter,
   matchesFastCaptureUrl,
   processCompletedFastCapture,
   processCompletedFastCaptureError,
   recoverFastCaptureFromPerformance,
-  registerFastCaptureFeatures,
   refreshFastCaptureFeatures,
+  registerFastCaptureFeatures,
   resetFastCaptureAdapterForTests,
-} from "./fastCaptureAdapter.js";
+} from "./fastCaptureService.js";
 export {
   getFastCaptureData,
   getFastCaptureSnapshot,
@@ -16,3 +18,4 @@ export {
   resetFastCaptureStoreForTests,
   subscribeFastCapture,
 } from "./fastCaptureStore.js";
+export { normalizeFastCaptureConfig } from "./rules.js";

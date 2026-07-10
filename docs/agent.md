@@ -20,8 +20,9 @@ This project uses a highly customized, performance-oriented **mini-framework** l
    - Even better, use `addListener` from `src/core/listenerRegistry.js` which handles automatic garbage collection when features are disabled.
 
 4. **ALL features MUST be created via the Factory**.
-   - Do not write functions that just execute immediately. 
-   - Export a feature created by `createFeature` or `createStyledFeature` and register it in `src/core/featureCatalog.js`.
+   - Do not write functions that just execute immediately.
+   - Export a feature created by `createFeature` or `createStyledFeature` from the feature module (use a `*Feature` export name, e.g. `export const myFeature = createFeature(...)`).
+   - The repository uses a generated manifest workflow: run `scripts/featureManifest.cjs` during build/CI to discover `*Feature` exports and produce the generated features manifest. Do not manually edit `src/core/featureCatalog.js` to register features.
    - Ensure you define an `enable` and `disable` method.
 
 5. **Heavy DOM operations MUST use the Task Queue**.

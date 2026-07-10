@@ -7,6 +7,10 @@ function toPosixPath(value) {
   return String(value || "").replace(/\\/g, "/");
 }
 
+function createDuplicateErrorMessage(symbolName, conflicts) {
+  return `Duplicate exported feature symbol '${symbolName}' found in ${conflicts.join(" and ")}`;
+}
+
 function findFeatureIndexFiles({ rootDir = process.cwd(), featuresDir = "src/features" } = {}) {
   const absoluteFeaturesDir = path.resolve(rootDir, featuresDir);
   if (!fs.existsSync(absoluteFeaturesDir)) return [];
@@ -42,6 +46,34 @@ function discoverFeatureExports(options = {}) {
     .filter((entry) => entry.exports.length > 0);
 }
 
+function validateFeatureManifestEntries(entries, { rootDir = process.cwd() } = {}) {
+  const errors = [];
+  const symbolToPaths = new Map();
+  const pathToSymbols = new Map();
+
+  entries.forEach((entry) => {
+    const normalizedPath = toPosixPath(path.relative(rootDir, entry.filePath));
+    entry.exports.forEach((symbolName) => {
+      const existingPaths = symbolToPaths.get(symbolName);
+      if (existingPaths) {
+        errors.push(createDuplicateErrorMessage(symbolName, [existingPaths[0], normalizedPath]));
+        return;
+      }
+      symbolToPaths.set(symbolName, [normalizedPath]);
+    });
+
+    const entryPath = toPosixPath(path.relative(rootDir, entry.filePath));
+    const existingSymbols = pathToSymbols.get(entryPath);
+    if (existingSymbols) {
+      errors.push(`Duplicate feature export list for ${entryPath}`);
+      return;
+    }
+    pathToSymbols.set(entryPath, entry.exports);
+  });
+
+  return errors;
+}
+
 function renderFeatureManifest(entries, { outputFile = "src/generated/features.generated.js" } = {}) {
   const outputDir = toPosixPath(path.dirname(outputFile));
   const imports = [];
@@ -69,27 +101,62 @@ function renderFeatureManifest(entries, { outputFile = "src/generated/features.g
   ].join("\n");
 }
 
-function generateFeatureManifest(options = {}) {
+function buildFeatureManifestState(options = {}) {
   const rootDir = path.resolve(options.rootDir || process.cwd());
   const outputFile = options.outputFile || "src/generated/features.generated.js";
   const entries = discoverFeatureExports({ ...options, rootDir });
+  const errors = validateFeatureManifestEntries(entries, { rootDir });
   const contents = renderFeatureManifest(entries, { outputFile });
-  const absoluteOutputFile = path.resolve(rootDir, outputFile);
-
-  fs.mkdirSync(path.dirname(absoluteOutputFile), { recursive: true });
-  fs.writeFileSync(absoluteOutputFile, contents);
 
   return {
-    outputFile: absoluteOutputFile,
+    rootDir,
+    outputFile,
+    absoluteOutputFile: path.resolve(rootDir, outputFile),
     entries,
     featureNames: entries.flatMap((entry) => entry.exports),
     contents,
+    errors,
+  };
+}
+
+function generateFeatureManifest(options = {}) {
+  const state = buildFeatureManifestState(options);
+  if (state.errors.length) {
+    const details = state.errors.join("\n");
+    throw new Error(`Feature manifest generation failed:\n${details}`);
+  }
+
+  fs.mkdirSync(path.dirname(state.absoluteOutputFile), { recursive: true });
+  fs.writeFileSync(state.absoluteOutputFile, state.contents);
+
+  return {
+    outputFile: state.absoluteOutputFile,
+    entries: state.entries,
+    featureNames: state.featureNames,
+    contents: state.contents,
+  };
+}
+
+function checkFeatureManifest(options = {}) {
+  const state = buildFeatureManifestState(options);
+  const absoluteOutputFile = path.resolve(state.rootDir, options.outputFile || "src/generated/features.generated.js");
+  const actualContent = fs.existsSync(absoluteOutputFile) ? fs.readFileSync(absoluteOutputFile, "utf8") : null;
+
+  return {
+    matches: !state.errors.length && actualContent === state.contents,
+    actualContent,
+    expectedContent: state.contents,
+    errors: state.errors,
+    outputFile: absoluteOutputFile,
   };
 }
 
 module.exports = {
+  buildFeatureManifestState,
+  checkFeatureManifest,
   discoverFeatureExports,
   extractFeatureExports,
   generateFeatureManifest,
   renderFeatureManifest,
+  validateFeatureManifestEntries,
 };

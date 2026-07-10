@@ -6,11 +6,11 @@ import {
   registerFeature,
 } from "./core/featureCatalog.js";
 import { runFrameBudgeted } from "./core/frameBudget.js";
-import { reportFeatureFailure } from "./core/featureHealth.js";
+import { getFeatureStatus, reportFeatureFailure } from "./core/featureHealth.js";
 import {
   refreshFastCaptureFeatures,
   registerFastCaptureFeatures,
-} from "./core/fastCaptureAdapter.js";
+} from "./services/fastCapture/index.js";
 import { TIMINGS } from "./config/timings.js";
 import { contributeToSection } from "./ui/settingsRuntime/sectionsRegistry.js";
 import { generatedFeatures } from "./generated/features.generated.js";
@@ -28,8 +28,9 @@ function registerFeatureSettingsUi(feature) {
   const sectionId = String(settingsUi.sectionId || "").trim();
   if (!sectionId) return;
 
+  const ownerId = `feature:${String(feature.featureKey || feature.id || feature.name || "unknown").trim()}`;
   for (const metaMap of metaMaps) {
-    contributeToSection(sectionId, metaMap);
+    contributeToSection(sectionId, metaMap, ownerId);
   }
 }
 
@@ -49,46 +50,59 @@ function getBodyBootstrapFeatures() {
   return listRegisteredFeatures();
 }
 
-async function runFeatureRegistry(features) {
+async function runFeatureRegistry(features, routeContext = null) {
   if (!Array.isArray(features) || features.length === 0) return;
-  await runFrameBudgeted(
-    features,
-    (feature) => {
+  const work = [];
+  await runFrameBudgeted(features, (feature) => {
       try {
         if (!feature || typeof feature !== "object") return;
         if (typeof feature.isEnabled !== "function" || typeof feature.enable !== "function") return;
         if (isFeatureAllowedOnCurrentPage(feature) && feature.isEnabled()) {
-          feature.enable();
+          work.push(feature.enable(routeContext));
         }
       } catch (error) {
         reportFeatureFailure(feature?.name || "Feature Loader", error, "loader.enable");
         console.error(`[Loader] Failed to enable ${feature?.name || "feature"}:`, error);
       }
-    },
-    {
+    }, {
       budgetMs: TIMINGS.LOADER_FEATURE_FRAME_BUDGET_MS,
       minChunk: TIMINGS.LOADER_FEATURE_MIN_CHUNK,
       startOnNextFrame: false,
-    },
-  );
+    });
+  await Promise.all(work);
 }
 
-export function loadFastBootstrapFeatures() {
+export function loadFastBootstrapFeatures(routeContext = null) {
   const features = getFastBootstrapFeatures();
   debugLog("Loader", `Registering ${features.length} fast bootstrap feature(s)...`);
-  return registerFastCaptureFeatures(features);
+  return registerFastCaptureFeatures(features, routeContext);
 }
 
-export function refreshFastBootstrapFeatures() {
-  return refreshFastCaptureFeatures(getFastBootstrapFeatures());
+export function refreshFastBootstrapFeatures(routeContext = null) {
+  return refreshFastCaptureFeatures(getFastBootstrapFeatures(), routeContext);
 }
 
-export async function loadBodyBootstrapFeatures() {
+export async function loadBodyBootstrapFeatures(routeContext = null) {
   const features = getBodyBootstrapFeatures();
   debugLog("Loader", `Running ${features.length} body bootstrap feature(s)...`);
-  await runFeatureRegistry(features);
+  await runFeatureRegistry(features, routeContext);
 }
 
 export async function loadFeatures() {
   await loadBodyBootstrapFeatures();
+}
+
+export async function reconcileFeatures(routeContext = null) {
+  const transitions = [];
+  for (const feature of listRegisteredFeatures()) {
+    if (!feature || typeof feature.isEnabled !== "function") continue;
+    const shouldRun = isFeatureAllowedOnCurrentPage(feature) && feature.isEnabled();
+    const status = getFeatureStatus(feature.name).status;
+    if (shouldRun && status !== "running" && typeof feature.enable === "function") {
+      transitions.push(feature.enable({ ...routeContext, reason: "route-change" }));
+    } else if (!shouldRun && status !== "disabled" && typeof feature.disable === "function") {
+      transitions.push(feature.disable({ ...routeContext, reason: "route-change" }));
+    }
+  }
+  await Promise.all(transitions);
 }

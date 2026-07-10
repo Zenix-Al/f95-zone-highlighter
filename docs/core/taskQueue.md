@@ -6,14 +6,14 @@ The `taskQueue` module provides a way to process a sequence of tasks with a fixe
 ```javascript
 import { createTaskQueue } from "../../core/taskQueue.js";
 
-const queue = createTaskQueue({ delay: 100, name: "TileRenderer" });
+const queue = createTaskQueue({ delay: 100, name: "TileRenderer", ownerId: "feature:tiles" });
 ```
 
 ## Adding Tasks
 Tasks are added using a unique key. If a task with the same key is already in the queue, it is ignored (effectively debouncing it).
 
 ```javascript
-queue.add("render-tile-1", async () => {
+queue.add("render-tile-1", async ({ signal, generation }) => {
     // Heavy DOM work
 }, generationId);
 ```
@@ -24,3 +24,15 @@ The queue supports "generations". When navigating in an SPA, the generation incr
 ```javascript
 queue.setGeneration(newGenerationId);
 ```
+
+## Lifecycle and policies
+
+Queues run sequentially and return a promise for every accepted task. Configure
+`duplicatePolicy` as `drop-new`, `drop-old`, or `replace-pending`, and configure
+bounded backpressure with `maxPending` plus `drop-oldest`, `drop-new`, or `reject`.
+Tasks receive `{ signal, key, queueName, ownerId, generation, enqueuedAt, startedAt }`.
+
+Use `cancelPending()`, `cancelRunning()`, or `clear()` during teardown. `whenIdle()`
+(also exposed as `drain()`) resolves once no task is running or pending; `snapshot()`
+returns safe queue diagnostics. `dispose()` aborts active work, settles pending work as
+cancelled, and releases the queue's owner-scoped resource registration.

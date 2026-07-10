@@ -4,7 +4,7 @@ import { injectCSS } from "./helpers/cssInjector";
 import { updateColorStyle } from "./helpers/updateColorStyle";
 import { stateManager } from "../config.js";
 import { crossTabSyncFeature } from "../services/syncService";
-import { createEl } from "../core/dom.js";
+import { createEl } from "../utils/dom.js";
 
 function initShadowDOM() {
   if (stateManager.get("shadowRoot")) return; // Already initialized

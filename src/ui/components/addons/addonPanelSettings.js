@@ -1,4 +1,4 @@
-import { createEl } from "../../../core/dom.js";
+import { createEl } from "../../../utils/dom.js";
 import { invokeAddonCoreAction } from "../../../services/addonsService.js";
 import { formatAddonScopes } from "./addonScopes.js";
 import { getSettingByPath } from "./settingPath.js";

@@ -1,6 +1,6 @@
 import { stateManager } from "../../config.js";
 import { TIMINGS } from "../../config/timings.js";
-import { createEl } from "../../core/dom.js";
+import { createEl } from "../../utils/dom.js";
 
 const MAX_TOASTS = 4;
 const TOAST_DURATION = TIMINGS.TOAST_DISPLAY;

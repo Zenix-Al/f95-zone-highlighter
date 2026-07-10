@@ -10,8 +10,8 @@ Instead of writing a feature as a standalone script, features are instantiated v
 
 ## Standard Interface
 When you create a feature, it returns an object with methods like:
-- `enable()`: Activates the feature. If an operation is in progress, it queues the request. It also checks if the feature is applicable to the current page.
-- `disable()`: Deactivates the feature and ensures clean teardown.
+- `enable(context?)`: Activates the feature and returns a promise that settles only after the requested state is reached, cancelled, or fails. It also checks whether the feature is applicable to the current page.
+- `disable(context?)`: Deactivates the feature and returns an equivalent lifecycle promise.
 - `toggle(shouldEnable, force)`: Helper to switch states.
 - `isEnabled()`: Checks if the feature should be active based on configuration.
 - `isApplicable()`: Checks if the feature is meant to run on the current page scope.
@@ -27,4 +27,4 @@ When calling `createFeature(name, options)`, the options object expects:
 - `pageScopes`: (Array) List of valid route scopes.
 
 ## Error Handling
-The factory wraps lifecycle transitions in `try/catch` and enforces an `OP_TIMEOUT` (15000ms). If a feature fails to start, it is reported to the `featureHealth` subsystem and will not crash the rest of the script. Features can also use `reportError(err, phase)` to report runtime errors that occur outside the standard lifecycle.
+The factory wraps lifecycle transitions in `try/catch` and enforces an `OP_TIMEOUT` (15000ms). A newer requested transition aborts a prior one and waits briefly for it to settle before running, so stale work cannot update the final feature state. Every handler receives `{ signal, operationId, generation, routeGeneration, reason, featureId }`; asynchronous code must honour `signal` before committing DOM or state. If a feature fails to start, it is reported to the `featureHealth` subsystem and will not crash the rest of the script. Features can also use `reportError(err, phase)` to report runtime errors that occur outside the standard lifecycle.

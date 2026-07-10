@@ -16,6 +16,7 @@ import {
 import { isValidOverlayColorOrder } from "../latest-overlay/overlayOrder.js";
 import { EXPORTABLE_CONFIG_KEYS } from "./constants.js";
 import { hasOnlyKnownKeys, isPlainObject, isPositiveInteger } from "./helpers.js";
+import { validateConfig } from "../../config/schema.js";
 
 function validateTagsSection(tags) {
   const seenIds = new Set();
@@ -192,6 +193,8 @@ function validateLatestSection(latestSettings) {
 }
 
 export function validateImportedPayload(payload) {
+  const result = validateConfig(payload, { mode: "strict", partial: true });
+  if (!result.valid) return `${result.issues[0].path || "config"}: ${result.issues[0].code}.`;
   if (!isPlainObject(payload)) {
     return "Imported JSON must be a plain object.";
   }

@@ -13,7 +13,7 @@ Since userscripts run in isolated execution environments (or namespaces), direct
 |  F95UE Add-on    |                   |    F95UE Core     |
 +--------+---------+                   +---------+---------+
          |                                       |
-         | CustomEvent("f95ue:addons-dev-cmd")  |
+         | CustomEvent("f95ue:addons-dev-command")  |
          |-------------------------------------->|
          | (type: "register")                    |
          |                                       |
@@ -26,7 +26,7 @@ Since userscripts run in isolated execution environments (or namespaces), direct
          |                                       |
          |  API Call (Core Action)               |
          |                                       |
-         | CustomEvent("f95ue:addons-dev-cmd")  |
+         | CustomEvent("f95ue:addons-dev-command")  |
          |-------------------------------------->| (Check permissions,
          | (action: "toast.show", replyEvent)    |  throttling, execute)
          |                                       |
@@ -100,34 +100,34 @@ To prevent rogue add-ons from stalling the browser, `bridgeServer.js` enforces r
 
 To add a new capability or action to the add-on system:
 
-### 1. Define Capability mapping
-Open `src/services/addons/coreActions.js` and add your action name and its required capability to `ACTION_CAPABILITY_ALTERNATIVES`:
+### 1. Register one action descriptor
+Open `src/services/addons/actions/descriptors.js` (or add a cohesive descriptor
+module) and register the action with its public ID, protocol version, required
+capabilities, payload validator, timeout, audit category, and execution handler:
 ```javascript
-export const ACTION_CAPABILITY_ALTERNATIVES = Object.freeze({
-  // ...
-  "myFeature.myAction": ["myCapability"],
+registerAction({
+  id: "myFeature.myAction",
+  protocolVersion: 1,
+  requiredCapabilities: ["myCapability"],
+  validatePayload: (payload) => payload && typeof payload === "object",
+  timeoutMs: 5000,
+  auditCategory: "myFeature",
+  execute: ({ addonId, payload, deps }) => myHandler(addonId, payload, deps),
 });
 ```
 
 ### 2. Implement the Action Handler
-Still inside `coreActions.js`, write the handler function:
+Place the handler beside its descriptor or in the matching cohesive action
+module. The central invocation pipeline validates payloads, applies the timeout,
+and returns only the descriptor's declared response shape.
 ```javascript
-async function actionMyCustomHandler(deps, payload) {
+async function myHandler(addonId, payload, deps) {
   // Execute logic using core services/dependencies in `deps`
   return { ok: true, value: "Hello from core!" };
 }
 ```
 
-### 3. Register in the Router Map
-Add it to the `actionHandlers` map in `invokeRegisteredAddonCoreAction`:
-```javascript
-const actionHandlers = {
-  // ...
-  "myFeature.myAction": async (payload) => await actionMyCustomHandler(deps, payload),
-};
-```
-
-### 4. Provide Add-on side wrappers
+### 3. Provide Add-on side wrappers
 Add the helper to `addons/example-addon/src/core/adaptor.js` and expose it through `api/`:
 ```javascript
 // adaptor.js
@@ -138,16 +138,9 @@ function invokeMyAction(payload) {
 
 ---
 
-## Potential Optimizations (Hardening Roadmap)
+## Action Registry
 
-The current core action registry in `coreActions.js` is built as a single monolithic router file with dozens of static imports and a giant nested switch-like map (`actionHandlers`). 
-
-This pattern creates a few problems:
-1. **Import bloat**: Modifying or adding actions requires updating one massive handler.
-2. **Coupling**: The core actions router directly imports almost all UI handlers, IndexedDB stores, and registries.
-
-### Rework Plan
-In the future, we should modularize this architecture:
-- Define an **Action Registry** where actions are dynamically registered.
-- Split each action namespace (e.g., `idb`, `ui`, `storage`) into separate module files (e.g., `src/services/addons/actions/idbActions.js`).
-- Allow the router to load or look up these files dynamically or register them during bootstrapping, making it cleaner to scale the API.
+`src/services/addons/actions/registry.js` exposes a read-only action snapshot for
+diagnostics and compatibility tests. The snapshot contains only an action ID,
+protocol version, required capabilities, timeout, and audit category—never a
+handler or dependencies. Duplicate IDs fail immediately during registration.

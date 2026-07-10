@@ -1,10 +1,11 @@
 const esbuild = require("esbuild");
 const fs = require("fs");
+const os = require("os");
 const path = require("path");
 
 const { stripCssComments } = require("./stripCssComments");
 const { stripDebugLogs } = require("./stripDebugLogs");
-const { generateFeatureManifest } = require("./scripts/featureManifest.cjs");
+const { checkFeatureManifest, generateFeatureManifest } = require("./scripts/featureManifest.cjs");
 let terser = null;
 try {
   terser = require("terser");
@@ -143,29 +144,43 @@ async function buildTarget(target, baseOptions, headerTemplate, version, banner,
 async function main() {
   const args = process.argv.slice(2);
   const isRelease = args.includes("--release");
+  const isSmoke = args.includes("--smoke");
   const bumpType = getBumpType(args);
 
   const currentVersion = readVersion();
-  const nextVersion = bumpVersion(currentVersion, bumpType);
+  const nextVersion = isSmoke ? currentVersion : bumpVersion(currentVersion, bumpType);
   const versionString = `${nextVersion.major}.${nextVersion.minor}.${nextVersion.patch}`;
 
-  console.log(
-    `Bumping version: ${currentVersion.major}.${currentVersion.minor}.${currentVersion.patch} → ${versionString} (${bumpType})`,
-  );
+  if (isSmoke) {
+    console.log(`Smoke build: using existing version ${versionString} without modifying version.json.`);
+  } else {
+    console.log(
+      `Bumping version: ${currentVersion.major}.${currentVersion.minor}.${currentVersion.patch} → ${versionString} (${bumpType})`,
+    );
+  }
   if (isRelease)
     console.log(
       "Release mode enabled — debug logs stripped + GreasyFork-friendly readable artifact",
     );
 
-  fs.writeFileSync(VERSION_FILE, JSON.stringify(nextVersion, null, 2));
+  if (!isSmoke) fs.writeFileSync(VERSION_FILE, JSON.stringify(nextVersion, null, 2));
 
   const now = new Date().toISOString().replace("T", " ").substring(0, 19) + " UTC";
   const banner = `// Built on ${now} -- AUTO-GENERATED, edit from /src and rebuild`;
   const headerTemplate = readHeaderTemplate();
-  const manifest = generateFeatureManifest({ rootDir: __dirname });
-  console.log(
-    `Generated feature manifest: ${path.relative(__dirname, manifest.outputFile)} (${manifest.featureNames.length} feature(s))`,
-  );
+  const manifest = isSmoke
+    ? checkFeatureManifest({ rootDir: __dirname })
+    : generateFeatureManifest({ rootDir: __dirname });
+  if (isSmoke && !manifest.matches) {
+    throw new Error("Generated feature manifest is stale; smoke build will not rewrite it.");
+  }
+  if (isSmoke) {
+    console.log(`Verified feature manifest: ${path.relative(__dirname, manifest.outputFile)}.`);
+  } else {
+    console.log(
+      `Generated feature manifest: ${path.relative(__dirname, manifest.outputFile)} (${manifest.featureNames.length} feature(s))`,
+    );
+  }
 
   const baseBuildOptions = {
     entryPoints: ["src/main.js"],
@@ -177,6 +192,13 @@ async function main() {
     plugins: getPlugins(isRelease),
   };
 
+  const smokeOutputDir = isSmoke
+    ? fs.mkdtempSync(path.join(os.tmpdir(), "f95ue-build-smoke-"))
+    : null;
+  const targetOutfile = (filename) => smokeOutputDir
+    ? path.join(smokeOutputDir, filename)
+    : filename;
+
   // === DYNAMIC TARGETS (this is the magic) ===
   const targets = [
     // Readable / main artifact
@@ -187,7 +209,7 @@ async function main() {
       minifyWhitespace: isRelease, // bit uglified in release
       minifyIdentifiers: false, // names always preserved for readability
       minifySyntax: isRelease,
-      finalOutfile: "dist/f95zone-ultimate-enhancer.user.js",
+      finalOutfile: targetOutfile("dist/f95zone-ultimate-enhancer.user.js"),
     },
     // Full uglified artifact
     {
@@ -197,12 +219,13 @@ async function main() {
       minifyWhitespace: true,
       minifyIdentifiers: true,
       minifySyntax: true,
-      finalOutfile: "dist/f95zone-ultimate-enhancer.uglified.user.js",
+      finalOutfile: targetOutfile("dist/f95zone-ultimate-enhancer.uglified.user.js"),
     },
   ];
 
   // Run both in parallel — super fast
-  const builtCodes = await Promise.all(
+  try {
+    const builtCodes = await Promise.all(
     targets.map((target) =>
       buildTarget(target, baseBuildOptions, headerTemplate, versionString, banner, isRelease),
     ),
@@ -226,7 +249,11 @@ async function main() {
     }
   }
 
-  console.log(`\n🎉 ALL BUILDS COMPLETE! Version ${versionString} ready in /dist`);
+  if (isSmoke) console.log("\nSmoke build completed without changing tracked build outputs.");
+  else console.log(`\n🎉 ALL BUILDS COMPLETE! Version ${versionString} ready in /dist`);
+  } finally {
+    if (smokeOutputDir) fs.rmSync(smokeOutputDir, { recursive: true, force: true });
+  }
 }
 
 main().catch((err) => {

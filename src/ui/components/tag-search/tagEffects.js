@@ -1,9 +1,9 @@
 import {
-  debouncedProcessAllTilesReset,
-  debouncedProcessThreadTags,
-} from "../../../core/tasksRegistry";
+  reprocessLatestTilesAfterSettingsChange,
+  refreshThreadOverlayAfterSettingsChange,
+} from "../../settingsRuntime/effectTasks.js";
 
 export function triggerTagUpdateEffects() {
-  debouncedProcessAllTilesReset();
-  debouncedProcessThreadTags();
+  reprocessLatestTilesAfterSettingsChange();
+  refreshThreadOverlayAfterSettingsChange();
 }
