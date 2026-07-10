@@ -1,4 +1,4 @@
-import { createEl } from "../../../core/dom.js";
+import { createEl } from "../../../utils/dom.js";
 import { showToast } from "../../components/toast";
 import { getRuntimeErrors, getAllFeatureStatuses } from "../../../core/featureHealth.js";
 import { stateManager } from "../../../config.js";

@@ -5,7 +5,7 @@ import { createInput } from "./createInput";
 import { createLabel } from "./createLabel";
 import { coerceSettingValue } from "./coerceSettingValue.js";
 import { getByPath, setByPath } from "../../utils/objectPath.js";
-import { createEl } from "../../core/dom.js";
+import { createEl } from "../../utils/dom.js";
 
 export function renderSetting(key, meta) {
   if (meta.type === "header") {
@@ -14,6 +14,14 @@ export function renderSetting(key, meta) {
 
   if (meta.type === "separator") {
     return createEl("hr", { className: "config-separator" });
+  }
+
+  if (meta.type === "info") {
+    const row = createEl("div", { className: `config-info ${meta.className || ""}`.trim() });
+    row.setAttribute("role", "note");
+    if (meta.tooltip) row.title = meta.tooltip;
+    row.appendChild(createEl("p", { text: meta.description || meta.text || "" }));
+    return row;
   }
 
   if (meta.type === "button") {
@@ -43,7 +51,7 @@ export function renderSetting(key, meta) {
     return row;
   }
 
-  // ⬇️ existing input renderer stays untouched
+  // â¬‡ï¸ existing input renderer stays untouched
   const row = createEl("div", { className: "config-row" });
   row.dataset.settingKey = key;
 

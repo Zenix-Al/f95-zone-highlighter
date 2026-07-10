@@ -15,6 +15,39 @@ import { normalizeOverlayColorOrder } from "../features/latest-overlay/overlayOr
 import { normalizeArray, normalizeObject } from "../utils/objectPath.js";
 import { isValidColor, isValidVersion } from "../utils/validators";
 import { LEGACY_STORAGE_KEYS, migrateLegacyConfigPayload } from "./configMigrationService.js";
+import { CONFIG_SCHEMA_VERSION, sanitizeConfig, validateConfig } from "../config/schema.js";
+import { storageAdapter } from "./storageAdapter.js";
+
+export const CONFIG_ENVELOPE_KEY = "f95ue:config";
+export const CONFIG_BACKUP_KEY = "f95ue:config:last-known-good";
+const WRITER_ID = `tab:${Date.now()}:${Math.random().toString(16).slice(2)}`;
+
+function cloneConfig(value) { return JSON.parse(JSON.stringify(value)); }
+
+export async function commitConfig(candidate, { origin = "local" } = {}) {
+  const validation = validateConfig(candidate, { mode: "strict" });
+  if (!validation.valid) return { committed: false, issues: validation.issues, origin };
+  const previousEnvelope = await storageAdapter.get(CONFIG_ENVELOPE_KEY, null);
+  const revision = Math.max(0, Number(previousEnvelope?.revision) || 0) + 1;
+  const envelope = { schemaVersion: CONFIG_SCHEMA_VERSION, revision, writerId: WRITER_ID, updatedAt: Date.now(), data: cloneConfig(validation.data) };
+  if (previousEnvelope) await storageAdapter.set(CONFIG_BACKUP_KEY, previousEnvelope);
+  await storageAdapter.set(CONFIG_ENVELOPE_KEY, envelope);
+  Object.assign(config, cloneConfig(envelope.data));
+  return { committed: true, origin, envelope, previousConfig: previousEnvelope?.data || null, config: cloneConfig(envelope.data) };
+}
+
+async function loadCanonicalEnvelope() {
+  const envelope = await storageAdapter.get(CONFIG_ENVELOPE_KEY, null);
+  if (!envelope || typeof envelope !== "object" || !envelope.data) return null;
+  const validation = sanitizeConfig(envelope.data);
+  if (validation.issues.length === 0) return { envelope, data: validation.data, recovered: false };
+  const backup = await storageAdapter.get(CONFIG_BACKUP_KEY, null);
+  if (backup?.data) {
+    const recovered = sanitizeConfig(backup.data);
+    if (recovered.issues.length === 0) return { envelope: backup, data: recovered.data, recovered: true };
+  }
+  return { envelope: null, data: validation.data, recovered: true };
+}
 
 function sanitizeColorSection(value) {
   const merged = { ...defaultColors, ...(value || {}) };
@@ -243,6 +276,10 @@ function sanitizePersistedUpdate(key, value) {
 }
 
 export async function saveConfigKeys(updates) {
+  const candidate = { ...cloneConfig(config), ...updates };
+  const committed = await commitConfig(candidate);
+  if (committed.committed) return { saved: Object.keys(updates), failed: [], committed };
+  // Compatibility fallback for legacy/partial state that has not yet gained full schema coverage.
   const entries = Object.entries(updates);
   if (entries.length === 0) {
     return { saved: [], failed: [] };
@@ -328,6 +365,8 @@ function deepMergeLatestSettings(saved, defaultObj) {
 export async function loadData() {
   let parsed = {};
   try {
+    const canonical = await loadCanonicalEnvelope();
+    if (canonical) return canonical.data;
     parsed = await loadRawStorage([...Object.keys(config), ...LEGACY_STORAGE_KEYS]);
     parsed = await migrateLegacyConfigPayload(parsed);
   } catch (e) {

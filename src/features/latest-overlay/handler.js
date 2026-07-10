@@ -1,7 +1,7 @@
 import { stateManager } from "../../config.js";
 import { debugLog } from "../../core/logger";
 import { addObserverCallback, removeObserverCallback } from "../../core/observer";
-import { getFastCaptureSnapshot, subscribeFastCapture } from "../../core/fastCapture.js";
+import { getFastCaptureSnapshot, subscribeFastCapture } from "../../services/fastCapture/index.js";
 import {
   getCurrentGeneration,
   incrementGeneration,

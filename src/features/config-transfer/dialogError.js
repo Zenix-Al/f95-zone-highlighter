@@ -1,5 +1,5 @@
 import { stateManager } from "../../config.js";
-import { createEl } from "../../core/dom.js";
+import { createEl } from "../../utils/dom.js";
 import { showToast } from "../../ui/components/toast.js";
 import {
   CONFIG_TRANSFER_DIALOG_ID,

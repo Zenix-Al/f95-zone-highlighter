@@ -43,7 +43,9 @@ For a normal input setting, the central renderer:
 9. Applies side effects.
 10. Shows a toast unless suppressed.
 
-It also supports structural metadata: header, separator, and button.
+It also supports structural metadata: header, separator, button, and `info`.
+`info` rows render text only (with an optional tooltip and CSS class); they do
+not read or write configuration, create form inputs, or attach change handlers.
 
 ## Input Types (`renderers/createInput.js`)
 
@@ -100,17 +102,16 @@ Global settings controls: config-button visibility, cross-tab sync, config impor
 
 Color section defines configurable color values. Effects update CSS variables, queue tile reprocessing, and queue thread-tag reprocessing.
 
-### `settings/latestSettings.js` & `settings/threadSettings.js`
-
-Currently export empty metadata collections. Settings can be contributed dynamically through the sections registry by feature modules.
-
-> **Ownership note:** These are placeholders. Feature modules contribute Latest and Thread settings dynamically via `contributeToSection()`. Needs clarification to prevent duplicate setting definitions.
-
 ### `settings/metaRegistry.js`
 
-Used by synchronization code to find UI effects associated with changed configuration sections. Currently maps: color settings and thread settings.
+The registry is the authoritative index for base, feature, and add-on settings
+metadata. It resolves immutable snapshots by section, metadata ID, config path,
+and owner ID. Metadata IDs and config paths are globally unique so sync effect
+replay has one authoritative descriptor. Dynamic registration returns a cleanup
+function that removes its entries when the owner unloads.
 
-> **Coverage gap:** Thread metadata is currently empty, and other sections (global, latest) are not mapped. Cross-tab sync live effects for unmapped sections need verification.
+Latest and Thread settings are feature-owned and register through
+`contributeToSection()`; there are no empty placeholder metadata modules.
 
 ## Adding a New Core Setting
 

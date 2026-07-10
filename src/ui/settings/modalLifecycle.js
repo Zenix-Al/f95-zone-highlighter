@@ -47,10 +47,17 @@ export function bindModalUiOnce(shadowRoot) {
 
   const modal = shadowRoot.getElementById("tag-config-modal");
   if (modal) {
-    addListener("modal-delegated-click", modal, "click", handleModalClick);
+    addListener("modal-delegated-click", modal, "click", handleModalClick, undefined, "ui:settings-modal");
   }
 
-  addListener("outside-search-click", document, "click", handleOutsideSearchClick);
+  addListener(
+    "outside-search-click",
+    document,
+    "click",
+    handleOutsideSearchClick,
+    undefined,
+    "ui:settings-modal",
+  );
   host.dataset.settingsUiBound = "1";
 }
 

@@ -60,4 +60,4 @@ export const globalSettingsMeta = {
     }),
   }),
 };
-contributeToSection("global", globalSettingsMeta);
+contributeToSection("global", globalSettingsMeta, "base:global");

@@ -1,14 +1,14 @@
 import {
-  debouncedProcessAllTilesReset,
-  debouncedProcessThreadTags,
-} from "../../core/tasksRegistry";
+  reprocessLatestTilesAfterSettingsChange,
+  refreshThreadOverlayAfterSettingsChange,
+} from "../settingsRuntime/effectTasks.js";
 import { updateColorStyle } from "../helpers/updateColorStyle";
 import { contributeToSection } from "../settingsRuntime/sectionsRegistry";
 import { buildSettingsMap, createColorSetting } from "./metaFactory";
 
 const executeBothQueuedTasks = () => {
-  debouncedProcessAllTilesReset();
-  debouncedProcessThreadTags();
+  reprocessLatestTilesAfterSettingsChange();
+  refreshThreadOverlayAfterSettingsChange();
 };
 
 const createColorEffect = (colorName) => () => {
@@ -52,4 +52,4 @@ export const colorSettingsDisabledMeta = {
   },
 };
 
-contributeToSection("color", colorSettingsMeta);
+contributeToSection("color", colorSettingsMeta, "base:color");

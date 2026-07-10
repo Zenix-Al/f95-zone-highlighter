@@ -4,6 +4,21 @@ Services are singletons that handle cross-cutting concerns—they sit below feat
 
 ## Key Services
 
+<!-- GENERATED:SERVICE-INVENTORY:START -->
+- `addonsService.js` — `src/services/addonsService.js`
+- `configChangeApplication.js` — `src/services/configChangeApplication.js`
+- `configMigrationService.js` — `src/services/configMigrationService.js`
+- `configTransferService.js` — `src/services/configTransferService.js`
+- `metricsService.js` — `src/services/metricsService.js`
+- `notificationService.js` — `src/services/notificationService.js`
+- `prefixService.js` — `src/services/prefixService.js`
+- `safetyService.js` — `src/services/safetyService.js`
+- `settingsService.js` — `src/services/settingsService.js`
+- `storageAdapter.js` — `src/services/storageAdapter.js`
+- `syncService.js` — `src/services/syncService.js`
+- `tagsService.js` — `src/services/tagsService.js`
+<!-- GENERATED:SERVICE-INVENTORY:END -->
+
 ### `settingsService.js`
 Handles reading and writing the userscript configuration to/from local storage or `GM_setValue`/`GM_getValue`. It ensures that `src/config.js` is always kept in sync with persisted data.
 

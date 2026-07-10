@@ -285,7 +285,11 @@ export function addObserverCallback(id, callback, options = {}) {
     filter: typeof options.filter === "function" ? options.filter : null,
     healthId: String(options.healthId || id || "observer").trim(),
   });
-  resourceManager.register(`observer:${id}`, () => removeObserverCallback(id));
+  resourceManager.register(
+    `observer:${id}`,
+    () => removeObserverCallback(id),
+    options.ownerId || null,
+  );
   startObserver();
 }
 

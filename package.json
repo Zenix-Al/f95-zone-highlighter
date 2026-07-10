@@ -16,7 +16,12 @@
     "build:addon:latest-filters": "node addons/build-addon.js latest-filters-addon",
     "lint": "eslint \"src/**\" --ext .js",
     "lint:fix": "eslint \"src/**\" --ext .js --fix",
-    "test": "node tests/run.cjs"
+    "test": "node tests/run.cjs",
+    "validate:manifest": "node scripts/validate-manifest.js",
+    "check:manifest": "node -e \"const { checkFeatureManifest } = require('./scripts/featureManifest.cjs'); const result = checkFeatureManifest({ rootDir: process.cwd() }); if (!result.matches) { console.error('Generated manifest is stale. Run node scripts/featureManifest.cjs'); process.exit(1); } console.log('Generated manifest is up to date.');\"",
+    "check:docs": "node scripts/check-docs.cjs",
+    "check:inventory": "node scripts/check-inventory.cjs",
+    "build:smoke": "node build.js --smoke"
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",

@@ -1,7 +1,7 @@
 import { config } from "./config.js";
 import { loadData } from "./services/settingsService";
 import { initAddonsConsoleBridge } from "./services/addonsService.js";
-import { waitForBodyReady } from "./core/dom";
+import { waitForBodyReady } from "./utils/dom";
 import { detectPage } from "./core/pageDetection.js";
 import { createBootstrapFailureHandler, runBootstrapPipeline } from "./core/bootstrap.js";
 
@@ -9,26 +9,34 @@ import { initUiPhaseIfApplicable } from "./ui";
 import {
   loadBodyBootstrapFeatures,
   loadFastBootstrapFeatures,
+  reconcileFeatures,
   refreshFastBootstrapFeatures,
 } from "./loader";
 import { addListener } from "./core/listenerRegistry.js";
-import { teardownAll } from "./core/teardown.js";
+import { markRuntimeRunning, resumeRuntime, suspendRuntime, teardownAll } from "./core/teardown.js";
 import { initGlobalErrorListeners } from "./core/featureFactory.js";
 import { flushQueuedToasts } from "./ui/components/toast.js";
 import { initRouteObserver } from "./core/routeObserver.js";
+import { beginRoute, getRouteContext } from "./core/routeState.js";
 
 let globalTeardownHooksRegistered = false;
 let configLoadPromise = null;
 
 function handlePageHide(event) {
-  if (event?.persisted === true) return;
-  teardownAll("pagehide");
+  if (event?.persisted === true) {
+    suspendRuntime("bfcache");
+    return;
+  }
+  void teardownAll("pagehide");
 }
 
 function handlePageShow(event) {
   if (!event.persisted) return;
+  resumeRuntime();
+  const routeContext = beginRoute();
   detectPage();
-  refreshFastBootstrapFeatures();
+  refreshFastBootstrapFeatures(routeContext);
+  void reconcileFeatures(routeContext);
 }
 
 function registerGlobalTeardownHooks() {
@@ -58,63 +66,78 @@ async function runFastBootstrap() {
   // Start config loading immediately so service-level gates such as
   // disableAddonsService are known before the addon bridge is exposed.
 
+  beginRoute();
   detectPage();
   const configReady = ensureConfigLoaded();
-  loadFastBootstrapFeatures();
+  loadFastBootstrapFeatures(getRouteContext());
 
   await runBootstrapPipeline([
     {
       name: "registerGlobalTeardownHooks",
+      classification: "required",
       run: () => registerGlobalTeardownHooks(),
     },
     {
       name: "initGlobalErrorListeners",
+      classification: "optional",
       run: () => initGlobalErrorListeners(),
     },
     {
       name: "initRouteObserver",
+      classification: "recoverable",
       run: () =>
-        initRouteObserver(() => {
+        initRouteObserver((routeContext) => {
           detectPage();
-          refreshFastBootstrapFeatures();
+          refreshFastBootstrapFeatures(routeContext);
+          return reconcileFeatures(routeContext);
         }),
+      fallback: () => null,
     },
     {
       name: "loadData",
+      classification: "required",
       run: () => configReady,
       fallbackValue: null,
     },
     {
       name: "initAddonsConsoleBridge",
+      classification: "optional",
       run: () => initAddonsConsoleBridge(),
     }
   ]);
 }
 
 async function runBodyBootstrap() {
-  await runBootstrapPipeline([
+  const summary = await runBootstrapPipeline([
     {
       name: "loadData",
+      classification: "required",
       run: ensureConfigLoaded,
       fallbackValue: null,
     },
     {
       name: "detectPage",
+      classification: "required",
       run: () => detectPage(),
     },
     {
       name: "initUiPhaseIfApplicable",
+      classification: "optional",
       run: () => initUiPhaseIfApplicable(),
     },
     {
       name: "flushQueuedToasts",
+      classification: "optional",
       run: () => flushQueuedToasts(),
     },
     {
       name: "loadBodyBootstrapFeatures",
-      run: () => loadBodyBootstrapFeatures(),
+      classification: "recoverable",
+      run: () => loadBodyBootstrapFeatures(getRouteContext()),
+      fallback: () => null,
     },
   ]);
+  if (summary.status !== "failed") markRuntimeRunning();
 }
 
 void runFastBootstrap().catch(createBootstrapFailureHandler("fast-bootstrap"));

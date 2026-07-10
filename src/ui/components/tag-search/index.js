@@ -298,16 +298,4 @@ export function initTagSearchListeners() {
     syncState();
   }
 
-  document.addEventListener("click", (e) => {
-    const sr = getShadowRoot();
-    const input = sr?.getElementById("tags-search");
-    const results = sr?.getElementById("search-results");
-    const clearBtn = sr?.getElementById("tags-search-clear");
-    if (!input || !results) return;
-
-    const path = e.composedPath ? e.composedPath() : [];
-    if (!path.includes(input) && !path.includes(results) && !path.includes(clearBtn)) {
-      results.style.display = "none";
-    }
-  });
 }

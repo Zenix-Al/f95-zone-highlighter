@@ -22,7 +22,7 @@ function removeStyleElement(entry) {
   }
 }
 
-export function acquireStyle(id, cssText, target = "document") {
+export function acquireStyle(id, cssText, target = "document", ownerId = null) {
   if (!id || typeof cssText !== "string") return null;
 
   const container = resolveTargetContainer(target);
@@ -43,9 +43,13 @@ export function acquireStyle(id, cssText, target = "document") {
       element: style,
     });
 
-    resourceManager.register(`style:${id}`, () => {
-      removeStyle(id, { force: true, unregister: false });
-    });
+    resourceManager.register(
+      `style:${id}`,
+      () => {
+        removeStyle(id, { force: true, unregister: false });
+      },
+      ownerId,
+    );
 
     return style;
   }

@@ -44,20 +44,34 @@ export const latestOverlayFeature = createStyledFeature("Latest Overlay", {
   - `'latest'`: Always capture and overwrite with the newest response.
   - `'oncePerRoute'`: Intercept once per client-side route change.
   - `'oncePerDocument'`: Intercept once per full page load.
-- **`ttlMs`**: *(Number)* Expiration lifetime of the captured snapshot in milliseconds.
+- **`ttlMs`**: *(Number)* Expiration lifetime of the captured snapshot in milliseconds. It defaults to 30 seconds and is capped at that value.
+
+## Ownership and limits
+
+`src/services/fastCapture/index.js` is the public facade for both consumers and
+bootstrap orchestration. `rules.js` owns feature-rule normalization,
+`pageCaptureTransport.js` and `sandboxCaptureTransport.js` own interception,
+`captureQueue.js` owns frame-budgeted queued processing, and
+`fastCaptureStore.js` owns snapshots and subscriber notification.
+
+The service accepts same-origin HTTP(S) XHR/fetch responses only. It rejects
+malformed URLs, unsupported response types, stale-route work, and payloads over
+512 KiB before parsing. The queue accepts at most 20 pending items; retained
+snapshots are capped at 2 MiB and oldest snapshots are evicted first. Diagnostics
+expose only counts, byte totals, ages, drop reasons, and queue state—never bodies.
 
 ---
 
 ## Consuming Captured Data in Feature Logic
 
-Do **not** import the service-level files directly. Instead, import consumer helpers from the core entry point:
+Import consumer helpers from the fast-capture service facade:
 
 ```javascript
 import { 
   getFastCaptureSnapshot, 
   subscribeFastCapture, 
   hasFastCaptureData 
-} from "../../core/fastCapture.js";
+} from "../../services/fastCapture/index.js";
 ```
 
 ### API Reference

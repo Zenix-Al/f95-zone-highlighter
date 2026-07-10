@@ -1,5 +1,6 @@
 import { pageDefinitions, stateManager } from "../config.js";
 import { debugLog } from "./logger.js";
+import { setRoutePageFlags } from "./routeState.js";
 
 function normalizeRuleEntries(value) {
   if (Array.isArray(value)) return value.map((entry) => String(entry || "").trim()).filter(Boolean);
@@ -55,5 +56,6 @@ export function detectPage(locationLike = location) {
   }
 
   debugLog("PageDetect", "Page state detected", { data: detected, level: "info" });
+  setRoutePageFlags(detected);
   return detected;
 }

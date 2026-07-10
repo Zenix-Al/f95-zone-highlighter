@@ -1,5 +1,5 @@
 import { renderSetting } from "../renderers/renderSetting.js";
-import { createEl } from "../../core/dom.js";
+import { createEl } from "../../utils/dom.js";
 import { createRegistrar } from "../../core/listenerRegistry.js";
 import { getShadowRoot } from "../getShadowRoot.js";
 const ACTIVE_DIALOG_ID = "latest-config-dialog";
@@ -240,7 +240,7 @@ export function openReorderDialog({
         const upBtn = createEl("button", {
           className: "config-reorder-btn",
           attrs: { type: "button" },
-          text: "▲",
+          text: "â–²",
         });
         upBtn.disabled = idx === 0;
         upBtn.addEventListener("click", () => {
@@ -252,7 +252,7 @@ export function openReorderDialog({
         const downBtn = createEl("button", {
           className: "config-reorder-btn",
           attrs: { type: "button" },
-          text: "▼",
+          text: "â–¼",
         });
         downBtn.disabled = idx === order.length - 1;
         downBtn.addEventListener("click", () => {

@@ -1,4 +1,4 @@
-import { createEl } from "../../../core/dom.js";
+import { createEl } from "../../../utils/dom.js";
 
 export function createActionButton(doc, text, action, addonId, extraClass = "") {
   return createEl("button", {

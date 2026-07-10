@@ -2,11 +2,14 @@ import { getByPath } from "../../utils/objectPath.js";
 import { debugLog } from "../../core/logger.js";
 import {
   getFastCaptureSnapshot,
+  getFastCaptureStoreDiagnostics,
   hasFastCaptureData,
   setFastCaptureCaptured,
   setFastCaptureError,
 } from "./fastCaptureStore.js";
 import { createCaptureQueue } from "./captureQueue.js";
+import { FAST_CAPTURE_LIMITS, measureCaptureBytes } from "./limits.js";
+import { isCaptureTransport, normalizeFastCaptureConfig } from "./rules.js";
 import {
   initPageCaptureTransport,
   resetPageCaptureTransportForTests,
@@ -20,8 +23,6 @@ import {
 
 const captures = new Map();
 const LOG_CHANNEL = "fast-capture";
-const TRANSPORTS = new Set(["xhr", "fetch", "any"]);
-const MODES = new Set(["latest", "oncePerRoute", "oncePerDocument"]);
 let routeGeneration = 0;
 let transportInitialized = false;
 let recoveryObserver = null;
@@ -30,6 +31,7 @@ let recoveryStopTimer = null;
 const pendingRecoveryKeys = new Set();
 const attemptedRecoveryKeys = new Set();
 const recoveryScheduleTimes = new Map(); // Track when recovery was scheduled for each key
+const droppedCaptures = new Map();
 
 function monotonicNow() {
   return typeof performance !== "undefined" && typeof performance.now === "function"
@@ -42,6 +44,32 @@ export function matchesFastCaptureUrl(url, urlIncludes) {
   return needles.some((needle) => needle && String(url || "").includes(String(needle).trim()));
 }
 
+function recordDropped(reason) {
+  const key = String(reason || "unknown");
+  droppedCaptures.set(key, (droppedCaptures.get(key) || 0) + 1);
+}
+
+function normalizeResponseText(value) {
+  if (typeof value === "string") return value;
+  if (value instanceof ArrayBuffer) return new TextDecoder().decode(value);
+  if (ArrayBuffer.isView(value)) return new TextDecoder().decode(value);
+  return null;
+}
+
+function validateCaptureInput(transport, url, responseText, generation = routeGeneration) {
+  if (!isCaptureTransport(transport)) return "invalid_transport";
+  let parsedUrl;
+  try { parsedUrl = new URL(String(url || ""), globalThis.location?.href); } catch { return "invalid_url"; }
+  if (!/^https?:$/.test(parsedUrl.protocol)) return "invalid_url";
+  const currentOrigin = globalThis.location?.origin;
+  if (currentOrigin && parsedUrl.origin !== currentOrigin) return "foreign_origin";
+  if (Number(generation) !== routeGeneration) return "stale_route";
+  const byteSize = measureCaptureBytes(responseText);
+  if (!Number.isFinite(byteSize)) return "unsupported_response";
+  if (byteSize > FAST_CAPTURE_LIMITS.maxResponseBytes) return "payload_too_large";
+  return null;
+}
+
 function matchingCaptures(transport, url) {
   return [...captures.values()].filter(
     (entry) =>
@@ -52,24 +80,16 @@ function matchingCaptures(transport, url) {
 }
 
 function normalizeFeature(feature) {
-  const config = feature?.fastCapture;
+  const config = normalizeFastCaptureConfig(feature?.fastCapture);
   if (feature?.bootstrapMode !== "fast" || !config) return null;
-  const urlIncludes = (Array.isArray(config.urlIncludes) ? config.urlIncludes : [config.urlIncludes])
-    .map((value) => String(value || "").trim())
-    .filter(Boolean);
-  const mode = MODES.has(config.mode)
-    ? config.mode
-    : config.once === false
-      ? "latest"
-      : "oncePerDocument";
   return {
     featureKey: String(feature.featureKey || feature.id || feature.name || "").trim(),
     featureName: String(feature.name || feature.id || "Fast Capture").trim(),
-    urlIncludes,
-    dataPath: String(config.dataPath || "").trim(),
-    transport: TRANSPORTS.has(config.transport) ? config.transport : "any",
-    mode,
-    ttlMs: Math.max(0, Number(config.ttlMs) || 0),
+    urlIncludes: config.urlIncludes,
+    dataPath: config.dataPath,
+    transport: config.transport,
+    mode: config.mode,
+    ttlMs: config.ttlMs,
     active: true,
   };
 }
@@ -108,7 +128,7 @@ function reportError(entry, url, transport, errorMessage, { updateSnapshot = tru
   });
 }
 
-function reportSuccess(entry, url, transport, data) {
+function reportSuccess(entry, url, transport, data, byteSize) {
   const alreadyExists = hasFastCaptureData(entry.featureKey);
   const recoveryScheduleTime = recoveryScheduleTimes.get(entry.featureKey);
   const recoveryDelayMs = recoveryScheduleTime ? Number((monotonicNow() - recoveryScheduleTime).toFixed(2)) : null;
@@ -120,6 +140,7 @@ function reportSuccess(entry, url, transport, data) {
     ttlMs: entry.ttlMs,
     generation: routeGeneration,
     mode: entry.mode,
+    byteSize,
   });
   debugLog(LOG_CHANNEL, "Snapshot stored", {
     data: {
@@ -142,15 +163,25 @@ function reportSuccess(entry, url, transport, data) {
   }
 }
 
-export function processCompletedFastCapture(transport, url, responseText) {
+export function processCompletedFastCapture(transport, url, responseText, { generation = routeGeneration } = {}) {
   const normalizedTransport = String(transport || "").toLowerCase();
   const normalizedUrl = String(url || "");
+  const validationError = validateCaptureInput(normalizedTransport, normalizedUrl, responseText, generation);
+  if (validationError) {
+    recordDropped(validationError);
+    return 0;
+  }
   const matches = matchingCaptures(normalizedTransport, normalizedUrl);
   if (matches.length === 0) return 0;
 
   let payload;
+  const normalizedResponseText = normalizeResponseText(responseText);
+  if (normalizedResponseText === null) {
+    recordDropped("unsupported_response");
+    return 0;
+  }
   try {
-    payload = JSON.parse(String(responseText || ""));
+    payload = JSON.parse(normalizedResponseText);
   } catch {
     for (const entry of matches) {
       reportError(entry, normalizedUrl, normalizedTransport, "invalid_json_response", {
@@ -169,7 +200,7 @@ export function processCompletedFastCapture(transport, url, responseText) {
       });
       continue;
     }
-    reportSuccess(entry, normalizedUrl, normalizedTransport, data);
+    reportSuccess(entry, normalizedUrl, normalizedTransport, data, measureCaptureBytes(responseText));
     count += 1;
   }
   return count;
@@ -181,9 +212,9 @@ export function processCompletedFastCaptureError(transport, url, error) {
   return matches.length;
 }
 
-const queue = createCaptureQueue(({ transport, url, responseText, enqueuedAt }) => {
+const queue = createCaptureQueue(({ transport, url, responseText, enqueuedAt, generation }) => {
   const startedAt = monotonicNow();
-  const capturedRules = processCompletedFastCapture(transport, url, responseText);
+  const capturedRules = processCompletedFastCapture(transport, url, responseText, { generation });
   debugLog(LOG_CHANNEL, "Response processed", {
     data: {
       transport,
@@ -195,11 +226,20 @@ const queue = createCaptureQueue(({ transport, url, responseText, enqueuedAt }) 
       navigationElapsedMs: Number(monotonicNow().toFixed(2)),
     },
   });
+}, {
+  limit: FAST_CAPTURE_LIMITS.maxPendingQueueItems,
+  shouldProcess: (job) => job?.generation === routeGeneration,
+  onDrop: (_job, reason) => recordDropped(reason),
 });
 
 export function enqueueFastCaptureProcessing(transport, url, responseText) {
   const normalizedTransport = String(transport || "").toLowerCase();
   const normalizedUrl = String(url || "");
+  const validationError = validateCaptureInput(normalizedTransport, normalizedUrl, responseText);
+  if (validationError) {
+    recordDropped(validationError);
+    return false;
+  }
   const enqueuedAt = monotonicNow();
   debugLog(LOG_CHANNEL, "Response received", {
     data: {
@@ -214,7 +254,9 @@ export function enqueueFastCaptureProcessing(transport, url, responseText) {
     url: normalizedUrl,
     responseText,
     enqueuedAt,
+    generation: routeGeneration,
   });
+  return true;
 }
 
 function latestMatchingResource(entry) {
@@ -387,7 +429,9 @@ export function initFastCaptureAdapter() {
   armInitialRecoveryWatch();
 }
 
-export function registerFastCaptureFeatures(features = []) {
+export function registerFastCaptureFeatures(features = [], routeContext = null) {
+  const suppliedGeneration = Number(routeContext?.generation);
+  if (Number.isFinite(suppliedGeneration) && suppliedGeneration >= 0) routeGeneration = suppliedGeneration;
   captures.clear();
   for (const feature of Array.isArray(features) ? features : []) {
     if (!isApplicable(feature)) continue;
@@ -412,9 +456,24 @@ export function registerFastCaptureFeatures(features = []) {
   return captures.size;
 }
 
-export function refreshFastCaptureFeatures(features = []) {
-  routeGeneration += 1;
-  return registerFastCaptureFeatures(features);
+export function refreshFastCaptureFeatures(features = [], routeContext = null) {
+  const suppliedGeneration = Number(routeContext?.generation);
+  routeGeneration = Number.isFinite(suppliedGeneration) && suppliedGeneration >= 0
+    ? suppliedGeneration
+    : routeGeneration + 1;
+  queue.clear();
+  return registerFastCaptureFeatures(features, routeContext);
+}
+
+export function getFastCaptureDiagnostics() {
+  return Object.freeze({
+    ...getFastCaptureStoreDiagnostics(),
+    routeGeneration,
+    activeRules: [...captures.values()].filter((entry) => entry.active).length,
+    registeredRules: captures.size,
+    queue: queue.getSnapshot(),
+    dropped: Object.fromEntries(droppedCaptures),
+  });
 }
 
 export function resetFastCaptureAdapterForTests() {
@@ -424,6 +483,7 @@ export function resetFastCaptureAdapterForTests() {
   stopInitialRecoveryWatch();
   attemptedRecoveryKeys.clear();
   recoveryScheduleTimes.clear();
+  droppedCaptures.clear();
   queue.clear();
   resetPageCaptureTransportForTests();
   resetSandboxCaptureTransportForTests();

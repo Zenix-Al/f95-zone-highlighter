@@ -11,7 +11,7 @@ const listeners = new Map();
  * @param {Function} handler - The function to execute when the event is triggered.
  * @param {object|boolean} [options] - An options object or boolean for capture.
  */
-export function addListener(id, element, eventType, handler, options) {
+export function addListener(id, element, eventType, handler, options, ownerId = null) {
   if (listeners.has(id)) {
     debugLog("ListenerRegistry", `Listener with ID '${id}' already exists. Skipping.`, {
       level: "warn",
@@ -22,13 +22,17 @@ export function addListener(id, element, eventType, handler, options) {
   element.addEventListener(eventType, handler, options);
   listeners.set(id, { element, eventType, handler, options });
   // Register cleanup with ResourceManager so features don't leak listeners
-  resourceManager.register(id, () => {
-    try {
-      element.removeEventListener(eventType, handler, options);
-    } catch (err) {
-      debugLog("ListenerRegistry", `Failed to cleanup listener '${id}': ${err}`);
-    }
-  });
+  resourceManager.register(
+    id,
+    () => {
+      try {
+        element.removeEventListener(eventType, handler, options);
+      } catch (err) {
+        debugLog("ListenerRegistry", `Failed to cleanup listener '${id}': ${err}`);
+      }
+    },
+    ownerId,
+  );
   debugLog(
     "ListenerRegistry",
     `Added listener '${id}' on ${element.constructor.name} for '${eventType}' event.`,

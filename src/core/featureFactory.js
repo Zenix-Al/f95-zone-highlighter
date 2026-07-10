@@ -8,46 +8,71 @@ import {
 import { showToast } from "../ui/components/toast.js";
 import { getByPath } from "../utils/objectPath.js";
 
-// Capture uncaught errors / unhandled rejections once per session so the
-// health diagnostic can surface runtime failures that happen outside the
-// feature lifecycle (e.g. inside requestAnimationFrame / queueMicrotask).
-let _globalListenerRegistered = false;
+let globalListenerRegistered = false;
 export function initGlobalErrorListeners() {
-  if (_globalListenerRegistered) return;
-  _globalListenerRegistered = true;
+  if (globalListenerRegistered) return;
+  globalListenerRegistered = true;
 
   window.addEventListener("error", (event) => {
     reportRuntimeError(event?.error || event?.message || "Unknown error", "window.error");
   });
-
   window.addEventListener("unhandledrejection", (event) => {
     reportRuntimeError(event?.reason ?? "Unknown rejection", "unhandledrejection");
   });
 }
 
 const OP_TIMEOUT = 15000;
+const ABORT_GRACE_MS = 250;
 const FEATURE_BOOTSTRAP_MODES = new Set(["waitForBody", "fast"]);
-const FAST_CAPTURE_TRANSPORTS = new Set(["xhr", "fetch", "any"]);
-const FAST_CAPTURE_MODES = new Set(["latest", "oncePerRoute", "oncePerDocument"]);
+const LIFECYCLE_REASONS = new Set(["startup", "config-change", "route-change", "teardown", "retry"]);
 
-function isPromiseLike(value) {
-  return Boolean(value) && typeof value.then === "function";
+function getErrorMessage(error) {
+  return error?.message || String(error);
 }
 
-function getErrorMessage(err) {
-  return err?.message || String(err);
+function createAbortError(message = "operation aborted") {
+  return Object.assign(new Error(message), { name: "AbortError" });
 }
 
-function reportLifecycleFailure(featureId, name, action, err) {
-  const message = getErrorMessage(err);
+function isAbortError(error) {
+  return error?.name === "AbortError" || /aborted|abort/i.test(getErrorMessage(error));
+}
+
+function waitForAbortGrace(promise) {
+  return Promise.race([
+    Promise.resolve(promise).catch(() => undefined),
+    new Promise((resolve) => setTimeout(resolve, ABORT_GRACE_MS)),
+  ]);
+}
+
+function reportLifecycleFailure(featureId, name, action, error) {
+  const message = getErrorMessage(error);
   debugLog(featureId, "Lifecycle transition failed", {
     data: { action, error: message },
     level: "error",
   });
-  reportFeatureFailure(name, err, action);
+  reportFeatureFailure(name, error, action);
   try {
     showToast(`${name} failed to ${action}: ${message}`);
   } catch {}
+}
+
+export function createLifecycleContext(featureId, action, {
+  generation = 0,
+  routeGeneration = 0,
+  reason = "startup",
+} = {}) {
+  const controller = new AbortController();
+  return {
+    signal: controller.signal,
+    operationId: `${featureId}:${action}:${Date.now()}:${Math.random().toString(16).slice(2)}`,
+    generation,
+    routeGeneration,
+    reason: LIFECYCLE_REASONS.has(reason) ? reason : "startup",
+    featureId,
+    action,
+    abort: (abortReason) => controller.abort(abortReason),
+  };
 }
 
 function slugifyFeatureKey(value) {
@@ -59,225 +84,153 @@ function slugifyFeatureKey(value) {
 }
 
 export function resolveFeatureId(name, explicitId = "", settingsUi = null) {
-  const explicit = slugifyFeatureKey(explicitId);
-  if (explicit) return explicit;
-
-  const settingsId = slugifyFeatureKey(settingsUi?.id);
-  if (settingsId) return settingsId;
-
-  return slugifyFeatureKey(name) || "unnamed-feature";
+  return slugifyFeatureKey(explicitId) || slugifyFeatureKey(settingsUi?.id) || slugifyFeatureKey(name) || "unnamed-feature";
 }
 
+// This remains lenient for callers which only need a safe display default.
+// Registration validates _declaredBootstrapMode so malformed declarations are never accepted.
 export function normalizeFeatureBootstrapMode(value) {
   return FEATURE_BOOTSTRAP_MODES.has(value) ? value : "waitForBody";
 }
 
-function normalizeFastCaptureUrlIncludes(value) {
-  const entries = Array.isArray(value) ? value : [value];
-  const normalized = entries.map((entry) => String(entry || "").trim()).filter(Boolean);
-  return normalized.length > 0 ? normalized : [];
-}
-
-export function normalizeFastCaptureConfig(value) {
-  if (!value || typeof value !== "object") return null;
-
-  const urlIncludes = normalizeFastCaptureUrlIncludes(value.urlIncludes);
-  const dataPath = String(value.dataPath || "").trim();
-  if (urlIncludes.length === 0 || !dataPath) return null;
-
-  const transport = FAST_CAPTURE_TRANSPORTS.has(value.transport) ? value.transport : "any";
-  const legacyMode = value.once === false ? "latest" : "oncePerDocument";
-  const mode = FAST_CAPTURE_MODES.has(value.mode) ? value.mode : legacyMode;
-
-  return {
-    urlIncludes,
-    dataPath,
-    transport,
-    mode,
-    ttlMs: Math.max(0, Number(value.ttlMs) || 0),
-  };
-}
-
-/**
- * Creates a standardized feature module interface. This factory is designed to
- * ensure all features follow a consistent lifecycle (enable, disable, toggle)
- * and have a uniform way of checking if they are enabled via configuration.
- */
-export function createFeature(
-  name,
-  {
-    id,
-    enable,
-    disable,
-    configPath,
-    isEnabled: customIsEnabled,
-    isApplicable,
-    settingsUi = null,
-    bootstrapMode = "waitForBody",
-    fastCapture = null,
-    pageScopes = [],
-  },
-) {
-  let opInProgress = false;
-  let pendingDesired = null;
+/** Create a cancellable, awaitable feature lifecycle wrapper. */
+export function createFeature(name, {
+  id,
+  enable,
+  disable,
+  configPath,
+  isEnabled: customIsEnabled,
+  isApplicable,
+  settingsUi = null,
+  bootstrapMode = "waitForBody",
+  fastCapture = null,
+  pageScopes = [],
+} = {}) {
+  let lifecycleGeneration = 0;
+  let activeOperation = null;
+  let pendingTransition = null;
+  let transitionChain = Promise.resolve();
   const featureId = resolveFeatureId(name, id, settingsUi);
-  const normalizedBootstrapMode = normalizeFeatureBootstrapMode(bootstrapMode);
-  const normalizedFastCapture = normalizeFastCaptureConfig(fastCapture);
 
   function canRunOnCurrentPage() {
     if (typeof isApplicable !== "function") return true;
     try {
       return Boolean(isApplicable({ stateManager, config }));
-    } catch (err) {
+    } catch (error) {
       debugLog(featureId, "Applicability check failed", {
-        data: { error: err?.message || String(err) },
+        data: { error: getErrorMessage(error) },
         level: "warn",
       });
       return false;
     }
   }
 
-  function computeIdleStatus() {
-    const desired = feature.isEnabled();
-    if (!desired) return { status: "disabled", details: null };
-    if (!canRunOnCurrentPage()) {
-      return { status: "disabled", details: "page mismatch" };
-    }
-    return { status: "unknown", details: null };
+  function createOperationContext(action, suppliedContext) {
+    lifecycleGeneration += 1;
+    return createLifecycleContext(featureId, action, {
+      generation: lifecycleGeneration,
+      routeGeneration: Number(suppliedContext?.routeGeneration) || 0,
+      reason: suppliedContext?.reason,
+    });
   }
 
-  function queueDesiredState(action) {
-    pendingDesired = action;
-    debugLog(
-      featureId,
-      `${action === "enable" ? "Enable" : "Disable"} deferred — operation in progress.`,
-    );
-  }
+  function requestTransition(action, suppliedContext = null) {
+    const transition = { action, suppliedContext };
+    pendingTransition = transition;
+    if (activeOperation) activeOperation.context.abort(createAbortError("operation superseded"));
 
-  function finalizeTransition(action, timer, finished) {
-    finished.value = true;
-    clearTimeout(timer);
-    opInProgress = false;
+    const queued = transitionChain.catch(() => undefined).then(async () => {
+      if (pendingTransition !== transition) throw createAbortError("operation superseded");
+      pendingTransition = null;
 
-    const nextDesired = pendingDesired;
-    pendingDesired = null;
-    if (nextDesired && nextDesired !== action) {
-      feature[nextDesired]();
-    }
-  }
-
-  function runTransition(action, handler, successStatus, timeoutDetails) {
-    opInProgress = true;
-    pendingDesired = null;
-
-    const finished = { value: false };
-    const timer = setTimeout(() => {
-      if (!finished.value) {
-        debugLog(
-          featureId,
-          `${action === "enable" ? "Enable" : "Disable"} operation timed out — marking as failing.`,
-        );
-        reportFeatureFailure(name, timeoutDetails, action);
-        opInProgress = false;
+      const previous = activeOperation;
+      if (previous) {
+        previous.context.abort(createAbortError("operation superseded"));
+        await waitForAbortGrace(previous.settled);
       }
-    }, OP_TIMEOUT);
 
-    async function executeTransition() {
+      const context = createOperationContext(action, suppliedContext);
+      const operation = { action, context, settled: null };
+      activeOperation = operation;
+      const handler = action === "enable" ? enable : disable;
+      const successStatus = action === "enable" ? "running" : "disabled";
+      let timeoutId;
+      const handlerResult = Promise.resolve().then(() => (handler ? handler(context) : null));
+      handlerResult.catch(() => undefined);
+      const timeoutResult = new Promise((_, reject) => {
+        timeoutId = setTimeout(() => {
+          context.abort(createAbortError(`${action} timeout`));
+          reject(createAbortError(`${action} timeout`));
+        }, OP_TIMEOUT);
+      });
+      operation.settled = Promise.race([handlerResult, timeoutResult]);
+
       try {
-        const result = handler ? handler() : null;
-        if (isPromiseLike(result)) await result;
+        await operation.settled;
+        if (context.signal.aborted || activeOperation !== operation) throw createAbortError();
         setFeatureStatus(name, successStatus);
-      } catch (err) {
-        reportLifecycleFailure(featureId, name, action, err);
+        return true;
+      } catch (error) {
+        if (isAbortError(error) || context.signal.aborted) {
+          if (activeOperation === operation) setFeatureStatus(name, "disabled", "cancelled");
+          throw createAbortError(getErrorMessage(error));
+        }
+        reportLifecycleFailure(featureId, name, action, error);
+        throw error;
       } finally {
-        finalizeTransition(action, timer, finished);
+        clearTimeout(timeoutId);
+        if (activeOperation === operation) activeOperation = null;
       }
-    }
-
-    void executeTransition();
+    });
+    transitionChain = queued;
+    return queued;
   }
 
   const feature = {
     id: featureId,
     featureKey: featureId,
-    name: name,
-    bootstrapMode: normalizedBootstrapMode,
-    fastCapture: normalizedFastCapture,
-    pageScopes: Array.isArray(pageScopes)
-      ? pageScopes.map((scope) => String(scope || "").trim()).filter(Boolean)
-      : [],
+    name,
+    bootstrapMode: normalizeFeatureBootstrapMode(bootstrapMode),
+    _declaredBootstrapMode: bootstrapMode,
+    fastCapture,
+    pageScopes: Array.isArray(pageScopes) ? pageScopes.map((scope) => String(scope || "").trim()).filter(Boolean) : pageScopes,
     settingsUi: settingsUi && typeof settingsUi === "object" ? settingsUi : null,
-    enable: function () {
-      debugLog(featureId, "Enable requested");
+    enable(context = null) {
       if (!canRunOnCurrentPage()) {
-        debugLog(featureId, "Enable skipped - page mismatch.");
         setFeatureStatus(name, "disabled", "page mismatch");
-        return;
+        return Promise.resolve(false);
       }
-
-      if (opInProgress) {
-        queueDesiredState("enable");
-        return;
-      }
-
-      runTransition("enable", enable, "running", "enable timeout");
+      return requestTransition("enable", context);
     },
-    disable: function () {
-      debugLog(featureId, "Disable requested");
-      if (opInProgress) {
-        queueDesiredState("disable");
-        return;
-      }
-
-      runTransition("disable", disable, "disabled", "disable timeout");
+    disable(context = null) {
+      return requestTransition("disable", context);
     },
-    toggle: function (shouldEnable, force = false) {
-      if (force) {
-        // Forced toggle: clear any pending and try to interrupt by cleanup where possible
-        pendingDesired = null;
-        // best-effort: if op in progress, mark as failing and continue
-        if (opInProgress) {
-          debugLog(featureId, "Forced toggle requested while operation in progress.");
-        }
-      }
-      shouldEnable ? this.enable() : this.disable();
+    toggle(shouldEnable, force = false) {
+      if (force) pendingTransition = null;
+      return shouldEnable ? this.enable() : this.disable();
     },
-    sync: function (force = false) {
-      this.toggle(this.isEnabled(), force);
+    sync(force = false) {
+      return this.toggle(this.isEnabled(), force);
     },
-    isEnabled: function () {
+    isEnabled() {
       if (customIsEnabled) return customIsEnabled();
       if (!configPath) return true;
-      const value = getByPath(config, configPath);
-      return typeof value === "boolean" ? value : false;
+      return getByPath(config, configPath) === true;
     },
-    isApplicable: function () {
+    isApplicable() {
       return canRunOnCurrentPage();
     },
-    /**
-     * Feature code running AFTER enable() can call this to record a runtime
-     * error and update health status without going through the lifecycle.
-     * e.g.  latestOverlayFeature.reportError(err, "processTilesBatch")
-     */
-    reportError: function (err, phase = "runtime") {
-      const message = err?.message || String(err);
-      debugLog(featureId, "Runtime error", {
-        data: { phase, error: message },
-        level: "error",
-      });
-      reportFeatureFailure(name, err, phase);
+    reportError(error, phase = "runtime") {
+      const message = getErrorMessage(error);
+      debugLog(featureId, "Runtime error", { data: { phase, error: message }, level: "error" });
+      reportFeatureFailure(name, error, phase);
       try {
         showToast(`${name} error: ${message}`);
       } catch {}
     },
   };
 
-  try {
-    const initial = computeIdleStatus();
-    setFeatureStatus(name, initial.status, initial.details);
-  } catch {
-    setFeatureStatus(name, "unknown");
-  }
-
+  const desired = feature.isEnabled();
+  setFeatureStatus(name, desired && canRunOnCurrentPage() ? "unknown" : "disabled", desired ? "page mismatch" : null);
   return feature;
 }

@@ -185,4 +185,4 @@ contributeToSection("global", {
       custom: openAddonsServiceSettingsDialog,
     },
   },
-});
+}, "addons:service-settings");

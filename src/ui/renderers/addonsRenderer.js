@@ -1,4 +1,4 @@
-import { createEl } from "../../core/dom.js";
+import { createEl } from "../../utils/dom.js";
 import {
   createAddonCard,
   createAddonPanelActions,
@@ -141,7 +141,7 @@ export function renderAddinsOverview(shadowRoot, getRegisteredAddons, getPinnedA
   if (isAddonsServiceDisabled()) {
     createEl("div", {
       className: "settings-addon-status-note error",
-      text: "âš ï¸ Add-ons service is disabled. No add-ons will be loaded or executed.",
+      text: "Ã¢Å¡Â Ã¯Â¸Â Add-ons service is disabled. No add-ons will be loaded or executed.",
       mount: installedList,
     });
   }

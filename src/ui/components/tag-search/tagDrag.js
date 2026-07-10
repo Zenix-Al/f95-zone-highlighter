@@ -1,5 +1,5 @@
 import { debugLog } from "../../../core/logger";
-import { createEl } from "../../../core/dom.js";
+import { createEl } from "../../../utils/dom.js";
 import { createRegistrar } from "../../../core/listenerRegistry.js";
 import { getShadowRoot } from "../../getShadowRoot.js";
 

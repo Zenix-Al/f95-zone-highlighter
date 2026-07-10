@@ -1,17 +1,11 @@
-import { config } from "../../config.js";
-import { saveConfigKeys } from "../../services/settingsService.js";
+import { buildConfigExport, commitConfigImport } from "../../services/configTransferService.js";
 import { openSettingsDialog } from "../../ui/components/dialog.js";
 import { showToast } from "../../ui/components/toast.js";
-import { EXPORTABLE_CONFIG_KEYS } from "./constants.js";
-import { deepCloneJson } from "./helpers.js";
 import {
-  buildExportPayload,
   downloadJsonFile,
   formatDateForFilename,
-  normalizeImportRoot,
   pickJsonFile,
 } from "./transferIO.js";
-import { validateImportedPayload } from "./validation.js";
 import {
   clearConfigTransferError,
   ensureConfigTransferErrorElement,
@@ -20,7 +14,7 @@ import {
 
 async function exportSettingsToFile() {
   clearConfigTransferError();
-  const payload = buildExportPayload();
+  const payload = buildConfigExport();
   const text = JSON.stringify(payload, null, 2);
   const filename = `f95zone-ultimate-enhancer-${formatDateForFilename()}.json`;
   downloadJsonFile(filename, text);
@@ -51,24 +45,14 @@ async function importSettingsFromFile() {
     return;
   }
 
-  const payload = normalizeImportRoot(parsed);
-  const validationError = validateImportedPayload(payload);
-  if (validationError) {
-    showConfigTransferError(`Import failed: ${validationError}`);
+  const result = await commitConfigImport(parsed);
+  if (!result.ok || !result.committed) {
+    const error = result.issues?.[0];
+    showConfigTransferError(`Import failed: ${error ? `${error.path}: ${error.code}` : "could not persist configuration."}`);
     return;
   }
 
-  // Merge import into config (only update keys present in import, preserve everything else including addons)
-  const updates = {};
-  for (const key of EXPORTABLE_CONFIG_KEYS) {
-    if (!Object.prototype.hasOwnProperty.call(payload, key)) continue;
-    const cloned = deepCloneJson(payload[key]);
-    updates[key] = cloned;
-    config[key] = cloned;
-  }
-
   clearConfigTransferError();
-  await saveConfigKeys(updates);
   showToast("Configuration imported. Reloading...");
   setTimeout(() => window.location.reload(), 400);
 }

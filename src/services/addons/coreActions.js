@@ -1,32 +1,5 @@
-export const ACTION_CAPABILITY_ALTERNATIVES = Object.freeze({
-  "toast.show": ["toast"],
-  "feature.enable": ["feature"],
-  "feature.disable": ["feature"],
-  "feature.refresh": ["feature"],
-  "storage.get": ["storage"],
-  "storage.set": ["storage"],
-  "storage.getUsage": ["storage"],
-  "config.getTagPrefs": ["storage"],
-  "idb.get": ["idb"],
-  "idb.put": ["idb"],
-  "idb.delete": ["idb"],
-  "idb.bulkPut": ["idb"],
-  "idb.bulkDelete": ["idb"],
-  "idb.query": ["idb"],
-  "idb.count": ["idb"],
-  "observer.watch": ["observer"],
-  "observer.unwatch": ["observer"],
-  "ui.dock.setButtons": ["ui", "ui.dock"],
-  "ui.dock.removeButtons": ["ui", "ui.dock"],
-  "ui.mount": ["ui", "ui.mount"],
-  "ui.update": ["ui", "ui.mount"],
-  "ui.unmount": ["ui", "ui.mount"],
-  "ui.dialog.open": ["ui", "ui.dialog"],
-  "ui.dialog.close": ["ui", "ui.dialog"],
-  "ui.confirm": ["ui", "ui.dialog"],
-  "ui.style.register": ["ui", "ui.style"],
-  "ui.style.unregister": ["ui", "ui.style"],
-});
+import { executeActionDescriptor, getAction, getActionSnapshot } from "./actions/registry.js";
+import "./actions/descriptors.js";
 
 export function hasAnyCapability(allowed, alternatives = []) {
   if (!(allowed instanceof Set) || !Array.isArray(alternatives) || alternatives.length === 0) {
@@ -36,7 +9,7 @@ export function hasAnyCapability(allowed, alternatives = []) {
 }
 
 export function isAddonActionAllowed(allowed, action) {
-  const alternatives = ACTION_CAPABILITY_ALTERNATIVES[action];
+  const alternatives = getAction(action)?.requiredCapabilities;
   if (!alternatives) return true;
   return hasAnyCapability(allowed, alternatives);
 }
@@ -48,51 +21,26 @@ export async function invokeRegisteredAddonCoreAction({
   deps,
   limits,
 }) {
-  const {
-    showToast,
-    emitAddonLifecycleCommand,
-    requestAddonTeardown,
-    cancelAddonTeardown,
-    updateAddonStatus,
-    ensureAddonStateBucket,
-    persistAddonsState,
-    upsertInstalledAddonMeta,
-    measurePayloadBytes,
-    idbGetForAddon,
-    idbPutForAddon,
-    idbDeleteForAddon,
-    idbBulkPutForAddon,
-    idbBulkDeleteForAddon,
-    idbQueryForAddon,
-    idbCountForAddon,
-    watchAddonObserver,
-    unwatchAddonObserver,
-    sanitizeDockButtons,
-    setAddonDockButtons,
-    removeAddonDockButtons,
-    sanitizeAddonMountId,
-    mountAddonUi,
-    updateAddonUi,
-    unmountAddonUi,
-    sanitizeAddonDialogId,
-    openAddonDialog,
-    closeAddonDialog,
-    openConfirmDialog,
-    sanitizeAddonStyleId,
-    registerAddonStyle,
-    unregisterAddonStyle,
-    emitAddonCommand,
-  } = deps;
-  const {
-    maxAddonStorageValueBytes,
-    maxAddonStorageTotalBytes,
-    maxAddonIdbPayloadBytes,
-    maxAddonIdbBulkItems,
-    maxAddonUiHtmlBytes,
-    maxAddonStyleTextBytes,
-  } = limits;
+  const descriptor = getAction(action);
+  if (descriptor) return executeActionDescriptor(descriptor, { addonId, action, payload, deps, limits });
+  return { ok: false, reason: "unsupported_action" };
+}
 
-  const actionHandlers = {
+export function getRegisteredAddonActionSnapshot() { return getActionSnapshot(); }
+
+/* Legacy handler table retained temporarily while descriptor modules are being registered. */
+export function createLegacyActionHandlers({ addonId, deps, limits }) {
+  const {
+    showToast, emitAddonLifecycleCommand, requestAddonTeardown, cancelAddonTeardown, updateAddonStatus,
+    ensureAddonStateBucket, persistAddonsState, upsertInstalledAddonMeta, measurePayloadBytes,
+    idbGetForAddon, idbPutForAddon, idbDeleteForAddon, idbBulkPutForAddon, idbBulkDeleteForAddon,
+    idbQueryForAddon, idbCountForAddon, watchAddonObserver, unwatchAddonObserver, sanitizeDockButtons,
+    setAddonDockButtons, removeAddonDockButtons, sanitizeAddonMountId, mountAddonUi, updateAddonUi,
+    unmountAddonUi, sanitizeAddonDialogId, openAddonDialog, closeAddonDialog, openConfirmDialog,
+    sanitizeAddonStyleId, registerAddonStyle, unregisterAddonStyle, emitAddonCommand,
+  } = deps;
+  const { maxAddonStorageValueBytes, maxAddonStorageTotalBytes, maxAddonIdbPayloadBytes, maxAddonIdbBulkItems, maxAddonUiHtmlBytes, maxAddonStyleTextBytes } = limits;
+  return {
     "toast.show": async (payload) => actionToastShow(showToast, payload),
     "feature.enable": async () =>
       await actionFeatureEnableDisable(
@@ -218,12 +166,6 @@ export async function invokeRegisteredAddonCoreAction({
     "ui.style.unregister": (payload) =>
       actionUiStyleUnregister(addonId, payload, unregisterAddonStyle),
   };
-
-  const handler = actionHandlers[action];
-  if (handler) {
-    return await handler(payload);
-  }
-  return { ok: false, reason: "unsupported_action" };
 }
 
 function actionToastShow(showToast, payload) {
@@ -659,3 +601,12 @@ function actionUiStyleUnregister(addonId, payload, unregisterAddonStyle) {
   const styleId = String(payload?.styleId || payload?.id || "");
   return unregisterAddonStyle(addonId, styleId);
 }
+
+export {
+  actionToastShow, actionFeatureEnableDisable, actionFeatureRefresh, actionStorageGet, actionStorageSet,
+  actionStorageGetUsage, actionConfigGetTagPrefs, actionIdbGet, actionIdbPut, actionIdbDelete,
+  actionIdbBulkPut, actionIdbBulkDelete, actionIdbQuery, actionIdbCount, actionObserverWatch,
+  actionObserverUnwatch, actionUiDockSetButtons, actionUiDockRemoveButtons, actionUiMount,
+  actionUiUpdate, actionUiUnmount, actionUiDialogOpen, actionUiDialogClose, actionUiConfirm,
+  actionUiStyleRegister, actionUiStyleUnregister,
+};
