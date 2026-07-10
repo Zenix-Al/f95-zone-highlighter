@@ -45,6 +45,13 @@ docs/
 - [ ] Move `src/core/dom.js` to `src/utils/dom.js` (or `src/ui/helpers/`).
 - [ ] Decouple and clean up "fast capture" logic from the core framework.
 - [ ] Move `src/core/tasksRegistry.js` to a more appropriate folder and document it.
-- [ ] Refactor `config-transfer` feature into a proper service.
-- [ ] Revisit and rework the storage mechanism.
+- [ ] Revisit storage mechanism and import/export:
+  - [ ] Revisit `settingsService.js` and `syncService.js` storage and sync interactions.
+  - [ ] Refactor the `config-transfer` feature (`src/features/config-transfer`) into a proper service.
+  - [ ] Decide on creating a schema/object to determine the data types of default configurations for clean imports.
 - [ ] Optimize the Core Actions API creation inside `addonsService` (e.g., modularize `coreActions.js` into distinct registerable action files rather than maintaining a giant static mapping table).
+- [ ] Review UI setting ownership: Clarify ownership of `latestSettings.js` and `threadSettings.js` (currently empty) vs dynamic contributions.
+- [ ] Verify `metaRegistry`: Ensure live effects for cross-tab changes work correctly for sections other than Color and Thread.
+- [ ] UI Metadata renderer: explicitly add support for the `info` metadata type in generic input renderers.
+- [ ] Tag search outside-click handler: Refactor to prevent duplicate bindings/duplicate work.
+- [ ] Add-on UI host trust boundary: Verify the security model where add-ons can mount HTML and style to multiple hosts.

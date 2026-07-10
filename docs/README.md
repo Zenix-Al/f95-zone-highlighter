@@ -16,5 +16,7 @@ Welcome to the documentation for the Latest Highlighter userscript. This directo
   - [Features](features/index.md) - The individual functionalities and how to create them.
   - [Services](services/index.md) - Background services for state, tags, settings, and addons.
     - [Add-on Development](services/addon-development.md) - Detailed guide and API reference for building add-ons.
-  - [UI](ui/index.md) - Rendering principles and components.
+    - [Fast Capture](services/fastCapture.md) - Documentation on early network response caching.
+  - [UI](ui/index.md) - Rendering principles and Shadow DOM usage.
+    - [Components](ui/components.md) - Reusable UI widgets (dialogs, toasts, picker).
   - [Config](config/index.md) - Configuration, defaults, and page definitions.
