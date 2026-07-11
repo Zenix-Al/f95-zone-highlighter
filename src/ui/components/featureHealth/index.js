@@ -1,6 +1,6 @@
 import { createEl } from "../../../utils/dom.js";
 import { showToast } from "../../components/toast";
-import { getRuntimeErrors, getAllFeatureStatuses } from "../../../core/featureHealth.js";
+import { getHealthDiagnostics, getRuntimeErrors, getAllFeatureStatuses } from "../../../core/featureHealth.js";
 import { stateManager } from "../../../config.js";
 import { listKnownAddons } from "../../../services/addonsService.js";
 
@@ -97,12 +97,16 @@ export function showFeatureHealthBox(providedStatuses, providedReportText) {
     }
 
     function formatFeatureHealthReport(statusesArg, countsArg, addonEntriesArg, addonCountsArg) {
+      const diagnostics = getHealthDiagnostics();
+      const resources = diagnostics.snapshots.resources || {};
+      const queues = diagnostics.snapshots.queues || {};
       const lines = [
         "Feature Health Diagnostic",
         `Timestamp: ${new Date().toISOString()}`,
         `Page: ${window.location.href}`,
         `Summary: running=${countsArg.running}, disabled=${countsArg.disabled}, degraded=${countsArg.degraded}, failing=${countsArg.failing}, unknown=${countsArg.unknown}`,
         `Add-ons (installed): total=${addonCountsArg.totalInstalled}, healthy=${addonCountsArg.healthy}, failing=${addonCountsArg.failing}, degraded=${addonCountsArg.degraded}, scoped-to-page=${addonCountsArg.scopeMatchesPage}, active-here=${addonCountsArg.activeOnPage}`,
+        `Resources: total=${resources.totalResources || 0}, owners=${resources.ownerCount || 0}; Queues: total=${queues.queueCount || 0}, pending=${queues.pendingCount || 0}, running=${queues.runningCount || 0}`,
         "",
       ];
 

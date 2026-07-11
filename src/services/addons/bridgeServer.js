@@ -1,4 +1,6 @@
 import { ensurePageBridge } from "../../core/pageBridge.js";
+import { recordHealthEvent } from "../../core/featureHealth.js";
+import { createReplayCache, createSafeAddonResponse, validateAddonRequestEnvelope } from "./protocol.js";
 
 const CORE_ACTION_RATE_WINDOW_MS = 5000;
 const CORE_ACTION_RATE_MAX = 100;
@@ -22,6 +24,7 @@ const addonInflight = new Map();
 const addonStatusTimestamps = new Map();
 const addonRegisterTimestamps = new Map();
 const addonUnregisterTimestamps = new Map();
+const replayCache = createReplayCache();
 
 function checkRateLimit(map, key, windowMs, maxCount) {
   const now = Date.now();
@@ -51,8 +54,11 @@ function releaseInflight(addonId) {
 }
 
 let isBridgeListenerBound = false;
+let bridgeListener = null;
+let bridgeEventName = "";
+let lastAddonRequest = null;
 
-function createBridgeScript(devCommandEvent, apiVersion) {
+function createBridgeScript(devCommandEvent, apiVersion, marker) {
   return `
     (() => {
       if (window.__F95UE_ADDONS_DEV__) return;
@@ -76,8 +82,8 @@ function createBridgeScript(devCommandEvent, apiVersion) {
         updateStatus(addonId, status, statusMessage = "") {
           dispatch("update-status", { addonId, status, statusMessage });
         },
-        invokeCoreAction(addonId, action, payload = {}, replyEvent = "") {
-          dispatch("core-action", { addonId, action, payload, replyEvent });
+        invokeCoreAction(addonId, action, payload = {}, replyEvent = "", requestId = "") {
+          dispatch("core-action", { marker: "${marker}", protocolVersion: "${apiVersion}", requestId: requestId || ("req-" + Date.now() + "-" + Math.random().toString(36).slice(2)), addonId, action, payload, replyEvent });
         },
         teardownComplete(addonId, reason = "") {
           dispatch("teardown-complete", { addonId, reason });
@@ -118,13 +124,13 @@ export function initAddonsBridgeServer({
   onInvokeCoreAction,
 }) {
   if (!isBridgeListenerBound) {
-    window.addEventListener(devCommandEvent, (event) => {
+    bridgeListener = (event) => {
       const detail = event?.detail || {};
       const type = String(detail.type || "").trim();
         typeBridgeListener(
           type,
           detail,
-          apiVersion,
+          apiVersion, marker,
           isServiceDisabled,
           getCoreActionThrottleConfig,
           onRegister,
@@ -133,21 +139,42 @@ export function initAddonsBridgeServer({
         onTeardownComplete,
         onInvokeCoreAction,
       );
-    });
+    };
+    bridgeEventName = devCommandEvent;
+    window.addEventListener(devCommandEvent, bridgeListener);
 
     isBridgeListenerBound = true;
   }
 
   return ensurePageBridge({
     marker,
-    scriptContent: createBridgeScript(devCommandEvent, apiVersion),
+    scriptContent: createBridgeScript(devCommandEvent, apiVersion, marker),
   });
+}
+
+export function shutdownAddonsBridgeServer() {
+  if (bridgeListener && bridgeEventName) window.removeEventListener(bridgeEventName, bridgeListener);
+  bridgeListener = null;
+  bridgeEventName = "";
+  isBridgeListenerBound = false;
+  replayCache.clear();
+  addonActionTimestamps.clear();
+  addonInflight.clear();
+  addonStatusTimestamps.clear();
+  addonRegisterTimestamps.clear();
+  addonUnregisterTimestamps.clear();
+  lastAddonRequest = null;
+}
+
+export function getAddonsBridgeDiagnostics() {
+  return Object.freeze({ listenerBound: isBridgeListenerBound, activeRequestAddons: addonInflight.size, lastRequest: lastAddonRequest && { ...lastAddonRequest } });
 }
 
 function typeBridgeListener(
   type,
   detail = {},
   apiVersion,
+  marker,
   isServiceDisabled,
   getCoreActionThrottleConfig,
   onRegister,
@@ -262,7 +289,20 @@ function typeBridgeListener(
             };
       const replyEvent = String(detail.replyEvent || "").trim();
       if (!replyEvent) return;
+      const validation = validateAddonRequestEnvelope(detail, { apiVersion, marker });
+      if (!validation.ok) {
+        recordHealthEvent({ code: "ADDON_REQUEST_REJECTED", severity: "warning", ownerId: String(detail.addonId || ""), subsystem: "addons", message: validation.reason, correlationId: String(detail.requestId || "") });
+        window.dispatchEvent(new CustomEvent(replyEvent, { detail: createSafeAddonResponse({ apiVersion, addonId: detail.addonId, requestId: detail.requestId, result: { ok: false, reason: validation.reason } }) }));
+        return;
+      }
+      if (replayCache.seen(detail.addonId, detail.requestId)) {
+        recordHealthEvent({ code: "ADDON_DUPLICATE_REQUEST", severity: "warning", ownerId: detail.addonId, subsystem: "addons", message: "Duplicate add-on request", correlationId: detail.requestId });
+        window.dispatchEvent(new CustomEvent(replyEvent, { detail: createSafeAddonResponse({ apiVersion, addonId: detail.addonId, requestId: detail.requestId, result: { ok: false, reason: "duplicate_request" } }) }));
+        return;
+      }
       const action = String(detail.action || "").trim();
+      lastAddonRequest = { addonId: key, action, correlationId: detail.requestId, receivedAt: Date.now() };
+      recordHealthEvent({ code: "ADDON_REQUEST", severity: "info", ownerId: key, subsystem: "addons", message: `Action ${action}`, correlationId: detail.requestId, operationId: action });
       const isCleanupAction = UNTHROTTLED_CLEANUP_ACTIONS.has(action);
       if (
         !isCleanupAction &&
@@ -274,14 +314,14 @@ function typeBridgeListener(
         )
       ) {
         window.dispatchEvent(
-          new CustomEvent(replyEvent, { detail: { ok: false, reason: "rate_limited" } }),
+          new CustomEvent(replyEvent, { detail: createSafeAddonResponse({ apiVersion, addonId: key, requestId: detail.requestId, result: { ok: false, reason: "rate_limited" } }) }),
         );
         return;
       }
       if (!isCleanupAction && !tryAcquireInflight(key, throttleConfig.maxConcurrent)) {
         window.dispatchEvent(
           new CustomEvent(replyEvent, {
-            detail: { ok: false, reason: "too_many_concurrent_requests" },
+            detail: createSafeAddonResponse({ apiVersion, addonId: key, requestId: detail.requestId, result: { ok: false, reason: "too_many_concurrent_requests" } }),
           }),
         );
         return;
@@ -294,12 +334,12 @@ function typeBridgeListener(
       )
         .then((result) => {
           if (!isCleanupAction) releaseInflight(key);
-          window.dispatchEvent(new CustomEvent(replyEvent, { detail: result }));
+          window.dispatchEvent(new CustomEvent(replyEvent, { detail: createSafeAddonResponse({ apiVersion, addonId: key, requestId: detail.requestId, result }) }));
         })
         .catch(() => {
           if (!isCleanupAction) releaseInflight(key);
           window.dispatchEvent(
-            new CustomEvent(replyEvent, { detail: { ok: false, reason: "internal_error" } }),
+            new CustomEvent(replyEvent, { detail: createSafeAddonResponse({ apiVersion, addonId: key, requestId: detail.requestId, result: { ok: false, reason: "internal_error" } }) }),
           );
         });
       break;

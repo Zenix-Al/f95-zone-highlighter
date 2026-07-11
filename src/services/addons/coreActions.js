@@ -1,4 +1,5 @@
 import { executeActionDescriptor, getAction, getActionSnapshot } from "./actions/registry.js";
+import { ADDON_UI_SLOT_POLICY, normalizeAddonMountSlot } from "./uiSanitizer.js";
 import "./actions/descriptors.js";
 
 export function hasAnyCapability(allowed, alternatives = []) {
@@ -20,9 +21,11 @@ export async function invokeRegisteredAddonCoreAction({
   payload = {},
   deps,
   limits,
+  allowed,
+  authorize,
 }) {
   const descriptor = getAction(action);
-  if (descriptor) return executeActionDescriptor(descriptor, { addonId, action, payload, deps, limits });
+  if (descriptor) return executeActionDescriptor(descriptor, { addonId, action, payload, deps, limits, allowed, authorize });
   return { ok: false, reason: "unsupported_action" };
 }
 
@@ -505,10 +508,10 @@ function actionUiDockRemoveButtons(addonId, removeAddonDockButtons) {
   return { ok: true };
 }
 
-function actionUiMount(addonId, payload, maxAddonUiHtmlBytes, sanitizeAddonMountId, mountAddonUi) {
+function actionUiMount(addonId, payload, maxAddonUiHtmlBytes, sanitizeAddonMountId, mountAddonUi, allowed = null) {
   const mountId = sanitizeAddonMountId(payload?.mountId || payload?.id || "");
   const html = String(payload?.html || payload?.template || "");
-  const slot = String(payload?.slot || "body");
+  const slot = String(payload?.slot || "page.panel");
   const position = String(payload?.position || "append");
 
   if (!mountId) return { ok: false, reason: "mount_id_required" };
@@ -517,7 +520,14 @@ function actionUiMount(addonId, payload, maxAddonUiHtmlBytes, sanitizeAddonMount
     return { ok: false, reason: "payload_too_large" };
   }
 
-  return mountAddonUi(addonId, { mountId, html, slot, position });
+  const normalizedSlot = normalizeAddonMountSlot(slot);
+  if (!normalizedSlot) return { ok: false, reason: "mount_slot_not_allowed" };
+  const requiredCapability = ADDON_UI_SLOT_POLICY[normalizedSlot].capability;
+  if (allowed instanceof Set && !allowed.has(requiredCapability) && !allowed.has("ui")) {
+    return { ok: false, reason: "permission_denied" };
+  }
+
+  return mountAddonUi(addonId, { mountId, html, slot: normalizedSlot, position });
 }
 
 function actionUiUpdate(

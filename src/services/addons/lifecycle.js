@@ -49,6 +49,11 @@ export function createAddonLifecycleOrchestrator({
       watchdogMs: teardownWatchdogMs,
     });
 
+    // Core-owned UI is not executable teardown state. Remove it immediately so
+    // a disabled, blocked, or out-of-scope add-on cannot leave page UI behind
+    // while its cooperative teardown handler is still running.
+    cleanupAddonUi(normalizedId);
+
     const timeoutId = window.setTimeout(() => {
       addonTeardownWatchdogs.delete(normalizedId);
       console.warn(

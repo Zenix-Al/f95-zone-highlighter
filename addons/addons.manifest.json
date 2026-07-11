@@ -4,12 +4,16 @@
       "id": "image-repair-addon",
       "name": "F95UE Image Repair Add-on",
       "description": "Automatically retries broken attachment images on F95Zone threads.",
-      "version": "0.2.2",
+      "version": "0.2.3",
       "author": "X Death",
       "entry": "addons/image-repair-addon/src/main.js",
       "outfile": "addons/image-repair-addon/dist/image-repair-addon.user.js",
-      "matches": ["*://f95zone.to/threads/*"],
-      "grants": ["none"],
+      "matches": [
+        "*://f95zone.to/threads/*"
+      ],
+      "grants": [
+        "none"
+      ],
       "runAt": "document-idle",
       "requiresCore": true,
       "capabilities": [
@@ -25,7 +29,7 @@
       "id": "masked-direct-addon",
       "name": "F95UE Masked + Direct Download Add-on",
       "description": "Combines masked-link skipper and direct-download flows into one trusted add-on.",
-      "version": "0.3.45",
+      "version": "0.3.46",
       "author": "X Death",
       "entry": "addons/masked-direct-addon/src/main.js",
       "outfile": "addons/masked-direct-addon/dist/masked-direct-addon.user.js",
@@ -55,18 +59,28 @@
       ],
       "runAt": "document-idle",
       "requiresCore": true,
-      "capabilities": ["toast", "feature", "storage", "ui", "ui.style"]
+      "capabilities": [
+        "toast",
+        "feature",
+        "storage",
+        "ui",
+        "ui.style"
+      ]
     },
     {
       "id": "library-addon",
       "name": "F95UE Library Add-on",
       "description": "Quick-add threads to a personal library and manage entries with a dedicated add-on UI.",
-      "version": "0.3.52",
+      "version": "0.3.54",
       "author": "X Death",
       "entry": "addons/library-addon/src/main.js",
       "outfile": "addons/library-addon/dist/library-addon.user.js",
-      "matches": ["*://f95zone.to/*"],
-      "grants": ["none"],
+      "matches": [
+        "*://f95zone.to/*"
+      ],
+      "grants": [
+        "none"
+      ],
       "runAt": "document-idle",
       "requiresCore": true,
       "capabilities": [
@@ -84,12 +98,16 @@
       "id": "example-addon",
       "name": "F95UE Example Add-on",
       "description": "Core API playground demonstrating every current addon-facing action through api modules.",
-      "version": "0.2.7",
+      "version": "0.2.8",
       "author": "X Death",
       "entry": "addons/example-addon/src/main.js",
       "outfile": "addons/example-addon/dist/example-addon.user.js",
-      "matches": ["*://f95zone.to/*"],
-      "grants": ["none"],
+      "matches": [
+        "*://f95zone.to/*"
+      ],
+      "grants": [
+        "none"
+      ],
       "runAt": "document-idle",
       "requiresCore": true,
       "capabilities": [
@@ -108,12 +126,17 @@
       "id": "latest-filters-addon",
       "name": "F95UE Latest Filters Add-on",
       "description": "Adds one Saved Filters button on Latest Updates with a searchable preset list and active filter tracking.",
-      "version": "0.3.17",
+      "version": "0.3.18",
       "author": "X Death",
       "entry": "addons/latest-filters-addon/src/main.js",
       "outfile": "addons/latest-filters-addon/dist/latest-filters-addon.user.js",
-      "matches": ["*://f95zone.to/sam/latest_alpha/*"],
-      "grants": ["GM.getValue", "GM.setValue"],
+      "matches": [
+        "*://f95zone.to/sam/latest_alpha/*"
+      ],
+      "grants": [
+        "GM.getValue",
+        "GM.setValue"
+      ],
       "runAt": "document-idle",
       "requiresCore": true,
       "capabilities": [
@@ -134,11 +157,17 @@
       "author": "X Death",
       "entry": "addons/halloween-theme-addon/src/main.js",
       "outfile": "addons/halloween-theme-addon/dist/halloween-theme-addon.user.js",
-      "matches": ["*://f95zone.to/*"],
-      "grants": ["none"],
+      "matches": [
+        "*://f95zone.to/*"
+      ],
+      "grants": [
+        "none"
+      ],
       "runAt": "document-idle",
       "requiresCore": true,
-      "capabilities": ["feature"]
+      "capabilities": [
+        "feature"
+      ]
     }
   ]
 }

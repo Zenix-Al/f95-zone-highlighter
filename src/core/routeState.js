@@ -1,3 +1,5 @@
+import { registerDiagnosticsProvider, recordHealthEvent } from "./featureHealth.js";
+
 let routeGeneration = 0;
 let currentUrl = "";
 let currentPageFlags = {};
@@ -37,6 +39,7 @@ export function beginRoute(locationLike = globalThis.location) {
   currentUrl = url;
   routeGeneration += 1;
   correlationId = createCorrelationId();
+  recordHealthEvent({ code: "ROUTE_TRANSITION", severity: "info", subsystem: "route", message: "Route changed", correlationId, routeGeneration, details: { changed: true } });
   return { ...getRouteContext(), changed: true };
 }
 
@@ -57,3 +60,5 @@ export function resetRouteStateForTests() {
   correlationId = "route:0";
   controller = new AbortController();
 }
+
+registerDiagnosticsProvider("route", () => ({ generation: routeGeneration, correlationId, pageFlags: { ...currentPageFlags } }));

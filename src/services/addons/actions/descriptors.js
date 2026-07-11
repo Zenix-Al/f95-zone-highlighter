@@ -28,7 +28,7 @@ const validators = Object.freeze({
   "ui.confirm": objectPayload, "ui.style.register": objectPayload, "ui.style.unregister": objectPayload, "toast.show": objectPayload,
 });
 
-function executeLegacyHandler(id, { addonId, payload, deps, limits }) {
+function executeLegacyHandler(id, { addonId, payload, deps, limits, allowed }) {
   const h = {
     "toast.show": () => actionToastShow(deps.showToast, payload),
     "feature.enable": () => actionFeatureEnableDisable(addonId, id, deps.updateAddonStatus, deps.emitAddonLifecycleCommand, deps.ensureAddonStateBucket, deps.persistAddonsState, deps.upsertInstalledAddonMeta, deps.requestAddonTeardown, deps.cancelAddonTeardown),
@@ -47,7 +47,7 @@ function executeLegacyHandler(id, { addonId, payload, deps, limits }) {
     "idb.count": () => actionIdbCount(addonId, payload, deps.measurePayloadBytes, limits.maxAddonIdbPayloadBytes, deps.idbCountForAddon),
     "observer.watch": () => actionObserverWatch(addonId, payload, deps.watchAddonObserver), "observer.unwatch": () => actionObserverUnwatch(addonId, payload, deps.unwatchAddonObserver),
     "ui.dock.setButtons": () => actionUiDockSetButtons(addonId, payload, deps.sanitizeDockButtons, deps.setAddonDockButtons), "ui.dock.removeButtons": () => actionUiDockRemoveButtons(addonId, deps.removeAddonDockButtons),
-    "ui.mount": () => actionUiMount(addonId, payload, limits.maxAddonUiHtmlBytes, deps.sanitizeAddonMountId, deps.mountAddonUi), "ui.update": () => actionUiUpdate(addonId, payload, limits.maxAddonUiHtmlBytes, deps.sanitizeAddonMountId, deps.updateAddonUi), "ui.unmount": () => actionUiUnmount(addonId, payload, deps.unmountAddonUi),
+    "ui.mount": () => actionUiMount(addonId, payload, limits.maxAddonUiHtmlBytes, deps.sanitizeAddonMountId, deps.mountAddonUi, allowed), "ui.update": () => actionUiUpdate(addonId, payload, limits.maxAddonUiHtmlBytes, deps.sanitizeAddonMountId, deps.updateAddonUi), "ui.unmount": () => actionUiUnmount(addonId, payload, deps.unmountAddonUi),
     "ui.dialog.open": () => actionUiDialogOpen(addonId, payload, limits.maxAddonUiHtmlBytes, deps.sanitizeAddonDialogId, deps.openAddonDialog), "ui.dialog.close": () => actionUiDialogClose(addonId, payload, deps.closeAddonDialog), "ui.confirm": () => actionUiConfirm(payload, deps.openConfirmDialog),
     "ui.style.register": () => actionUiStyleRegister(addonId, payload, limits.maxAddonStyleTextBytes, deps.sanitizeAddonStyleId, deps.registerAddonStyle), "ui.style.unregister": () => actionUiStyleUnregister(addonId, payload, deps.unregisterAddonStyle),
   }[id];

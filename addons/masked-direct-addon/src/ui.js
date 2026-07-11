@@ -66,6 +66,7 @@ export function createAddonUi({ addonId, buttonClass, addTeardown }) {
     if (!toastEl) {
       toastEl = document.createElement("div");
       toastEl.id = "f95ue-addon-toast";
+      toastEl.dataset.addonId = addonId;
       document.body.appendChild(toastEl);
     }
     toastEl.textContent = String(message || "");

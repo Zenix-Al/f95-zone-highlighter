@@ -1,4 +1,4 @@
-import { reportFeatureFailure, reportFeatureWarning } from "./featureHealth.js";
+import { registerDiagnosticsProvider, reportFeatureFailure, reportFeatureWarning } from "./featureHealth.js";
 
 let lastBootstrapSummary = null;
 
@@ -80,3 +80,14 @@ export function getLastBootstrapSummary() {
 export function createBootstrapFailureHandler(step = "bootstrap") {
   return (error) => reportFeatureFailure("Bootstrap", error, step);
 }
+
+registerDiagnosticsProvider("bootstrap", () => {
+  if (!lastBootstrapSummary) return { status: "idle" };
+  return {
+    correlationId: lastBootstrapSummary.correlationId,
+    status: lastBootstrapSummary.status,
+    stepCount: lastBootstrapSummary.steps.length,
+    failedSteps: [...lastBootstrapSummary.failedSteps],
+    degradedSteps: [...lastBootstrapSummary.degradedSteps],
+  };
+});

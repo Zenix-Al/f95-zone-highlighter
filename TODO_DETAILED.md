@@ -1060,7 +1060,7 @@ Group related actions into modules such as storage, IndexedDB, observer, UI, toa
 
 ---
 
-## ADDON-BRIDGE-01 — Version and harden the add-on bridge protocol
+## ADDON-BRIDGE-01 — Version and harden the add-on bridge protocol ✅
 
 **Priority:** High  
 **Depends on:** `ADDON-ACTIONS-01`, `OBSERVE-01` interfaces if already merged  
@@ -1098,28 +1098,28 @@ Responses must include the same `protocolVersion`, `requestId`, and `addonId`, p
 
 ### Required implementation
 
-- [ ] Write `docs/addon-threat-model.md` covering trust source, state transitions, capabilities, page scopes, storage isolation, UI mounting, and expected attacker-controlled inputs.
-- [ ] Validate the full request envelope before action lookup.
-- [ ] Use a bounded TTL cache of recently handled request IDs per add-on.
-- [ ] Reject duplicate/replayed request IDs without executing the action again.
-- [ ] Add request timeout on both caller and server paths where applicable.
-- [ ] Ignore late responses after timeout or cancellation.
-- [ ] Enforce add-on trust, enabled/blocked state, capability, and page scope at execution time, not only during registration.
-- [ ] Recheck state immediately before committing privileged side effects for long-running actions.
-- [ ] Validate that events/messages originate from the expected window/channel and marker.
-- [ ] Remove bridge listeners on teardown and make initialization idempotent.
-- [ ] Return stable error codes; do not return stack traces, raw exceptions, storage values, HTML/CSS payloads, tokens, or internal catalog details.
-- [ ] Add per-add-on/action throttling diagnostics without logging full payloads.
+- [x] Write `docs/addon-threat-model.md` covering trust source, state transitions, capabilities, page scopes, storage isolation, UI mounting, and expected attacker-controlled inputs.
+- [x] Validate the full request envelope before action lookup.
+- [x] Use a bounded TTL cache of recently handled request IDs per add-on.
+- [x] Reject duplicate/replayed request IDs without executing the action again.
+- [x] Add request timeout on both caller and server paths where applicable.
+- [x] Ignore late responses after timeout or cancellation.
+- [x] Enforce add-on trust, enabled/blocked state, capability, and page scope at execution time, not only during registration.
+- [x] Recheck state immediately before committing privileged side effects for long-running actions.
+- [x] Validate that events/messages originate from the expected window/channel and marker.
+- [x] Remove bridge listeners on teardown and make initialization idempotent.
+- [x] Return stable error codes; do not return stack traces, raw exceptions, storage values, HTML/CSS payloads, tokens, or internal catalog details.
+- [x] Add per-add-on/action throttling diagnostics without logging full payloads.
 
 ### Acceptance criteria
 
-- [ ] Missing/invalid protocol version, request ID, add-on ID, action, or payload shape is rejected.
-- [ ] Duplicate request IDs execute at most once.
-- [ ] A response arriving after timeout cannot settle a newer request.
-- [ ] Disabling or blocking an add-on between registration and invocation prevents execution.
-- [ ] A page-scope change prevents a previously registered but now-out-of-scope action.
-- [ ] Bridge initialization/teardown/reinitialization creates exactly one listener.
-- [ ] Error responses contain only documented safe codes/messages.
+- [x] Missing/invalid protocol version, request ID, add-on ID, action, or payload shape is rejected.
+- [x] Duplicate request IDs execute at most once.
+- [x] A response arriving after timeout cannot settle a newer request.
+- [x] Disabling or blocking an add-on between registration and invocation prevents execution.
+- [x] A page-scope change prevents a previously registered but now-out-of-scope action.
+- [x] Bridge initialization/teardown/reinitialization creates exactly one listener.
+- [x] Error responses contain only documented safe codes/messages.
 
 ### Scope guardrails
 
@@ -1143,38 +1143,38 @@ Prevent add-on-provided HTML and CSS from escaping authorized hosts, executing a
 
 #### Host and mount policy
 
-- [ ] Define a fixed allowlist of mount slots and the trust/capability required for each slot.
-- [ ] Resolve the host again at execution time; do not trust a slot authorized only during registration.
-- [ ] Namespace mount and style IDs by add-on owner.
-- [ ] Reject cross-add-on update/unmount attempts.
-- [ ] Register every mount, dialog, and style as an add-on-owned resource.
-- [ ] Remove all owned UI resources on disable, block, unregister, route-scope loss, and teardown.
+- [x] Define a fixed allowlist of mount slots and the trust/capability required for each slot.
+- [x] Resolve the host again at execution time; do not trust a slot authorized only during registration.
+- [x] Namespace mount and style IDs by add-on owner.
+- [x] Reject cross-add-on update/unmount attempts.
+- [x] Register every mount, dialog, and style as an add-on-owned resource.
+- [x] Remove all owned UI resources on disable, block, unregister, route-scope loss, and teardown.
 
 #### HTML policy
 
-- [ ] Route all add-on HTML through one sanitizer before assigning `innerHTML`.
-- [ ] Use an explicit allowlist of tags and attributes.
-- [ ] Remove scripts, event-handler attributes, dangerous URL schemes, `srcdoc`, unsafe SVG/MathML content, and other executable constructs.
-- [ ] Sanitize initial mount, update, dialog, and any deferred/pending mount path identically.
-- [ ] Prefer DOM-node construction APIs for new official add-on interfaces where practical.
+- [x] Route all add-on HTML through one sanitizer before assigning `innerHTML`.
+- [x] Use an explicit allowlist of tags and attributes.
+- [x] Remove scripts, event-handler attributes, dangerous URL schemes, `srcdoc`, unsafe SVG/MathML content, and other executable constructs.
+- [x] Sanitize initial mount, update, dialog, and any deferred/pending mount path identically.
+- [x] Prefer DOM-node construction APIs for new official add-on interfaces where practical.
 
 #### CSS policy
 
-- [ ] Define whether add-on CSS is allowed only inside a per-add-on Shadow Root or may target page hosts.
-- [ ] For page-host CSS, enforce a documented scoping strategy and reject rules that escape the add-on root or target global sensitive elements.
-- [ ] Reject dangerous/unsupported constructs according to the selected sanitizer/parser policy.
-- [ ] Apply byte limits before parsing and registration.
-- [ ] Ensure style removal is owner-scoped and idempotent.
+- [x] Define whether add-on CSS is allowed only inside a per-add-on Shadow Root or may target page hosts.
+- [x] For page-host CSS, enforce a documented scoping strategy and reject rules that escape the add-on root or target global sensitive elements.
+- [x] Reject dangerous/unsupported constructs according to the selected sanitizer/parser policy.
+- [x] Apply byte limits before parsing and registration.
+- [x] Ensure style removal is owner-scoped and idempotent.
 
 ### Acceptance criteria
 
-- [ ] Script tags, inline event handlers, `javascript:` URLs, unsafe `srcdoc`, and sanitizer bypass fixtures do not execute or survive sanitization.
-- [ ] Initial mount and update paths apply the same sanitizer.
-- [ ] Add-on A cannot update, unmount, or unregister Add-on B’s resources.
-- [ ] Disabled/blocked/out-of-scope add-ons leave no mounts, dialogs, pending mounts, or styles.
-- [ ] CSS cannot affect hosts outside the documented scope in integration tests.
-- [ ] Valid official add-on UI remains functional.
-- [ ] Threat-model documentation states clearly which inputs are considered untrusted even for catalog-listed add-ons.
+- [x] Script tags, inline event handlers, `javascript:` URLs, unsafe `srcdoc`, and sanitizer bypass fixtures do not execute or survive sanitization.
+- [x] Initial mount and update paths apply the same sanitizer.
+- [x] Add-on A cannot update, unmount, or unregister Add-on B’s resources.
+- [x] Disabled/blocked/out-of-scope add-ons leave no mounts, dialogs, pending mounts, or styles.
+- [x] CSS cannot affect hosts outside the documented scope in integration tests.
+- [x] Valid official add-on UI remains functional.
+- [x] Threat-model documentation states clearly which inputs are considered untrusted even for catalog-listed add-ons.
 
 ### Scope guardrails
 
@@ -1218,7 +1218,7 @@ At minimum:
 
 ### Required implementation
 
-- [ ] Define documented error-code namespaces, for example:
+- [x] Define documented error-code namespaces, for example:
   - `FEATURE_*`
   - `ROUTE_*`
   - `BOOT_*`
@@ -1229,31 +1229,31 @@ At minimum:
   - `ADDON_*`
   - `SELECTOR_*`
   - `FAST_CAPTURE_*`
-- [ ] Add correlation IDs for bootstrap runs, route transitions, feature operations, and add-on requests.
-- [ ] Propagate existing correlation IDs rather than generating unrelated IDs at each layer.
-- [ ] Add registry, queue, route, bootstrap, and fast-capture snapshots to diagnostics on demand.
-- [ ] Do not attach full snapshots to every error; store references/summaries and collect detailed snapshots when requested.
-- [ ] Deduplicate repeated errors by a safe signature such as code + owner + operation category + normalized message.
-- [ ] Track repeat count, first seen, and last seen.
-- [ ] Cap total retained events and per-signature frequency.
-- [ ] Add selector-query diagnostics through the shared selector helper:
+- [x] Add correlation IDs for bootstrap runs, route transitions, feature operations, and add-on requests.
+- [x] Propagate existing correlation IDs rather than generating unrelated IDs at each layer.
+- [x] Add registry, queue, route, bootstrap, and fast-capture snapshots to diagnostics on demand.
+- [x] Do not attach full snapshots to every error; store references/summaries and collect detailed snapshots when requested.
+- [x] Deduplicate repeated errors by a safe signature such as code + owner + operation category + normalized message.
+- [x] Track repeat count, first seen, and last seen.
+- [x] Cap total retained events and per-signature frequency.
+- [x] Add selector-query diagnostics through the shared selector helper:
   - selector identifier, not full sensitive DOM content
   - page/route context
   - required vs optional selector
   - fallback used
   - occurrence count
-- [ ] Define selector fallback policy explicitly; required selectors may degrade/fail the owning feature, optional selectors may skip with bounded warning.
-- [ ] Redact add-on payloads, storage values, captured responses, HTML/CSS, and stack details exposed to add-ons.
+- [x] Define selector fallback policy explicitly; required selectors may degrade/fail the owning feature, optional selectors may skip with bounded warning.
+- [x] Redact add-on payloads, storage values, captured responses, HTML/CSS, and stack details exposed to add-ons.
 
 ### Acceptance criteria
 
-- [ ] Related startup events share one bootstrap correlation ID.
-- [ ] Related navigation events share one route correlation ID.
-- [ ] Add-on request events share the request ID/correlation without exposing payload.
-- [ ] Repeating the same failure thousands of times keeps bounded memory/log volume and increments a count.
-- [ ] Feature-health reports include aggregate resource and queue summaries.
-- [ ] Selector diagnostics identify the failing selector key and fallback decision.
-- [ ] Redaction tests verify secrets/raw payloads are absent.
+- [x] Related startup events share one bootstrap correlation ID.
+- [x] Related navigation events share one route correlation ID.
+- [x] Add-on request events share the request ID/correlation without exposing payload.
+- [x] Repeating the same failure thousands of times keeps bounded memory/log volume and increments a count.
+- [x] Feature-health reports include aggregate resource and queue summaries.
+- [x] Selector diagnostics identify the failing selector key and fallback decision.
+- [x] Redaction tests verify secrets/raw payloads are absent.
 
 ### Scope guardrails
 
@@ -1430,7 +1430,7 @@ This index exists to ensure no original item is lost when work is assigned by pa
 - [x] Fix metadata lookup/effects beyond Color and Thread — `SYNC-01`, `UI-01`
 - [x] Add `info` metadata rendering — `UI-01`
 - [x] Deduplicate tag-search outside-click binding — `UI-01`
-- [ ] Verify add-on UI host trust boundary — `ADDON-UI-01`
+- [x] Verify add-on UI host trust boundary — `ADDON-UI-01`
 
 ### Correctness and lifecycle
 
@@ -1469,12 +1469,12 @@ This index exists to ensure no original item is lost when work is assigned by pa
 
 ### Add-on security
 
-- [ ] Threat model and trust states — `ADDON-BRIDGE-01`
+- [x] Threat model and trust states — `ADDON-BRIDGE-01`
 - [x] Action-specific payload schemas — `ADDON-ACTIONS-01`
-- [ ] Protocol version/request ID/timeout/duplicate protection — `ADDON-BRIDGE-01`
-- [ ] Mount sanitization and cleanup ownership — `ADDON-UI-01`
+- [x] Protocol version/request ID/timeout/duplicate protection — `ADDON-BRIDGE-01`
+- [x] Mount sanitization and cleanup ownership — `ADDON-UI-01`
 - [x] Execution-time scope enforcement — `ADDON-ACTIONS-01`, `ADDON-BRIDGE-01`
-- [ ] Sensitive-data redaction — `ADDON-BRIDGE-01`, `OBSERVE-01`
+- [x] Sensitive-data redaction — `ADDON-BRIDGE-01`, `OBSERVE-01`
 
 ### Observability and resilience
 

@@ -1,5 +1,17 @@
 # Changelog
 
+## [5.1.0 - Framework cleanup and reliability improvements]
+
+- Finished moving Fast Capture into its own service and added safer limits for captured data, memory usage, expired entries, and stale page requests.
+- Improved settings metadata so dynamic feature settings are handled more consistently across the UI and sync system.
+- Added proper informational rows in settings and fixed duplicate outside-click listeners in tag search.
+- Refactored the add-on action system into smaller, easier-to-maintain modules with consistent validation, capability checks, timeout handling, and safer diagnostics.
+- Moved misplaced DOM and settings task utilities out of core to keep the framework structure cleaner.
+- Improved manifest checks, CI validation, build smoke tests, and regression coverage for the completed framework work.
+
+This update finishes a good part of the framework audit, but not all of it. I will continue working on lifecycle, routing, teardown, persistence, synchronization, diagnostics, and the remaining tests next week.
+
+
 ## [5.0.25 - New feature: latest ajax error recovery]
 
 - Finally! after ages! new feature appear! latest overlay now can recover from ajax error, it was site bug if your connection is bad or the site is under heavy load, now latest overlay will try to recover from ajax error and retry to fetch the data.
