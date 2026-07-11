@@ -113,6 +113,6 @@ export const defaultMetrics = {
   failed: 0,
   avgCache: 0,
   highest: 0,
-  lowest: Infinity,
+  lowest: 0,
   mean: 0,
 };

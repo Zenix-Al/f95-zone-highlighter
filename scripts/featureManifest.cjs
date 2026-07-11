@@ -11,6 +11,10 @@ function createDuplicateErrorMessage(symbolName, conflicts) {
   return `Duplicate exported feature symbol '${symbolName}' found in ${conflicts.join(" and ")}`;
 }
 
+function getEntryPath(entry, rootDir) {
+  return toPosixPath(entry.relativePath || path.relative(rootDir, entry.filePath));
+}
+
 function findFeatureIndexFiles({ rootDir = process.cwd(), featuresDir = "src/features" } = {}) {
   const absoluteFeaturesDir = path.resolve(rootDir, featuresDir);
   if (!fs.existsSync(absoluteFeaturesDir)) return [];
@@ -23,8 +27,7 @@ function findFeatureIndexFiles({ rootDir = process.cwd(), featuresDir = "src/fea
     .sort((left, right) => left.localeCompare(right));
 }
 
-function extractFeatureExports(filePath) {
-  const source = fs.readFileSync(filePath, "utf8");
+function extractFeatureExportsFromSource(source) {
   const exports = [];
   let match;
   while ((match = FEATURE_EXPORT_RE.exec(source))) {
@@ -33,45 +36,57 @@ function extractFeatureExports(filePath) {
   return exports;
 }
 
-function discoverFeatureExports(options = {}) {
-  const rootDir = path.resolve(options.rootDir || process.cwd());
-  const files = findFeatureIndexFiles({ rootDir, featuresDir: options.featuresDir });
+function extractFeatureExports(filePath) {
+  return extractFeatureExportsFromSource(fs.readFileSync(filePath, "utf8"));
+}
 
-  return files
-    .map((filePath) => ({
+function discoverFeatureExportsFromSources(sources, { rootDir = process.cwd() } = {}) {
+  return [...sources]
+    .sort((left, right) => String(left.filePath).localeCompare(String(right.filePath)))
+    .map(({ filePath, source }) => ({
       filePath,
       relativePath: toPosixPath(path.relative(rootDir, filePath)),
-      exports: extractFeatureExports(filePath),
+      exports: extractFeatureExportsFromSource(source),
     }))
     .filter((entry) => entry.exports.length > 0);
 }
 
+function discoverFeatureExports(options = {}) {
+  const rootDir = path.resolve(options.rootDir || process.cwd());
+  const files = findFeatureIndexFiles({ rootDir, featuresDir: options.featuresDir });
+
+  return discoverFeatureExportsFromSources(files.map((filePath) => ({
+    filePath,
+    source: fs.readFileSync(filePath, "utf8"),
+  })), { rootDir });
+}
+
 function validateFeatureManifestEntries(entries, { rootDir = process.cwd() } = {}) {
   const errors = [];
-  const symbolToPaths = new Map();
-  const pathToSymbols = new Map();
+  const symbolToPath = new Map();
+  const seenPaths = new Set();
+  const orderedEntries = [...entries].sort((left, right) =>
+    getEntryPath(left, rootDir).localeCompare(getEntryPath(right, rootDir)));
 
-  entries.forEach((entry) => {
-    const normalizedPath = toPosixPath(path.relative(rootDir, entry.filePath));
-    entry.exports.forEach((symbolName) => {
-      const existingPaths = symbolToPaths.get(symbolName);
-      if (existingPaths) {
-        errors.push(createDuplicateErrorMessage(symbolName, [existingPaths[0], normalizedPath]));
-        return;
+  for (const entry of orderedEntries) {
+    const entryPath = getEntryPath(entry, rootDir);
+    if (seenPaths.has(entryPath)) errors.push(`Duplicate generated import path '${entryPath}' found in ${entryPath} and ${entryPath}`);
+    seenPaths.add(entryPath);
+
+    const symbolsInEntry = new Set();
+    for (const symbolName of entry.exports || []) {
+      if (symbolsInEntry.has(symbolName)) {
+        errors.push(`Duplicate exported feature symbol '${symbolName}' found more than once in ${entryPath}`);
+        continue;
       }
-      symbolToPaths.set(symbolName, [normalizedPath]);
-    });
-
-    const entryPath = toPosixPath(path.relative(rootDir, entry.filePath));
-    const existingSymbols = pathToSymbols.get(entryPath);
-    if (existingSymbols) {
-      errors.push(`Duplicate feature export list for ${entryPath}`);
-      return;
+      symbolsInEntry.add(symbolName);
+      const existingPath = symbolToPath.get(symbolName);
+      if (existingPath) errors.push(createDuplicateErrorMessage(symbolName, [existingPath, entryPath]));
+      else symbolToPath.set(symbolName, entryPath);
     }
-    pathToSymbols.set(entryPath, entry.exports);
-  });
+  }
 
-  return errors;
+  return [...new Set(errors)].sort((left, right) => left.localeCompare(right));
 }
 
 function renderFeatureManifest(entries, { outputFile = "src/generated/features.generated.js" } = {}) {
@@ -79,7 +94,9 @@ function renderFeatureManifest(entries, { outputFile = "src/generated/features.g
   const imports = [];
   const featureNames = [];
 
-  entries.forEach((entry, index) => {
+  const orderedEntries = [...entries].sort((left, right) =>
+    String(left.relativePath || left.filePath || "").localeCompare(String(right.relativePath || right.filePath || "")));
+  orderedEntries.forEach((entry, index) => {
     const names = [...new Set(entry.exports)];
     featureNames.push(...names);
     const importPath = toPosixPath(
@@ -87,7 +104,7 @@ function renderFeatureManifest(entries, { outputFile = "src/generated/features.g
     );
     const normalizedImportPath = importPath.startsWith(".") ? importPath : `./${importPath}`;
     imports.push(`import { ${names.join(", ")} } from "${normalizedImportPath}";`);
-    if (index < entries.length - 1) imports.push("");
+    if (index < orderedEntries.length - 1) imports.push("");
   });
 
   return [
@@ -155,7 +172,9 @@ module.exports = {
   buildFeatureManifestState,
   checkFeatureManifest,
   discoverFeatureExports,
+  discoverFeatureExportsFromSources,
   extractFeatureExports,
+  extractFeatureExportsFromSource,
   generateFeatureManifest,
   renderFeatureManifest,
   validateFeatureManifestEntries,

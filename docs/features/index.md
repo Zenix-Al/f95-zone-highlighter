@@ -34,15 +34,15 @@ Current features (automatically discovered):
 - `denseLatestGridFeature` — alternative dense grid for Latest.
 - `wideForumFeature` — layout adjustments for forum pages.
 
-For an up-to-date list, run the manifest generator or inspect `src/generated/features.generated.js`.
+For an up-to-date list, refresh the manifest without a version bump with `node -e "require('./scripts/featureManifest.cjs').generateFeatureManifest({ rootDir: process.cwd() })"` or inspect `src/generated/features.generated.js`. Do not edit the generated file manually.
 
 ## How Features Are Registered
 
-Features are discovered and registered via a generated manifest. Do not manually import features into `src/core/featureCatalog.js`.
+Features are discovered and registered via a generated manifest. Do not manually import features into `src/loader.js` or `src/core/featureCatalog.js`.
 
 Workflow:
 
-- Export your feature as a `*Feature` export from the feature module (e.g. `export const myFeature = createFeature(...)`).
+- Export your feature as a `*Feature` export from `src/features/*/index.js` (e.g. `export const myFeature = createFeature(...)`).
 - The repository's manifest generator (`scripts/featureManifest.cjs`) discovers `*Feature` exports and builds a generated manifest used by the loader.
 - The loader reads the generated manifest and the runtime `featureCatalog` contains the registrations used during bootstrap.
 

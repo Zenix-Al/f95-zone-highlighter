@@ -48,4 +48,18 @@ function createFakeClock() {
   return { setTimeout, clearTimeout, tick, pending: () => timers.size, now: () => now };
 }
 
-module.exports = { createDomSandbox, createFakeClock, createFakeGM };
+function dispatchPageTransition(window, type, persisted) {
+  const event = new window.Event(type);
+  Object.defineProperty(event, "persisted", { value: Boolean(persisted) });
+  window.dispatchEvent(event);
+  return event;
+}
+
+function createAddonBridgeTransport(window, eventName = "TEST-01:addon-bridge") {
+  const requests = [];
+  const send = (detail) => { requests.push(detail); window.dispatchEvent(new window.CustomEvent(eventName, { detail })); };
+  const subscribe = (listener) => { window.addEventListener(eventName, listener); return () => window.removeEventListener(eventName, listener); };
+  return { eventName, requests, send, subscribe };
+}
+
+module.exports = { createAddonBridgeTransport, createDomSandbox, createFakeClock, createFakeGM, dispatchPageTransition };

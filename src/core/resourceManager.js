@@ -159,6 +159,15 @@ export function getResourceSnapshot() {
   return resourceManager.getSnapshot();
 }
 
+export function assertNoResourceLeaks(ownerId) {
+  const snapshot = resourceManager.getSnapshot();
+  const leaked = snapshot.owners[String(ownerId || "")]?.resources || [];
+  if (leaked.length > 0) throw new Error(`Resource leak for '${ownerId}': ${leaked.map((entry) => entry.id).join(", ")}`);
+  return true;
+}
+
+export function resetResourceManagerForTests() { resourceManager.cleanupAll(); }
+
 export const resourceManager = new ResourceManager();
 
 registerDiagnosticsProvider("resources", () => {

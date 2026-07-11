@@ -7,6 +7,7 @@ import { listRegisteredFeatures } from "./featureCatalog.js";
 import { abortCurrentRoute } from "./routeState.js";
 import { resetRouteObserverForTests } from "./routeObserver.js";
 import { notifyAllAddonsBeforePageChange } from "../services/addonsService.js";
+import { clearBootstrapSummary } from "./bootstrap.js";
 
 let runtimeState = "new";
 let teardownPromise = null;
@@ -66,6 +67,7 @@ export async function teardownAll(reason = "unknown", { featureTimeoutMs = 1000 
     runCleanup(summary, "listeners", removeAllListeners);
     runCleanup(summary, "resources", () => resourceManager.cleanupAll());
     runCleanup(summary, "styles", clearAllStyles);
+    runCleanup(summary, "bootstrap", clearBootstrapSummary);
     runtimeState = "stopped";
     teardownPromise = null;
     return summary;

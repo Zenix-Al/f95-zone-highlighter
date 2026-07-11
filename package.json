@@ -18,7 +18,7 @@
     "lint:fix": "eslint \"src/**\" --ext .js --fix",
     "test": "node tests/run.cjs",
     "validate:manifest": "node scripts/validate-manifest.js",
-    "check:manifest": "node -e \"const { checkFeatureManifest } = require('./scripts/featureManifest.cjs'); const result = checkFeatureManifest({ rootDir: process.cwd() }); if (!result.matches) { console.error('Generated manifest is stale. Run node scripts/featureManifest.cjs'); process.exit(1); } console.log('Generated manifest is up to date.');\"",
+    "check:manifest": "node scripts/check-feature-manifest.cjs",
     "check:docs": "node scripts/check-docs.cjs",
     "check:inventory": "node scripts/check-inventory.cjs",
     "build:smoke": "node build.js --smoke"

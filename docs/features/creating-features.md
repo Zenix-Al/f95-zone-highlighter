@@ -57,12 +57,12 @@ export const myFeature = createStyledFeature("My Cool Feature", {
 
 ### 4. Feature discovery and manifest generation
 
-Do not manually import or register features in `src/core/featureCatalog.js`. Features are discovered automatically by the manifest generator.
+Do not manually import or register features in `src/loader.js` or `src/core/featureCatalog.js`, and do not edit `src/generated/features.generated.js`. Features are discovered automatically from `src/features/*/index.js` by the manifest generator.
 
 Correct workflow:
 
 1. Export your feature from the feature module using a `*Feature` export name (for example `export const myFeature = createFeature(...)`).
-2. Run the manifest generator (`scripts/featureManifest.cjs`) during build or CI; it discovers `*Feature` exports and produces a generated features manifest.
+2. Refresh the manifest without a version bump with `node -e "require('./scripts/featureManifest.cjs').generateFeatureManifest({ rootDir: process.cwd() })"`; it discovers `*Feature` exports and writes `src/generated/features.generated.js`.
 3. The generated manifest is imported by the loader at runtime, and the feature catalog stores the runtime registrations.
 
 This avoids brittle manual edits and reduces merge conflicts. See `scripts/featureManifest.cjs` for the discovery rules and naming conventions.

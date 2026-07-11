@@ -39,6 +39,7 @@ export function createTaskQueue({
   overflowPolicy = "drop-oldest",
   timeoutMs = 0,
   generation = 0,
+  routeContext = null,
 } = {}) {
   if (!DUPLICATE_POLICIES.has(duplicatePolicy)) throw new Error(`Unknown duplicate policy '${duplicatePolicy}'`);
   if (!OVERFLOW_POLICIES.has(overflowPolicy)) throw new Error(`Unknown overflow policy '${overflowPolicy}'`);
@@ -47,7 +48,7 @@ export function createTaskQueue({
   const pending = new Map();
   const idleWaiters = new Set();
   const resourceId = `queue:${ownerId}:${name}`;
-  let currentGeneration = generation;
+  let currentGeneration = Number(routeContext?.generation ?? generation) || 0;
   let running = null;
   let timer = null;
   let paused = false;
@@ -120,6 +121,8 @@ export function createTaskQueue({
 
     processing = true;
     const controller = new AbortController();
+    if (entry.routeSignal?.aborted) controller.abort(entry.routeSignal.reason);
+    else entry.routeSignal?.addEventListener("abort", () => controller.abort(entry.routeSignal.reason), { once: true });
     const startedAt = Date.now();
     running = { ...entry, controller, startedAt };
     let timeoutId;
@@ -129,6 +132,8 @@ export function createTaskQueue({
       queueName: name,
       ownerId,
       generation: entry.generation ?? currentGeneration,
+      correlationId: entry.correlationId || "",
+      routeGeneration: entry.generation ?? currentGeneration,
       enqueuedAt: entry.enqueuedAt,
       startedAt,
     };
@@ -199,7 +204,9 @@ export function createTaskQueue({
   function add(key, task, taskGeneration = currentGeneration, taskTimeoutMs = timeoutMs) {
     if (disposed) return Promise.resolve({ status: "cancelled", key, reason: "queue disposed" });
     if (typeof task !== "function") return Promise.reject(new TypeError("Task queue task must be a function"));
-    if (taskGeneration !== undefined && taskGeneration !== currentGeneration) {
+    const suppliedRouteContext = taskGeneration && typeof taskGeneration === "object" ? taskGeneration : null;
+    const resolvedGeneration = suppliedRouteContext ? Number(suppliedRouteContext.generation) || 0 : taskGeneration;
+    if (resolvedGeneration !== undefined && resolvedGeneration !== currentGeneration) {
       return Promise.resolve({ status: "cancelled", key, reason: "stale generation" });
     }
 
@@ -234,7 +241,16 @@ export function createTaskQueue({
     }
 
     const deferred = createDeferred();
-    pending.set(key, { key, task, generation: taskGeneration, timeoutMs: taskTimeoutMs, enqueuedAt: Date.now(), deferred });
+    pending.set(key, {
+      key,
+      task,
+      generation: resolvedGeneration,
+      correlationId: suppliedRouteContext?.correlationId || "",
+      routeSignal: suppliedRouteContext?.signal || null,
+      timeoutMs: taskTimeoutMs,
+      enqueuedAt: Date.now(),
+      deferred,
+    });
     debugLog(name, `Task '${key}' added. Queue size: ${pending.size}`);
     schedule();
     return deferred.promise;
@@ -252,6 +268,11 @@ export function createTaskQueue({
       cancelRunning("stale generation");
     }
     schedule();
+  }
+
+  function setRouteContext(nextRouteContext) {
+    setGeneration(Number(nextRouteContext?.generation) || 0);
+    return snapshot();
   }
 
   function start() {
@@ -304,6 +325,7 @@ export function createTaskQueue({
     resume,
     dispose,
     setGeneration,
+    setRouteContext,
     snapshot,
     size: () => pending.size,
   };

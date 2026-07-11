@@ -1,6 +1,6 @@
 import { pageDefinitions, stateManager } from "../config.js";
 import { debugLog } from "./logger.js";
-import { setRoutePageFlags } from "./routeState.js";
+import { getRouteContext, isRouteContextCurrent, setRoutePageFlags } from "./routeState.js";
 
 function normalizeRuleEntries(value) {
   if (Array.isArray(value)) return value.map((entry) => String(entry || "").trim()).filter(Boolean);
@@ -46,14 +46,16 @@ export function matchesPageDefinition(definition, locationLike = location) {
   return true;
 }
 
-export function detectPage(locationLike = location) {
+export function detectPage(locationLike = location, routeContext = getRouteContext()) {
   const detected = {};
 
   for (const key of Object.keys(pageDefinitions)) {
     const value = matchesPageDefinition(pageDefinitions[key], locationLike);
-    stateManager.set(key, value);
     detected[key] = value;
   }
+
+  if (routeContext?.generation > 0 && !isRouteContextCurrent(routeContext)) return detected;
+  for (const [key, value] of Object.entries(detected)) stateManager.set(key, value);
 
   debugLog("PageDetect", "Page state detected", { data: detected, level: "info" });
   setRoutePageFlags(detected);

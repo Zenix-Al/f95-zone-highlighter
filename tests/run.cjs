@@ -1,11 +1,14 @@
 const path = require("path");
 const fs = require("fs");
 const assert = require("assert");
+const childProcess = require("child_process");
 const esbuild = require("esbuild");
-const { createDomSandbox, createFakeClock, createFakeGM } = require("./helpers.cjs");
+const { createAddonBridgeTransport, createDomSandbox, createFakeClock, createFakeGM, dispatchPageTransition } = require("./helpers.cjs");
 const {
   generateFeatureManifest,
   checkFeatureManifest,
+  renderFeatureManifest,
+  validateFeatureManifestEntries,
 } = require("../scripts/featureManifest.cjs");
 
 const ROOT = path.join(__dirname, "..");
@@ -62,6 +65,7 @@ const { featureMatchesPageScopes } = loadModule("src/core/featureScope.js");
 const {
   beginRoute,
   getRouteContext,
+  normalizeRouteUrl,
   resetRouteStateForTests,
   setRoutePageFlags,
 } = loadModule("src/core/routeState.js");
@@ -311,7 +315,7 @@ runTest("generated feature manifest contains current feature exports", () => {
   assert.ok(generated.includes("../features/latest-overlay/index.js"));
 });
 
-runTest("manifest generation rejects duplicate feature exports across files", () => {
+runTest("MANIFEST-01 generation rejects duplicate feature exports across files with both paths", () => {
   const fixtureRoot = fs.mkdtempSync(path.join(TMP_DIR, "manifest-"));
   const alphaDir = path.join(fixtureRoot, "src/features/alpha");
   const betaDir = path.join(fixtureRoot, "src/features/beta");
@@ -327,11 +331,23 @@ runTest("manifest generation rejects duplicate feature exports across files", ()
         rootDir: fixtureRoot,
         outputFile: path.join(fixtureRoot, "src/generated/features.generated.js"),
       }),
-    /duplicate/i,
+    (error) => /duplicateFeature/.test(error.message)
+      && /src\/features\/alpha\/index\.js/.test(error.message)
+      && /src\/features\/beta\/index\.js/.test(error.message),
   );
 });
 
-runTest("manifest check mode reports a stale generated file without rewriting it", () => {
+runTest("MANIFEST-01 validation rejects repeated symbols and generated import paths", () => {
+  const entries = [
+    { filePath: "/repo/src/features/alpha/index.js", relativePath: "src/features/alpha/index.js", exports: ["alphaFeature", "alphaFeature"] },
+    { filePath: "/repo/src/features/alpha/index.js", relativePath: "src/features/alpha/index.js", exports: ["betaFeature"] },
+  ];
+  const errors = validateFeatureManifestEntries(entries, { rootDir: "/repo" });
+  assert.ok(errors.some((error) => /more than once/.test(error) && /alphaFeature/.test(error)));
+  assert.ok(errors.some((error) => /Duplicate generated import path/.test(error) && /alpha\/index\.js/.test(error)));
+});
+
+runTest("MANIFEST-01 check command exits non-zero for stale output without rewriting it", () => {
   const fixtureRoot = fs.mkdtempSync(path.join(TMP_DIR, "manifest-check-"));
   const featureDir = path.join(fixtureRoot, "src/features/example");
   const outputFile = path.join(fixtureRoot, "src/generated/features.generated.js");
@@ -345,6 +361,24 @@ runTest("manifest check mode reports a stale generated file without rewriting it
   assert.strictEqual(result.matches, false);
   assert.strictEqual(result.actualContent, "// stale\n");
   assert.ok(result.expectedContent.includes("exampleFeature"));
+  const command = childProcess.spawnSync(process.execPath, [
+    path.join(ROOT, "scripts/check-feature-manifest.cjs"),
+    "--root", fixtureRoot,
+    "--output", outputFile,
+  ], { encoding: "utf8" });
+  assert.notStrictEqual(command.status, 0);
+  assert.strictEqual(fs.readFileSync(outputFile, "utf8"), "// stale\n");
+});
+
+runTest("MANIFEST-01 manifest rendering is deterministic for unordered discovery entries", () => {
+  const entries = [
+    { relativePath: "src/features/zeta/index.js", exports: ["zetaFeature"] },
+    { relativePath: "src/features/alpha/index.js", exports: ["alphaFeature"] },
+  ];
+  const first = renderFeatureManifest(entries);
+  const second = renderFeatureManifest([...entries].reverse());
+  assert.strictEqual(first, second);
+  assert.ok(first.indexOf("alphaFeature") < first.indexOf("zetaFeature"));
 });
 
 runTest(
@@ -406,7 +440,7 @@ runTest("feature lifecycle aborts an in-progress enable when disabled", async ()
   assert.deepStrictEqual(events, ["abort", "disable"]);
 });
 
-runTest("route state creates one shared generation and aborts stale route work", () => {
+runTest("ROUTE-01 route state creates one shared generation and aborts stale route work", () => {
   resetRouteStateForTests();
   const first = beginRoute({ href: "https://f95zone.to/threads/a" });
   const duplicate = beginRoute({ href: "https://f95zone.to/threads/a" });
@@ -422,25 +456,150 @@ runTest("route state creates one shared generation and aborts stale route work",
   resetRouteStateForTests();
 });
 
-runTest("bootstrap classifies optional, recoverable, and required failures", async () => {
+runTest("BOOT-01 classifies success, optional, recoverable, and required steps", async () => {
   const calls = [];
   const correlationIds = [];
   const degraded = await runBootstrapPipeline([
-    { id: "success", classification: "required", run: (context) => { correlationIds.push(context.correlationId); calls.push("success"); } },
-    { id: "optional", classification: "optional", run: (context) => { correlationIds.push(context.correlationId); throw new Error("optional"); } },
-    { id: "recover", classification: "recoverable", run: () => { throw new Error("recover"); }, fallback: () => calls.push("fallback") },
+    { id: "success", classification: "required", timeoutMs: 100, run: (context) => { correlationIds.push(context.correlationId); calls.push("success"); } },
+    { id: "optional", classification: "optional", timeoutMs: 100, run: (context) => { correlationIds.push(context.correlationId); throw new Error("optional"); } },
+    { id: "recover", classification: "recoverable", timeoutMs: 100, run: () => { throw new Error("recover"); }, fallback: () => calls.push("fallback") },
   ]);
   assert.strictEqual(degraded.status, "degraded");
   assert.deepStrictEqual(correlationIds, [degraded.correlationId, degraded.correlationId]);
   assert.deepStrictEqual(calls, ["success", "fallback"]);
   assert.deepStrictEqual(degraded.degradedSteps, ["optional", "recover"]);
   const failed = await runBootstrapPipeline([
-    { id: "required", classification: "required", run: () => { throw new Error("required"); } },
-    { id: "dependent", classification: "required", run: () => calls.push("dependent") },
+    { id: "required", classification: "required", timeoutMs: 100, run: () => { throw new Error("required"); } },
+    { id: "dependent", classification: "required", timeoutMs: 100, run: () => calls.push("dependent") },
   ]);
   assert.strictEqual(failed.status, "failed");
   assert.ok(!calls.includes("dependent"));
   assert.deepStrictEqual(failed.failedSteps, ["required"]);
+});
+
+runTest("ROUTE-01 normalization treats path query and hash changes as meaningful", () => {
+  const base = normalizeRouteUrl({ href: "https://f95zone.to/threads/a.1/" });
+  const query = normalizeRouteUrl({ href: "https://f95zone.to/threads/a.1/?page=2" });
+  const hash = normalizeRouteUrl({ href: "https://f95zone.to/threads/a.1/#updates" });
+  assert.notStrictEqual(base, query);
+  assert.notStrictEqual(base, hash);
+  assert.strictEqual(normalizeRouteUrl({ href: "https://f95zone.to/threads/a.1/" }), base);
+});
+
+runTest("ROUTE-01 reconciles applicability A to B to C without duplicate same-route work", async () => {
+  const sandbox = createDomSandbox();
+  try {
+    const result = await loadModule("tests/fixtures/routeHarness.js").runRouteApplicabilityScenario();
+    assert.strictEqual(result.duplicate.changed, false);
+    assert.strictEqual(result.duplicate.generation, result.a.generation);
+    assert.deepStrictEqual(result.lifecycle, [
+      `enable:${result.a.generation}`,
+      `disable:${result.b.generation}`,
+      `enable:${result.c.generation}`,
+    ]);
+    const transitionEvents = result.events.filter((event) => event.code === "ROUTE_TRANSITION");
+    assert.deepStrictEqual(transitionEvents.map((event) => event.correlationId), [
+      result.a.correlationId,
+      result.b.correlationId,
+      result.c.correlationId,
+    ]);
+  } finally {
+    sandbox.restore();
+  }
+});
+
+runTest("ROUTE-01 task queue consumes route context and aborts stale running work", async () => {
+  const clock = createFakeClock();
+  const previousSetTimeout = global.setTimeout;
+  const previousClearTimeout = global.clearTimeout;
+  global.setTimeout = clock.setTimeout;
+  global.clearTimeout = clock.clearTimeout;
+  try {
+    resetRouteStateForTests();
+    const a = beginRoute({ href: "https://f95zone.to/threads/a.1/" });
+    const queue = createTaskQueue({ name: "ROUTE-01", ownerId: "core:route-test", delay: 0, routeContext: a });
+    let observed;
+    const work = queue.add("work", (context) => {
+      observed = context;
+      return new Promise(() => {});
+    }, a);
+    await clock.tick(0);
+    const b = beginRoute({ href: "https://f95zone.to/threads/b.2/" });
+    queue.setRouteContext(b);
+    assert.strictEqual((await work).status, "cancelled");
+    assert.strictEqual(observed.correlationId, a.correlationId);
+    assert.strictEqual(observed.routeGeneration, a.generation);
+    await queue.dispose();
+    resetRouteStateForTests();
+  } finally {
+    global.setTimeout = previousSetTimeout;
+    global.clearTimeout = previousClearTimeout;
+  }
+});
+
+runTest("ROUTE-01 rapid A to B to C signals prevent stale lifecycle commits", async () => {
+  resetRouteStateForTests();
+  const commits = [];
+  const feature = createFeature("ROUTE-01 Stale Commit", {
+    enable: async (context) => {
+      await Promise.resolve();
+      if (!context.signal.aborted) commits.push(context.routeGeneration);
+    },
+    disable: () => null,
+  });
+  const contexts = ["a.1", "b.2", "c.3"].map((slug) => beginRoute({ href: `https://f95zone.to/threads/${slug}/` }));
+  const operations = contexts.map((context) => feature.enable({ ...context, routeGeneration: context.generation }));
+  await Promise.allSettled(operations);
+  assert.deepStrictEqual(commits, [contexts[2].generation]);
+  await feature.disable({ reason: "teardown" });
+  resetRouteStateForTests();
+});
+
+runTest("BOOT-01 timeout aborts the step and returns a structured failed summary", async () => {
+  const clock = createFakeClock();
+  const previousSetTimeout = global.setTimeout;
+  const previousClearTimeout = global.clearTimeout;
+  global.setTimeout = clock.setTimeout;
+  global.clearTimeout = clock.clearTimeout;
+  try {
+    let signal;
+    const running = runBootstrapPipeline([
+      { id: "timeout", classification: "required", timeoutMs: 25, run: (context) => { signal = context.signal; return new Promise(() => {}); } },
+    ], { correlationId: "bootstrap:timeout" });
+    for (let index = 0; index < 5 && clock.pending() === 0; index += 1) await Promise.resolve();
+    await clock.tick(25);
+    const summary = await running;
+    assert.strictEqual(summary.status, "failed");
+    assert.strictEqual(summary.steps[0].timedOut, true);
+    assert.strictEqual(signal.aborted, true);
+    assert.strictEqual(summary.correlationId, "bootstrap:timeout");
+  } finally {
+    global.setTimeout = previousSetTimeout;
+    global.clearTimeout = previousClearTimeout;
+  }
+});
+
+runTest("BOOT-01 degraded diagnostics retain correlation and redact failure details", async () => {
+  const result = await loadModule("tests/fixtures/bootstrapHarness.js").runDegradedBootstrapScenario();
+  assert.strictEqual(result.summary.status, "degraded");
+  assert.strictEqual(result.diagnostics.snapshots.bootstrap.status, "degraded");
+  assert.deepStrictEqual(result.diagnostics.snapshots.bootstrap.degradedSteps, ["optional", "recover"]);
+  assert.ok(result.events.length >= 2);
+  assert.ok(result.events.every((event) => event.correlationId === result.summary.correlationId));
+  assert.ok(result.events.every((event) => !event.message.includes("secret")));
+});
+
+runTest("BOOT-01 reset followed by startup does not reuse stale bootstrap state", async () => {
+  const sandbox = createDomSandbox();
+  try {
+    const result = await loadModule("tests/fixtures/bootstrapHarness.js").runFreshBootstrapScenario();
+    assert.strictEqual(result.first.correlationId, "bootstrap:first");
+    assert.strictEqual(result.idle, null);
+    assert.strictEqual(result.second.correlationId, "bootstrap:second");
+    assert.deepStrictEqual(result.second.steps.map((step) => step.id), ["second"]);
+  } finally {
+    sandbox.restore();
+  }
 });
 
 runTest("config schema strictly rejects unknown nested fields and tolerantly preserves siblings", () => {
@@ -453,7 +612,7 @@ runTest("config schema strictly rejects unknown nested fields and tolerantly pre
   assert.ok(getExportableConfigKeys().includes("latestSettings"));
 });
 
-runTest("feature catalog rejects invalid descriptors before registration", () => {
+runTest("MANIFEST-01 feature catalog rejects invalid descriptors before registration", () => {
   resetFeatureCatalogForTests();
   const invalid = {
     id: "bad-feature",
@@ -469,7 +628,7 @@ runTest("feature catalog rejects invalid descriptors before registration", () =>
   assert.throws(() => registerFeature(invalid), /registration rejected/i);
 });
 
-runTest("feature catalog rejects duplicate ids and settings contributions", () => {
+runTest("MANIFEST-01 feature catalog rejects duplicate ids and settings contributions", () => {
   resetFeatureCatalogForTests();
   const descriptor = {
     id: "catalog-alpha",
@@ -490,6 +649,33 @@ runTest("feature catalog rejects duplicate ids and settings contributions", () =
     /settings contribution/i,
   );
   resetFeatureCatalogForTests();
+});
+
+runTest("MANIFEST-01 descriptor defaults only missing bootstrap and page scopes", () => {
+  resetFeatureCatalogForTests();
+  const descriptor = { id: "manifest-defaults", featureKey: "manifest-defaults" };
+  assert.deepStrictEqual(validateFeatureDescriptor(descriptor), []);
+  assert.strictEqual(registerFeature(descriptor), descriptor);
+  assert.strictEqual(descriptor.bootstrapMode, "waitForBody");
+  assert.deepStrictEqual(descriptor.pageScopes, []);
+  resetFeatureCatalogForTests();
+});
+
+runTest("MANIFEST-01 production rejects invalid descriptors and continues valid registration", () => {
+  const previousNodeEnv = process.env.NODE_ENV;
+  process.env.NODE_ENV = "production";
+  try {
+    const result = loadModule("tests/fixtures/manifestCatalogHarness.js").runProductionRegistrationScenario();
+    assert.strictEqual(result.invalidResult, null);
+    assert.strictEqual(result.validAccepted, true);
+    assert.deepStrictEqual(result.registeredIds, ["valid-production-feature"]);
+    assert.ok(result.events.some((event) => event.code === "FEATURE_FAILURE"
+      && event.ownerId === "Feature Catalog"
+      && /invalid bootstrap mode/.test(event.message)));
+  } finally {
+    if (previousNodeEnv === undefined) delete process.env.NODE_ENV;
+    else process.env.NODE_ENV = previousNodeEnv;
+  }
 });
 
 runTest("add-on action registry rejects duplicates and exposes safe snapshots", () => {
@@ -1255,8 +1441,9 @@ runTest(
   },
 );
 
-runTest("oncePerRoute capture reactivates on a route generation change", () => {
+runTest("ROUTE-01 oncePerRoute capture consumes the shared route generation", () => {
   resetFastCaptureHarness();
+  resetRouteStateForTests();
   const feature = {
     name: "Route Capture",
     featureKey: "route-capture",
@@ -1269,7 +1456,8 @@ runTest("oncePerRoute capture reactivates on a route generation change", () => {
     },
     isApplicable: () => true,
   };
-  registerFastCaptureFeatures([feature]);
+  const firstRoute = beginRoute({ href: "https://f95zone.to/sam/latest_alpha#one" });
+  registerFastCaptureFeatures([feature], firstRoute);
   processCompletedFastCapture(
     "fetch",
     "https://f95zone.to/latest_data.php?page=1",
@@ -1284,7 +1472,8 @@ runTest("oncePerRoute capture reactivates on a route generation change", () => {
     0,
   );
 
-  refreshFastCaptureFeatures([feature]);
+  const secondRoute = beginRoute({ href: "https://f95zone.to/sam/latest_alpha#two" });
+  refreshFastCaptureFeatures([feature], secondRoute);
   assert.strictEqual(
     processCompletedFastCapture(
       "fetch",
@@ -1293,6 +1482,7 @@ runTest("oncePerRoute capture reactivates on a route generation change", () => {
     ),
     1,
   );
+  resetRouteStateForTests();
 });
 
 runTest(
@@ -1768,6 +1958,22 @@ runTest("TEST-01 deterministic helpers isolate GM storage and timers", async () 
   assert.strictEqual(clock.pending(), 0);
 });
 
+runTest("TEST-01 reusable page lifecycle and add-on bridge fakes preserve event state", () => {
+  const sandbox = createDomSandbox();
+  try {
+    let persisted = null;
+    sandbox.window.addEventListener("pagehide", (event) => { persisted = event.persisted; });
+    dispatchPageTransition(sandbox.window, "pagehide", true);
+    assert.strictEqual(persisted, true);
+    const bridge = createAddonBridgeTransport(sandbox.window);
+    const received = [];
+    const unsubscribe = bridge.subscribe((event) => received.push(event.detail));
+    bridge.send({ requestId: "TEST-01-request", action: "storage.get" });
+    unsubscribe();
+    assert.deepStrictEqual(received, [{ requestId: "TEST-01-request", action: "storage.get" }]);
+  } finally { sandbox.restore(); }
+});
+
 runTest("TEST-01 lifecycle rapid route transitions commit only the latest operation", async () => {
   const commits = [];
   const feature = createFeature("TEST Route Lifecycle", {
@@ -1797,20 +2003,36 @@ runTest("TEST-01 lifecycle enable route disable and re-enable leaves no stale co
   assert.deepStrictEqual(events, ["enable:1", "disable", "enable:3"]);
 });
 
-runTest("TEST-01 DOM route observer coalesces rapid history changes", async () => {
+runTest("ROUTE-01 DOM observer coalesces dispatch while preserving distinct generations and cleanup", async () => {
   const sandbox = createDomSandbox("https://f95zone.to/threads/a.1/");
   try {
     const route = loadModule("src/core/routeObserver.js");
     const contexts = [];
-    route.initRouteObserver((context) => contexts.push(context));
+    const originalPushState = sandbox.window.history.pushState;
+    const originalReplaceState = sandbox.window.history.replaceState;
+    const cleanup = route.initRouteObserver((context) => contexts.push(context));
     sandbox.window.history.pushState({}, "", "/threads/b.2/");
     sandbox.window.history.pushState({}, "", "/threads/c.3/");
     await Promise.resolve();
     await Promise.resolve();
     assert.strictEqual(contexts.length, 1);
     assert.ok(contexts[0].url.includes("/threads/c.3/"));
-    route.resetRouteObserverForTests();
+    assert.strictEqual(contexts[0].generation, 2);
+    cleanup();
+    assert.strictEqual(sandbox.window.history.pushState, originalPushState);
+    assert.strictEqual(sandbox.window.history.replaceState, originalReplaceState);
   } finally { sandbox.restore(); }
+});
+
+runTest("ROUTE-01 full teardown restores route history patches", async () => {
+  const sandbox = createDomSandbox("https://f95zone.to/threads/a.1/");
+  try {
+    const result = await loadModule("tests/fixtures/routeTeardownHarness.js").runRouteTeardownScenario();
+    assert.strictEqual(result.patched, true);
+    assert.strictEqual(result.restored, true);
+  } finally {
+    sandbox.restore();
+  }
 });
 
 runTest("TEST-01 teardown suspension, resume, and full cleanup are idempotent", async () => {
@@ -1839,6 +2061,20 @@ runTest("TEST-01 persistence commit is atomic on storage failure", async () => {
     assert.strictEqual(result.issues[0].code, "storage_error");
     assert.deepStrictEqual(gm.snapshot(), {});
     assert.strictEqual(JSON.stringify(config), before);
+  } finally { global.GM = previousGM; }
+});
+
+runTest("TEST-01 persistence commit atomically stores a valid canonical envelope", async () => {
+  const previousGM = global.GM;
+  const gm = createFakeGM();
+  global.GM = gm;
+  try {
+    const settings = loadModule("src/services/settingsService.js");
+    const { config } = loadModule("src/config.js");
+    const result = await settings.commitConfig(config, { origin: "TEST-01" });
+    assert.strictEqual(result.committed, true);
+    assert.strictEqual(gm.snapshot()[settings.CONFIG_ENVELOPE_KEY].revision, 1);
+    assert.strictEqual(gm.snapshot()[settings.CONFIG_ENVELOPE_KEY].data.latestSettings.minVersion, config.latestSettings.minVersion);
   } finally { global.GM = previousGM; }
 });
 
@@ -1888,6 +2124,146 @@ runTest("TEST-01 sync rejects stale envelopes and ignores local loop events", as
     assert.strictEqual(sync.applyIncoming(newer), true);
     assert.strictEqual(sync.applyIncoming(stale), false);
   } finally { global.GM = previousGM; }
+});
+
+runTest("TEST-01 cross-tab sync replays registered effects across config sections", () => {
+  const harness = loadModule("tests/fixtures/syncEffectHarness.js");
+  const result = harness.runSyncEffectReplay();
+  assert.strictEqual(result.applied, true);
+  assert.deepStrictEqual(result.seen.map(([section]) => section).sort(), ["global", "latest"]);
+});
+
+runTest("TEST-01 BFCache page lifecycle suspends, resumes fresh route work, and fully tears down", async () => {
+  const { createPageLifecycleHandlers } = loadModule("src/core/pageLifecycle.js");
+  const calls = [];
+  const handlers = createPageLifecycleHandlers({
+    suspendRuntime: (reason) => calls.push(`suspend:${reason}`),
+    teardownAll: async (reason) => calls.push(`teardown:${reason}`),
+    resumeRuntime: () => calls.push("resume"),
+    beginRoute: () => ({ generation: 9, correlationId: "route-9" }),
+    detectPage: () => calls.push("detect"),
+    refreshFastBootstrapFeatures: (context) => calls.push(`fast:${context.generation}`),
+    reconcileFeatures: async (context) => calls.push(`reconcile:${context.generation}`),
+  });
+  handlers.handlePageHide({ persisted: true });
+  await handlers.handlePageShow({ persisted: true });
+  await handlers.handlePageHide({ persisted: false });
+  assert.deepStrictEqual(calls, ["suspend:bfcache", "resume", "detect", "fast:9", "reconcile:9", "teardown:pagehide"]);
+});
+
+runTest("TEST-01 resource leak assertion detects and clears owner resources", () => {
+  const resources = loadModule("src/core/resourceManager.js");
+  resources.resetResourceManagerForTests();
+  const owner = resources.createResourceOwner("TEST-01:leak-owner");
+  owner.register("TEST-01:leaked-listener", () => {});
+  assert.throws(() => resources.assertNoResourceLeaks("TEST-01:leak-owner"), /Resource leak/);
+  resources.releaseOwner("TEST-01:leak-owner");
+  assert.strictEqual(resources.assertNoResourceLeaks("TEST-01:leak-owner"), true);
+});
+
+runTest("TEST-01 transactional config import rolls back on persistence failure", async () => {
+  const previousGM = global.GM;
+  global.GM = createFakeGM({}, { failSet: true });
+  try {
+    const service = loadModule("src/services/configTransferService.js");
+    const { config } = loadModule("src/config.js");
+    const before = JSON.stringify(config);
+    const result = await service.commitConfigImport({ settings: { latestSettings: { ...config.latestSettings, minVersion: 0.9 } } });
+    assert.strictEqual(result.committed, false);
+    assert.strictEqual(JSON.stringify(config), before);
+  } finally { global.GM = previousGM; }
+});
+
+runTest("TEST-01 add-on UI ownership rejects cross-owner mutation and cleans every resource", () => {
+  const sandbox = createDomSandbox();
+  try {
+    const host = loadModule("src/services/addons/uiHost.js");
+    assert.strictEqual(host.mountAddonUi("addon-a", { mountId: "panel", slot: "page.panel", html: '<button onclick="bad()">Safe</button>' }).ok, true);
+    assert.strictEqual(host.updateAddonUi("addon-b", { mountId: "panel", html: "stolen" }).reason, "mount_not_found");
+    assert.strictEqual(host.registerAddonStyle("addon-a", { styleId: "panel", cssText: ".panel { color: red; }" }).ok, true);
+    assert.strictEqual(host.openAddonDialog("addon-a", { dialogId: "dialog", html: "<div>Dialog</div>" }).ok, true);
+    host.cleanupAddonUi("addon-a");
+    const owners = host.getAddonUiPolicySnapshot().owners;
+    assert.deepStrictEqual(owners, { docks: [], dialogs: [], mounts: [], pendingMounts: [], styles: [] });
+    host.resetAddonUiHostForTests();
+  } finally { sandbox.restore(); }
+});
+
+runTest("TEST-01 add-on trust state and execution-time scope revocation remain enforced", () => {
+  const { getAddonActionBlockReason } = loadModule("src/services/addonsService.js");
+  const base = { trusted: true, blocked: false, status: "installed", pageScopes: [] };
+  assert.strictEqual(getAddonActionBlockReason(base, "storage.get"), null);
+  assert.strictEqual(getAddonActionBlockReason({ ...base, status: "disabled" }, "storage.get"), "addon_disabled");
+  assert.strictEqual(getAddonActionBlockReason({ ...base, trusted: false }, "storage.get"), "addon_untrusted");
+  assert.strictEqual(getAddonActionBlockReason({ ...base, blocked: true }, "storage.get"), "addon_blocked");
+  assert.strictEqual(getAddonActionBlockReason({ ...base, pageScopes: ["never-current"] }, "storage.get"), "addon_out_of_scope");
+});
+
+runTest("TEST-01 lifecycle timeout and repeated applicability transitions settle deterministically", async () => {
+  const clock = createFakeClock();
+  const previousSetTimeout = global.setTimeout;
+  const previousClearTimeout = global.clearTimeout;
+  global.setTimeout = clock.setTimeout;
+  global.clearTimeout = clock.clearTimeout;
+  try {
+    const timed = createFeature("TEST-01 Timeout Feature", { enable: () => new Promise(() => {}), disable: () => null });
+    const operation = timed.enable();
+    for (let index = 0; index < 8 && clock.pending() === 0; index += 1) await Promise.resolve();
+    assert.ok(clock.pending() > 0);
+    await clock.tick(15000);
+    await assert.rejects(operation, /timeout/i);
+    let applicable = false;
+    const transitions = [];
+    const feature = createFeature("TEST-01 Applicability Feature", {
+      isApplicable: () => applicable,
+      enable: () => transitions.push("enable"), disable: () => transitions.push("disable"),
+    });
+    assert.strictEqual(await feature.enable(), false);
+    applicable = true; await feature.enable();
+    applicable = false; await feature.disable();
+    applicable = true; await feature.enable();
+    assert.deepStrictEqual(transitions, ["enable", "disable", "enable"]);
+  } finally { global.setTimeout = previousSetTimeout; global.clearTimeout = previousClearTimeout; }
+});
+
+runTest("TEST-01 queue timeout reports final idle state without sleeps", async () => {
+  const clock = createFakeClock();
+  const previousSetTimeout = global.setTimeout;
+  const previousClearTimeout = global.clearTimeout;
+  global.setTimeout = clock.setTimeout;
+  global.clearTimeout = clock.clearTimeout;
+  try {
+    const { createTaskQueue: createQueue } = loadModule("src/core/taskQueue.js");
+    const queue = createQueue({ name: "TEST-01-timeout", ownerId: "TEST-01:queue-timeout", delay: 0, timeoutMs: 5 });
+    let startedResolve;
+    const started = new Promise((resolve) => { startedResolve = resolve; });
+    const task = queue.add("blocked", () => { startedResolve(); return new Promise(() => {}); });
+    await clock.tick(0); await started; await clock.tick(5);
+    assert.strictEqual((await task).status, "cancelled");
+    const idle = await queue.whenIdle();
+    assert.strictEqual(idle.runningKey, null);
+    await queue.dispose();
+  } finally { global.setTimeout = previousSetTimeout; global.clearTimeout = previousClearTimeout; }
+});
+
+runTest("TEST-01 corrupted canonical and invalid backup recover to validated defaults", async () => {
+  const previousGM = global.GM;
+  const gm = createFakeGM();
+  global.GM = gm;
+  try {
+    const settings = loadModule("src/services/settingsService.js");
+    await gm.setValue(settings.CONFIG_ENVELOPE_KEY, { revision: 4, data: { latestSettings: { minVersion: "bad" } } });
+    await gm.setValue(settings.CONFIG_BACKUP_KEY, { revision: 3, data: { latestSettings: { minVersion: "also-bad" } } });
+    const loaded = await settings.loadData();
+    assert.strictEqual(typeof loaded.latestSettings.minVersion, "number");
+  } finally { global.GM = previousGM; }
+});
+
+runTest("TEST-01 malformed payloads are rejected across add-on action categories", async () => {
+  for (const action of ["toast.show", "storage.set", "idb.put", "observer.watch", "ui.mount", "ui.dialog.open", "ui.style.register"]) {
+    const result = await invokeRegisteredAddonCoreAction({ addonId: "test-addon", action, payload: null, deps: {}, limits: {}, authorize: () => null });
+    assert.strictEqual(result.reason, "invalid_payload", action);
+  }
 });
 
 testChain.then(() => {

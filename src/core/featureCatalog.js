@@ -22,6 +22,10 @@ function getSettingsContributionIds(feature) {
   return maps.flatMap((map) => Object.keys(map || {}).map((key) => `${sectionId}:${key}`));
 }
 
+function getEffectiveBootstrapMode(feature) {
+  return feature?._declaredBootstrapMode ?? feature?.bootstrapMode ?? "waitForBody";
+}
+
 /**
  * Validate the runtime descriptor before it enters a bootstrap bucket.  The
  * factory preserves the originally declared bootstrap value on
@@ -35,20 +39,20 @@ export function validateFeatureDescriptor(feature, {
   const errors = [];
   if (!feature || typeof feature !== "object") return ["feature descriptor must be an object"];
 
-  const id = String(feature.id || "").trim();
+  const id = typeof feature.id === "string" ? feature.id.trim() : "";
   const key = getFeatureKey(feature);
   if (!id) errors.push("feature id must be a non-empty stable string");
   if (!key) errors.push("feature catalog key must be a non-empty string");
   if (id && featureIds.has(id)) errors.push(`duplicate feature id '${id}'`);
   if (key && featureKeys.has(key)) errors.push(`duplicate feature catalog key '${key}'`);
 
-  const declaredMode = feature._declaredBootstrapMode ?? feature.bootstrapMode;
+  const declaredMode = getEffectiveBootstrapMode(feature);
   if (!SUPPORTED_BOOTSTRAP_MODES.has(declaredMode)) {
     errors.push(`invalid bootstrap mode '${String(declaredMode)}'`);
   }
-  if (!Array.isArray(feature.pageScopes)) {
+  if (feature.pageScopes !== undefined && !Array.isArray(feature.pageScopes)) {
     errors.push("pageScopes must be an array when provided");
-  } else {
+  } else if (Array.isArray(feature.pageScopes)) {
     for (const scope of feature.pageScopes) {
       if (!Object.hasOwn(pageDefinitions, scope)) errors.push(`unknown page scope '${scope}'`);
     }
@@ -58,7 +62,10 @@ export function validateFeatureDescriptor(feature, {
       errors.push(`${handlerName} must be a function when provided`);
     }
   }
+  const localContributionIds = new Set();
   for (const contributionId of getSettingsContributionIds(feature)) {
+    if (localContributionIds.has(contributionId)) errors.push(`duplicate settings contribution '${contributionId}' within feature '${id || key}'`);
+    localContributionIds.add(contributionId);
     if (contributionIds.has(contributionId)) errors.push(`duplicate settings contribution '${contributionId}'`);
   }
   return errors;
@@ -75,11 +82,14 @@ export function registerFeature(feature) {
 
   const key = getFeatureKey(feature);
   const id = String(feature.id).trim();
+  const bootstrapMode = getEffectiveBootstrapMode(feature);
+  if (feature.bootstrapMode === undefined) feature.bootstrapMode = bootstrapMode;
+  if (feature.pageScopes === undefined) feature.pageScopes = [];
   registeredFeatures.push(feature);
   registeredFeatureKeys.add(key);
   registeredFeatureIds.add(id);
   for (const contributionId of getSettingsContributionIds(feature)) settingsContributionIds.add(contributionId);
-  featureBuckets[feature.bootstrapMode].push(feature);
+  featureBuckets[bootstrapMode].push(feature);
   return feature;
 }
 

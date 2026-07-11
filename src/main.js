@@ -18,26 +18,15 @@ import { initGlobalErrorListeners } from "./core/featureFactory.js";
 import { flushQueuedToasts } from "./ui/components/toast.js";
 import { initRouteObserver } from "./core/routeObserver.js";
 import { beginRoute, getRouteContext } from "./core/routeState.js";
+import { createPageLifecycleHandlers } from "./core/pageLifecycle.js";
 
 let globalTeardownHooksRegistered = false;
 let configLoadPromise = null;
 
-function handlePageHide(event) {
-  if (event?.persisted === true) {
-    suspendRuntime("bfcache");
-    return;
-  }
-  void teardownAll("pagehide");
-}
-
-function handlePageShow(event) {
-  if (!event.persisted) return;
-  resumeRuntime();
-  const routeContext = beginRoute();
-  detectPage();
-  refreshFastBootstrapFeatures(routeContext);
-  void reconcileFeatures(routeContext);
-}
+const { handlePageHide, handlePageShow } = createPageLifecycleHandlers({
+  suspendRuntime, teardownAll, resumeRuntime, beginRoute, detectPage,
+  refreshFastBootstrapFeatures, reconcileFeatures,
+});
 
 function registerGlobalTeardownHooks() {
   if (globalTeardownHooksRegistered) return;
@@ -63,76 +52,102 @@ async function ensureConfigLoaded() {
 }
 
 async function runFastBootstrap() {
-  // Start config loading immediately so service-level gates such as
-  // disableAddonsService are known before the addon bridge is exposed.
-
-  beginRoute();
-  detectPage();
+  // Classification rationale: route/config prerequisites are required;
+  // diagnostics and the add-on console bridge are optional; feature capture
+  // and route observation have explicit degraded fallbacks.
   const configReady = ensureConfigLoaded();
-  loadFastBootstrapFeatures(getRouteContext());
-
-  await runBootstrapPipeline([
+  return runBootstrapPipeline([
     {
-      name: "registerGlobalTeardownHooks",
+      id: "beginRoute",
       classification: "required",
+      timeoutMs: 5000,
+      run: () => beginRoute(),
+    },
+    {
+      id: "detectPage",
+      classification: "required",
+      timeoutMs: 5000,
+      run: () => detectPage(),
+    },
+    {
+      id: "loadFastBootstrapFeatures",
+      classification: "recoverable",
+      timeoutMs: 10000,
+      run: () => loadFastBootstrapFeatures(getRouteContext()),
+      fallback: () => null,
+    },
+    {
+      id: "registerGlobalTeardownHooks",
+      classification: "required",
+      timeoutMs: 5000,
       run: () => registerGlobalTeardownHooks(),
     },
     {
-      name: "initGlobalErrorListeners",
+      id: "initGlobalErrorListeners",
       classification: "optional",
+      timeoutMs: 5000,
       run: () => initGlobalErrorListeners(),
     },
     {
-      name: "initRouteObserver",
+      id: "initRouteObserver",
       classification: "recoverable",
+      timeoutMs: 5000,
       run: () =>
         initRouteObserver((routeContext) => {
-          detectPage();
+          detectPage(window.location, routeContext);
           refreshFastBootstrapFeatures(routeContext);
           return reconcileFeatures(routeContext);
         }),
       fallback: () => null,
     },
     {
-      name: "loadData",
+      id: "loadData",
       classification: "required",
+      timeoutMs: 15000,
       run: () => configReady,
-      fallbackValue: null,
     },
     {
-      name: "initAddonsConsoleBridge",
+      id: "initAddonsConsoleBridge",
       classification: "optional",
+      timeoutMs: 5000,
       run: () => initAddonsConsoleBridge(),
     }
   ]);
 }
 
 async function runBodyBootstrap() {
+  // Validated config and page detection are required. UI/toasts are optional,
+  // while feature loading may degrade because individual features remain
+  // independently diagnosable and retryable.
   const summary = await runBootstrapPipeline([
     {
-      name: "loadData",
+      id: "loadData",
       classification: "required",
+      timeoutMs: 15000,
       run: ensureConfigLoaded,
-      fallbackValue: null,
     },
     {
-      name: "detectPage",
+      id: "detectPage",
       classification: "required",
+      timeoutMs: 5000,
       run: () => detectPage(),
     },
     {
-      name: "initUiPhaseIfApplicable",
+      id: "initUiPhaseIfApplicable",
       classification: "optional",
+      timeoutMs: 10000,
       run: () => initUiPhaseIfApplicable(),
     },
     {
-      name: "flushQueuedToasts",
+      id: "flushQueuedToasts",
       classification: "optional",
+      timeoutMs: 5000,
       run: () => flushQueuedToasts(),
     },
     {
-      name: "loadBodyBootstrapFeatures",
+      id: "loadBodyBootstrapFeatures",
       classification: "recoverable",
+      timeoutMs: 15000,
       run: () => loadBodyBootstrapFeatures(getRouteContext()),
       fallback: () => null,
     },
