@@ -34,6 +34,8 @@ export function getActionSnapshot() { return Object.freeze([...actions.values()]
 export function resetActionRegistryForTests() { actions.clear(); }
 
 export async function executeActionDescriptor(descriptor, context) {
+  const authorization = typeof context?.authorize === "function" ? context.authorize() : null;
+  if (authorization) return { ok: false, reason: authorization };
   const validation = descriptor.validatePayload(context.payload);
   if (validation !== true && validation?.ok !== true) {
     return { ok: false, reason: validation?.reason || "invalid_payload" };

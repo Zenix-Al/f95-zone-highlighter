@@ -68,24 +68,11 @@ export function resolveAddonMountHost(slot, { shadowRoot } = {}) {
     .trim()
     .toLowerCase();
 
-  if (!normalizedSlot || normalizedSlot === "body") return document.body;
   if (normalizedSlot === "latest.filters.after-title") {
     return document.querySelector(".content-block_filter-title");
   }
   if (normalizedSlot === "page.dock") return getAddonDockSlotElement(shadowRoot);
   if (normalizedSlot === "page.panel") return ensureAddonPanelHost();
   if (normalizedSlot === "page.floating") return ensureAddonFloatingHost();
-  if (normalizedSlot.startsWith("selector:")) {
-    const selector = String(slot || "")
-      .slice("selector:".length)
-      .trim();
-    if (!selector) return null;
-    try {
-      return document.querySelector(selector);
-    } catch {
-      return null;
-    }
-  }
-
   return null;
 }

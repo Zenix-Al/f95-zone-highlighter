@@ -12,6 +12,7 @@ function createActionButton(type, payloadUrl) {
   const btn = document.createElement("button");
   btn.type = "button";
   btn.className = RESOLVE_BTN_CLASS;
+  btn.dataset.addonId = "masked-direct-addon";
   btn.dataset.actionType = type;
 
   if (type === "masked") {

@@ -64,12 +64,13 @@ Handles or normalizes paths for nested add-on settings.
 Defines host surfaces for add-on-contributed UI: dialog, settings panel, floating UI, and page dock.
 
 Supported mount locations:
-- body
 - after the Latest filters title
 - page dock
 - page panel
 - floating page surface
-- explicit selector-based targets
+
+Mounts are restricted to those fixed slots. Arbitrary body and selector-based
+targets are intentionally not supported.
 
 ### `addonMount.js`
 Creates and inserts add-on HTML mounts according to host and position rules.
@@ -102,6 +103,15 @@ The UI communicates with the add-on service for: registry and known-add-on lists
 6. Test collisions, missing targets, repeated mounts, and unmounting.
 
 ## Trust Boundary
+
+Add-on HTML and CSS are untrusted input, including input from catalog-listed and
+trusted add-ons. The service sanitizes HTML once before every mount, update,
+dialog, and deferred mount assignment. It rejects executable elements,
+event-handler attributes, unsafe URL schemes, `srcdoc`, SVG, and MathML.
+
+Page-host CSS is scoped by the service to the add-on-owned mount or dialog root.
+Global selectors and risky CSS constructs are rejected; styles are removed with
+the owning add-on during teardown.
 
 Add-on UI helpers can mount add-on-provided HTML and styles. This is not by itself evidence of a vulnerability — sanitization or trust enforcement may occur in the add-on service/UI-host boundary.
 

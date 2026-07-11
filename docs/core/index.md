@@ -10,6 +10,7 @@ The `core` directory contains the foundational building blocks of the Latest Hig
 - **[taskQueue](taskQueue.md)**: Schedule potentially heavy tasks sequentially with a delay.
 - **[pageBridge](pageBridge.md)**: Safely bridges the userscript to the host page's `window` context.
 - **[resourceManager & teardown](teardown.md)**: Ensures robust cleanup of event listeners and timeouts when a feature disables or the page unloads.
+- **[observability](observability.md)**: Bounded health events, redaction, correlation IDs, and diagnostic snapshots.
 
 **Note on `featureHealth.js`**: This core module runs silently in the background, intercepting errors and timeouts from the feature lifecycle, reporting them to the console and metrics to ensure developers know when a feature is failing.
 

@@ -29,9 +29,9 @@ export function createImageRepairUi({ addonId, toastId, wrapperId, toastUpdateIn
       width: 14px;
       height: 14px;
       display: inline-block;
-      animation: img-retry-spin 1s linear infinite;
+      animation: image-repair-addon-spin 1s linear infinite;
     }
-    @keyframes img-retry-spin {
+    @keyframes image-repair-addon-spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
@@ -85,6 +85,7 @@ export function createImageRepairUi({ addonId, toastId, wrapperId, toastUpdateIn
 
     const wrapper = document.createElement("div");
     wrapper.id = wrapperId;
+    wrapper.dataset.addonId = addonId;
     wrapper.appendChild(toast);
     document.body.appendChild(wrapper);
   }

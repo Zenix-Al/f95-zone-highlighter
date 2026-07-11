@@ -1,6 +1,12 @@
 import { stateManager } from "../../config.js";
 import { emitAddonCommand } from "./lifecycle.js";
 import {
+  ADDON_UI_SLOT_POLICY,
+  normalizeAddonMountSlot,
+  sanitizeAddonCss,
+  sanitizeAddonHtml,
+} from "./uiSanitizer.js";
+import {
   buildAddonDockGroupId,
   createAddonDialogElements,
   createAddonDockGroup,
@@ -201,9 +207,12 @@ function pendingMountKey(addonId, mountId) {
 
 function tryMountAddonUi(addonId, payload = {}) {
   const mountId = sanitizeAddonMountId(payload?.mountId || payload?.id || "");
-  const html = String(payload?.html || payload?.template || "");
-  const slot = String(payload?.slot || "body");
+  const html = sanitizeAddonHtml(payload?.html || payload?.template || "");
+  const slot = normalizeAddonMountSlot(payload?.slot || "page.panel");
   const position = String(payload?.position || "append");
+
+  if (!mountId) return { ok: false, reason: "mount_id_required" };
+  if (!slot) return { ok: false, reason: "mount_slot_not_allowed" };
 
   const host = resolveAddonMountHost(slot, { shadowRoot: stateManager.get("shadowRoot") });
   if (!host) return { ok: false, reason: "mount_slot_not_found" };
@@ -212,6 +221,7 @@ function tryMountAddonUi(addonId, payload = {}) {
   const existing = bucket.get(mountId);
 
   if (existing) {
+    if (existing.dataset?.addonId !== addonId) return { ok: false, reason: "mount_owner_mismatch" };
     existing.innerHTML = html;
     return { ok: true, value: { updated: true, mountId } };
   }
@@ -347,13 +357,13 @@ export function removeAddonDockButtons(addonId) {
 
 export function mountAddonUi(addonId, payload = {}) {
   const mountId = sanitizeAddonMountId(payload?.mountId || payload?.id || "");
-  const html = String(payload?.html || payload?.template || "");
-  const slot = String(payload?.slot || "body");
+  const html = sanitizeAddonHtml(payload?.html || payload?.template || "");
+  const slot = normalizeAddonMountSlot(payload?.slot || "page.panel");
 
   const result = tryMountAddonUi(addonId, payload);
   if (result?.ok) return result;
 
-  if (result?.reason === "mount_slot_not_found" && slot.trim().toLowerCase() === "page.dock") {
+  if (result?.reason === "mount_slot_not_found" && slot === "page.dock") {
     pendingAddonMounts.set(pendingMountKey(addonId, mountId), {
       addonId,
       payload: { ...payload, mountId, html, slot },
@@ -367,7 +377,7 @@ export function mountAddonUi(addonId, payload = {}) {
 
 export function updateAddonUi(addonId, payload = {}) {
   const mountId = sanitizeAddonMountId(payload?.mountId || payload?.id || "");
-  const html = String(payload?.html || payload?.template || "");
+  const html = sanitizeAddonHtml(payload?.html || payload?.template || "");
 
   const bucket = addonMountRegistry.get(addonId);
   const mountEl = bucket?.get(mountId);
@@ -387,6 +397,7 @@ export function updateAddonUi(addonId, payload = {}) {
     return { ok: true, value: { pending: true, mountId } };
   }
   if (!mountEl) return { ok: false, reason: "mount_not_found" };
+  if (mountEl.dataset?.addonId !== addonId) return { ok: false, reason: "mount_owner_mismatch" };
 
   mountEl.innerHTML = html;
   return { ok: true, value: { mountId } };
@@ -398,7 +409,7 @@ export function unmountAddonUi(addonId, mountId = "") {
 
 export function openAddonDialog(addonId, payload = {}) {
   const dialogId = sanitizeAddonDialogId(payload?.dialogId || payload?.id || "");
-  const html = String(payload?.html || payload?.template || "");
+  const html = sanitizeAddonHtml(payload?.html || payload?.template || "");
   const title = String(payload?.title || "Dialog").trim();
   const closeOnEsc = payload?.closeOnEsc !== false;
   const closeOnBackdrop = payload?.closeOnBackdrop !== false;
@@ -459,11 +470,15 @@ export function closeAddonDialog(addonId, dialogId = "", reason = "addon-request
 
 export function registerAddonStyle(addonId, payload = {}) {
   const styleId = sanitizeAddonStyleId(payload?.styleId || payload?.id || "");
-  const cssText = String(payload?.cssText || payload?.css || "");
+  if (!styleId) return { ok: false, reason: "style_id_required" };
+  const sanitized = sanitizeAddonCss(addonId, payload?.cssText || payload?.css || "");
+  if (!sanitized.ok) return sanitized;
+  const cssText = sanitized.cssText;
 
   const bucket = getAddonStyleBucket(addonId);
   const existing = bucket.get(styleId);
   if (existing) {
+    if (existing.dataset?.addonId !== addonId) return { ok: false, reason: "style_owner_mismatch" };
     existing.textContent = cssText;
     return { ok: true, value: { updated: true, styleId } };
   }
@@ -485,4 +500,17 @@ export function cleanupAddonUi(addonId) {
   removeAddonDialogs(addonId);
   removeAddonMounts(addonId);
   removeAddonRegisteredStyles(addonId);
+}
+
+export function getAddonUiPolicySnapshot() {
+  return {
+    slots: ADDON_UI_SLOT_POLICY,
+    owners: {
+      docks: [...addonDockButtonsState.keys()],
+      dialogs: [...addonDialogRegistry.keys()],
+      mounts: [...addonMountRegistry.keys()],
+      pendingMounts: [...pendingAddonMounts.values()].map((entry) => entry.addonId),
+      styles: [...addonStyleRegistry.keys()],
+    },
+  };
 }

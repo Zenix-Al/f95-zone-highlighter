@@ -1,4 +1,5 @@
 import { config } from "../../config.js";
+import { registerDiagnosticsProvider } from "../../core/featureHealth.js";
 import {
   sanitizeAddonCapabilities,
   sanitizeAddonId,
@@ -281,3 +282,12 @@ export function reapplyAddonSecurityPolicies() {
     .filter(Boolean);
   return replaceRegistry(normalized);
 }
+
+registerDiagnosticsProvider("addonRegistry", () => {
+  const entries = createRegistrySnapshot();
+  return {
+    total: entries.length,
+    blocked: entries.filter((entry) => entry.blocked).length,
+    active: entries.filter((entry) => entry.status === "installed").length,
+  };
+});

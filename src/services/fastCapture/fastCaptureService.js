@@ -1,5 +1,6 @@
 import { getByPath } from "../../utils/objectPath.js";
 import { debugLog } from "../../core/logger.js";
+import { registerDiagnosticsProvider } from "../../core/featureHealth.js";
 import {
   getFastCaptureSnapshot,
   getFastCaptureStoreDiagnostics,
@@ -488,3 +489,5 @@ export function resetFastCaptureAdapterForTests() {
   resetPageCaptureTransportForTests();
   resetSandboxCaptureTransportForTests();
 }
+
+registerDiagnosticsProvider("fastCapture", () => getFastCaptureDiagnostics());

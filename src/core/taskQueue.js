@@ -1,9 +1,15 @@
 import { debugLog } from "./logger.js";
-import { reportFeatureWarning } from "./featureHealth.js";
+import { registerDiagnosticsProvider, reportFeatureWarning } from "./featureHealth.js";
 import { resourceManager } from "./resourceManager.js";
 
 const DUPLICATE_POLICIES = new Set(["drop-new", "drop-old", "replace-pending"]);
 const OVERFLOW_POLICIES = new Set(["drop-oldest", "drop-new", "reject"]);
+const taskQueues = new Map();
+
+export function getTaskQueueDiagnostics() {
+  const queues = [...taskQueues.values()].map((queue) => queue.snapshot());
+  return { queueCount: queues.length, pendingCount: queues.reduce((total, queue) => total + queue.pendingCount, 0), runningCount: queues.filter((queue) => queue.runningKey).length, queues };
+}
 
 function createAbortError(message = "task cancelled") {
   return Object.assign(new Error(message), { name: "AbortError" });
@@ -270,6 +276,7 @@ export function createTaskQueue({
     disposed = true;
     clear(reason);
     resourceManager.unregister(resourceId);
+    taskQueues.delete(resourceId);
     notifyIdle();
     return Promise.resolve({ status: "disposed", reason });
   }
@@ -285,7 +292,7 @@ export function createTaskQueue({
   }
 
   resourceManager.register(resourceId, () => dispose("owner released"), ownerId);
-  return {
+  const api = {
     add,
     start,
     clear,
@@ -300,7 +307,14 @@ export function createTaskQueue({
     snapshot,
     size: () => pending.size,
   };
+  taskQueues.set(resourceId, api);
+  return api;
 }
+
+registerDiagnosticsProvider("queues", () => {
+  const diagnostic = getTaskQueueDiagnostics();
+  return { queueCount: diagnostic.queueCount, pendingCount: diagnostic.pendingCount, runningCount: diagnostic.runningCount };
+});
 
 export function createDebouncedTask(task, delay = 100) {
   let timeoutId = null;

@@ -55,7 +55,7 @@ export function createCoreAdaptor(addonId) {
       const timer = setTimeout(() => finish({ ok: false, reason: "timeout" }), timeoutMs);
 
       window.addEventListener(replyEvent, onReply);
-      dispatchCoreCommand("core-action", { addonId, action, payload, replyEvent });
+      dispatchCoreCommand("core-action", { marker: "f95ue_addons_dev_bridge_installed", protocolVersion: "0.1.0", requestId: randomId("f95ue-example-addon-request"), addonId, action, payload, replyEvent });
     });
   }
 

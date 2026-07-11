@@ -1,6 +1,6 @@
 import { createEl } from "../../../utils/dom.js";
 
-export function createAddonMountElement({ addonId, mountId, html = "", slot = "body" } = {}) {
+export function createAddonMountElement({ addonId, mountId, html = "", slot = "page.panel" } = {}) {
   const mountEl = createEl("div", {
     attrs: {
       id: `f95ue-addon-mount-${addonId}-${mountId}`,

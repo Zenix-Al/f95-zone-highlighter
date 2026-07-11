@@ -2,6 +2,7 @@ const path = require("path");
 const fs = require("fs");
 const assert = require("assert");
 const esbuild = require("esbuild");
+const { createDomSandbox, createFakeClock, createFakeGM } = require("./helpers.cjs");
 const {
   generateFeatureManifest,
   checkFeatureManifest,
@@ -82,12 +83,18 @@ const {
 } = loadModule("src/core/resourceManager.js");
 const { createTaskQueue } = loadModule("src/core/taskQueue.js");
 const {
+  clearHealthEventsForTests,
+  getHealthDiagnostics,
+  getHealthEvents,
   getAllFeatureStatuses,
   getRuntimeErrors,
+  recordHealthEvent,
+  registerDiagnosticsProvider,
   reportFeatureFailure,
   reportFeatureWarning,
   reportRuntimeError,
 } = loadModule("src/core/featureHealth.js");
+const { queryFirstBySelectors } = loadModule("src/utils/selectorQuery.js");
 const {
   OVERLAY_COLOR_ORDER_KEYS,
   normalizeOverlayColorOrder,
@@ -140,6 +147,12 @@ const { flushQueuedToasts, showToast } = loadModule(
 const { isAddonOwnedObserverNode } = loadModule(
   "src/services/addons/observer.js",
 );
+const {
+  ADDON_UI_SLOT_POLICY,
+  normalizeAddonMountSlot,
+  sanitizeAddonCss,
+  sanitizeAddonHtml,
+} = loadModule("src/services/addons/uiSanitizer.js");
 const { createAddonDockGroup } = loadModule(
   "src/ui/components/addons/addonDockGroup.js",
 );
@@ -402,6 +415,8 @@ runTest("route state creates one shared generation and aborts stale route work",
   assert.strictEqual(first.changed, true);
   assert.strictEqual(duplicate.changed, false);
   assert.strictEqual(second.generation, first.generation + 1);
+  assert.strictEqual(duplicate.correlationId, first.correlationId);
+  assert.notStrictEqual(second.correlationId, first.correlationId);
   assert.strictEqual(first.signal.aborted, true);
   assert.strictEqual(getRouteContext().pageFlags.isLatest, true);
   resetRouteStateForTests();
@@ -409,12 +424,14 @@ runTest("route state creates one shared generation and aborts stale route work",
 
 runTest("bootstrap classifies optional, recoverable, and required failures", async () => {
   const calls = [];
+  const correlationIds = [];
   const degraded = await runBootstrapPipeline([
-    { id: "success", classification: "required", run: () => calls.push("success") },
-    { id: "optional", classification: "optional", run: () => { throw new Error("optional"); } },
+    { id: "success", classification: "required", run: (context) => { correlationIds.push(context.correlationId); calls.push("success"); } },
+    { id: "optional", classification: "optional", run: (context) => { correlationIds.push(context.correlationId); throw new Error("optional"); } },
     { id: "recover", classification: "recoverable", run: () => { throw new Error("recover"); }, fallback: () => calls.push("fallback") },
   ]);
   assert.strictEqual(degraded.status, "degraded");
+  assert.deepStrictEqual(correlationIds, [degraded.correlationId, degraded.correlationId]);
   assert.deepStrictEqual(calls, ["success", "fallback"]);
   assert.deepStrictEqual(degraded.degradedSteps, ["optional", "recover"]);
   const failed = await runBootstrapPipeline([
@@ -1103,6 +1120,38 @@ runTest(
   },
 );
 
+runTest("OBSERVE health events redact details, deduplicate, and cap retention", () => {
+  clearHealthEventsForTests();
+  for (let index = 0; index < 1000; index += 1) {
+    recordHealthEvent({
+      code: "ADDON_REQUEST", ownerId: "example-addon", subsystem: "addons",
+      message: "request failed token=super-secret-value payload=<script>boom()</script>",
+      correlationId: "req-observe-1",
+    });
+  }
+  const events = getHealthEvents();
+  assert.strictEqual(events.length, 1);
+  assert.strictEqual(events[0].count, 1000);
+  assert.ok(!JSON.stringify(events).includes("super-secret-value"));
+  assert.ok(!JSON.stringify(events).includes("<script>"));
+  for (let index = 0; index < 150; index += 1) {
+    recordHealthEvent({ code: `FEATURE_${index}`, ownerId: `feature-${index}`, message: `failure ${index}` });
+  }
+  assert.ok(getHealthEvents().length <= 100);
+});
+
+runTest("OBSERVE diagnostics providers return snapshots on demand", () => {
+  const unregister = registerDiagnosticsProvider("observe-test", () => ({ count: 2 }));
+  assert.deepStrictEqual(getHealthDiagnostics().snapshots["observe-test"], { count: 2 });
+  unregister();
+});
+
+runTest("OBSERVE selector helper chooses fallbacks without failing optional misses", () => {
+  const root = { querySelector(selector) { return selector === ".fallback" ? { id: "fallback" } : null; } };
+  assert.deepStrictEqual(queryFirstBySelectors([".primary", ".fallback"], root, { key: "test.selector", required: true }), { id: "fallback" });
+  assert.strictEqual(queryFirstBySelectors([".missing"], root, { key: "optional.selector", required: false }), null);
+});
+
 runTest("matchesFastCaptureUrl supports string and array urlIncludes", () => {
   assert.strictEqual(
     matchesFastCaptureUrl(
@@ -1555,6 +1604,291 @@ runTest(
     }
   },
 );
+
+runTest("ADDON-BRIDGE protocol rejects malformed envelopes and replay IDs", () => {
+  const { createReplayCache, createSafeAddonResponse, validateAddonRequestEnvelope } = loadModule("src/services/addons/protocol.js");
+  const envelope = {
+    marker: "bridge-marker", protocolVersion: "0.1.0", requestId: "request-123",
+    addonId: "example-addon", action: "toast.show", payload: {},
+  };
+  assert.strictEqual(validateAddonRequestEnvelope(envelope, { marker: "bridge-marker", apiVersion: "0.1.0" }).ok, true);
+  assert.strictEqual(validateAddonRequestEnvelope({ ...envelope, requestId: "bad" }, { marker: "bridge-marker", apiVersion: "0.1.0" }).reason, "invalid_request_id");
+  const cache = createReplayCache();
+  assert.strictEqual(cache.seen("example-addon", "request-123"), false);
+  assert.strictEqual(cache.seen("example-addon", "request-123"), true);
+  assert.deepStrictEqual(
+    createSafeAddonResponse({ apiVersion: "0.1.0", addonId: "example-addon", requestId: "request-123", result: { ok: false, reason: "invalid_payload", secret: "discarded" } }),
+    { ok: false, reason: "invalid_payload", value: undefined, protocolVersion: "0.1.0", addonId: "example-addon", requestId: "request-123" },
+  );
+});
+
+runTest("ADDON-BRIDGE listener shutdown permits one clean reinitialization", () => {
+  const previousWindow = global.window;
+  const previousDocument = global.document;
+  const previousCustomEvent = global.CustomEvent;
+  const listeners = new Map();
+  global.window = {
+    addEventListener(type, handler) { listeners.set(type, handler); },
+    removeEventListener(type, handler) { if (listeners.get(type) === handler) listeners.delete(type); },
+    dispatchEvent(event) { listeners.get(event.type)?.(event); return true; },
+  };
+  global.CustomEvent = class { constructor(type, options = {}) { this.type = type; this.detail = options.detail; } };
+  global.document = { documentElement: { dataset: {}, appendChild(node) { return node; } }, createElement() { return { remove() {} }; } };
+  try {
+    const bridge = loadModule("src/services/addons/bridgeServer.js");
+    const options = { marker: "bridge-test", devCommandEvent: "bridge-event", apiVersion: "0.1.0", isServiceDisabled: () => false, onInvokeCoreAction: () => ({ ok: true }) };
+    bridge.initAddonsBridgeServer(options);
+    assert.strictEqual(bridge.getAddonsBridgeDiagnostics().listenerBound, true);
+    bridge.shutdownAddonsBridgeServer();
+    assert.strictEqual(bridge.getAddonsBridgeDiagnostics().listenerBound, false);
+    bridge.initAddonsBridgeServer(options);
+    assert.strictEqual(listeners.size, 1);
+    bridge.shutdownAddonsBridgeServer();
+  } finally { global.window = previousWindow; global.document = previousDocument; global.CustomEvent = previousCustomEvent; }
+});
+
+runTest("OBSERVE add-on diagnostics retain request correlation without payload", async () => {
+  const previousWindow = global.window;
+  const previousDocument = global.document;
+  const previousCustomEvent = global.CustomEvent;
+  const listeners = new Map();
+  global.window = {
+    addEventListener(type, handler) { listeners.set(type, handler); },
+    removeEventListener(type, handler) { if (listeners.get(type) === handler) listeners.delete(type); },
+    dispatchEvent(event) { listeners.get(event.type)?.(event); return true; },
+  };
+  global.CustomEvent = class { constructor(type, options = {}) { this.type = type; this.detail = options.detail; } };
+  global.document = { documentElement: { dataset: {}, appendChild(node) { return node; } }, createElement() { return { remove() {} }; } };
+  try {
+    const bridge = loadModule("src/services/addons/bridgeServer.js");
+    bridge.initAddonsBridgeServer({ marker: "observe-marker", devCommandEvent: "observe-event", apiVersion: "0.1.0", isServiceDisabled: () => false, onInvokeCoreAction: () => ({ ok: true }) });
+    global.window.dispatchEvent(new global.CustomEvent("observe-event", { detail: {
+      type: "core-action", marker: "observe-marker", protocolVersion: "0.1.0", requestId: "req-observe-123", addonId: "example-addon", action: "storage.set", payload: { secret: "must-not-appear" }, replyEvent: "observe-reply",
+    } }));
+    await Promise.resolve();
+    const request = bridge.getAddonsBridgeDiagnostics().lastRequest;
+    assert.deepStrictEqual(request && { addonId: request.addonId, action: request.action, correlationId: request.correlationId }, { addonId: "example-addon", action: "storage.set", correlationId: "req-observe-123" });
+    assert.ok(!JSON.stringify(request).includes("must-not-appear"));
+    bridge.shutdownAddonsBridgeServer();
+  } finally { global.window = previousWindow; global.document = previousDocument; global.CustomEvent = previousCustomEvent; }
+});
+
+runTest("out-of-scope add-ons can still be enabled or disabled from core UI", () => {
+  const { getAddonActionBlockReason } = loadModule("src/services/addonsService.js");
+  const addon = { trusted: true, blocked: false, status: "installed", pageScopes: ["thread"] };
+  assert.strictEqual(getAddonActionBlockReason(addon, "feature.disable"), null);
+  assert.strictEqual(getAddonActionBlockReason(addon, "storage.get"), "addon_out_of_scope");
+});
+
+runTest("ADDON-UI fixed mount policy rejects body and selector targets", () => {
+  assert.deepStrictEqual(Object.keys(ADDON_UI_SLOT_POLICY).sort(), [
+    "latest.filters.after-title", "page.dock", "page.floating", "page.panel",
+  ]);
+  assert.strictEqual(normalizeAddonMountSlot("page.panel"), "page.panel");
+  assert.strictEqual(normalizeAddonMountSlot("body"), "");
+  assert.strictEqual(normalizeAddonMountSlot("selector:#victim"), "");
+});
+
+runTest("ADDON-UI dock mounts require the dock capability at execution", () => {
+  const { actionUiMount } = loadModule("src/services/addons/coreActions.js");
+  const mount = () => ({ ok: true });
+  const sanitizeId = (value) => value;
+  assert.strictEqual(
+    actionUiMount("example-addon", { mountId: "dock", html: "<div></div>", slot: "page.dock" }, 1024, sanitizeId, mount, new Set(["ui.mount"])).reason,
+    "permission_denied",
+  );
+  assert.strictEqual(
+    actionUiMount("example-addon", { mountId: "dock", html: "<div></div>", slot: "page.dock" }, 1024, sanitizeId, mount, new Set(["ui.mount", "ui.dock"])).ok,
+    true,
+  );
+});
+
+runTest("ADDON-UI descriptor preserves mount-slot capability checks", async () => {
+  const result = await invokeRegisteredAddonCoreAction({
+    addonId: "example-addon",
+    action: "ui.mount",
+    payload: { mountId: "dock", html: "<div></div>", slot: "page.dock" },
+    allowed: new Set(["ui.mount"]),
+    deps: { sanitizeAddonMountId: (value) => value, mountAddonUi: () => ({ ok: true }) },
+    limits: { maxAddonUiHtmlBytes: 1024 },
+    authorize: () => null,
+  });
+  assert.deepStrictEqual(result, { ok: false, reason: "permission_denied" });
+});
+
+runTest("ADDON-UI sanitizer treats markup as text without a DOM parser", () => {
+  const previousDocument = global.document;
+  try {
+    global.document = undefined;
+    const sanitized = sanitizeAddonHtml('<img src="javascript:alert(1)" onerror="boom"><script>boom()</script>');
+    assert.ok(!sanitized.includes("<script>"));
+    assert.ok(!sanitized.includes("<img"));
+    assert.ok(sanitized.includes("&lt;script&gt;"));
+  } finally {
+    global.document = previousDocument;
+  }
+});
+
+runTest("ADDON-UI page CSS is owner scoped and rejects global escape hatches", () => {
+  const scoped = sanitizeAddonCss("example-addon", ".card { color: red; } .card > button { display: block; }");
+  assert.strictEqual(scoped.ok, true);
+  assert.ok(scoped.cssText.includes('[data-addon-id="example-addon"] .card'));
+  assert.strictEqual(sanitizeAddonCss("example-addon", "body { display: none; }").reason, "unsafe_css_selector");
+  assert.strictEqual(sanitizeAddonCss("example-addon", "@import url(https://example.test/a.css);").reason, "unsafe_css");
+  assert.strictEqual(sanitizeAddonCss("example-addon", ".card { background: url(https://example.test/a.png); }").reason, "unsafe_css");
+});
+
+runTest("TEST-01 DOM sanitizer strips active content while retaining safe add-on markup", () => {
+  const sandbox = createDomSandbox();
+  try {
+    const { sanitizeAddonHtml } = loadModule("src/services/addons/uiSanitizer.js");
+    const html = sanitizeAddonHtml('<button class="safe" onclick="boom()">Run</button><a href="javascript:boom()">bad</a><iframe srcdoc="x"></iframe><svg onload="boom()"></svg>');
+    sandbox.document.body.innerHTML = html;
+    assert.strictEqual(sandbox.document.querySelectorAll("button.safe").length, 1);
+    assert.strictEqual(sandbox.document.querySelector("button").getAttribute("onclick"), null);
+    assert.strictEqual(sandbox.document.querySelector("a").getAttribute("href"), null);
+    assert.strictEqual(sandbox.document.querySelector("iframe"), null);
+    assert.strictEqual(sandbox.document.querySelector("svg"), null);
+  } finally { sandbox.restore(); }
+});
+
+runTest("TEST-01 deterministic helpers isolate GM storage and timers", async () => {
+  const gm = createFakeGM({ value: 1 });
+  const changes = [];
+  const id = gm.addValueChangeListener("value", (...args) => changes.push(args.slice(0, 3)));
+  await gm.setValue("value", 2);
+  gm.removeValueChangeListener(id);
+  assert.deepStrictEqual(changes, [["value", 1, 2]]);
+  const clock = createFakeClock();
+  const events = [];
+  clock.setTimeout(() => events.push("late"), 10);
+  clock.setTimeout(() => events.push("early"), 5);
+  await clock.tick(10);
+  assert.deepStrictEqual(events, ["early", "late"]);
+  assert.strictEqual(clock.pending(), 0);
+});
+
+runTest("TEST-01 lifecycle rapid route transitions commit only the latest operation", async () => {
+  const commits = [];
+  const feature = createFeature("TEST Route Lifecycle", {
+    enable: async (context) => {
+      await Promise.resolve();
+      if (!context.signal.aborted) commits.push(context.routeGeneration);
+    },
+    disable: () => null,
+  });
+  const first = feature.enable({ routeGeneration: 1, correlationId: "route-a" });
+  const second = feature.enable({ routeGeneration: 2, correlationId: "route-b" });
+  const third = feature.enable({ routeGeneration: 3, correlationId: "route-c" });
+  await Promise.allSettled([first, second, third]);
+  assert.deepStrictEqual(commits, [3]);
+  await feature.disable({ reason: "teardown" });
+});
+
+runTest("TEST-01 lifecycle enable route disable and re-enable leaves no stale commit", async () => {
+  const events = [];
+  const feature = createFeature("TEST Route Re-enable", {
+    enable: async (context) => { if (!context.signal.aborted) events.push(`enable:${context.routeGeneration}`); },
+    disable: async () => { events.push("disable"); },
+  });
+  await feature.enable({ routeGeneration: 1, correlationId: "route-1" });
+  await feature.disable({ routeGeneration: 2, reason: "route-change" });
+  await feature.enable({ routeGeneration: 3, correlationId: "route-3" });
+  assert.deepStrictEqual(events, ["enable:1", "disable", "enable:3"]);
+});
+
+runTest("TEST-01 DOM route observer coalesces rapid history changes", async () => {
+  const sandbox = createDomSandbox("https://f95zone.to/threads/a.1/");
+  try {
+    const route = loadModule("src/core/routeObserver.js");
+    const contexts = [];
+    route.initRouteObserver((context) => contexts.push(context));
+    sandbox.window.history.pushState({}, "", "/threads/b.2/");
+    sandbox.window.history.pushState({}, "", "/threads/c.3/");
+    await Promise.resolve();
+    await Promise.resolve();
+    assert.strictEqual(contexts.length, 1);
+    assert.ok(contexts[0].url.includes("/threads/c.3/"));
+    route.resetRouteObserverForTests();
+  } finally { sandbox.restore(); }
+});
+
+runTest("TEST-01 teardown suspension, resume, and full cleanup are idempotent", async () => {
+  const teardown = loadModule("src/core/teardown.js");
+  teardown.resetTeardownForTests();
+  teardown.markRuntimeRunning();
+  assert.strictEqual(teardown.suspendRuntime("bfcache").state, "suspended");
+  assert.strictEqual(teardown.suspendRuntime("bfcache").state, "suspended");
+  assert.strictEqual(teardown.resumeRuntime(), "running");
+  const summary = await teardown.teardownAll("TEST-01");
+  assert.strictEqual(summary.state, "stopped");
+  assert.strictEqual(teardown.getRuntimeState(), "stopped");
+  teardown.resetTeardownForTests();
+});
+
+runTest("TEST-01 persistence commit is atomic on storage failure", async () => {
+  const previousGM = global.GM;
+  const gm = createFakeGM({}, { failSet: true });
+  global.GM = gm;
+  try {
+    const settings = loadModule("src/services/settingsService.js");
+    const { config } = loadModule("src/config.js");
+    const before = JSON.stringify(config);
+    const result = await settings.commitConfig({ ...config, metrics: { ...config.metrics, lowest: 0 } });
+    assert.strictEqual(result.committed, false);
+    assert.strictEqual(result.issues[0].code, "storage_error");
+    assert.deepStrictEqual(gm.snapshot(), {});
+    assert.strictEqual(JSON.stringify(config), before);
+  } finally { global.GM = previousGM; }
+});
+
+runTest("TEST-01 migration is idempotent and corrupted canonical config recovers from backup", async () => {
+  const previousGM = global.GM;
+  const gm = createFakeGM({ minVersion: 0.7, threadSettings: { skipMaskedLink: true } });
+  global.GM = gm;
+  try {
+    const { migrateLegacyConfigPayload } = loadModule("src/services/configMigrationService.js");
+    const migrated = await migrateLegacyConfigPayload(gm.snapshot());
+    const repeated = await migrateLegacyConfigPayload(migrated);
+    assert.strictEqual(migrated.latestSettings.minVersion, 0.7);
+    assert.strictEqual(migrated.threadSettings.skipMaskedLink, undefined);
+    assert.deepStrictEqual(repeated, migrated);
+    const settings = loadModule("src/services/settingsService.js");
+    const { config } = loadModule("src/config.js");
+    await gm.setValue(settings.CONFIG_ENVELOPE_KEY, { revision: 3, data: { latestSettings: { minVersion: "bad" } } });
+    await gm.setValue(settings.CONFIG_BACKUP_KEY, { revision: 2, data: config });
+    const loaded = await settings.loadData();
+    assert.strictEqual(loaded.latestSettings.minVersion, config.latestSettings.minVersion);
+  } finally { global.GM = previousGM; }
+});
+
+runTest("TEST-01 config import preview rejects invalid data without mutating state", async () => {
+  const previousGM = global.GM;
+  global.GM = createFakeGM();
+  try {
+    const { config } = loadModule("src/config.js");
+    const { previewConfigImport } = loadModule("src/services/configTransferService.js");
+    const before = JSON.stringify(config);
+    const preview = previewConfigImport({ settings: { latestSettings: { unknown: true } } });
+    assert.strictEqual(preview.ok, false);
+    assert.strictEqual(JSON.stringify(config), before);
+  } finally { global.GM = previousGM; }
+});
+
+runTest("TEST-01 sync rejects stale envelopes and ignores local loop events", async () => {
+  const previousGM = global.GM;
+  const gm = createFakeGM();
+  global.GM = gm;
+  try {
+    const sync = loadModule("src/services/syncService.js");
+    const { config } = loadModule("src/config.js");
+    const data = { ...JSON.parse(JSON.stringify(config)), metrics: { ...config.metrics, lowest: 0 } };
+    const newer = { revision: 2, updatedAt: 20, writerId: "tab-b", data };
+    const stale = { revision: 1, updatedAt: 10, writerId: "tab-a", data };
+    assert.strictEqual(sync.applyIncoming(newer), true);
+    assert.strictEqual(sync.applyIncoming(stale), false);
+  } finally { global.GM = previousGM; }
+});
 
 testChain.then(() => {
   console.log(`\nTest results: ${passed} passed, ${failed} failed`);

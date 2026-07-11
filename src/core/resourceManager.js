@@ -1,3 +1,5 @@
+import { registerDiagnosticsProvider } from "./featureHealth.js";
+
 class ResourceManager {
   constructor() {
     this.resources = new Map();
@@ -158,3 +160,8 @@ export function getResourceSnapshot() {
 }
 
 export const resourceManager = new ResourceManager();
+
+registerDiagnosticsProvider("resources", () => {
+  const snapshot = getResourceSnapshot();
+  return { totalResources: snapshot.totalResources, ownerCount: Object.keys(snapshot.owners).length };
+});

@@ -45,13 +45,13 @@ function waitForAbortGrace(promise) {
   ]);
 }
 
-function reportLifecycleFailure(featureId, name, action, error) {
+function reportLifecycleFailure(featureId, name, action, error, context = {}) {
   const message = getErrorMessage(error);
   debugLog(featureId, "Lifecycle transition failed", {
     data: { action, error: message },
     level: "error",
   });
-  reportFeatureFailure(name, error, action);
+  reportFeatureFailure(name, error, action, context);
   try {
     showToast(`${name} failed to ${action}: ${message}`);
   } catch {}
@@ -60,12 +60,14 @@ function reportLifecycleFailure(featureId, name, action, error) {
 export function createLifecycleContext(featureId, action, {
   generation = 0,
   routeGeneration = 0,
+  correlationId = "",
   reason = "startup",
 } = {}) {
   const controller = new AbortController();
   return {
     signal: controller.signal,
     operationId: `${featureId}:${action}:${Date.now()}:${Math.random().toString(16).slice(2)}`,
+    correlationId: String(correlationId || ""),
     generation,
     routeGeneration,
     reason: LIFECYCLE_REASONS.has(reason) ? reason : "startup",
@@ -130,6 +132,7 @@ export function createFeature(name, {
     return createLifecycleContext(featureId, action, {
       generation: lifecycleGeneration,
       routeGeneration: Number(suppliedContext?.routeGeneration) || 0,
+      correlationId: suppliedContext?.correlationId,
       reason: suppliedContext?.reason,
     });
   }
@@ -175,7 +178,7 @@ export function createFeature(name, {
           if (activeOperation === operation) setFeatureStatus(name, "disabled", "cancelled");
           throw createAbortError(getErrorMessage(error));
         }
-        reportLifecycleFailure(featureId, name, action, error);
+        reportLifecycleFailure(featureId, name, action, error, context);
         throw error;
       } finally {
         clearTimeout(timeoutId);

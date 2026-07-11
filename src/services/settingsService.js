@@ -27,13 +27,17 @@ function cloneConfig(value) { return JSON.parse(JSON.stringify(value)); }
 export async function commitConfig(candidate, { origin = "local" } = {}) {
   const validation = validateConfig(candidate, { mode: "strict" });
   if (!validation.valid) return { committed: false, issues: validation.issues, origin };
-  const previousEnvelope = await storageAdapter.get(CONFIG_ENVELOPE_KEY, null);
-  const revision = Math.max(0, Number(previousEnvelope?.revision) || 0) + 1;
-  const envelope = { schemaVersion: CONFIG_SCHEMA_VERSION, revision, writerId: WRITER_ID, updatedAt: Date.now(), data: cloneConfig(validation.data) };
-  if (previousEnvelope) await storageAdapter.set(CONFIG_BACKUP_KEY, previousEnvelope);
-  await storageAdapter.set(CONFIG_ENVELOPE_KEY, envelope);
-  Object.assign(config, cloneConfig(envelope.data));
-  return { committed: true, origin, envelope, previousConfig: previousEnvelope?.data || null, config: cloneConfig(envelope.data) };
+  try {
+    const previousEnvelope = await storageAdapter.get(CONFIG_ENVELOPE_KEY, null);
+    const revision = Math.max(0, Number(previousEnvelope?.revision) || 0) + 1;
+    const envelope = { schemaVersion: CONFIG_SCHEMA_VERSION, revision, writerId: WRITER_ID, updatedAt: Date.now(), data: cloneConfig(validation.data) };
+    if (previousEnvelope) await storageAdapter.set(CONFIG_BACKUP_KEY, previousEnvelope);
+    await storageAdapter.set(CONFIG_ENVELOPE_KEY, envelope);
+    Object.assign(config, cloneConfig(envelope.data));
+    return { committed: true, origin, envelope, previousConfig: previousEnvelope?.data || null, config: cloneConfig(envelope.data) };
+  } catch (error) {
+    return { committed: false, issues: [{ path: "", code: "storage_error", expected: "persisted config", received: error?.message || "storage_error" }], origin };
+  }
 }
 
 async function loadCanonicalEnvelope() {

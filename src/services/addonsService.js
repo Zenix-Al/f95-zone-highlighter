@@ -39,7 +39,7 @@ import {
   unwatchAddonObserver,
   watchAddonObserver,
 } from "./addons/observer.js";
-import { initAddonsBridgeServer } from "./addons/bridgeServer.js";
+import { initAddonsBridgeServer, shutdownAddonsBridgeServer } from "./addons/bridgeServer.js";
 import { createAddonLifecycleOrchestrator, emitAddonCommand } from "./addons/lifecycle.js";
 import { invokeRegisteredAddonCoreAction, isAddonActionAllowed } from "./addons/coreActions.js";
 import { buildKnownAddonsSnapshot } from "./addons/knownAddons.js";
@@ -171,6 +171,7 @@ export function disableAddonsService() {
 
   // Stop reporting runtime entries immediately; remaining UI/observer cleanup is best-effort.
   replaceRegisteredAddons([]);
+  shutdownAddonsBridgeServer();
 
   return { ok: true };
 }
@@ -211,6 +212,11 @@ function measurePayloadBytes(payload) {
 
 function isFeatureToggleAction(action) {
   return action === "feature.enable" || action === "feature.disable";
+}
+
+export function getAddonActionBlockReason(addon, action) {
+  const reason = getAddonExecutionBlockReason(addon);
+  return reason === "addon_out_of_scope" && isFeatureToggleAction(action) ? null : reason;
 }
 
 async function processUnregisteredAddonAction(addonId, action, installedMeta) {
@@ -292,6 +298,16 @@ function getAddonPermissions(addon) {
   return new Set(Array.isArray(addon.capabilities) ? addon.capabilities : []);
 }
 
+export function getAddonExecutionBlockReason(addon, currentScopes = getCurrentPageScopes()) {
+  if (!addon) return "addon_not_registered";
+  if (addon.blocked) return "addon_blocked";
+  if (!addon.trusted) return "addon_untrusted";
+  if (addon.status === "disabled") return "addon_disabled";
+  const scopes = Array.isArray(addon.pageScopes) ? addon.pageScopes : [];
+  if (scopes.length > 0 && !scopes.some((scope) => currentScopes.includes(scope))) return "addon_out_of_scope";
+  return null;
+}
+
 const ADDON_CORE_ACTION_LIMITS = {
   maxAddonStorageValueBytes: MAX_ADDON_STORAGE_VALUE_BYTES,
   maxAddonStorageTotalBytes: MAX_ADDON_STORAGE_TOTAL_BYTES,
@@ -370,7 +386,8 @@ export async function invokeAddonCoreAction(addonId, action, payload = {}) {
     return getAddonAccessResponse(addon);
   }
 
-  if (addon.blocked) return { ok: false, reason: "addon_blocked" };
+  const executionBlockReason = getAddonActionBlockReason(addon, action);
+  if (executionBlockReason) return { ok: false, reason: executionBlockReason };
 
   const allowed = getAddonPermissions(addon);
   if (!isAddonActionAllowed(allowed, action)) return { ok: false, reason: "permission_denied" };
@@ -382,6 +399,12 @@ export async function invokeAddonCoreAction(addonId, action, payload = {}) {
     allowed,
     deps: ADDON_CORE_ACTION_DEPS,
     limits: ADDON_CORE_ACTION_LIMITS,
+    authorize: () => {
+      const currentAddon = getRegisteredAddon(normalizedId);
+      const reason = getAddonActionBlockReason(currentAddon, action);
+      if (reason) return reason;
+      return isAddonActionAllowed(getAddonPermissions(currentAddon), action) ? null : "permission_denied";
+    },
   });
 
   return warnOnUnsupportedUiAction(result, normalizedId, action);
