@@ -1,6 +1,7 @@
 import { getByPath } from "../../utils/objectPath.js";
 import { debugLog } from "../../core/logger.js";
 import { registerDiagnosticsProvider } from "../../core/featureHealth.js";
+import { getRouteContext } from "../../core/routeState.js";
 import {
   getFastCaptureSnapshot,
   getFastCaptureStoreDiagnostics,
@@ -458,10 +459,8 @@ export function registerFastCaptureFeatures(features = [], routeContext = null) 
 }
 
 export function refreshFastCaptureFeatures(features = [], routeContext = null) {
-  const suppliedGeneration = Number(routeContext?.generation);
-  routeGeneration = Number.isFinite(suppliedGeneration) && suppliedGeneration >= 0
-    ? suppliedGeneration
-    : routeGeneration + 1;
+  const suppliedGeneration = Number(routeContext?.generation ?? getRouteContext().generation);
+  if (Number.isFinite(suppliedGeneration) && suppliedGeneration >= 0) routeGeneration = suppliedGeneration;
   queue.clear();
   return registerFastCaptureFeatures(features, routeContext);
 }

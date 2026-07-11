@@ -20,9 +20,19 @@ This phase runs once `waitForBodyReady()` completes.
 - **UI Phase Initialization**: Sets up the UI environment via `initUiPhaseIfApplicable()`.
 - **Feature Loading**: Triggers `loadBodyBootstrapFeatures()`, which iterates over features registered in the catalog and enables those whose `bootstrapMode` is `waitForBody` and are applicable to the current page/configuration.
 
+### Bootstrap step policy
+
+Every bootstrap step declares an ID, timeout, and classification. Required steps
+(route state, page detection, validated configuration, and teardown hooks) stop their
+pipeline on failure because later steps depend on their output. Optional diagnostics,
+UI conveniences, toast flushing, and the add-on console bridge may be unavailable
+without invalidating core state. Route observation and feature loading are recoverable:
+their explicit fallback preserves a usable core while diagnostics report degraded
+startup. A fallback never changes a failed primary operation into a healthy result.
+
 ### Feature discovery & generated manifest
 
-Features are discovered at build time by a manifest generator rather than by manual imports. The repository provides `scripts/featureManifest.cjs` which scans `src/features/` for `*Feature` exports (for example `export const myFeature = createFeature(...)`) and emits a generated manifest file consumed by the loader.
+Features are discovered at build time from `*Feature` exports in `src/features/*/index.js` rather than by manual imports. Refresh the generated `src/generated/features.generated.js` file without a version bump with `node -e "require('./scripts/featureManifest.cjs').generateFeatureManifest({ rootDir: process.cwd() })"`. The generated file is consumed by the loader and must not be edited manually.
 
 - Do not rely on manual edits to `src/core/featureCatalog.js` — the loader uses the generated manifest during bootstrap to create the runtime catalog.
 - The manifest step should be run during build/CI so the generated file is always in sync with source.

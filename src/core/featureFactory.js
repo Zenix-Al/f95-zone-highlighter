@@ -62,8 +62,11 @@ export function createLifecycleContext(featureId, action, {
   routeGeneration = 0,
   correlationId = "",
   reason = "startup",
+  routeSignal = null,
 } = {}) {
   const controller = new AbortController();
+  if (routeSignal?.aborted) controller.abort(routeSignal.reason);
+  else routeSignal?.addEventListener("abort", () => controller.abort(routeSignal.reason), { once: true });
   return {
     signal: controller.signal,
     operationId: `${featureId}:${action}:${Date.now()}:${Math.random().toString(16).slice(2)}`,
@@ -134,6 +137,7 @@ export function createFeature(name, {
       routeGeneration: Number(suppliedContext?.routeGeneration) || 0,
       correlationId: suppliedContext?.correlationId,
       reason: suppliedContext?.reason,
+      routeSignal: suppliedContext?.signal,
     });
   }
 

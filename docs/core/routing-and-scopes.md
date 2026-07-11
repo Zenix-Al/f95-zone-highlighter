@@ -18,6 +18,12 @@ This document explains how the system detects pages, evaluates feature applicabi
 
 - The framework emits route transition events and increments a generation token.
 - Features should check the generation token or accept an `AbortSignal` for async work to avoid applying stale changes.
+- Route identity includes origin, path, query, and hash because each can change the
+  active XenForo view. Repeated notifications for the identical normalized URL do
+  not create a generation. Synchronous A → B → C history changes create distinct
+  generations but coalesce reconciliation so only C is dispatched.
+- `routeState` is the only generation owner. Loaders, lifecycle operations, task
+  queues, selector diagnostics, and fast capture consume its route context.
 
 ## Handling SPA-like navigations
 

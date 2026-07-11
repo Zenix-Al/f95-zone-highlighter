@@ -48,4 +48,5 @@ const crossTabSyncFeature = createFeature("Cross Tab Sync", {
 });
 
 export function toggleCrossTabSync(enabled) { return crossTabSyncFeature.toggle(Boolean(enabled)); }
+export function resetSyncServiceForTests() { disableCrossTabSync(); lastApplied = null; }
 export { applyIncoming, compareEnvelope, crossTabSyncFeature };

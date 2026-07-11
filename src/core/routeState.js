@@ -6,7 +6,7 @@ let currentPageFlags = {};
 let controller = new AbortController();
 let correlationId = "route:0";
 
-function normalizeLocation(locationLike = globalThis.location) {
+export function normalizeRouteUrl(locationLike = globalThis.location) {
   const href = String(locationLike?.href || "");
   try {
     const url = new URL(href, globalThis.location?.href || undefined);
@@ -32,15 +32,22 @@ export function getRouteContext() {
 }
 
 export function beginRoute(locationLike = globalThis.location) {
-  const url = normalizeLocation(locationLike);
+  const url = normalizeRouteUrl(locationLike);
   if (url === currentUrl) return { ...getRouteContext(), changed: false };
   controller.abort(new DOMException("route changed", "AbortError"));
   controller = new AbortController();
   currentUrl = url;
   routeGeneration += 1;
   correlationId = createCorrelationId();
-  recordHealthEvent({ code: "ROUTE_TRANSITION", severity: "info", subsystem: "route", message: "Route changed", correlationId, routeGeneration, details: { changed: true } });
+  recordHealthEvent({ code: "ROUTE_TRANSITION", severity: "info", ownerId: `route:${routeGeneration}`, subsystem: "route", message: "Route changed", correlationId, routeGeneration, details: { changed: true } });
   return { ...getRouteContext(), changed: true };
+}
+
+export function isRouteContextCurrent(routeContext) {
+  return Boolean(routeContext)
+    && Number(routeContext.generation) === routeGeneration
+    && String(routeContext.url || "") === currentUrl
+    && !routeContext.signal?.aborted;
 }
 
 export function setRoutePageFlags(pageFlags) {

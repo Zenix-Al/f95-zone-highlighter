@@ -1,93 +1,165 @@
-import { registerDiagnosticsProvider, reportFeatureFailure, reportFeatureWarning } from "./featureHealth.js";
+import {
+  registerDiagnosticsProvider,
+  reportFeatureFailure,
+  reportFeatureWarning,
+  setFeatureStatus,
+} from "./featureHealth.js";
 
+const BOOTSTRAP_CLASSIFICATIONS = new Set(["required", "optional", "recoverable"]);
+const DEFAULT_STEP_TIMEOUT_MS = 15000;
 let lastBootstrapSummary = null;
 
-function correlationId() {
+function createCorrelationId() {
   return `bootstrap:${Date.now()}:${Math.random().toString(16).slice(2)}`;
 }
 
-function timeoutPromise(timeoutMs, controller, stepId) {
-  if (!timeoutMs || timeoutMs <= 0) return null;
-  return new Promise((_, reject) => setTimeout(() => {
-    controller.abort(new DOMException("bootstrap step timeout", "AbortError"));
-    reject(new Error(`Bootstrap step '${stepId}' timed out`));
-  }, timeoutMs));
+function errorMessage(error) {
+  return error?.message ? String(error.message) : String(error || "Unknown bootstrap error");
 }
 
-export async function runBootstrapStep(step, fn, fallbackValue = undefined, context = {}) {
-  const descriptor = typeof step === "object"
-    ? step
-    : { id: String(step || "bootstrap-step"), classification: "optional", run: fn, fallbackValue };
-  const id = String(descriptor.id || descriptor.name || "bootstrap-step");
-  const classification = descriptor.classification || "optional";
+function validateStep(step) {
+  if (!step || typeof step !== "object") return "bootstrap step must be an object";
+  if (!String(step.id || "").trim()) return "bootstrap step id is required";
+  if (!BOOTSTRAP_CLASSIFICATIONS.has(step.classification)) return `bootstrap step '${step.id}' has invalid classification`;
+  if (typeof step.run !== "function") return `bootstrap step '${step.id}' must provide run()`;
+  if (step.classification === "recoverable" && typeof step.fallback !== "function") {
+    return `recoverable bootstrap step '${step.id}' must provide fallback()`;
+  }
+  if (!Number.isFinite(Number(step.timeoutMs)) || Number(step.timeoutMs) <= 0) {
+    return `bootstrap step '${step.id}' must provide a positive timeoutMs`;
+  }
+  return null;
+}
+
+function createStepController(parentSignal) {
   const controller = new AbortController();
+  if (parentSignal?.aborted) controller.abort(parentSignal.reason);
+  else parentSignal?.addEventListener("abort", () => controller.abort(parentSignal.reason), { once: true });
+  return controller;
+}
+
+function copyStepResult(result) {
+  const copy = { ...result };
+  delete copy.value;
+  return copy;
+}
+
+export async function runBootstrapStep(step, context = {}) {
+  const validationError = validateStep(step);
+  const id = String(step?.id || "invalid-step").trim() || "invalid-step";
+  const classification = BOOTSTRAP_CLASSIFICATIONS.has(step?.classification)
+    ? step.classification
+    : "required";
   const startedAt = Date.now();
+  if (validationError) {
+    return { id, classification, status: "failed", errorMessage: validationError, startedAt, completedAt: Date.now(), durationMs: 0, timedOut: false };
+  }
+
+  const controller = createStepController(context.signal);
+  const timeoutMs = Number(step.timeoutMs || DEFAULT_STEP_TIMEOUT_MS);
+  let timeoutId;
+  let timedOut = false;
+  const timeout = new Promise((_, reject) => {
+    timeoutId = setTimeout(() => {
+      timedOut = true;
+      const error = new DOMException(`Bootstrap step '${id}' timed out`, "AbortError");
+      controller.abort(error);
+      reject(error);
+    }, timeoutMs);
+  });
+
   try {
-    const run = descriptor.run || fn;
     const value = await Promise.race([
-      Promise.resolve().then(() => run({ ...context, signal: controller.signal, stepId: id })),
-      timeoutPromise(descriptor.timeoutMs, controller, id),
-    ].filter(Boolean));
-    return { id, classification, status: "ok", value, durationMs: Date.now() - startedAt };
+      Promise.resolve().then(() => step.run({ ...context, signal: controller.signal, stepId: id })),
+      timeout,
+    ]);
+    return { id, classification, status: "ok", value, startedAt, completedAt: Date.now(), durationMs: Date.now() - startedAt, timedOut: false };
   } catch (error) {
-    const result = { id, classification, status: "failed", error, durationMs: Date.now() - startedAt };
-    if (classification === "recoverable" && typeof descriptor.fallback === "function") {
+    const result = { id, classification, status: "failed", errorMessage: errorMessage(error), startedAt, completedAt: Date.now(), durationMs: Date.now() - startedAt, timedOut };
+    if (classification === "recoverable") {
       try {
-        result.value = await descriptor.fallback({ ...context, signal: controller.signal, stepId: id, error });
+        result.value = await step.fallback({ ...context, signal: context.signal, stepId: id, error });
         result.status = "degraded";
+        result.fallbackApplied = true;
       } catch (fallbackError) {
-        result.fallbackError = fallbackError;
+        result.fallbackApplied = false;
+        result.fallbackErrorMessage = errorMessage(fallbackError);
       }
     }
     return result;
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
 
 export async function runBootstrapPipeline(steps = [], context = {}) {
-  const summary = { correlationId: context.correlationId || correlationId(), status: "healthy", steps: [], failedSteps: [], degradedSteps: [] };
+  const controller = new AbortController();
+  if (context.signal?.aborted) controller.abort(context.signal.reason);
+  else context.signal?.addEventListener("abort", () => controller.abort(context.signal.reason), { once: true });
+  const startedAt = Date.now();
+  const summary = {
+    correlationId: String(context.correlationId || createCorrelationId()),
+    status: "healthy",
+    startedAt,
+    completedAt: 0,
+    durationMs: 0,
+    steps: [],
+    failedSteps: [],
+    degradedSteps: [],
+  };
+
   for (const step of Array.isArray(steps) ? steps : []) {
-    if (!step || typeof step.run !== "function") continue;
-    const result = await runBootstrapStep(step, null, undefined, summary);
-    summary.steps.push(result);
+    if (controller.signal.aborted) break;
+    const result = await runBootstrapStep(step, { correlationId: summary.correlationId, signal: controller.signal });
     if (result.status === "ok") {
-      try { step.onResult?.(result.value); } catch (error) { reportFeatureWarning("Bootstrap", error, `${result.id}:onResult`); }
-      continue;
+      try { step.onResult?.(result.value); }
+      catch (error) {
+        result.status = "failed";
+        result.errorMessage = errorMessage(error);
+      }
     }
+    summary.steps.push(copyStepResult(result));
+    if (result.status === "ok") continue;
+
+    const eventContext = { correlationId: summary.correlationId, details: { stepId: result.id, classification: result.classification, timedOut: result.timedOut } };
     if (result.status === "degraded") {
       summary.status = "degraded";
       summary.degradedSteps.push(result.id);
-      reportFeatureWarning("Bootstrap", result.error, `${result.id}:${summary.correlationId}`);
+      reportFeatureWarning("Bootstrap", result.errorMessage, `BOOT_STEP_${result.id}`, eventContext);
       continue;
     }
+
     summary.failedSteps.push(result.id);
     if (result.classification === "required") {
       summary.status = "failed";
-      reportFeatureFailure("Bootstrap", result.error, `${result.id}:${summary.correlationId}`);
+      reportFeatureFailure("Bootstrap", result.errorMessage, `BOOT_STEP_${result.id}`, eventContext);
+      controller.abort(new Error(`required bootstrap step '${result.id}' failed`));
       break;
     }
-    summary.status = summary.status === "healthy" ? "degraded" : summary.status;
+    summary.status = "degraded";
     summary.degradedSteps.push(result.id);
-    reportFeatureWarning("Bootstrap", result.error, `${result.id}:${summary.correlationId}`);
+    reportFeatureWarning("Bootstrap", result.errorMessage, `BOOT_STEP_${result.id}`, eventContext);
   }
+
+  summary.completedAt = Date.now();
+  summary.durationMs = summary.completedAt - startedAt;
   lastBootstrapSummary = summary;
-  return summary;
+  setFeatureStatus("Bootstrap", summary.status === "healthy" ? "running" : summary.status === "degraded" ? "degraded" : "failing", `${summary.status} startup`);
+  return getLastBootstrapSummary();
 }
 
 export function getLastBootstrapSummary() {
   return lastBootstrapSummary && JSON.parse(JSON.stringify(lastBootstrapSummary));
 }
 
+export function clearBootstrapSummary() {
+  lastBootstrapSummary = null;
+}
+
+export const resetBootstrapForTests = clearBootstrapSummary;
+
 export function createBootstrapFailureHandler(step = "bootstrap") {
   return (error) => reportFeatureFailure("Bootstrap", error, step);
 }
 
-registerDiagnosticsProvider("bootstrap", () => {
-  if (!lastBootstrapSummary) return { status: "idle" };
-  return {
-    correlationId: lastBootstrapSummary.correlationId,
-    status: lastBootstrapSummary.status,
-    stepCount: lastBootstrapSummary.steps.length,
-    failedSteps: [...lastBootstrapSummary.failedSteps],
-    degradedSteps: [...lastBootstrapSummary.degradedSteps],
-  };
-});
+registerDiagnosticsProvider("bootstrap", () => getLastBootstrapSummary() || { status: "idle" });

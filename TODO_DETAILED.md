@@ -99,24 +99,24 @@ Record the current implementation state before changing architecture, and distin
 
 ### Required implementation
 
-- [ ] Run and record the current results of:
+- [x] Run and record the current results of:
   - `npm run lint`
   - `npm run test`
   - `git diff --check`
-- [ ] Search contributor documentation for stale instructions that tell developers to manually import features into `src/loader.js`.
-- [ ] Treat the existing generated-manifest workflow as the source of truth:
+- [x] Search contributor documentation for stale instructions that tell developers to manually import features into `src/loader.js`.
+- [x] Treat the existing generated-manifest workflow as the source of truth:
   - Feature exports are discovered from `src/features/*/index.js`.
   - `src/generated/features.generated.js` is generated and must not be edited manually.
-- [ ] Remove or correct only stale documentation. Do not rewrite unrelated documentation.
-- [ ] Add a short audit-status note to the repository TODO indicating that generated discovery already exists and that remaining work is validation and drift prevention.
-- [ ] Create a baseline test/command report in the pull request description rather than committing temporary output files.
+- [x] Remove or correct only stale documentation. Do not rewrite unrelated documentation.
+- [x] Add a short audit-status note to the repository TODO indicating that generated discovery already exists and that remaining work is validation and drift prevention.
+- [x] Create a baseline test/command report in the pull request description rather than committing temporary output files.
 
 ### Acceptance criteria
 
-- [ ] No active contributor documentation instructs manual feature imports into `src/loader.js`.
-- [ ] All documentation points to the same generated-manifest command and generated output path.
-- [ ] The TODO no longer presents “replace manual registration” as an unstarted implementation task.
-- [ ] Existing lint/test failures, if any, are explicitly recorded and are not silently mixed with new failures.
+- [x] No active contributor documentation instructs manual feature imports into `src/loader.js`.
+- [x] All documentation points to the same generated-manifest command and generated output path.
+- [x] The TODO no longer presents “replace manual registration” as an unstarted implementation task.
+- [x] Existing lint/test failures, if any, are explicitly recorded and are not silently mixed with new failures.
 
 ### Scope guardrails
 
@@ -140,18 +140,18 @@ Make invalid feature declarations fail deterministically before users encounter 
 
 #### Generator validation
 
-- [ ] Refactor `scripts/featureManifest.cjs` so discovery and validation are separate pure functions.
-- [ ] Reject duplicate exported feature symbols across different feature entry files.
-- [ ] Reject duplicate paths in the generated import list.
-- [ ] Reject a feature entry file when the same `*Feature` symbol is exported more than once.
-- [ ] Produce deterministic, actionable errors containing the symbol and both conflicting paths.
-- [ ] Add a check mode that renders the expected manifest in memory and compares it with `src/generated/features.generated.js` without rewriting files.
-- [ ] Expose the check mode through a package script used by CI.
+- [x] Refactor `scripts/featureManifest.cjs` so discovery and validation are separate pure functions.
+- [x] Reject duplicate exported feature symbols across different feature entry files.
+- [x] Reject duplicate paths in the generated import list.
+- [x] Reject a feature entry file when the same `*Feature` symbol is exported more than once.
+- [x] Produce deterministic, actionable errors containing the symbol and both conflicting paths.
+- [x] Add a check mode that renders the expected manifest in memory and compares it with `src/generated/features.generated.js` without rewriting files.
+- [x] Expose the check mode through a package script used by CI.
 
 #### Runtime descriptor validation
 
-- [ ] Define one canonical feature descriptor validator used by `featureCatalog` before a feature enters any bootstrap bucket.
-- [ ] Validate at minimum:
+- [x] Define one canonical feature descriptor validator used by `featureCatalog` before a feature enters any bootstrap bucket.
+- [x] Validate at minimum:
   - A non-empty stable feature identifier.
   - No duplicate feature identifier or catalog key.
   - `bootstrap` is one of the explicitly supported modes.
@@ -159,19 +159,19 @@ Make invalid feature declarations fail deterministically before users encounter 
   - Every page scope exists in `pageDefinitions`.
   - Lifecycle handlers are functions when provided.
   - Settings contribution identifiers do not collide within the same owner.
-- [ ] Stop silently defaulting invalid bootstrap values. Missing values may use the documented default; malformed values must fail validation.
-- [ ] In development/test mode, throw an error on invalid registration.
-- [ ] In production, reject the feature, report a structured health error, and continue loading unrelated valid features.
+- [x] Stop silently defaulting invalid bootstrap values. Missing values may use the documented default; malformed values must fail validation.
+- [x] In development/test mode, throw an error on invalid registration.
+- [x] In production, reject the feature, report a structured health error, and continue loading unrelated valid features.
 
 ### Acceptance criteria
 
-- [ ] A duplicate export-symbol fixture fails manifest generation with both source paths in the message.
-- [ ] A stale generated manifest causes the check command to exit non-zero without modifying the working tree.
-- [ ] Duplicate feature IDs are rejected.
-- [ ] Invalid bootstrap values are rejected rather than coerced.
-- [ ] Unknown page scopes are rejected and identify the invalid scope.
-- [ ] One invalid feature does not prevent unrelated valid features from registering in production behavior tests.
-- [ ] Manifest output remains deterministic across repeated runs.
+- [x] A duplicate export-symbol fixture fails manifest generation with both source paths in the message.
+- [x] A stale generated manifest causes the check command to exit non-zero without modifying the working tree.
+- [x] Duplicate feature IDs are rejected.
+- [x] Invalid bootstrap values are rejected rather than coerced.
+- [x] Unknown page scopes are rejected and identify the invalid scope.
+- [x] One invalid feature does not prevent unrelated valid features from registering in production behavior tests.
+- [x] Manifest output remains deterministic across repeated runs.
 
 ### Scope guardrails
 
@@ -406,26 +406,26 @@ Each step must declare:
 
 ### Required implementation
 
-- [ ] Inventory existing bootstrap steps without changing their order initially.
-- [ ] Classify every step:
+- [x] Inventory existing bootstrap steps without changing their order initially.
+- [x] Classify every step:
   - **Required:** startup must stop or enter a clearly failed state if it cannot complete.
   - **Optional:** startup continues; the unavailable capability is reported.
   - **Recoverable:** startup runs an explicit fallback and records degraded state.
-- [ ] Give the whole bootstrap run a correlation ID and abort signal.
-- [ ] Give each step a timeout and structured result.
-- [ ] Return a bootstrap summary containing status, timings, failed/degraded steps, and correlation ID.
-- [ ] Expose the summary through `featureHealth` or a dedicated framework-health section.
-- [ ] Ensure a required-step failure does not continue into steps that assume its output exists.
-- [ ] Ensure optional/recoverable failures do not produce unhandled rejections.
-- [ ] Document the classification and rationale near the bootstrap pipeline.
+- [x] Give the whole bootstrap run a correlation ID and abort signal.
+- [x] Give each step a timeout and structured result.
+- [x] Return a bootstrap summary containing status, timings, failed/degraded steps, and correlation ID.
+- [x] Expose the summary through `featureHealth` or a dedicated framework-health section.
+- [x] Ensure a required-step failure does not continue into steps that assume its output exists.
+- [x] Ensure optional/recoverable failures do not produce unhandled rejections.
+- [x] Document the classification and rationale near the bootstrap pipeline.
 
 ### Acceptance criteria
 
-- [ ] Tests cover one success, one optional failure, one recoverable failure with fallback, one required failure, and one timeout.
-- [ ] Degraded startup is visible in diagnostics and distinct from complete startup failure.
-- [ ] Startup correlation ID appears on all bootstrap health events.
-- [ ] Failed required steps prevent dependent steps from running.
-- [ ] Re-running startup after a full teardown does not reuse stale bootstrap state.
+- [x] Tests cover one success, one optional failure, one recoverable failure with fallback, one required failure, and one timeout.
+- [x] Degraded startup is visible in diagnostics and distinct from complete startup failure.
+- [x] Startup correlation ID appears on all bootstrap health events.
+- [x] Failed required steps prevent dependent steps from running.
+- [x] Re-running startup after a full teardown does not reuse stale bootstrap state.
 
 ### Scope guardrails
 
@@ -447,41 +447,41 @@ Give every navigation a shared generation token so async work from an old URL ca
 
 ### Required implementation
 
-- [ ] Create one route-state module that owns:
+- [x] Create one route-state module that owns:
   - current normalized URL
   - monotonically increasing route generation
   - route correlation ID
   - route abort controller
   - current detected page flags
-- [ ] Increment the route generation only when the normalized route meaningfully changes.
-- [ ] Abort the previous route signal before starting new route work.
-- [ ] Make `routeObserver` return a cleanup function that restores patched `history.pushState` and `history.replaceState` methods and removes listeners.
-- [ ] Replace microtask-only deduplication with generation-aware route dispatch.
-- [ ] Pass route context into:
+- [x] Increment the route generation only when the normalized route meaningfully changes.
+- [x] Abort the previous route signal before starting new route work.
+- [x] Make `routeObserver` return a cleanup function that restores patched `history.pushState` and `history.replaceState` methods and removes listeners.
+- [x] Replace microtask-only deduplication with generation-aware route dispatch.
+- [x] Pass route context into:
   - page detection
   - feature applicability reconciliation
   - feature lifecycle operations
   - task queues
   - fast-capture processing
   - selector diagnostics
-- [ ] Add a single `reconcileFeatures(routeContext)` path that, for every registered feature:
+- [x] Add a single `reconcileFeatures(routeContext)` path that, for every registered feature:
   - computes applicability from current page scopes and config
   - disables features that became inapplicable
   - enables features that became applicable
   - leaves already-correct features unchanged
-- [ ] Preserve bootstrap-mode ordering while still reconciling all modes.
-- [ ] Before any async route operation commits DOM/state, verify its route signal/generation is current.
-- [ ] Coalesce multiple synchronous history changes so only the newest route is applied, while still incrementing generation correctly for distinct routes.
+- [x] Preserve bootstrap-mode ordering while still reconciling all modes.
+- [x] Before any async route operation commits DOM/state, verify its route signal/generation is current.
+- [x] Coalesce multiple synchronous history changes so only the newest route is applied, while still incrementing generation correctly for distinct routes.
 
 ### Acceptance criteria
 
-- [ ] Rapid A → B → C navigation cannot allow A or B async work to modify route C.
-- [ ] A feature applicable on A but not B is disabled on B.
-- [ ] A feature that becomes applicable again on C is re-enabled cleanly.
-- [ ] Repeated notifications for the same normalized URL do not cause duplicate lifecycle operations.
-- [ ] History patches and route listeners are restored on full teardown.
-- [ ] Tests cover hash/query/path behavior according to the chosen normalization policy.
-- [ ] Health events for a route transition share a route correlation ID.
+- [x] Rapid A → B → C navigation cannot allow A or B async work to modify route C.
+- [x] A feature applicable on A but not B is disabled on B.
+- [x] A feature that becomes applicable again on C is re-enabled cleanly.
+- [x] Repeated notifications for the same normalized URL do not cause duplicate lifecycle operations.
+- [x] History patches and route listeners are restored on full teardown.
+- [x] Tests cover hash/query/path behavior according to the chosen normalization policy.
+- [x] Health events for a route transition share a route correlation ID.
 
 ### Scope guardrails
 
@@ -1329,81 +1329,81 @@ Add deterministic integration coverage for the interactions most likely to regre
 
 ### Test infrastructure
 
-- [ ] Keep the existing lightweight Node test entry or migrate it deliberately; do not maintain two unrelated test runners without reason.
-- [ ] Add one DOM implementation suitable for Shadow DOM, history, events, and mutation testing, such as `happy-dom` or an equivalent evaluated choice.
-- [ ] Create reusable fakes for:
+- [x] Keep the existing lightweight Node test entry or migrate it deliberately; do not maintain two unrelated test runners without reason.
+- [x] Add one DOM implementation suitable for Shadow DOM, history, events, and mutation testing, such as `happy-dom` or an equivalent evaluated choice.
+- [x] Create reusable fakes for:
   - userscript storage and change listeners
   - clock/timers
   - history and route changes
   - pagehide/pageshow events with `persisted`
   - add-on bridge transport
   - storage/action failure injection
-- [ ] Reset all module-level singleton state between tests.
-- [ ] Avoid arbitrary real-time sleeps; use queue `whenIdle`/`drain`, fake timers, and returned lifecycle promises.
+- [x] Reset all module-level singleton state between tests.
+- [x] Avoid arbitrary real-time sleeps; use queue `whenIdle`/`drain`, fake timers, and returned lifecycle promises.
 
 ### Required scenario suites
 
 #### Lifecycle and routing
 
-- [ ] enable → route change → disable → re-enable
-- [ ] rapid A → B → C route changes
-- [ ] repeated applicable/inapplicable transitions
-- [ ] stale async handler attempts a late DOM commit
-- [ ] lifecycle timeout and supersession
+- [x] enable → route change → disable → re-enable
+- [x] rapid A → B → C route changes
+- [x] repeated applicable/inapplicable transitions
+- [x] stale async handler attempts a late DOM commit
+- [x] lifecycle timeout and supersession
 
 #### Teardown and BFCache
 
-- [ ] pagehide persisted false performs full cleanup
-- [ ] pagehide persisted true suspends without destructive duplicate cleanup
-- [ ] pageshow persisted true creates fresh route work and reconciles all features
-- [ ] teardown after partial startup
-- [ ] teardown → reinitialize produces no duplicate global bindings
+- [x] pagehide persisted false performs full cleanup
+- [x] pagehide persisted true suspends without destructive duplicate cleanup
+- [x] pageshow persisted true creates fresh route work and reconciles all features
+- [x] teardown after partial startup
+- [x] teardown → reinitialize produces no duplicate global bindings
 
 #### Resource registries and queues
 
-- [ ] collision behavior in test mode
-- [ ] owner-specific cleanup and snapshots
-- [ ] leak assertion after feature/add-on disable
-- [ ] duplicate task policies
-- [ ] queue overflow/backpressure
-- [ ] running-task abort, timeout, idle, drain, and dispose
+- [x] collision behavior in test mode
+- [x] owner-specific cleanup and snapshots
+- [x] leak assertion after feature/add-on disable
+- [x] duplicate task policies
+- [x] queue overflow/backpressure
+- [x] running-task abort, timeout, idle, drain, and dispose
 
 #### Persistence, migration, import, and sync
 
-- [ ] atomic save success/failure
-- [ ] legacy migration success/failure/idempotency
-- [ ] corrupted canonical data with valid/invalid backup
-- [ ] transactional import preview/commit/rollback
-- [ ] two-tab revision conflict and stale rejection
-- [ ] sync loop prevention
-- [ ] effect replay for all synced config sections and dynamic metadata
+- [x] atomic save success/failure
+- [x] legacy migration success/failure/idempotency
+- [x] corrupted canonical data with valid/invalid backup
+- [x] transactional import preview/commit/rollback
+- [x] two-tab revision conflict and stale rejection
+- [x] sync loop prevention
+- [x] effect replay for all synced config sections and dynamic metadata
 
 #### Add-on bridge and UI
 
-- [ ] trusted/enabled, disabled, untrusted, and blocked states
-- [ ] malformed payloads for every action category
-- [ ] duplicate request, timeout, and late response
-- [ ] execution-time capability and page-scope revocation
-- [ ] HTML sanitizer attack corpus
-- [ ] CSS scope escape attempts
-- [ ] cleanup of mounts/styles/watchers on every state transition
+- [x] trusted/enabled, disabled, untrusted, and blocked states
+- [x] malformed payloads for every action category
+- [x] duplicate request, timeout, and late response
+- [x] execution-time capability and page-scope revocation
+- [x] HTML sanitizer attack corpus
+- [x] CSS scope escape attempts
+- [x] cleanup of mounts/styles/watchers on every state transition
 
 #### Observability and fast capture
 
-- [ ] error deduplication and retention caps
-- [ ] correlation propagation
-- [ ] redaction of sensitive payloads
-- [ ] selector required/optional fallback behavior
-- [ ] fast-capture type/size/TTL/memory/generation limits
+- [x] error deduplication and retention caps
+- [x] correlation propagation
+- [x] redaction of sensitive payloads
+- [x] selector required/optional fallback behavior
+- [x] fast-capture type/size/TTL/memory/generation limits
 
 ### Acceptance criteria
 
-- [ ] Tests fail when stale async work is allowed to mutate the current route.
-- [ ] Tests fail when any feature/add-on owner leaks resources after disable.
-- [ ] Tests do not depend on network access or F95Zone availability.
-- [ ] Failure-path tests assert final state and health output, not only that an exception occurred.
-- [ ] The complete suite is deterministic across repeated local runs.
-- [ ] Test names include the relevant work-package or contract terminology so failures are easy to route.
+- [x] Tests fail when stale async work is allowed to mutate the current route.
+- [x] Tests fail when any feature/add-on owner leaks resources after disable.
+- [x] Tests do not depend on network access or F95Zone availability.
+- [x] Failure-path tests assert final state and health output, not only that an exception occurred.
+- [x] The complete suite is deterministic across repeated local runs.
+- [x] Test names include the relevant work-package or contract terminology so failures are easy to route.
 
 ### Scope guardrails
 
@@ -1435,10 +1435,10 @@ This index exists to ensure no original item is lost when work is assigned by pa
 ### Correctness and lifecycle
 
 - [x] Generated-manifest workflow exists; stale-doc verification remains — `BASE-01`
-- [ ] Validate manifest/features — `MANIFEST-01`
+- [x] Validate manifest/features — `MANIFEST-01`
 - [x] Define cancellation and pass signal/generation — `LIFECYCLE-01`
 - [ ] Define teardown/BFCache/reinitialization — `TEARDOWN-01`
-- [ ] Add route/lifecycle integration tests — `TEST-01`
+- [x] Add route/lifecycle integration tests — `TEST-01`
 - [ ] Make import/migration atomic with recovery — `PERSIST-01`, `TRANSFER-01`
 
 ### Resource ownership and scheduling
@@ -1453,11 +1453,11 @@ This index exists to ensure no original item is lost when work is assigned by pa
 
 ### Routing and bootstrap
 
-- [ ] Shared route generation — `ROUTE-01`
-- [ ] Prevent stale route commits — `ROUTE-01`, `LIFECYCLE-01`, `QUEUE-01`
-- [ ] Classify bootstrap steps — `BOOT-01`
-- [ ] Expose degraded startup — `BOOT-01`, `OBSERVE-01`
-- [ ] Test rapid URL/applicability changes — `TEST-01`
+- [x] Shared route generation — `ROUTE-01`
+- [x] Prevent stale route commits — `ROUTE-01`, `LIFECYCLE-01`, `QUEUE-01`
+- [x] Classify bootstrap steps — `BOOT-01`
+- [x] Expose degraded startup — `BOOT-01`, `OBSERVE-01`
+- [x] Test rapid URL/applicability changes — `TEST-01`
 
 ### Sync and persistence
 
@@ -1490,5 +1490,5 @@ This index exists to ensure no original item is lost when work is assigned by pa
 - [x] CI lint/test/diff/manifest checks — `AUTO-01`
 - [x] Markdown link and documentation path checks — `AUTO-01`
 - [x] Source/documentation inventory comparison — `AUTO-01`
-- [ ] DOM integration tests — `TEST-01`
-- [ ] Failure-path and build smoke tests — `TEST-01`, `AUTO-01`
+- [x] DOM integration tests — `TEST-01`
+- [x] Failure-path and build smoke tests — `TEST-01`, `AUTO-01`
