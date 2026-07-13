@@ -10,7 +10,7 @@ function getListTypeLabel(listKey) {
 }
 
 export function addTagToList({ listKey, tag, render }) {
-  const list = config[listKey];
+  const list = Array.isArray(config[listKey]) ? [...config[listKey]] : null;
   if (!Array.isArray(list) || list.includes(tag.id)) return;
 
   list.push(tag.id);
@@ -22,7 +22,7 @@ export function addTagToList({ listKey, tag, render }) {
 }
 
 export function removeTagFromList({ listKey, tag, index, render }) {
-  const list = config[listKey];
+  const list = Array.isArray(config[listKey]) ? [...config[listKey]] : null;
   if (!Array.isArray(list) || index < 0 || index >= list.length) return;
 
   list.splice(index, 1);
@@ -33,7 +33,7 @@ export function removeTagFromList({ listKey, tag, index, render }) {
 }
 
 export function reorderTagInList({ listKey, fromIndex, toIndex, render }) {
-  const list = config[listKey];
+  const list = Array.isArray(config[listKey]) ? [...config[listKey]] : null;
   if (
     !Array.isArray(list) ||
     fromIndex < 0 ||
@@ -62,8 +62,8 @@ export function moveTagAcrossLists({
   renderExcluded,
   renderMarked,
 }) {
-  const fromList = config[fromListKey];
-  const toList = config[toListKey];
+  const fromList = Array.isArray(config[fromListKey]) ? [...config[fromListKey]] : null;
+  const toList = Array.isArray(config[toListKey]) ? [...config[toListKey]] : null;
   if (!Array.isArray(fromList) || !Array.isArray(toList)) return;
   if (!Number.isFinite(fromIndex) || fromIndex < 0 || fromIndex >= fromList.length) return;
 

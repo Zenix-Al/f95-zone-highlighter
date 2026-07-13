@@ -1,405 +1,339 @@
+import { config } from "../config";
+import { recordHealthEvent } from "../core/featureHealth.js";
+import { applyConfigChange } from "./configChangeApplication.js";
+import { LEGACY_STORAGE_KEYS, migrateConfigData, migrateLegacyConfigPayload } from "./configMigrationService.js";
 import {
-  config,
-  defaultAddonsApiThrottleSettings,
-  defaultAddonsSettings,
-  defaultAddonsServiceSettings,
-  defaultColors,
-  defaultGlobalSettings,
-  defaultLatestSettings,
-  defaultMetrics,
-  defaultOverlaySettings,
-  defaultThreadSetting,
-} from "../config";
-import { debugLog } from "../core/logger";
-import { normalizeOverlayColorOrder } from "../features/latest-overlay/overlayOrder.js";
-import { normalizeArray, normalizeObject } from "../utils/objectPath.js";
-import { isValidColor, isValidVersion } from "../utils/validators";
-import { LEGACY_STORAGE_KEYS, migrateLegacyConfigPayload } from "./configMigrationService.js";
-import { CONFIG_SCHEMA_VERSION, sanitizeConfig, validateConfig } from "../config/schema.js";
+  CONFIG_SCHEMA_VERSION,
+  getDefaultConfig,
+  sanitizeConfig,
+  validateConfig,
+} from "../config/schema.js";
 import { storageAdapter } from "./storageAdapter.js";
 
 export const CONFIG_ENVELOPE_KEY = "f95ue:config";
 export const CONFIG_BACKUP_KEY = "f95ue:config:last-known-good";
-const WRITER_ID = `tab:${Date.now()}:${Math.random().toString(16).slice(2)}`;
+export const CONFIG_RECOVERY_MARKER_KEY = "f95ue:config:recovery";
+export const CONFIG_WRITER_ID = `tab:${Date.now()}:${Math.random().toString(16).slice(2)}`;
 
-function cloneConfig(value) { return JSON.parse(JSON.stringify(value)); }
+const LEGACY_CONFIG_KEYS = Object.freeze(Object.keys(getDefaultConfig()));
+
+function cloneConfig(value) {
+  return JSON.parse(JSON.stringify(value));
+}
+
+function isRecord(value) {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function safeIssueSummary(issues) {
+  return (issues || []).slice(0, 8).map((entry) => ({
+    path: String(entry?.path || ""),
+    code: String(entry?.code || "validation"),
+  }));
+}
+
+function reportPersistenceHealth(code, message, details = {}) {
+  return recordHealthEvent({
+    code: `CONFIG_${code}`,
+    severity: code === "SAVE_FAILED" || code === "MIGRATION_FAILED" ? "error" : "warning",
+    ownerId: "settingsService",
+    subsystem: "config",
+    message,
+    details,
+  });
+}
+
+function envelopeStructureIssues(envelope) {
+  const issues = [];
+  if (!isRecord(envelope)) return [{ path: "", code: "type" }];
+  if (!Number.isInteger(envelope.schemaVersion) || envelope.schemaVersion < 0) issues.push({ path: "schemaVersion", code: "version" });
+  if (!Number.isInteger(envelope.revision) || envelope.revision < 0) issues.push({ path: "revision", code: "revision" });
+  if (typeof envelope.writerId !== "string" || envelope.writerId.trim() === "") issues.push({ path: "writerId", code: "required" });
+  if (!Number.isFinite(envelope.updatedAt) || envelope.updatedAt < 0) issues.push({ path: "updatedAt", code: "timestamp" });
+  if (!isRecord(envelope.data)) issues.push({ path: "data", code: "type" });
+  return issues;
+}
+
+function validateStoredEnvelope(raw) {
+  const structureIssues = envelopeStructureIssues(raw);
+  if (structureIssues.length > 0) return { valid: false, issues: structureIssues };
+  if (raw.schemaVersion > CONFIG_SCHEMA_VERSION) return { valid: false, issues: [{ path: "schemaVersion", code: "unsupported" }] };
+
+  const validation = sanitizeConfig(raw.data, { mode: "tolerant" });
+  if (validation.issues.length > 0) return { valid: false, issues: validation.issues };
+  return { valid: true, envelope: raw, data: validation.data, issues: [] };
+}
+
+export function validateConfigEnvelope(envelope) {
+  const structureIssues = envelopeStructureIssues(envelope);
+  if (structureIssues.length > 0) return { valid: false, issues: structureIssues, data: null };
+  if (envelope.schemaVersion !== CONFIG_SCHEMA_VERSION) {
+    return { valid: false, issues: [{ path: "schemaVersion", code: "unsupported" }], data: null };
+  }
+  const validation = validateConfig(envelope.data, { mode: "strict" });
+  const missingSections = Object.keys(getDefaultConfig())
+    .filter((key) => !Object.hasOwn(envelope.data, key))
+    .map((key) => ({ path: `data.${key}`, code: "required" }));
+  return {
+    valid: validation.valid && missingSections.length === 0,
+    issues: [...validation.issues, ...missingSections],
+    data: validation.data,
+    envelope,
+  };
+}
+
+function buildEnvelope(data, revision) {
+  return {
+    schemaVersion: CONFIG_SCHEMA_VERSION,
+    revision,
+    writerId: CONFIG_WRITER_ID,
+    updatedAt: Date.now(),
+    data: cloneConfig(data),
+  };
+}
+
+async function persistEnvelope(envelope, previousEnvelope = null) {
+  if (previousEnvelope) await storageAdapter.set(CONFIG_BACKUP_KEY, cloneConfig(previousEnvelope));
+  await storageAdapter.set(CONFIG_ENVELOPE_KEY, cloneConfig(envelope));
+}
+
+async function markRecovery(marker) {
+  try {
+    await storageAdapter.set(CONFIG_RECOVERY_MARKER_KEY, {
+      kind: String(marker.kind || "unknown"),
+      source: String(marker.source || "unknown"),
+      at: Date.now(),
+      issues: safeIssueSummary(marker.issues),
+    });
+  } catch {
+    // Recovery reporting must not prevent a usable fallback from loading.
+  }
+}
+
+async function clearRecoveryMarker() {
+  try { await storageAdapter.delete(CONFIG_RECOVERY_MARKER_KEY); } catch { /* best effort */ }
+}
+
+function makeLoadResult(data, details = {}) {
+  return {
+    loaded: true,
+    data: cloneConfig(data),
+    config: cloneConfig(data),
+    source: details.source || "defaults",
+    recovered: Boolean(details.recovered),
+    degraded: Boolean(details.degraded),
+    migrated: Boolean(details.migrated),
+    persisted: details.persisted !== false,
+    issues: safeIssueSummary(details.issues),
+    envelope: details.envelope ? cloneConfig(details.envelope) : null,
+  };
+}
+
+async function applyLoadedConfig(result) {
+  if (result?.data && isRecord(result.data)) {
+    const applied = applyConfigChange(result.data, { origin: `load:${result.source}` });
+    await applied.effects;
+  }
+  return result;
+}
+
+async function loadLegacyConfig(rawValues, revisionHint = 0) {
+  const migrated = migrateLegacyConfigPayload(rawValues);
+  const validation = sanitizeConfig(migrated, { mode: "tolerant" });
+  const envelope = buildEnvelope(validation.data, Math.max(0, Number(revisionHint) || 0) + 1);
+  try {
+    await persistEnvelope(envelope);
+    for (const key of [...LEGACY_CONFIG_KEYS, ...LEGACY_STORAGE_KEYS]) {
+      try { await storageAdapter.delete(key); } catch { /* compatibility cleanup is best effort */ }
+    }
+    await clearRecoveryMarker();
+    return makeLoadResult(validation.data, {
+      source: "legacy-migration",
+      migrated: true,
+      persisted: true,
+      issues: validation.issues,
+      envelope,
+    });
+  } catch {
+    reportPersistenceHealth("MIGRATION_FAILED", "Legacy configuration migration could not be persisted.", {
+      source: "legacy",
+      issues: safeIssueSummary(validation.issues),
+    });
+    await markRecovery({ kind: "migration-failed", source: "legacy", issues: validation.issues });
+    return makeLoadResult(validation.data, {
+      source: "legacy-migration",
+      migrated: true,
+      persisted: false,
+      degraded: true,
+      issues: validation.issues,
+    });
+  }
+}
+
+export async function loadConfig({ migrations } = {}) {
+  const defaults = getDefaultConfig();
+  let canonicalRaw = null;
+
+  try {
+    canonicalRaw = await storageAdapter.get(CONFIG_ENVELOPE_KEY, null);
+    const canonical = validateStoredEnvelope(canonicalRaw);
+    if (canonical.valid) {
+      if (canonical.envelope.schemaVersion < CONFIG_SCHEMA_VERSION) {
+        try {
+          const migratedData = migrateConfigData(canonical.data, canonical.envelope.schemaVersion, migrations);
+          const validation = validateConfig(migratedData, { mode: "strict" });
+          if (!validation.valid) throw new Error("migration_output_invalid");
+          const migratedEnvelope = buildEnvelope(validation.data, canonical.envelope.revision + 1);
+          await persistEnvelope(migratedEnvelope, canonical.envelope);
+          await clearRecoveryMarker();
+          return applyLoadedConfig(makeLoadResult(validation.data, {
+            source: "canonical-migration",
+            migrated: true,
+            persisted: true,
+            envelope: migratedEnvelope,
+          }));
+        } catch {
+          reportPersistenceHealth("MIGRATION_FAILED", "Canonical configuration migration failed.", {
+            source: "canonical",
+            schemaVersion: canonical.envelope.schemaVersion,
+          });
+          await markRecovery({ kind: "migration-failed", source: "canonical" });
+          return applyLoadedConfig(makeLoadResult(canonical.data, {
+            source: "canonical",
+            recovered: true,
+            degraded: true,
+            persisted: false,
+            migrated: false,
+            envelope: canonical.envelope,
+          }));
+        }
+      } else {
+        await clearRecoveryMarker();
+        return applyLoadedConfig(makeLoadResult(canonical.data, {
+          source: "canonical",
+          envelope: canonical.envelope,
+        }));
+      }
+    }
+
+    const backupRaw = await storageAdapter.get(CONFIG_BACKUP_KEY, null);
+    const backup = validateStoredEnvelope(backupRaw);
+    if (backup.valid) {
+      const recoveredEnvelope = buildEnvelope(backup.data, Math.max(Number(canonicalRaw?.revision) || 0, backup.envelope.revision) + 1);
+      try {
+        await persistEnvelope(recoveredEnvelope);
+        await clearRecoveryMarker();
+      } catch {
+        await markRecovery({ kind: "canonical-recovery-persist-failed", source: "backup" });
+      }
+      reportPersistenceHealth("RECOVERED", "Canonical configuration was recovered from last-known-good data.", {
+        source: "backup",
+        issues: safeIssueSummary(validateStoredEnvelope(canonicalRaw).issues),
+      });
+      return applyLoadedConfig(makeLoadResult(backup.data, {
+        source: "backup",
+        recovered: true,
+        degraded: true,
+        persisted: true,
+        issues: validateStoredEnvelope(canonicalRaw).issues,
+        envelope: recoveredEnvelope,
+      }));
+    }
+
+    const rawValues = await storageAdapter.getMany([...LEGACY_CONFIG_KEYS, ...LEGACY_STORAGE_KEYS]);
+    const legacyValues = Object.fromEntries(Object.entries(rawValues || {}).filter(([, value]) => value !== undefined));
+    if ((canonicalRaw === null || typeof canonicalRaw === "undefined") && Object.keys(legacyValues).length > 0) {
+      return applyLoadedConfig(await loadLegacyConfig(legacyValues, Math.max(Number(canonicalRaw?.revision) || 0, Number(backupRaw?.revision) || 0)));
+    }
+
+    const canonicalIssues = validateStoredEnvelope(canonicalRaw).issues;
+    const backupIssues = validateStoredEnvelope(backupRaw).issues;
+    const issues = [...canonicalIssues, ...backupIssues];
+    reportPersistenceHealth("CORRUPT", "No valid canonical or backup configuration was available; defaults were loaded.", {
+      source: "defaults",
+      issues: safeIssueSummary(issues),
+    });
+    await markRecovery({ kind: "corrupt", source: "defaults", issues });
+    return applyLoadedConfig(makeLoadResult(defaults, {
+      source: "defaults",
+      recovered: true,
+      degraded: true,
+      persisted: false,
+      issues,
+    }));
+  } catch {
+    reportPersistenceHealth("LOAD_FAILED", "Configuration loading failed; sanitized defaults were loaded.", { source: "defaults" });
+    await markRecovery({ kind: "load-failed", source: "defaults" });
+    return applyLoadedConfig(makeLoadResult(defaults, {
+      source: "defaults",
+      recovered: true,
+      degraded: true,
+      persisted: false,
+    }));
+  }
+}
 
 export async function commitConfig(candidate, { origin = "local" } = {}) {
   const validation = validateConfig(candidate, { mode: "strict" });
-  if (!validation.valid) return { committed: false, issues: validation.issues, origin };
-  try {
-    const previousEnvelope = await storageAdapter.get(CONFIG_ENVELOPE_KEY, null);
-    const revision = Math.max(0, Number(previousEnvelope?.revision) || 0) + 1;
-    const envelope = { schemaVersion: CONFIG_SCHEMA_VERSION, revision, writerId: WRITER_ID, updatedAt: Date.now(), data: cloneConfig(validation.data) };
-    if (previousEnvelope) await storageAdapter.set(CONFIG_BACKUP_KEY, previousEnvelope);
-    await storageAdapter.set(CONFIG_ENVELOPE_KEY, envelope);
-    Object.assign(config, cloneConfig(envelope.data));
-    return { committed: true, origin, envelope, previousConfig: previousEnvelope?.data || null, config: cloneConfig(envelope.data) };
-  } catch (error) {
-    return { committed: false, issues: [{ path: "", code: "storage_error", expected: "persisted config", received: error?.message || "storage_error" }], origin };
-  }
-}
-
-async function loadCanonicalEnvelope() {
-  const envelope = await storageAdapter.get(CONFIG_ENVELOPE_KEY, null);
-  if (!envelope || typeof envelope !== "object" || !envelope.data) return null;
-  const validation = sanitizeConfig(envelope.data);
-  if (validation.issues.length === 0) return { envelope, data: validation.data, recovered: false };
-  const backup = await storageAdapter.get(CONFIG_BACKUP_KEY, null);
-  if (backup?.data) {
-    const recovered = sanitizeConfig(backup.data);
-    if (recovered.issues.length === 0) return { envelope: backup, data: recovered.data, recovered: true };
-  }
-  return { envelope: null, data: validation.data, recovered: true };
-}
-
-function sanitizeColorSection(value) {
-  const merged = { ...defaultColors, ...(value || {}) };
-  for (const [key, fallback] of Object.entries(defaultColors)) {
-    if (!isValidColor(merged[key])) {
-      merged[key] = fallback;
-    }
-  }
-  return merged;
-}
-
-function sanitizeLatestSettings(value) {
-  const source = normalizeObject(value);
-  const merged = mergeWithDefault(source, defaultLatestSettings);
-  merged.priorityWeights = mergeWithDefault(
-    source.priorityWeights,
-    defaultLatestSettings.priorityWeights,
-  );
-  merged.tagModifiers = mergeWithDefault(
-    source.tagModifiers,
-    defaultLatestSettings.tagModifiers,
-  );
-  if (!isValidVersion(merged.minVersion)) {
-    merged.minVersion = defaultLatestSettings.minVersion;
-  }
-  merged.latestOverlayColorOrder = normalizeOverlayColorOrder(merged.latestOverlayColorOrder);
-  return merged;
-}
-
-function sanitizeThreadSettings(value) {
-  const source = normalizeObject(value);
-  const merged = { ...defaultThreadSetting };
-  for (const key of Object.keys(defaultThreadSetting)) {
-    if (Object.prototype.hasOwnProperty.call(source, key)) {
-      merged[key] = source[key];
-    }
-  }
-  return merged;
-}
-
-function clampFiniteNumber(value, fallback, { min = 0, max = Number.MAX_SAFE_INTEGER } = {}) {
-  const parsed = Number(value);
-  if (!Number.isFinite(parsed)) return fallback;
-  if (parsed < min) return min;
-  if (parsed > max) return max;
-  return parsed;
-}
-
-function sanitizeAddonsServiceSettings(value) {
-  const source = normalizeObject(value);
-  const apiThrottleSource = normalizeObject(source.apiThrottle);
-
-  return {
-    ...defaultAddonsServiceSettings,
-    apiThrottle: {
-      coreActionWindowMs: clampFiniteNumber(
-        apiThrottleSource.coreActionWindowMs,
-        defaultAddonsApiThrottleSettings.coreActionWindowMs,
-        { min: 250, max: 60000 },
-      ),
-      coreActionRateMax: clampFiniteNumber(
-        apiThrottleSource.coreActionRateMax,
-        defaultAddonsApiThrottleSettings.coreActionRateMax,
-        { min: 1, max: 1000 },
-      ),
-      coreActionMaxConcurrent: clampFiniteNumber(
-        apiThrottleSource.coreActionMaxConcurrent,
-        defaultAddonsApiThrottleSettings.coreActionMaxConcurrent,
-        { min: 1, max: 100 },
-      ),
-    },
-  };
-}
-
-function normalizeAddonsSettings(value) {
-  const source = normalizeObject(value);
-  const byAddonSource = normalizeObject(source.byAddon);
-  const installedMetaSource = normalizeObject(source.installedMeta);
-  const trustedIdsSource = normalizeArray(source.trustedIds);
-  const byAddon = {};
-  const installedMeta = {};
-  const sanitizedTrustedIds = [
-    ...new Set(
-      trustedIdsSource
-        .map((entry) =>
-          String(entry || "")
-            .trim()
-            .replace(/[^a-z0-9_-]+/gi, "-")
-            .replace(/^-+|-+$/g, "")
-            .toLowerCase(),
-        )
-        .filter(Boolean),
-    ),
-  ];
-
-  const trustedIds =
-    sanitizedTrustedIds.length > 0 ? sanitizedTrustedIds : [...defaultAddonsSettings.trustedIds];
-
-  for (const [addonId, addonData] of Object.entries(byAddonSource)) {
-    const normalizedAddonId = String(addonId || "")
-      .trim()
-      .replace(/[^a-z0-9_-]+/gi, "-")
-      .replace(/^-+|-+$/g, "")
-      .toLowerCase();
-    if (!normalizedAddonId) continue;
-
-    const entry = normalizeObject(addonData);
-    byAddon[normalizedAddonId] = {
-      state: normalizeObject(entry.state),
-    };
-  }
-
-  for (const [addonId, metaValue] of Object.entries(installedMetaSource)) {
-    const normalizedAddonId = String(addonId || "")
-      .trim()
-      .replace(/[^a-z0-9_-]+/gi, "-")
-      .replace(/^-+|-+$/g, "")
-      .toLowerCase();
-    if (!normalizedAddonId) continue;
-
-    const meta = normalizeObject(metaValue);
-    const lastSeenAt = Number(meta.lastSeenAt || 0);
-    const installedSeenAt = Number(meta.installedSeenAt || 0);
-
-    installedMeta[normalizedAddonId] = {
-      name: String(meta.name || "").trim(),
-      version: String(meta.version || "").trim(),
-      installedSeenAt: Number.isFinite(installedSeenAt) ? installedSeenAt : 0,
-      lastSeenAt: Number.isFinite(lastSeenAt) ? lastSeenAt : 0,
-    };
-  }
-
-  return {
-    ...defaultAddonsSettings,
-    trustedIds,
-    byAddon,
-    installedMeta,
-    service: sanitizeAddonsServiceSettings(source.service),
-  };
-}
-
-function compactAddonsSettingsForStorage(value) {
-  const normalized = normalizeAddonsSettings(value);
-  const compacted = {};
-
-  const defaultTrustedIds = JSON.stringify(defaultAddonsSettings.trustedIds);
-  const normalizedTrustedIds = JSON.stringify(normalized.trustedIds);
-  if (normalizedTrustedIds !== defaultTrustedIds) {
-    compacted.trustedIds = [...normalized.trustedIds];
-  }
-
-  const byAddon = {};
-  for (const [addonId, addonEntry] of Object.entries(normalized.byAddon)) {
-    const state = normalizeObject(addonEntry?.state);
-    if (Object.keys(state).length === 0) continue;
-    byAddon[addonId] = { state };
-  }
-  if (Object.keys(byAddon).length > 0) {
-    compacted.byAddon = byAddon;
-  }
-
-  const installedMeta = {};
-  for (const [addonId, metaEntry] of Object.entries(normalized.installedMeta)) {
-    const meta = normalizeObject(metaEntry);
-    const nextMeta = {};
-
-    const name = String(meta.name || "").trim();
-    const version = String(meta.version || "").trim();
-    const installedSeenAt = Number(meta.installedSeenAt || 0);
-    const lastSeenAt = Number(meta.lastSeenAt || 0);
-
-    if (name) nextMeta.name = name;
-    if (version) nextMeta.version = version;
-    if (Number.isFinite(installedSeenAt) && installedSeenAt > 0) {
-      nextMeta.installedSeenAt = installedSeenAt;
-    }
-    if (Number.isFinite(lastSeenAt) && lastSeenAt > 0) {
-      nextMeta.lastSeenAt = lastSeenAt;
-    }
-
-    if (Object.keys(nextMeta).length === 0) continue;
-    installedMeta[addonId] = nextMeta;
-  }
-  if (Object.keys(installedMeta).length > 0) {
-    compacted.installedMeta = installedMeta;
-  }
-
-  const normalizedApiThrottle = JSON.stringify(normalized.service.apiThrottle);
-  const defaultApiThrottle = JSON.stringify(defaultAddonsServiceSettings.apiThrottle);
-  if (normalizedApiThrottle !== defaultApiThrottle) {
-    compacted.service = {
-      apiThrottle: { ...normalized.service.apiThrottle },
-    };
-  }
-
-  return compacted;
-}
-
-function sanitizePrefixCatalog(value) {
-  const source = normalizeObject(value);
-  return {
-    items: normalizeArray(source.items),
-    categories: normalizeObject(source.categories),
-  };
-}
-
-function sanitizePersistedUpdate(key, value) {
-  switch (key) {
-    case "color":
-      return sanitizeColorSection(value);
-    case "latestSettings":
-      return sanitizeLatestSettings(value);
-    case "overlaySettings":
-      return { ...defaultOverlaySettings, ...normalizeObject(value) };
-    case "threadSettings":
-      return sanitizeThreadSettings(value);
-    case "globalSettings":
-      return { ...defaultGlobalSettings, ...normalizeObject(value) };
-    case "metrics":
-      return { ...defaultMetrics, ...normalizeObject(value) };
-    case "addons":
-      return compactAddonsSettingsForStorage(value);
-    default:
-      return value;
-  }
-}
-
-export async function saveConfigKeys(updates) {
-  const candidate = { ...cloneConfig(config), ...updates };
-  const committed = await commitConfig(candidate);
-  if (committed.committed) return { saved: Object.keys(updates), failed: [], committed };
-  // Compatibility fallback for legacy/partial state that has not yet gained full schema coverage.
-  const entries = Object.entries(updates);
-  if (entries.length === 0) {
-    return { saved: [], failed: [] };
-  }
-  const results = await Promise.allSettled(
-    entries.map(([key, value]) => GM.setValue(key, sanitizePersistedUpdate(key, value))),
-  );
-  const saved = [];
-  const failed = [];
-  for (let i = 0; i < results.length; i++) {
-    const key = entries[i][0];
-    const result = results[i];
-    if (result.status === "fulfilled") {
-      saved.push(key);
-    } else {
-      failed.push({
-        key,
-        reason: result.reason,
-      });
-    }
-  }
-  if (saved.length > 0) {
-    debugLog("saveConfigKeys", `Config updated: ${JSON.stringify(saved)}`);
-  }
-  if (failed.length > 0) {
-    console.warn(
-      "[saveConfigKeys] Some settings failed to persist:",
-      failed.map((item) => item.key),
-    );
-    debugLog("saveConfigKeys", "Failed to persist settings keys", {
-      data: failed,
-      level: "warn",
+  if (!validation.valid) {
+    reportPersistenceHealth("SAVE_FAILED", "Configuration commit was rejected by the schema.", {
+      origin,
+      issues: safeIssueSummary(validation.issues),
     });
+    return { committed: false, saved: [], failed: [{ code: "validation", issues: safeIssueSummary(validation.issues) }], issues: validation.issues, origin };
   }
-  return { saved, failed };
+
+  const previousLiveConfig = cloneConfig(config);
+  try {
+    const latestRaw = await storageAdapter.get(CONFIG_ENVELOPE_KEY, null);
+    const latestRevision = Math.max(0, Number(latestRaw?.revision) || 0);
+    const previous = validateStoredEnvelope(latestRaw);
+    const envelope = buildEnvelope(validation.data, latestRevision + 1);
+    await persistEnvelope(envelope, previous.valid ? previous.envelope : null);
+
+    const applied = applyConfigChange(validation.data, { origin });
+    await applied.effects;
+    await clearRecoveryMarker();
+    return {
+      committed: true,
+      saved: Object.keys(validation.data),
+      failed: [],
+      origin,
+      source: origin,
+      envelope,
+      revision: envelope.revision,
+      revisionMetadata: {
+        revision: envelope.revision,
+        writerId: envelope.writerId,
+        updatedAt: envelope.updatedAt,
+      },
+      previousConfig: previousLiveConfig,
+      config: cloneConfig(applied.config),
+      changedPaths: applied.changedPaths,
+    };
+  } catch {
+    reportPersistenceHealth("SAVE_FAILED", "Configuration commit failed before the live state was updated.", { origin });
+    return {
+      committed: false,
+      saved: [],
+      failed: [{ code: "storage_error", message: "configuration storage write failed" }],
+      issues: [{ path: "", code: "storage_error", expected: "persisted config", received: "storage_error" }],
+      origin,
+      previousConfig: previousLiveConfig,
+      config: previousLiveConfig,
+    };
+  }
 }
 
-async function loadRawStorage(keys) {
-  if (typeof GM.getValues === "function") {
-    return (await GM.getValues(keys)) ?? {};
-  }
-  const entries = await Promise.all(
-    keys.map(async (k) => {
-      try {
-        return [k, await GM.getValue(k)];
-      } catch {
-        return [k, undefined];
-      }
-    }),
-  );
-  return Object.fromEntries(entries.filter(([, v]) => v !== undefined));
-}
-
-function mergeWithDefault(saved, defaultObj) {
-  const source = normalizeObject(saved);
-  const result = { ...defaultObj };
-  for (const key of Object.keys(source)) {
-    if (key in result) result[key] = source[key];
-  }
-  return result;
-}
-
-/**
- * Deep merge for nested objects (used for latestSettings which has priorityWeights and tagModifiers)
- */
-function deepMergeLatestSettings(saved, defaultObj) {
-  const source = normalizeObject(saved);
-  const result = { ...defaultObj };
-
-  for (const key of Object.keys(source)) {
-    if (key in result) {
-      // For objects like priorityWeights and tagModifiers, do a shallow merge of their contents
-      if (key === "priorityWeights" || key === "tagModifiers") {
-        result[key] = mergeWithDefault(source[key], result[key]);
-      } else {
-        result[key] = source[key];
-      }
-    }
-  }
-  return result;
+export async function saveConfigKeys(updates, { origin = "local" } = {}) {
+  const patch = isRecord(updates) ? cloneConfig(updates) : {};
+  const candidate = { ...cloneConfig(config), ...patch };
+  const result = await commitConfig(candidate, { origin });
+  if (result.committed) return { ...result, saved: Object.keys(patch) };
+  return { ...result, saved: [], failed: result.failed || [{ code: "commit_failed" }] };
 }
 
 export async function loadData() {
-  let parsed = {};
-  try {
-    const canonical = await loadCanonicalEnvelope();
-    if (canonical) return canonical.data;
-    parsed = await loadRawStorage([...Object.keys(config), ...LEGACY_STORAGE_KEYS]);
-    parsed = await migrateLegacyConfigPayload(parsed);
-  } catch (e) {
-    debugLog("loadData", `Error loading data: ${e}`);
-  }
-
-  const result = {
-    tags: normalizeArray(parsed.tags),
-    prefixes: sanitizePrefixCatalog(parsed.prefixes),
-    preferredTags: normalizeArray(parsed.preferredTags),
-    excludedTags: normalizeArray(parsed.excludedTags),
-    markedTags: normalizeArray(parsed.markedTags),
-    color: mergeWithDefault(parsed.color, defaultColors),
-    overlaySettings: mergeWithDefault(parsed.overlaySettings, defaultOverlaySettings),
-    threadSettings: sanitizeThreadSettings(parsed.threadSettings),
-    latestSettings: deepMergeLatestSettings(parsed.latestSettings, defaultLatestSettings),
-    globalSettings: mergeWithDefault(parsed.globalSettings, defaultGlobalSettings),
-    metrics: mergeWithDefault(parsed.metrics, defaultMetrics),
-    addons: normalizeAddonsSettings(parsed.addons),
-    savedNotifID: parsed.savedNotifID || null,
-  };
-
-  if (typeof result.latestSettings.minVersion !== "number") {
-    result.latestSettings.minVersion = defaultLatestSettings.minVersion;
-  }
-  result.latestSettings.latestOverlayColorOrder = normalizeOverlayColorOrder(
-    result.latestSettings.latestOverlayColorOrder,
-  );
-  debugLog("loadData", `loadData result:`, { result, level: "info" });
-
-  return result;
+  const result = await loadConfig();
+  return result.data;
 }

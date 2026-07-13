@@ -1,4 +1,4 @@
-import { registerDiagnosticsProvider } from "./featureHealth.js";
+import { recordHealthEvent, registerDiagnosticsProvider } from "./featureHealth.js";
 
 class ResourceManager {
   constructor() {
@@ -28,6 +28,14 @@ class ResourceManager {
       res.cleanup();
     } catch (err) {
       console.warn(`ResourceManager: cleanup for '${id}' threw:`, err);
+      recordHealthEvent({
+        code: "RESOURCE_CLEANUP_FAILED",
+        severity: "error",
+        ownerId: res.ownerId || "core:resources",
+        subsystem: "resources",
+        message: "Resource cleanup failed",
+        details: { resourceId: id },
+      });
     }
     this.resources.delete(id);
     if (res.ownerId) {

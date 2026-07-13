@@ -7,18 +7,23 @@ import {
 } from "./featureHealth.js";
 import { showToast } from "../ui/components/toast.js";
 import { getByPath } from "../utils/objectPath.js";
+import { addListener } from "./listenerRegistry.js";
 
 let globalListenerRegistered = false;
 export function initGlobalErrorListeners() {
   if (globalListenerRegistered) return;
   globalListenerRegistered = true;
 
-  window.addEventListener("error", (event) => {
+  addListener("global-error", window, "error", (event) => {
     reportRuntimeError(event?.error || event?.message || "Unknown error", "window.error");
-  });
-  window.addEventListener("unhandledrejection", (event) => {
+  }, undefined, "core:runtime");
+  addListener("global-unhandledrejection", window, "unhandledrejection", (event) => {
     reportRuntimeError(event?.reason ?? "Unknown rejection", "unhandledrejection");
-  });
+  }, undefined, "core:runtime");
+}
+
+export function resetGlobalErrorListeners() {
+  globalListenerRegistered = false;
 }
 
 const OP_TIMEOUT = 15000;

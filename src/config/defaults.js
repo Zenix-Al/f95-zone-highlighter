@@ -116,3 +116,8 @@ export const defaultMetrics = {
   lowest: 0,
   mean: 0,
 };
+
+// Persisted baseline values belong here; schema.js supplies constraints and metadata.
+export const defaultTags = [];
+export const defaultPrefixes = { items: [], categories: {} };
+export const defaultSavedNotifID = null;

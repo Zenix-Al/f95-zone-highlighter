@@ -70,7 +70,18 @@ const {
   setRoutePageFlags,
 } = loadModule("src/core/routeState.js");
 const { runBootstrapPipeline } = loadModule("src/core/bootstrap.js");
-const { getExportableConfigKeys, validateConfig } = loadModule("src/config/schema.js");
+const {
+  getConfigPathMetadata,
+  getDefaultConfig,
+  getExportableConfigKeys,
+  getPersistedConfigPaths,
+  getSchemaPathIndex,
+  getSyncedConfigPaths,
+  mergeWithDefaults,
+  sanitizeConfig,
+  validateConfig,
+  validateConfigSection,
+} = loadModule("src/config/schema.js");
 const {
   registerFeature,
   resetFeatureCatalogForTests,
@@ -579,6 +590,20 @@ runTest("BOOT-01 timeout aborts the step and returns a structured failed summary
   }
 });
 
+runTest("TEARDOWN-01 aborts active bootstrap without publishing stale summary", async () => {
+  const bootstrap = loadModule("src/core/bootstrap.js");
+  let release;
+  const running = bootstrap.runBootstrapPipeline([
+    { id: "teardown-hang", classification: "required", timeoutMs: 1000, run: () => new Promise((resolve) => { release = resolve; }) },
+  ]);
+  await Promise.resolve();
+  assert.strictEqual(bootstrap.abortActiveBootstrap("TEARDOWN-01"), 1);
+  release(true);
+  const summary = await running;
+  assert.strictEqual(summary.status, "cancelled");
+  assert.strictEqual(bootstrap.getLastBootstrapSummary(), null);
+});
+
 runTest("BOOT-01 degraded diagnostics retain correlation and redact failure details", async () => {
   const result = await loadModule("tests/fixtures/bootstrapHarness.js").runDegradedBootstrapScenario();
   assert.strictEqual(result.summary.status, "degraded");
@@ -610,6 +635,134 @@ runTest("config schema strictly rejects unknown nested fields and tolerantly pre
   assert.strictEqual(tolerant.data.latestSettings.autoRefresh, true);
   assert.strictEqual(typeof tolerant.data.latestSettings.minVersion, "number");
   assert.ok(getExportableConfigKeys().includes("latestSettings"));
+});
+
+runTest("CONFIG-01 schema covers defaults, metadata, and deterministic pure APIs", () => {
+  const defaults = getDefaultConfig();
+  const defaultsSnapshot = JSON.stringify(defaults);
+  const persistedPaths = getPersistedConfigPaths().sort();
+  assert.deepStrictEqual(persistedPaths, Object.keys(defaults).sort());
+
+  const valid = validateConfig(defaults, { mode: "strict" });
+  assert.strictEqual(valid.valid, true);
+  assert.deepStrictEqual(valid.data, defaults);
+  assert.strictEqual(JSON.stringify(defaults), defaultsSnapshot);
+
+  const representative = validateConfig({
+    prefixes: {
+      items: [{ id: 1, name: "Example", class: "example" }],
+      categories: { games: [{ id: null, name: "Games", prefixIds: [1] }] },
+    },
+    globalSettings: { enableCrossTabSync: true },
+    metrics: { retried: 1 },
+    addons: {
+      byAddon: { "example-addon": { state: { enabled: true, mode: "safe" } } },
+      installedMeta: { "example-addon": { name: "Example", version: "1.0", installedSeenAt: 1, lastSeenAt: 2 } },
+    },
+    savedNotifID: 42,
+  }, { mode: "strict", partial: true });
+  assert.strictEqual(representative.valid, true);
+  assert.strictEqual(representative.data.prefixes.categories.games[0].id, null);
+  assert.strictEqual(representative.data.addons.byAddon["example-addon"].state.mode, "safe");
+  assert.strictEqual(representative.data.savedNotifID, 42);
+
+  assert.deepStrictEqual(getExportableConfigKeys().sort(), [
+    "color",
+    "excludedTags",
+    "globalSettings",
+    "latestSettings",
+    "markedTags",
+    "overlaySettings",
+    "preferredTags",
+    "tags",
+    "threadSettings",
+  ].sort());
+  assert.deepStrictEqual(getSyncedConfigPaths().sort(), [
+    "addons",
+    "color",
+    "excludedTags",
+    "globalSettings",
+    "latestSettings",
+    "markedTags",
+    "overlaySettings",
+    "preferredTags",
+    "tags",
+    "threadSettings",
+  ].sort());
+  assert.strictEqual(getConfigPathMetadata("latestSettings.priorityWeights.rating").exportable, true);
+  assert.strictEqual(getConfigPathMetadata("addons.byAddon.example-addon.state.enabled").syncable, true);
+  assert.strictEqual(getConfigPathMetadata("missing.path"), null);
+  assert.ok(getSchemaPathIndex()["latestSettings.tagModifiers.preferred"]);
+
+  const merged = mergeWithDefaults({ latestSettings: { autoRefresh: true } });
+  assert.strictEqual(merged.latestSettings.autoRefresh, true);
+  assert.strictEqual(typeof merged.latestSettings.minVersion, "number");
+  assert.notStrictEqual(merged.latestSettings, defaults.latestSettings);
+});
+
+runTest("CONFIG-01 strict mode covers nested constraints and feature validators", () => {
+  const invalid = validateConfig({
+    tags: [{ id: 1, name: "Example" }, { id: 1, name: "Duplicate" }],
+    color: { red: "not-a-color" },
+    latestSettings: {
+      latestOverlayStyle: "invalid",
+      latestOverlayColorOrder: ["excluded", "excluded", "completed", "onhold", "abandoned", "highVersion", "invalidVersion"],
+      ratingHighlightThreshold: -1,
+      priorityWeights: { rating: "heavy" },
+      tagModifiers: { preferred: 11 },
+    },
+    addons: {
+      trustedIds: ["bad id"],
+      byAddon: { "bad.id": { state: { enabled: true } } },
+    },
+  }, { mode: "strict", partial: true });
+
+  assert.strictEqual(invalid.valid, false);
+  for (const path of [
+    "tags[1]",
+    "color.red",
+    "latestSettings.latestOverlayStyle",
+    "latestSettings.latestOverlayColorOrder",
+    "latestSettings.ratingHighlightThreshold",
+    "latestSettings.priorityWeights.rating",
+    "latestSettings.tagModifiers.preferred",
+    "addons.trustedIds[0]",
+    "addons.byAddon.bad.id",
+  ]) assert.ok(invalid.issues.some((entry) => entry.path === path), path);
+  assert.ok(invalid.issues.every((entry) => typeof entry.receivedType === "string" && typeof entry.receivedSummary === "string"));
+});
+
+runTest("CONFIG-01 tolerant and migration modes preserve valid data and recover invalid input", () => {
+  const tolerant = sanitizeConfig({
+    preferredTags: [1, 1, "bad"],
+    latestSettings: {
+      autoRefresh: true,
+      minVersion: "bad",
+      priorityWeights: { rating: 2.5, engagement: "bad" },
+    },
+    addons: { byAddon: { "bad.id": { state: { enabled: true } }, "good-addon": { state: { enabled: true } } } },
+  }, { partial: true });
+
+  assert.strictEqual(tolerant.data.latestSettings.autoRefresh, true);
+  assert.strictEqual(tolerant.data.latestSettings.minVersion, getDefaultConfig().latestSettings.minVersion);
+  assert.strictEqual(tolerant.data.latestSettings.priorityWeights.rating, 2.5);
+  assert.strictEqual(tolerant.data.latestSettings.priorityWeights.engagement, getDefaultConfig().latestSettings.priorityWeights.engagement);
+  assert.deepStrictEqual(tolerant.data.preferredTags, [1]);
+  assert.deepStrictEqual(Object.keys(tolerant.data.addons.byAddon), ["good-addon"]);
+  assert.ok(tolerant.issues.length >= 4);
+
+  const migration = validateConfig({
+    minVersion: 0.7,
+    threadSettings: { marked: false, skipMaskedLink: true },
+  }, { mode: "migration", partial: true });
+  assert.strictEqual(migration.valid, true);
+  assert.strictEqual(migration.data.threadSettings.marked, false);
+  assert.strictEqual(Object.hasOwn(migration.data, "minVersion"), false);
+  assert.strictEqual(Object.hasOwn(migration.data.threadSettings, "skipMaskedLink"), false);
+
+  const section = validateConfigSection("color", { completed: "#abc" }, { mode: "strict" });
+  assert.strictEqual(section.valid, true);
+  assert.strictEqual(section.data.color.completed, "#abc");
 });
 
 runTest("MANIFEST-01 feature catalog rejects invalid descriptors before registration", () => {
@@ -2048,6 +2201,15 @@ runTest("TEST-01 teardown suspension, resume, and full cleanup are idempotent", 
   teardown.resetTeardownForTests();
 });
 
+runTest("TEARDOWN-01 full teardown is bounded, idempotent, and disposes queues/resources", async () => {
+  const result = await loadModule("tests/fixtures/teardownHarness.js").runTeardownResourceScenario();
+  assert.strictEqual(result.first.state, "stopped");
+  assert.strictEqual(result.first.failures.some((failure) => failure.code === "timeout"), true);
+  assert.deepStrictEqual(result.second, result.first);
+  assert.strictEqual(result.queues.queueCount, 0);
+  assert.strictEqual(result.resources.totalResources, 0);
+});
+
 runTest("TEST-01 persistence commit is atomic on storage failure", async () => {
   const previousGM = global.GM;
   const gm = createFakeGM({}, { failSet: true });
@@ -2075,6 +2237,172 @@ runTest("TEST-01 persistence commit atomically stores a valid canonical envelope
     assert.strictEqual(result.committed, true);
     assert.strictEqual(gm.snapshot()[settings.CONFIG_ENVELOPE_KEY].revision, 1);
     assert.strictEqual(gm.snapshot()[settings.CONFIG_ENVELOPE_KEY].data.latestSettings.minVersion, config.latestSettings.minVersion);
+  } finally { global.GM = previousGM; }
+});
+
+runTest("PERSIST-01 storage adapter remains a raw I/O boundary", async () => {
+  const calls = [];
+  const values = new Map();
+  const adapter = loadModule("src/services/storageAdapter.js").createStorageAdapter({
+    async getValue(key, fallback) { calls.push(["get", key]); return values.has(key) ? values.get(key) : fallback; },
+    async setValue(key, value) { calls.push(["set", key]); values.set(key, value); },
+    async deleteValue(key) { calls.push(["delete", key]); values.delete(key); },
+  });
+  await adapter.set("raw", { value: 1 });
+  assert.deepStrictEqual(await adapter.get("raw", null), { value: 1 });
+  await adapter.delete("raw");
+  assert.deepStrictEqual(calls.map(([operation]) => operation), ["set", "get", "delete"]);
+});
+
+runTest("PERSIST-01 successful commits advance revisions and retain last-known-good", async () => {
+  const previousGM = global.GM;
+  const gm = createFakeGM();
+  global.GM = gm;
+  try {
+    const settings = loadModule("src/services/settingsService.js");
+    const { config } = loadModule("src/config.js");
+    const first = await settings.commitConfig(config, { origin: "PERSIST-01" });
+    const second = await settings.commitConfig({
+      ...first.config,
+      latestSettings: { ...first.config.latestSettings, minVersion: 0.9 },
+    }, { origin: "PERSIST-01" });
+    assert.strictEqual(first.committed, true);
+    assert.strictEqual(second.committed, true);
+    assert.strictEqual(first.revision, 1);
+    assert.strictEqual(second.revision, 2);
+    assert.strictEqual(gm.snapshot()[settings.CONFIG_BACKUP_KEY].revision, 1);
+    assert.strictEqual(gm.snapshot()[settings.CONFIG_ENVELOPE_KEY].data.latestSettings.minVersion, 0.9);
+    assert.deepStrictEqual(second.revisionMetadata, {
+      revision: 2,
+      writerId: second.envelope.writerId,
+      updatedAt: second.envelope.updatedAt,
+    });
+    assert.ok(Array.isArray(second.changedPaths));
+  } finally { global.GM = previousGM; }
+});
+
+runTest("PERSIST-01 failed multi-write commit preserves canonical and live state", async () => {
+  const previousGM = global.GM;
+  const seedGM = createFakeGM();
+  global.GM = seedGM;
+  let settings = loadModule("src/services/settingsService.js");
+  const { config } = loadModule("src/config.js");
+  const seed = await settings.commitConfig(config, { origin: "PERSIST-01" });
+  const previousEnvelope = seedGM.snapshot()[settings.CONFIG_ENVELOPE_KEY];
+
+  const failingGM = createFakeGM({ [settings.CONFIG_ENVELOPE_KEY]: previousEnvelope }, { failSetAt: 2 });
+  global.GM = failingGM;
+  try {
+    settings = loadModule("src/services/settingsService.js");
+    const result = await settings.commitConfig({
+      ...config,
+      latestSettings: { ...config.latestSettings, minVersion: 0.9 },
+    }, { origin: "PERSIST-01" });
+    assert.strictEqual(result.committed, false);
+    assert.strictEqual(result.failed[0].code, "storage_error");
+    assert.deepStrictEqual(failingGM.snapshot()[settings.CONFIG_ENVELOPE_KEY], previousEnvelope);
+    assert.deepStrictEqual(result.config, result.previousConfig);
+  } finally { global.GM = previousGM; }
+});
+
+runTest("PERSIST-01 migration failure preserves the old canonical envelope", async () => {
+  const previousGM = global.GM;
+  const gm = createFakeGM();
+  global.GM = gm;
+  try {
+    const settings = loadModule("src/services/settingsService.js");
+    const { config } = loadModule("src/config.js");
+    const oldEnvelope = {
+      schemaVersion: 0,
+      revision: 4,
+      writerId: "old-writer",
+      updatedAt: 10,
+      data: config,
+    };
+    const backupEnvelope = {
+      schemaVersion: 1,
+      revision: 3,
+      writerId: "backup-writer",
+      updatedAt: 9,
+      data: config,
+    };
+    await gm.setValue(settings.CONFIG_ENVELOPE_KEY, oldEnvelope);
+    await gm.setValue(settings.CONFIG_BACKUP_KEY, backupEnvelope);
+    const loaded = await settings.loadConfig({ migrations: { 1: () => { throw new Error("migration_injected"); } } });
+    assert.strictEqual(loaded.recovered, true);
+    assert.strictEqual(loaded.source, "canonical");
+    assert.deepStrictEqual(gm.snapshot()[settings.CONFIG_ENVELOPE_KEY], oldEnvelope);
+  } finally { global.GM = previousGM; }
+});
+
+runTest("PERSIST-01 valid backup recovers corrupt canonical data", async () => {
+  const previousGM = global.GM;
+  const gm = createFakeGM();
+  global.GM = gm;
+  try {
+    const settings = loadModule("src/services/settingsService.js");
+    const { config } = loadModule("src/config.js");
+    const validBackup = {
+      schemaVersion: 1,
+      revision: 2,
+      writerId: "backup-writer",
+      updatedAt: 2,
+      data: config,
+    };
+    await gm.setValue(settings.CONFIG_ENVELOPE_KEY, {
+      schemaVersion: 1,
+      revision: 5,
+      writerId: "corrupt-writer",
+      updatedAt: 5,
+      data: { latestSettings: { minVersion: "bad" } },
+    });
+    await gm.setValue(settings.CONFIG_BACKUP_KEY, validBackup);
+    const loaded = await settings.loadConfig();
+    assert.strictEqual(loaded.source, "backup");
+    assert.strictEqual(loaded.recovered, true);
+    assert.strictEqual(gm.snapshot()[settings.CONFIG_ENVELOPE_KEY].revision, 6);
+    assert.strictEqual(gm.snapshot()[settings.CONFIG_ENVELOPE_KEY].data.latestSettings.minVersion, config.latestSettings.minVersion);
+  } finally { global.GM = previousGM; }
+});
+
+runTest("PERSIST-01 corrupt canonical and backup load defaults with a recovery marker", async () => {
+  const previousGM = global.GM;
+  const gm = createFakeGM();
+  global.GM = gm;
+  try {
+    const settings = loadModule("src/services/settingsService.js");
+    await gm.setValue(settings.CONFIG_ENVELOPE_KEY, { schemaVersion: 1, revision: 4, writerId: "bad", updatedAt: 4, data: { latestSettings: { minVersion: "bad" } } });
+    await gm.setValue(settings.CONFIG_BACKUP_KEY, { schemaVersion: 1, revision: 3, writerId: "also-bad", updatedAt: 3, data: { latestSettings: { minVersion: "also-bad" } } });
+    const loaded = await settings.loadConfig();
+    assert.strictEqual(loaded.source, "defaults");
+    assert.strictEqual(loaded.degraded, true);
+    assert.strictEqual(gm.snapshot()[settings.CONFIG_RECOVERY_MARKER_KEY].kind, "corrupt");
+  } finally { global.GM = previousGM; }
+});
+
+runTest("PERSIST-01 legacy keys migrate into one envelope before cleanup", async () => {
+  const previousGM = global.GM;
+  const gm = createFakeGM({
+    tags: [{ id: 1, name: "Legacy" }],
+    minVersion: 0.7,
+    threadSettings: { marked: true, skipMaskedLink: true },
+  });
+  global.GM = gm;
+  try {
+    const settings = loadModule("src/services/settingsService.js");
+    const loaded = await settings.loadConfig();
+    const snapshot = gm.snapshot();
+    assert.strictEqual(loaded.source, "legacy-migration");
+    assert.strictEqual(loaded.persisted, true);
+    assert.strictEqual(snapshot[settings.CONFIG_ENVELOPE_KEY].data.latestSettings.minVersion, 0.7);
+    assert.strictEqual(snapshot[settings.CONFIG_ENVELOPE_KEY].data.threadSettings.skipMaskedLink, undefined);
+    assert.strictEqual(Object.hasOwn(snapshot, "minVersion"), false);
+    assert.strictEqual(Object.hasOwn(snapshot, "tags"), false);
+    assert.strictEqual(Object.hasOwn(snapshot, "threadSettings"), false);
+    const revision = snapshot[settings.CONFIG_ENVELOPE_KEY].revision;
+    const repeated = await settings.loadConfig();
+    assert.strictEqual(repeated.source, "canonical");
+    assert.strictEqual(gm.snapshot()[settings.CONFIG_ENVELOPE_KEY].revision, revision);
   } finally { global.GM = previousGM; }
 });
 
@@ -2111,6 +2439,90 @@ runTest("TEST-01 config import preview rejects invalid data without mutating sta
   } finally { global.GM = previousGM; }
 });
 
+runTest("TRANSFER-01 export uses schema metadata and includes safe document metadata", () => {
+  const service = loadModule("src/services/configTransferService.js");
+  const exported = service.buildConfigExport({ exportedAt: "2026-01-01T00:00:00.000Z" });
+  assert.deepStrictEqual(Object.keys(exported.settings).sort(), getExportableConfigKeys().sort());
+  assert.strictEqual(exported.formatVersion, 1);
+  assert.strictEqual(exported.schemaVersion, 1);
+  assert.strictEqual(exported.exportedAt, "2026-01-01T00:00:00.000Z");
+  assert.strictEqual(Object.hasOwn(exported.settings, "metrics"), false);
+  assert.strictEqual(Object.hasOwn(exported.settings, "addons"), false);
+  assert.strictEqual(typeof exported.applicationVersion, "string");
+});
+
+runTest("TRANSFER-01 format and schema errors are structured without raw payloads", () => {
+  const { previewConfigImport } = loadModule("src/services/configTransferService.js");
+  const invalidJson = previewConfigImport("{not-json");
+  assert.strictEqual(invalidJson.ok, false);
+  assert.strictEqual(invalidJson.issues[0].code, "invalid_json");
+  assert.strictEqual(Object.hasOwn(invalidJson.issues[0], "received"), false);
+
+  const unsupported = previewConfigImport({ formatVersion: 99, settings: { color: { completed: "#abc" } } });
+  assert.strictEqual(unsupported.issues[0].code, "unsupported");
+  assert.strictEqual(unsupported.issues[0].path, "formatVersion");
+
+  const unknown = previewConfigImport({ settings: { latestSettings: { unknown: true } } });
+  assert.strictEqual(unknown.ok, false);
+  assert.ok(unknown.issues.some((entry) => entry.code === "unknown"));
+
+  const invalidNested = previewConfigImport({ settings: { latestSettings: { priorityWeights: { rating: "bad" } } } });
+  assert.strictEqual(invalidNested.ok, false);
+  assert.ok(invalidNested.issues.some((entry) => entry.path === "latestSettings.priorityWeights.rating"));
+});
+
+runTest("TRANSFER-01 preview is read-only and migrates supported legacy exports", () => {
+  const previousGM = global.GM;
+  const gm = createFakeGM({ untouched: "value" });
+  global.GM = gm;
+  try {
+    const service = loadModule("src/services/configTransferService.js");
+    const { config } = loadModule("src/config.js");
+    const beforeConfig = JSON.stringify(config);
+    const beforeStorage = JSON.stringify(gm.snapshot());
+    const preview = service.previewConfigImport({
+      minVersion: 0.7,
+      tags: { Legacy: "1" },
+      threadSettings: { marked: false, skipMaskedLink: true },
+    });
+    assert.strictEqual(preview.ok, true);
+    assert.strictEqual(preview.migrated, true);
+    assert.strictEqual(preview.candidate.latestSettings.minVersion, 0.7);
+    assert.deepStrictEqual(preview.candidate.tags, [{ id: 1, name: "Legacy" }]);
+    assert.strictEqual(Object.hasOwn(preview.candidate.threadSettings, "skipMaskedLink"), false);
+    assert.strictEqual(JSON.stringify(config), beforeConfig);
+    assert.strictEqual(JSON.stringify(gm.snapshot()), beforeStorage);
+  } finally { global.GM = previousGM; }
+});
+
+runTest("TRANSFER-01 successful import commits complete sections through shared application", async () => {
+  const previousGM = global.GM;
+  const gm = createFakeGM();
+  global.GM = gm;
+  try {
+    const service = loadModule("src/services/configTransferService.js");
+    const result = await service.commitConfigImport({
+      formatVersion: 1,
+      schemaVersion: 1,
+      settings: {
+        color: { completed: "#abc" },
+        globalSettings: { enableCrossTabSync: true },
+        latestSettings: { minVersion: 0.9 },
+        tags: [{ id: 7, name: "Imported" }],
+      },
+    });
+    assert.strictEqual(result.ok, true);
+    assert.strictEqual(result.committed, true);
+    assert.strictEqual(result.config.color.completed, "#abc");
+    assert.strictEqual(result.config.globalSettings.enableCrossTabSync, true);
+    assert.strictEqual(result.config.latestSettings.minVersion, 0.9);
+    assert.deepStrictEqual(result.config.tags, [{ id: 7, name: "Imported" }]);
+    assert.deepStrictEqual(result.changedSections.sort(), ["color", "globalSettings", "latestSettings", "tags"].sort());
+    assert.strictEqual(result.reloadRequired, false);
+    assert.strictEqual(gm.snapshot()["f95ue:config"].data.metrics.failed, result.config.metrics.failed);
+  } finally { global.GM = previousGM; }
+});
+
 runTest("TEST-01 sync rejects stale envelopes and ignores local loop events", async () => {
   const previousGM = global.GM;
   const gm = createFakeGM();
@@ -2119,11 +2531,59 @@ runTest("TEST-01 sync rejects stale envelopes and ignores local loop events", as
     const sync = loadModule("src/services/syncService.js");
     const { config } = loadModule("src/config.js");
     const data = { ...JSON.parse(JSON.stringify(config)), metrics: { ...config.metrics, lowest: 0 } };
-    const newer = { revision: 2, updatedAt: 20, writerId: "tab-b", data };
-    const stale = { revision: 1, updatedAt: 10, writerId: "tab-a", data };
+    const newer = { schemaVersion: 1, revision: 2, updatedAt: 20, writerId: "tab-b", data };
+    const stale = { schemaVersion: 1, revision: 1, updatedAt: 10, writerId: "tab-a", data };
     assert.strictEqual(sync.applyIncoming(newer), true);
     assert.strictEqual(sync.applyIncoming(stale), false);
   } finally { global.GM = previousGM; }
+});
+
+runTest("SYNC-01 compares revisions deterministically and prevents remote echo loops", async () => {
+  const previousGM = global.GM;
+  const gm = createFakeGM();
+  global.GM = gm;
+  try {
+    const tabA = loadModule("tests/fixtures/syncTabHarness.js");
+    const tabB = loadModule("tests/fixtures/syncTabHarness.js");
+    await Promise.all([tabA.enableSync(), tabB.enableSync()]);
+    const data = tabA.snapshotConfig();
+    const originalMetrics = data.metrics.failed;
+    data.latestSettings.minVersion = 0.9;
+    data.metrics.failed += 10;
+    const envelope = { schemaVersion: 1, revision: 1, updatedAt: 10, writerId: "tab-a", data };
+    gm.emitRemote("f95ue:config", envelope);
+    assert.strictEqual(tabA.snapshotConfig().latestSettings.minVersion, 0.9);
+    assert.strictEqual(tabB.snapshotConfig().latestSettings.minVersion, 0.9);
+    assert.strictEqual(tabA.snapshotConfig().metrics.failed, originalMetrics);
+    gm.emitRemote("f95ue:config", envelope);
+    assert.strictEqual(tabB.snapshotConfig().latestSettings.minVersion, 0.9);
+
+    const tieData = tabA.snapshotConfig();
+    tieData.latestSettings.minVersion = 0.8;
+    gm.emitRemote("f95ue:config", { schemaVersion: 1, revision: 2, updatedAt: 20, writerId: "tab-a", data: tieData });
+    tieData.latestSettings.minVersion = 0.7;
+    gm.emitRemote("f95ue:config", { schemaVersion: 1, revision: 2, updatedAt: 20, writerId: "tab-b", data: tieData });
+    assert.strictEqual(tabA.snapshotConfig().latestSettings.minVersion, 0.7);
+    assert.strictEqual(tabB.snapshotConfig().latestSettings.minVersion, 0.7);
+    tabA.resetSync(); tabB.resetSync();
+  } finally { global.GM = previousGM; }
+});
+
+runTest("SYNC-01 replays static, tag, nested, and dynamic metadata through one pipeline", async () => {
+  const result = await loadModule("tests/fixtures/syncCoverageHarness.js").runSyncCoverage();
+  const seen = new Set(result.seen.map(([name]) => name));
+  for (const name of ["color", "overlay", "thread", "latest", "modifier", "global", "tag", "preference"]) {
+    assert.ok(seen.has(name), name);
+  }
+  assert.ok(result.appliedPaths.some((path) => path.startsWith("latestSettings.priorityWeights")));
+  assert.ok(result.appliedPaths.some((path) => path.startsWith("tags[0]")));
+  assert.strictEqual(result.metricsFailed, 0);
+});
+
+runTest("SYNC-01 isolates effect failures and continues unrelated replay", async () => {
+  const result = await loadModule("tests/fixtures/syncCoverageHarness.js").runEffectFailureIsolation();
+  assert.deepStrictEqual(result.seen, ["succeeding"]);
+  assert.strictEqual(typeof result.value, "number");
 });
 
 runTest("TEST-01 cross-tab sync replays registered effects across config sections", () => {
@@ -2136,11 +2596,12 @@ runTest("TEST-01 cross-tab sync replays registered effects across config section
 runTest("TEST-01 BFCache page lifecycle suspends, resumes fresh route work, and fully tears down", async () => {
   const { createPageLifecycleHandlers } = loadModule("src/core/pageLifecycle.js");
   const calls = [];
+  let beginRouteOptions = null;
   const handlers = createPageLifecycleHandlers({
     suspendRuntime: (reason) => calls.push(`suspend:${reason}`),
     teardownAll: async (reason) => calls.push(`teardown:${reason}`),
     resumeRuntime: () => calls.push("resume"),
-    beginRoute: () => ({ generation: 9, correlationId: "route-9" }),
+    beginRoute: (_location, options) => { beginRouteOptions = options; return { generation: 9, correlationId: "route-9" }; },
     detectPage: () => calls.push("detect"),
     refreshFastBootstrapFeatures: (context) => calls.push(`fast:${context.generation}`),
     reconcileFeatures: async (context) => calls.push(`reconcile:${context.generation}`),
@@ -2149,6 +2610,7 @@ runTest("TEST-01 BFCache page lifecycle suspends, resumes fresh route work, and 
   await handlers.handlePageShow({ persisted: true });
   await handlers.handlePageHide({ persisted: false });
   assert.deepStrictEqual(calls, ["suspend:bfcache", "resume", "detect", "fast:9", "reconcile:9", "teardown:pagehide"]);
+  assert.deepStrictEqual(beginRouteOptions, { force: true });
 });
 
 runTest("TEST-01 resource leak assertion detects and clears owner resources", () => {
@@ -2161,9 +2623,10 @@ runTest("TEST-01 resource leak assertion detects and clears owner resources", ()
   assert.strictEqual(resources.assertNoResourceLeaks("TEST-01:leak-owner"), true);
 });
 
-runTest("TEST-01 transactional config import rolls back on persistence failure", async () => {
+runTest("TRANSFER-01 transactional import leaves live and canonical state unchanged on persistence failure", async () => {
   const previousGM = global.GM;
-  global.GM = createFakeGM({}, { failSet: true });
+  const originalEnvelope = { sentinel: "unchanged" };
+  global.GM = createFakeGM({ "f95ue:config": originalEnvelope }, { failSet: true });
   try {
     const service = loadModule("src/services/configTransferService.js");
     const { config } = loadModule("src/config.js");
@@ -2171,6 +2634,7 @@ runTest("TEST-01 transactional config import rolls back on persistence failure",
     const result = await service.commitConfigImport({ settings: { latestSettings: { ...config.latestSettings, minVersion: 0.9 } } });
     assert.strictEqual(result.committed, false);
     assert.strictEqual(JSON.stringify(config), before);
+    assert.deepStrictEqual(global.GM.snapshot()["f95ue:config"], originalEnvelope);
   } finally { global.GM = previousGM; }
 });
 

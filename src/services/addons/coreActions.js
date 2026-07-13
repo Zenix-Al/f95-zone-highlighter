@@ -1,5 +1,6 @@
 import { executeActionDescriptor, getAction, getActionSnapshot } from "./actions/registry.js";
 import { ADDON_UI_SLOT_POLICY, normalizeAddonMountSlot } from "./uiSanitizer.js";
+import { storageAdapter } from "../storageAdapter.js";
 import "./actions/descriptors.js";
 
 export function hasAnyCapability(allowed, alternatives = []) {
@@ -231,7 +232,7 @@ async function actionStorageGet(addonId, payload, ensureAddonStateBucket, persis
   }
 
   try {
-    const legacyValue = await GM.getValue(`addon:${addonId}:${key}`, undefined);
+    const legacyValue = await storageAdapter.get(`addon:${addonId}:${key}`, undefined);
     if (typeof legacyValue !== "undefined") {
       stateBucket[key] = legacyValue;
       const persisted = await persistAddonsState();
@@ -313,11 +314,11 @@ function actionStorageGetUsage(
 async function actionConfigGetTagPrefs(measurePayloadBytes, maxPayloadBytes) {
   try {
     const [tags, preferredTags, excludedTags, markedTags, color] = await Promise.all([
-      GM.getValue("tags", []),
-      GM.getValue("preferredTags", []),
-      GM.getValue("excludedTags", []),
-      GM.getValue("markedTags", []),
-      GM.getValue("color", {}),
+      storageAdapter.get("tags", []),
+      storageAdapter.get("preferredTags", []),
+      storageAdapter.get("excludedTags", []),
+      storageAdapter.get("markedTags", []),
+      storageAdapter.get("color", {}),
     ]);
 
     const value = {

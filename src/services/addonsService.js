@@ -128,6 +128,13 @@ export function notifyAllAddonsBeforePageChange() {
   addonLifecycle.notifyAllBeforePageChange();
 }
 
+export function shutdownAddonsService(reason = "runtime teardown") {
+  const summary = addonLifecycle.shutdownAll(reason);
+  replaceRegisteredAddons([]);
+  shutdownAddonsBridgeServer();
+  return summary;
+}
+
 const CORE_PAGE_SCOPE_FLAGS = Object.freeze([
   ["f95zone", "isF95Zone"],
   ["thread", "isThread"],

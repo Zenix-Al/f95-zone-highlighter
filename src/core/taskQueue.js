@@ -11,6 +11,29 @@ export function getTaskQueueDiagnostics() {
   return { queueCount: queues.length, pendingCount: queues.reduce((total, queue) => total + queue.pendingCount, 0), runningCount: queues.filter((queue) => queue.runningKey).length, queues };
 }
 
+export function pauseAllTaskQueues(reason = "runtime suspended") {
+  let cancelled = 0;
+  for (const queue of taskQueues.values()) {
+    cancelled += queue.clear(reason).pendingCount;
+    queue.pause();
+  }
+  return { queueCount: taskQueues.size, cancelled };
+}
+
+export function resumeAllTaskQueues(routeContext = null) {
+  for (const queue of taskQueues.values()) {
+    if (routeContext) queue.setRouteContext(routeContext);
+    queue.resume();
+  }
+  return getTaskQueueDiagnostics();
+}
+
+export async function disposeAllTaskQueues(reason = "runtime teardown") {
+  const queues = [...taskQueues.values()];
+  await Promise.all(queues.map((queue) => queue.dispose(reason)));
+  return { disposed: queues.length, ...getTaskQueueDiagnostics() };
+}
+
 function createAbortError(message = "task cancelled") {
   return Object.assign(new Error(message), { name: "AbortError" });
 }

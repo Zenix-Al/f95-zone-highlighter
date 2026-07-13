@@ -1,6 +1,5 @@
 import { config } from "../../config.js";
 import { saveConfigKeys } from "../../services/settingsService";
-import { applyEffects } from "./applyEffects";
 import { createInput } from "./createInput";
 import { createLabel } from "./createLabel";
 import { coerceSettingValue } from "./coerceSettingValue.js";
@@ -107,17 +106,21 @@ export function renderSetting(key, meta) {
       input.value = String(newValue);
     }
 
-    const didSet = setByPath(config, meta.config, newValue);
+    const nextConfig = JSON.parse(JSON.stringify(config));
+    const didSet = setByPath(nextConfig, meta.config, newValue);
     if (!didSet) {
       return;
     }
 
     const topLevelKey = meta.config.split(".")[0];
-    saveConfigKeys({
-      [topLevelKey]: config[topLevelKey],
+    void saveConfigKeys({
+      [topLevelKey]: nextConfig[topLevelKey],
+    }).then((result) => {
+      if (!result.committed) {
+        if (meta.type === "toggle") input.checked = Boolean(previousValue);
+        else input.value = String(previousValue ?? "");
+      }
     });
-
-    void applyEffects(meta, newValue);
   });
 
   row.appendChild(label);

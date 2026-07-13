@@ -1,4 +1,4 @@
-import { config, defaultColors } from "../../config";
+import { defaultColors } from "../../config";
 import { reprocessAllTiles } from "../../features/latest-overlay/index.js";
 import { refreshThreadOverlayAfterSettingsChange } from "../settingsRuntime/effectTasks.js";
 import { colorSettingsMeta } from "../settings/colorSettings";
@@ -9,7 +9,7 @@ import { showToast } from "./toast";
 
 let resetColorConfirmUntil = 0;
 
-export function resetColor() {
+export async function resetColor() {
   const now = Date.now();
   if (now > resetColorConfirmUntil) {
     resetColorConfirmUntil = now + 3000;
@@ -18,9 +18,9 @@ export function resetColor() {
   }
 
   resetColorConfirmUntil = 0;
-  config.color = { ...defaultColors };
+  const persisted = await saveConfigKeys({ color: { ...defaultColors } });
+  if (!persisted.committed) return;
   updateColorStyle();
-  saveConfigKeys({ color: config.color });
 
   reprocessAllTiles();
   refreshThreadOverlayAfterSettingsChange();

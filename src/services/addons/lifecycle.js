@@ -91,11 +91,27 @@ export function createAddonLifecycleOrchestrator({
     }
   }
 
+  function shutdownAll(reason = "runtime teardown") {
+    const registered = listRegisteredAddons();
+    for (const addon of registered) {
+      if (!addon?.id) continue;
+      requestTeardown(addon.id, reason);
+      clearTeardownWatchdog(addon.id);
+      forceCleanup(addon.id);
+    }
+    for (const addonId of [...addonTeardownWatchdogs.keys()]) {
+      clearTeardownWatchdog(addonId);
+      forceCleanup(addonId);
+    }
+    return { cleaned: registered.filter((addon) => addon?.id).length };
+  }
+
   return {
     emitLifecycleCommand,
     requestTeardown,
     acknowledgeTeardown,
     cancelTeardown,
     notifyAllBeforePageChange,
+    shutdownAll,
   };
 }

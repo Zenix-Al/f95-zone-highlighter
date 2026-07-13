@@ -8,6 +8,7 @@ import {
 const BOOTSTRAP_CLASSIFICATIONS = new Set(["required", "optional", "recoverable"]);
 const DEFAULT_STEP_TIMEOUT_MS = 15000;
 let lastBootstrapSummary = null;
+const activeBootstrapControllers = new Set();
 
 function createCorrelationId() {
   return `bootstrap:${Date.now()}:${Math.random().toString(16).slice(2)}`;
@@ -94,6 +95,7 @@ export async function runBootstrapStep(step, context = {}) {
 
 export async function runBootstrapPipeline(steps = [], context = {}) {
   const controller = new AbortController();
+  activeBootstrapControllers.add(controller);
   if (context.signal?.aborted) controller.abort(context.signal.reason);
   else context.signal?.addEventListener("abort", () => controller.abort(context.signal.reason), { once: true });
   const startedAt = Date.now();
@@ -108,44 +110,54 @@ export async function runBootstrapPipeline(steps = [], context = {}) {
     degradedSteps: [],
   };
 
-  for (const step of Array.isArray(steps) ? steps : []) {
-    if (controller.signal.aborted) break;
-    const result = await runBootstrapStep(step, { correlationId: summary.correlationId, signal: controller.signal });
-    if (result.status === "ok") {
-      try { step.onResult?.(result.value); }
-      catch (error) {
-        result.status = "failed";
-        result.errorMessage = errorMessage(error);
+  try {
+    for (const step of Array.isArray(steps) ? steps : []) {
+      if (controller.signal.aborted) break;
+      const result = await runBootstrapStep(step, { correlationId: summary.correlationId, signal: controller.signal });
+      if (result.status === "ok" && !controller.signal.aborted) {
+        try { step.onResult?.(result.value); }
+        catch (error) {
+          result.status = "failed";
+          result.errorMessage = errorMessage(error);
+        }
       }
-    }
-    summary.steps.push(copyStepResult(result));
-    if (result.status === "ok") continue;
+      summary.steps.push(copyStepResult(result));
+      if (result.status === "ok") continue;
 
-    const eventContext = { correlationId: summary.correlationId, details: { stepId: result.id, classification: result.classification, timedOut: result.timedOut } };
-    if (result.status === "degraded") {
+      const eventContext = { correlationId: summary.correlationId, details: { stepId: result.id, classification: result.classification, timedOut: result.timedOut } };
+      if (result.status === "degraded") {
+        summary.status = "degraded";
+        summary.degradedSteps.push(result.id);
+        reportFeatureWarning("Bootstrap", result.errorMessage, `BOOT_STEP_${result.id}`, eventContext);
+        continue;
+      }
+
+      summary.failedSteps.push(result.id);
+      if (result.classification === "required") {
+        summary.status = "failed";
+        reportFeatureFailure("Bootstrap", result.errorMessage, `BOOT_STEP_${result.id}`, eventContext);
+        controller.abort(new Error(`required bootstrap step '${result.id}' failed`));
+        break;
+      }
       summary.status = "degraded";
       summary.degradedSteps.push(result.id);
       reportFeatureWarning("Bootstrap", result.errorMessage, `BOOT_STEP_${result.id}`, eventContext);
-      continue;
     }
-
-    summary.failedSteps.push(result.id);
-    if (result.classification === "required") {
-      summary.status = "failed";
-      reportFeatureFailure("Bootstrap", result.errorMessage, `BOOT_STEP_${result.id}`, eventContext);
-      controller.abort(new Error(`required bootstrap step '${result.id}' failed`));
-      break;
-    }
-    summary.status = "degraded";
-    summary.degradedSteps.push(result.id);
-    reportFeatureWarning("Bootstrap", result.errorMessage, `BOOT_STEP_${result.id}`, eventContext);
+  } finally {
+    activeBootstrapControllers.delete(controller);
   }
 
+  if (controller.signal.aborted && controller._f95ueTeardownAbort) {
+    summary.status = "cancelled";
+    summary.cancelled = true;
+  }
   summary.completedAt = Date.now();
   summary.durationMs = summary.completedAt - startedAt;
-  lastBootstrapSummary = summary;
-  setFeatureStatus("Bootstrap", summary.status === "healthy" ? "running" : summary.status === "degraded" ? "degraded" : "failing", `${summary.status} startup`);
-  return getLastBootstrapSummary();
+  if (!summary.cancelled) {
+    lastBootstrapSummary = summary;
+    setFeatureStatus("Bootstrap", summary.status === "healthy" ? "running" : summary.status === "degraded" ? "degraded" : "failing", `${summary.status} startup`);
+  }
+  return getLastBootstrapSummary() || JSON.parse(JSON.stringify(summary));
 }
 
 export function getLastBootstrapSummary() {
@@ -154,6 +166,15 @@ export function getLastBootstrapSummary() {
 
 export function clearBootstrapSummary() {
   lastBootstrapSummary = null;
+}
+
+export function abortActiveBootstrap(reason = "bootstrap cancelled") {
+  const abortReason = reason instanceof Error ? reason : new DOMException(String(reason), "AbortError");
+  for (const controller of activeBootstrapControllers) {
+    controller._f95ueTeardownAbort = true;
+    controller.abort(abortReason);
+  }
+  return activeBootstrapControllers.size;
 }
 
 export const resetBootstrapForTests = clearBootstrapSummary;

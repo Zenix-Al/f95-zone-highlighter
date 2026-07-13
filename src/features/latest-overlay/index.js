@@ -135,8 +135,10 @@ async function openOverlayColorOrderEditor() {
 
   if (result === null) return;
 
-  config.latestSettings.latestOverlayColorOrder = result;
-  await saveConfigKeys({ latestSettings: config.latestSettings });
+  const persisted = await saveConfigKeys({
+    latestSettings: { ...config.latestSettings, latestOverlayColorOrder: [...result] },
+  });
+  if (!persisted.committed) return;
   effectReprocessAllTiles();
   showToast("Overlay color order updated.");
 }
@@ -436,7 +438,7 @@ export const latestOverlayFeature = createStyledFeature("Latest Overlay", {
 export { reprocessAllTiles, resetTile, processTile };
 
 let resetConfigConfirmUntil = 0;
-function resetConfigToDefaults() {
+async function resetConfigToDefaults() {
   const now = Date.now();
   if (now > resetConfigConfirmUntil) {
     resetConfigConfirmUntil = now + 3000;
@@ -445,22 +447,23 @@ function resetConfigToDefaults() {
   }
   resetConfigConfirmUntil = 0;
 
-  Object.assign(config.overlaySettings, defaultOverlaySettings);
-  config.latestSettings.latestOverlayToggle = defaultLatestSettings.latestOverlayToggle;
-  config.latestSettings.minVersion = defaultLatestSettings.minVersion;
-  config.latestSettings.latestOverlayColorOrder = [
-    ...defaultLatestSettings.latestOverlayColorOrder,
-  ];
-  config.latestSettings.latestOverlayStyle = defaultLatestSettings.latestOverlayStyle;
-  config.latestSettings.ratingHighlightThreshold = defaultLatestSettings.ratingHighlightThreshold;
-  config.latestSettings.engagementRatioThreshold = defaultLatestSettings.engagementRatioThreshold;
-  config.latestSettings.enableScoreWeights = defaultLatestSettings.enableScoreWeights;
-  config.latestSettings.priorityWeights = { ...defaultLatestSettings.priorityWeights };
-  config.latestSettings.tagModifiers = { ...defaultLatestSettings.tagModifiers };
-  saveConfigKeys({
-    latestSettings: config.latestSettings,
-    overlaySettings: config.overlaySettings,
+  const nextLatestSettings = {
+    ...config.latestSettings,
+    latestOverlayToggle: defaultLatestSettings.latestOverlayToggle,
+    minVersion: defaultLatestSettings.minVersion,
+    latestOverlayColorOrder: [...defaultLatestSettings.latestOverlayColorOrder],
+    latestOverlayStyle: defaultLatestSettings.latestOverlayStyle,
+    ratingHighlightThreshold: defaultLatestSettings.ratingHighlightThreshold,
+    engagementRatioThreshold: defaultLatestSettings.engagementRatioThreshold,
+    enableScoreWeights: defaultLatestSettings.enableScoreWeights,
+    priorityWeights: { ...defaultLatestSettings.priorityWeights },
+    tagModifiers: { ...defaultLatestSettings.tagModifiers },
+  };
+  const persisted = await saveConfigKeys({
+    latestSettings: nextLatestSettings,
+    overlaySettings: { ...defaultOverlaySettings },
   });
+  if (!persisted.committed) return;
   latestOverlaySettingsDialog?.close();
   latestOverlaySettingsDialog = null;
   checkOverlaySettings();

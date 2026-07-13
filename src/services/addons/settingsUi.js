@@ -121,7 +121,7 @@ const coreActionMaxConcurrentSetting = {
 let resetThrottleConfirmUntil = 0;
 let addonsServiceSettingsDialog = null;
 
-function resetAddonsApiThrottleDefaults() {
+async function resetAddonsApiThrottleDefaults() {
   const now = Date.now();
   if (now > resetThrottleConfirmUntil) {
     resetThrottleConfirmUntil = now + 3000;
@@ -130,16 +130,14 @@ function resetAddonsApiThrottleDefaults() {
   }
 
   resetThrottleConfirmUntil = 0;
-  if (!config.addons || typeof config.addons !== "object") {
-    config.addons = {};
-  }
-  const serviceConfig =
-    config.addons.service && typeof config.addons.service === "object" ? config.addons.service : {};
-  config.addons.service = {
+  const addons = JSON.parse(JSON.stringify(config.addons || {}));
+  const serviceConfig = addons.service && typeof addons.service === "object" ? addons.service : {};
+  addons.service = {
     ...serviceConfig,
     apiThrottle: { ...defaultAddonsApiThrottleSettings },
   };
-  saveConfigKeys({ addons: config.addons });
+  const persisted = await saveConfigKeys({ addons });
+  if (!persisted.committed) return;
   addonsServiceSettingsDialog?.close();
   addonsServiceSettingsDialog = null;
   showToast("Add-ons API throttle settings reset to default.");
