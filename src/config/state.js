@@ -9,11 +9,14 @@ import {
   defaultAddonsSettings,
   defaultAddonsServiceSettings,
   defaultMetrics,
+  defaultPrefixes,
+  defaultSavedNotifID,
+  defaultTags,
 } from "./defaults.js";
 
 export let config = {
-  tags: [],
-  prefixes: { items: [], categories: {} },
+  tags: [...defaultTags],
+  prefixes: { ...defaultPrefixes, items: [...defaultPrefixes.items], categories: { ...defaultPrefixes.categories } },
   preferredTags: [],
   excludedTags: [],
   markedTags: [],
@@ -31,7 +34,7 @@ export let config = {
       apiThrottle: { ...defaultAddonsServiceSettings.apiThrottle },
     },
   },
-  savedNotifID: null,
+  savedNotifID: defaultSavedNotifID,
 };
 
 const runtimeState = {

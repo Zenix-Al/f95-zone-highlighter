@@ -173,8 +173,8 @@ async function refreshTagsFromLatestUpdates() {
 
   if (toTagsOrderString(config.tags) === toTagsOrderString(newTags)) return;
 
-  config.tags = newTags;
-  await GM.setValue("tags", config.tags);
+  const persisted = await saveConfigKeys({ tags: newTags });
+  if (!persisted.committed) return;
   debugLog(
     "Tag Update",
     `Tags updated from latestUpdates.tags (${result.source}): ${newTags.length} tags found.`,
@@ -223,15 +223,13 @@ async function applyPrunedTagLists({
 }) {
   if (!hasChanged) return;
 
-  config.preferredTags = newPreferred;
-  config.excludedTags = newExcluded;
-  config.markedTags = newMarked;
-
-  await saveConfigKeys({
+  const persisted = await saveConfigKeys({
     preferredTags: newPreferred,
     excludedTags: newExcluded,
     markedTags: newMarked,
   });
+
+  if (!persisted.committed) return;
 
   debugLog("Tag Update", `Pruned ${prunedCount} tags from preferred/excluded/marked lists.`);
 }

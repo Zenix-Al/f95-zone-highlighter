@@ -22,6 +22,9 @@ Services are singletons that handle cross-cutting concerns—they sit below feat
 ### `settingsService.js`
 Handles reading and writing the userscript configuration to/from local storage or `GM_setValue`/`GM_getValue`. It ensures that `src/config.js` is always kept in sync with persisted data.
 
+### [configTransferService.js](config-transfer.md)
+Owns the configuration transfer document format, schema-backed import validation, supported legacy-format migration, read-only preview, and transactional import commits. The config-transfer feature keeps file selection, downloads, dialog rendering, and user-facing messages in the UI layer.
+
 ### `tagsService.js`
 Responsible for asynchronous operations related to thread tags. It fetches, parses, and caches tag data so that features (like `latest-overlay`) can quickly look up whether a thread is "Completed", "On Hold", etc.
 

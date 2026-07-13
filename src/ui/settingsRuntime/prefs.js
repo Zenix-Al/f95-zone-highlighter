@@ -1,4 +1,5 @@
 import { stateManager } from "../../config.js";
+import { storageAdapter } from "../../services/storageAdapter.js";
 
 const DEFAULT_SETTINGS_PANEL = "settings-panel-general";
 
@@ -11,7 +12,7 @@ export function getDefaultSettingsPanelId() {
 
 export async function persistSettingsUiValue(key, value) {
   try {
-    await GM.setValue(key, value);
+    await storageAdapter.set(key, value);
   } catch (error) {
     console.warn(`[settings-ui] Failed to persist ${key}:`, error);
   }
@@ -25,12 +26,12 @@ export async function ensureSettingsUiPrefsLoaded() {
 
   try {
     activePanel = String(
-      await GM.getValue(SETTINGS_ACTIVE_PANEL_STORAGE_KEY, DEFAULT_SETTINGS_PANEL),
+      await storageAdapter.get(SETTINGS_ACTIVE_PANEL_STORAGE_KEY, DEFAULT_SETTINGS_PANEL),
     );
   } catch {}
 
   try {
-    const storedPins = await GM.getValue(SETTINGS_PINNED_ADDONS_STORAGE_KEY, []);
+    const storedPins = await storageAdapter.get(SETTINGS_PINNED_ADDONS_STORAGE_KEY, []);
     if (Array.isArray(storedPins)) {
       pinnedAddonIds = storedPins.map((id) => String(id || "").trim()).filter(Boolean);
     }

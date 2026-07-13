@@ -1,4 +1,5 @@
 import { config } from "../config.js";
+import { saveConfigKeys } from "./settingsService.js";
 import { runFrameBudgeted } from "../core/frameBudget.js";
 import { ensurePageBridge, requestPageBridge } from "../core/pageBridge.js";
 import { debugLog } from "../core/logger";
@@ -227,8 +228,8 @@ export async function updatePrefixes() {
   const next = JSON.stringify(newPrefixes);
   if (previous === next) return { updated: false, count: newPrefixes.items.length };
 
-  config.prefixes = newPrefixes;
-  await GM.setValue("prefixes", config.prefixes);
+  const persisted = await saveConfigKeys({ prefixes: newPrefixes });
+  if (!persisted.committed) return { updated: false, count: Number(config.prefixes?.items?.length || 0) };
   debugLog(
     "Prefix Update",
     `Prefixes updated from latestUpdates.prefixes (${result.source}): ${newPrefixes.items.length} unique prefixes stored.`,

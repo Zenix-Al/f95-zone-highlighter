@@ -14,14 +14,15 @@ function createDomSandbox(url = "https://f95zone.to/threads/example.1/") {
   };
 }
 
-function createFakeGM(initial = {}, { failSet = false, failDelete = false } = {}) {
+function createFakeGM(initial = {}, { failSet = false, failSetAt = null, failDelete = false } = {}) {
   const values = new Map(Object.entries(initial));
   const listeners = new Map();
   let nextId = 1;
+  let setCount = 0;
   const emit = (key, oldValue, newValue, remote = false) => listeners.forEach((entry) => { if (entry.key === key) entry.listener(key, oldValue, newValue, remote); });
   return {
     async getValue(key, fallback) { return values.has(key) ? values.get(key) : fallback; },
-    async setValue(key, value) { if (failSet) throw new Error("fake_set_failed"); const oldValue = values.get(key); values.set(key, value); emit(key, oldValue, value); },
+    async setValue(key, value) { setCount += 1; if (failSet || (Number.isInteger(failSetAt) && setCount === failSetAt)) throw new Error("fake_set_failed"); const oldValue = values.get(key); values.set(key, value); emit(key, oldValue, value); },
     async deleteValue(key) { if (failDelete) throw new Error("fake_delete_failed"); const oldValue = values.get(key); values.delete(key); emit(key, oldValue, undefined); },
     addValueChangeListener(key, listener) { const id = nextId++; listeners.set(id, { key, listener }); return id; },
     removeValueChangeListener(id) { listeners.delete(id); },

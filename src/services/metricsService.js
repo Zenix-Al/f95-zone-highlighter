@@ -2,22 +2,23 @@ import { config } from "../config";
 import { saveConfigKeys } from "./settingsService";
 
 export function recordSuccess(img, duration, updateToast) {
-  config.metrics.succeeded++;
-  config.metrics.avgCache =
-    (config.metrics.avgCache * (config.metrics.succeeded - 1) + duration) /
-    config.metrics.succeeded;
-  config.metrics.highest = Math.max(config.metrics.highest, duration);
-  config.metrics.lowest = config.metrics.lowest > 0
-    ? Math.min(config.metrics.lowest, duration)
+  const metrics = { ...config.metrics };
+  metrics.succeeded++;
+  metrics.avgCache =
+    (metrics.avgCache * (metrics.succeeded - 1) + duration) /
+    metrics.succeeded;
+  metrics.highest = Math.max(metrics.highest, duration);
+  metrics.lowest = metrics.lowest > 0
+    ? Math.min(metrics.lowest, duration)
     : duration;
-  config.metrics.mean = (config.metrics.highest + config.metrics.lowest) / 2;
+  metrics.mean = (metrics.highest + metrics.lowest) / 2;
 
-  saveConfigKeys({ metrics: config.metrics });
+  void saveConfigKeys({ metrics });
   if (updateToast) updateToast();
 }
 
 export function recordFail(updateToast) {
-  config.metrics.failed++;
-  saveConfigKeys({ metrics: config.metrics });
+  const metrics = { ...config.metrics, failed: config.metrics.failed + 1 };
+  void saveConfigKeys({ metrics });
   if (updateToast) updateToast();
 }

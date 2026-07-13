@@ -37,15 +37,7 @@ async function importSettingsFromFile() {
     return;
   }
 
-  let parsed;
-  try {
-    parsed = JSON.parse(await file.text());
-  } catch {
-    showConfigTransferError("Import failed: invalid JSON.");
-    return;
-  }
-
-  const result = await commitConfigImport(parsed);
+  const result = await commitConfigImport(await file.text());
   if (!result.ok || !result.committed) {
     const error = result.issues?.[0];
     showConfigTransferError(`Import failed: ${error ? `${error.path}: ${error.code}` : "could not persist configuration."}`);
@@ -53,8 +45,12 @@ async function importSettingsFromFile() {
   }
 
   clearConfigTransferError();
-  showToast("Configuration imported. Reloading...");
-  setTimeout(() => window.location.reload(), 400);
+  if (result.reloadRequired) {
+    showToast("Configuration imported. Reloading...");
+    setTimeout(() => window.location.reload(), 400);
+  } else {
+    showToast("Configuration imported.");
+  }
 }
 
 const configTransferDialogMeta = {

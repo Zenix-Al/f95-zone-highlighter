@@ -31,9 +31,9 @@ export function getRouteContext() {
   };
 }
 
-export function beginRoute(locationLike = globalThis.location) {
+export function beginRoute(locationLike = globalThis.location, { force = false } = {}) {
   const url = normalizeRouteUrl(locationLike);
-  if (url === currentUrl) return { ...getRouteContext(), changed: false };
+  if (!force && url === currentUrl) return { ...getRouteContext(), changed: false };
   controller.abort(new DOMException("route changed", "AbortError"));
   controller = new AbortController();
   currentUrl = url;

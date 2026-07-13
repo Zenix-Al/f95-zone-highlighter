@@ -14,7 +14,7 @@ export function runSyncEffectReplay() {
   const data = JSON.parse(JSON.stringify(config));
   data.latestSettings.autoRefresh = !data.latestSettings.autoRefresh;
   data.globalSettings.configVisibility = !data.globalSettings.configVisibility;
-  const applied = applyIncoming({ revision: 100, updatedAt: 100, writerId: "TEST-01:remote", data });
+  const applied = applyIncoming({ schemaVersion: 1, revision: 100, updatedAt: 100, writerId: "TEST-01:remote", data });
   resetSettingsMetadataForTests();
   return { applied, seen };
 }

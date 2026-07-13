@@ -11,6 +11,11 @@ This document explains the registries and patterns features must use to ensure d
 - `styleRegistry.js`: Tracks registered styles and supports scoped `acquire`/`release` semantics.
 - `teardown.js`: Global coordinator that invokes `teardownAll()` on `pagehide` or when the runtime requests a full reset.
 
+The coordinator exposes the runtime states `new`, `starting`, `running`, `suspended`,
+`stopping`, and `stopped`. A completed teardown retains its summary, so repeated calls
+are inert; starting a new runtime clears that retained result and permits registration
+again.
+
 ## Recommended teardown ordering
 
 1. Cancel or mark long-running async work as stale (AbortController / generation token).
@@ -29,6 +34,14 @@ This ordering ensures that interactive items are removed before styles are strip
 - Use `pagehide` instead of `unload` for teardown because `pagehide` will fire for BFCache navigations and provides `event.persisted`.
 - On `pagehide`, prefer lightweight persistence (if needed) and detach resources. On `pageshow`, reinitialize only if the page was restored from BFCache (`event.persisted`).
 - Avoid expensive sync operations during `pagehide` that could block the transition. Prefer to persist only minimal state required to resume.
+- A persisted `pagehide` aborts the active route context and cancels pending queue work,
+  then pauses queues while preserving stable DOM and styles. A persisted `pageshow`
+  requests a forced route generation, re-detects the page, resumes queues, refreshes
+  add-on security policy, and reconciles all features.
+- A non-persisted `pagehide` aborts active bootstrap controllers, bounds feature disable
+  waits, disposes queues, shuts down the add-on bridge, restores route patches, and
+  clears owner registries. The returned summary contains completed stages, disabled
+  features, and safe failure records.
 
 Example:
 

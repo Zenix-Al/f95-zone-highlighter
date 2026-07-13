@@ -11,7 +11,9 @@ This document describes the configuration schema, migration contract, and recomm
 
 ## Schema basics
 
-- Defaults live in `src/config/defaults.js`. Treat that file as the canonical schema for default values.
+- Default values live in `src/config/defaults.js`; they are not the validation contract. Explicit descriptors and metadata live in `src/config/schema.js`.
+- The schema exposes `validateConfig`, `validateConfigSection`, `sanitizeConfig`, `mergeWithDefaults`, `getDefaultConfig`, `getExportableConfigKeys`, `getSyncedConfigPaths`, and `getConfigPathMetadata`. Strict mode rejects unknown or invalid values, tolerant mode reports issues while preserving valid siblings and filling defaults, and migration mode accepts only documented legacy input shapes.
+- Schema issues contain a path, stable code, expected constraint, and safe received-type summary. Schema validation is pure: storage, migration writes, sync subscriptions, UI effects, and transfer-document parsing remain in their owning services.
 - Persisted configuration should store an explicit `schemaVersion` at top-level alongside configuration keys, e.g.: 
 
 ```json
@@ -22,6 +24,13 @@ This document describes the configuration schema, migration contract, and recomm
 ```
 
 - Keep schema changes additive when possible. If removal is required, provide a migration that transforms old keys into the new shape.
+
+### Adding a persistent field
+
+1. Add the baseline value to `defaults.js`.
+2. Add an explicit descriptor and relevant metadata to `CONFIG_SCHEMA` in `schema.js`; do not rely on inferred default types.
+3. Route boundary validation through the shared schema API and add tests for default/schema consistency, strict rejection, tolerant recovery, and metadata derivation.
+4. Keep persistence, migration, sync, effects, and import/export format responsibilities in their existing modules.
 
 ## Migration contract
 
@@ -54,7 +63,7 @@ Notes:
 
 ## Cross-tab synchronization implications
 
-- Persisted writes should carry revision metadata: `{ rev: <monotonic or timestamp>, source: <id> }`.
+- Persisted writes carry `{ schemaVersion, revision, writerId, updatedAt }`; sync compares that tuple deterministically.
 - When applying a remote change with `syncService`, do not re-run migrations that are already applied — migrations should only run when the local persisted `schemaVersion` is less than the code `currentSchemaVersion`.
 - When a migration changes persisted keys that trigger effects, ensure `metaRegistry` covers those sections so other tabs can replay effects deterministically.
 

@@ -1,6 +1,5 @@
-import { config } from "./config.js";
 import { loadData } from "./services/settingsService";
-import { initAddonsConsoleBridge } from "./services/addonsService.js";
+import { initAddonsConsoleBridge, refreshAddonSecurityPolicies } from "./services/addonsService.js";
 import { waitForBodyReady } from "./utils/dom";
 import { detectPage } from "./core/pageDetection.js";
 import { createBootstrapFailureHandler, runBootstrapPipeline } from "./core/bootstrap.js";
@@ -13,7 +12,15 @@ import {
   refreshFastBootstrapFeatures,
 } from "./loader";
 import { addListener } from "./core/listenerRegistry.js";
-import { markRuntimeRunning, resumeRuntime, suspendRuntime, teardownAll } from "./core/teardown.js";
+import {
+  markRuntimeRunning,
+  markRuntimeStarting,
+  registerTeardownResetter,
+  getRuntimeState,
+  resumeRuntime,
+  suspendRuntime,
+  teardownAll,
+} from "./core/teardown.js";
 import { initGlobalErrorListeners } from "./core/featureFactory.js";
 import { flushQueuedToasts } from "./ui/components/toast.js";
 import { initRouteObserver } from "./core/routeObserver.js";
@@ -22,10 +29,17 @@ import { createPageLifecycleHandlers } from "./core/pageLifecycle.js";
 
 let globalTeardownHooksRegistered = false;
 let configLoadPromise = null;
+let startupPromise = null;
 
 const { handlePageHide, handlePageShow } = createPageLifecycleHandlers({
   suspendRuntime, teardownAll, resumeRuntime, beginRoute, detectPage,
-  refreshFastBootstrapFeatures, reconcileFeatures,
+  refreshFastBootstrapFeatures, reconcileFeatures, refreshAddonSecurityPolicies,
+});
+
+registerTeardownResetter(() => {
+  globalTeardownHooksRegistered = false;
+  configLoadPromise = null;
+  startupPromise = null;
 });
 
 function registerGlobalTeardownHooks() {
@@ -44,10 +58,7 @@ async function ensureConfigLoaded() {
   }
 
   const loadedConfig = await configLoadPromise;
-  if (loadedConfig && typeof loadedConfig === "object") {
-    Object.assign(config, loadedConfig);
-  }
-
+  if (["suspended", "stopping", "stopped"].includes(getRuntimeState())) return loadedConfig;
   return loadedConfig;
 }
 
@@ -155,7 +166,16 @@ async function runBodyBootstrap() {
   if (summary.status !== "failed") markRuntimeRunning();
 }
 
-void runFastBootstrap().catch(createBootstrapFailureHandler("fast-bootstrap"));
-void waitForBodyReady()
-  .then(() => runBodyBootstrap())
-  .catch(createBootstrapFailureHandler("body-bootstrap"));
+export function startRuntime() {
+  if (startupPromise) return startupPromise;
+  markRuntimeStarting();
+  startupPromise = Promise.all([
+    runFastBootstrap().catch(createBootstrapFailureHandler("fast-bootstrap")),
+    waitForBodyReady()
+      .then(() => runBodyBootstrap())
+      .catch(createBootstrapFailureHandler("body-bootstrap")),
+  ]);
+  return startupPromise;
+}
+
+void startRuntime();
