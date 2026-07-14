@@ -4,7 +4,6 @@ import {
   defaultColors,
   defaultGlobalSettings,
   defaultLatestSettings,
-  defaultMetrics,
   defaultOverlaySettings,
   defaultPrefixes,
   defaultPriorityWeights,
@@ -20,8 +19,6 @@ import {
   isValidVersion,
 } from "../utils/validators.js";
 import { isValidOverlayColorOrder } from "../features/latest-overlay/overlayOrder.js";
-
-export const CONFIG_SCHEMA_VERSION = 1;
 
 function clone(value) {
   if (value === undefined) return undefined;
@@ -176,11 +173,6 @@ const addons = node("object", defaultAddonsSettings, {
   },
   additionalProperties: false,
 });
-const metrics = node("object", defaultMetrics, {
-  properties: Object.fromEntries(Object.keys(defaultMetrics).map((key) => [key, finiteNumber(defaultMetrics[key], { min: 0 })])),
-  additionalProperties: false,
-});
-
 const CONFIG_SCHEMA = {
   tags: node("array", defaultTags, { items: tag, uniqueBy: "id", exportable: true, syncable: true }),
   prefixes: prefixCatalog,
@@ -192,7 +184,6 @@ const CONFIG_SCHEMA = {
   threadSettings: { ...threadSettings, exportable: true, syncable: true },
   globalSettings: { ...globalSettings, exportable: true, syncable: true },
   latestSettings: { ...latestSettings, exportable: true, syncable: true },
-  metrics: { ...metrics },
   addons: { ...addons, syncable: true },
   savedNotifID: node("number", defaultSavedNotifID, { nullable: true, min: 1, integer: true }),
 };
@@ -208,13 +199,10 @@ const DEFAULTS = Object.freeze({
   threadSettings: defaultThreadSetting,
   globalSettings: defaultGlobalSettings,
   latestSettings: defaultLatestSettings,
-  metrics: defaultMetrics,
   addons: defaultAddonsSettings,
   savedNotifID: defaultSavedNotifID,
 });
 
-const LEGACY_MIGRATION_KEYS = new Set(["minVersion"]);
-const LEGACY_THREAD_SETTINGS_KEYS = new Set(["skipMaskedLink", "directDownloadLinks", "directDownloadPackages", "directDownloadHealth"]);
 const PATH_INDEX = new Map();
 const METADATA_INDEX = new Map();
 
@@ -339,10 +327,7 @@ function validateNode(value, descriptor, path, context) {
       if (descriptor.keyPattern && !descriptor.keyPattern.test(key)) context.issues.push(issue(`${path}.${key}`, "key", "matching object key pattern", key));
       if (Object.hasOwn(properties, key)) continue;
       if (descriptor.additionalProperties && descriptor.additionalProperties !== false) continue;
-      const isLegacy = context.mode === "migration"
-        && ((path === "" && LEGACY_MIGRATION_KEYS.has(key))
-          || (path === "threadSettings" && LEGACY_THREAD_SETTINGS_KEYS.has(key)));
-      if (!isLegacy) context.issues.push(issue(`${path ? `${path}.` : ""}${key}`, "unknown", "known key", value[key]));
+      context.issues.push(issue(`${path ? `${path}.` : ""}${key}`, "unknown", "known key", value[key]));
     }
     for (const [key, child] of Object.entries(properties)) {
       if (Object.hasOwn(value, key)) result[key] = validateNode(value[key], child, `${path}.${key}`, context);
@@ -433,7 +418,7 @@ export function validateConfig(data, { mode = "strict", partial = false } = {}) 
   if (!isObject(data)) return { valid: false, issues: [issue("", "type", "object", data)], data: getDefaultConfig() };
 
   for (const key of Object.keys(data)) {
-    if (!Object.hasOwn(CONFIG_SCHEMA, key) && !(mode === "migration" && LEGACY_MIGRATION_KEYS.has(key))) {
+    if (!Object.hasOwn(CONFIG_SCHEMA, key)) {
       context.issues.push(issue(key, "unknown", "known section", data[key]));
     }
   }

@@ -30,12 +30,11 @@ export async function runSyncCoverage() {
   data.globalSettings.configVisibility = !data.globalSettings.configVisibility;
   data.tags = [{ id: 1, name: "Synced tag" }];
   data.preferredTags = [1];
-  data.metrics.failed += 1;
 
   const applied = applyConfigChange(data, { origin: "remote-sync", syncableOnly: true });
   await applied.effects;
   resetSettingsMetadataForTests();
-  return { seen, appliedPaths: applied.appliedPaths, metricsFailed: config.metrics.failed };
+  return { seen, appliedPaths: applied.appliedPaths };
 }
 
 export async function runEffectFailureIsolation() {

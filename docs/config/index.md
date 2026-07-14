@@ -8,7 +8,7 @@ The `config` directory is responsible for the baseline settings, state schemas, 
 Contains persisted baseline values for the userscript. Defaults are values only; constraints, validation rules, and persistence/export/sync metadata belong in `schema.js`. If you add a new toggleable feature, you **must** add its default state here and add the matching schema descriptor.
 
 ### `schema.js`
-The pure configuration contract. It defines explicit types, ranges, enums, nested object policies, legacy migration input, and path metadata. Use its validation APIs rather than adding datatype checks in storage, settings, sync, or transfer code.
+The pure configuration contract. It defines explicit types, ranges, enums, nested object policies, and path metadata. Persisted version policy and storage keys live in `persistence.js`; transfer-document normalization remains in the transfer service. Use the schema validation APIs rather than adding datatype checks in storage, settings, sync, or transfer code.
 
 To add a persistent field:
 

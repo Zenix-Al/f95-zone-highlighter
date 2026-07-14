@@ -1,6 +1,6 @@
 import { stateManager } from "../../config.js";
 import { createEl } from "../../utils/dom.js";
-import { showToast } from "../../ui/components/toast.js";
+import { showToast } from "../components/toast.js";
 import {
   CONFIG_TRANSFER_DIALOG_ID,
   CONFIG_TRANSFER_ERROR_ID,
@@ -31,12 +31,8 @@ export function ensureConfigTransferErrorElement() {
   });
 
   const actions = panel.querySelector(".config-dialog-actions");
-  if (actions) {
-    panel.insertBefore(el, actions);
-  } else {
-    panel.appendChild(el);
-  }
-
+  if (actions) panel.insertBefore(el, actions);
+  else panel.appendChild(el);
   return el;
 }
 
@@ -46,7 +42,6 @@ export function clearConfigTransferError() {
 
   const el = panel.querySelector(`#${CONFIG_TRANSFER_ERROR_ID}`);
   if (!el) return;
-
   el.textContent = "";
   el.style.display = "none";
 }
@@ -60,6 +55,5 @@ export function showConfigTransferError(message) {
     el.textContent = text;
     el.style.display = "block";
   }
-
   showToast(text, ERROR_TOAST_DURATION);
 }

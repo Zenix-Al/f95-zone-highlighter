@@ -21,7 +21,12 @@
     "check:manifest": "node scripts/check-feature-manifest.cjs",
     "check:docs": "node scripts/check-docs.cjs",
     "check:inventory": "node scripts/check-inventory.cjs",
-    "build:smoke": "node build.js --smoke"
+    "build:smoke": "node build.js --smoke",
+    "audit:core": "node scripts/core-source-audit.cjs --output docs/architecture/core-size-baseline.json",
+    "audit:css": "node scripts/css-audit.cjs --output docs/architecture/css-audit.json --compare docs/architecture/css-audit-baseline.json",
+    "build:core:smoke": "node scripts/core-source-audit.cjs --smoke-build",
+    "check:core": "node scripts/core-source-audit.cjs --check docs/architecture/core-size-baseline.json",
+    "check:css": "node scripts/css-audit.cjs --check docs/architecture/css-audit.json --compare docs/architecture/css-audit-baseline.json"
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",

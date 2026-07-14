@@ -105,7 +105,7 @@ Direct download support is handled by the Masked + Direct Download Add-on for Bu
 - `src/features/*`: individual features
 - `src/config/*`: default config, runtime state, page definitions, selectors, timings
 - `src/core/*`: framework internals
-- `src/services/*`: persistence, sync, safety, metrics, tags
+- `src/services/*`: persistence, sync, safety, tags, and configuration transfer
 - `src/ui/*`: modal UI, settings renderers, components, CSS
 - `build.js`: bundle + userscript header generation + version bump
 - `tests/run.cjs`: lightweight Node test suite
@@ -282,7 +282,7 @@ export const myStyledFeature = createStyledFeature("My Styled Feature", {
   - `threadSettings` for thread page features
   - `globalSettings` for global features
 - `settingsService` merges saved config with defaults automatically.
-- If config import/export should accept the key, update `src/features/config-transfer/validation.js`.
+- Mark import/export eligibility in `src/config/schema.js`; the transfer service reads the shared schema metadata.
 
 5. Add page definitions when needed
 
@@ -329,7 +329,7 @@ Base settings that are not owned by a feature can still live in `src/ui/settings
 
 - If config shape changes, ensure `loadData` merge/sanitize still works.
 - For cross-tab synced sections, keep `crossTabKeys` aligned.
-- If a setting is exportable/importable, update config-transfer validation.
+- If a setting is exportable/importable, update its `exportable` metadata in `src/config/schema.js`.
 
 8. Validate
 

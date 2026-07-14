@@ -107,16 +107,6 @@ export const defaultAddonsSettings = {
   },
 };
 
-export const defaultMetrics = {
-  retried: 0,
-  succeeded: 0,
-  failed: 0,
-  avgCache: 0,
-  highest: 0,
-  lowest: 0,
-  mean: 0,
-};
-
 // Persisted baseline values belong here; schema.js supplies constraints and metadata.
 export const defaultTags = [];
 export const defaultPrefixes = { items: [], categories: {} };

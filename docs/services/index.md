@@ -7,9 +7,7 @@ Services are singletons that handle cross-cutting concerns—they sit below feat
 <!-- GENERATED:SERVICE-INVENTORY:START -->
 - `addonsService.js` — `src/services/addonsService.js`
 - `configChangeApplication.js` — `src/services/configChangeApplication.js`
-- `configMigrationService.js` — `src/services/configMigrationService.js`
-- `configTransferService.js` — `src/services/configTransferService.js`
-- `metricsService.js` — `src/services/metricsService.js`
+- `configTransfer/index.js` — `src/services/configTransfer/index.js`
 - `notificationService.js` — `src/services/notificationService.js`
 - `prefixService.js` — `src/services/prefixService.js`
 - `safetyService.js` — `src/services/safetyService.js`
@@ -22,8 +20,8 @@ Services are singletons that handle cross-cutting concerns—they sit below feat
 ### `settingsService.js`
 Handles reading and writing the userscript configuration to/from local storage or `GM_setValue`/`GM_getValue`. It ensures that `src/config.js` is always kept in sync with persisted data.
 
-### [configTransferService.js](config-transfer.md)
-Owns the configuration transfer document format, schema-backed import validation, supported legacy-format migration, read-only preview, and transactional import commits. The config-transfer feature keeps file selection, downloads, dialog rendering, and user-facing messages in the UI layer.
+### [configTransfer/index.js](config-transfer.md)
+Owns the configuration transfer document format, schema-backed import validation, supported legacy-format normalization, read-only preview, and transactional import commits. Browser file selection, downloads, dialog rendering, and user-facing messages live in `src/ui/configTransfer/`.
 
 ### `tagsService.js`
 Responsible for asynchronous operations related to thread tags. It fetches, parses, and caches tag data so that features (like `latest-overlay`) can quickly look up whether a thread is "Completed", "On Hold", etc.
@@ -36,9 +34,6 @@ Intercepts and caches XHR/Fetch network responses early in the page load lifecyc
 
 ### `safetyService.js`
 Validates configuration thresholds and sanitizes data to prevent malicious injections or corrupt state from crashing the script.
-
-### `metricsService.js`
-A lightweight tracker for feature performance and usage (usually tied into `featureHealth.js`).
 
 ## Usage
 Features can import services directly. For example, a feature might call `saveConfigKeys()` from `settingsService.js` when the user clicks a custom UI button.

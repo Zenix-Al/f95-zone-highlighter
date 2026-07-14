@@ -1,16 +1,26 @@
-import { buildConfigExport, commitConfigImport } from "../../services/configTransferService.js";
-import { openSettingsDialog } from "../../ui/components/dialog.js";
-import { showToast } from "../../ui/components/toast.js";
+import {
+  buildConfigExport,
+  commitConfigImport,
+} from "../../services/configTransfer/index.js";
+import { openSettingsDialog } from "../components/dialog.js";
+import { showToast } from "../components/toast.js";
 import {
   downloadJsonFile,
   formatDateForFilename,
-  pickJsonFile,
+  createJsonFilePicker,
 } from "./transferIO.js";
 import {
   clearConfigTransferError,
   ensureConfigTransferErrorElement,
   showConfigTransferError,
 } from "./dialogError.js";
+
+let activePicker = null;
+
+function cancelActivePicker() {
+  activePicker?.cancel();
+  activePicker = null;
+}
 
 async function exportSettingsToFile() {
   clearConfigTransferError();
@@ -23,7 +33,11 @@ async function exportSettingsToFile() {
 
 async function importSettingsFromFile() {
   clearConfigTransferError();
-  const file = await pickJsonFile();
+  cancelActivePicker();
+  const picker = createJsonFilePicker();
+  activePicker = picker;
+  const file = await picker.promise;
+  if (activePicker === picker) activePicker = null;
   if (!file) return;
 
   const isJsonName = String(file.name || "")
@@ -71,11 +85,14 @@ const configTransferDialogMeta = {
 };
 
 export function openConfigTransferDialog() {
-  openSettingsDialog({
+  cancelActivePicker();
+  const dialog = openSettingsDialog({
     title: "Import / Export Settings",
     description: "Export config to a JSON file. Import accepts JSON files only.",
     metaMap: configTransferDialogMeta,
+    onClose: cancelActivePicker,
   });
   ensureConfigTransferErrorElement();
   clearConfigTransferError();
+  return dialog;
 }
