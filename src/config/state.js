@@ -8,7 +8,6 @@ import {
   defaultGlobalSettings,
   defaultAddonsSettings,
   defaultAddonsServiceSettings,
-  defaultMetrics,
   defaultPrefixes,
   defaultSavedNotifID,
   defaultTags,
@@ -25,7 +24,6 @@ export let config = {
   threadSettings: { ...defaultThreadSetting },
   globalSettings: { ...defaultGlobalSettings },
   latestSettings: { ...defaultLatestSettings },
-  metrics: { ...defaultMetrics },
   addons: {
     trustedIds: [...defaultAddonsSettings.trustedIds],
     byAddon: { ...defaultAddonsSettings.byAddon },

@@ -1,12 +1,11 @@
-import { config } from "../config.js";
+import { config } from "../../config.js";
 import {
-  CONFIG_SCHEMA_VERSION,
   getConfigPathMetadata,
   getExportableConfigKeys,
   validateConfig,
-} from "../config/schema.js";
-import { migrateConfigData } from "./configMigrationService.js";
-import { commitConfig } from "./settingsService.js";
+} from "../../config/schema.js";
+import { CONFIG_SCHEMA_VERSION } from "../../config/persistence.js";
+import { commitConfig } from "../settingsService.js";
 
 export const CONFIG_TRANSFER_FORMAT_VERSION = 1;
 
@@ -24,15 +23,6 @@ const LEGACY_THREAD_KEYS = Object.freeze([
   "directDownloadHealth",
 ]);
 
-function clone(value) {
-  if (value === undefined) return undefined;
-  return JSON.parse(JSON.stringify(value));
-}
-
-function isPlainObject(value) {
-  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
-}
-
 function issue(path, code, expected, value) {
   return {
     path: String(path || ""),
@@ -42,9 +32,18 @@ function issue(path, code, expected, value) {
   };
 }
 
+function isPlainObject(value) {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
 function applicationVersion() {
   const version = globalThis.GM_info?.script?.version;
   return typeof version === "string" && version.trim() ? version.trim() : "unknown";
+}
+
+function clone(value) {
+  if (value === undefined) return undefined;
+  return JSON.parse(JSON.stringify(value));
 }
 
 function diffPaths(before, after, prefix = "") {
@@ -125,6 +124,23 @@ function normalizeImportSettings(settings) {
   if (Object.hasOwn(normalized, "tags")) normalized.tags = normalizeLegacyTags(normalized.tags);
   for (const key of ["preferredTags", "excludedTags", "markedTags"]) {
     if (Object.hasOwn(normalized, key)) normalized[key] = normalizeLegacyIdArray(normalized[key]);
+  }
+  return normalized;
+}
+
+function normalizeLegacyTransferSettings(settings) {
+  const normalized = normalizeImportSettings(settings);
+  if (!isPlainObject(normalized)) return normalized;
+  if (typeof normalized.minVersion === "number") {
+    const latestSettings = isPlainObject(normalized.latestSettings) ? normalized.latestSettings : {};
+    if (!Object.hasOwn(latestSettings, "minVersion")) {
+      normalized.latestSettings = { ...latestSettings, minVersion: normalized.minVersion };
+    }
+    delete normalized.minVersion;
+  }
+  if (isPlainObject(normalized.threadSettings)) {
+    normalized.threadSettings = { ...normalized.threadSettings };
+    for (const key of LEGACY_THREAD_KEYS) delete normalized.threadSettings[key];
   }
   return normalized;
 }
@@ -248,18 +264,14 @@ export function previewConfigImport(input) {
   let settings = document.settings;
   const warnings = [...document.warnings];
   if (document.schemaVersion < CONFIG_SCHEMA_VERSION || document.formatVersion < CONFIG_TRANSFER_FORMAT_VERSION) {
-    const legacyValidationInput = clone(settings);
+    const legacyValidationInput = normalizeLegacyTransferSettings(settings);
     if (isPlainObject(legacyValidationInput)) {
       for (const key of LEGACY_IMPORT_KEYS) delete legacyValidationInput[key];
-      if (isPlainObject(legacyValidationInput.threadSettings)) {
-        legacyValidationInput.threadSettings = { ...legacyValidationInput.threadSettings };
-        for (const key of LEGACY_THREAD_KEYS) delete legacyValidationInput.threadSettings[key];
-      }
     }
     const legacyValidation = validateConfig(legacyValidationInput, { mode: "strict", partial: true });
     if (!legacyValidation.valid) return { ok: false, issues: legacyValidation.issues, warnings };
     try {
-      settings = migrateConfigData(settings, document.schemaVersion);
+      settings = normalizeLegacyTransferSettings(settings);
       warnings.push({ code: "migrated", message: "A supported legacy configuration format was normalized." });
     } catch {
       return { ok: false, issues: [issue("schemaVersion", "migration_failed", "supported configuration format", document.schemaVersion)], warnings };

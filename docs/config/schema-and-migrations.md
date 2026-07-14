@@ -1,29 +1,29 @@
 # Config Schema and Migrations
 
-This document describes the configuration schema, migration contract, and recommended practices for safe, testable upgrades.
+This document describes the configuration schema, current persisted version policy, and recommended practices for safe, testable upgrades.
 
 ## Goals
 
 - Provide a single source of schema truth and versioning for configuration.
-- Make migrations deterministic, idempotent, and testable.
+- Keep persisted configuration at schema version `1`; unsupported older versions recover from backup or defaults.
 - Ensure config updates are atomic and recoverable on failure.
 - Support cross-tab synchronization with revision metadata.
 
 ## Schema basics
 
 - Default values live in `src/config/defaults.js`; they are not the validation contract. Explicit descriptors and metadata live in `src/config/schema.js`.
-- The schema exposes `validateConfig`, `validateConfigSection`, `sanitizeConfig`, `mergeWithDefaults`, `getDefaultConfig`, `getExportableConfigKeys`, `getSyncedConfigPaths`, and `getConfigPathMetadata`. Strict mode rejects unknown or invalid values, tolerant mode reports issues while preserving valid siblings and filling defaults, and migration mode accepts only documented legacy input shapes.
+- The schema exposes `validateConfig`, `validateConfigSection`, `sanitizeConfig`, `mergeWithDefaults`, `getDefaultConfig`, `getExportableConfigKeys`, `getSyncedConfigPaths`, and `getConfigPathMetadata`. Strict mode rejects unknown or invalid values; tolerant mode reports issues while preserving valid siblings and filling defaults.
 - Schema issues contain a path, stable code, expected constraint, and safe received-type summary. Schema validation is pure: storage, migration writes, sync subscriptions, UI effects, and transfer-document parsing remain in their owning services.
 - Persisted configuration should store an explicit `schemaVersion` at top-level alongside configuration keys, e.g.: 
 
 ```json
 {
-  "schemaVersion": 3,
+  "schemaVersion": 1,
   "globalSettings": { ... }
 }
 ```
 
-- Keep schema changes additive when possible. If removal is required, provide a migration that transforms old keys into the new shape.
+- Keep schema changes additive when possible. Persisted storage currently has zero migration steps; transfer-document normalization remains separate from persisted-envelope loading.
 
 ### Adding a persistent field
 
@@ -32,77 +32,45 @@ This document describes the configuration schema, migration contract, and recomm
 3. Route boundary validation through the shared schema API and add tests for default/schema consistency, strict rejection, tolerant recovery, and metadata derivation.
 4. Keep persistence, migration, sync, effects, and import/export format responsibilities in their existing modules.
 
-## Migration contract
+## Persisted version policy
 
-Migrations should follow a strict contract so they are safe to run in build/CI, in production, and when replayed during cross-tab sync.
+1. `CONFIG_SCHEMA_VERSION` remains `1` in `src/config/persistence.js`.
+2. `CONFIG_MIGRATIONS` is an immutable empty registry and `CONFIG_MIGRATION_COUNT` is `0`.
+3. Version `0` and other mismatches are unsupported persisted envelopes; the settings repository uses last-known-good recovery or defaults.
+4. Tolerant sanitization preserves valid siblings and does not rewrite the canonical envelope.
 
-1. Idempotent: running the same migration multiple times must yield the same result.
-2. Deterministic: no random data or timestamp-dependent branching.
-3. Small, composable steps: provide a migration per `schemaVersion` increment.
-4. Validate output: after migration, validate the resulting config against expectations before swapping into active state.
-5. Atomic replace: perform migrations in a temporary object and replace the active config only after all migrations succeed.
-6. Logging and rollback: on failure, log the reason, preserve the previous persisted snapshot (keep lastKnownGood), and do not replace active config.
-
-## Migration implementation pattern (example)
+## Load and recovery pattern
 
 1. Load defaults.
-2. Read persisted config.
-3. Build `working = { ...defaults, ...persisted }` (merge as appropriate).
-4. For each migration `M_n` where `n` > `persisted.schemaVersion` and `n <= currentSchemaVersion`, run `working = M_n(working)`.
-5. Validate `working`.
-6. Persist `working` atomically with new `schemaVersion` and revision metadata.
+2. Read the canonical version-1 envelope.
+3. Sanitize current-version data on a clone and apply the result through the shared config-change boundary.
+4. For an unsupported version, validate the last-known-good envelope and recover it atomically, or load defaults.
+5. Persist only explicit commits or backup recovery; sanitized canonical loads do not write storage.
 
 Notes:
-- Prefer explicit top-level section writes where the storage backend requires it (e.g., `storage.set('latestSettings', value)`) but ensure the migration step can persist a snapshot backup if atomic multi-key writes are not available.
+- Storage I/O remains in `storageAdapter`; persistence policy and recovery remain in `settingsService`.
 
 ## Validation and test strategy
 
-- Maintain a test suite with fixtures for every supported input `schemaVersion` and an expectation for the target version.
+- Test the current version, unsupported versions, backup recovery, tolerant sibling preservation, and zero migration calls.
 - Tests should assert both structural correctness and that no user-visible semantics regress (e.g., a toggle remains true/false where intended).
-- Run migration tests in CI on every PR that modifies defaults or migration code.
+- Run persistence tests in CI on every PR that modifies defaults or the persistence contract.
 
 ## Cross-tab synchronization implications
 
 - Persisted writes carry `{ schemaVersion, revision, writerId, updatedAt }`; sync compares that tuple deterministically.
-- When applying a remote change with `syncService`, do not re-run migrations that are already applied — migrations should only run when the local persisted `schemaVersion` is less than the code `currentSchemaVersion`.
-- When a migration changes persisted keys that trigger effects, ensure `metaRegistry` covers those sections so other tabs can replay effects deterministically.
+- When applying a remote change with `syncService`, validate the version-1 envelope and use the shared config-change application pipeline; the sync path does not migrate or persist the remote change.
+- When a persisted field changes, ensure `metaRegistry` covers its section so other tabs can replay effects deterministically.
 
 ## Backups and recovery
 
-- Keep a `lastKnownGood` snapshot in storage after successful migrations; allow a manual restore path.
-- Optionally keep the last N snapshots for recovery from accidental destructive migrations.
+- Keep a `lastKnownGood` snapshot in storage after successful commits and use it for bounded recovery from corrupt canonical data.
 
-## Practical checklist for adding a migration
-
-- [ ] Add a migration function file under `src/config/migrations/` named `migrate-v<N>.js` exporting `migrate(workingConfig)`.
-- [ ] Add tests under `tests/migrations/` for input fixture(s) and expected output.
-- [ ] Update `src/config/index.js` (or migration runner) to include the new migration in the ordered list.
-- [ ] Verify `npm test` passes locally and in CI.
-- [ ] Run `npm run validate:manifest` (or other repo checks) if the migration touches features or sync metadata.
-
-## Example migration snippet
-
-```js
-// src/config/migrations/migrate-v3.js
-module.exports.migrate = function migrateV3(working) {
-  // idempotent transform
-  if (!working) working = {};
-  if (working.schemaVersion >= 3) return working;
-  const copy = JSON.parse(JSON.stringify(working));
-  // move old key to new structure
-  if (copy.oldFeatureFlag !== undefined) {
-    copy.newFeature = { enabled: !!copy.oldFeatureFlag };
-    delete copy.oldFeatureFlag;
-  }
-  copy.schemaVersion = 3;
-  return copy;
-};
-```
+There is no persisted migration runner or migration directory in the current contract. Future schema changes require an explicitly scoped design decision; this package does not add a generic migration framework.
 
 ## Monitoring and observability
 
-- Emit a health event when migrations run, including duration and any errors.
-- Surface migration failure info in the feature-health report with redaction of sensitive values.
+- Emit one bounded health event for a sanitized load or recovery outcome, with redacted issue details.
 
 ---
 

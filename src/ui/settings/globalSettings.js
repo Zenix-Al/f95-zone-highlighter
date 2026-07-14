@@ -1,4 +1,4 @@
-import { openConfigTransferDialog } from "../../features/config-transfer/index.js";
+import { openConfigTransferDialog } from "../configTransfer/index.js";
 import { crossTabSyncFeature } from "../../services/syncService";
 import { updateButtonVisibility } from "../components/configButton";
 import { createEnabledDisabledToast, createToggleSetting } from "./metaFactory";

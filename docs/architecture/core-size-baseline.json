@@ -1,0 +1,1977 @@
+{
+  "reportSchemaVersion": 1,
+  "tool": "core-source-audit",
+  "reportedObservation": {
+    "value": 480,
+    "unit": "KB",
+    "note": "User-reported approximate core size; not a measured baseline."
+  },
+  "scope": {
+    "includedAreas": [
+      "src/config/**",
+      "src/core/**",
+      "src/services/**",
+      "src/features/**",
+      "src/ui/**"
+    ],
+    "excludedHints": [
+      "src/services/addons/",
+      "src/services/addonsService.js",
+      "src/ui/components/addons/",
+      "src/ui/renderers/addonsRenderer.js",
+      "src/features/latest-ajax-error-recovery/",
+      "src/**/test/**",
+      "src/**/tests/**",
+      "src/generated/**",
+      "dist/**",
+      "tests/**"
+    ]
+  },
+  "authored": {
+    "fileCount": 118,
+    "physicalLines": 15001,
+    "meaningfulLines": 12859,
+    "authoredBytes": 483481,
+    "bytesByArea": {
+      "config": 31297,
+      "core": 107204,
+      "services": 86630,
+      "features": 105675,
+      "ui": 152675
+    },
+    "largestFiles": [
+      {
+        "path": "src/ui/assets/css.css",
+        "area": "ui",
+        "bytes": 32106,
+        "physicalLines": 1631,
+        "meaningfulLines": 1405,
+        "fanIn": 1,
+        "fanOut": 0,
+        "exports": []
+      },
+      {
+        "path": "src/config/schema.js",
+        "area": "config",
+        "bytes": 19512,
+        "physicalLines": 440,
+        "meaningfulLines": 408,
+        "fanIn": 4,
+        "fanOut": 2,
+        "exports": [
+          "getDefaultConfig",
+          "mergeWithDefaults",
+          "getExportableConfigKeys",
+          "getSyncedConfigPaths",
+          "getPersistedConfigPaths",
+          "getConfigPathMetadata",
+          "getSchemaPathIndex",
+          "validateConfigSection",
+          "validateConfig",
+          "sanitizeConfig",
+          "CONFIG_SCHEMA"
+        ]
+      },
+      {
+        "path": "src/services/fastCapture/fastCaptureService.js",
+        "area": "services",
+        "bytes": 17989,
+        "physicalLines": 492,
+        "meaningfulLines": 451,
+        "fanIn": 1,
+        "fanOut": 9,
+        "exports": [
+          "matchesFastCaptureUrl",
+          "processCompletedFastCapture",
+          "processCompletedFastCaptureError",
+          "enqueueFastCaptureProcessing",
+          "recoverFastCaptureFromPerformance",
+          "initFastCaptureAdapter",
+          "registerFastCaptureFeatures",
+          "refreshFastCaptureFeatures",
+          "getFastCaptureDiagnostics",
+          "resetFastCaptureAdapterForTests"
+        ]
+      },
+      {
+        "path": "src/features/latest-overlay/index.js",
+        "area": "features",
+        "bytes": 16599,
+        "physicalLines": 472,
+        "meaningfulLines": 446,
+        "fanIn": 2,
+        "fanOut": 10,
+        "exports": [
+          "overlaySettingsMeta",
+          "ratingWeightSetting",
+          "engagementWeightSetting",
+          "tagWeightSetting",
+          "modifierPreferredSetting",
+          "modifierCompletedSetting",
+          "modifierHighVersionSetting",
+          "modifierOnholdSetting",
+          "modifierAbandonedSetting",
+          "modifierExcludedSetting",
+          "modifierInvalidVersionSetting",
+          "resetLatestOverlaySettingsButton",
+          "overlayStyleSetting",
+          "latestOverlayFeature",
+          "reprocessAllTiles",
+          "resetTile",
+          "processTile"
+        ]
+      },
+      {
+        "path": "src/features/latest-overlay/scoreCalculator.js",
+        "area": "features",
+        "bytes": 15051,
+        "physicalLines": 389,
+        "meaningfulLines": 261,
+        "fanIn": 2,
+        "fanOut": 2,
+        "exports": [
+          "calculateTileScore",
+          "getScoreColorClass",
+          "applyScoreDisplay",
+          "removeScoreDisplay"
+        ]
+      },
+      {
+        "path": "src/core/sound/instrumentBank.js",
+        "area": "core",
+        "bytes": 13521,
+        "physicalLines": 387,
+        "meaningfulLines": 300,
+        "fanIn": 0,
+        "fanOut": 1,
+        "exports": [
+          "makeBreathyInstrument",
+          "makeWaterInstrument",
+          "makeSlimeInstrument",
+          "makeSimpleInstrument",
+          "makeGlassChime",
+          "makeSilkyWhoosh",
+          "makeElectricClick",
+          "makeZapActivate",
+          "makeHumDeactivate"
+        ]
+      },
+      {
+        "path": "src/ui/components/tag-search/tagDrag.js",
+        "area": "ui",
+        "bytes": 13252,
+        "physicalLines": 433,
+        "meaningfulLines": 361,
+        "fanIn": 1,
+        "fanOut": 3,
+        "exports": [
+          "ensurePointerCleanupHooks",
+          "ensureContainerDropHandlers",
+          "createTagChipItem"
+        ]
+      },
+      {
+        "path": "src/core/taskQueue.js",
+        "area": "core",
+        "bytes": 12467,
+        "physicalLines": 375,
+        "meaningfulLines": 335,
+        "fanIn": 1,
+        "fanOut": 3,
+        "exports": [
+          "getTaskQueueDiagnostics",
+          "pauseAllTaskQueues",
+          "resumeAllTaskQueues",
+          "disposeAllTaskQueues",
+          "createTaskQueue",
+          "createDebouncedTask"
+        ]
+      },
+      {
+        "path": "src/services/configTransfer/index.js",
+        "area": "services",
+        "bytes": 12283,
+        "physicalLines": 312,
+        "meaningfulLines": 278,
+        "fanIn": 1,
+        "fanOut": 3,
+        "exports": [
+          "CONFIG_TRANSFER_FORMAT_VERSION",
+          "buildConfigExport",
+          "previewConfigImport",
+          "commitConfigImport"
+        ]
+      },
+      {
+        "path": "src/ui/components/featureHealth/index.js",
+        "area": "ui",
+        "bytes": 11712,
+        "physicalLines": 311,
+        "meaningfulLines": 276,
+        "fanIn": 1,
+        "fanOut": 2,
+        "exports": [
+          "showFeatureHealthBox"
+        ]
+      },
+      {
+        "path": "src/ui/components/dialog.js",
+        "area": "ui",
+        "bytes": 11564,
+        "physicalLines": 402,
+        "meaningfulLines": 337,
+        "fanIn": 3,
+        "fanOut": 3,
+        "exports": [
+          "openConfirmDialog",
+          "openTextPrompt",
+          "openReorderDialog",
+          "openSettingsDialog"
+        ]
+      },
+      {
+        "path": "src/services/settingsService.js",
+        "area": "services",
+        "bytes": 11070,
+        "physicalLines": 301,
+        "meaningfulLines": 275,
+        "fanIn": 9,
+        "fanOut": 5,
+        "exports": [
+          "CONFIG_ENVELOPE_KEY",
+          "CONFIG_BACKUP_KEY",
+          "CONFIG_RECOVERY_MARKER_KEY",
+          "CONFIG_WRITER_ID",
+          "validateConfigEnvelope",
+          "loadConfig",
+          "commitConfig",
+          "saveConfigKeys",
+          "loadData"
+        ]
+      },
+      {
+        "path": "src/core/observer.js",
+        "area": "core",
+        "bytes": 9534,
+        "physicalLines": 311,
+        "meaningfulLines": 268,
+        "fanIn": 4,
+        "fanOut": 3,
+        "exports": [
+          "getObserverProfileSnapshot",
+          "resetObserverProfileSnapshot",
+          "setObserverProfilingEnabled",
+          "addObserverCallback",
+          "removeObserverCallback",
+          "removeAllObserverCallbacks"
+        ]
+      },
+      {
+        "path": "src/ui/components/darkColorPicker.js",
+        "area": "ui",
+        "bytes": 9258,
+        "physicalLines": 336,
+        "meaningfulLines": 288,
+        "fanIn": 1,
+        "fanOut": 1,
+        "exports": [
+          "attachDarkColorPicker"
+        ]
+      },
+      {
+        "path": "src/services/prefixService.js",
+        "area": "services",
+        "bytes": 8862,
+        "physicalLines": 238,
+        "meaningfulLines": 208,
+        "fanIn": 1,
+        "fanOut": 4,
+        "exports": [
+          "normalizePrefixesFromLatestUpdates",
+          "updatePrefixes"
+        ]
+      },
+      {
+        "path": "src/services/tagsService.js",
+        "area": "services",
+        "bytes": 8799,
+        "physicalLines": 279,
+        "meaningfulLines": 237,
+        "fanIn": 1,
+        "fanOut": 7,
+        "exports": [
+          "updateSearch",
+          "showAllTags",
+          "updateTags"
+        ]
+      },
+      {
+        "path": "src/core/featureFactory.js",
+        "area": "core",
+        "bytes": 8680,
+        "physicalLines": 248,
+        "meaningfulLines": 222,
+        "fanIn": 4,
+        "fanOut": 4,
+        "exports": [
+          "initGlobalErrorListeners",
+          "resetGlobalErrorListeners",
+          "createLifecycleContext",
+          "resolveFeatureId",
+          "normalizeFeatureBootstrapMode",
+          "createFeature"
+        ]
+      },
+      {
+        "path": "src/core/featureHealth.js",
+        "area": "core",
+        "bytes": 8088,
+        "physicalLines": 165,
+        "meaningfulLines": 148,
+        "fanIn": 16,
+        "fanOut": 0,
+        "exports": [
+          "HEALTH_ERROR_CODE_NAMESPACES",
+          "redactDiagnosticValue",
+          "recordHealthEvent",
+          "getHealthEvents",
+          "clearHealthEventsForTests",
+          "registerDiagnosticsProvider",
+          "getHealthDiagnostics",
+          "setFeatureStatus",
+          "reportFeatureFailure",
+          "reportFeatureWarning",
+          "reportRuntimeError",
+          "recordSelectorDiagnostic",
+          "pushFeatureError",
+          "getFeatureErrors",
+          "pushRuntimeError",
+          "getRuntimeErrors",
+          "getFeatureStatus",
+          "getAllFeatureStatuses",
+          "clearFeatureStatus"
+        ]
+      },
+      {
+        "path": "src/ui/components/tag-search/index.js",
+        "area": "ui",
+        "bytes": 7782,
+        "physicalLines": 301,
+        "meaningfulLines": 256,
+        "fanIn": 2,
+        "fanOut": 3,
+        "exports": [
+          "renderList",
+          "renderPreferred",
+          "renderExcluded",
+          "renderMarked",
+          "initTagSearchListeners"
+        ]
+      },
+      {
+        "path": "src/features/latest-overlay/ratingEngagementHighlight.js",
+        "area": "features",
+        "bytes": 7745,
+        "physicalLines": 221,
+        "meaningfulLines": 139,
+        "fanIn": 2,
+        "fanOut": 3,
+        "exports": [
+          "calculateEngagementRatio",
+          "getRatingHighlightClass",
+          "getEngagementHighlightClass",
+          "getRecordHighlightClasses",
+          "applyHighlightClasses",
+          "removeHighlightClasses"
+        ]
+      }
+    ],
+    "graph": {
+      "files": [
+        {
+          "path": "src/ui/assets/css.css",
+          "fanIn": 1,
+          "fanOut": 0
+        },
+        {
+          "path": "src/config/schema.js",
+          "fanIn": 4,
+          "fanOut": 2
+        },
+        {
+          "path": "src/services/fastCapture/fastCaptureService.js",
+          "fanIn": 1,
+          "fanOut": 9
+        },
+        {
+          "path": "src/features/latest-overlay/index.js",
+          "fanIn": 2,
+          "fanOut": 10
+        },
+        {
+          "path": "src/features/latest-overlay/scoreCalculator.js",
+          "fanIn": 2,
+          "fanOut": 2
+        },
+        {
+          "path": "src/core/sound/instrumentBank.js",
+          "fanIn": 0,
+          "fanOut": 1
+        },
+        {
+          "path": "src/ui/components/tag-search/tagDrag.js",
+          "fanIn": 1,
+          "fanOut": 3
+        },
+        {
+          "path": "src/core/taskQueue.js",
+          "fanIn": 1,
+          "fanOut": 3
+        },
+        {
+          "path": "src/services/configTransfer/index.js",
+          "fanIn": 1,
+          "fanOut": 3
+        },
+        {
+          "path": "src/ui/components/featureHealth/index.js",
+          "fanIn": 1,
+          "fanOut": 2
+        },
+        {
+          "path": "src/ui/components/dialog.js",
+          "fanIn": 3,
+          "fanOut": 3
+        },
+        {
+          "path": "src/services/settingsService.js",
+          "fanIn": 9,
+          "fanOut": 5
+        },
+        {
+          "path": "src/core/observer.js",
+          "fanIn": 4,
+          "fanOut": 3
+        },
+        {
+          "path": "src/ui/components/darkColorPicker.js",
+          "fanIn": 1,
+          "fanOut": 1
+        },
+        {
+          "path": "src/services/prefixService.js",
+          "fanIn": 1,
+          "fanOut": 4
+        },
+        {
+          "path": "src/services/tagsService.js",
+          "fanIn": 1,
+          "fanOut": 7
+        },
+        {
+          "path": "src/core/featureFactory.js",
+          "fanIn": 4,
+          "fanOut": 4
+        },
+        {
+          "path": "src/core/featureHealth.js",
+          "fanIn": 16,
+          "fanOut": 0
+        },
+        {
+          "path": "src/ui/components/tag-search/index.js",
+          "fanIn": 2,
+          "fanOut": 3
+        },
+        {
+          "path": "src/features/latest-overlay/ratingEngagementHighlight.js",
+          "fanIn": 2,
+          "fanOut": 3
+        },
+        {
+          "path": "src/core/bootstrap.js",
+          "fanIn": 1,
+          "fanOut": 1
+        },
+        {
+          "path": "src/features/latest-overlay/handler.js",
+          "fanIn": 1,
+          "fanOut": 7
+        },
+        {
+          "path": "src/ui/assets/ui.html",
+          "fanIn": 1,
+          "fanOut": 0
+        },
+        {
+          "path": "src/features/latest-overlay/tileProcessor.js",
+          "fanIn": 1,
+          "fanOut": 9
+        },
+        {
+          "path": "src/core/teardown.js",
+          "fanIn": 0,
+          "fanOut": 12
+        },
+        {
+          "path": "src/core/resourceManager.js",
+          "fanIn": 7,
+          "fanOut": 1
+        },
+        {
+          "path": "src/services/fastCapture/fastCaptureStore.js",
+          "fanIn": 2,
+          "fanOut": 2
+        },
+        {
+          "path": "src/ui/settings/metaRegistry.js",
+          "fanIn": 2,
+          "fanOut": 0
+        },
+        {
+          "path": "src/features/thread-overlay/index.js",
+          "fanIn": 1,
+          "fanOut": 7
+        },
+        {
+          "path": "src/features/dismiss-notification/handler.js",
+          "fanIn": 1,
+          "fanOut": 4
+        },
+        {
+          "path": "src/core/featureCatalog.js",
+          "fanIn": 1,
+          "fanOut": 2
+        },
+        {
+          "path": "src/features/latest-overlay/overlayEvaluator.js",
+          "fanIn": 1,
+          "fanOut": 3
+        },
+        {
+          "path": "src/services/fastCapture/pageCaptureTransport.js",
+          "fanIn": 1,
+          "fanOut": 1
+        },
+        {
+          "path": "src/services/configChangeApplication.js",
+          "fanIn": 2,
+          "fanOut": 5
+        },
+        {
+          "path": "src/ui/settings/panelNavigation.js",
+          "fanIn": 1,
+          "fanOut": 1
+        },
+        {
+          "path": "src/features/latest-control/index.js",
+          "fanIn": 0,
+          "fanOut": 6
+        },
+        {
+          "path": "src/ui/renderers/renderSetting.js",
+          "fanIn": 2,
+          "fanOut": 4
+        },
+        {
+          "path": "src/services/syncService.js",
+          "fanIn": 2,
+          "fanOut": 6
+        },
+        {
+          "path": "src/config/state.js",
+          "fanIn": 2,
+          "fanOut": 3
+        },
+        {
+          "path": "src/core/StateManager.js",
+          "fanIn": 1,
+          "fanOut": 0
+        },
+        {
+          "path": "src/core/sound/instrument.js",
+          "fanIn": 1,
+          "fanOut": 1
+        },
+        {
+          "path": "src/core/listenerRegistry.js",
+          "fanIn": 10,
+          "fanOut": 2
+        },
+        {
+          "path": "src/ui/components/tag-search/tagMutations.js",
+          "fanIn": 1,
+          "fanOut": 3
+        },
+        {
+          "path": "src/features/latest-overlay/tilePatcher.js",
+          "fanIn": 2,
+          "fanOut": 5
+        },
+        {
+          "path": "src/features/latest-overlay/overlayCache.js",
+          "fanIn": 5,
+          "fanOut": 1
+        },
+        {
+          "path": "src/ui/components/configButton.js",
+          "fanIn": 2,
+          "fanOut": 1
+        },
+        {
+          "path": "src/config/latestOverlayScoring.js",
+          "fanIn": 2,
+          "fanOut": 0
+        },
+        {
+          "path": "src/features/latest-overlay/style.css",
+          "fanIn": 1,
+          "fanOut": 0
+        },
+        {
+          "path": "src/ui/components/toast.js",
+          "fanIn": 9,
+          "fanOut": 1
+        },
+        {
+          "path": "src/features/signature-collapse/index.js",
+          "fanIn": 0,
+          "fanOut": 6
+        },
+        {
+          "path": "src/features/latest-overlay/hoverTagHandler.js",
+          "fanIn": 1,
+          "fanOut": 2
+        },
+        {
+          "path": "src/ui/configTransfer/index.js",
+          "fanIn": 1,
+          "fanOut": 5
+        },
+        {
+          "path": "src/core/styleRegistry.js",
+          "fanIn": 3,
+          "fanOut": 1
+        },
+        {
+          "path": "src/features/wide-latest/index.js",
+          "fanIn": 0,
+          "fanOut": 3
+        },
+        {
+          "path": "src/features/audio/index.js",
+          "fanIn": 0,
+          "fanOut": 1
+        },
+        {
+          "path": "src/config/defaults.js",
+          "fanIn": 3,
+          "fanOut": 0
+        },
+        {
+          "path": "src/core/pageDetection.js",
+          "fanIn": 0,
+          "fanOut": 2
+        },
+        {
+          "path": "src/features/latest-overlay/latestDataIndex.js",
+          "fanIn": 3,
+          "fanOut": 0
+        },
+        {
+          "path": "src/core/routeState.js",
+          "fanIn": 4,
+          "fanOut": 1
+        },
+        {
+          "path": "src/features/wide-latest/style.css",
+          "fanIn": 1,
+          "fanOut": 0
+        },
+        {
+          "path": "src/services/fastCapture/sandboxCaptureTransport.js",
+          "fanIn": 1,
+          "fanOut": 0
+        },
+        {
+          "path": "src/ui/components/helpMessage.js",
+          "fanIn": 2,
+          "fanOut": 1
+        },
+        {
+          "path": "src/core/routeObserver.js",
+          "fanIn": 1,
+          "fanOut": 3
+        },
+        {
+          "path": "src/ui/settings/globalSettings.js",
+          "fanIn": 1,
+          "fanOut": 7
+        },
+        {
+          "path": "src/core/pageBridge.js",
+          "fanIn": 3,
+          "fanOut": 0
+        },
+        {
+          "path": "src/ui/settings/modalLifecycle.js",
+          "fanIn": 1,
+          "fanOut": 6
+        },
+        {
+          "path": "src/ui/settings/colorSettings.js",
+          "fanIn": 2,
+          "fanOut": 4
+        },
+        {
+          "path": "src/core/sound/index.js",
+          "fanIn": 3,
+          "fanOut": 1
+        },
+        {
+          "path": "src/ui/configTransfer/transferIO.js",
+          "fanIn": 1,
+          "fanOut": 2
+        },
+        {
+          "path": "src/ui/settingsRuntime/sectionsRegistry.js",
+          "fanIn": 3,
+          "fanOut": 2
+        },
+        {
+          "path": "src/services/safetyService.js",
+          "fanIn": 4,
+          "fanOut": 1
+        },
+        {
+          "path": "src/core/frameBudget.js",
+          "fanIn": 4,
+          "fanOut": 0
+        },
+        {
+          "path": "src/ui/helpers/updateColorStyle.js",
+          "fanIn": 3,
+          "fanOut": 2
+        },
+        {
+          "path": "src/features/wideForum/index.js",
+          "fanIn": 0,
+          "fanOut": 4
+        },
+        {
+          "path": "src/ui/components/modal.js",
+          "fanIn": 3,
+          "fanOut": 3
+        },
+        {
+          "path": "src/ui/configTransfer/dialogError.js",
+          "fanIn": 1,
+          "fanOut": 2
+        },
+        {
+          "path": "src/ui/settingsRuntime/effectTasks.js",
+          "fanIn": 5,
+          "fanOut": 5
+        },
+        {
+          "path": "src/features/dismiss-notification/index.js",
+          "fanIn": 0,
+          "fanOut": 4
+        },
+        {
+          "path": "src/features/latest-overlay/overlayOrder.js",
+          "fanIn": 4,
+          "fanOut": 0
+        },
+        {
+          "path": "src/services/fastCapture/captureQueue.js",
+          "fanIn": 1,
+          "fanOut": 1
+        },
+        {
+          "path": "src/ui/settings/tagsSettings.js",
+          "fanIn": 1,
+          "fanOut": 6
+        },
+        {
+          "path": "src/ui/settings/index.js",
+          "fanIn": 1,
+          "fanOut": 4
+        },
+        {
+          "path": "src/ui/settingsRuntime/prefs.js",
+          "fanIn": 2,
+          "fanOut": 1
+        },
+        {
+          "path": "src/core/createStyledFeature.js",
+          "fanIn": 6,
+          "fanOut": 2
+        },
+        {
+          "path": "src/features/signature-collapse/style.css",
+          "fanIn": 1,
+          "fanOut": 0
+        },
+        {
+          "path": "src/ui/renderers/coerceSettingValue.js",
+          "fanIn": 1,
+          "fanOut": 0
+        },
+        {
+          "path": "src/core/logger.js",
+          "fanIn": 23,
+          "fanOut": 0
+        },
+        {
+          "path": "src/ui/settings/metaFactory.js",
+          "fanIn": 9,
+          "fanOut": 0
+        },
+        {
+          "path": "src/ui/renderers/createInput.js",
+          "fanIn": 1,
+          "fanOut": 1
+        },
+        {
+          "path": "src/ui/components/settingsActions.js",
+          "fanIn": 1,
+          "fanOut": 8
+        },
+        {
+          "path": "src/services/fastCapture/rules.js",
+          "fanIn": 2,
+          "fanOut": 1
+        },
+        {
+          "path": "src/features/dismiss-notification/style.css",
+          "fanIn": 1,
+          "fanOut": 0
+        },
+        {
+          "path": "src/config/selectors.js",
+          "fanIn": 8,
+          "fanOut": 0
+        },
+        {
+          "path": "src/core/pageLifecycle.js",
+          "fanIn": 0,
+          "fanOut": 1
+        },
+        {
+          "path": "src/ui/components/listeners.js",
+          "fanIn": 1,
+          "fanOut": 2
+        },
+        {
+          "path": "src/ui/index.js",
+          "fanIn": 0,
+          "fanOut": 4
+        },
+        {
+          "path": "src/features/latest-overlay/tileStateFactory.js",
+          "fanIn": 1,
+          "fanOut": 2
+        },
+        {
+          "path": "src/services/storageAdapter.js",
+          "fanIn": 3,
+          "fanOut": 0
+        },
+        {
+          "path": "src/ui/renderers/applyEffects.js",
+          "fanIn": 1,
+          "fanOut": 1
+        },
+        {
+          "path": "src/services/notificationService.js",
+          "fanIn": 0,
+          "fanOut": 0
+        },
+        {
+          "path": "src/services/fastCapture/index.js",
+          "fanIn": 1,
+          "fanOut": 3
+        },
+        {
+          "path": "src/ui/renderers/settingsSection.js",
+          "fanIn": 2,
+          "fanOut": 2
+        },
+        {
+          "path": "src/core/createDebouncedTask.js",
+          "fanIn": 1,
+          "fanOut": 0
+        },
+        {
+          "path": "src/services/fastCapture/limits.js",
+          "fanIn": 3,
+          "fanOut": 0
+        },
+        {
+          "path": "src/config/persistence.js",
+          "fanIn": 4,
+          "fanOut": 0
+        },
+        {
+          "path": "src/ui/assets/document.css",
+          "fanIn": 1,
+          "fanOut": 0
+        },
+        {
+          "path": "src/ui/renderers/createLabel.js",
+          "fanIn": 1,
+          "fanOut": 0
+        },
+        {
+          "path": "src/ui/renderers/reRenderSetting.js",
+          "fanIn": 1,
+          "fanOut": 1
+        },
+        {
+          "path": "src/features/thread-overlay/style.css",
+          "fanIn": 1,
+          "fanOut": 0
+        },
+        {
+          "path": "src/features/wideForum/style.css",
+          "fanIn": 1,
+          "fanOut": 0
+        },
+        {
+          "path": "src/config/timings.js",
+          "fanIn": 3,
+          "fanOut": 0
+        },
+        {
+          "path": "src/core/featureScope.js",
+          "fanIn": 0,
+          "fanOut": 0
+        },
+        {
+          "path": "src/ui/helpers/cssInjector.js",
+          "fanIn": 1,
+          "fanOut": 3
+        },
+        {
+          "path": "src/config/pageDefinitions.js",
+          "fanIn": 3,
+          "fanOut": 0
+        },
+        {
+          "path": "src/ui/components/tag-search/tagEffects.js",
+          "fanIn": 1,
+          "fanOut": 1
+        },
+        {
+          "path": "src/ui/configTransfer/constants.js",
+          "fanIn": 1,
+          "fanOut": 0
+        },
+        {
+          "path": "src/config/index.js",
+          "fanIn": 3,
+          "fanOut": 5
+        },
+        {
+          "path": "src/ui/getShadowRoot.js",
+          "fanIn": 3,
+          "fanOut": 0
+        }
+      ],
+      "cycles": [
+        "src/core/sound/index.js -> src/core/sound/instrument.js",
+        "src/features/latest-overlay/index.js -> src/ui/settingsRuntime/effectTasks.js",
+        "src/ui/components/configButton.js -> src/ui/components/modal.js -> src/ui/settings/index.js -> src/ui/settings/globalSettings.js",
+        "src/ui/components/modal.js -> src/ui/settings/index.js -> src/ui/settings/modalLifecycle.js",
+        "src/ui/components/modal.js -> src/ui/settings/index.js -> src/ui/settings/modalLifecycle.js -> src/ui/components/listeners.js",
+        "src/ui/settingsRuntime/effectTasks.js -> src/features/thread-overlay/index.js"
+      ],
+      "crossBoundaryImports": [
+        {
+          "from": "config",
+          "to": "core",
+          "count": 1,
+          "examples": [
+            {
+              "from": "src/config/state.js",
+              "to": "src/core/StateManager.js"
+            }
+          ]
+        },
+        {
+          "from": "config",
+          "to": "features",
+          "count": 1,
+          "examples": [
+            {
+              "from": "src/config/schema.js",
+              "to": "src/features/latest-overlay/overlayOrder.js"
+            }
+          ]
+        },
+        {
+          "from": "core",
+          "to": "config",
+          "count": 1,
+          "examples": [
+            {
+              "from": "src/core/featureCatalog.js",
+              "to": "src/config/pageDefinitions.js"
+            }
+          ]
+        },
+        {
+          "from": "core",
+          "to": "ui",
+          "count": 1,
+          "examples": [
+            {
+              "from": "src/core/featureFactory.js",
+              "to": "src/ui/components/toast.js"
+            }
+          ]
+        },
+        {
+          "from": "features",
+          "to": "config",
+          "count": 12,
+          "examples": [
+            {
+              "from": "src/features/dismiss-notification/handler.js",
+              "to": "src/config/selectors.js"
+            },
+            {
+              "from": "src/features/latest-control/index.js",
+              "to": "src/config/selectors.js"
+            },
+            {
+              "from": "src/features/latest-control/index.js",
+              "to": "src/config/timings.js"
+            },
+            {
+              "from": "src/features/latest-overlay/ratingEngagementHighlight.js",
+              "to": "src/config/latestOverlayScoring.js"
+            },
+            {
+              "from": "src/features/latest-overlay/ratingEngagementHighlight.js",
+              "to": "src/config/selectors.js"
+            }
+          ]
+        },
+        {
+          "from": "features",
+          "to": "core",
+          "count": 21,
+          "examples": [
+            {
+              "from": "src/features/audio/index.js",
+              "to": "src/core/sound/index.js"
+            },
+            {
+              "from": "src/features/dismiss-notification/handler.js",
+              "to": "src/core/logger.js"
+            },
+            {
+              "from": "src/features/dismiss-notification/handler.js",
+              "to": "src/core/observer.js"
+            },
+            {
+              "from": "src/features/dismiss-notification/index.js",
+              "to": "src/core/createStyledFeature.js"
+            },
+            {
+              "from": "src/features/latest-control/index.js",
+              "to": "src/core/featureFactory.js"
+            }
+          ]
+        },
+        {
+          "from": "features",
+          "to": "services",
+          "count": 5,
+          "examples": [
+            {
+              "from": "src/features/dismiss-notification/handler.js",
+              "to": "src/services/settingsService.js"
+            },
+            {
+              "from": "src/features/latest-overlay/handler.js",
+              "to": "src/services/fastCapture/index.js"
+            },
+            {
+              "from": "src/features/latest-overlay/index.js",
+              "to": "src/services/safetyService.js"
+            },
+            {
+              "from": "src/features/latest-overlay/index.js",
+              "to": "src/services/settingsService.js"
+            },
+            {
+              "from": "src/features/thread-overlay/index.js",
+              "to": "src/services/safetyService.js"
+            }
+          ]
+        },
+        {
+          "from": "features",
+          "to": "ui",
+          "count": 12,
+          "examples": [
+            {
+              "from": "src/features/dismiss-notification/index.js",
+              "to": "src/ui/settings/metaFactory.js"
+            },
+            {
+              "from": "src/features/latest-control/index.js",
+              "to": "src/ui/settings/metaFactory.js"
+            },
+            {
+              "from": "src/features/latest-overlay/index.js",
+              "to": "src/ui/components/dialog.js"
+            },
+            {
+              "from": "src/features/latest-overlay/index.js",
+              "to": "src/ui/components/toast.js"
+            },
+            {
+              "from": "src/features/latest-overlay/index.js",
+              "to": "src/ui/settings/metaFactory.js"
+            }
+          ]
+        },
+        {
+          "from": "services",
+          "to": "config",
+          "count": 7,
+          "examples": [
+            {
+              "from": "src/services/configChangeApplication.js",
+              "to": "src/config/schema.js"
+            },
+            {
+              "from": "src/services/configChangeApplication.js",
+              "to": "src/config/state.js"
+            },
+            {
+              "from": "src/services/configTransfer/index.js",
+              "to": "src/config/persistence.js"
+            },
+            {
+              "from": "src/services/configTransfer/index.js",
+              "to": "src/config/schema.js"
+            },
+            {
+              "from": "src/services/settingsService.js",
+              "to": "src/config/persistence.js"
+            }
+          ]
+        },
+        {
+          "from": "services",
+          "to": "core",
+          "count": 17,
+          "examples": [
+            {
+              "from": "src/services/configChangeApplication.js",
+              "to": "src/core/featureHealth.js"
+            },
+            {
+              "from": "src/services/fastCapture/captureQueue.js",
+              "to": "src/core/frameBudget.js"
+            },
+            {
+              "from": "src/services/fastCapture/fastCaptureService.js",
+              "to": "src/core/featureHealth.js"
+            },
+            {
+              "from": "src/services/fastCapture/fastCaptureService.js",
+              "to": "src/core/logger.js"
+            },
+            {
+              "from": "src/services/fastCapture/fastCaptureService.js",
+              "to": "src/core/routeState.js"
+            }
+          ]
+        },
+        {
+          "from": "services",
+          "to": "ui",
+          "count": 3,
+          "examples": [
+            {
+              "from": "src/services/configChangeApplication.js",
+              "to": "src/ui/renderers/applyEffects.js"
+            },
+            {
+              "from": "src/services/configChangeApplication.js",
+              "to": "src/ui/settings/metaRegistry.js"
+            },
+            {
+              "from": "src/services/tagsService.js",
+              "to": "src/ui/components/tag-search/index.js"
+            }
+          ]
+        },
+        {
+          "from": "ui",
+          "to": "config",
+          "count": 4,
+          "examples": [
+            {
+              "from": "src/ui/components/settingsActions.js",
+              "to": "src/config/index.js"
+            },
+            {
+              "from": "src/ui/components/toast.js",
+              "to": "src/config/timings.js"
+            },
+            {
+              "from": "src/ui/helpers/updateColorStyle.js",
+              "to": "src/config/index.js"
+            },
+            {
+              "from": "src/ui/settings/tagsSettings.js",
+              "to": "src/config/index.js"
+            }
+          ]
+        },
+        {
+          "from": "ui",
+          "to": "core",
+          "count": 16,
+          "examples": [
+            {
+              "from": "src/ui/components/darkColorPicker.js",
+              "to": "src/core/listenerRegistry.js"
+            },
+            {
+              "from": "src/ui/components/dialog.js",
+              "to": "src/core/listenerRegistry.js"
+            },
+            {
+              "from": "src/ui/components/featureHealth/index.js",
+              "to": "src/core/featureHealth.js"
+            },
+            {
+              "from": "src/ui/components/helpMessage.js",
+              "to": "src/core/logger.js"
+            },
+            {
+              "from": "src/ui/components/tag-search/tagDrag.js",
+              "to": "src/core/listenerRegistry.js"
+            }
+          ]
+        },
+        {
+          "from": "ui",
+          "to": "features",
+          "count": 3,
+          "examples": [
+            {
+              "from": "src/ui/components/settingsActions.js",
+              "to": "src/features/latest-overlay/index.js"
+            },
+            {
+              "from": "src/ui/settingsRuntime/effectTasks.js",
+              "to": "src/features/latest-overlay/index.js"
+            },
+            {
+              "from": "src/ui/settingsRuntime/effectTasks.js",
+              "to": "src/features/thread-overlay/index.js"
+            }
+          ]
+        },
+        {
+          "from": "ui",
+          "to": "services",
+          "count": 9,
+          "examples": [
+            {
+              "from": "src/ui/components/settingsActions.js",
+              "to": "src/services/settingsService.js"
+            },
+            {
+              "from": "src/ui/components/tag-search/tagMutations.js",
+              "to": "src/services/settingsService.js"
+            },
+            {
+              "from": "src/ui/configTransfer/index.js",
+              "to": "src/services/configTransfer/index.js"
+            },
+            {
+              "from": "src/ui/index.js",
+              "to": "src/services/syncService.js"
+            },
+            {
+              "from": "src/ui/renderers/renderSetting.js",
+              "to": "src/services/settingsService.js"
+            }
+          ]
+        }
+      ],
+      "orphanFiles": [
+        "src/core/featureScope.js",
+        "src/core/pageDetection.js",
+        "src/core/pageLifecycle.js",
+        "src/core/sound/instrumentBank.js",
+        "src/core/teardown.js",
+        "src/features/audio/index.js",
+        "src/features/dismiss-notification/index.js",
+        "src/features/latest-control/index.js",
+        "src/features/signature-collapse/index.js",
+        "src/features/wide-latest/index.js",
+        "src/features/wideForum/index.js",
+        "src/services/notificationService.js",
+        "src/ui/index.js"
+      ],
+      "unreferencedExports": [
+        "src/config/persistence.js#CONFIG_MIGRATIONS",
+        "src/config/persistence.js#CONFIG_MIGRATION_COUNT",
+        "src/config/persistence.js#isCurrentConfigVersion",
+        "src/config/schema.js#CONFIG_SCHEMA",
+        "src/config/schema.js#getPersistedConfigPaths",
+        "src/config/schema.js#getSchemaPathIndex",
+        "src/config/schema.js#getSyncedConfigPaths",
+        "src/config/schema.js#mergeWithDefaults",
+        "src/config/schema.js#validateConfigSection",
+        "src/config/state.js#crossTabKeys",
+        "src/core/bootstrap.js#createBootstrapFailureHandler",
+        "src/core/bootstrap.js#getLastBootstrapSummary",
+        "src/core/bootstrap.js#resetBootstrapForTests",
+        "src/core/bootstrap.js#runBootstrapPipeline",
+        "src/core/bootstrap.js#runBootstrapStep",
+        "src/core/featureCatalog.js#listFeaturesByBootstrapMode",
+        "src/core/featureCatalog.js#registerFeature",
+        "src/core/featureCatalog.js#resetFeatureCatalogForTests",
+        "src/core/featureCatalog.js#validateFeatureDescriptor",
+        "src/core/featureFactory.js#createLifecycleContext",
+        "src/core/featureFactory.js#initGlobalErrorListeners",
+        "src/core/featureFactory.js#normalizeFeatureBootstrapMode",
+        "src/core/featureFactory.js#resolveFeatureId",
+        "src/core/featureHealth.js#HEALTH_ERROR_CODE_NAMESPACES",
+        "src/core/featureHealth.js#clearFeatureStatus",
+        "src/core/featureHealth.js#clearHealthEventsForTests",
+        "src/core/featureHealth.js#getFeatureErrors",
+        "src/core/featureHealth.js#getFeatureStatus",
+        "src/core/featureHealth.js#getHealthEvents",
+        "src/core/featureHealth.js#pushFeatureError",
+        "src/core/featureHealth.js#pushRuntimeError",
+        "src/core/featureHealth.js#recordSelectorDiagnostic",
+        "src/core/featureScope.js#featureMatchesPageScopes",
+        "src/core/frameBudget.js#createFrameBudget",
+        "src/core/observer.js#getObserverProfileSnapshot",
+        "src/core/observer.js#resetObserverProfileSnapshot",
+        "src/core/observer.js#setObserverProfilingEnabled",
+        "src/core/pageDetection.js#detectPage",
+        "src/core/pageDetection.js#matchesPageDefinition",
+        "src/core/pageLifecycle.js#createPageLifecycleHandlers",
+        "src/core/resourceManager.js#assertNoResourceLeaks",
+        "src/core/resourceManager.js#getResourceSnapshot",
+        "src/core/resourceManager.js#releaseOwner",
+        "src/core/resourceManager.js#resetResourceManagerForTests",
+        "src/core/routeObserver.js#initRouteObserver",
+        "src/core/routeState.js#normalizeRouteUrl",
+        "src/core/routeState.js#resetRouteStateForTests",
+        "src/core/sound/index.js#getAudioCtx",
+        "src/core/sound/instrumentBank.js#makeBreathyInstrument",
+        "src/core/sound/instrumentBank.js#makeElectricClick",
+        "src/core/sound/instrumentBank.js#makeGlassChime",
+        "src/core/sound/instrumentBank.js#makeHumDeactivate",
+        "src/core/sound/instrumentBank.js#makeSilkyWhoosh",
+        "src/core/sound/instrumentBank.js#makeSimpleInstrument",
+        "src/core/sound/instrumentBank.js#makeSlimeInstrument",
+        "src/core/sound/instrumentBank.js#makeWaterInstrument",
+        "src/core/sound/instrumentBank.js#makeZapActivate",
+        "src/core/styleRegistry.js#getStyleRegistrySnapshot",
+        "src/core/taskQueue.js#createTaskQueue",
+        "src/core/taskQueue.js#getTaskQueueDiagnostics",
+        "src/core/teardown.js#getRuntimeState",
+        "src/core/teardown.js#markRuntimeRunning",
+        "src/core/teardown.js#markRuntimeStarting",
+        "src/core/teardown.js#registerTeardownResetter",
+        "src/core/teardown.js#resetTeardownForTests",
+        "src/core/teardown.js#resumeRuntime",
+        "src/core/teardown.js#suspendRuntime",
+        "src/core/teardown.js#teardownAll",
+        "src/features/audio/index.js#midiPlay",
+        "src/features/audio/index.js#playActivated",
+        "src/features/audio/index.js#playDeactivated",
+        "src/features/audio/index.js#playModalClose",
+        "src/features/audio/index.js#playModalOpen",
+        "src/features/audio/index.js#playSectionClosed",
+        "src/features/audio/index.js#playSectionOpen",
+        "src/features/audio/index.js#playToggled",
+        "src/features/dismiss-notification/index.js#dismissNotificationFeature",
+        "src/features/dismiss-notification/index.js#toggleNoticeDismissal",
+        "src/features/latest-control/index.js#latestControlFeature",
+        "src/features/latest-overlay/handler.js#getLatestOverlayPageCategory",
+        "src/features/latest-overlay/index.js#engagementWeightSetting",
+        "src/features/latest-overlay/index.js#modifierAbandonedSetting",
+        "src/features/latest-overlay/index.js#modifierCompletedSetting",
+        "src/features/latest-overlay/index.js#modifierExcludedSetting",
+        "src/features/latest-overlay/index.js#modifierHighVersionSetting",
+        "src/features/latest-overlay/index.js#modifierInvalidVersionSetting",
+        "src/features/latest-overlay/index.js#modifierOnholdSetting",
+        "src/features/latest-overlay/index.js#modifierPreferredSetting",
+        "src/features/latest-overlay/index.js#overlaySettingsMeta",
+        "src/features/latest-overlay/index.js#overlayStyleSetting",
+        "src/features/latest-overlay/index.js#ratingWeightSetting",
+        "src/features/latest-overlay/index.js#resetLatestOverlaySettingsButton",
+        "src/features/latest-overlay/index.js#tagWeightSetting",
+        "src/features/latest-overlay/latestDataIndex.js#buildLatestRecordMap",
+        "src/features/latest-overlay/latestDataIndex.js#normalizeLatestRecord",
+        "src/features/latest-overlay/overlayCache.js#buildPrefixStatusMap",
+        "src/features/latest-overlay/ratingEngagementHighlight.js#calculateEngagementRatio",
+        "src/features/latest-overlay/ratingEngagementHighlight.js#getEngagementHighlightClass",
+        "src/features/latest-overlay/ratingEngagementHighlight.js#getRatingHighlightClass",
+        "src/features/latest-overlay/scoreCalculator.js#getScoreColorClass",
+        "src/features/signature-collapse/index.js#signatureCollapseFeature",
+        "src/features/thread-overlay/index.js#threadOverlaySettingsMeta",
+        "src/features/wide-latest/index.js#denseLatestGridFeature",
+        "src/features/wide-latest/index.js#wideLatestPageFeature",
+        "src/features/wideForum/index.js#wideForumFeature",
+        "src/services/configTransfer/index.js#CONFIG_TRANSFER_FORMAT_VERSION",
+        "src/services/configTransfer/index.js#previewConfigImport",
+        "src/services/notificationService.js#notify",
+        "src/services/notificationService.js#notifyAllDone",
+        "src/services/notificationService.js#notifyMaxAttempts",
+        "src/services/prefixService.js#normalizePrefixesFromLatestUpdates",
+        "src/services/safetyService.js#colorErrorNotif",
+        "src/services/safetyService.js#tagsErrorNotif",
+        "src/services/settingsService.js#CONFIG_BACKUP_KEY",
+        "src/services/settingsService.js#CONFIG_ENVELOPE_KEY",
+        "src/services/settingsService.js#CONFIG_RECOVERY_MARKER_KEY",
+        "src/services/settingsService.js#loadConfig",
+        "src/services/settingsService.js#loadData",
+        "src/services/storageAdapter.js#createStorageAdapter",
+        "src/services/syncService.js#applyIncoming",
+        "src/services/syncService.js#compareEnvelope",
+        "src/services/syncService.js#resetSyncServiceForTests",
+        "src/services/syncService.js#toggleCrossTabSync",
+        "src/ui/components/configButton.js#ensureAddonDockSlot",
+        "src/ui/components/dialog.js#openConfirmDialog",
+        "src/ui/components/dialog.js#openTextPrompt",
+        "src/ui/components/toast.js#flushQueuedToasts",
+        "src/ui/index.js#initUiPhaseIfApplicable",
+        "src/ui/renderers/reRenderSetting.js#clearContainer",
+        "src/ui/settings/colorSettings.js#colorSettingsDisabledMeta",
+        "src/ui/settings/globalSettings.js#globalSettingsMeta",
+        "src/ui/settings/metaRegistry.js#getSettingsMetadataById",
+        "src/ui/settings/metaRegistry.js#getSettingsMetadataByOwner",
+        "src/ui/settings/metaRegistry.js#getSettingsMetadataBySection",
+        "src/ui/settings/metaRegistry.js#getSettingsMetadataSnapshot",
+        "src/ui/settings/metaRegistry.js#resetSettingsMetadataForTests",
+        "src/ui/settings/metaRegistry.js#unregisterSettingsMetadata",
+        "src/ui/settingsRuntime/effectTasks.js#disableLatestOverlayAfterSettingsChange",
+        "src/ui/settingsRuntime/effectTasks.js#refreshLatestOverlayAfterSettingsChange",
+        "src/ui/settingsRuntime/prefs.js#SETTINGS_PINNED_ADDONS_STORAGE_KEY",
+        "src/ui/settingsRuntime/sectionsRegistry.js#SETTINGS_SECTION_CONTAINERS"
+      ]
+    }
+  },
+  "bundle": {
+    "readable": {
+      "mode": "regular",
+      "bytes": 585931,
+      "gzipBytes": 124260,
+      "contributors": [
+        {
+          "path": "src/ui/assets/css.css",
+          "bytes": 26401
+        },
+        {
+          "path": "src/config/schema.js",
+          "bytes": 18944
+        },
+        {
+          "path": "src/services/fastCapture/fastCaptureService.js",
+          "bytes": 16792
+        },
+        {
+          "path": "src/features/latest-overlay/index.js",
+          "bytes": 15531
+        },
+        {
+          "path": "src/services/addons/coreActions.js",
+          "bytes": 15307
+        },
+        {
+          "path": "src/services/addons/uiHost.js",
+          "bytes": 14538
+        },
+        {
+          "path": "src/services/addonsService.js",
+          "bytes": 13321
+        },
+        {
+          "path": "src/ui/components/addons/settingsController.js",
+          "bytes": 13281
+        },
+        {
+          "path": "src/ui/components/tag-search/tagDrag.js",
+          "bytes": 13150
+        },
+        {
+          "path": "src/services/configTransfer/index.js",
+          "bytes": 12450
+        },
+        {
+          "path": "src/services/addons/bridgeServer.js",
+          "bytes": 11613
+        },
+        {
+          "path": "src/ui/components/featureHealth/index.js",
+          "bytes": 11483
+        },
+        {
+          "path": "src/services/settingsService.js",
+          "bytes": 10954
+        },
+        {
+          "path": "src/features/latest-overlay/scoreCalculator.js",
+          "bytes": 10824
+        },
+        {
+          "path": "src/services/addons/registry.js",
+          "bytes": 9269
+        },
+        {
+          "path": "src/ui/components/darkColorPicker.js",
+          "bytes": 9209
+        },
+        {
+          "path": "src/core/featureFactory.js",
+          "bytes": 8557
+        },
+        {
+          "path": "src/services/addons/idbStore.js",
+          "bytes": 8500
+        },
+        {
+          "path": "src/ui/components/dialog.js",
+          "bytes": 8163
+        },
+        {
+          "path": "src/services/tagsService.js",
+          "bytes": 8100
+        }
+      ],
+      "coreContributors": [
+        {
+          "path": "src/ui/assets/css.css",
+          "bytes": 26401
+        },
+        {
+          "path": "src/config/schema.js",
+          "bytes": 18944
+        },
+        {
+          "path": "src/services/fastCapture/fastCaptureService.js",
+          "bytes": 16792
+        },
+        {
+          "path": "src/features/latest-overlay/index.js",
+          "bytes": 15531
+        },
+        {
+          "path": "src/ui/components/tag-search/tagDrag.js",
+          "bytes": 13150
+        },
+        {
+          "path": "src/services/configTransfer/index.js",
+          "bytes": 12450
+        },
+        {
+          "path": "src/ui/components/featureHealth/index.js",
+          "bytes": 11483
+        },
+        {
+          "path": "src/services/settingsService.js",
+          "bytes": 10954
+        },
+        {
+          "path": "src/features/latest-overlay/scoreCalculator.js",
+          "bytes": 10824
+        },
+        {
+          "path": "src/ui/components/darkColorPicker.js",
+          "bytes": 9209
+        },
+        {
+          "path": "src/core/featureFactory.js",
+          "bytes": 8557
+        },
+        {
+          "path": "src/ui/components/dialog.js",
+          "bytes": 8163
+        },
+        {
+          "path": "src/services/tagsService.js",
+          "bytes": 8100
+        },
+        {
+          "path": "src/core/observer.js",
+          "bytes": 7554
+        },
+        {
+          "path": "src/core/featureHealth.js",
+          "bytes": 7466
+        },
+        {
+          "path": "src/ui/components/tag-search/index.js",
+          "bytes": 7410
+        },
+        {
+          "path": "src/core/bootstrap.js",
+          "bytes": 7374
+        },
+        {
+          "path": "src/ui/assets/ui.html",
+          "bytes": 6872
+        },
+        {
+          "path": "src/services/prefixService.js",
+          "bytes": 6605
+        },
+        {
+          "path": "src/features/latest-overlay/handler.js",
+          "bytes": 5471
+        }
+      ],
+      "excludedContributors": [
+        {
+          "path": "src/services/addons/coreActions.js",
+          "bytes": 15307
+        },
+        {
+          "path": "src/services/addons/uiHost.js",
+          "bytes": 14538
+        },
+        {
+          "path": "src/services/addonsService.js",
+          "bytes": 13321
+        },
+        {
+          "path": "src/ui/components/addons/settingsController.js",
+          "bytes": 13281
+        },
+        {
+          "path": "src/services/addons/bridgeServer.js",
+          "bytes": 11613
+        },
+        {
+          "path": "src/services/addons/registry.js",
+          "bytes": 9269
+        },
+        {
+          "path": "src/services/addons/idbStore.js",
+          "bytes": 8500
+        },
+        {
+          "path": "src/ui/renderers/addonsRenderer.js",
+          "bytes": 7463
+        },
+        {
+          "path": "src/services/addons/uiSanitizer.js",
+          "bytes": 7432
+        },
+        {
+          "path": "src/services/addons/actions/descriptors.js",
+          "bytes": 6482
+        },
+        {
+          "path": "src/services/addons/knownAddons.js",
+          "bytes": 6482
+        },
+        {
+          "path": "src/features/latest-ajax-error-recovery/index.js",
+          "bytes": 6341
+        },
+        {
+          "path": "src/services/addons/state.js",
+          "bytes": 5971
+        },
+        {
+          "path": "src/services/addons/settingsUi.js",
+          "bytes": 5765
+        },
+        {
+          "path": "src/ui/components/addons/addonCard.js",
+          "bytes": 4865
+        },
+        {
+          "path": "src/services/addons/observer.js",
+          "bytes": 4256
+        },
+        {
+          "path": "src/loader.js",
+          "bytes": 4167
+        },
+        {
+          "path": "src/ui/components/addons/addonDialog.js",
+          "bytes": 4126
+        },
+        {
+          "path": "src/ui/components/addons/addonPanelSettings.js",
+          "bytes": 4126
+        },
+        {
+          "path": "src/main.js",
+          "bytes": 4115
+        }
+      ]
+    },
+    "uglified": {
+      "mode": "release",
+      "bytes": 301645,
+      "gzipBytes": 88371,
+      "contributors": [
+        {
+          "path": "src/ui/assets/css.css",
+          "bytes": 26387
+        },
+        {
+          "path": "src/config/schema.js",
+          "bytes": 9914
+        },
+        {
+          "path": "src/features/latest-overlay/index.js",
+          "bytes": 9145
+        },
+        {
+          "path": "src/ui/components/addons/settingsController.js",
+          "bytes": 6739
+        },
+        {
+          "path": "src/ui/assets/ui.html",
+          "bytes": 6690
+        },
+        {
+          "path": "src/services/addons/coreActions.js",
+          "bytes": 6444
+        },
+        {
+          "path": "src/ui/components/tag-search/tagDrag.js",
+          "bytes": 6254
+        },
+        {
+          "path": "src/services/configTransfer/index.js",
+          "bytes": 6097
+        },
+        {
+          "path": "src/services/addons/bridgeServer.js",
+          "bytes": 6017
+        },
+        {
+          "path": "src/services/addonsService.js",
+          "bytes": 5973
+        },
+        {
+          "path": "src/ui/components/featureHealth/index.js",
+          "bytes": 5944
+        },
+        {
+          "path": "src/services/addons/uiHost.js",
+          "bytes": 5821
+        },
+        {
+          "path": "src/services/fastCapture/fastCaptureService.js",
+          "bytes": 5680
+        },
+        {
+          "path": "src/features/latest-ajax-error-recovery/index.js",
+          "bytes": 5444
+        },
+        {
+          "path": "src/services/settingsService.js",
+          "bytes": 5348
+        },
+        {
+          "path": "src/ui/components/darkColorPicker.js",
+          "bytes": 4831
+        },
+        {
+          "path": "src/services/addons/registry.js",
+          "bytes": 4466
+        },
+        {
+          "path": "src/services/addons/uiSanitizer.js",
+          "bytes": 4134
+        },
+        {
+          "path": "src/services/addons/actions/descriptors.js",
+          "bytes": 4113
+        },
+        {
+          "path": "src/features/latest-overlay/scoreCalculator.js",
+          "bytes": 3981
+        }
+      ],
+      "coreContributors": [
+        {
+          "path": "src/ui/assets/css.css",
+          "bytes": 26387
+        },
+        {
+          "path": "src/config/schema.js",
+          "bytes": 9914
+        },
+        {
+          "path": "src/features/latest-overlay/index.js",
+          "bytes": 9145
+        },
+        {
+          "path": "src/ui/assets/ui.html",
+          "bytes": 6690
+        },
+        {
+          "path": "src/ui/components/tag-search/tagDrag.js",
+          "bytes": 6254
+        },
+        {
+          "path": "src/services/configTransfer/index.js",
+          "bytes": 6097
+        },
+        {
+          "path": "src/ui/components/featureHealth/index.js",
+          "bytes": 5944
+        },
+        {
+          "path": "src/services/fastCapture/fastCaptureService.js",
+          "bytes": 5680
+        },
+        {
+          "path": "src/services/settingsService.js",
+          "bytes": 5348
+        },
+        {
+          "path": "src/ui/components/darkColorPicker.js",
+          "bytes": 4831
+        },
+        {
+          "path": "src/features/latest-overlay/scoreCalculator.js",
+          "bytes": 3981
+        },
+        {
+          "path": "src/core/bootstrap.js",
+          "bytes": 3917
+        },
+        {
+          "path": "src/ui/components/dialog.js",
+          "bytes": 3914
+        },
+        {
+          "path": "src/ui/components/tag-search/index.js",
+          "bytes": 3662
+        },
+        {
+          "path": "src/services/tagsService.js",
+          "bytes": 3621
+        },
+        {
+          "path": "src/core/featureHealth.js",
+          "bytes": 3612
+        },
+        {
+          "path": "src/core/featureFactory.js",
+          "bytes": 3559
+        },
+        {
+          "path": "src/services/prefixService.js",
+          "bytes": 3259
+        },
+        {
+          "path": "src/core/observer.js",
+          "bytes": 3089
+        },
+        {
+          "path": "src/features/thread-overlay/index.js",
+          "bytes": 2497
+        }
+      ],
+      "excludedContributors": [
+        {
+          "path": "src/ui/components/addons/settingsController.js",
+          "bytes": 6739
+        },
+        {
+          "path": "src/services/addons/coreActions.js",
+          "bytes": 6444
+        },
+        {
+          "path": "src/services/addons/bridgeServer.js",
+          "bytes": 6017
+        },
+        {
+          "path": "src/services/addonsService.js",
+          "bytes": 5973
+        },
+        {
+          "path": "src/services/addons/uiHost.js",
+          "bytes": 5821
+        },
+        {
+          "path": "src/features/latest-ajax-error-recovery/index.js",
+          "bytes": 5444
+        },
+        {
+          "path": "src/services/addons/registry.js",
+          "bytes": 4466
+        },
+        {
+          "path": "src/services/addons/uiSanitizer.js",
+          "bytes": 4134
+        },
+        {
+          "path": "src/services/addons/actions/descriptors.js",
+          "bytes": 4113
+        },
+        {
+          "path": "src/services/addons/idbStore.js",
+          "bytes": 3936
+        },
+        {
+          "path": "src/ui/renderers/addonsRenderer.js",
+          "bytes": 3632
+        },
+        {
+          "path": "src/services/addons/settingsUi.js",
+          "bytes": 3489
+        },
+        {
+          "path": "src/services/addons/knownAddons.js",
+          "bytes": 3480
+        },
+        {
+          "path": "src/services/addons/state.js",
+          "bytes": 2776
+        },
+        {
+          "path": "src/ui/components/addons/addonCard.js",
+          "bytes": 2392
+        },
+        {
+          "path": "src/ui/components/addons/addonDialog.js",
+          "bytes": 2202
+        },
+        {
+          "path": "src/ui/components/addons/addonPanelSettings.js",
+          "bytes": 2126
+        },
+        {
+          "path": "src/main.js",
+          "bytes": 1883
+        },
+        {
+          "path": "src/loader.js",
+          "bytes": 1762
+        },
+        {
+          "path": "src/services/addons/observer.js",
+          "bytes": 1703
+        }
+      ]
+    }
+  }
+}

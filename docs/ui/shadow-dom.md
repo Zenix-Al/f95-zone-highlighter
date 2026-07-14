@@ -53,6 +53,8 @@ Style acquisition is delegated to the shared style registry, which provides feat
 
 The main UI stylesheet covering: modal layout, navigation, settings rows, toggles and form controls, color picker, tag lists and drag states, add-on cards and panels, dock behavior, toast notifications, and responsive/mobile layout.
 
+The deterministic selector and cascade audit is documented in [`css-audit.md`](css-audit.md); unresolved or dynamically assembled selectors remain protected.
+
 ### `assets/document.css`
 
 Injected outside the Shadow DOM. **Maintenance note:** Keep this file narrowly scoped. Document-level selectors have a larger collision surface than Shadow DOM styles and should use distinctive prefixes or IDs.

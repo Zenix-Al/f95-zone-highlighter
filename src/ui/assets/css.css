@@ -144,21 +144,6 @@
   -ms-touch-action: none;
 }
 
-/* Desktop cursor affordance for dragging */
-.tag-chip {
-  cursor: grab;
-}
-.tag-chip.dragging {
-  cursor: grabbing;
-}
-
-.preferred-tag-remove {
-  background-color: #c15858;
-  color: #fff;
-  border: none;
-  /* consolidated into .tag-remove-btn */
-}
-
 /* Excluded tags container */
 .tag-actions {
   display: flex;
@@ -198,12 +183,6 @@
   color: var(--excluded-text-color);
 }
 
-.excluded-tag-remove {
-  background-color: #c15858;
-  color: #fff;
-  border: none;
-  /* consolidated into .tag-remove-btn */
-}
 /* Marked tag item */
 .marked-tag-item {
   background-color: var(--marked-color);
@@ -319,12 +298,6 @@
 #tags-search:focus {
   outline: none;
   border: 1px solid #c15858;
-}
-
-/* Make search results scroll visually match modal scrollbar */
-#search-results {
-  max-height: 260px; /* keep results bounded */
-  overflow-y: auto;
 }
 
 /* Better-shaped action buttons: square/rounded icons rather than raw text */
@@ -916,12 +889,6 @@
 @media (max-width: 480px) {
   #tag-config-modal .modal-content {
     min-width: 0;
-    width: 100%;
-    max-width: none;
-    margin: 0;
-    border-radius: 0;
-    height: 100dvh;
-    max-height: 100dvh;
   }
 }
 
@@ -1399,39 +1366,7 @@
   }
 
   .settings-nav {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    overflow-y: auto;
     margin-top: 6px;
-    padding-right: 2px;
-  }
-
-  .settings-nav-group,
-  .settings-nav-pinned-items {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  .settings-nav-group + .settings-nav-group {
-    margin-top: 10px;
-    padding-top: 10px;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-  }
-
-  .settings-nav-group-label {
-    padding: 0 10px 2px;
-    font-size: 11px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: #8f959e;
-  }
-
-  .settings-nav-item {
-    text-align: left;
-    padding: 9px 12px;
-    font-size: 14px;
   }
 
   .settings-nav-item.settings-nav-addon-item {
@@ -1440,11 +1375,6 @@
 
   .settings-nav-item.settings-nav-addon-item::after {
     display: inline;
-  }
-
-  .settings-sidebar-footer {
-    margin-top: auto;
-    padding: 8px 2px 2px;
   }
 
   /* Color panel keeps its own larger spacing */
@@ -1670,7 +1600,6 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0;
   padding: 7px 10px;
   transition:
     background 0.12s ease,

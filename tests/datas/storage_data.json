@@ -135,15 +135,6 @@
     "latestOverlayStyle": "strip"
   },
   "markedTags": [173, 392],
-  "metrics": {
-    "retried": 1760,
-    "succeeded": 6803,
-    "failed": 22,
-    "avgCache": 34663.99842064988,
-    "highest": 638499.1999999993,
-    "lowest": 0,
-    "mean": 319249.5999999996
-  },
   "overlaySettings": {
     "completed": true,
     "onhold": true,

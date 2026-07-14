@@ -38,6 +38,8 @@ Provides reusable dialogs for:
 
 The add-on dialog variant (`components/addons/addonDialog.js`) has stronger focus-management behavior, while these general dialogs provide the common modal interaction primitives used by settings actions.
 
+Settings dialogs may provide an `onClose` callback for cleanup owned by an action controller, such as cancelling a pending file picker.
+
 ## Help Messages (`components/helpMessage.js`)
 
 Displays rotating help messages while the settings modal is open:

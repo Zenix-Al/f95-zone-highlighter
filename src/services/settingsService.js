@@ -1,21 +1,18 @@
-import { config } from "../config";
-import { recordHealthEvent } from "../core/featureHealth.js";
-import { applyConfigChange } from "./configChangeApplication.js";
-import { LEGACY_STORAGE_KEYS, migrateConfigData, migrateLegacyConfigPayload } from "./configMigrationService.js";
+import { config } from "../config.js";
 import {
   CONFIG_SCHEMA_VERSION,
-  getDefaultConfig,
-  sanitizeConfig,
-  validateConfig,
-} from "../config/schema.js";
+  CONFIG_STORAGE_KEYS,
+  isSupportedConfigVersion,
+} from "../config/persistence.js";
+import { getDefaultConfig, sanitizeConfig, validateConfig } from "../config/schema.js";
+import { recordHealthEvent } from "../core/featureHealth.js";
+import { applyConfigChange } from "./configChangeApplication.js";
 import { storageAdapter } from "./storageAdapter.js";
 
-export const CONFIG_ENVELOPE_KEY = "f95ue:config";
-export const CONFIG_BACKUP_KEY = "f95ue:config:last-known-good";
-export const CONFIG_RECOVERY_MARKER_KEY = "f95ue:config:recovery";
+export const CONFIG_ENVELOPE_KEY = CONFIG_STORAGE_KEYS.current;
+export const CONFIG_BACKUP_KEY = CONFIG_STORAGE_KEYS.backup;
+export const CONFIG_RECOVERY_MARKER_KEY = CONFIG_STORAGE_KEYS.recovery;
 export const CONFIG_WRITER_ID = `tab:${Date.now()}:${Math.random().toString(16).slice(2)}`;
-
-const LEGACY_CONFIG_KEYS = Object.freeze(Object.keys(getDefaultConfig()));
 
 function cloneConfig(value) {
   return JSON.parse(JSON.stringify(value));
@@ -35,7 +32,7 @@ function safeIssueSummary(issues) {
 function reportPersistenceHealth(code, message, details = {}) {
   return recordHealthEvent({
     code: `CONFIG_${code}`,
-    severity: code === "SAVE_FAILED" || code === "MIGRATION_FAILED" ? "error" : "warning",
+    severity: code === "SAVE_FAILED" ? "error" : "warning",
     ownerId: "settingsService",
     subsystem: "config",
     message,
@@ -57,11 +54,18 @@ function envelopeStructureIssues(envelope) {
 function validateStoredEnvelope(raw) {
   const structureIssues = envelopeStructureIssues(raw);
   if (structureIssues.length > 0) return { valid: false, issues: structureIssues };
-  if (raw.schemaVersion > CONFIG_SCHEMA_VERSION) return { valid: false, issues: [{ path: "schemaVersion", code: "unsupported" }] };
+  if (!isSupportedConfigVersion(raw.schemaVersion)) {
+    return { valid: false, issues: [{ path: "schemaVersion", code: "unsupported" }] };
+  }
 
   const validation = sanitizeConfig(raw.data, { mode: "tolerant" });
-  if (validation.issues.length > 0) return { valid: false, issues: validation.issues };
-  return { valid: true, envelope: raw, data: validation.data, issues: [] };
+  return {
+    valid: true,
+    envelope: raw,
+    data: validation.data,
+    issues: validation.issues,
+    sanitized: validation.issues.length > 0,
+  };
 }
 
 export function validateConfigEnvelope(envelope) {
@@ -117,12 +121,13 @@ async function clearRecoveryMarker() {
 function makeLoadResult(data, details = {}) {
   return {
     loaded: true,
+    status: details.status || "loaded",
     data: cloneConfig(data),
     config: cloneConfig(data),
-    source: details.source || "defaults",
+    source: details.source || "canonical",
     recovered: Boolean(details.recovered),
     degraded: Boolean(details.degraded),
-    migrated: Boolean(details.migrated),
+    migrated: false,
     persisted: details.persisted !== false,
     issues: safeIssueSummary(details.issues),
     envelope: details.envelope ? cloneConfig(details.envelope) : null,
@@ -137,40 +142,7 @@ async function applyLoadedConfig(result) {
   return result;
 }
 
-async function loadLegacyConfig(rawValues, revisionHint = 0) {
-  const migrated = migrateLegacyConfigPayload(rawValues);
-  const validation = sanitizeConfig(migrated, { mode: "tolerant" });
-  const envelope = buildEnvelope(validation.data, Math.max(0, Number(revisionHint) || 0) + 1);
-  try {
-    await persistEnvelope(envelope);
-    for (const key of [...LEGACY_CONFIG_KEYS, ...LEGACY_STORAGE_KEYS]) {
-      try { await storageAdapter.delete(key); } catch { /* compatibility cleanup is best effort */ }
-    }
-    await clearRecoveryMarker();
-    return makeLoadResult(validation.data, {
-      source: "legacy-migration",
-      migrated: true,
-      persisted: true,
-      issues: validation.issues,
-      envelope,
-    });
-  } catch {
-    reportPersistenceHealth("MIGRATION_FAILED", "Legacy configuration migration could not be persisted.", {
-      source: "legacy",
-      issues: safeIssueSummary(validation.issues),
-    });
-    await markRecovery({ kind: "migration-failed", source: "legacy", issues: validation.issues });
-    return makeLoadResult(validation.data, {
-      source: "legacy-migration",
-      migrated: true,
-      persisted: false,
-      degraded: true,
-      issues: validation.issues,
-    });
-  }
-}
-
-export async function loadConfig({ migrations } = {}) {
+export async function loadConfig() {
   const defaults = getDefaultConfig();
   let canonicalRaw = null;
 
@@ -178,42 +150,26 @@ export async function loadConfig({ migrations } = {}) {
     canonicalRaw = await storageAdapter.get(CONFIG_ENVELOPE_KEY, null);
     const canonical = validateStoredEnvelope(canonicalRaw);
     if (canonical.valid) {
-      if (canonical.envelope.schemaVersion < CONFIG_SCHEMA_VERSION) {
-        try {
-          const migratedData = migrateConfigData(canonical.data, canonical.envelope.schemaVersion, migrations);
-          const validation = validateConfig(migratedData, { mode: "strict" });
-          if (!validation.valid) throw new Error("migration_output_invalid");
-          const migratedEnvelope = buildEnvelope(validation.data, canonical.envelope.revision + 1);
-          await persistEnvelope(migratedEnvelope, canonical.envelope);
-          await clearRecoveryMarker();
-          return applyLoadedConfig(makeLoadResult(validation.data, {
-            source: "canonical-migration",
-            migrated: true,
-            persisted: true,
-            envelope: migratedEnvelope,
-          }));
-        } catch {
-          reportPersistenceHealth("MIGRATION_FAILED", "Canonical configuration migration failed.", {
-            source: "canonical",
-            schemaVersion: canonical.envelope.schemaVersion,
-          });
-          await markRecovery({ kind: "migration-failed", source: "canonical" });
-          return applyLoadedConfig(makeLoadResult(canonical.data, {
-            source: "canonical",
-            recovered: true,
-            degraded: true,
-            persisted: false,
-            migrated: false,
-            envelope: canonical.envelope,
-          }));
-        }
-      } else {
-        await clearRecoveryMarker();
+      if (canonical.sanitized) {
+        reportPersistenceHealth("SANITIZED", "Configuration loaded after dropping invalid or unknown fields.", {
+          source: "canonical",
+          issues: safeIssueSummary(canonical.issues),
+        });
         return applyLoadedConfig(makeLoadResult(canonical.data, {
           source: "canonical",
+          status: "sanitized",
+          degraded: true,
+          persisted: true,
+          issues: canonical.issues,
           envelope: canonical.envelope,
         }));
       }
+      await clearRecoveryMarker();
+      return applyLoadedConfig(makeLoadResult(canonical.data, {
+        source: "canonical",
+        status: "loaded",
+        envelope: canonical.envelope,
+      }));
     }
 
     const backupRaw = await storageAdapter.get(CONFIG_BACKUP_KEY, null);
@@ -232,6 +188,7 @@ export async function loadConfig({ migrations } = {}) {
       });
       return applyLoadedConfig(makeLoadResult(backup.data, {
         source: "backup",
+        status: "recovered",
         recovered: true,
         degraded: true,
         persisted: true,
@@ -240,10 +197,13 @@ export async function loadConfig({ migrations } = {}) {
       }));
     }
 
-    const rawValues = await storageAdapter.getMany([...LEGACY_CONFIG_KEYS, ...LEGACY_STORAGE_KEYS]);
-    const legacyValues = Object.fromEntries(Object.entries(rawValues || {}).filter(([, value]) => value !== undefined));
-    if ((canonicalRaw === null || typeof canonicalRaw === "undefined") && Object.keys(legacyValues).length > 0) {
-      return applyLoadedConfig(await loadLegacyConfig(legacyValues, Math.max(Number(canonicalRaw?.revision) || 0, Number(backupRaw?.revision) || 0)));
+    if ((canonicalRaw === null || typeof canonicalRaw === "undefined")
+      && (backupRaw === null || typeof backupRaw === "undefined")) {
+      return applyLoadedConfig(makeLoadResult(defaults, {
+        source: "defaults",
+        status: "defaults",
+        persisted: false,
+      }));
     }
 
     const canonicalIssues = validateStoredEnvelope(canonicalRaw).issues;
@@ -256,6 +216,7 @@ export async function loadConfig({ migrations } = {}) {
     await markRecovery({ kind: "corrupt", source: "defaults", issues });
     return applyLoadedConfig(makeLoadResult(defaults, {
       source: "defaults",
+      status: "defaults",
       recovered: true,
       degraded: true,
       persisted: false,
@@ -266,6 +227,7 @@ export async function loadConfig({ migrations } = {}) {
     await markRecovery({ kind: "load-failed", source: "defaults" });
     return applyLoadedConfig(makeLoadResult(defaults, {
       source: "defaults",
+      status: "defaults",
       recovered: true,
       degraded: true,
       persisted: false,

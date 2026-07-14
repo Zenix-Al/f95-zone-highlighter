@@ -8,7 +8,10 @@ function removeDialogIfExists() {
   const shadowRoot = getShadowRoot();
   if (!shadowRoot) return;
   const existing = shadowRoot.getElementById(ACTIVE_DIALOG_ID);
-  if (existing) existing.remove();
+  if (existing) {
+    existing.__f95ueOnClose?.();
+    existing.remove();
+  }
 }
 
 export function openConfirmDialog({
@@ -322,6 +325,7 @@ export function openSettingsDialog({
   description = "",
   metaMap = {},
   closeLabel = "Close",
+  onClose = null,
 } = {}) {
   const shadowRoot = getShadowRoot();
   if (!shadowRoot) return null;
@@ -371,7 +375,10 @@ export function openSettingsDialog({
     done = true;
     disposeSettings();
     backdrop.remove();
+    try { onClose?.(); } catch {}
   };
+
+  backdrop.__f95ueOnClose = onClose;
 
   const keydownHandler = (e) => {
     if (e.key === "Escape") {

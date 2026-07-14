@@ -1,0 +1,2339 @@
+{
+    "addons": {
+        "byAddon": {
+            "image-repair-addon": {
+                "state": {
+                    "enabled": true
+                }
+            },
+            "masked-direct-addon": {
+                "state": {
+                    "enabled": true,
+                    "settings": {
+                        "skipMaskedLink": true,
+                        "directDownloadLinks": true,
+                        "directDownloadPackages": {
+                            "buzzheavier": true,
+                            "gofile": true,
+                            "pixeldrain": true,
+                            "datanodes": true
+                        },
+                        "downloadPageCloseDelayMs": 5000
+                    }
+                }
+            },
+            "library-addon": {
+                "state": {
+                    "libraryMigrationV1Done": true,
+                    "settings": {
+                        "enabled": true,
+                        "showPageButtons": true
+                    },
+                    "enabled": true,
+                    "libraryRecords": null
+                }
+            },
+            "latest-filters-addon": {
+                "state": {
+                    "presets": [
+                        {
+                            "id": "preset-1775566735423-4qmidt",
+                            "name": "test",
+                            "url": "https://f95zone.to/sam/latest_alpha/#/cat=games/page=1/tags=1507/notags=1434",
+                            "normalizedUrl": "https://f95zone.to/sam/latest_alpha/",
+                            "summary": "Base latest page",
+                            "searchText": "test base latest page https://f95zone.to/sam/latest_alpha/",
+                            "updatedAt": 1775566735423
+                        }
+                    ],
+                    "enabled": true,
+                    "settings": {
+                        "enabled": true,
+                        "state": {
+                            "showPageButton": true
+                        },
+                        "showPageButton": true
+                    }
+                }
+            },
+            "halloween-theme-addon": {
+                "state": {
+                    "enabled": true
+                }
+            },
+            "example-addon": {
+                "state": {
+                    "enabled": true,
+                    "playground": {
+                        "text": "Hello from storage.set",
+                        "updatedAt": "2026-06-23T16:13:20.765Z"
+                    }
+                }
+            }
+        },
+        "installedMeta": {
+            "image-repair-addon": {
+                "name": "F95UE Image Repair Add-on",
+                "version": "1.1.23",
+                "installedSeenAt": 1775306858623,
+                "lastSeenAt": 1783900349588
+            },
+            "masked-direct-addon": {
+                "name": "F95UE Masked + Direct Download Add-on",
+                "version": "0.3.45",
+                "installedSeenAt": 1775306858634,
+                "lastSeenAt": 1783900411224
+            },
+            "library-addon": {
+                "name": "F95UE Library Add-on",
+                "version": "0.3.54",
+                "installedSeenAt": 1775306858677,
+                "lastSeenAt": 1784032438250
+            },
+            "latest-filters-addon": {
+                "name": "F95UE Latest Filters Add-on",
+                "version": "0.3.16",
+                "installedSeenAt": 1775566638265,
+                "lastSeenAt": 1784032438283
+            },
+            "halloween-theme-addon": {
+                "name": "F95UE Halloween Theme Add-on",
+                "version": "0.2.10",
+                "installedSeenAt": 1777341802336,
+                "lastSeenAt": 1781959263819
+            },
+            "example-addon": {
+                "name": "F95UE Example Add-on",
+                "version": "0.2.7",
+                "installedSeenAt": 1781974170443,
+                "lastSeenAt": 1783835820761
+            }
+        }
+    },
+    "color": {
+        "completed": "#388e3c",
+        "onhold": "#1976d2",
+        "abandoned": "#c9a300",
+        "highVersion": "#2e7d32",
+        "invalidVersion": "#a38400",
+        "tileInfo": "#9398a0",
+        "tileHeader": "#d9d9d9",
+        "preferred": "#7b1fa2",
+        "preferredText": "#ffffff",
+        "excluded": "#b71c1c",
+        "excludedText": "#ffffff",
+        "marked": "#4a4f55",
+        "markedText": "#ffffff"
+    },
+    "configVisibility": true,
+    "directDownloadAttentionEvent": {
+        "ts": 1774003936490,
+        "id": "1774003936490-cnxnm5",
+        "host": "datanodes.to",
+        "code": "ready_not_found",
+        "message": "Datanodes automation failed: Ready state not detected.",
+        "href": "https://datanodes.to/download",
+        "targetTabId": "1774003270298-4d55xf",
+        "requestId": "1774003894582-u196le"
+    },
+    "excludedTags": [
+        258,
+        2234,
+        360,
+        324
+    ],
+    "globalSettings": {
+        "configVisibility": false,
+        "closeNotifOnClick": true,
+        "enableCrossTabSync": false,
+        "allowUntrustedAddons": false,
+        "disableAddonsService": false,
+        "disableHelpMessage": true
+    },
+    "isImgRetryInjected": true,
+    "latestSettings": {
+        "autoRefresh": true,
+        "webNotif": true,
+        "minVersion": 0.5,
+        "wideLatest": true,
+        "denseLatestGrid": true,
+        "latestOverlayToggle": true,
+        "latestOverlayColorOrder": [
+            "excluded",
+            "preferred",
+            "completed",
+            "onhold",
+            "abandoned",
+            "highVersion",
+            "invalidVersion"
+        ],
+        "latestOverlayStyle": "strip",
+        "ratingHighlightThreshold": 3,
+        "engagementRatioThreshold": 50,
+        "enableScoreWeights": true,
+        "priorityWeights": {
+            "rating": 2.5,
+            "engagement": 1.5,
+            "tags": 6
+        },
+        "tagModifiers": {
+            "preferred": 0.25,
+            "completed": 0.25,
+            "highVersion": 0.12,
+            "onhold": -0.2,
+            "abandoned": -0.4,
+            "excluded": -0.55,
+            "invalidVersion": 0.22
+        }
+    },
+    "markedTags": [
+        173,
+        392
+    ],
+    "metrics": {
+        "retried": 1760,
+        "succeeded": 6803,
+        "failed": 22,
+        "avgCache": 34663.99842064988,
+        "highest": 638499.1999999993,
+        "lowest": 0,
+        "mean": 319249.5999999996
+    },
+    "overlaySettings": {
+        "completed": true,
+        "onhold": true,
+        "abandoned": true,
+        "highVersion": true,
+        "invalidVersion": false,
+        "preferred": true,
+        "excluded": true,
+        "overlayText": true,
+        "ratingHighlight": true,
+        "engagementHighlight": true
+    },
+    "preferredTags": [
+        2255,
+        191,
+        225,
+        30,
+        362,
+        924
+    ],
+    "prefixes": {
+        "items": [
+            {
+                "id": 22,
+                "name": "Abandoned",
+                "class": "label--orange"
+            },
+            {
+                "id": 12,
+                "name": "ADRIFT",
+                "class": "label--blue"
+            },
+            {
+                "id": 59,
+                "name": "App",
+                "class": "label--green"
+            },
+            {
+                "id": 40,
+                "name": "AutoDesk",
+                "class": "label--green"
+            },
+            {
+                "id": 42,
+                "name": "Blender",
+                "class": "label--skyBlue"
+            },
+            {
+                "id": 49,
+                "name": "CG",
+                "class": "label--yellow"
+            },
+            {
+                "id": 19,
+                "name": "Collection",
+                "class": "label--gray"
+            },
+            {
+                "id": 16,
+                "name": "Comics",
+                "class": "label--orange"
+            },
+            {
+                "id": 18,
+                "name": "Completed",
+                "class": "label--blue"
+            },
+            {
+                "id": 33,
+                "name": "Daz",
+                "class": "label--orange"
+            },
+            {
+                "id": 8,
+                "name": "Flash",
+                "class": "label--gray"
+            },
+            {
+                "id": 37,
+                "name": "Flash",
+                "class": "label--royalBlue"
+            },
+            {
+                "id": 38,
+                "name": "GIF",
+                "class": "label--skyBlue"
+            },
+            {
+                "id": 116,
+                "name": "Godot",
+                "class": "label--skyBlue"
+            },
+            {
+                "id": 4,
+                "name": "HTML",
+                "class": "label--olive"
+            },
+            {
+                "id": 36,
+                "name": "Illusion",
+                "class": "label--lightGreen"
+            },
+            {
+                "id": 6,
+                "name": "Java",
+                "class": "pre-java"
+            },
+            {
+                "id": 43,
+                "name": "Manga",
+                "class": "label--skyBlue"
+            },
+            {
+                "id": 20,
+                "name": "Onhold",
+                "class": "label--skyBlue"
+            },
+            {
+                "id": 71,
+                "name": "Other",
+                "class": "label--lightGreen"
+            },
+            {
+                "id": 14,
+                "name": "Others",
+                "class": "label--lightGreen"
+            },
+            {
+                "id": 44,
+                "name": "Pinup",
+                "class": "label--blue"
+            },
+            {
+                "id": 41,
+                "name": "Poser",
+                "class": "label--accent"
+            },
+            {
+                "id": 1,
+                "name": "QSP",
+                "class": "label--red"
+            },
+            {
+                "id": 5,
+                "name": "RAGS",
+                "class": "label--orange"
+            },
+            {
+                "id": 7,
+                "name": "Ren&#039;Py",
+                "class": "pre-renpy"
+            },
+            {
+                "id": 2,
+                "name": "RPGM",
+                "class": "label--blue"
+            },
+            {
+                "id": 115,
+                "name": "RPGM",
+                "class": "label--blue"
+            },
+            {
+                "id": 23,
+                "name": "SiteRip",
+                "class": "label--lightGreen"
+            },
+            {
+                "id": 17,
+                "name": "Tads",
+                "class": "label--blue"
+            },
+            {
+                "id": 45,
+                "name": "Tutorial",
+                "class": "label--lightGreen"
+            },
+            {
+                "id": 3,
+                "name": "Unity",
+                "class": "pre-unity"
+            },
+            {
+                "id": 114,
+                "name": "Unity",
+                "class": "pre-unity"
+            },
+            {
+                "id": 110,
+                "name": "Unreal",
+                "class": "label--royalBlue"
+            },
+            {
+                "id": 31,
+                "name": "Unreal Engine",
+                "class": "label--royalBlue"
+            },
+            {
+                "id": 35,
+                "name": "VAM",
+                "class": "label--royalBlue"
+            },
+            {
+                "id": 39,
+                "name": "Video",
+                "class": "label--orange"
+            },
+            {
+                "id": 13,
+                "name": "VN",
+                "class": "label--red"
+            },
+            {
+                "id": 47,
+                "name": "WebGL",
+                "class": "pre-webgl"
+            },
+            {
+                "id": 30,
+                "name": "Wolf RPG",
+                "class": "label--green"
+            }
+        ],
+        "categories": {
+            "games": [
+                {
+                    "id": 1,
+                    "name": "Engine",
+                    "prefixes": [
+                        {
+                            "id": 12,
+                            "name": "ADRIFT",
+                            "class": "label--blue"
+                        },
+                        {
+                            "id": 8,
+                            "name": "Flash",
+                            "class": "label--gray"
+                        },
+                        {
+                            "id": 116,
+                            "name": "Godot",
+                            "class": "label--skyBlue"
+                        },
+                        {
+                            "id": 4,
+                            "name": "HTML",
+                            "class": "label--olive"
+                        },
+                        {
+                            "id": 6,
+                            "name": "Java",
+                            "class": "pre-java"
+                        },
+                        {
+                            "id": 14,
+                            "name": "Others",
+                            "class": "label--lightGreen"
+                        },
+                        {
+                            "id": 1,
+                            "name": "QSP",
+                            "class": "label--red"
+                        },
+                        {
+                            "id": 5,
+                            "name": "RAGS",
+                            "class": "label--orange"
+                        },
+                        {
+                            "id": 2,
+                            "name": "RPGM",
+                            "class": "label--blue"
+                        },
+                        {
+                            "id": 7,
+                            "name": "Ren&#039;Py",
+                            "class": "pre-renpy"
+                        },
+                        {
+                            "id": 17,
+                            "name": "Tads",
+                            "class": "label--blue"
+                        },
+                        {
+                            "id": 3,
+                            "name": "Unity",
+                            "class": "pre-unity"
+                        },
+                        {
+                            "id": 31,
+                            "name": "Unreal Engine",
+                            "class": "label--royalBlue"
+                        },
+                        {
+                            "id": 47,
+                            "name": "WebGL",
+                            "class": "pre-webgl"
+                        },
+                        {
+                            "id": 30,
+                            "name": "Wolf RPG",
+                            "class": "label--green"
+                        }
+                    ],
+                    "prefixIds": [
+                        12,
+                        8,
+                        116,
+                        4,
+                        6,
+                        14,
+                        1,
+                        5,
+                        2,
+                        7,
+                        17,
+                        3,
+                        31,
+                        47,
+                        30
+                    ]
+                },
+                {
+                    "id": 3,
+                    "name": "Other",
+                    "prefixes": [
+                        {
+                            "id": 19,
+                            "name": "Collection",
+                            "class": "label--gray"
+                        },
+                        {
+                            "id": 23,
+                            "name": "SiteRip",
+                            "class": "label--lightGreen"
+                        },
+                        {
+                            "id": 13,
+                            "name": "VN",
+                            "class": "label--red"
+                        }
+                    ],
+                    "prefixIds": [
+                        19,
+                        23,
+                        13
+                    ]
+                },
+                {
+                    "id": 4,
+                    "name": "Status",
+                    "prefixes": [
+                        {
+                            "id": 22,
+                            "name": "Abandoned",
+                            "class": "label--orange"
+                        },
+                        {
+                            "id": 18,
+                            "name": "Completed",
+                            "class": "label--blue"
+                        },
+                        {
+                            "id": 20,
+                            "name": "Onhold",
+                            "class": "label--skyBlue"
+                        }
+                    ],
+                    "prefixIds": [
+                        22,
+                        18,
+                        20
+                    ]
+                }
+            ],
+            "comics": [
+                {
+                    "id": 3,
+                    "name": "Other",
+                    "prefixes": [
+                        {
+                            "id": 43,
+                            "name": "Manga",
+                            "class": "label--skyBlue"
+                        },
+                        {
+                            "id": 23,
+                            "name": "SiteRip",
+                            "class": "label--lightGreen"
+                        },
+                        {
+                            "id": 19,
+                            "name": "Collection",
+                            "class": "label--gray"
+                        },
+                        {
+                            "id": 16,
+                            "name": "Comics",
+                            "class": "label--orange"
+                        },
+                        {
+                            "id": 49,
+                            "name": "CG",
+                            "class": "label--yellow"
+                        },
+                        {
+                            "id": 44,
+                            "name": "Pinup",
+                            "class": "label--blue"
+                        }
+                    ],
+                    "prefixIds": [
+                        43,
+                        23,
+                        19,
+                        16,
+                        49,
+                        44
+                    ]
+                },
+                {
+                    "id": 4,
+                    "name": "Status",
+                    "prefixes": [
+                        {
+                            "id": 18,
+                            "name": "Completed",
+                            "class": "label--blue"
+                        },
+                        {
+                            "id": 20,
+                            "name": "Onhold",
+                            "class": "label--skyBlue"
+                        },
+                        {
+                            "id": 22,
+                            "name": "Abandoned",
+                            "class": "label--orange"
+                        }
+                    ],
+                    "prefixIds": [
+                        18,
+                        20,
+                        22
+                    ]
+                }
+            ],
+            "animations": [
+                {
+                    "id": 3,
+                    "name": "Other",
+                    "prefixes": [
+                        {
+                            "id": 19,
+                            "name": "Collection",
+                            "class": "label--gray"
+                        }
+                    ],
+                    "prefixIds": [
+                        19
+                    ]
+                },
+                {
+                    "id": 6,
+                    "name": "Animation",
+                    "prefixes": [
+                        {
+                            "id": 39,
+                            "name": "Video",
+                            "class": "label--orange"
+                        },
+                        {
+                            "id": 38,
+                            "name": "GIF",
+                            "class": "label--skyBlue"
+                        },
+                        {
+                            "id": 37,
+                            "name": "Flash",
+                            "class": "label--royalBlue"
+                        },
+                        {
+                            "id": 59,
+                            "name": "App",
+                            "class": "label--green"
+                        }
+                    ],
+                    "prefixIds": [
+                        39,
+                        38,
+                        37,
+                        59
+                    ]
+                }
+            ],
+            "assets": [
+                {
+                    "id": 5,
+                    "name": "Assets",
+                    "prefixes": [
+                        {
+                            "id": 115,
+                            "name": "RPGM",
+                            "class": "label--blue"
+                        },
+                        {
+                            "id": 33,
+                            "name": "Daz",
+                            "class": "label--orange"
+                        },
+                        {
+                            "id": 35,
+                            "name": "VAM",
+                            "class": "label--royalBlue"
+                        },
+                        {
+                            "id": 36,
+                            "name": "Illusion",
+                            "class": "label--lightGreen"
+                        },
+                        {
+                            "id": 40,
+                            "name": "AutoDesk",
+                            "class": "label--green"
+                        },
+                        {
+                            "id": 41,
+                            "name": "Poser",
+                            "class": "label--accent"
+                        },
+                        {
+                            "id": 42,
+                            "name": "Blender",
+                            "class": "label--skyBlue"
+                        },
+                        {
+                            "id": 110,
+                            "name": "Unreal",
+                            "class": "label--royalBlue"
+                        },
+                        {
+                            "id": 45,
+                            "name": "Tutorial",
+                            "class": "label--lightGreen"
+                        },
+                        {
+                            "id": 71,
+                            "name": "Other",
+                            "class": "label--lightGreen"
+                        },
+                        {
+                            "id": 114,
+                            "name": "Unity",
+                            "class": "pre-unity"
+                        }
+                    ],
+                    "prefixIds": [
+                        115,
+                        33,
+                        35,
+                        36,
+                        40,
+                        41,
+                        42,
+                        110,
+                        45,
+                        71,
+                        114
+                    ]
+                },
+                {
+                    "id": 3,
+                    "name": "Other",
+                    "prefixes": [
+                        {
+                            "id": 19,
+                            "name": "Collection",
+                            "class": "label--gray"
+                        }
+                    ],
+                    "prefixIds": [
+                        19
+                    ]
+                }
+            ]
+        }
+    },
+    "savedNotifID": 121,
+    "settingsUiActivePanel": "settings-panel-addins",
+    "settingsUiPinnedAddonIds": [],
+    "tags": [{
+                    "id": 2214,
+                    "name": "bunch of tags"
+                }],
+	"threadSettings": {
+        "marked": true,
+        "preferred": true,
+        "preferredShadow": false,
+        "excluded": true,
+        "excludedShadow": false,
+        "isWide": true,
+        "collapseSignature": true,
+        "threadOverlayToggle": true
+    },
+    "f95ue:config": {
+        "schemaVersion": 1,
+        "revision": 30,
+        "writerId": "tab:1784039363677:c05634851a362",
+        "updatedAt": 1784039363956,
+        "data": {
+			"tags": [{
+				"id": 2214,
+				"name": "bunch of tags"
+			}],
+			"prefixes": {
+                "items": [
+                    {
+                        "id": 22,
+                        "name": "Abandoned",
+                        "class": "label--orange"
+                    },
+                    {
+                        "id": 12,
+                        "name": "ADRIFT",
+                        "class": "label--blue"
+                    },
+                    {
+                        "id": 59,
+                        "name": "App",
+                        "class": "label--green"
+                    },
+                    {
+                        "id": 40,
+                        "name": "AutoDesk",
+                        "class": "label--green"
+                    },
+                    {
+                        "id": 42,
+                        "name": "Blender",
+                        "class": "label--skyBlue"
+                    },
+                    {
+                        "id": 49,
+                        "name": "CG",
+                        "class": "label--yellow"
+                    },
+                    {
+                        "id": 19,
+                        "name": "Collection",
+                        "class": "label--gray"
+                    },
+                    {
+                        "id": 16,
+                        "name": "Comics",
+                        "class": "label--orange"
+                    },
+                    {
+                        "id": 18,
+                        "name": "Completed",
+                        "class": "label--blue"
+                    },
+                    {
+                        "id": 33,
+                        "name": "Daz",
+                        "class": "label--orange"
+                    },
+                    {
+                        "id": 8,
+                        "name": "Flash",
+                        "class": "label--gray"
+                    },
+                    {
+                        "id": 37,
+                        "name": "Flash",
+                        "class": "label--royalBlue"
+                    },
+                    {
+                        "id": 38,
+                        "name": "GIF",
+                        "class": "label--skyBlue"
+                    },
+                    {
+                        "id": 116,
+                        "name": "Godot",
+                        "class": "label--skyBlue"
+                    },
+                    {
+                        "id": 4,
+                        "name": "HTML",
+                        "class": "label--olive"
+                    },
+                    {
+                        "id": 36,
+                        "name": "Illusion",
+                        "class": "label--lightGreen"
+                    },
+                    {
+                        "id": 6,
+                        "name": "Java",
+                        "class": "pre-java"
+                    },
+                    {
+                        "id": 43,
+                        "name": "Manga",
+                        "class": "label--skyBlue"
+                    },
+                    {
+                        "id": 20,
+                        "name": "Onhold",
+                        "class": "label--skyBlue"
+                    },
+                    {
+                        "id": 71,
+                        "name": "Other",
+                        "class": "label--lightGreen"
+                    },
+                    {
+                        "id": 14,
+                        "name": "Others",
+                        "class": "label--lightGreen"
+                    },
+                    {
+                        "id": 44,
+                        "name": "Pinup",
+                        "class": "label--blue"
+                    },
+                    {
+                        "id": 41,
+                        "name": "Poser",
+                        "class": "label--accent"
+                    },
+                    {
+                        "id": 1,
+                        "name": "QSP",
+                        "class": "label--red"
+                    },
+                    {
+                        "id": 5,
+                        "name": "RAGS",
+                        "class": "label--orange"
+                    },
+                    {
+                        "id": 7,
+                        "name": "Ren&#039;Py",
+                        "class": "pre-renpy"
+                    },
+                    {
+                        "id": 2,
+                        "name": "RPGM",
+                        "class": "label--blue"
+                    },
+                    {
+                        "id": 115,
+                        "name": "RPGM",
+                        "class": "label--blue"
+                    },
+                    {
+                        "id": 23,
+                        "name": "SiteRip",
+                        "class": "label--lightGreen"
+                    },
+                    {
+                        "id": 17,
+                        "name": "Tads",
+                        "class": "label--blue"
+                    },
+                    {
+                        "id": 45,
+                        "name": "Tutorial",
+                        "class": "label--lightGreen"
+                    },
+                    {
+                        "id": 3,
+                        "name": "Unity",
+                        "class": "pre-unity"
+                    },
+                    {
+                        "id": 114,
+                        "name": "Unity",
+                        "class": "pre-unity"
+                    },
+                    {
+                        "id": 110,
+                        "name": "Unreal",
+                        "class": "label--royalBlue"
+                    },
+                    {
+                        "id": 31,
+                        "name": "Unreal Engine",
+                        "class": "label--royalBlue"
+                    },
+                    {
+                        "id": 35,
+                        "name": "VAM",
+                        "class": "label--royalBlue"
+                    },
+                    {
+                        "id": 39,
+                        "name": "Video",
+                        "class": "label--orange"
+                    },
+                    {
+                        "id": 13,
+                        "name": "VN",
+                        "class": "label--red"
+                    },
+                    {
+                        "id": 47,
+                        "name": "WebGL",
+                        "class": "pre-webgl"
+                    },
+                    {
+                        "id": 30,
+                        "name": "Wolf RPG",
+                        "class": "label--green"
+                    }
+                ],
+                "categories": {
+                    "games": [
+                        {
+                            "id": 1,
+                            "name": "Engine",
+                            "prefixes": [
+                                {
+                                    "id": 12,
+                                    "name": "ADRIFT",
+                                    "class": "label--blue"
+                                },
+                                {
+                                    "id": 8,
+                                    "name": "Flash",
+                                    "class": "label--gray"
+                                },
+                                {
+                                    "id": 116,
+                                    "name": "Godot",
+                                    "class": "label--skyBlue"
+                                },
+                                {
+                                    "id": 4,
+                                    "name": "HTML",
+                                    "class": "label--olive"
+                                },
+                                {
+                                    "id": 6,
+                                    "name": "Java",
+                                    "class": "pre-java"
+                                },
+                                {
+                                    "id": 14,
+                                    "name": "Others",
+                                    "class": "label--lightGreen"
+                                },
+                                {
+                                    "id": 1,
+                                    "name": "QSP",
+                                    "class": "label--red"
+                                },
+                                {
+                                    "id": 5,
+                                    "name": "RAGS",
+                                    "class": "label--orange"
+                                },
+                                {
+                                    "id": 2,
+                                    "name": "RPGM",
+                                    "class": "label--blue"
+                                },
+                                {
+                                    "id": 7,
+                                    "name": "Ren&#039;Py",
+                                    "class": "pre-renpy"
+                                },
+                                {
+                                    "id": 17,
+                                    "name": "Tads",
+                                    "class": "label--blue"
+                                },
+                                {
+                                    "id": 3,
+                                    "name": "Unity",
+                                    "class": "pre-unity"
+                                },
+                                {
+                                    "id": 31,
+                                    "name": "Unreal Engine",
+                                    "class": "label--royalBlue"
+                                },
+                                {
+                                    "id": 47,
+                                    "name": "WebGL",
+                                    "class": "pre-webgl"
+                                },
+                                {
+                                    "id": 30,
+                                    "name": "Wolf RPG",
+                                    "class": "label--green"
+                                }
+                            ],
+                            "prefixIds": [
+                                12,
+                                8,
+                                116,
+                                4,
+                                6,
+                                14,
+                                1,
+                                5,
+                                2,
+                                7,
+                                17,
+                                3,
+                                31,
+                                47,
+                                30
+                            ]
+                        },
+                        {
+                            "id": 3,
+                            "name": "Other",
+                            "prefixes": [
+                                {
+                                    "id": 19,
+                                    "name": "Collection",
+                                    "class": "label--gray"
+                                },
+                                {
+                                    "id": 23,
+                                    "name": "SiteRip",
+                                    "class": "label--lightGreen"
+                                },
+                                {
+                                    "id": 13,
+                                    "name": "VN",
+                                    "class": "label--red"
+                                }
+                            ],
+                            "prefixIds": [
+                                19,
+                                23,
+                                13
+                            ]
+                        },
+                        {
+                            "id": 4,
+                            "name": "Status",
+                            "prefixes": [
+                                {
+                                    "id": 22,
+                                    "name": "Abandoned",
+                                    "class": "label--orange"
+                                },
+                                {
+                                    "id": 18,
+                                    "name": "Completed",
+                                    "class": "label--blue"
+                                },
+                                {
+                                    "id": 20,
+                                    "name": "Onhold",
+                                    "class": "label--skyBlue"
+                                }
+                            ],
+                            "prefixIds": [
+                                22,
+                                18,
+                                20
+                            ]
+                        }
+                    ],
+                    "comics": [
+                        {
+                            "id": 3,
+                            "name": "Other",
+                            "prefixes": [
+                                {
+                                    "id": 43,
+                                    "name": "Manga",
+                                    "class": "label--skyBlue"
+                                },
+                                {
+                                    "id": 23,
+                                    "name": "SiteRip",
+                                    "class": "label--lightGreen"
+                                },
+                                {
+                                    "id": 19,
+                                    "name": "Collection",
+                                    "class": "label--gray"
+                                },
+                                {
+                                    "id": 16,
+                                    "name": "Comics",
+                                    "class": "label--orange"
+                                },
+                                {
+                                    "id": 49,
+                                    "name": "CG",
+                                    "class": "label--yellow"
+                                },
+                                {
+                                    "id": 44,
+                                    "name": "Pinup",
+                                    "class": "label--blue"
+                                }
+                            ],
+                            "prefixIds": [
+                                43,
+                                23,
+                                19,
+                                16,
+                                49,
+                                44
+                            ]
+                        },
+                        {
+                            "id": 4,
+                            "name": "Status",
+                            "prefixes": [
+                                {
+                                    "id": 18,
+                                    "name": "Completed",
+                                    "class": "label--blue"
+                                },
+                                {
+                                    "id": 20,
+                                    "name": "Onhold",
+                                    "class": "label--skyBlue"
+                                },
+                                {
+                                    "id": 22,
+                                    "name": "Abandoned",
+                                    "class": "label--orange"
+                                }
+                            ],
+                            "prefixIds": [
+                                18,
+                                20,
+                                22
+                            ]
+                        }
+                    ],
+                    "animations": [
+                        {
+                            "id": 3,
+                            "name": "Other",
+                            "prefixes": [
+                                {
+                                    "id": 19,
+                                    "name": "Collection",
+                                    "class": "label--gray"
+                                }
+                            ],
+                            "prefixIds": [
+                                19
+                            ]
+                        },
+                        {
+                            "id": 6,
+                            "name": "Animation",
+                            "prefixes": [
+                                {
+                                    "id": 39,
+                                    "name": "Video",
+                                    "class": "label--orange"
+                                },
+                                {
+                                    "id": 38,
+                                    "name": "GIF",
+                                    "class": "label--skyBlue"
+                                },
+                                {
+                                    "id": 37,
+                                    "name": "Flash",
+                                    "class": "label--royalBlue"
+                                },
+                                {
+                                    "id": 59,
+                                    "name": "App",
+                                    "class": "label--green"
+                                }
+                            ],
+                            "prefixIds": [
+                                39,
+                                38,
+                                37,
+                                59
+                            ]
+                        }
+                    ],
+                    "assets": [
+                        {
+                            "id": 5,
+                            "name": "Assets",
+                            "prefixes": [
+                                {
+                                    "id": 115,
+                                    "name": "RPGM",
+                                    "class": "label--blue"
+                                },
+                                {
+                                    "id": 33,
+                                    "name": "Daz",
+                                    "class": "label--orange"
+                                },
+                                {
+                                    "id": 35,
+                                    "name": "VAM",
+                                    "class": "label--royalBlue"
+                                },
+                                {
+                                    "id": 36,
+                                    "name": "Illusion",
+                                    "class": "label--lightGreen"
+                                },
+                                {
+                                    "id": 40,
+                                    "name": "AutoDesk",
+                                    "class": "label--green"
+                                },
+                                {
+                                    "id": 41,
+                                    "name": "Poser",
+                                    "class": "label--accent"
+                                },
+                                {
+                                    "id": 42,
+                                    "name": "Blender",
+                                    "class": "label--skyBlue"
+                                },
+                                {
+                                    "id": 110,
+                                    "name": "Unreal",
+                                    "class": "label--royalBlue"
+                                },
+                                {
+                                    "id": 45,
+                                    "name": "Tutorial",
+                                    "class": "label--lightGreen"
+                                },
+                                {
+                                    "id": 71,
+                                    "name": "Other",
+                                    "class": "label--lightGreen"
+                                },
+                                {
+                                    "id": 114,
+                                    "name": "Unity",
+                                    "class": "pre-unity"
+                                }
+                            ],
+                            "prefixIds": [
+                                115,
+                                33,
+                                35,
+                                36,
+                                40,
+                                41,
+                                42,
+                                110,
+                                45,
+                                71,
+                                114
+                            ]
+                        },
+                        {
+                            "id": 3,
+                            "name": "Other",
+                            "prefixes": [
+                                {
+                                    "id": 19,
+                                    "name": "Collection",
+                                    "class": "label--gray"
+                                }
+                            ],
+                            "prefixIds": [
+                                19
+                            ]
+                        }
+                    ]
+                }
+            },
+            "preferredTags": [],
+            "excludedTags": [],
+            "markedTags": [],
+            "color": {
+                "completed": "#388e3c",
+                "onhold": "#1976d2",
+                "abandoned": "#c9a300",
+                "highVersion": "#2e7d32",
+                "invalidVersion": "#a38400",
+                "tileInfo": "#9398a0",
+                "tileHeader": "#d9d9d9",
+                "preferred": "#7b1fa2",
+                "preferredText": "#ffffff",
+                "excluded": "#b71c1c",
+                "excludedText": "#ffffff",
+                "marked": "#4a4f55",
+                "markedText": "#ffffff"
+            },
+            "overlaySettings": {
+                "completed": true,
+                "onhold": true,
+                "abandoned": true,
+                "highVersion": true,
+                "invalidVersion": true,
+                "preferred": true,
+                "excluded": true,
+                "overlayText": true,
+                "ratingHighlight": true,
+                "engagementHighlight": true
+            },
+            "threadSettings": {
+                "marked": true,
+                "preferred": true,
+                "preferredShadow": true,
+                "excluded": true,
+                "excludedShadow": true,
+                "isWide": true,
+                "collapseSignature": true,
+                "threadOverlayToggle": true
+            },
+            "globalSettings": {
+                "configVisibility": true,
+                "closeNotifOnClick": true,
+                "enableCrossTabSync": false,
+                "allowUntrustedAddons": false,
+                "disableAddonsService": false,
+                "disableHelpMessage": false
+            },
+            "latestSettings": {
+                "autoRefresh": false,
+                "webNotif": false,
+                "minVersion": 0.5,
+                "wideLatest": true,
+                "denseLatestGrid": true,
+                "latestAjaxErrorRecovery": true,
+                "latestOverlayToggle": true,
+                "latestOverlayColorOrder": [
+                    "excluded",
+                    "preferred",
+                    "completed",
+                    "onhold",
+                    "abandoned",
+                    "highVersion",
+                    "invalidVersion"
+                ],
+                "latestOverlayStyle": "strip",
+                "ratingHighlightThreshold": 3,
+                "engagementRatioThreshold": 50,
+                "enableScoreWeights": true,
+                "priorityWeights": {
+                    "rating": 2.5,
+                    "engagement": 1.5,
+                    "tags": 6
+                },
+                "tagModifiers": {
+                    "preferred": 0.25,
+                    "completed": 0.25,
+                    "highVersion": 0.12,
+                    "onhold": -0.2,
+                    "abandoned": -0.4,
+                    "excluded": -0.55,
+                    "invalidVersion": 0.22
+                }
+            },
+            "metrics": {
+                "retried": 0,
+                "succeeded": 0,
+                "failed": 0,
+                "avgCache": 0,
+                "highest": 0,
+                "lowest": 0,
+                "mean": 0
+            },
+            "addons": {
+                "trustedIds": [
+                    "image-repair-addon",
+                    "masked-direct-addon",
+                    "example-addon"
+                ],
+                "byAddon": {
+                    "library-addon": {
+                        "state": {
+                            "libraryRecords": null
+                        }
+                    },
+                    "latest-filters-addon": {
+                        "state": {}
+                    }
+                },
+                "installedMeta": {
+                    "library-addon": {
+                        "name": "F95UE Library Add-on",
+                        "version": "0.3.54",
+                        "description": "Quick-add threads to a personal library and manage entries with a dedicated add-on UI.",
+                        "panelTitle": "F95UE Library Add-on",
+                        "panelBody": "Use the bottom-left page dock to open Library anywhere on F95. Save/Remove appears when you are on a thread page.",
+                        "statusMessage": "Library button is available site-wide; quick add is active on thread pages.",
+                        "pageScopes": [
+                            "f95zone"
+                        ],
+                        "capabilities": [
+                            "toast",
+                            "feature",
+                            "storage",
+                            "idb",
+                            "ui",
+                            "ui.mount",
+                            "ui.style",
+                            "ui.dialog"
+                        ],
+                        "installedSeenAt": 1784039058645,
+                        "lastSeenAt": 1784039363840
+                    },
+                    "masked-direct-addon": {
+                        "name": "F95UE Masked + Direct Download Add-on",
+                        "version": "0.3.45",
+                        "description": "Combines masked-link skipper and direct-download flows into one trusted add-on.",
+                        "panelTitle": "F95UE Masked + Direct Download Add-on",
+                        "panelBody": "This add-on provides masked-link Resolve buttons and direct-download page handling for supported hosts.",
+                        "statusMessage": "Masked-link skipper and direct-download routing are active.",
+                        "pageScopes": [
+                            "thread",
+                            "download",
+                            "direct-download"
+                        ],
+                        "capabilities": [
+                            "toast",
+                            "feature",
+                            "storage",
+                            "ui",
+                            "ui.style"
+                        ],
+                        "installedSeenAt": 1784039134091,
+                        "lastSeenAt": 1784039363921
+                    },
+                    "image-repair-addon": {
+                        "name": "F95UE Image Repair Add-on",
+                        "version": "1.1.23",
+                        "description": "Automatically retries broken attachment images on F95Zone threads.",
+                        "panelTitle": "F95UE Image Repair Add-on",
+                        "panelBody": "Retries failed attachment images (attachments.f95zone.to). Use Enable / Disable to control whether the watcher is active.",
+                        "statusMessage": "Watching for broken images and retrying automatically.",
+                        "pageScopes": [
+                            "thread"
+                        ],
+                        "capabilities": [
+                            "toast",
+                            "feature",
+                            "storage",
+                            "observer",
+                            "ui",
+                            "ui.style"
+                        ],
+                        "installedSeenAt": 1784039134148,
+                        "lastSeenAt": 1784039363948
+                    }
+                },
+                "service": {
+                    "apiThrottle": {
+                        "coreActionWindowMs": 5000,
+                        "coreActionRateMax": 100,
+                        "coreActionMaxConcurrent": 12
+                    }
+                }
+            },
+            "savedNotifID": null
+        }
+    },
+    "f95ue:config:last-known-good": {
+        "schemaVersion": 1,
+        "revision": 29,
+        "writerId": "tab:1784039363677:c05634851a362",
+        "updatedAt": 1784039363932,
+        "data": {
+            "tags": [{
+                    "id": 2214,
+                    "name": "bunch of tags"
+                }],
+			"prefixes": {
+                "items": [
+                    {
+                        "id": 22,
+                        "name": "Abandoned",
+                        "class": "label--orange"
+                    },
+                    {
+                        "id": 12,
+                        "name": "ADRIFT",
+                        "class": "label--blue"
+                    },
+                    {
+                        "id": 59,
+                        "name": "App",
+                        "class": "label--green"
+                    },
+                    {
+                        "id": 40,
+                        "name": "AutoDesk",
+                        "class": "label--green"
+                    },
+                    {
+                        "id": 42,
+                        "name": "Blender",
+                        "class": "label--skyBlue"
+                    },
+                    {
+                        "id": 49,
+                        "name": "CG",
+                        "class": "label--yellow"
+                    },
+                    {
+                        "id": 19,
+                        "name": "Collection",
+                        "class": "label--gray"
+                    },
+                    {
+                        "id": 16,
+                        "name": "Comics",
+                        "class": "label--orange"
+                    },
+                    {
+                        "id": 18,
+                        "name": "Completed",
+                        "class": "label--blue"
+                    },
+                    {
+                        "id": 33,
+                        "name": "Daz",
+                        "class": "label--orange"
+                    },
+                    {
+                        "id": 8,
+                        "name": "Flash",
+                        "class": "label--gray"
+                    },
+                    {
+                        "id": 37,
+                        "name": "Flash",
+                        "class": "label--royalBlue"
+                    },
+                    {
+                        "id": 38,
+                        "name": "GIF",
+                        "class": "label--skyBlue"
+                    },
+                    {
+                        "id": 116,
+                        "name": "Godot",
+                        "class": "label--skyBlue"
+                    },
+                    {
+                        "id": 4,
+                        "name": "HTML",
+                        "class": "label--olive"
+                    },
+                    {
+                        "id": 36,
+                        "name": "Illusion",
+                        "class": "label--lightGreen"
+                    },
+                    {
+                        "id": 6,
+                        "name": "Java",
+                        "class": "pre-java"
+                    },
+                    {
+                        "id": 43,
+                        "name": "Manga",
+                        "class": "label--skyBlue"
+                    },
+                    {
+                        "id": 20,
+                        "name": "Onhold",
+                        "class": "label--skyBlue"
+                    },
+                    {
+                        "id": 71,
+                        "name": "Other",
+                        "class": "label--lightGreen"
+                    },
+                    {
+                        "id": 14,
+                        "name": "Others",
+                        "class": "label--lightGreen"
+                    },
+                    {
+                        "id": 44,
+                        "name": "Pinup",
+                        "class": "label--blue"
+                    },
+                    {
+                        "id": 41,
+                        "name": "Poser",
+                        "class": "label--accent"
+                    },
+                    {
+                        "id": 1,
+                        "name": "QSP",
+                        "class": "label--red"
+                    },
+                    {
+                        "id": 5,
+                        "name": "RAGS",
+                        "class": "label--orange"
+                    },
+                    {
+                        "id": 7,
+                        "name": "Ren&#039;Py",
+                        "class": "pre-renpy"
+                    },
+                    {
+                        "id": 2,
+                        "name": "RPGM",
+                        "class": "label--blue"
+                    },
+                    {
+                        "id": 115,
+                        "name": "RPGM",
+                        "class": "label--blue"
+                    },
+                    {
+                        "id": 23,
+                        "name": "SiteRip",
+                        "class": "label--lightGreen"
+                    },
+                    {
+                        "id": 17,
+                        "name": "Tads",
+                        "class": "label--blue"
+                    },
+                    {
+                        "id": 45,
+                        "name": "Tutorial",
+                        "class": "label--lightGreen"
+                    },
+                    {
+                        "id": 3,
+                        "name": "Unity",
+                        "class": "pre-unity"
+                    },
+                    {
+                        "id": 114,
+                        "name": "Unity",
+                        "class": "pre-unity"
+                    },
+                    {
+                        "id": 110,
+                        "name": "Unreal",
+                        "class": "label--royalBlue"
+                    },
+                    {
+                        "id": 31,
+                        "name": "Unreal Engine",
+                        "class": "label--royalBlue"
+                    },
+                    {
+                        "id": 35,
+                        "name": "VAM",
+                        "class": "label--royalBlue"
+                    },
+                    {
+                        "id": 39,
+                        "name": "Video",
+                        "class": "label--orange"
+                    },
+                    {
+                        "id": 13,
+                        "name": "VN",
+                        "class": "label--red"
+                    },
+                    {
+                        "id": 47,
+                        "name": "WebGL",
+                        "class": "pre-webgl"
+                    },
+                    {
+                        "id": 30,
+                        "name": "Wolf RPG",
+                        "class": "label--green"
+                    }
+                ],
+                "categories": {
+                    "games": [
+                        {
+                            "id": 1,
+                            "name": "Engine",
+                            "prefixes": [
+                                {
+                                    "id": 12,
+                                    "name": "ADRIFT",
+                                    "class": "label--blue"
+                                },
+                                {
+                                    "id": 8,
+                                    "name": "Flash",
+                                    "class": "label--gray"
+                                },
+                                {
+                                    "id": 116,
+                                    "name": "Godot",
+                                    "class": "label--skyBlue"
+                                },
+                                {
+                                    "id": 4,
+                                    "name": "HTML",
+                                    "class": "label--olive"
+                                },
+                                {
+                                    "id": 6,
+                                    "name": "Java",
+                                    "class": "pre-java"
+                                },
+                                {
+                                    "id": 14,
+                                    "name": "Others",
+                                    "class": "label--lightGreen"
+                                },
+                                {
+                                    "id": 1,
+                                    "name": "QSP",
+                                    "class": "label--red"
+                                },
+                                {
+                                    "id": 5,
+                                    "name": "RAGS",
+                                    "class": "label--orange"
+                                },
+                                {
+                                    "id": 2,
+                                    "name": "RPGM",
+                                    "class": "label--blue"
+                                },
+                                {
+                                    "id": 7,
+                                    "name": "Ren&#039;Py",
+                                    "class": "pre-renpy"
+                                },
+                                {
+                                    "id": 17,
+                                    "name": "Tads",
+                                    "class": "label--blue"
+                                },
+                                {
+                                    "id": 3,
+                                    "name": "Unity",
+                                    "class": "pre-unity"
+                                },
+                                {
+                                    "id": 31,
+                                    "name": "Unreal Engine",
+                                    "class": "label--royalBlue"
+                                },
+                                {
+                                    "id": 47,
+                                    "name": "WebGL",
+                                    "class": "pre-webgl"
+                                },
+                                {
+                                    "id": 30,
+                                    "name": "Wolf RPG",
+                                    "class": "label--green"
+                                }
+                            ],
+                            "prefixIds": [
+                                12,
+                                8,
+                                116,
+                                4,
+                                6,
+                                14,
+                                1,
+                                5,
+                                2,
+                                7,
+                                17,
+                                3,
+                                31,
+                                47,
+                                30
+                            ]
+                        },
+                        {
+                            "id": 3,
+                            "name": "Other",
+                            "prefixes": [
+                                {
+                                    "id": 19,
+                                    "name": "Collection",
+                                    "class": "label--gray"
+                                },
+                                {
+                                    "id": 23,
+                                    "name": "SiteRip",
+                                    "class": "label--lightGreen"
+                                },
+                                {
+                                    "id": 13,
+                                    "name": "VN",
+                                    "class": "label--red"
+                                }
+                            ],
+                            "prefixIds": [
+                                19,
+                                23,
+                                13
+                            ]
+                        },
+                        {
+                            "id": 4,
+                            "name": "Status",
+                            "prefixes": [
+                                {
+                                    "id": 22,
+                                    "name": "Abandoned",
+                                    "class": "label--orange"
+                                },
+                                {
+                                    "id": 18,
+                                    "name": "Completed",
+                                    "class": "label--blue"
+                                },
+                                {
+                                    "id": 20,
+                                    "name": "Onhold",
+                                    "class": "label--skyBlue"
+                                }
+                            ],
+                            "prefixIds": [
+                                22,
+                                18,
+                                20
+                            ]
+                        }
+                    ],
+                    "comics": [
+                        {
+                            "id": 3,
+                            "name": "Other",
+                            "prefixes": [
+                                {
+                                    "id": 43,
+                                    "name": "Manga",
+                                    "class": "label--skyBlue"
+                                },
+                                {
+                                    "id": 23,
+                                    "name": "SiteRip",
+                                    "class": "label--lightGreen"
+                                },
+                                {
+                                    "id": 19,
+                                    "name": "Collection",
+                                    "class": "label--gray"
+                                },
+                                {
+                                    "id": 16,
+                                    "name": "Comics",
+                                    "class": "label--orange"
+                                },
+                                {
+                                    "id": 49,
+                                    "name": "CG",
+                                    "class": "label--yellow"
+                                },
+                                {
+                                    "id": 44,
+                                    "name": "Pinup",
+                                    "class": "label--blue"
+                                }
+                            ],
+                            "prefixIds": [
+                                43,
+                                23,
+                                19,
+                                16,
+                                49,
+                                44
+                            ]
+                        },
+                        {
+                            "id": 4,
+                            "name": "Status",
+                            "prefixes": [
+                                {
+                                    "id": 18,
+                                    "name": "Completed",
+                                    "class": "label--blue"
+                                },
+                                {
+                                    "id": 20,
+                                    "name": "Onhold",
+                                    "class": "label--skyBlue"
+                                },
+                                {
+                                    "id": 22,
+                                    "name": "Abandoned",
+                                    "class": "label--orange"
+                                }
+                            ],
+                            "prefixIds": [
+                                18,
+                                20,
+                                22
+                            ]
+                        }
+                    ],
+                    "animations": [
+                        {
+                            "id": 3,
+                            "name": "Other",
+                            "prefixes": [
+                                {
+                                    "id": 19,
+                                    "name": "Collection",
+                                    "class": "label--gray"
+                                }
+                            ],
+                            "prefixIds": [
+                                19
+                            ]
+                        },
+                        {
+                            "id": 6,
+                            "name": "Animation",
+                            "prefixes": [
+                                {
+                                    "id": 39,
+                                    "name": "Video",
+                                    "class": "label--orange"
+                                },
+                                {
+                                    "id": 38,
+                                    "name": "GIF",
+                                    "class": "label--skyBlue"
+                                },
+                                {
+                                    "id": 37,
+                                    "name": "Flash",
+                                    "class": "label--royalBlue"
+                                },
+                                {
+                                    "id": 59,
+                                    "name": "App",
+                                    "class": "label--green"
+                                }
+                            ],
+                            "prefixIds": [
+                                39,
+                                38,
+                                37,
+                                59
+                            ]
+                        }
+                    ],
+                    "assets": [
+                        {
+                            "id": 5,
+                            "name": "Assets",
+                            "prefixes": [
+                                {
+                                    "id": 115,
+                                    "name": "RPGM",
+                                    "class": "label--blue"
+                                },
+                                {
+                                    "id": 33,
+                                    "name": "Daz",
+                                    "class": "label--orange"
+                                },
+                                {
+                                    "id": 35,
+                                    "name": "VAM",
+                                    "class": "label--royalBlue"
+                                },
+                                {
+                                    "id": 36,
+                                    "name": "Illusion",
+                                    "class": "label--lightGreen"
+                                },
+                                {
+                                    "id": 40,
+                                    "name": "AutoDesk",
+                                    "class": "label--green"
+                                },
+                                {
+                                    "id": 41,
+                                    "name": "Poser",
+                                    "class": "label--accent"
+                                },
+                                {
+                                    "id": 42,
+                                    "name": "Blender",
+                                    "class": "label--skyBlue"
+                                },
+                                {
+                                    "id": 110,
+                                    "name": "Unreal",
+                                    "class": "label--royalBlue"
+                                },
+                                {
+                                    "id": 45,
+                                    "name": "Tutorial",
+                                    "class": "label--lightGreen"
+                                },
+                                {
+                                    "id": 71,
+                                    "name": "Other",
+                                    "class": "label--lightGreen"
+                                },
+                                {
+                                    "id": 114,
+                                    "name": "Unity",
+                                    "class": "pre-unity"
+                                }
+                            ],
+                            "prefixIds": [
+                                115,
+                                33,
+                                35,
+                                36,
+                                40,
+                                41,
+                                42,
+                                110,
+                                45,
+                                71,
+                                114
+                            ]
+                        },
+                        {
+                            "id": 3,
+                            "name": "Other",
+                            "prefixes": [
+                                {
+                                    "id": 19,
+                                    "name": "Collection",
+                                    "class": "label--gray"
+                                }
+                            ],
+                            "prefixIds": [
+                                19
+                            ]
+                        }
+                    ]
+                }
+            },
+            "preferredTags": [],
+            "excludedTags": [],
+            "markedTags": [],
+            "color": {
+                "completed": "#388e3c",
+                "onhold": "#1976d2",
+                "abandoned": "#c9a300",
+                "highVersion": "#2e7d32",
+                "invalidVersion": "#a38400",
+                "tileInfo": "#9398a0",
+                "tileHeader": "#d9d9d9",
+                "preferred": "#7b1fa2",
+                "preferredText": "#ffffff",
+                "excluded": "#b71c1c",
+                "excludedText": "#ffffff",
+                "marked": "#4a4f55",
+                "markedText": "#ffffff"
+            },
+            "overlaySettings": {
+                "completed": true,
+                "onhold": true,
+                "abandoned": true,
+                "highVersion": true,
+                "invalidVersion": true,
+                "preferred": true,
+                "excluded": true,
+                "overlayText": true,
+                "ratingHighlight": true,
+                "engagementHighlight": true
+            },
+            "threadSettings": {
+                "marked": true,
+                "preferred": true,
+                "preferredShadow": true,
+                "excluded": true,
+                "excludedShadow": true,
+                "isWide": true,
+                "collapseSignature": true,
+                "threadOverlayToggle": true
+            },
+            "globalSettings": {
+                "configVisibility": true,
+                "closeNotifOnClick": true,
+                "enableCrossTabSync": false,
+                "allowUntrustedAddons": false,
+                "disableAddonsService": false,
+                "disableHelpMessage": false
+            },
+            "latestSettings": {
+                "autoRefresh": false,
+                "webNotif": false,
+                "minVersion": 0.5,
+                "wideLatest": true,
+                "denseLatestGrid": true,
+                "latestAjaxErrorRecovery": true,
+                "latestOverlayToggle": true,
+                "latestOverlayColorOrder": [
+                    "excluded",
+                    "preferred",
+                    "completed",
+                    "onhold",
+                    "abandoned",
+                    "highVersion",
+                    "invalidVersion"
+                ],
+                "latestOverlayStyle": "strip",
+                "ratingHighlightThreshold": 3,
+                "engagementRatioThreshold": 50,
+                "enableScoreWeights": true,
+                "priorityWeights": {
+                    "rating": 2.5,
+                    "engagement": 1.5,
+                    "tags": 6
+                },
+                "tagModifiers": {
+                    "preferred": 0.25,
+                    "completed": 0.25,
+                    "highVersion": 0.12,
+                    "onhold": -0.2,
+                    "abandoned": -0.4,
+                    "excluded": -0.55,
+                    "invalidVersion": 0.22
+                }
+            },
+            "metrics": {
+                "retried": 0,
+                "succeeded": 0,
+                "failed": 0,
+                "avgCache": 0,
+                "highest": 0,
+                "lowest": 0,
+                "mean": 0
+            },
+            "addons": {
+                "trustedIds": [
+                    "image-repair-addon",
+                    "masked-direct-addon",
+                    "example-addon"
+                ],
+                "byAddon": {
+                    "library-addon": {
+                        "state": {
+                            "libraryRecords": null
+                        }
+                    },
+                    "latest-filters-addon": {
+                        "state": {}
+                    }
+                },
+                "installedMeta": {
+                    "library-addon": {
+                        "name": "F95UE Library Add-on",
+                        "version": "0.3.54",
+                        "description": "Quick-add threads to a personal library and manage entries with a dedicated add-on UI.",
+                        "panelTitle": "F95UE Library Add-on",
+                        "panelBody": "Use the bottom-left page dock to open Library anywhere on F95. Save/Remove appears when you are on a thread page.",
+                        "statusMessage": "Library button is available site-wide; quick add is active on thread pages.",
+                        "pageScopes": [
+                            "f95zone"
+                        ],
+                        "capabilities": [
+                            "toast",
+                            "feature",
+                            "storage",
+                            "idb",
+                            "ui",
+                            "ui.mount",
+                            "ui.style",
+                            "ui.dialog"
+                        ],
+                        "installedSeenAt": 1784039058645,
+                        "lastSeenAt": 1784039363840
+                    },
+                    "masked-direct-addon": {
+                        "name": "F95UE Masked + Direct Download Add-on",
+                        "version": "0.3.45",
+                        "description": "Combines masked-link skipper and direct-download flows into one trusted add-on.",
+                        "panelTitle": "F95UE Masked + Direct Download Add-on",
+                        "panelBody": "This add-on provides masked-link Resolve buttons and direct-download page handling for supported hosts.",
+                        "statusMessage": "Masked-link skipper and direct-download routing are active.",
+                        "pageScopes": [
+                            "thread",
+                            "download",
+                            "direct-download"
+                        ],
+                        "capabilities": [
+                            "toast",
+                            "feature",
+                            "storage",
+                            "ui",
+                            "ui.style"
+                        ],
+                        "installedSeenAt": 1784039134091,
+                        "lastSeenAt": 1784039363921
+                    },
+                    "image-repair-addon": {
+                        "name": "F95UE Image Repair Add-on",
+                        "version": "1.1.23",
+                        "description": "Automatically retries broken attachment images on F95Zone threads.",
+                        "panelTitle": "F95UE Image Repair Add-on",
+                        "panelBody": "Retries failed attachment images (attachments.f95zone.to). Use Enable / Disable to control whether the watcher is active.",
+                        "statusMessage": "Watching for broken images and retrying automatically.",
+                        "pageScopes": [
+                            "thread"
+                        ],
+                        "capabilities": [
+                            "toast",
+                            "feature",
+                            "storage",
+                            "observer",
+                            "ui",
+                            "ui.style"
+                        ],
+                        "installedSeenAt": 1784039134148,
+                        "lastSeenAt": 1784039134148
+                    }
+                },
+                "service": {
+                    "apiThrottle": {
+                        "coreActionWindowMs": 5000,
+                        "coreActionRateMax": 100,
+                        "coreActionMaxConcurrent": 12
+                    }
+                }
+            },
+            "savedNotifID": null
+        }
+    }
+}

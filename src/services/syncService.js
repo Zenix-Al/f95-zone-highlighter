@@ -3,10 +3,10 @@ import { createFeature } from "../core/featureFactory.js";
 import { recordHealthEvent } from "../core/featureHealth.js";
 import { storageAdapter } from "./storageAdapter.js";
 import {
-  CONFIG_ENVELOPE_KEY,
   CONFIG_WRITER_ID,
   validateConfigEnvelope,
 } from "./settingsService.js";
+import { CONFIG_STORAGE_KEYS } from "../config/persistence.js";
 import { applyConfigChange } from "./configChangeApplication.js";
 
 let listenerId = null;
@@ -72,7 +72,7 @@ async function initCrossTabSync() {
   if (listenerId !== null || !config.globalSettings.enableCrossTabSync) return;
 
   try {
-    const current = await storageAdapter.get(CONFIG_ENVELOPE_KEY, null);
+    const current = await storageAdapter.get(CONFIG_STORAGE_KEYS.current, null);
     if (validateConfigEnvelope(current).valid) setLastApplied(current);
     else lastApplied = { revision: 0, updatedAt: 0, writerId: CONFIG_WRITER_ID };
   } catch {
@@ -80,7 +80,7 @@ async function initCrossTabSync() {
     recordSyncDiagnostic("SYNC_STORAGE_READ_FAILED", "Could not initialize the local sync tuple.");
   }
 
-  listenerId = storageAdapter.subscribe(CONFIG_ENVELOPE_KEY, (_name, _oldValue, newValue, remote) => {
+  listenerId = storageAdapter.subscribe(CONFIG_STORAGE_KEYS.current, (_name, _oldValue, newValue, remote) => {
     try {
       if (!remote) {
         const local = validateConfigEnvelope(newValue);
