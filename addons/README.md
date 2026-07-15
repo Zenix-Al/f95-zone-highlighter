@@ -421,6 +421,25 @@ must not reconstruct the untrusted policy or its blocked message. The bridge
 keeps the existing event names, handshake fields, action response shapes, and
 teardown acknowledgment behavior unchanged.
 
+### Example Add-on template boundaries
+
+The Example Add-on is the copyable runtime template. Its `main.js` only constructs
+manifest-injected runtime metadata, creates the bridge and app, waits for core, starts
+bootstrap, and reports fatal bootstrap failures. Within `src/`:
+
+- `core/` owns bridge adaptation;
+- `api/` owns thin action-specific wrappers and raw action IDs;
+- `app/state.js` owns runtime state and stable storage/IDB payload definitions;
+- `app/lifecycle.js` serializes enable, disable, refresh, and terminal teardown;
+- `app/commands.js` owns core command dispatch and teardown routing;
+- `app/createExampleAddonApp.js` composes app behavior and delegates rendering/UI to `ui/`;
+- `ui/` owns markup, CSS, dialog views, render helpers, and DOM event bindings;
+- optional domain modules such as bulk-work controllers belong under `app/` or a named domain folder.
+
+Every listener, timeout, observer test node, mount, dock button, dialog, style, and pending
+bulk operation is add-on-owned. Disable cancels owned asynchronous work and releases reversible
+resources; terminal teardown removes command/UI listeners and sends `teardown-complete` once.
+
 ## Non-mutating baseline and smoke build
 
 `ADDON-BASELINE-01` uses a separate audit path so measurement does not invoke the production

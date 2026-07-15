@@ -32,7 +32,7 @@ if (!fs.existsSync(TMP_DIR)) {
   fs.mkdirSync(TMP_DIR, { recursive: true });
 }
 
-function loadModule(relativePath) {
+function loadModule(relativePath, options = {}) {
   const entry = path.join(ROOT, relativePath);
   const outFile = path.join(
     TMP_DIR,
@@ -44,6 +44,7 @@ function loadModule(relativePath) {
     bundle: true,
     format: "cjs",
     platform: "node",
+    loader: options.loader,
     define: {
       __F95UE_DEBUG__: "false",
     },
@@ -2384,6 +2385,187 @@ runTest("ADDON-BUILD-TOOLS-01 normalizes Windows and POSIX metafile paths", () =
   const serialized = JSON.stringify(normalized);
   assert.doesNotMatch(serialized, /\\/);
   assert.doesNotMatch(serialized, /[A-Za-z]:[\\/]/);
+});
+
+runTest("ADDON-GOLDEN-01 keeps Example Add-on composition and API boundaries", () => {
+  const addonRoot = path.join(ROOT, "addons", "example-addon", "src");
+  const mainSource = fs.readFileSync(path.join(addonRoot, "main.js"), "utf8");
+  const appSource = fs.readFileSync(path.join(addonRoot, "app", "createExampleAddonApp.js"), "utf8");
+  const appSources = collectJavaScriptFiles(path.join(addonRoot, "app"))
+    .map((filePath) => fs.readFileSync(filePath, "utf8"))
+    .join("\n");
+  const uiSources = collectJavaScriptFiles(path.join(addonRoot, "ui"))
+    .map((filePath) => fs.readFileSync(filePath, "utf8"))
+    .join("\n");
+  const manifestEntry = ADDON_MANIFEST.addons.find((addon) => addon.id === "example-addon");
+
+  assert.ok(manifestEntry);
+  assert.deepStrictEqual(manifestEntry.pageScopes, ["f95zone"]);
+  assert.match(mainSource, /__ADDON_ID__/);
+  assert.match(mainSource, /waitForCorePing/);
+  assert.match(mainSource, /createCoreAdaptor/);
+  assert.match(mainSource, /createExampleAddonApp/);
+  assert.match(mainSource, /app\.bootstrap\(\)/);
+  assert.doesNotMatch(mainSource, /invokeCoreAction|registerAddonRuntime|openDialog/);
+  assert.match(appSource, /createExampleLifecycle/);
+  assert.match(appSource, /createBulkImportController/);
+  assert.doesNotMatch(appSources, /\.invokeCoreAction\(/);
+  assert.doesNotMatch(uiSources, /\.invokeCoreAction\(/);
+  assert.ok(fs.existsSync(path.join(addonRoot, "core", "adaptor.js")));
+  assert.ok(fs.existsSync(path.join(addonRoot, "api", "bridge.js")));
+  assert.ok(fs.existsSync(path.join(addonRoot, "app", "state.js")));
+  assert.ok(fs.existsSync(path.join(addonRoot, "app", "lifecycle.js")));
+  assert.ok(fs.existsSync(path.join(addonRoot, "app", "commands.js")));
+  assert.ok(fs.existsSync(path.join(addonRoot, "ui", "panel.js")));
+  assert.ok(fs.existsSync(path.join(addonRoot, "ui", "bindings.js")));
+});
+
+runTest("ADDON-GOLDEN-01 boots normally on the declared F95Zone scope", async () => {
+  const previousWindow = global.window;
+  const previousDocument = global.document;
+  const domWindow = new Window();
+  global.window = domWindow;
+  global.document = domWindow.document;
+  const registrations = [];
+  const actions = [];
+  let commandHandler = null;
+  let resolveTeardown;
+  const teardownAcknowledged = new Promise((resolve) => {
+    resolveTeardown = resolve;
+  });
+  const core = {
+    registerAddon: (addon) => {
+      registrations.push(addon);
+      return { ok: true };
+    },
+    updateStatus: (status, message) => {
+      actions.push({ action: "status", status, message });
+      return { ok: true };
+    },
+    bindAddonCommands: (handler) => {
+      commandHandler = handler;
+      return () => { commandHandler = null; };
+    },
+    notifyTeardownComplete: (reason) => {
+      actions.push({ action: "teardown-ack", reason });
+      resolveTeardown(reason);
+      return { ok: true };
+    },
+    invokeCoreAction: async (action) => {
+      actions.push({ action });
+      if (action === "addon.access") return { ok: true, value: { blocked: false } };
+      if (action === "addon.throttle") return { ok: true, value: {} };
+      return { ok: true };
+    },
+  };
+  try {
+    const { createExampleAddonApp } = loadModule("addons/example-addon/src/app/createExampleAddonApp.js", {
+      loader: { ".css": "text", ".html": "text" },
+    });
+    const app = createExampleAddonApp({
+      core,
+      runtime: {
+        addonId: "example-addon",
+        addonName: "Example Add-on",
+        addonVersion: "0.2.8",
+        addonDescription: "Example",
+        capabilities: ADDON_MANIFEST.addons.find((addon) => addon.id === "example-addon").capabilities,
+        pageScopes: ["f95zone"],
+        runtimeMode: "core-required",
+        matches: ["*://f95zone.to/*"],
+      },
+    });
+    await app.bootstrap();
+    assert.strictEqual(registrations.length, 2);
+    assert.deepStrictEqual(registrations[0].pageScopes, ["f95zone"]);
+    assert.strictEqual(actions.some((entry) => entry.action === "scope.error"), false);
+    assert.ok(actions.some((entry) => entry.action === "ui.style.register"));
+    assert.ok(actions.some((entry) => entry.action === "ui.mount"));
+    commandHandler({ command: "teardown", reason: "terminal-bootstrap-test" });
+    commandHandler({ command: "teardown", reason: "duplicate-terminal-bootstrap-test" });
+    assert.strictEqual(await teardownAcknowledged, "terminal-bootstrap-test");
+    assert.strictEqual(actions.filter((entry) => entry.action === "teardown-ack").length, 1);
+    assert.ok(actions.some((entry) => entry.action === "ui.dock.removeButtons"));
+    assert.ok(actions.some((entry) => entry.action === "ui.unmount"));
+    assert.ok(actions.some((entry) => entry.action === "ui.style.unregister"));
+  } finally {
+    global.window = previousWindow;
+    global.document = previousDocument;
+  }
+});
+
+runTest("ADDON-GOLDEN-01 serializes lifecycle, suppresses stale commits, and acknowledges teardown once", async () => {
+  const { createExampleLifecycle } = loadModule("addons/example-addon/src/app/lifecycle.js");
+  const events = [];
+  let releaseEnable;
+  let enableStarted;
+  const enableStartedPromise = new Promise((resolve) => {
+    enableStarted = resolve;
+  });
+  const enableGate = new Promise((resolve) => {
+    releaseEnable = resolve;
+  });
+  const lifecycle = createExampleLifecycle({
+    onEnable: async ({ isCurrent }) => {
+      events.push("enable:start");
+      enableStarted();
+      await enableGate;
+      if (!isCurrent()) {
+        events.push("enable:stale");
+        return { ok: false, reason: "enable_superseded" };
+      }
+      events.push("enable:commit");
+      return { ok: true };
+    },
+    onDisable: async () => {
+      events.push("disable");
+      return { ok: true };
+    },
+    onRefresh: async () => {
+      events.push("refresh");
+      return { ok: true };
+    },
+    onTeardown: async ({ reason }) => {
+      events.push(`teardown:${reason}`);
+      return { ok: true };
+    },
+    onTeardownAcknowledged: async (reason) => {
+      events.push(`ack:${reason}`);
+    },
+  });
+
+  const enablePromise = lifecycle.enable();
+  await enableStartedPromise;
+  const disablePromise = lifecycle.disable();
+  releaseEnable();
+  assert.deepStrictEqual(await enablePromise, { ok: false, reason: "enable_superseded" });
+  assert.deepStrictEqual(await disablePromise, { ok: true });
+
+  assert.deepStrictEqual(await lifecycle.enable(), { ok: true });
+  assert.deepStrictEqual(await lifecycle.refresh(), { ok: true });
+  assert.deepStrictEqual(await lifecycle.teardown("terminal-test"), { ok: true });
+  assert.deepStrictEqual(await lifecycle.teardown("ignored-second-reason"), { ok: true });
+  assert.strictEqual(events.filter((event) => event.startsWith("teardown:")).length, 1);
+  assert.deepStrictEqual(events.filter((event) => event.startsWith("ack:")), ["ack:terminal-test"]);
+  assert.strictEqual(lifecycle.isTerminated(), true);
+  assert.strictEqual(lifecycle.isTeardownAcknowledged(), true);
+  assert.deepStrictEqual(await lifecycle.enable(), { ok: false, reason: "terminated" });
+});
+
+runTest("ADDON-GOLDEN-01 keeps owned cancellation and late-commit guards in the app", () => {
+  const appSource = fs.readFileSync(path.join(ROOT, "addons/example-addon/src/app/createExampleAddonApp.js"), "utf8");
+  const bulkSource = fs.readFileSync(path.join(ROOT, "addons/example-addon/src/app/bulkImport.js"), "utf8");
+  assert.match(appSource, /ownedTimeouts/);
+  assert.match(appSource, /ownedObserverNodes/);
+  assert.match(appSource, /cancelOwnedTimeouts/);
+  assert.match(appSource, /bulkImport\.requestCancellation\(\)/);
+  assert.match(appSource, /unregisterStyle/);
+  assert.match(appSource, /commandController\.unbind\(\)/);
+  assert.match(appSource, /notifyTeardownComplete/);
+  assert.match(appSource, /if \(!state\.enabled \|\| terminal\)/);
+  assert.match(bulkSource, /handleDialogClosed/);
+  assert.match(bulkSource, /active\.closing = true/);
+  assert.match(bulkSource, /finally \{\s*active = null;/s);
 });
 
 runTest("ADDON-SCOPE-02 validates authoritative metadata and preserves headers", () => {

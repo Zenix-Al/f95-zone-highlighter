@@ -711,52 +711,52 @@ Make the example a safe reference for metadata, lifecycle, API wrappers, cancell
 
 ### Required implementation
 
-- [ ] Use `pageScopes: ["f95zone"]`.
-- [ ] Use manifest-injected runtime metadata only.
-- [ ] Keep `main.js` limited to:
+- [x] Use `pageScopes: ["f95zone"]`.
+- [x] Use manifest-injected runtime metadata only.
+- [x] Keep `main.js` limited to:
   - runtime construction;
   - adaptor/app composition;
   - core availability check;
   - bootstrap;
   - fatal error reporting.
-- [ ] Separate:
+- [x] Separate:
   - lifecycle/command handling;
   - state;
   - API demos;
   - long-running work;
   - UI rendering;
   - UI event binding.
-- [ ] Keep raw action IDs under `src/api/**` or the adaptor.
-- [ ] Make listeners, timers, observers, mounts, dialogs, dock buttons, styles, and pending requests explicitly owned.
-- [ ] Make enable/disable/refresh repeatable.
-- [ ] Reserve permanent unbinding for terminal teardown/unregister.
-- [ ] Cancel bulk work and suppress late UI commits after disable/teardown.
-- [ ] Add deterministic teardown acknowledgment.
-- [ ] Document canonical folder boundaries:
+- [x] Keep raw action IDs under `src/api/**` or the adaptor.
+- [x] Make listeners, timers, observers, mounts, dialogs, dock buttons, styles, and pending requests explicitly owned.
+- [x] Make enable/disable/refresh repeatable.
+- [x] Reserve permanent unbinding for terminal teardown/unregister.
+- [x] Cancel bulk work and suppress late UI commits after disable/teardown.
+- [x] Add deterministic teardown acknowledgment.
+- [x] Document canonical folder boundaries:
   - `main.js`;
   - `core/`;
   - `api/`;
   - `app/`;
   - `ui/`;
   - optional domain folders.
-- [ ] Do not turn the example into a shared framework package.
-- [ ] Ensure every demonstration still exists after splitting.
+- [x] Do not turn the example into a shared framework package.
+- [x] Ensure every demonstration still exists after splitting.
 
 ### Required tests
 
-- [ ] Normal F95Zone bootstrap succeeds without scope errors.
-- [ ] Repeated enable/disable/refresh works.
-- [ ] Terminal teardown releases every resource.
-- [ ] Teardown acknowledgment is exactly once.
-- [ ] Late bulk results cannot update closed UI.
-- [ ] Raw action IDs do not appear in app/UI modules.
-- [ ] Structure and lint checks pass.
+- [x] Normal F95Zone bootstrap succeeds without scope errors.
+- [x] Repeated enable/disable/refresh works.
+- [x] Terminal teardown releases every resource.
+- [x] Teardown acknowledgment is exactly once.
+- [x] Late bulk results cannot update closed UI.
+- [x] Raw action IDs do not appear in app/UI modules.
+- [x] Structure and lint checks pass.
 
 ### Acceptance criteria
 
-- [ ] The example can be copied without inheriting scope or lifecycle defects.
-- [ ] Its main app module is an orchestration facade.
-- [ ] Documentation and source layout match.
+- [x] The example can be copied without inheriting scope or lifecycle defects.
+- [x] Its main app module is an orchestration facade.
+- [x] Documentation and source layout match.
 
 ---
 

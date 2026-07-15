@@ -4,18 +4,15 @@ import { waitForCorePing } from "./api/bridge.js";
 import { createCoreAdaptor } from "./core/adaptor.js";
 
 const runtime = {
-  addonId: typeof __ADDON_ID__ === "string" ? __ADDON_ID__ : "example-addon",
-  addonName: typeof __ADDON_NAME__ === "string" ? __ADDON_NAME__ : "F95UE Example Add-on",
-  addonVersion: typeof __ADDON_VERSION__ === "string" ? __ADDON_VERSION__ : "0.2.0",
-  addonDescription:
-    typeof __ADDON_DESCRIPTION__ === "string"
-      ? __ADDON_DESCRIPTION__
-      : "Reference add-on exercising every current core action through api modules.",
-  capabilities: Array.isArray(__ADDON_CAPABILITIES__) ? __ADDON_CAPABILITIES__ : [],
-  requiresCore: Boolean(__ADDON_REQUIRES_CORE__),
-  pageScopes: Array.isArray(__ADDON_PAGE_SCOPES__) ? __ADDON_PAGE_SCOPES__ : ["f95zone"],
-  runtimeMode: typeof __ADDON_RUNTIME_MODE__ === "string" ? __ADDON_RUNTIME_MODE__ : "core-required",
-  matches: Array.isArray(__ADDON_MATCHES__) ? __ADDON_MATCHES__ : ["*://f95zone.to/*"],
+  addonId: __ADDON_ID__,
+  addonName: __ADDON_NAME__,
+  addonVersion: __ADDON_VERSION__,
+  addonDescription: __ADDON_DESCRIPTION__,
+  capabilities: __ADDON_CAPABILITIES__,
+  requiresCore: __ADDON_REQUIRES_CORE__,
+  pageScopes: __ADDON_PAGE_SCOPES__,
+  runtimeMode: __ADDON_RUNTIME_MODE__,
+  matches: __ADDON_MATCHES__,
 };
 
 const core = createCoreAdaptor(runtime.addonId);

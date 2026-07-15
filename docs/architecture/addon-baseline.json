@@ -1096,10 +1096,10 @@
     {
       "id": "example-addon",
       "source": {
-        "fileCount": 22,
-        "authoredBytes": 58381,
-        "physicalLines": 1874,
-        "nonblankLines": 1692,
+        "fileCount": 27,
+        "authoredBytes": 61303,
+        "physicalLines": 1929,
+        "nonblankLines": 1767,
         "files": [
           {
             "path": "addons/example-addon/src/api/bridge.js",
@@ -1168,10 +1168,34 @@
             "nonblankLines": 11
           },
           {
+            "path": "addons/example-addon/src/app/bulkImport.js",
+            "bytes": 8064,
+            "physicalLines": 196,
+            "nonblankLines": 181
+          },
+          {
+            "path": "addons/example-addon/src/app/commands.js",
+            "bytes": 2060,
+            "physicalLines": 64,
+            "nonblankLines": 61
+          },
+          {
             "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-            "bytes": 36060,
-            "physicalLines": 1137,
-            "nonblankLines": 1041
+            "bytes": 22839,
+            "physicalLines": 718,
+            "nonblankLines": 678
+          },
+          {
+            "path": "addons/example-addon/src/app/lifecycle.js",
+            "bytes": 1867,
+            "physicalLines": 66,
+            "nonblankLines": 60
+          },
+          {
+            "path": "addons/example-addon/src/app/state.js",
+            "bytes": 2476,
+            "physicalLines": 83,
+            "nonblankLines": 77
           },
           {
             "path": "addons/example-addon/src/constants.js",
@@ -1187,9 +1211,15 @@
           },
           {
             "path": "addons/example-addon/src/main.js",
-            "bytes": 1933,
-            "physicalLines": 40,
-            "nonblankLines": 34
+            "bytes": 1393,
+            "physicalLines": 37,
+            "nonblankLines": 31
+          },
+          {
+            "path": "addons/example-addon/src/ui/bindings.js",
+            "bytes": 2216,
+            "physicalLines": 68,
+            "nonblankLines": 62
           },
           {
             "path": "addons/example-addon/src/ui/bulkImportProgressDialog.js",
@@ -1238,12 +1268,16 @@
       "builds": {
         "regular": {
           "mode": "regular",
-          "bytes": 62593,
-          "gzipBytes": 13418,
+          "bytes": 65919,
+          "gzipBytes": 14390,
           "contributors": [
             {
               "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-              "bytes": 34814
+              "bytes": 21632
+            },
+            {
+              "path": "addons/example-addon/src/app/bulkImport.js",
+              "bytes": 7941
             },
             {
               "path": "addons/example-addon/src/ui/panel.js",
@@ -1262,12 +1296,28 @@
               "bytes": 2751
             },
             {
-              "path": "addons/example-addon/src/main.js",
-              "bytes": 1497
+              "path": "addons/example-addon/src/app/state.js",
+              "bytes": 2454
+            },
+            {
+              "path": "addons/example-addon/src/ui/bindings.js",
+              "bytes": 2326
+            },
+            {
+              "path": "addons/example-addon/src/app/lifecycle.js",
+              "bytes": 1979
+            },
+            {
+              "path": "addons/example-addon/src/app/commands.js",
+              "bytes": 1973
             },
             {
               "path": "addons/example-addon/src/constants.js",
               "bytes": 1102
+            },
+            {
+              "path": "addons/example-addon/src/main.js",
+              "bytes": 1098
             },
             {
               "path": "addons/example-addon/src/api/idb.js",
@@ -1300,37 +1350,21 @@
             {
               "path": "addons/example-addon/src/api/feature.js",
               "bytes": 289
-            },
-            {
-              "path": "addons/example-addon/src/api/ui/style.js",
-              "bytes": 280
-            },
-            {
-              "path": "addons/example-addon/src/ui/extraMount.js",
-              "bytes": 248
-            },
-            {
-              "path": "addons/example-addon/src/ui/dock.html",
-              "bytes": 225
-            },
-            {
-              "path": "addons/example-addon/src/api/ui/dock.js",
-              "bytes": 224
-            },
-            {
-              "path": "addons/example-addon/src/api/meta.js",
-              "bytes": 191
             }
           ]
         },
         "release": {
           "mode": "release",
-          "bytes": 56939,
-          "gzipBytes": 11782,
+          "bytes": 62314,
+          "gzipBytes": 13006,
           "contributors": [
             {
               "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-              "bytes": 23689
+              "bytes": 14788
+            },
+            {
+              "path": "addons/example-addon/src/app/bulkImport.js",
+              "bytes": 5922
             },
             {
               "path": "addons/example-addon/src/ui/panel.js",
@@ -1349,8 +1383,24 @@
               "bytes": 2280
             },
             {
+              "path": "addons/example-addon/src/app/state.js",
+              "bytes": 1757
+            },
+            {
+              "path": "addons/example-addon/src/ui/bindings.js",
+              "bytes": 1640
+            },
+            {
+              "path": "addons/example-addon/src/app/lifecycle.js",
+              "bytes": 1340
+            },
+            {
+              "path": "addons/example-addon/src/app/commands.js",
+              "bytes": 1291
+            },
+            {
               "path": "addons/example-addon/src/main.js",
-              "bytes": 1096
+              "bytes": 885
             },
             {
               "path": "addons/example-addon/src/constants.js",
@@ -1387,26 +1437,6 @@
             {
               "path": "addons/example-addon/src/api/observer.js",
               "bytes": 230
-            },
-            {
-              "path": "addons/example-addon/src/ui/extraMount.js",
-              "bytes": 230
-            },
-            {
-              "path": "addons/example-addon/src/api/ui/style.js",
-              "bytes": 218
-            },
-            {
-              "path": "addons/example-addon/src/ui/dock.html",
-              "bytes": 215
-            },
-            {
-              "path": "addons/example-addon/src/api/ui/dock.js",
-              "bytes": 193
-            },
-            {
-              "path": "addons/shared/htmlUtils.js",
-              "bytes": 171
             }
           ]
         }
