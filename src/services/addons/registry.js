@@ -6,12 +6,15 @@ import {
   sanitizeAddonIdList,
   VALID_ADDON_STATUSES,
 } from "./shared.js";
-import { getTrustedCatalogEntry } from "./catalog.js";
+import { getCanonicalAddonId, getTrustedCatalogEntry } from "./catalog.js";
 import { resolveAddonAccess } from "./access.js";
 import { validateAddonRuntimeMetadata } from "./scope.js";
 
 const REGISTRY_LISTENERS = new Set();
 let addonsRuntimeRegistry = [];
+// Kept outside the public registry entry so the bridge response shape remains
+// unchanged. This records which runtime identity currently owns a canonical ID.
+let runtimeRegistrationSources = new Map();
 
 function clonePlainValue(value) {
   if (Array.isArray(value)) {
@@ -57,7 +60,8 @@ function createRegistrySnapshot() {
 }
 
 function findRegistryIndex(addonId) {
-  return addonsRuntimeRegistry.findIndex((addon) => addon.id === addonId);
+  const canonicalId = getCanonicalAddonId(addonId);
+  return addonsRuntimeRegistry.findIndex((addon) => addon.id === canonicalId);
 }
 
 function normalizeAddonEntry(addon, existingAddon = null) {
@@ -66,7 +70,7 @@ function normalizeAddonEntry(addon, existingAddon = null) {
   const metadata = validateAddonRuntimeMetadata(addon, { registration: true });
   if (!metadata.ok) return null;
 
-  const id = sanitizeAddonId(addon.id);
+  const id = getCanonicalAddonId(addon.id);
   const name = String(addon.name || existingAddon?.name || "").trim();
   if (!id || !name) return null;
 
@@ -224,6 +228,7 @@ function emitRegistryChange() {
 
 function replaceRegistry(addons) {
   addonsRuntimeRegistry = Array.isArray(addons) ? addons.map((addon) => cloneAddonEntry(addon)) : [];
+  runtimeRegistrationSources = new Map(addonsRuntimeRegistry.map((addon) => [addon.id, addon.id]));
   emitRegistryChange();
   return createRegistrySnapshot();
 }
@@ -233,7 +238,7 @@ export function listRegisteredAddons() {
 }
 
 export function getRegisteredAddon(addonId) {
-  const normalizedId = sanitizeAddonId(addonId);
+  const normalizedId = getCanonicalAddonId(addonId);
   if (!normalizedId) return null;
   const index = findRegistryIndex(normalizedId);
   if (index < 0) return null;
@@ -248,10 +253,20 @@ export function replaceRegisteredAddons(addons) {
 }
 
 export function registerAddon(addon) {
-  const normalizedId = sanitizeAddonId(addon?.id);
+  const sourceId = sanitizeAddonId(addon?.id);
+  const normalizedId = getCanonicalAddonId(sourceId);
   const existingIndex = normalizedId ? findRegistryIndex(normalizedId) : -1;
   const existingAddon = existingIndex >= 0 ? addonsRuntimeRegistry[existingIndex] : null;
-  const normalized = normalizeAddonEntry(addon, existingAddon);
+  const existingSource = normalizedId ? runtimeRegistrationSources.get(normalizedId) : null;
+
+  // A canonical registration supersedes an old runtime alias. Two different
+  // aliases cannot race into two cards; the first source remains authoritative
+  // until the canonical runtime appears.
+  if (existingIndex >= 0 && existingSource && existingSource !== sourceId && sourceId !== normalizedId) {
+    return createRegistrySnapshot();
+  }
+
+  const normalized = normalizeAddonEntry({ ...addon, id: normalizedId }, existingAddon);
   if (!normalized) return createRegistrySnapshot();
 
   if (existingIndex >= 0) {
@@ -259,25 +274,27 @@ export function registerAddon(addon) {
   } else {
     addonsRuntimeRegistry.push(normalized);
   }
+  runtimeRegistrationSources.set(normalizedId, sourceId || normalizedId);
 
   emitRegistryChange();
   return createRegistrySnapshot();
 }
 
 export function unregisterAddon(addonId) {
-  const normalizedId = sanitizeAddonId(addonId);
+  const normalizedId = getCanonicalAddonId(addonId);
   if (!normalizedId) return createRegistrySnapshot();
 
   const index = findRegistryIndex(normalizedId);
   if (index < 0) return createRegistrySnapshot();
 
   addonsRuntimeRegistry.splice(index, 1);
+  runtimeRegistrationSources.delete(normalizedId);
   emitRegistryChange();
   return createRegistrySnapshot();
 }
 
 export function updateAddonStatus(addonId, status, statusMessage = "") {
-  const normalizedId = sanitizeAddonId(addonId);
+  const normalizedId = getCanonicalAddonId(addonId);
   if (!normalizedId) return createRegistrySnapshot();
 
   const index = findRegistryIndex(normalizedId);

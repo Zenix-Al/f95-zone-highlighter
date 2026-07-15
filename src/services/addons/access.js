@@ -1,5 +1,6 @@
 import { sanitizeAddonId, sanitizeAddonIdList } from "./shared.js";
 import { matchesAnyUserscriptPattern, scopeAppliesToCurrentPage } from "./scope.js";
+import { getCanonicalAddonId } from "./catalog.js";
 
 const TRUST_SOURCE = Object.freeze({
   CATALOG: "catalog",
@@ -41,8 +42,8 @@ export function resolveAddonAccess({
   currentUrl = "",
 } = {}) {
   const source = addon || registered || {};
-  const id = normalizeId(providedId || source.id);
-  const normalizedTrustedIds = new Set(sanitizeAddonIdList(trustedIds));
+  const id = getCanonicalAddonId(providedId || source.id);
+  const normalizedTrustedIds = new Set(sanitizeAddonIdList(trustedIds).map((value) => getCanonicalAddonId(value)));
   const catalogIdentity = getCatalogIdentity(catalogEntry, id);
   const trustedByUser = Boolean(id && normalizedTrustedIds.has(id));
   const trustedByCatalog = !catalogIdentity.mismatch && Boolean(catalogEntry?.trusted === true);
@@ -100,4 +101,3 @@ export function resolveAddonAccess({
 }
 
 export const ADDON_TRUST_SOURCES = TRUST_SOURCE;
-

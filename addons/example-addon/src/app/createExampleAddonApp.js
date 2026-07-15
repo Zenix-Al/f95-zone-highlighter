@@ -35,7 +35,8 @@ import {
   putRecord,
   queryRecords,
 } from "../api/idb.js";
-import { watchObserver, unwatchObserver } from "../api/observer.js";
+import { waitForObserver, watchObserver, unwatchObserver } from "../api/observer.js";
+import { getPageContext } from "../api/page.js";
 import {
   getStoredValue,
   getStorageUsage,
@@ -43,7 +44,7 @@ import {
   setStoredValue,
 } from "../api/storage.js";
 import { showCoreToast } from "../api/toast.js";
-import { closeDialog, confirmDialog, openDialog } from "../api/ui/dialog.js";
+import { closeDialog, confirmDialog, openDialog, updateDialog } from "../api/ui/dialog.js";
 import { removeDockButtons, setDockButtons } from "../api/ui/dock.js";
 import { mountUi, unmountUi, updateUi } from "../api/ui/mount.js";
 import { registerStyle, unregisterStyle } from "../api/ui/style.js";
@@ -59,18 +60,27 @@ export function createExampleAddonApp({ core, runtime }) {
   let terminal = false;
   const ownedTimeouts = new Map();
   const ownedObserverNodes = new Set();
+  let ownedResourceSequence = 0;
 
   function wait(ms) {
     return new Promise((resolve) => {
       const token = {};
+      const resourceId = `timer:${++ownedResourceSequence}`;
       const finish = () => {
         if (!ownedTimeouts.has(token)) return;
         ownedTimeouts.delete(token);
+        lifecycle?.releaseResource?.(resourceId);
         resolve();
       };
       token.timer = window.setTimeout(finish, Math.max(0, Number(ms) || 0));
       token.finish = finish;
       ownedTimeouts.set(token, token);
+      lifecycle?.registerResource?.(resourceId, () => {
+        if (!ownedTimeouts.has(token)) return;
+        ownedTimeouts.delete(token);
+        window.clearTimeout(token.timer);
+        resolve();
+      }, "timer");
     });
   }
 
@@ -87,7 +97,10 @@ export function createExampleAddonApp({ core, runtime }) {
     );
   }
 
-  function updateOpenDialogContent(dialogId, html) {
+  async function updateOpenDialogContent(dialogId, html) {
+    const result = await updateDialog(core, dialogId, html);
+    if (result?.ok) return true;
+    if (result?.reason !== "unsupported_action") return false;
     const contentEl = getDialogContentElement(dialogId);
     if (!contentEl) return false;
     contentEl.innerHTML = html;
@@ -139,7 +152,7 @@ export function createExampleAddonApp({ core, runtime }) {
     if (!state.enabled || terminal || !state.ui.panelOpen) return;
 
     const html = renderExamplePanel(state);
-    if (updateOpenDialogContent(EXAMPLE_PANEL_DIALOG_ID, html)) {
+    if (await updateOpenDialogContent(EXAMPLE_PANEL_DIALOG_ID, html)) {
       return;
     }
 
@@ -268,19 +281,28 @@ export function createExampleAddonApp({ core, runtime }) {
     document.body.appendChild(node);
     ownedObserverNodes.add(node);
     const token = {};
+    const resourceId = `observer-node:${++ownedResourceSequence}`;
     const timer = window.setTimeout(() => {
       ownedTimeouts.delete(token);
       ownedObserverNodes.delete(node);
+      lifecycle?.releaseResource?.(resourceId);
       node.remove();
     }, 1500);
     token.timer = timer;
     token.finish = () => {
       ownedTimeouts.delete(token);
       ownedObserverNodes.delete(node);
+      lifecycle?.releaseResource?.(resourceId);
       window.clearTimeout(timer);
       node.remove();
     };
     ownedTimeouts.set(token, token);
+    lifecycle?.registerResource?.(resourceId, () => {
+      ownedTimeouts.delete(token);
+      ownedObserverNodes.delete(node);
+      window.clearTimeout(timer);
+      node.remove();
+    }, "observer-node");
   }
 
   async function refreshMetaSection() {
@@ -569,6 +591,11 @@ export function createExampleAddonApp({ core, runtime }) {
         setLastResult(action, result);
         break;
       }
+      case "observer-wait": {
+        const result = await waitForObserver(core, `${EXAMPLE_OBSERVER_ID}-wait`, "body", 1000);
+        setLastResult(action, result);
+        break;
+      }
       case "observer-add-node": {
         createObserverTestNode();
         setLastResult(action, { ok: true, value: "observer test node appended" });
@@ -643,6 +670,16 @@ export function createExampleAddonApp({ core, runtime }) {
         setLastResult(action, result);
         break;
       }
+      case "dialog-update": {
+        const result = await updateDialog(core, EXAMPLE_DIALOG_ID, `${renderExampleDialog()}<p>Dialog content updated through <code>ui.dialog.update</code>.</p>`);
+        setLastResult(action, result);
+        break;
+      }
+      case "meta-page": {
+        const result = await getPageContext(core);
+        setLastResult(action, result ? { ok: true, value: result } : { ok: false, reason: "unsupported_action" });
+        break;
+      }
       case "dialog-confirm": {
         const result = await confirmDialog(core, {
           title: "ui.confirm example",
@@ -714,5 +751,8 @@ export function createExampleAddonApp({ core, runtime }) {
 
   return {
     bootstrap,
+    getRuntimeSnapshot: () => lifecycle?.getSnapshot?.() || null,
+    getResourceSnapshot: () => lifecycle?.getResourceSnapshot?.() || [],
+    getPendingOperationSnapshot: () => lifecycle?.getPendingOperationSnapshot?.() || [],
   };
 }

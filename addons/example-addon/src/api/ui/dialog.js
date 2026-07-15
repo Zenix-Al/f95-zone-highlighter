@@ -9,6 +9,10 @@ export function closeDialog(core, dialogId, reason = "addon-request") {
   });
 }
 
+export function updateDialog(core, dialogId, html) {
+  return core.invokeCoreAction("ui.dialog.update", { dialogId, html });
+}
+
 export function confirmDialog(core, payload) {
   return core.invokeCoreAction("ui.confirm", payload || {});
 }

@@ -256,6 +256,26 @@ These may run in parallel after the golden/runtime contracts are available:
 - `ADDON-MASKED-DIRECT-01`
 - `SITE-REPAIR-01` after `ADDON-IDENTITY-01`
 
+### Wave 3 canonical-template rule
+
+Every Wave 3 production add-on package must explicitly use the completed
+`addons/example-addon` implementation as its structural, API-wrapper, and lifecycle
+reference. Each package must compare its current add-on against that template before
+editing and then preserve its own domain behavior while adopting the same boundaries:
+
+- manifest-injected metadata only;
+- composition-only `main.js`;
+- `core/adaptor.js` for bridge adaptation;
+- thin action-specific `api/**` wrappers;
+- `app/` state, commands, lifecycle, and domain orchestration;
+- `ui/` rendering, styles, and browser event bindings;
+- explicit ownership, cancellation, late-commit suppression, reversible disable, and
+  exactly-once terminal teardown acknowledgment.
+
+This is a per-add-on normalization rule, not permission to copy Example demos or create
+a shared framework. Public action IDs, payloads, response shapes, metadata, storage,
+IDB, host behavior, and user-facing flows remain add-on-specific compatibility contracts.
+
 ### Wave 4 — Complete Site Repair
 
 - `SITE-REPAIR-02` after `SITE-REPAIR-01`
@@ -808,17 +828,17 @@ The exact public wire format does not need to change if this context can be asse
 
 ### Required implementation
 
-- [ ] Give each add-on app a monotonically increasing lifecycle generation.
-- [ ] Abort or invalidate pending work when:
+- [x] Give each add-on app a monotonically increasing lifecycle generation.
+- [x] Abort or invalidate pending work when:
   - disable starts;
   - a newer refresh supersedes an older one;
   - route context changes;
   - terminal teardown starts.
-- [ ] Prevent stale work from committing UI/state.
-- [ ] Serialize conflicting lifecycle operations.
-- [ ] Make duplicate enable/disable/refresh commands idempotent.
-- [ ] Distinguish reversible disable from terminal teardown.
-- [ ] Require terminal teardown to:
+- [x] Prevent stale work from committing UI/state.
+- [x] Serialize conflicting lifecycle operations.
+- [x] Make duplicate enable/disable/refresh commands idempotent.
+- [x] Distinguish reversible disable from terminal teardown.
+- [x] Require terminal teardown to:
   1. stop accepting new work;
   2. abort pending operations;
   3. stop feature/domain controllers;
@@ -826,30 +846,30 @@ The exact public wire format does not need to change if this context can be asse
   5. remove listeners/observers/timers;
   6. unregister or acknowledge as required;
   7. settle exactly once.
-- [ ] Add a bounded teardown timeout/watchdog in core service behavior.
-- [ ] Make best-effort hard cleanup owner-specific after timeout.
-- [ ] Keep expected cancellation separate from failures.
-- [ ] Add snapshots for active add-on-owned resources and pending operations.
-- [ ] Add a small shared helper only after proving the pattern in Example plus another fixture.
-- [ ] Preserve current registration handshake and action response shapes.
+- [x] Add a bounded teardown timeout/watchdog in core service behavior.
+- [x] Make best-effort hard cleanup owner-specific after timeout.
+- [x] Keep expected cancellation separate from failures.
+- [x] Add snapshots for active add-on-owned resources and pending operations.
+- [x] Add a small shared helper only after proving the pattern in Example plus another fixture.
+- [x] Preserve current registration handshake and action response shapes.
 
 ### Required tests
 
-- [ ] enable → disable → enable leaves the add-on enabled.
-- [ ] refresh during disable cannot recreate UI.
-- [ ] route change invalidates old work.
-- [ ] disable during import/retry cancels late commits.
-- [ ] repeated teardown acknowledges once.
-- [ ] teardown timeout triggers deterministic hard cleanup.
-- [ ] cancellation does not count as normal failure.
-- [ ] registration transport and identity-security behavior are unchanged.
+- [x] enable → disable → enable leaves the add-on enabled.
+- [x] refresh during disable cannot recreate UI.
+- [x] route change invalidates old work.
+- [x] disable during import/retry cancels late commits.
+- [x] repeated teardown acknowledges once.
+- [x] teardown timeout triggers deterministic hard cleanup.
+- [x] cancellation does not count as normal failure.
+- [x] registration transport and identity-security behavior are unchanged.
 
 ### Acceptance criteria
 
-- [ ] Production add-ons can implement one documented lifecycle.
-- [ ] Resource leaks are visible and testable.
-- [ ] Disable remains reversible.
-- [ ] No handshake hardening is introduced.
+- [x] Production add-ons can implement one documented lifecycle.
+- [x] Resource leaks are visible and testable.
+- [x] Disable remains reversible.
+- [x] No handshake hardening is introduced.
 
 ---
 
@@ -869,41 +889,41 @@ Allow an official add-on rename without losing enabled state, settings, installa
 
 ### Required implementation
 
-- [ ] Add optional `legacyIds` to manifest metadata.
-- [ ] Validate aliases with the same ID sanitizer.
-- [ ] Reject collisions with:
+- [x] Add optional `legacyIds` to manifest metadata.
+- [x] Validate aliases with the same ID sanitizer.
+- [x] Reject collisions with:
   - active IDs;
   - other aliases;
   - folder IDs;
   - catalog IDs.
-- [ ] Resolve catalog, installed snapshots, and UI cards through the canonical ID.
-- [ ] Move alias/state normalization into the add-on state repository.
-- [ ] Do not depend on a generic core config-migration service.
-- [ ] Atomically merge legacy add-on state:
+- [x] Resolve catalog, installed snapshots, and UI cards through the canonical ID.
+- [x] Move alias/state normalization into the add-on state repository.
+- [x] Do not depend on a generic core config-migration service.
+- [x] Atomically merge legacy add-on state:
   - explicit current values win;
   - missing current values inherit;
   - earliest install and latest last-seen timestamps are retained;
   - current status/panel metadata wins;
   - old bucket is removed only after canonical persistence succeeds.
-- [ ] Make normalization idempotent.
-- [ ] If old and new userscripts register simultaneously, show one canonical card and reject conflicting active runtime registrations deterministically.
-- [ ] Keep alias data out of runtime builds unless a current consumer requires it.
-- [ ] Document release sequencing.
+- [x] Make normalization idempotent.
+- [x] If old and new userscripts register simultaneously, show one canonical card and reject conflicting active runtime registrations deterministically.
+- [x] Keep alias data out of runtime builds unless a current consumer requires it.
+- [x] Document release sequencing.
 
 ### Required tests
 
-- [ ] Legacy-only state normalizes.
-- [ ] Mixed current/legacy state merges correctly.
-- [ ] Failed persistence leaves legacy state recoverable.
-- [ ] Repeated normalization is a no-op.
-- [ ] Catalog trust/download data resolves to canonical ID.
-- [ ] Old/new simultaneous runtime registrations do not create duplicate cards.
+- [x] Legacy-only state normalizes.
+- [x] Mixed current/legacy state merges correctly.
+- [x] Failed persistence leaves legacy state recoverable.
+- [x] Repeated normalization is a no-op.
+- [x] Catalog trust/download data resolves to canonical ID.
+- [x] Old/new simultaneous runtime registrations do not create duplicate cards.
 
 ### Acceptance criteria
 
-- [ ] Renaming an add-on does not reset it.
-- [ ] Users see one canonical add-on entry.
-- [ ] Alias handling is repository-owned and independent of registration-handshake security.
+- [x] Renaming an add-on does not reset it.
+- [x] Users see one canonical add-on entry.
+- [x] Alias handling is repository-owned and independent of registration-handshake security.
 
 ---
 
@@ -980,18 +1000,18 @@ Evaluate at minimum:
 
 ### Required tests
 
-- [ ] The inventory includes every production add-on.
-- [ ] Every raw action string is accounted for.
-- [ ] Every proposed public API has at least two consumers or a documented exceptional threshold.
-- [ ] Rejected APIs include a reason.
-- [ ] No registration-handshake security item is accepted in this audit.
+- [x] The inventory includes every production add-on.
+- [x] Every raw action string is accounted for.
+- [x] Every proposed public API has at least two consumers or a documented exceptional threshold.
+- [x] Rejected APIs include a reason.
+- [x] No registration-handshake security item is accepted in this audit.
 
 ### Acceptance criteria
 
-- [ ] The report distinguishes public API gaps from add-on-local boilerplate.
-- [ ] No speculative action is added.
-- [ ] The next package has a bounded approved API list.
-- [ ] API work is ranked by correctness reduction first and byte reduction second.
+- [x] The report distinguishes public API gaps from add-on-local boilerplate.
+- [x] No speculative action is added.
+- [x] The next package has a bounded approved API list.
+- [x] API work is ranked by correctness reduction first and byte reduction second.
 
 ---
 
@@ -1013,7 +1033,7 @@ Replace repeated fragile workarounds with a small, versioned, bounded public sur
 
 For every approved API:
 
-- [ ] Define one descriptor containing:
+- [x] Define one descriptor containing:
   - action ID;
   - protocol version;
   - capability alternatives;
@@ -1023,18 +1043,18 @@ For every approved API:
   - timeout;
   - executor;
   - ownership/cleanup rule.
-- [ ] Add thin add-on wrappers under `src/api/**`.
-- [ ] Add at least two real consumers.
-- [ ] Remove the replaced workarounds.
-- [ ] Update Example Add-on demonstrations.
-- [ ] Document success, failure, cancellation, and cleanup semantics.
-- [ ] Keep payload/result sizes bounded.
-- [ ] Reauthorize immediately before externally visible async commit.
-- [ ] Preserve unsupported-action behavior for older core versions.
-- [ ] Add capability negotiation or graceful fallback in add-ons where mixed versions are supported.
-- [ ] Do not expose core DOM internals.
-- [ ] Do not add arbitrary script execution.
-- [ ] Do not change registration-handshake authentication.
+- [x] Add thin add-on wrappers under `src/api/**`.
+- [x] Add at least two real consumers.
+- [x] Remove the replaced workarounds.
+- [x] Update Example Add-on demonstrations.
+- [x] Document success, failure, cancellation, and cleanup semantics.
+- [x] Keep payload/result sizes bounded.
+- [x] Reauthorize immediately before externally visible async commit.
+- [x] Preserve unsupported-action behavior for older core versions.
+- [x] Add capability negotiation or graceful fallback in add-ons where mixed versions are supported.
+- [x] Do not expose core DOM internals.
+- [x] Do not add arbitrary script execution.
+- [x] Do not change registration-handshake authentication.
 
 ### API-specific minimum rules
 
@@ -1080,21 +1100,21 @@ For every approved API:
 
 ### Required tests
 
-- [ ] Descriptor contract snapshots.
-- [ ] Capability and scope rejection.
-- [ ] Timeout/cancellation.
-- [ ] Owner cleanup.
-- [ ] Older-core fallback.
-- [ ] Two production consumers per implemented API.
-- [ ] Removed workaround no longer exists.
-- [ ] Registration handshake remains unchanged.
+- [x] Descriptor contract snapshots.
+- [x] Capability and scope rejection.
+- [x] Timeout/cancellation.
+- [x] Owner cleanup.
+- [x] Older-core fallback.
+- [x] Two production consumers per implemented API.
+- [x] Removed workaround no longer exists.
+- [x] Registration handshake remains unchanged.
 
 ### Acceptance criteria
 
-- [ ] The public action list grows only by audited APIs.
-- [ ] Consumers become simpler or safer.
-- [ ] No API exists with only a demo consumer.
-- [ ] Net source/bundle and maintenance impact is recorded.
+- [x] The public action list grows only by audited APIs.
+- [x] Consumers become simpler or safer.
+- [x] No API exists with only a demo consumer.
+- [x] Net source/bundle and maintenance impact is recorded.
 
 ---
 
@@ -1108,6 +1128,29 @@ For every approved API:
 
 > Execute `ADDON-HALLOWEEN-01` only. Preserve visible behavior while replacing invalid scope, raw bridge, and cleanup structure.
 
+### Golden-template comparison and normalization boundary
+
+The current add-on is a flat `main.js` plus `constants.js`/`coreBridge.js`: it performs
+registration, access checks, raw style/observer actions, DOM style injection, logo
+mutation, anonymous command listening, and teardown in one module. Compared with
+`example-addon`, it has no `core/adaptor.js`, thin `api/**`, app instance, UI boundary,
+owned restoration records, serialized lifecycle, or refresh path.
+
+The implementation must use `addons/example-addon` as the mandatory reference while
+preserving Halloween behavior. In addition to the scope fixes below, it must:
+
+- use injected metadata directly from `main.js`;
+- move bridge calls behind thin API wrappers and keep `main.js` composition-only;
+- place enable/disable/refresh/teardown and restoration state in an app module;
+- place markup/style text and browser bindings in `ui/**`;
+- own the command listener, core style, logo/srcset restoration records, and any route
+  refresh work; disable must be reversible and teardown must acknowledge once;
+- prevent stale refresh/apply work from restoring or reapplying the theme after disable.
+
+Required tests must include a structure check against the Example boundaries and a
+repository search/assertion proving raw core action invocation is confined to `api/**`
+or the adaptor. The package must not copy Example's API playground demonstrations.
+
 ### Current defects
 
 - unsupported `global` and `download` scopes;
@@ -1119,37 +1162,43 @@ For every approved API:
 
 ### Required implementation
 
-- [ ] Use manifest `pageScopes: ["f95zone"]`.
-- [ ] Register with `runtime.pageScopes`.
-- [ ] Request only required capabilities.
-- [ ] Use core-owned style action.
-- [ ] Adopt canonical boundaries:
+- [x] Use manifest `pageScopes: ["f95zone"]`.
+- [x] Register with `runtime.pageScopes`.
+- [x] Request only required capabilities.
+- [x] Use core-owned style action.
+- [x] Adopt canonical boundaries:
   - `core/adaptor.js`;
   - thin `api/**`;
   - `app/createHalloweenThemeApp.js`;
   - `ui/**`;
   - small `main.js`.
-- [ ] Narrow logo selectors.
-- [ ] Keep app-owned restoration records.
-- [ ] Make apply/remove idempotent.
-- [ ] Handle enable, disable, refresh, before-page-change, and teardown.
-- [ ] Unbind terminal listeners.
-- [ ] Acknowledge teardown exactly once.
-- [ ] Do not request storage, observer, Notification, or broad capabilities unless actual code requires them.
+- [x] Narrow logo selectors.
+- [x] Keep app-owned restoration records.
+- [x] Make apply/remove idempotent.
+- [x] Handle enable, disable, refresh, before-page-change, and teardown.
+- [x] Unbind terminal listeners.
+- [x] Acknowledge teardown exactly once.
+- [x] Do not request storage, observer, Notification, or broad capabilities unless actual code requires them.
+- [x] Complete the Example Add-on structure comparison and adopt its metadata, adaptor, API, app, and UI boundaries without copying its demos.
+- [x] Keep all raw core action invocations inside `api/**` or `core/adaptor.js`.
+- [x] Track every owned listener, timer, style, restoration record, and pending operation through disable and terminal teardown.
 
 ### Required tests
 
-- [ ] Ordinary, thread, Latest, and masked routes work.
-- [ ] Repeated enable creates no duplicate style/records.
-- [ ] Disable restores original logo values.
-- [ ] Route refresh reapplies to replaced logo nodes.
-- [ ] Teardown leaves no listener or style.
+- [x] Ordinary, thread, Latest, and masked routes work.
+- [x] Repeated enable creates no duplicate style/records.
+- [x] Disable restores original logo values.
+- [x] Route refresh reapplies to replaced logo nodes.
+- [x] Teardown leaves no listener or style.
+- [x] Example-boundary and raw-action searches pass for the normalized source tree.
+- [x] Late route/apply work cannot recreate theme UI after disable or teardown.
 
 ### Acceptance criteria
 
-- [ ] No unsupported scope remains.
-- [ ] No raw bridge dispatch remains outside adaptor/API.
-- [ ] Cleanup follows the runtime contract.
+- [x] No unsupported scope remains.
+- [x] No raw bridge dispatch remains outside adaptor/API.
+- [x] Cleanup follows the runtime contract.
+- [x] The add-on is structurally copyable from `example-addon` while retaining Halloween-specific behavior.
 
 ---
 
@@ -1163,38 +1212,68 @@ For every approved API:
 
 > Execute `ADDON-LATEST-FILTERS-01` only. Keep Latest-only behavior and preserve saved presets.
 
+### Golden-template comparison and normalization boundary
+
+The current add-on keeps mutable singleton state, runtime metadata fallbacks, storage
+helpers, rendering, bridge calls, route listeners, mount retries, dialogs, and command
+handling in `main.js`; its preset module is useful domain code but is not an app/API
+boundary. It also has direct raw bridge calls in `main.js`, direct GM fallback logic,
+untracked retry/debounce work, and browser UI fallback paths.
+
+Use `addons/example-addon` as the mandatory structural and lifecycle reference. The
+normalization must additionally:
+
+- make `main.js` metadata/adaptor/app composition and bootstrap only;
+- create `core/adaptor.js`, thin `api/**` wrappers, `app/` state/lifecycle/commands,
+  and `ui/` render/binding modules;
+- keep preset normalization/repository logic as a domain module consumed by the app,
+  with storage compatibility behind an API/storage adapter;
+- give route listeners, mount retries, debounce timers, dialogs, styles, mounts,
+  pending storage, and route generations explicit owners and cancellation;
+- ensure disable, refresh, re-enable, and teardown cannot allow stale async work to
+  recreate Latest UI or overwrite current preset state.
+
+Add structure and raw-action-boundary tests modeled on Example without changing the
+Latest-only public flow or saved formats.
+
 ### Required implementation
 
-- [ ] Keep `pageScopes: ["latest"]`.
-- [ ] Keep the existing Latest-only activation match.
-- [ ] Move mutable singleton state into an app instance.
-- [ ] Keep constants static.
-- [ ] Adopt canonical `core/`, `api/`, `app/`, and `ui/` boundaries.
-- [ ] Separate preset normalization/repository from rendering.
-- [ ] Keep GM compatibility behind a storage adapter.
-- [ ] Correct panel active-page metadata.
-- [ ] Track and cancel:
+- [x] Keep `pageScopes: ["latest"]`.
+- [x] Keep the existing Latest-only activation match.
+- [x] Move mutable singleton state into an app instance.
+- [x] Keep constants static.
+- [x] Adopt canonical `core/`, `api/`, `app/`, and `ui/` boundaries.
+- [x] Separate preset normalization/repository from rendering.
+- [x] Keep GM compatibility behind a storage adapter.
+- [x] Correct panel active-page metadata.
+- [x] Track and cancel:
   - mount retries;
   - route listeners;
   - dialog listeners;
   - pending storage;
   - debounced updates.
-- [ ] Preserve storage keys and preset formats.
-- [ ] Use approved APIs from `ADDON-API-EXTENSIONS-01` only where they remove existing workarounds.
+- [x] Preserve storage keys and preset formats.
+- [x] Use approved APIs from `ADDON-API-EXTENSIONS-01` only where they remove existing workarounds.
+- [x] Complete the Example Add-on structure comparison and use injected metadata only.
+- [x] Keep all raw core action invocations inside `api/**` or `core/adaptor.js`; app/domain/UI modules consume wrappers.
+- [x] Make lifecycle generations invalidate mount, storage, dialog, and route work before any late UI/state commit.
 
 ### Required tests
 
-- [ ] Existing presets/settings load.
-- [ ] Latest bootstrap, disable, re-enable, refresh, and teardown.
-- [ ] Rapid route replacement creates no duplicates.
-- [ ] Outside Latest, installed/idle status remains accurate and management toggles work.
-- [ ] Cancelled retries cannot recreate UI.
+- [x] Existing presets/settings load.
+- [x] Latest bootstrap, disable, re-enable, refresh, and teardown.
+- [x] Rapid route replacement creates no duplicates.
+- [x] Outside Latest, installed/idle status remains accurate and management toggles work.
+- [x] Cancelled retries cannot recreate UI.
+- [x] Example-boundary and raw-action searches pass for the normalized source tree.
+- [x] Repeated lifecycle tests prove no stale mount, dialog, preset, or listener commit.
 
 ### Acceptance criteria
 
-- [ ] Scope remains intentionally narrow.
-- [ ] No mutable state is exported from constants.
-- [ ] Main/adaptor modules contain no rendering logic.
+- [x] Scope remains intentionally narrow.
+- [x] No mutable state is exported from constants.
+- [x] Main/adaptor modules contain no rendering logic.
+- [x] The resulting layout follows `example-addon` without changing Latest-only behavior or saved formats.
 
 ---
 
@@ -1207,6 +1286,32 @@ For every approved API:
 ### Agent execution command
 
 > Execute `ADDON-LIBRARY-02` only. Preserve Library data behavior and the merged site-wide scope fix.
+
+### Golden-template comparison and normalization boundary
+
+The current Library add-on already has useful `api/library`, `library`, `thread`, and
+`ui` domain folders, but `main.js` still owns runtime state, registration, command
+dispatch, dock orchestration, lifecycle, timers, and raw bridge calls. UI application
+modules and library clients also receive/use the bridge directly, and runtime metadata
+still has fallback construction in `constants.js`.
+
+Use `addons/example-addon` as the mandatory reference for the final shape. In addition
+to the Library-specific requirements below, the package must:
+
+- add a bridge-only `core/adaptor.js` and thin action-specific `api/**` wrappers;
+- make `main.js` composition-only and move runtime state, commands, lifecycle, and
+  manager orchestration into app modules;
+- keep Library/thread/domain modules and UI renderers/bindings free of raw core action
+  invocation; they consume injected API capabilities instead;
+- track imports, progress dialogs, manager dialogs, dock/style resources, listeners,
+  timers, IDB work, and pending operations with owner/generation cancellation;
+- make disable reversible, suppress late import/UI commits, and make terminal teardown
+  release every owner and acknowledge exactly once;
+- use manifest-injected metadata without weakening the existing Library storage, IDB,
+  legacy-record, or import/export compatibility contracts.
+
+Required tests must include Example-boundary structure checks, raw-action searches for
+domain/UI code, and repeated enable/disable/refresh/teardown coverage.
 
 ### Required implementation
 
@@ -1227,6 +1332,9 @@ For every approved API:
 - [ ] Preserve database names, stores, indexes, storage keys, legacy records, and import/export formats.
 - [ ] Route debug output through shared debug behavior.
 - [ ] Adopt approved new APIs only when the audit names Library as a consumer.
+- [ ] Complete the Example Add-on structure comparison and use injected metadata only.
+- [ ] Keep raw core action invocations inside `api/**` or `core/adaptor.js`; library/thread/domain/UI modules consume wrappers.
+- [ ] Make app generations and owner cleanup suppress late import, IDB, dialog, dock, and table commits.
 
 ### Required tests
 
@@ -1235,12 +1343,15 @@ For every approved API:
 - [ ] Existing records remain compatible.
 - [ ] Disable during import prevents late writes/UI.
 - [ ] Re-enable creates no duplicate manager/dock listeners.
+- [ ] Example-boundary and raw-action searches pass for the normalized source tree.
+- [ ] Repeated lifecycle and exactly-once teardown tests cover manager, import, dock, style, listener, and timer ownership.
 
 ### Acceptance criteria
 
 - [ ] Site-wide scope is not regressed.
 - [ ] Domain modules know no raw bridge event/action strings.
 - [ ] Structure and lint checks pass.
+- [ ] The final Library layout follows `example-addon` while preserving all Library domain and persistence behavior.
 
 ---
 
@@ -1253,6 +1364,32 @@ For every approved API:
 ### Agent execution command
 
 > Execute `ADDON-MASKED-DIRECT-01` only. Preserve every existing host match, grant, document-idle timing, selector, route-context field, and supported flow.
+
+### Golden-template comparison and normalization boundary
+
+The current hybrid add-on has a large metadata-fallback `main.js` that owns the core
+bridge, F95 registration/access, settings, style, commands, teardown, and console
+helper. External host controllers are already separated under `hosts/**`, but the F95
+mode has no Example-style `core/adaptor.js`, thin `api/**`, app lifecycle boundary, or
+UI binding boundary. It also uses shared teardown arrays and many host timers,
+listeners, observers, and pending operations that must remain independent but owned.
+
+Use `addons/example-addon` as the mandatory reference for the F95 core mode only:
+
+- make `main.js` injected-metadata composition/bootstrap only;
+- add `core/adaptor.js`, thin core API wrappers, F95 `app/` lifecycle/commands/state,
+  and `ui/` rendering/binding modules;
+- keep `hosts/**`, GM cross-host state, route-context transport, and standalone host
+  behavior behind domain adapters that never import or invoke the core adaptor;
+- assign explicit owners, generations, abort/cancel paths, and late-commit guards to
+  F95 UI, route context, host handoffs, timers, listeners, observers, and pending
+  operations; terminal teardown must be idempotent and acknowledge once;
+- preserve every existing userscript header field, external flow, selector, timing,
+  storage key, request/identity field, and public response shape.
+
+Required tests must prove the Example-boundary structure for F95 mode, no raw core
+actions in host/domain/UI modules, no core events on external hosts, and repeated
+F95 enable/disable/refresh/teardown without affecting standalone flows.
 
 ### Required implementation
 
@@ -1275,6 +1412,9 @@ For every approved API:
 - [ ] Define behavior for an already-open external-host flow after F95-side disable.
 - [ ] Preserve selectors and timings unless a fixture proves a bug.
 - [ ] Keep host adapters independent from the core adaptor.
+- [ ] Complete the Example Add-on comparison for F95 mode and use injected metadata only.
+- [ ] Keep raw F95 core action invocations inside F95 `api/**` or `core/adaptor.js`; host adapters remain core-free.
+- [ ] Use generation/owner cancellation for F95 and cross-host handoff work without changing standalone transport behavior.
 
 ### Required tests
 
@@ -1287,6 +1427,8 @@ For every approved API:
 - [ ] Route context expiry/mismatch/cleanup works.
 - [ ] Disable prevents new F95 flows.
 - [ ] Every existing host adapter has success, timeout, and missing-selector fixtures.
+- [ ] Example-boundary and raw-action searches pass for F95 modules while external hosts remain core-free.
+- [ ] Repeated F95 lifecycle and exactly-once teardown tests cover styles, listeners, timers, observers, and pending handoffs.
 
 ### Acceptance criteria
 
@@ -1294,6 +1436,7 @@ For every approved API:
 - [ ] Core and standalone modes are obvious.
 - [ ] No host controller imports the core adaptor.
 - [ ] Registration-handshake security is unchanged.
+- [ ] F95 mode follows `example-addon` boundaries without imposing those boundaries on standalone host adapters.
 
 ---
 
@@ -1335,6 +1478,26 @@ For every approved API:
 - Do not generate a new namespace or a second GreasyFork identity for this
   rebrand.
 
+### Golden-template comparison and normalization boundary
+
+The current Image Repair source is a legacy flat `app.js`/`feature.js`/`ui.js` shape
+with a `coreBridge.js` re-export, direct raw API calls, direct command-event handling,
+anonymous page-ready/retry timers, mutable feature/UI state, and a console global.
+The new Site Repair implementation must start from the completed `example-addon`
+template rather than reproducing that legacy shape.
+
+The rebrand must therefore create canonical `main.js`, `core/`, `api/`, `app/`, and
+`ui/` boundaries with injected metadata, thin API wrappers, an app-owned lifecycle,
+explicit resource ownership, cancellation, late-commit suppression, reversible
+disable, and exactly-once teardown acknowledgment. Repair modules may remain domain
+modules under the app, but must not invoke raw bridge actions or own untracked global
+listeners/timers. Preserve the recovered namespace, legacy ID/state alias, repair
+behavior, and all header compatibility requirements above.
+
+Required tests must include a structural comparison against `example-addon`, raw-action
+boundary checks, repeated lifecycle/teardown tests, and proof that the rebrand does not
+inherit the legacy app's cleanup defects.
+
 ### Required implementation
 
 - [ ] Create the new add-on from canonical structure.
@@ -1355,6 +1518,9 @@ For every approved API:
   - `repairs.imageAttachments.enabled`;
   - reserved `repairs.latestAjax.enabled`.
 - [ ] Teardown modules in reverse startup order.
+- [ ] Build the new Site Repair source from the Example Add-on structure, not from the legacy Image Repair flat app.
+- [ ] Keep raw core action invocations inside `api/**` or `core/adaptor.js`; repair domains and UI consume wrappers.
+- [ ] Give repair modules and shared app lifecycle explicit owner/generation cancellation and late-commit suppression.
 
 ### Required tests
 
@@ -1363,11 +1529,13 @@ For every approved API:
 - [ ] Image repair success, exhaustion, mid-retry disable, removed node, and route change.
 - [ ] No stale UI/state after invalidation.
 - [ ] Site Repair can remain registered while a route-inapplicable repair stays idle.
+- [ ] Example-boundary, raw-action, repeated-lifecycle, and exactly-once teardown tests pass.
 
 ### Acceptance criteria
 
 - [ ] Branding supports multiple repair modules.
 - [ ] Existing users do not lose state.
+- [ ] Site Repair follows the Golden Add-on structure while preserving the legacy namespace, state alias, and repair behavior.
 - [ ] Image repair is independently startable/stoppable.
 
 ---

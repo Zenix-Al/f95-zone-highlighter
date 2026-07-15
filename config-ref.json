@@ -147,8 +147,7 @@
         "closeNotifOnClick": true,
         "enableCrossTabSync": false,
         "allowUntrustedAddons": false,
-        "disableAddonsService": false,
-        "disableHelpMessage": true
+        "disableAddonsService": false
     },
     "isImgRetryInjected": true,
     "latestSettings": {
@@ -1427,8 +1426,7 @@
                 "closeNotifOnClick": true,
                 "enableCrossTabSync": false,
                 "allowUntrustedAddons": false,
-                "disableAddonsService": false,
-                "disableHelpMessage": false
+                "disableAddonsService": false
             },
             "latestSettings": {
                 "autoRefresh": false,
@@ -2193,8 +2191,7 @@
                 "closeNotifOnClick": true,
                 "enableCrossTabSync": false,
                 "allowUntrustedAddons": false,
-                "disableAddonsService": false,
-                "disableHelpMessage": false
+                "disableAddonsService": false
             },
             "latestSettings": {
                 "autoRefresh": false,

@@ -2,6 +2,15 @@
 
 This guide explains how to design, structure, and write an external F95UE Add-on. It serves as a detailed reference for the APIs exposed by the Core message bridge and is designed to supplement the high-level outline in [addons/README.md](../../addons/README.md).
 
+The manifest ID is the canonical runtime identity. For an identity migration, declare sanitized
+`legacyIds` in the manifest. The catalog and core state repository resolve those aliases to the
+canonical ID before building installed snapshots or UI cards. Canonical state fields win conflicts;
+the earliest valid install sighting and latest valid last sighting are retained, and the state/meta
+move is one revisioned commit. Keep the alias-aware core/catalog release ahead of the renamed
+userscript, verify old and new runtimes produce one canonical card, then remove the alias in a later
+release. This does not change the bridge handshake, transport, headers, or public action response
+shapes.
+
 ---
 
 ## Recommended Add-on Structure

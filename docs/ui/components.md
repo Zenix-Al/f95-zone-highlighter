@@ -40,17 +40,6 @@ The add-on dialog variant (`components/addons/addonDialog.js`) has stronger focu
 
 Settings dialogs may provide an `onClose` callback for cleanup owned by an action controller, such as cancelling a pending file picker.
 
-## Help Messages (`components/helpMessage.js`)
-
-Displays rotating help messages while the settings modal is open:
-
-- Randomized messages.
-- A feedback link.
-- A rotation interval of roughly 12 seconds.
-- Honors the global setting that disables help messages.
-
-The timer is started when the modal opens and stopped when it closes.
-
 ## Delegated Listeners (`components/listeners.js`)
 
 Contains delegated handlers for modal actions: close, reset, and outside-click behavior for tag search. Delegation reduces the need to bind a listener to every dynamic button.

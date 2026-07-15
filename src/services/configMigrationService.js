@@ -28,6 +28,7 @@ export const LEGACY_CLEANUP_KEYS = Object.freeze([
   ...LEGACY_SURFACE_KEYS,
   "configVisibility",
   "metrics",
+  "disableHelpMessage",
 ]);
 
 export const CACHE_SECTION_KEYS = Object.freeze(["tags", "prefixes"]);
@@ -150,6 +151,17 @@ function validateCache(section, value) {
 export function hasRecognizedHistoricalData(values) {
   return LEGACY_SURFACE_KEYS.some((key) => hasValue(values, key))
     || hasValue(values, "configVisibility");
+}
+
+/**
+ * Before canonical envelopes existed, some installations stored the complete
+ * configuration object at the eventual canonical key. Treat that shape as a
+ * bounded historical source rather than as an unrecoverable envelope.
+ */
+export function isLegacyConfigRoot(value) {
+  return isRecord(value)
+    && !Object.hasOwn(value, "data")
+    && hasRecognizedHistoricalData(value);
 }
 
 export function buildMigrationPlan({

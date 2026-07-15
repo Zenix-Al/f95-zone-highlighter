@@ -84,7 +84,6 @@ export const defaultGlobalSettings = {
   closeNotifOnClick: true,
   allowUntrustedAddons: false,
   disableAddonsService: false,
-  disableHelpMessage: false,
 };
 
 export const defaultAddonsApiThrottleSettings = {

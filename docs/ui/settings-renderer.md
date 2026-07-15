@@ -96,7 +96,7 @@ Creates a setting label and optionally adds a tooltip/help badge.
 
 ### `settings/globalSettings.js`
 
-Global settings controls: config-button visibility, config import/export, feature-health reporting, and disabling the rotating help message. Some entries are action buttons rather than persisted values.
+Global settings controls: config-button visibility, config import/export, and feature-health reporting. Some entries are action buttons rather than persisted values.
 
 ### `settings/colorSettings.js`
 

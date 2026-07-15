@@ -3,6 +3,7 @@
 ## v0.2.2 - bugfix
 
 - fixed flow execution issue where add-on execute first before register, causing halloween theme is on despite core disabled it.
+- normalized the add-on around the canonical runtime lifecycle, core-owned styles, narrow logo selection, and reversible route refresh cleanup.
 
 No core update required.
 

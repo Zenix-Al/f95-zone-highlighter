@@ -8,6 +8,7 @@ import {
   TOAST_UPDATE_INTERVAL,
 } from "./constants.js";
 import { createCoreBridge } from "./coreBridge.js";
+import { waitForElement } from "./api/observer.js";
 import { createImageRepairUi } from "./ui.js";
 import { createRetryManager } from "./feature.js";
 import { debugLog } from "../../shared/debugLog.js";
@@ -33,13 +34,20 @@ function createStatusMessages() {
   };
 }
 
-async function waitForPageReady() {
-  // Wait for document.readyState to be complete
-  if (document.readyState !== "complete") {
-    await new Promise((resolve) => {
-      window.addEventListener("load", resolve, { once: true });
-    });
-  }
+async function waitForPageReady(bridge) {
+  const waitForLoadFallback = () => document.readyState === "complete"
+    ? { ok: true, value: { observerId: "image-repair-page-ready", matched: true } }
+    : new Promise((resolve) => window.addEventListener("load", () => resolve({
+      ok: true,
+      value: { observerId: "image-repair-page-ready", matched: true },
+    }), { once: true }));
+  await waitForElement(
+    bridge,
+    "image-repair-page-ready",
+    "body",
+    3000,
+    waitForLoadFallback,
+  );
 
   // Also wait for F95Zone's loading overlay to disappear (if present)
   // F95Zone shows a loading indicator during navigation
@@ -295,7 +303,7 @@ export function startImageRepairAddon() {
 
       if (isEnabled) {
         // Wait for page to fully load before enabling observer
-        await waitForPageReady();
+        await waitForPageReady(bridge);
 
         await registerUiStyle();
         feature.enable();

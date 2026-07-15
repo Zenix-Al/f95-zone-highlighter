@@ -59,7 +59,7 @@ const LEGACY_THREAD_SETTINGS_KEYS = Object.freeze([
 export const LEGACY_STORAGE_KEYS = Object.freeze(["minVersion"]);
 ```
 
-The restored migration is intentionally bounded to the historical surface-level layout proven by Git history and `config-ref.json`. It also separates `tags` and `prefixes` into cache keys, drops removed metrics/transient fields, verifies the canonical write, and sets one migration-generation marker only after success. Cleanup is a best-effort post-verification step over the explicit historical key list; unknown keys remain untouched.
+The restored migration is intentionally bounded to the historical surface-level layout proven by Git history and `config-ref.json`, including pre-envelope installations that stored the complete raw config object at `f95ue:config` or its backup key. It also separates `tags` and `prefixes` into cache keys, drops removed metrics/transient fields, verifies the canonical write, and sets one migration-generation marker only after success. Cleanup is a best-effort post-verification step over the explicit historical key list; unknown keys remain untouched.
 
 After the supported historical installations have migrated, or after an explicit compatibility-breaking release decision, remove `src/services/configMigrationService.js`, the bounded source list, marker handling, and migration tests together. Do not remove it while released installations can still be at the pre-canonical surface-key layout.
 

@@ -7,6 +7,8 @@ import {
   LIBRARY_STORAGE_KEY,
 } from "./constants.js";
 import { createCoreBridge } from "./coreBridge.js";
+import { getPageContext } from "./api/page.js";
+import { waitForElement } from "./api/observer.js";
 import { createLibraryService } from "./library/service.js";
 import { getThreadSnapshot, isThreadPage } from "./thread/detector.js";
 import { renderDockMarkup } from "./ui/components/dock/dockRenderer.js";
@@ -34,6 +36,17 @@ let addonCommandHandler = null;
 let currentSnapshot = null;
 let currentSaved = false;
 let dockMountClickHandler = null;
+
+function getLocalPageContext() {
+  const isF95 = location.hostname.includes("f95zone.to");
+  const isThread = isThreadPage();
+  return {
+    pageScopes: isThread ? ["f95zone", "thread"] : isF95 ? ["f95zone"] : [],
+    pageType: isThread ? "thread" : isF95 ? "f95zone" : "unknown",
+    routeGeneration: 0,
+    url: String(location.href || ""),
+  };
+}
 
 function wait(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -243,7 +256,19 @@ async function mountQuickAddIfApplicable() {
     return;
   }
 
-  const snapshot = isThreadPage() ? getThreadSnapshot() : null;
+  const pageContext = await getPageContext(bridge, getLocalPageContext);
+  const threadPage = pageContext?.pageScopes?.includes("thread") || false;
+  if (threadPage) {
+    await waitForElement(
+      bridge,
+      "library-thread-title",
+      "h1.p-title-value",
+      2500,
+      () => ({ ok: false, reason: "unsupported_action" }),
+    );
+  }
+
+  const snapshot = threadPage ? getThreadSnapshot() : null;
   console.debug(`[library-addon] page snapshot:`, snapshot);
   if (!snapshot?.threadId) {
     currentSnapshot = null;

@@ -58,6 +58,12 @@ recovery, not a replacement migration framework.
 
 When the marker is absent or old, the repository reads only the explicit bounded list in `configMigrationService.js`, plus canonical, backup, and the two cache keys. Historical surface sections take precedence for fields they explicitly contain. A valid canonical or backup source fills fields absent from the historical layout; defaults fill the remainder. Revisions are not compared across generations.
 
+Some pre-envelope builds stored the complete raw configuration object at the eventual
+`f95ue:config` or backup key. The same bounded recovery path recognizes that shape as a
+historical source, validates it with the shared schema, and writes a verified v1 envelope
+before the add-on bridge or settings commits depend on configuration readiness. This does
+not change the schema version or add a schema migration step.
+
 Core candidates are built from detached defaults and validated tolerantly, then strictly validated before commit. Invalid leaves fall back independently while valid siblings survive. Add-on state is merged by add-on and timestamps use earliest meaningful installation time and latest meaningful last-seen time. Metrics, runtime events, UI preferences, and unknown keys do not enter canonical config.
 
 Tags and prefixes are validated separately and written to their cache keys. The canonical envelope and backup contain empty catalog placeholders, so their serialized size does not scale with catalog size.
@@ -72,7 +78,12 @@ All complete configuration writes remain in `settingsService`. `saveConfigKeys()
 
 ## Recovery procedure
 
-For an affected installation, leave the old surface keys in place, update to a build containing this migration, and restart once. If migration fails, the marker remains absent and the source keys remain available for another attempt. If the canonical result is later corrupt, the verified backup is used. If both canonical and backup are unavailable, do not guess from unrelated keys; preserve the recovery marker and use the exported configuration or the still-retained historical keys for manual recovery.
+For an affected installation, leave the old surface keys or raw pre-envelope `f95ue:config`
+value in place, update to a build containing this migration, and restart once. If migration
+fails, the marker remains absent and the source values remain available for another attempt.
+If the canonical result is later corrupt, the verified backup is used. If both canonical and
+backup are unavailable, do not guess from unrelated keys; preserve the recovery marker and
+use the exported configuration or the still-retained historical values for manual recovery.
 
 ## Removal boundary
 

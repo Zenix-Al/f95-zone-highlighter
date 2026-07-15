@@ -32,6 +32,7 @@ const CATALOG_FALLBACK = Object.freeze([
   },
   {
     id: "example-addon",
+    legacyIds: ["example-addon-legacy"],
     name: "Example Add-on",
     downloadUrl: "",
     pageScopes: ["f95zone"],
@@ -69,6 +70,7 @@ let NORMALIZED_TRUSTED_ADDON_CATALOG = CATALOG_FALLBACK.map((entry) => ({
 let TRUSTED_ADDON_CATALOG_BY_ID = new Map(
   NORMALIZED_TRUSTED_ADDON_CATALOG.map((entry) => [entry.id, entry]),
 );
+let TRUSTED_ADDON_ID_ALIASES = new Map();
 let _catalogFresh = false;
 let _catalogInitialized = false;
 
@@ -76,11 +78,23 @@ function rebuildNormalizedCatalogCache() {
   NORMALIZED_TRUSTED_ADDON_CATALOG = TRUSTED_ADDON_CATALOG.map((entry) => ({
     ...entry,
     id: sanitizeAddonId(entry.id),
+    legacyIds: Array.isArray(entry.legacyIds)
+      ? [...new Set(entry.legacyIds.map((value) => sanitizeAddonId(value)).filter(Boolean))]
+      : [],
   })).filter((entry) => entry.id);
   TRUSTED_ADDON_CATALOG_BY_ID = new Map(
     NORMALIZED_TRUSTED_ADDON_CATALOG.map((entry) => [entry.id, entry]),
   );
+  TRUSTED_ADDON_ID_ALIASES = new Map();
+  for (const entry of NORMALIZED_TRUSTED_ADDON_CATALOG) {
+    for (const legacyId of entry.legacyIds) {
+      if (legacyId === entry.id || TRUSTED_ADDON_CATALOG_BY_ID.has(legacyId)) continue;
+      if (!TRUSTED_ADDON_ID_ALIASES.has(legacyId)) TRUSTED_ADDON_ID_ALIASES.set(legacyId, entry.id);
+    }
+  }
 }
+
+rebuildNormalizedCatalogCache();
 
 function getCatalogResource() {
   try {
@@ -135,6 +149,18 @@ export function getTrustedCatalogEntry(addonId) {
   const id = sanitizeAddonId(addonId);
   if (!id) return null;
   ensureCatalogInitialized();
-  const entry = TRUSTED_ADDON_CATALOG_BY_ID.get(id);
+  const entry = TRUSTED_ADDON_CATALOG_BY_ID.get(id) || TRUSTED_ADDON_CATALOG_BY_ID.get(TRUSTED_ADDON_ID_ALIASES.get(id));
   return entry ? { ...entry } : null;
+}
+
+export function getCanonicalAddonId(addonId) {
+  const id = sanitizeAddonId(addonId);
+  if (!id) return "";
+  ensureCatalogInitialized();
+  return TRUSTED_ADDON_ID_ALIASES.get(id) || id;
+}
+
+export function isAddonIdAlias(addonId) {
+  const id = sanitizeAddonId(addonId);
+  return Boolean(id && getCanonicalAddonId(id) !== id);
 }

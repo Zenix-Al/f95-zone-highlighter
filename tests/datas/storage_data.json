@@ -113,7 +113,6 @@
     "enableCrossTabSync": true,
     "allowUntrustedAddons": false,
     "disableAddonsService": false,
-    "disableHelpMessage": true
   },
   "isImgRetryInjected": true,
   "latestSettings": {

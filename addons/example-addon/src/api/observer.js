@@ -10,3 +10,11 @@ export function unwatchObserver(core, observerId) {
     observerId,
   });
 }
+
+export function waitForObserver(core, observerId, selector, timeoutMs = 3000) {
+  return core.invokeCoreAction("observer.waitFor", {
+    observerId,
+    selector,
+    timeoutMs,
+  }, Math.min(5000, Math.max(2500, Number(timeoutMs) + 500)));
+}

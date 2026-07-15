@@ -2,6 +2,7 @@ import {
   createImportProgressMarkup,
   updateImportProgressView,
 } from "../components/manager/importProgressDialog.js";
+import { updateDialog } from "../../api/ui/dialog.js";
 
 const IMPORT_PROGRESS_DIALOG_ID = "library-import-progress";
 
@@ -12,12 +13,42 @@ function wait(ms) {
   return new Promise((resolve) => setTimeout(resolve, Math.max(0, Number(ms) || 0)));
 }
 
-function updateProgressContent(progress) {
+function bindCancelButton() {
   const root = activeImport?.contentId ? document.getElementById(activeImport.contentId) : null;
-  updateImportProgressView(root, progress, {
-    total: activeImport?.total || 0,
-    totalBatches: activeImport?.totalBatches || 0,
+  root?.querySelector('[data-action="cancel-import"]')?.addEventListener("click", () => {
+    void closeProgressDialog("cancel-import", true);
   });
+}
+
+async function updateProgressContent(progress) {
+  if (!activeImport || !coreBridge) return;
+  const html = createImportProgressMarkup({
+    total: activeImport.total,
+    totalBatches: activeImport.totalBatches,
+    throttle: activeImport.throttle,
+    progress,
+  });
+  const result = await updateDialog(
+    coreBridge,
+    IMPORT_PROGRESS_DIALOG_ID,
+    html,
+    () => {
+      const root = activeImport?.contentId ? document.getElementById(activeImport.contentId) : null;
+      updateImportProgressView(root, progress, {
+        total: activeImport?.total || 0,
+        totalBatches: activeImport?.totalBatches || 0,
+      });
+      return { ok: false, reason: "unsupported_action" };
+    },
+  );
+  if (result?.ok) bindCancelButton();
+  if (!result?.ok && result?.reason !== "unsupported_action" && result?.reason !== "dialog_not_found") {
+    const root = activeImport?.contentId ? document.getElementById(activeImport.contentId) : null;
+    updateImportProgressView(root, progress, {
+      total: activeImport?.total || 0,
+      totalBatches: activeImport?.totalBatches || 0,
+    });
+  }
 }
 
 async function closeProgressDialog(reason, cancelImport = false) {
@@ -75,10 +106,7 @@ export async function openImportProgress(configOrTotal) {
   }
 
   activeImport.contentId = String(result?.value?.contentId || "").trim();
-  const root = activeImport.contentId ? document.getElementById(activeImport.contentId) : null;
-  root?.querySelector('[data-action="cancel-import"]')?.addEventListener("click", () => {
-    void closeProgressDialog("cancel-import", true);
-  });
+  bindCancelButton();
   return true;
 }
 

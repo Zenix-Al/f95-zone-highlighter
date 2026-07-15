@@ -2,6 +2,7 @@ export function createImportProgressMarkup({
   total = 0,
   totalBatches = 0,
   throttle = {},
+  progress = {},
 } = {}) {
   const suggestedMinIntervalMs = Math.max(
     0,
@@ -9,12 +10,20 @@ export function createImportProgressMarkup({
   );
   const maxPayloadBytes = Math.max(0, Number(throttle?.payloadLimits?.idb?.maxPayloadBytes || 0));
   const maxBulkItems = Math.max(0, Number(throttle?.payloadLimits?.idb?.maxBulkItems || 0));
+  const processed = Math.max(0, Number(progress?.processed || 0));
+  const status = String(progress?.status || "preparing").trim();
+  const title = progress?.cancelled || status === "cancelling"
+    ? "Stopping import..."
+    : status === "completed"
+      ? "Import complete"
+      : "Importing library...";
+  const detail = `${processed} / ${Math.max(0, Number(progress?.total || total))} records | ${Math.max(0, Number(progress?.completedBatches || 0))} / ${Math.max(0, Number(progress?.totalBatches || totalBatches))} batches | added ${Math.max(0, Number(progress?.added || 0))} | updated ${Math.max(0, Number(progress?.updated || 0))} | skipped ${Math.max(0, Number(progress?.skipped || 0))} | failed ${Math.max(0, Number(progress?.failed || 0))}`;
 
   return `
     <div style="padding:16px;color:#f0f2f6;background:#191b1e;border:1px solid #3f4043;border-radius:10px;">
-      <div data-role="import-progress-text" style="font-weight:700;margin-bottom:10px;">Preparing import...</div>
-      <progress data-role="import-progress-bar" max="${Math.max(1, total)}" value="0" style="width:100%;"></progress>
-      <div data-role="import-progress-detail" style="margin-top:10px;color:#b9c1cc;font-size:12px;">0 / ${total} records | 0 / ${totalBatches} batches</div>
+      <div data-role="import-progress-text" style="font-weight:700;margin-bottom:10px;">${title}</div>
+      <progress data-role="import-progress-bar" max="${Math.max(1, total)}" value="${Math.min(processed, Math.max(1, Number(total) || 1))}" style="width:100%;"></progress>
+      <div data-role="import-progress-detail" style="margin-top:10px;color:#b9c1cc;font-size:12px;">${detail}</div>
       <div data-role="import-progress-note" style="margin-top:8px;color:#8f99a6;font-size:11px;">
         pacing ${suggestedMinIntervalMs}ms between requests | payload ceiling ${maxPayloadBytes} bytes | batch items <= ${maxBulkItems}
       </div>

@@ -7,7 +7,7 @@ import {
   countRecords,
 } from "../api/idb.js";
 import { getCoreThrottle } from "../api/meta.js";
-import { closeDialog, openDialog } from "../api/ui/dialog.js";
+import { closeDialog, openDialog, updateDialog } from "../api/ui/dialog.js";
 import {
   createBulkImportProgressMarkup,
   updateBulkImportProgressView,
@@ -91,15 +91,31 @@ export function createBulkImportController({ core, state, syncPanel, getDialogCo
 
   function updateProgress(progress) {
     state.idb.bulkImport = { ...state.idb.bulkImport, ...progress };
-    const root = getDialogContentElement(EXAMPLE_BULK_PROGRESS_DIALOG_ID);
-    updateBulkImportProgressView(root, progress, active?.total || 0);
+    const fallback = () => {
+      const root = getDialogContentElement(EXAMPLE_BULK_PROGRESS_DIALOG_ID);
+      updateBulkImportProgressView(root, progress, active?.total || 0);
+      return { ok: false, reason: "unsupported_action" };
+    };
+    void updateDialog(
+      core,
+      EXAMPLE_BULK_PROGRESS_DIALOG_ID,
+      createBulkImportProgressMarkup({
+        total: active?.total || progress?.total || 0,
+        totalBatches: progress?.totalBatches || 0,
+        throttle: active?.throttle || {},
+        progress,
+      }),
+    ).then((result) => {
+      if (result?.ok) return;
+      fallback();
+    });
   }
 
   async function openProgress(progress, throttle) {
     const result = await openDialog(core, {
       dialogId: EXAMPLE_BULK_PROGRESS_DIALOG_ID,
       title: "Dummy Bulk Import",
-      html: createBulkImportProgressMarkup({ total: progress.total, totalBatches: progress.totalBatches, throttle }),
+      html: createBulkImportProgressMarkup({ total: progress.total, totalBatches: progress.totalBatches, throttle, progress }),
       closeOnBackdrop: true,
       closeOnEsc: true,
       size: "sm",

@@ -22,15 +22,23 @@ export function createExampleCommandController({
     unbind = bindRuntimeCommands(core, (detail) => {
       const command = String(detail.command || "").trim();
       const lifecycle = getLifecycle();
+      const context = {
+        commandId: detail.commandId,
+        reason: detail.reason,
+        routeContext: detail.routeContext,
+      };
       switch (command) {
         case "enable":
-          void lifecycle.enable().catch((error) => onError("enable-command", error, "enable_failed"));
+          void lifecycle.enable(context).catch((error) => onError("enable-command", error, "enable_failed"));
           break;
         case "disable":
-          void lifecycle.disable().catch((error) => onError("disable-command", error, "disable_failed"));
+          void lifecycle.disable(context).catch((error) => onError("disable-command", error, "disable_failed"));
           break;
         case "refresh":
-          void lifecycle.refresh().catch((error) => onError("refresh-command", error, "refresh_failed"));
+          void lifecycle.refresh(context).catch((error) => onError("refresh-command", error, "refresh_failed"));
+          break;
+        case "before-page-change":
+          lifecycle.invalidate(String(detail.reason || "page-change"), detail.routeContext || null);
           break;
         case "dock-action":
           void onDockAction(String(detail.actionId || "").trim());
@@ -52,7 +60,7 @@ export function createExampleCommandController({
           if (String(detail.observerId || "").trim() === EXAMPLE_OBSERVER_ID) onObserverNodes(detail);
           break;
         case "teardown":
-          void lifecycle.teardown(String(detail.reason || "teardown"));
+          void lifecycle.teardown(context).catch((error) => onError("teardown-command", error, "teardown_failed"));
           break;
         default:
           break;

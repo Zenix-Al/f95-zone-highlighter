@@ -108,10 +108,11 @@ Core actions are requested by sending `type: "core-action"` with the specific ac
 | **`feature`** | `feature.enable`<br>`feature.disable`<br>`feature.refresh` | Controls the active status of the add-on feature. |
 | **`storage`** | `storage.get`<br>`storage.set`<br>`storage.getUsage`<br>`config.getTagPrefs` | Scoped key-value storage. Total storage is capped at 64KB total per add-on. |
 | **`idb`** | `idb.get`<br>`idb.put`<br>`idb.delete`<br>`idb.bulkPut`<br>`idb.bulkDelete`<br>`idb.query`<br>`idb.count` | Interface to IndexedDB databases. Key-paths and schemas must be supplied in payloads. Payload sizes are capped at 512KB per write. |
-| **`observer`**| `observer.watch`<br>`observer.unwatch` | Subscribes/unsubscribes to DOM mutations detected by core. |
+| **`page`** | `page.getContext` | Returns bounded, read-only route/page metadata; it never returns DOM objects or core state. |
+| **`observer`**| `observer.watch`<br>`observer.unwatch`<br>`observer.waitFor` | Subscribes/unsubscribes to core-owned DOM observation, or waits once for a bounded simple selector. |
 | **`ui.style`**| `ui.style.register`<br>`ui.style.unregister` | Registers custom CSS strings. Injected into the core Shadow DOM to bypass boundary limits. Max 64KB. |
 | **`ui.mount`**| `ui.mount`<br>`ui.update`<br>`ui.unmount` | Mounts/updates HTML fragments in specific page slots (e.g. `body`, `page.dock`, `latest.filters.after-title`). Max HTML size is 128KB. |
-| **`ui.dialog`**| `ui.dialog.open`<br>`ui.dialog.close`<br>`ui.confirm` | Opens/closes modals or triggers confirm dialogs. |
+| **`ui.dialog`**| `ui.dialog.open`<br>`ui.dialog.close`<br>`ui.dialog.update`<br>`ui.confirm` | Opens/closes modals, updates an already add-on-owned dialog, or triggers confirm dialogs. |
 | **`ui.dock`**  | `ui.dock.setButtons`<br>`ui.dock.removeButtons` | Mounts up to 4 custom action buttons to the core dock. |
 
 ---

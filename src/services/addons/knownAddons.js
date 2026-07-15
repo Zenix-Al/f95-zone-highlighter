@@ -4,6 +4,7 @@ import {
 } from "./scope.js";
 import { resolveAddonAccess } from "./access.js";
 import { sanitizeAddonId } from "./shared.js";
+import { getCanonicalAddonId } from "./catalog.js";
 
 function computeAddonStatus({
   runtimeEntry,
@@ -67,30 +68,48 @@ export function buildKnownAddonsSnapshot({
   allowUntrusted = false,
   getAddonState = () => ({}),
 }) {
-  const normalizeEntries = (entries) =>
-    entries
-      .map((entry) => [sanitizeAddonId(entry?.id), entry])
-      .filter(([id]) => id);
-  const byRegistered = new Map(normalizeEntries(registered));
-  const catalogById = new Map(normalizeEntries(catalog));
-  const normalizeKey = (value) => sanitizeAddonId(value);
-  const normalizedMeta = Object.fromEntries(
-    Object.entries(installedMeta || {})
-      .map(([id, entry]) => [normalizeKey(id), entry])
-      .filter(([id]) => id),
-  );
+  const snapshotAliases = new Map();
+  for (const entry of catalog || []) {
+    const canonical = sanitizeAddonId(entry?.id);
+    if (!canonical) continue;
+    snapshotAliases.set(canonical, canonical);
+    for (const legacyId of Array.isArray(entry?.legacyIds) ? entry.legacyIds : []) {
+      const alias = sanitizeAddonId(legacyId);
+      if (alias && !snapshotAliases.has(alias)) snapshotAliases.set(alias, canonical);
+    }
+  }
+  const resolveSnapshotId = (value) => {
+    const source = sanitizeAddonId(value);
+    return snapshotAliases.get(source) || getCanonicalAddonId(source);
+  };
+  const selectCanonical = (map, sourceId, entry) => {
+    const source = sanitizeAddonId(sourceId);
+    const id = resolveSnapshotId(source);
+    if (!id) return;
+    const current = map.get(id);
+    if (!current || (source === id && current.source !== id)) {
+      map.set(id, { source, entry });
+    }
+  };
+  const normalizeEntries = (entries) => {
+    const map = new Map();
+    for (const entry of entries || []) selectCanonical(map, entry?.id, entry);
+    return map;
+  };
+  const byRegistered = normalizeEntries(registered);
+  const catalogById = normalizeEntries(catalog);
+  const normalizedMeta = new Map();
+  for (const [sourceId, entry] of Object.entries(installedMeta || {})) {
+    selectCanonical(normalizedMeta, sourceId, entry);
+  }
   const currentScopesSet = new Set(currentScopes);
-  const allIds = new Set([
-    ...catalog.map((entry) => normalizeKey(entry?.id)),
-    ...Object.keys(normalizedMeta),
-    ...registered.map((entry) => normalizeKey(entry?.id)),
-  ]);
+  const allIds = new Set([...catalogById.keys(), ...normalizedMeta.keys(), ...byRegistered.keys()]);
 
   const merged = [];
   for (const id of allIds) {
-    const runtimeEntry = byRegistered.get(id) || null;
-    const catalogEntry = catalogById.get(id) || null;
-    const metaEntry = normalizedMeta[id] || null;
+    const runtimeEntry = byRegistered.get(id)?.entry || null;
+    const catalogEntry = catalogById.get(id)?.entry || null;
+    const metaEntry = normalizedMeta.get(id)?.entry || null;
 
     // Runtime registration takes priority for metadata; catalog is fallback.
     const pageScopes = Array.isArray(runtimeEntry?.pageScopes)

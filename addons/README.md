@@ -90,6 +90,29 @@ contain only `f95zone`, `thread`, or `latest`; `runtimeMode` is one of
 and must agree with the runtime mode. Userscript `matches`, `grants`, and `runAt` remain
 independent injection metadata and are never used as action authorization.
 
+### Stable identities and legacy aliases
+
+The manifest `id` is the canonical add-on identity and remains the folder, output filename, catalog
+key, state key, and UI-card key. A shipped identity that must be retired may declare optional
+`legacyIds`, for example `"legacyIds": ["old-example-addon"]`. Each alias must be a sanitized,
+unique ID; it must not collide with an active manifest ID, an add-on folder, or a catalog ID, and an
+alias may belong to only one canonical add-on. Do not use an alias to rename Image Repair in the
+identity package.
+
+Core resolves aliases before reading or committing add-on state. When both identities exist,
+canonical fields win conflicts; `installedSeenAt` keeps the earliest valid value and `lastSeenAt`
+keeps the latest. State and installed metadata are moved in one revisioned config commit. Failed
+commits leave the old alias data intact for retry, while a repeated successful normalization is a
+no-op. Catalog entries, installed snapshots, management cards, and runtime registrations expose
+one canonical card. A canonical runtime supersedes an old-alias runtime; competing aliases do not
+create a second card. Alias resolution does not alter registration transport, handshake identity,
+userscript headers, or action response shapes.
+
+Release sequencing for a real rename is: publish the alias-aware core/catalog and state repository
+first; publish the userscript with its canonical ID while allowing the old runtime to register;
+verify one canonical card and successful state normalization; only then remove the alias in a later
+release. The alias is metadata only and is not injected into add-on bundles.
+
 The builder injects these constants into the bundle:
 
 - `__ADDON_ID__`
@@ -177,10 +200,11 @@ Always filter incoming events by `detail.addonId`.
 | `feature`           | `feature.enable`, `feature.disable`, `feature.refresh`                                        |
 | `storage`           | `storage.get`, `storage.set`, `storage.getUsage`, `config.getTagPrefs`                        |
 | `idb`               | `idb.get`, `idb.put`, `idb.delete`, `idb.bulkPut`, `idb.bulkDelete`, `idb.query`, `idb.count` |
-| `observer`          | `observer.watch`, `observer.unwatch`                                                          |
+| `page`              | `page.getContext` — bounded, read-only route/page context (`hostname`, `pathname`, `pageType`, `threadId`, and route generation); no DOM objects are returned. |
+| `observer`          | `observer.watch`, `observer.unwatch`, `observer.waitFor`                                      |
 | `ui.style` or `ui`  | `ui.style.register`, `ui.style.unregister`                                                    |
 | `ui.mount` or `ui`  | `ui.mount`, `ui.update`, `ui.unmount`                                                         |
-| `ui.dialog` or `ui` | `ui.dialog.open`, `ui.dialog.close`, `ui.confirm`                                             |
+| `ui.dialog` or `ui` | `ui.dialog.open`, `ui.dialog.close`, `ui.dialog.update`, `ui.confirm`                         |
 | `ui.dock` or `ui`   | `ui.dock.setButtons`, `ui.dock.removeButtons`                                                 |
 
 Two read-only meta actions are available after registration:
@@ -211,6 +235,22 @@ export function setStoredValue(core, key, value) {
 ```
 
 This makes permissions visible, payloads consistent, and API changes easy to locate.
+
+The approved additive APIs have bounded contracts and protocol version `1`:
+
+- `page.getContext` is read-only and returns normalized, size-limited page metadata. It
+  does not expose core state, DOM nodes, or arbitrary page execution.
+- `observer.waitFor` accepts one simple tag/class/id selector, a required timeout from
+  100 to 4,000 ms, and an add-on-owned `observerId`. It is one-shot and cancellable by
+  `observer.unwatch`; core removes the callback on match, timeout, cancellation, or
+  add-on teardown.
+- `ui.dialog.update` updates only a dialog already owned by the calling add-on. Content
+  is sanitized and size-limited while the dialog and content identity remain stable;
+  missing or foreign dialogs return a structured failure.
+
+These APIs are additive. Add-ons that receive `unsupported_action` from an older core
+use their local bounded fallback and keep the original user flow. The core action bridge,
+registration handshake, response envelope, and existing public action IDs are unchanged.
 
 ## Registration Metadata
 
@@ -355,6 +395,27 @@ Cleanup actions are designed to remain available during teardown pressure, but t
 
 Core also applies a teardown watchdog and hard-cleans owned observers and UI when an add-on fails to acknowledge teardown.
 
+### Runtime contract after registration
+
+Core-connected add-ons use the shared `addons/shared/runtimeLifecycle.js` contract
+after registration. The observable states are `new`, `starting`, `enabled`,
+`disabling`, `disabled`, `refreshing`, `tearing-down`, `terminated`, and `failed`.
+Lifecycle operations are serialized; duplicate enable, disable, and refresh requests
+are idempotent, while terminal teardown is a one-shot operation.
+
+Each command handler receives or derives a context containing `commandId`, `command`,
+`reason`, `generation`, `routeContext`, `signal`, and `terminal`. Disable, superseding
+refresh, route invalidation, and teardown abort the owned signal or advance the
+generation. A callback must check `signal.aborted` or `isCurrent()` before committing
+state or UI. Expected cancellation is reported separately from ordinary failures.
+
+The runtime helper exposes `getSnapshot()`, `getResourceSnapshot()`, and
+`getPendingOperationSnapshot()`. Resource entries are owner-scoped and must be
+released on reversible disable or terminal teardown. Teardown stops new work, aborts
+pending work, releases feature resources, and acknowledges `teardown-complete` once;
+core applies a bounded owner-specific watchdog cleanup when that acknowledgment is
+missed.
+
 ## Observer Rules
 
 Each observer subscription needs a stable `observerId`. Core filters out DOM owned by the same add-on to prevent self-triggered render loops. Keep callbacks lightweight and unwatch subscriptions when they are no longer needed.
@@ -366,6 +427,12 @@ await core.invokeCoreAction("observer.watch", {
 
 await core.invokeCoreAction("observer.unwatch", {
   observerId: "my-observer",
+});
+
+const wait = await core.invokeCoreAction("observer.waitFor", {
+  observerId: "initial-content",
+  selector: ".content-block",
+  timeoutMs: 3000,
 });
 ```
 
@@ -451,6 +518,8 @@ action descriptors, lifecycle snapshots, source shape, gzip sizes, and esbuild c
 npm run audit:addons
 npm run check:addons:baseline
 npm run build:addons:smoke
+npm run audit:addons:api
+npm run check:addons:api
 ```
 
 These commands do not update add-on versions, `.build-cache.json`, `addons.manifest.json`, or
@@ -458,6 +527,12 @@ tracked `dist/`. The baseline separates add-on userscript bundles from the core 
 UI integration footprint. The trusted-add-on contradiction recorded by the baseline was resolved
 by `ADDON-TRUST-GATING-01`; the shared access resolver now keeps trust, blocked state, status text,
 and execution authorization consistent.
+
+`ADDON-API-AUDIT-01` writes `docs/architecture/addon-api-audit.json` and the readable
+`docs/architecture/addon-api-audit.md`. It inventories all manifest add-ons, raw action call sites,
+bridge events, listeners, polling, URL parsing, DOM assumptions, direct GM access, and cancellation
+scaffolding. It is source-only and does not add actions, change the handshake, or build release
+artifacts. Use `npm run check:addons:api` to verify the report is deterministic and current.
 
 ## Independent add-on validation
 

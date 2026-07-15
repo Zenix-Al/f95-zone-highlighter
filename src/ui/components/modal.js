@@ -1,16 +1,13 @@
 import { stateManager } from "../../config.js";
 import ui_html from "../assets/ui.html";
 import { initModalUi } from "../settings/index.js";
-import { startHelpMessageCycle, stopHelpMessageCycle } from "./helpMessage.js";
 
 export async function openModal() {
   await initModalUi();
-  startHelpMessageCycle();
   stateManager.get("shadowRoot").getElementById("tag-config-modal").style.display = "block";
 }
 export function closeModal() {
   stateManager.get("shadowRoot").getElementById("tag-config-modal").style.display = "none";
-  stopHelpMessageCycle();
 }
 
 export function injectModal() {

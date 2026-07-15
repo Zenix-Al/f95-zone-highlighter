@@ -11,6 +11,7 @@ const VALID_CAPABILITIES = new Set([
   "toast",
   "feature",
   "storage",
+  "page",
   "idb",
   "observer",
   "ui",
@@ -26,6 +27,14 @@ const F95ZONE_SAMPLE_URLS = [
   "https://f95zone.to/sam/latest_alpha/",
   "https://f95zone.to/masked/example/",
 ];
+
+function sanitizeAddonId(value) {
+  return String(value || "")
+    .trim()
+    .replace(/[^a-z0-9_-]+/gi, "-")
+    .replace(/^-+|-+$/g, "")
+    .toLowerCase();
+}
 
 function matchesPattern(url, pattern) {
   const normalized = String(pattern || "").trim();
@@ -80,7 +89,7 @@ function validateManifest(addons = readManifest(), { rootDir = ROOT, checkFiles 
 
   for (const addon of addons) {
     const index = addons.indexOf(addon);
-    const id = String(addon?.id || "").trim();
+    const id = sanitizeAddonId(addon?.id);
     const scopes = Array.isArray(addon?.pageScopes)
       ? addon.pageScopes.map((scope) => String(scope || "").trim().toLowerCase())
       : null;
@@ -144,9 +153,11 @@ function validateManifest(addons = readManifest(), { rootDir = ROOT, checkFiles 
       addPathError(index, "legacyIds", "must be an array when provided");
     }
     for (const legacyId of Array.isArray(declaredLegacyIds) ? declaredLegacyIds : []) {
-      const normalizedLegacyId = String(legacyId || "").trim();
+      const normalizedLegacyId = sanitizeAddonId(legacyId);
       if (!normalizedLegacyId) addPathError(index, "legacyIds", "contains an empty ID");
-      else if (normalizedLegacyId === id || legacyIds.has(normalizedLegacyId)) {
+      else if (String(legacyId || "").trim() !== normalizedLegacyId) {
+        addPathError(index, "legacyIds", `must use sanitized ID '${normalizedLegacyId}'`);
+      } else if (normalizedLegacyId === id || legacyIds.has(normalizedLegacyId)) {
         addPathError(index, "legacyIds", `duplicates add-on identity '${normalizedLegacyId}'`);
       } else {
         legacyIds.set(normalizedLegacyId, index);
@@ -154,8 +165,31 @@ function validateManifest(addons = readManifest(), { rootDir = ROOT, checkFiles 
     }
   }
   const allIds = new Set(addons.map((addon) => String(addon?.id || "").trim()).filter(Boolean));
+  const folderIds = new Set(
+    addons
+      .map((addon) => String(addon?.entry || "").replace(/\\/g, "/").match(/^addons\/([^/]+)\/src\/main\.js$/)?.[1])
+      .filter(Boolean),
+  );
+  try {
+    for (const entry of fs.readdirSync(path.join(root, "addons"), { withFileTypes: true })) {
+      if (entry.isDirectory()) folderIds.add(sanitizeAddonId(entry.name));
+    }
+  } catch {
+    // Temporary validator fixtures may not include an add-ons directory.
+  }
+  let catalogIds = new Set();
+  if (checkFiles) {
+    try {
+      const existingCatalog = JSON.parse(fs.readFileSync(path.join(root, "src", "services", "addons", "trusted-catalog.json"), "utf8"));
+      catalogIds = new Set((Array.isArray(existingCatalog) ? existingCatalog : []).map((entry) => sanitizeAddonId(entry?.id)).filter(Boolean));
+    } catch {
+      catalogIds = new Set();
+    }
+  }
   for (const [legacyId, ownerIndex] of legacyIds) {
-    if (allIds.has(legacyId)) addPathError(ownerIndex, "legacyIds", `duplicates add-on identity '${legacyId}'`);
+    if (allIds.has(legacyId) || folderIds.has(legacyId) || (catalogIds.has(legacyId) && !allIds.has(legacyId))) {
+      addPathError(ownerIndex, "legacyIds", `duplicates add-on identity '${legacyId}'`);
+    }
   }
   for (const [legacyId, ownerIndex] of legacyIds) {
     const owner = addons[ownerIndex];
@@ -187,6 +221,9 @@ function buildTrustedCatalog(addons = readManifest()) {
       capabilities: [...addon.capabilities],
       downloadUrl: String(addon.downloadUrl || ""),
       trusted: true,
+      ...(Array.isArray(addon.legacyIds) && addon.legacyIds.length > 0
+        ? { legacyIds: [...new Set(addon.legacyIds.map((value) => sanitizeAddonId(value)).filter(Boolean))].sort() }
+        : {}),
     }));
 }
 

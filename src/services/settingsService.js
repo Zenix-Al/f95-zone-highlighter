@@ -19,6 +19,7 @@ import {
   LEGACY_CLEANUP_KEYS,
   LEGACY_SURFACE_KEYS,
   hasRecognizedHistoricalData,
+  isLegacyConfigRoot,
   isCurrentMigrationMarker,
 } from "./configMigrationService.js";
 import { storageAdapter } from "./storageAdapter.js";
@@ -260,9 +261,11 @@ async function migrateStorage({ canonicalRaw, backupRaw }) {
     validateStoredEnvelope(canonicalRaw),
     validateStoredEnvelope(backupRaw),
   ]);
+  const canonicalLegacy = !canonical.valid && isLegacyConfigRoot(canonicalRaw) ? canonicalRaw : null;
+  const backupLegacy = !backup.valid && isLegacyConfigRoot(backupRaw) ? backupRaw : null;
   const plan = buildMigrationPlan({
-    canonicalData: canonical.valid ? canonicalRaw.data : null,
-    backupData: backup.valid ? backupRaw.data : null,
+    canonicalData: canonical.valid ? canonicalRaw.data : canonicalLegacy,
+    backupData: backup.valid ? backupRaw.data : backupLegacy,
     surfaceValues: historicalRaw,
     tagsCache: cacheRaw.tags,
     prefixesCache: cacheRaw.prefixes,
@@ -271,7 +274,8 @@ async function migrateStorage({ canonicalRaw, backupRaw }) {
     || backupRaw !== null && backupRaw !== undefined;
   const hasCacheSource = cacheRaw.tags !== null && cacheRaw.tags !== undefined
     || cacheRaw.prefixes !== null && cacheRaw.prefixes !== undefined;
-  if (!canonical.valid && !backup.valid && !hasRecognizedHistoricalData(historicalRaw)
+  if (!canonical.valid && !backup.valid && !canonicalLegacy && !backupLegacy
+    && !hasRecognizedHistoricalData(historicalRaw)
     && !hasCacheSource && hasCanonicalOrBackup) {
     throw new Error("no_recoverable_source");
   }

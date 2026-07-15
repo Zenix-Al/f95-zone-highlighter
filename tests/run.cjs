@@ -15,6 +15,7 @@ const coreAudit = require("../scripts/core-source-audit.cjs");
 const coreSizeGate = require("../scripts/core-size-gate.cjs");
 const cssAudit = require("../scripts/css-audit.cjs");
 const addonBaseline = require("../scripts/addon-baseline.cjs");
+const addonApiAudit = require("../scripts/addon-api-audit.cjs");
 const addonCatalog = require("../scripts/addon-catalog.cjs");
 const addonBuildTools = require("../scripts/addon-build-tools.cjs");
 const addonBuilder = require("../addons/build-addon.js");
@@ -203,7 +204,12 @@ const { setByPath } = loadModule("src/utils/objectPath.js");
 const { flushQueuedToasts, showToast } = loadModule(
   "src/ui/components/toast.js",
 );
-const { isAddonOwnedObserverNode } = loadModule(
+const {
+  isAddonOwnedObserverNode,
+  normalizeObserverWaitSelector,
+  unwatchAddonObserver,
+  waitForAddonObserver,
+} = loadModule(
   "src/services/addons/observer.js",
 );
 const {
@@ -215,6 +221,7 @@ const {
 const { createAddonDockGroup } = loadModule(
   "src/ui/components/addons/addonDockGroup.js",
 );
+const { invokeOptionalCoreAction } = loadModule("addons/shared/apiFallback.js");
 const { normalizePrefixesFromLatestUpdates } = loadModule(
   "src/services/prefixService.js",
 );
@@ -1792,6 +1799,124 @@ runTest("OBSERVE health events redact details, deduplicate, and cap retention", 
   assert.ok(getHealthEvents().length <= 100);
 });
 
+runTest("ADDON-API-EXTENSIONS-01 keeps approved descriptors bounded and cancellable", async () => {
+  const descriptors = new Map(getRegisteredAddonActionSnapshot().map((entry) => [entry.id, entry]));
+  assert.deepStrictEqual(
+    ["page.getContext", "observer.waitFor", "ui.dialog.update"].map((id) => descriptors.get(id)?.id),
+    ["page.getContext", "observer.waitFor", "ui.dialog.update"],
+  );
+  assert.deepStrictEqual(descriptors.get("page.getContext"), {
+    id: "page.getContext",
+    protocolVersion: 1,
+    requiredCapabilities: ["page"],
+    timeoutMs: 5000,
+    auditCategory: "page",
+    scopePolicy: "runtime",
+    ownership: "request-scoped-read-only",
+    cleanup: "none; no live references or resources are returned",
+  });
+  assert.deepStrictEqual(descriptors.get("observer.waitFor"), {
+    id: "observer.waitFor",
+    protocolVersion: 1,
+    requiredCapabilities: ["observer"],
+    timeoutMs: 5000,
+    auditCategory: "observer",
+    scopePolicy: "runtime",
+    ownership: "addon-scoped one-shot observer subscription",
+    cleanup: "remove on match, timeout, unwatch, or addon teardown",
+  });
+  assert.deepStrictEqual(descriptors.get("ui.dialog.update"), {
+    id: "ui.dialog.update",
+    protocolVersion: 1,
+    requiredCapabilities: ["ui", "ui.dialog"],
+    timeoutMs: 5000,
+    auditCategory: "ui",
+    scopePolicy: "runtime",
+    ownership: "addon-owned dialog content",
+    cleanup: "dialog teardown removes the owned entry; update fails after ownership ends",
+  });
+  assert.strictEqual(isAddonActionAllowed(new Set(["storage"]), "page.getContext"), false);
+  assert.strictEqual(isAddonActionAllowed(new Set(["page"]), "page.getContext"), true);
+  assert.strictEqual(normalizeObserverWaitSelector(".content-block_filter-title"), ".content-block_filter-title");
+  assert.strictEqual(normalizeObserverWaitSelector("div, body"), "");
+  assert.strictEqual(normalizeObserverWaitSelector(":has(*)"), "");
+
+  let fallbackCalled = false;
+  const fallbackResult = await invokeOptionalCoreAction(
+    {
+      invokeCoreAction: async (action, payload, timeoutMs) => {
+        assert.strictEqual(action, "observer.waitFor");
+        assert.deepStrictEqual(payload, { observerId: "legacy", selector: "body", timeoutMs: 3000 });
+        assert.strictEqual(timeoutMs, 3500);
+        return { ok: false, reason: "unsupported_action" };
+      },
+    },
+    "observer.waitFor",
+    { observerId: "legacy", selector: "body", timeoutMs: 3000 },
+    async () => {
+      fallbackCalled = true;
+      return { ok: true, value: { matched: true, fallback: true } };
+    },
+    3500,
+  );
+  assert.strictEqual(fallbackCalled, true);
+  assert.deepStrictEqual(fallbackResult, { ok: true, value: { matched: true, fallback: true } });
+
+  const pageResult = await invokeRegisteredAddonCoreAction({
+    addonId: "example-addon",
+    action: "page.getContext",
+    payload: {},
+    allowed: new Set(["page"]),
+    deps: {},
+    limits: {},
+    authorize: () => null,
+  });
+  assert.strictEqual(pageResult.ok, true);
+  assert.ok(Number.isInteger(pageResult.value.routeGeneration));
+  assert.ok(Array.isArray(pageResult.value.pageScopes));
+
+  const invalidWait = await invokeRegisteredAddonCoreAction({
+    addonId: "example-addon",
+    action: "observer.waitFor",
+    payload: { observerId: "invalid", selector: "body" },
+    allowed: new Set(["observer"]),
+    deps: {},
+    limits: {},
+    authorize: () => null,
+  });
+  assert.deepStrictEqual(invalidWait, { ok: false, reason: "timeout_required" });
+
+  const sandbox = createDomSandbox();
+  try {
+    const immediate = await waitForAddonObserver("api-test", {
+      observerId: "immediate",
+      selector: "body",
+      timeoutMs: 1000,
+    });
+    assert.deepStrictEqual(immediate, {
+      ok: true,
+      value: { observerId: "immediate", matched: true },
+    });
+
+    const pending = waitForAddonObserver("api-test", {
+      observerId: "cancelled",
+      selector: ".api-test-never-mounted",
+      timeoutMs: 1000,
+    });
+    assert.deepStrictEqual(unwatchAddonObserver("api-test", { observerId: "cancelled" }), {
+      ok: true,
+      observerId: "cancelled",
+    });
+    assert.deepStrictEqual(await pending, {
+      ok: false,
+      reason: "cancelled",
+      value: { observerId: "cancelled" },
+    });
+  } finally {
+    sandbox.restore();
+  }
+});
+
 runTest("OBSERVE diagnostics providers return snapshots on demand", () => {
   const unregister = registerDiagnosticsProvider("observe-test", () => ({ count: 2 }));
   assert.deepStrictEqual(getHealthDiagnostics().snapshots["observe-test"], { count: 2 });
@@ -2301,6 +2426,35 @@ runTest("ADDON-BASELINE-01 records deterministic metadata, behavior, and size ev
   assert.deepStrictEqual(addonBaseline.snapshotWorkingTree(), before);
 });
 
+runTest("ADDON-API-AUDIT-01 covers every add-on and bounds the next API package", () => {
+  const first = addonApiAudit.createAuditReport();
+  const second = addonApiAudit.createAuditReport();
+  assert.deepStrictEqual(first, second);
+  assert.strictEqual(first.inventory.coverage.everyManifestAddonInventoried, true);
+  assert.strictEqual(first.inventory.coverage.rawActionIdsAccountedFor, true);
+  assert.strictEqual(first.inventory.addOns.length, ADDON_MANIFEST.addons.length);
+  assert.ok(first.rawActions.some((entry) => entry.id === "ui.dialog.close" && entry.callSites.length > 0));
+  assert.ok(first.inventory.addOns.some((entry) => entry.id === "masked-direct-addon" && entry.directGmAccess.length > 0));
+  assert.ok(first.inventory.addOns.some((entry) => entry.id === "latest-filters-addon" && entry.urlAndPageParsing.length > 0));
+  for (const candidate of first.candidates.filter((entry) => entry.decision === "implement")) {
+    assert.ok(candidate.consumerCount >= 2, `${candidate.candidateActionId} needs two consumers`);
+    assert.ok(candidate.payloadBounds && candidate.resultBounds);
+    assert.ok(candidate.ownershipCleanup);
+  }
+  assert.deepStrictEqual(first.approvedNextPackage, [
+    "page.getContext",
+    "observer.waitFor",
+    "ui.dialog.update",
+    "addons.shared.cancellableTask",
+  ]);
+  assert.strictEqual(first.security.publicActionChanges, 0);
+  assert.match(first.security.registrationHandshake, /preserved/);
+  assert.strictEqual(
+    addonApiAudit.renderMarkdown(first),
+    fs.readFileSync(path.join(ROOT, "docs/architecture/addon-api-audit.md"), "utf8"),
+  );
+});
+
 runTest("ADDON-BUILD-TOOLS-01 validates manifest paths and metadata rules", () => {
   const manifest = ADDON_MANIFEST.addons.map((addon) => ({ ...addon, capabilities: [...addon.capabilities], matches: [...addon.matches], grants: [...addon.grants] }));
   const invalid = { ...manifest[0], entry: "addons/wrong/src/index.js", grants: ["none", "GM_setValue"], capabilities: ["not-a-capability"], runAt: "tomorrow" };
@@ -2351,7 +2505,7 @@ runTest("ADDON-BUILD-TOOLS-01 smoke builds every add-on in regular and release m
 });
 
 runTest("ADDON-BUILD-TOOLS-01 preserves current release stripping behavior", async () => {
-  const addon = ADDON_MANIFEST.addons.find((entry) => entry.id === "halloween-theme-addon");
+  const addon = ADDON_MANIFEST.addons.find((entry) => entry.id === "image-repair-addon");
   const tempRoot = fs.mkdtempSync(path.join(TMP_DIR, "addon-release-strip-"));
   try {
     const regular = await addonBuilder.buildAddonToPath(addon, false, {
@@ -2418,6 +2572,350 @@ runTest("ADDON-GOLDEN-01 keeps Example Add-on composition and API boundaries", (
   assert.ok(fs.existsSync(path.join(addonRoot, "app", "commands.js")));
   assert.ok(fs.existsSync(path.join(addonRoot, "ui", "panel.js")));
   assert.ok(fs.existsSync(path.join(addonRoot, "ui", "bindings.js")));
+});
+
+runTest("ADDON-HALLOWEEN-01 follows the Example boundaries and confines bridge actions", () => {
+  const addonRoot = path.join(ROOT, "addons", "halloween-theme-addon", "src");
+  const manifestEntry = ADDON_MANIFEST.addons.find((addon) => addon.id === "halloween-theme-addon");
+  const mainSource = fs.readFileSync(path.join(addonRoot, "main.js"), "utf8");
+  const sourceFiles = collectJavaScriptFiles(addonRoot);
+  const nonBridgeSources = sourceFiles
+    .filter((filePath) => !filePath.includes(`${path.sep}api${path.sep}`) && !filePath.includes(`${path.sep}core${path.sep}`))
+    .map((filePath) => fs.readFileSync(filePath, "utf8"))
+    .join("\n");
+
+  assert.ok(manifestEntry);
+  assert.deepStrictEqual(manifestEntry.pageScopes, ["f95zone"]);
+  assert.deepStrictEqual(manifestEntry.capabilities, ["feature", "ui.style"]);
+  assert.match(mainSource, /__ADDON_ID__/);
+  assert.match(mainSource, /createCoreAdaptor/);
+  assert.match(mainSource, /createHalloweenThemeApp/);
+  assert.doesNotMatch(mainSource, /invokeCoreAction|dispatchCoreCommand|addEventListener|querySelectorAll/);
+  assert.doesNotMatch(nonBridgeSources, /\.invokeCoreAction\(|\.dispatchCoreCommand\(/);
+  for (const relativePath of [
+    "core/adaptor.js",
+    "api/bridge.js",
+    "api/meta.js",
+    "api/ui/style.js",
+    "app/commands.js",
+    "app/lifecycle.js",
+    "app/createHalloweenThemeApp.js",
+    "ui/theme.js",
+  ]) {
+    assert.ok(fs.existsSync(path.join(addonRoot, relativePath)), relativePath);
+  }
+});
+
+runTest("ADDON-HALLOWEEN-01 preserves route behavior and owns reversible theme lifecycle", async () => {
+  const manifestEntry = ADDON_MANIFEST.addons.find((addon) => addon.id === "halloween-theme-addon");
+  const routeUrls = [
+    "https://f95zone.to/",
+    "https://f95zone.to/threads/example.1/",
+    "https://f95zone.to/sam/latest_alpha/",
+    "https://f95zone.to/masked/example/",
+  ];
+  assert.ok(routeUrls.every((url) => new URL(url).hostname === "f95zone.to"));
+  assert.deepStrictEqual(manifestEntry.pageScopes, ["f95zone"]);
+  assert.ok(manifestEntry.matches.every((match) => match === "*://f95zone.to/*"));
+
+  const sandbox = createDomSandbox(routeUrls[0]);
+  const actions = [];
+  let commandHandler = null;
+  let unbound = false;
+  let teardownAcknowledgements = 0;
+  const core = {
+    registerAddon(addon) { actions.push({ action: "register", addon }); return { ok: true }; },
+    updateStatus(status, message) { actions.push({ action: "status", status, message }); return { ok: true }; },
+    bindAddonCommands(handler) { commandHandler = handler; return () => { unbound = true; commandHandler = null; }; },
+    notifyTeardownComplete(reason) { teardownAcknowledgements += 1; actions.push({ action: "teardown-ack", reason }); return { ok: true }; },
+    async getAddonAccess() { return { ok: true, value: { blocked: false } }; },
+    async invokeCoreAction(action, payload) {
+      actions.push({ action, payload });
+      return { ok: true, value: {} };
+    },
+  };
+  try {
+    document.body.innerHTML = '<img id="logo" src="/assets/logo.png" srcset="/assets/logo.png 1x">';
+    const { createHalloweenThemeApp } = loadModule("addons/halloween-theme-addon/src/app/createHalloweenThemeApp.js");
+    const app = createHalloweenThemeApp({
+      core,
+      runtime: {
+        addonId: "halloween-theme-addon",
+        addonName: "Halloween Theme",
+        addonVersion: "2.0.12",
+        addonDescription: "Halloween",
+        capabilities: ["feature", "ui.style"],
+        pageScopes: ["f95zone"],
+        runtimeMode: "core-required",
+        matches: ["*://f95zone.to/*"],
+      },
+    });
+
+    await app.bootstrap();
+    const lifecycle = app.getLifecycle();
+    const image = document.querySelector("#logo");
+    assert.strictEqual(image.getAttribute("src"), "/assets/halloween/logo.png");
+    assert.strictEqual(app.getState().restorationCount, 1);
+    assert.strictEqual(actions.filter((entry) => entry.action === "ui.style.register").length, 1);
+
+    await lifecycle.enable({ reason: "repeat-enable" });
+    assert.strictEqual(actions.filter((entry) => entry.action === "ui.style.register").length, 1);
+
+    document.body.innerHTML = '<img id="replaced-logo" src="/assets/logo.png">';
+    assert.ok(commandHandler);
+    commandHandler({
+      command: "before-page-change",
+      reason: "route-refresh",
+      routeContext: { url: routeUrls[2] },
+    });
+    await new Promise((resolve) => window.setTimeout(resolve, 0));
+    assert.strictEqual(lifecycle.getResourceSnapshot().some((entry) => entry.id === "route-refresh-timer"), true);
+    await new Promise((resolve) => window.setTimeout(resolve, 125));
+    const replacedImage = document.querySelector("#replaced-logo");
+    assert.strictEqual(replacedImage.getAttribute("src"), "/assets/halloween/logo.png");
+
+    document.body.innerHTML = '<img id="late-logo" src="/assets/logo.png">';
+    commandHandler({ command: "refresh", reason: "late-refresh" });
+    await lifecycle.disable({ reason: "test-disable" });
+    await new Promise((resolve) => window.setTimeout(resolve, 125));
+    assert.strictEqual(replacedImage.getAttribute("src"), "/assets/logo.png");
+    assert.strictEqual(document.querySelector("#late-logo").getAttribute("src"), "/assets/logo.png");
+    assert.strictEqual(app.getState().restorationCount, 0);
+    assert.strictEqual(actions.filter((entry) => entry.action === "ui.style.unregister").length, 1);
+
+    await lifecycle.enable({ reason: "test-reenable" });
+    await lifecycle.teardown({ reason: "test-teardown" });
+    await lifecycle.teardown({ reason: "duplicate-teardown" });
+    assert.strictEqual(unbound, true);
+    assert.strictEqual(teardownAcknowledgements, 1);
+    assert.deepStrictEqual(lifecycle.getResourceSnapshot(), []);
+    assert.deepStrictEqual(lifecycle.getPendingOperationSnapshot(), []);
+    assert.deepStrictEqual(app.getResourceSnapshot(), []);
+    assert.deepStrictEqual(app.getPendingOperationSnapshot(), []);
+    assert.strictEqual(app.getState().restorationCount, 0);
+    assert.strictEqual(actions.filter((entry) => entry.action === "ui.style.unregister").length, 2);
+    assert.strictEqual(commandHandler, null);
+  } finally {
+    sandbox.restore();
+  }
+});
+
+runTest("ADDON-LATEST-FILTERS-01 keeps Latest scope and canonical module boundaries", () => {
+  const addonRoot = path.join(ROOT, "addons", "latest-filters-addon", "src");
+  const manifestEntry = ADDON_MANIFEST.addons.find((addon) => addon.id === "latest-filters-addon");
+  const mainSource = fs.readFileSync(path.join(addonRoot, "main.js"), "utf8");
+  const nonBridgeSources = collectJavaScriptFiles(addonRoot)
+    .filter((filePath) => !filePath.includes(`${path.sep}api${path.sep}`) && !filePath.includes(`${path.sep}core${path.sep}`))
+    .map((filePath) => fs.readFileSync(filePath, "utf8"))
+    .join("\n");
+
+  assert.ok(manifestEntry);
+  assert.deepStrictEqual(manifestEntry.pageScopes, ["latest"]);
+  assert.deepStrictEqual(manifestEntry.matches, ["*://f95zone.to/sam/latest_alpha/*"]);
+  assert.deepStrictEqual(manifestEntry.grants, ["GM.getValue", "GM.setValue"]);
+  assert.strictEqual(manifestEntry.runAt, "document-idle");
+  assert.ok(manifestEntry.capabilities.includes("page"));
+  assert.ok(manifestEntry.capabilities.includes("observer"));
+  assert.match(mainSource, /__ADDON_ID__/);
+  assert.match(mainSource, /createCoreAdaptor/);
+  assert.match(mainSource, /createLatestFiltersApp/);
+  assert.match(mainSource, /app\.bootstrap\(\)/);
+  assert.doesNotMatch(mainSource, /invokeCoreAction|registerAddonRuntime|renderPanelContent|addEventListener/);
+  assert.doesNotMatch(nonBridgeSources, /\.invokeCoreAction\(|\.dispatchCoreCommand\(/);
+  assert.doesNotMatch(fs.readFileSync(path.join(addonRoot, "constants.js"), "utf8"), /export const state/);
+  for (const relativePath of [
+    "core/adaptor.js",
+    "api/bridge.js",
+    "api/storage.js",
+    "api/page.js",
+    "api/observer.js",
+    "api/ui/dialog.js",
+    "app/state.js",
+    "app/repository.js",
+    "app/lifecycle.js",
+    "app/commands.js",
+    "app/createLatestFiltersApp.js",
+    "ui/bindings.js",
+    "ui/renderer.js",
+  ]) {
+    assert.ok(fs.existsSync(path.join(addonRoot, relativePath)), relativePath);
+  }
+  assert.strictEqual(fs.existsSync(path.join(addonRoot, "coreBridge.js")), false);
+});
+
+runTest("ADDON-LATEST-FILTERS-01 preserves preset formats and storage keys behind adapters", async () => {
+  const sandbox = createDomSandbox("https://f95zone.to/sam/latest_alpha/");
+  try {
+  const { createStorageAdapter } = loadModule("addons/latest-filters-addon/src/api/storage.js");
+  const { createLatestFiltersRepository } = loadModule("addons/latest-filters-addon/src/app/repository.js");
+  const localKey = "addon:latest-filters-addon:presets";
+  const rawPreset = { id: "legacy-preset", name: "Safe", url: "https://f95zone.to/sam/latest_alpha/?tags=1&page=3" };
+  const gm = createFakeGM({ [localKey]: [rawPreset] });
+  const coreWrites = [];
+  const core = {
+    async invokeCoreAction(action, payload) {
+      if (action === "storage.get") {
+        if (payload.key === "settings") return { ok: true, value: { enabled: true, state: { showPageButton: false } } };
+        return { ok: true, value: payload.defaultValue };
+      }
+      if (action === "storage.set") { coreWrites.push(payload); return { ok: true }; }
+      if (action === "config.getTagPrefs") return { ok: true, value: { tags: [] } };
+      return { ok: false, reason: "unknown_test_action" };
+    },
+  };
+  const repository = createLatestFiltersRepository(createStorageAdapter({ core, addonId: "latest-filters-addon", gm }));
+  const settings = await repository.loadSettings();
+  const presets = await repository.loadPresets();
+  assert.strictEqual(settings.state.showPageButton, false);
+  assert.strictEqual(presets[0].id, "legacy-preset");
+  assert.strictEqual(presets[0].normalizedUrl, "https://f95zone.to/sam/latest_alpha/?tags=1");
+
+  await repository.savePresets(presets);
+  assert.deepStrictEqual(gm.logs().writes, [localKey]);
+  assert.ok(gm.snapshot()[localKey][0].summary);
+
+  const failingGm = createFakeGM({}, { failSet: true });
+  const fallbackRepository = createLatestFiltersRepository(createStorageAdapter({ core, addonId: "latest-filters-addon", gm: failingGm }));
+  await fallbackRepository.savePresets(presets);
+  assert.ok(coreWrites.some((entry) => entry.key === "presets"));
+  } finally {
+    sandbox.restore();
+  }
+});
+
+runTest("ADDON-LATEST-FILTERS-01 owns repeated lifecycle and suppresses canceled mount retries", async () => {
+  const sandbox = createDomSandbox("https://f95zone.to/sam/latest_alpha/");
+  const clock = createFakeClock();
+  const actions = [];
+  let commandHandler = null;
+  let teardownAcknowledgements = 0;
+  const settings = { enabled: true, state: { showPageButton: true } };
+  const core = {
+    registerAddon(addon) { actions.push({ action: "register", addon }); return { ok: true }; },
+    updateStatus(status, message) { actions.push({ action: "status", status, message }); return { ok: true }; },
+    bindAddonCommands(handler) { commandHandler = handler; return () => { commandHandler = null; }; },
+    notifyTeardownComplete() { teardownAcknowledgements += 1; return { ok: true }; },
+    async getAddonAccess() { return { ok: true, value: { blocked: false } }; },
+    async invokeCoreAction(action, payload) {
+      actions.push({ action, payload });
+      if (action === "storage.get" && payload.key === "settings") return { ok: true, value: settings };
+      if (action === "storage.get" && payload.key === "presets") return { ok: true, value: [] };
+      if (action === "storage.set") return { ok: true };
+      if (action === "config.getTagPrefs") return { ok: true, value: { tags: [], preferredTags: [], excludedTags: [], markedTags: [], color: {} } };
+      if (action === "page.getContext") return { ok: true, value: { pageScopes: ["latest"], pageType: "latest", url: location.href } };
+      if (action === "observer.waitFor") return { ok: false, reason: "unsupported_action" };
+      return { ok: false, reason: "unsupported_action" };
+    },
+  };
+  const previousSetTimeout = sandbox.window.setTimeout;
+  const previousClearTimeout = sandbox.window.clearTimeout;
+  sandbox.window.setTimeout = clock.setTimeout;
+  sandbox.window.clearTimeout = clock.clearTimeout;
+  try {
+    document.body.innerHTML = "";
+    const { createLatestFiltersApp } = loadModule("addons/latest-filters-addon/src/app/createLatestFiltersApp.js", {
+      loader: { ".css": "text", ".html": "text" },
+    });
+    const app = createLatestFiltersApp({
+      core,
+      runtime: {
+        addonId: "latest-filters-addon",
+        addonName: "Latest Filters",
+        addonVersion: "0.3.18",
+        addonDescription: "Latest filters",
+        capabilities: ADDON_MANIFEST.addons.find((entry) => entry.id === "latest-filters-addon").capabilities,
+        pageScopes: ["latest"],
+        runtimeMode: "core-required",
+        matches: ["*://f95zone.to/sam/latest_alpha/*"],
+      },
+      gm: null,
+    });
+
+    await app.bootstrap();
+    await Promise.resolve();
+    await Promise.resolve();
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.ok(commandHandler);
+    assert.strictEqual(app.getState().enabled, true);
+    assert.strictEqual(app.getState().routeListenersBound, true);
+    assert.strictEqual(clock.pending() > 0, true);
+
+    commandHandler({ command: "before-page-change", commandId: "route-1", reason: "rapid-route-1", routeContext: { url: location.href } });
+    commandHandler({ command: "before-page-change", commandId: "route-2", reason: "rapid-route-2", routeContext: { url: location.href } });
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.strictEqual(app.getResourceSnapshot().filter((entry) => entry.id === "latest-route-listeners").length, 1);
+
+    await app.getLifecycle().disable({ commandId: "disable-1", reason: "test-disable" });
+    await clock.tick(5000);
+    assert.strictEqual(document.getElementById("f95ue-latest-filters-addon"), null);
+    assert.deepStrictEqual(app.getResourceSnapshot(), []);
+    assert.deepStrictEqual(app.getPendingOperationSnapshot(), []);
+
+    await app.getLifecycle().enable({ commandId: "enable-1", reason: "test-enable" });
+    await app.getLifecycle().disable({ commandId: "disable-2", reason: "test-disable-again" });
+    await app.getLifecycle().teardown({ commandId: "teardown-1", reason: "test-teardown" });
+    await app.getLifecycle().teardown({ commandId: "teardown-2", reason: "duplicate" });
+    assert.strictEqual(teardownAcknowledgements, 1);
+    assert.deepStrictEqual(app.getResourceSnapshot(), []);
+    assert.deepStrictEqual(app.getPendingOperationSnapshot(), []);
+    assert.strictEqual(commandHandler, null);
+  } finally {
+    sandbox.window.setTimeout = previousSetTimeout;
+    sandbox.window.clearTimeout = previousClearTimeout;
+    sandbox.restore();
+  }
+});
+
+runTest("ADDON-LATEST-FILTERS-01 keeps management toggles available outside Latest", async () => {
+  const sandbox = createDomSandbox("https://f95zone.to/threads/example.1/");
+  const actions = [];
+  let commandHandler = null;
+  const core = {
+    registerAddon(addon) { actions.push({ action: "register", addon }); return { ok: true }; },
+    updateStatus(status) { actions.push({ action: "status", status }); return { ok: true }; },
+    bindAddonCommands(handler) { commandHandler = handler; return () => { commandHandler = null; }; },
+    notifyTeardownComplete() { return { ok: true }; },
+    async getAddonAccess() { return { ok: true, value: { blocked: false } }; },
+    async invokeCoreAction(action, payload) {
+      if (action === "storage.get" && payload.key === "settings") return { ok: true, value: { enabled: true, state: { showPageButton: true } } };
+      if (action === "storage.get") return { ok: true, value: [] };
+      if (action === "storage.set") return { ok: true };
+      if (action === "config.getTagPrefs") return { ok: true, value: { tags: [] } };
+      return { ok: false, reason: "unsupported_action" };
+    },
+  };
+  try {
+    const { createLatestFiltersApp } = loadModule("addons/latest-filters-addon/src/app/createLatestFiltersApp.js", {
+      loader: { ".css": "text", ".html": "text" },
+    });
+    const app = createLatestFiltersApp({
+      core,
+      runtime: {
+        addonId: "latest-filters-addon",
+        addonName: "Latest Filters",
+        addonVersion: "0.3.18",
+        addonDescription: "Latest filters",
+        capabilities: ["toast", "feature", "storage", "page", "observer", "ui", "ui.style", "ui.mount", "ui.dialog"],
+        pageScopes: ["latest"],
+        runtimeMode: "core-required",
+        matches: ["*://f95zone.to/sam/latest_alpha/*"],
+      },
+      gm: null,
+    });
+    await app.bootstrap();
+    assert.strictEqual(app.getState().enabled, true);
+    assert.strictEqual(document.getElementById("f95ue-latest-filters-addon"), null);
+    assert.strictEqual(actions.some((entry) => entry.action === "ui.mount"), false);
+    commandHandler({ command: "disable", commandId: "outside-disable", reason: "user" });
+    await new Promise((resolve) => setImmediate(resolve));
+    commandHandler({ command: "enable", commandId: "outside-enable", reason: "user" });
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.strictEqual(app.getState().enabled, true);
+    assert.ok(actions.some((entry) => entry.action === "status"));
+    await app.getLifecycle().teardown({ reason: "test-teardown" });
+  } finally {
+    sandbox.restore();
+  }
 });
 
 runTest("ADDON-GOLDEN-01 boots normally on the declared F95Zone scope", async () => {
@@ -2568,6 +3066,117 @@ runTest("ADDON-GOLDEN-01 keeps owned cancellation and late-commit guards in the 
   assert.match(bulkSource, /finally \{\s*active = null;/s);
 });
 
+runTest("ADDON-RUNTIME-CONTRACT-01 exposes serialized command context and lifecycle snapshots", async () => {
+  const { createAddonRuntimeLifecycle, LIFECYCLE_STATES } = loadModule("addons/shared/runtimeLifecycle.js");
+  const contexts = [];
+  let releaseEnable;
+  const enableGate = new Promise((resolve) => { releaseEnable = resolve; });
+  const lifecycle = createAddonRuntimeLifecycle({
+    addonId: "runtime-fixture",
+    onEnable: async (context) => {
+      contexts.push(context);
+      await enableGate;
+      return context.isCurrent() ? { ok: true } : { ok: false, reason: "stale" };
+    },
+    onDisable: async (context) => {
+      contexts.push(context);
+      return { ok: true };
+    },
+    onRefresh: async (context) => {
+      contexts.push(context);
+      return { ok: true };
+    },
+    onTeardown: async (context) => {
+      contexts.push(context);
+      return { ok: true };
+    },
+  });
+
+  assert.deepStrictEqual(lifecycle.states, LIFECYCLE_STATES);
+  const enablePromise = lifecycle.enable({ commandId: "enable-1", routeContext: { route: "a" } });
+  await Promise.resolve();
+  const disablePromise = lifecycle.disable({ commandId: "disable-1", reason: "user" });
+  releaseEnable();
+  assert.deepStrictEqual(await enablePromise, { ok: false, reason: "stale" });
+  assert.deepStrictEqual(await disablePromise, { ok: true });
+  assert.strictEqual(lifecycle.getState(), "disabled");
+  assert.strictEqual(contexts[0].commandId, "enable-1");
+  assert.strictEqual(contexts[0].command, "enable");
+  assert.ok(contexts[0].signal instanceof AbortSignal);
+  assert.strictEqual(contexts[0].terminal, false);
+  assert.strictEqual(contexts[1].generation > contexts[0].generation, true);
+
+  const release = lifecycle.registerResource("fixture-style", () => {}, "style");
+  const pending = lifecycle.trackPendingOperation("fixture-import", Promise.resolve("done"), { kind: "import" });
+  assert.strictEqual(lifecycle.getSnapshot().resources[0].kind, "style");
+  assert.strictEqual(lifecycle.getSnapshot().pendingOperations[0].kind, "import");
+  release();
+  await pending;
+  assert.deepStrictEqual(lifecycle.getResourceSnapshot(), []);
+  assert.deepStrictEqual(lifecycle.getPendingOperationSnapshot(), []);
+  await lifecycle.teardown({ commandId: "teardown-1", reason: "test" });
+  await lifecycle.teardown({ commandId: "teardown-2", reason: "ignored" });
+  assert.strictEqual(lifecycle.getState(), "terminated");
+  assert.strictEqual(lifecycle.isTeardownAcknowledged(), true);
+  assert.deepStrictEqual(await lifecycle.enable(), { ok: false, reason: "terminated" });
+});
+
+runTest("ADDON-RUNTIME-CONTRACT-01 invalidates route work and keeps disable reversible", async () => {
+  const { createAddonRuntimeLifecycle } = loadModule("addons/shared/runtimeLifecycle.js");
+  const commits = [];
+  let releaseRefresh;
+  const refreshGate = new Promise((resolve) => { releaseRefresh = resolve; });
+  const lifecycle = createAddonRuntimeLifecycle({
+    onEnable: async () => { commits.push("enable"); return { ok: true }; },
+    onDisable: async () => { commits.push("disable"); return { ok: true }; },
+    onRefresh: async (context) => {
+      await refreshGate;
+      if (!context.isCurrent()) return { ok: false, reason: "route_stale" };
+      commits.push("refresh");
+      return { ok: true };
+    },
+  });
+  await lifecycle.enable();
+  const refresh = lifecycle.refresh({ routeContext: { route: "old" } });
+  await Promise.resolve();
+  lifecycle.invalidate("route-change", { route: "new" });
+  releaseRefresh();
+  assert.deepStrictEqual(await refresh, { ok: false, reason: "route_stale" });
+  assert.deepStrictEqual(commits, ["enable"]);
+  assert.strictEqual(lifecycle.getState(), "enabled");
+  const disablePromise = lifecycle.disable({ reason: "user" });
+  const refreshDuringDisable = lifecycle.refresh({ reason: "stale-refresh" });
+  assert.deepStrictEqual(await disablePromise, { ok: true });
+  assert.deepStrictEqual(await refreshDuringDisable, { ok: false, reason: "disabled" });
+  await lifecycle.enable();
+  assert.deepStrictEqual(commits, ["enable", "disable", "enable"]);
+});
+
+runTest("ADDON-RUNTIME-CONTRACT-01 core watchdog hard-cleans one owner and ignores duplicate acknowledgments", async () => {
+  const sandbox = createDomSandbox();
+  const cleaned = [];
+  try {
+    const { createAddonLifecycleOrchestrator } = loadModule("src/services/addons/lifecycle.js");
+    const orchestrator = createAddonLifecycleOrchestrator({
+      sanitizeAddonId: (value) => String(value || "").trim(),
+      listRegisteredAddons: () => [{ id: "watchdog-fixture" }],
+      cleanupAddonObserverSubscriptions: (addonId) => cleaned.push(`observer:${addonId}`),
+      cleanupAddonUi: (addonId) => cleaned.push(`ui:${addonId}`),
+      teardownWatchdogMs: 5,
+    });
+    orchestrator.requestTeardown("watchdog-fixture", "timeout-test");
+    await new Promise((resolve) => setTimeout(resolve, 15));
+    assert.deepStrictEqual(cleaned, ["ui:watchdog-fixture", "observer:watchdog-fixture", "ui:watchdog-fixture"]);
+    const snapshot = orchestrator.getSnapshot();
+    assert.strictEqual(snapshot.watchdogs.length, 0);
+    assert.strictEqual(snapshot.owners[0].state, "terminated");
+    assert.strictEqual(snapshot.owners[0].hardCleaned, true);
+    assert.strictEqual(orchestrator.acknowledgeTeardown("watchdog-fixture"), false);
+  } finally {
+    sandbox.restore();
+  }
+});
+
 runTest("ADDON-SCOPE-02 validates authoritative metadata and preserves headers", () => {
   const manifest = addonCatalog.readManifest ? addonCatalog.readManifest() : JSON.parse(fs.readFileSync(path.join(ROOT, "addons/addons.manifest.json"), "utf8")).addons;
   assert.deepStrictEqual(addonCatalog.validateManifest(manifest), []);
@@ -2637,6 +3246,99 @@ runTest("ADDON-SCOPE-02 separates activation matching, runtime scopes, and regis
   assert.strictEqual(thread.matchesCurrentPage, false);
   assert.strictEqual(thread.scopeApplies, false);
   assert.strictEqual(thread.supportsCurrentPage, false);
+});
+
+runTest("ADDON-IDENTITY-01 canonicalizes catalog aliases and runtime conflicts", () => {
+  const catalog = loadModule("src/services/addons/catalog.js");
+  assert.strictEqual(catalog.getCanonicalAddonId("EXAMPLE.ADDON-LEGACY"), "example-addon");
+  assert.strictEqual(catalog.getTrustedCatalogEntry("example-addon-legacy").id, "example-addon");
+  assert.deepStrictEqual(catalog.getTrustedCatalogEntry("example-addon").legacyIds, ["example-addon-legacy"]);
+
+  const registry = loadModule("src/services/addons/registry.js");
+  const metadata = {
+    name: "Example Runtime",
+    version: "1.0.0",
+    description: "fixture",
+    runtimeMode: "core-required",
+    requiresCore: true,
+    pageScopes: ["f95zone"],
+    matches: ["*://f95zone.to/*"],
+    capabilities: ["toast"],
+  };
+  registry.registerAddon({ ...metadata, id: "example-addon-legacy" });
+  registry.registerAddon({ ...metadata, id: "example-addon", name: "Canonical Runtime" });
+  const snapshot = registry.listRegisteredAddons();
+  assert.strictEqual(snapshot.length, 1);
+  assert.strictEqual(snapshot[0].id, "example-addon");
+  assert.strictEqual(snapshot[0].name, "Canonical Runtime");
+  assert.strictEqual(registry.getRegisteredAddon("example-addon-legacy").id, "example-addon");
+
+  const { buildKnownAddonsSnapshot } = loadModule("src/services/addons/knownAddons.js");
+  const cards = buildKnownAddonsSnapshot({
+    registered: [{ ...metadata, id: "example-addon-legacy", name: "Old Runtime" }, { ...metadata, id: "example-addon", name: "Canonical Runtime" }],
+    catalog: [{ id: "example-addon", legacyIds: ["example-addon-legacy"], name: "Catalog Example", trusted: true, pageScopes: ["f95zone"], matches: ["*://f95zone.to/*"] }],
+    installedMeta: { "example-addon-legacy": { name: "Old Installed", installedSeenAt: 2, lastSeenAt: 3 } },
+    currentScopes: ["f95zone"],
+    currentUrl: "https://f95zone.to/",
+    catalogFresh: true,
+  });
+  assert.strictEqual(cards.length, 1);
+  assert.strictEqual(cards[0].id, "example-addon");
+  assert.strictEqual(cards[0].name, "Canonical Runtime");
+});
+
+runTest("ADDON-IDENTITY-01 merges state atomically with deterministic precedence and retry", async () => {
+  const previousGM = global.GM;
+  const seedGM = createFakeGM();
+  global.GM = seedGM;
+  try {
+    const settings = loadModule("src/services/settingsService.js");
+    const { config } = loadModule("src/config.js");
+    await seedReadyConfig(seedGM, settings, config);
+
+    const state = loadModule("src/services/addons/state.js");
+    const committed = await state.persistAddonsState({
+      byAddon: {
+        "example-addon-legacy": { state: { enabled: false, legacyOnly: true, shared: "old" } },
+        "example-addon": { state: { enabled: true, shared: "canonical" } },
+      },
+      installedMeta: {
+        "example-addon-legacy": { name: "Old", installedSeenAt: 20, lastSeenAt: 30 },
+        "example-addon": { name: "Canonical", installedSeenAt: 10, lastSeenAt: 40 },
+      },
+    });
+    assert.strictEqual(committed.ok, true);
+    assert.deepStrictEqual(state.getAddonState("example-addon-legacy"), { enabled: true, legacyOnly: true, shared: "canonical" });
+    const normalizedMeta = state.getInstalledAddonMeta("example-addon-legacy");
+    assert.strictEqual(normalizedMeta.name, "Canonical");
+    assert.strictEqual(normalizedMeta.installedSeenAt, 10);
+    assert.strictEqual(normalizedMeta.lastSeenAt, 40);
+    assert.deepStrictEqual(Object.keys(state.listInstalledAddonMeta()), ["example-addon"]);
+    const writesAfterCommit = seedGM.logs().writes.length;
+    assert.deepStrictEqual(await state.normalizeAddonIdentities(), { ok: true, changed: false });
+    assert.strictEqual(seedGM.logs().writes.length, writesAfterCommit);
+
+    const failingSeed = createFakeGM();
+    global.GM = failingSeed;
+    const seedSettings = loadModule("src/services/settingsService.js");
+    const seedConfig = loadModule("src/config.js").config;
+    await seedReadyConfig(failingSeed, seedSettings, seedConfig);
+    const seededEnvelope = failingSeed.snapshot()[seedSettings.CONFIG_ENVELOPE_KEY];
+    seededEnvelope.data.addons.byAddon = { "example-addon-legacy": { state: { enabled: false } } };
+    await failingSeed.setValue(seedSettings.CONFIG_ENVELOPE_KEY, seededEnvelope);
+    const failingGM = createFakeGM(failingSeed.snapshot(), { failSet: true });
+    global.GM = failingGM;
+    const retryState = loadModule("src/services/addons/state.js");
+    const failed = await retryState.persistAddonsState({
+      byAddon: { "example-addon-legacy": { state: { enabled: false } } },
+      installedMeta: {},
+    });
+    assert.strictEqual(failed.ok, false);
+    assert.deepStrictEqual(retryState.getAddonState("example-addon"), { enabled: false });
+    assert.ok(Object.hasOwn(failingGM.snapshot()[settings.CONFIG_ENVELOPE_KEY].data.addons.byAddon, "example-addon-legacy"));
+  } finally {
+    global.GM = previousGM;
+  }
 });
 
 runTest("ADDON-TRUST-GATING-01 reproduces the stale trusted-and-blocked masked fixture", () => {
@@ -3342,6 +4044,27 @@ runTest("CORE-CONFIG-STORAGE-01 missing canonical data ignores obsolete standalo
   } finally { global.GM = previousGM; }
 });
 
+runTest("CORE-CONFIG-MIGRATION-RECOVERY-01 migrates a legacy complete config stored at the canonical key", async () => {
+  const previousGM = global.GM;
+  const fixture = loadModule("tests/fixtures/configMigrationHarness.js");
+  const reference = fixture.loadConfigReference({ compactCatalogs: true });
+  const gm = createFakeGM({ ["f95ue:config"]: reference });
+  global.GM = gm;
+  try {
+    const settings = loadModule("src/services/settingsService.js");
+    const loaded = await settings.loadConfig();
+    const snapshot = gm.snapshot();
+    const canonical = snapshot[settings.CONFIG_ENVELOPE_KEY];
+    assert.strictEqual(loaded.status, "migrated");
+    assert.strictEqual(loaded.source, "legacy-migration");
+    assert.strictEqual(settings.isConfigReady(), true);
+    assert.strictEqual(canonical.schemaVersion, 1);
+    assert.strictEqual(canonical.data.addons.byAddon["example-addon"].state.enabled, true);
+    assert.strictEqual(Object.hasOwn(canonical.data, "metrics"), false);
+    assert.strictEqual(snapshot[settings.CONFIG_MIGRATION_VERSION_KEY], 1);
+  } finally { global.GM = previousGM; }
+});
+
 runTest("CORE-CONFIG-STORAGE-01 sanitized version-one data preserves valid siblings without writing", async () => {
   const previousGM = global.GM;
   const gm = createFakeGM();
@@ -3396,7 +4119,7 @@ runTest("CORE-CONFIG-MIGRATION-RECOVERY-01 recovers the supplied real-world surf
     const snapshot = gm.snapshot();
     const canonical = snapshot[settings.CONFIG_ENVELOPE_KEY];
     assert.strictEqual(loaded.status, "migrated");
-    assert.strictEqual(loaded.data.globalSettings.disableHelpMessage, true);
+    assert.strictEqual(Object.hasOwn(loaded.data.globalSettings, "disableHelpMessage"), false);
     assert.strictEqual(loaded.data.latestSettings.autoRefresh, true);
     assert.strictEqual(loaded.data.latestSettings.webNotif, true);
     assert.deepStrictEqual(loaded.data.preferredTags, reference.preferredTags);
@@ -3456,7 +4179,7 @@ runTest("CORE-CONFIG-MIGRATION-RECOVERY-01 invalid historical leaves preserve va
     const settings = loadModule("src/services/settingsService.js");
     const loaded = await settings.loadConfig();
     assert.strictEqual(loaded.status, "migrated");
-    assert.strictEqual(loaded.data.globalSettings.disableHelpMessage, true);
+    assert.strictEqual(Object.hasOwn(loaded.data.globalSettings, "disableHelpMessage"), false);
     assert.strictEqual(Object.hasOwn(loaded.data.globalSettings, "enableCrossTabSync"), false);
     assert.strictEqual(loaded.data.globalSettings.configVisibility, true);
     assert.strictEqual(loaded.data.latestSettings.autoRefresh, true);
@@ -3602,12 +4325,12 @@ runTest("CORE-CONFIG-MIGRATION-RECOVERY-01 save waits for migration readiness", 
   try {
     const settings = loadModule("src/services/settingsService.js");
     const loadPromise = settings.loadConfig();
-    const savePromise = settings.saveConfigKeys({ globalSettings: { disableHelpMessage: true } });
+    const savePromise = settings.saveConfigKeys({ globalSettings: { configVisibility: false } });
     const [loaded, saved] = await Promise.all([loadPromise, savePromise]);
     assert.strictEqual(loaded.status, "migrated");
     assert.strictEqual(saved.committed, true);
     assert.deepStrictEqual(saved.config.preferredTags, [13]);
-    assert.strictEqual(saved.config.globalSettings.disableHelpMessage, true);
+    assert.strictEqual(saved.config.globalSettings.configVisibility, false);
   } finally { global.GM = previousGM; }
 });
 
@@ -3936,7 +4659,10 @@ runTest("TEST-01 add-on UI ownership rejects cross-owner mutation and cleans eve
     assert.strictEqual(host.updateAddonUi("addon-b", { mountId: "panel", html: "stolen" }).reason, "mount_not_found");
     assert.strictEqual(host.registerAddonStyle("addon-a", { styleId: "panel", cssText: ".panel { color: red; }" }).ok, true);
     assert.strictEqual(host.openAddonDialog("addon-a", { dialogId: "dialog", html: "<div>Dialog</div>" }).ok, true);
+    assert.strictEqual(host.updateAddonDialog("addon-b", { dialogId: "dialog", html: "stolen" }).reason, "dialog_not_found");
+    assert.strictEqual(host.updateAddonDialog("addon-a", { dialogId: "dialog", html: "<p>Updated safely</p>" }).ok, true);
     host.cleanupAddonUi("addon-a");
+    assert.strictEqual(host.updateAddonDialog("addon-a", { dialogId: "dialog", html: "late" }).reason, "dialog_not_found");
     const owners = host.getAddonUiPolicySnapshot().owners;
     assert.deepStrictEqual(owners, { docks: [], dialogs: [], mounts: [], pendingMounts: [], styles: [] });
     host.resetAddonUiHostForTests();

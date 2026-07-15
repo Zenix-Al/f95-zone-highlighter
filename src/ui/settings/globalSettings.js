@@ -2,7 +2,6 @@ import { openConfigTransferDialog } from "../configTransfer/index.js";
 import { updateButtonVisibility } from "../components/configButton";
 import { createEnabledDisabledToast, createToggleSetting } from "./metaFactory";
 import { showFeatureHealthBox } from "../components/featureHealth/index.js";
-import { syncHelpMessageFooter } from "../components/helpMessage.js";
 import { contributeToSection } from "../settingsRuntime/sectionsRegistry.js";
 
 export const globalSettingsMeta = {
@@ -36,17 +35,5 @@ export const globalSettingsMeta = {
       }
     },
   },
-  disableHelpMessage: createToggleSetting({
-    text: "Disable help message (dont)",
-    tooltip: "y u do dis?",
-    config: "globalSettings.disableHelpMessage",
-    custom: () => {
-      syncHelpMessageFooter();
-    },
-    toast: createEnabledDisabledToast("Help message", {
-      enabled: "disabled",
-      disabled: "enabled",
-    }),
-  }),
 };
 contributeToSection("global", globalSettingsMeta, "base:global");

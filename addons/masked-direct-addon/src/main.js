@@ -1,5 +1,7 @@
 /* global __ADDON_ID__, __ADDON_NAME__, __ADDON_VERSION__, __ADDON_DESCRIPTION__, __ADDON_CAPABILITIES__, __ADDON_REQUIRES_CORE__, __ADDON_PAGE_SCOPES__, __ADDON_RUNTIME_MODE__, __ADDON_MATCHES__, GM_openInTab, GM, GM_addValueChangeListener, GM_removeValueChangeListener, grecaptcha */
 import { createCoreBridge } from "./coreBridge.js";
+import { getPageContext } from "./api/page.js";
+import { waitForElement } from "./api/observer.js";
 import { ADDON_COMMAND_EVENT, RESOLVE_BTN_CLASS } from "./constants.js";
 import {
   createDebugLog,
@@ -320,9 +322,32 @@ async function readThreadFlags(force = false) {
   return settingsCache;
 }
 
-function applyCurrentPageBehavior() {
+function getLocalPageContext() {
+  const isF95 = location.hostname.includes("f95zone.to");
+  const isThread = isThreadPage();
+  return {
+    pageScopes: isThread ? ["f95zone", "thread"] : isF95 ? ["f95zone"] : [],
+    pageType: isThread ? "thread" : isF95 ? "f95zone" : "unknown",
+    routeGeneration: 0,
+    url: String(location.href || ""),
+  };
+}
+
+async function applyCurrentPageBehavior() {
   clearTeardowns();
   if (!isEnabled || isBlockedByCore) return;
+
+  const pageContext = await getPageContext(bridge, getLocalPageContext);
+  const threadPage = pageContext?.pageScopes?.includes("thread") || false;
+  if (threadPage) {
+    await waitForElement(
+      bridge,
+      "masked-direct-page-ready",
+      "body",
+      2500,
+      () => ({ ok: false, reason: "unsupported_action" }),
+    );
+  }
 
   try {
     if (isF95AddonPage()) {
@@ -331,7 +356,7 @@ function applyCurrentPageBehavior() {
       });
     }
 
-    if (isThreadPage()) {
+    if (threadPage) {
       threadPageController.enableThreadHooks({
         isEnabled,
         isBlockedByCore,

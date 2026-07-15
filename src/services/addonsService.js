@@ -32,6 +32,7 @@ import {
 } from "./addons/state.js";
 import {
   initTrustedAddonCatalog,
+  getCanonicalAddonId,
   getTrustedCatalogEntry,
   reloadTrustedAddonCatalog,
   isCatalogFresh,
@@ -87,6 +88,9 @@ const PAYLOAD_SIZE_ENCODER = typeof TextEncoder !== "undefined" ? new TextEncode
 export { listRegisteredAddons, replaceRegisteredAddons, registerAddon, validateAddonRegistration, subscribeAddonsRegistry };
 export { getAddonState, setAddonStateValue, clearAddonState };
 export { isCatalogFresh };
+export function getAddonLifecycleSnapshot() {
+  return addonLifecycle.getSnapshot();
+}
 const addonLifecycle = createAddonLifecycleOrchestrator({
   sanitizeAddonId,
   listRegisteredAddons,
@@ -512,7 +516,7 @@ export function initAddonsConsoleBridge() {
       const snapshot = registerAddon(addon || {});
       if (!addonId) return;
 
-      const registered = snapshot.find((entry) => entry.id === addonId);
+      const registered = snapshot.find((entry) => entry.id === getCanonicalAddonId(addonId));
       if (registered) {
         void upsertInstalledAddonMeta(addonId, {
           name: registered.name,

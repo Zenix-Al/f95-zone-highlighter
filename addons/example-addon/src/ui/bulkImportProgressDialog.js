@@ -2,6 +2,7 @@ export function createBulkImportProgressMarkup({
   total = 0,
   totalBatches = 0,
   throttle = {},
+  progress = {},
 } = {}) {
   const suggestedMinIntervalMs = Math.max(
     0,
@@ -9,13 +10,22 @@ export function createBulkImportProgressMarkup({
   );
   const maxPayloadBytes = Math.max(0, Number(throttle?.payloadLimits?.idb?.maxPayloadBytes || 0));
   const maxBulkItems = Math.max(0, Number(throttle?.payloadLimits?.idb?.maxBulkItems || 0));
+  const processed = Math.max(0, Number(progress?.processed || 0));
+  const status = String(progress?.status || "preparing").trim();
+  const title = progress?.cancelled || status === "cancelling"
+    ? "Stopping bulk import..."
+    : status === "completed"
+      ? "Bulk import complete"
+      : status === "failed"
+        ? "Bulk import failed"
+        : "Importing dummy IndexedDB records...";
 
   return `
     <div class="f95ue-example-progress">
-      <div class="f95ue-example-progress-title">Preparing throttled bulk import...</div>
-      <progress data-role="bulk-progress-bar" max="${Math.max(1, total)}" value="0"></progress>
+      <div class="f95ue-example-progress-title">${title}</div>
+      <progress data-role="bulk-progress-bar" max="${Math.max(1, total)}" value="${Math.min(processed, Math.max(1, Number(total) || 1))}"></progress>
       <div class="f95ue-example-progress-detail" data-role="bulk-progress-detail">
-        0 / ${total} records | 0 / ${totalBatches} batches
+        ${processed} / ${total} records | ${Math.max(0, Number(progress?.completedBatches || 0))} / ${totalBatches} batches | failed ${Math.max(0, Number(progress?.failed || 0))}
       </div>
       <div class="f95ue-example-progress-note">
         pacing ${suggestedMinIntervalMs}ms between requests | payload ceiling ${maxPayloadBytes} bytes | batch items <= ${maxBulkItems}
