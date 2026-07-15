@@ -257,7 +257,7 @@ async function mountPageUi(forcePanelOnly = false) {
     const anchor = getAnchor();
     if (!anchor) return false;
 
-    state.rootEl = createstate.rootElement(ROOT_ID);
+    state.rootEl = createRootElement(ROOT_ID);
     if (panelOnly) {
       state.rootEl.classList.add("is-panel-only");
     }

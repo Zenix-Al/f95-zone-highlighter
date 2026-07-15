@@ -7,6 +7,19 @@ const CATALOG_PATH = path.join(ROOT, "src", "services", "addons", "trusted-catal
 const HEADER_PATH = path.join(ROOT, "header.txt");
 const SUPPORTED_SCOPES = new Set(["f95zone", "thread", "latest"]);
 const RUNTIME_MODES = new Set(["core-required", "standalone", "hybrid"]);
+const VALID_CAPABILITIES = new Set([
+  "toast",
+  "feature",
+  "storage",
+  "idb",
+  "observer",
+  "ui",
+  "ui.style",
+  "ui.mount",
+  "ui.dialog",
+  "ui.dock",
+]);
+const VALID_RUN_AT = new Set(["document-start", "document-body", "document-end", "document-idle", "context-menu"]);
 const F95ZONE_SAMPLE_URLS = [
   "https://f95zone.to/",
   "https://f95zone.to/threads/example.1/",
@@ -52,10 +65,21 @@ function readManifest() {
   return Array.isArray(parsed.addons) ? parsed.addons : [];
 }
 
-function validateManifest(addons = readManifest()) {
+function validateManifest(addons = readManifest(), { rootDir = ROOT, checkFiles = true } = {}) {
   const errors = [];
   const ids = new Set();
+  const legacyIds = new Map();
+  const root = path.resolve(rootDir);
+  if (!Array.isArray(addons)) return ["addons: manifest must contain an array"];
+
+  const addPathError = (index, field, message) => errors.push(`addons[${index}].${field}: ${message}`);
+  const isRelativeRepositoryPath = (value) => {
+    const normalized = String(value || "").replace(/\\/g, "/");
+    return normalized && !normalized.startsWith("/") && !/^[A-Za-z]:\//.test(normalized) && !normalized.includes("../");
+  };
+
   for (const addon of addons) {
+    const index = addons.indexOf(addon);
     const id = String(addon?.id || "").trim();
     const scopes = Array.isArray(addon?.pageScopes)
       ? addon.pageScopes.map((scope) => String(scope || "").trim().toLowerCase())
@@ -64,24 +88,79 @@ function validateManifest(addons = readManifest()) {
       ? addon.matches.map((match) => String(match || "").trim())
       : [];
     const mode = String(addon?.runtimeMode || "").trim().toLowerCase();
-    if (!id || ids.has(id)) errors.push(`${id || "<missing>"}: duplicate or missing id`);
+    if (!id) addPathError(index, "id", "missing add-on id");
+    else if (ids.has(id)) addPathError(index, "id", `duplicate add-on id '${id}'`);
     ids.add(id);
-    if (!RUNTIME_MODES.has(mode)) errors.push(`${id}: invalid runtimeMode`);
-    if (!Array.isArray(scopes)) errors.push(`${id}: pageScopes must be an array`);
-    if (scopes?.some((scope) => !scope)) errors.push(`${id}: empty page scope`);
-    if (scopes && new Set(scopes).size !== scopes.length) errors.push(`${id}: duplicate page scope`);
-    if (scopes?.some((scope) => !SUPPORTED_SCOPES.has(scope))) errors.push(`${id}: unknown page scope`);
-    if (mode !== "standalone" && scopes?.length === 0) errors.push(`${id}: core mode requires pageScopes`);
-    if (mode === "standalone" && scopes?.length > 0) errors.push(`${id}: standalone cannot declare pageScopes`);
-    if (!Array.isArray(addon?.matches) || matches.length === 0) errors.push(`${id}: missing matches`);
-    if (mode !== "standalone" && !addon.requiresCore) errors.push(`${id}: core mode contradicts requiresCore`);
-    if (mode === "standalone" && addon.requiresCore) errors.push(`${id}: standalone contradicts requiresCore`);
-    if (mode === "core-required" && !hasF95ZoneMatch(matches)) errors.push(`${id}: core-required lacks an F95Zone match`);
+    if (!RUNTIME_MODES.has(mode)) addPathError(index, "runtimeMode", `invalid runtime mode '${mode || "<missing>"}'`);
+    if (!Array.isArray(scopes)) addPathError(index, "pageScopes", "must be an array");
+    if (scopes?.some((scope) => !scope)) addPathError(index, "pageScopes", "contains an empty scope");
+    if (scopes && new Set(scopes).size !== scopes.length) addPathError(index, "pageScopes", "contains duplicate scopes");
+    if (scopes?.some((scope) => !SUPPORTED_SCOPES.has(scope))) addPathError(index, "pageScopes", "contains an unsupported scope");
+    if (mode !== "standalone" && scopes?.length === 0) addPathError(index, "pageScopes", "core mode requires at least one scope");
+    if (mode === "standalone" && scopes?.length > 0) addPathError(index, "pageScopes", "standalone mode must not declare scopes");
+    if (!Array.isArray(addon?.matches) || matches.length === 0) addPathError(index, "matches", "must contain at least one match");
+    if (new Set(matches).size !== matches.length) addPathError(index, "matches", "contains duplicate matches");
+    if (mode !== "standalone" && addon.requiresCore !== true) addPathError(index, "requiresCore", "must be true for core modes");
+    if (mode === "standalone" && addon.requiresCore !== false) addPathError(index, "requiresCore", "must be false for standalone mode");
+    if (mode === "core-required" && !hasF95ZoneMatch(matches)) addPathError(index, "matches", "core-required lacks an F95Zone match");
     if (mode === "hybrid" && (!hasF95ZoneMatch(matches) || !hasStandaloneMatch(matches))) {
-      errors.push(`${id}: hybrid requires F95Zone and standalone matches`);
+      addPathError(index, "matches", "hybrid requires both F95Zone and standalone matches");
     }
     if (matches.some((match) => !match || (!match.startsWith("<all_urls>") && !/^(\*|https?|file):\/\//i.test(match)))) {
-      errors.push(`${id}: unsupported userscript match syntax`);
+      addPathError(index, "matches", "contains unsupported userscript match syntax");
+    }
+
+    const grants = Array.isArray(addon?.grants) ? addon.grants.map((grant) => String(grant || "").trim()) : null;
+    if (!grants || grants.length === 0) addPathError(index, "grants", "must contain at least one grant");
+    if (grants && new Set(grants).size !== grants.length) addPathError(index, "grants", "contains duplicate grants");
+    if (grants?.includes("none") && grants.length !== 1) addPathError(index, "grants", "none must be used alone");
+    if (grants?.some((grant) => grant !== "none" && !/^(?:GM_[A-Za-z0-9]+|GM\.[A-Za-z0-9]+)$/.test(grant))) {
+      addPathError(index, "grants", "contains an unsupported grant");
+    }
+
+    if (!VALID_RUN_AT.has(String(addon?.runAt || "").trim())) {
+      addPathError(index, "runAt", `unsupported run timing '${addon?.runAt || "<missing>"}'`);
+    }
+    if (!Array.isArray(addon?.capabilities)) addPathError(index, "capabilities", "must be an array");
+    if (addon?.capabilities?.some((capability) => !VALID_CAPABILITIES.has(String(capability || "").trim()))) {
+      addPathError(index, "capabilities", "contains an unsupported capability");
+    }
+    if (addon?.capabilities && new Set(addon.capabilities).size !== addon.capabilities.length) {
+      addPathError(index, "capabilities", "contains duplicate capabilities");
+    }
+
+    const expectedEntry = `addons/${id}/src/main.js`;
+    const expectedOutfile = `addons/${id}/dist/${id}.user.js`;
+    if (addon?.entry !== expectedEntry) addPathError(index, "entry", `must be '${expectedEntry}'`);
+    if (addon?.outfile !== expectedOutfile) addPathError(index, "outfile", `must be '${expectedOutfile}'`);
+    if (!isRelativeRepositoryPath(addon?.entry)) addPathError(index, "entry", "must be a relative repository path");
+    if (!isRelativeRepositoryPath(addon?.outfile)) addPathError(index, "outfile", "must be a relative repository path");
+    if (checkFiles && id && addon?.entry === expectedEntry && !fs.existsSync(path.join(root, expectedEntry))) {
+      addPathError(index, "entry", `file does not exist: ${expectedEntry}`);
+    }
+
+    const declaredLegacyIds = addon?.legacyIds;
+    if (typeof declaredLegacyIds !== "undefined" && !Array.isArray(declaredLegacyIds)) {
+      addPathError(index, "legacyIds", "must be an array when provided");
+    }
+    for (const legacyId of Array.isArray(declaredLegacyIds) ? declaredLegacyIds : []) {
+      const normalizedLegacyId = String(legacyId || "").trim();
+      if (!normalizedLegacyId) addPathError(index, "legacyIds", "contains an empty ID");
+      else if (normalizedLegacyId === id || legacyIds.has(normalizedLegacyId)) {
+        addPathError(index, "legacyIds", `duplicates add-on identity '${normalizedLegacyId}'`);
+      } else {
+        legacyIds.set(normalizedLegacyId, index);
+      }
+    }
+  }
+  const allIds = new Set(addons.map((addon) => String(addon?.id || "").trim()).filter(Boolean));
+  for (const [legacyId, ownerIndex] of legacyIds) {
+    if (allIds.has(legacyId)) addPathError(ownerIndex, "legacyIds", `duplicates add-on identity '${legacyId}'`);
+  }
+  for (const [legacyId, ownerIndex] of legacyIds) {
+    const owner = addons[ownerIndex];
+    if (owner?.legacyIds?.filter((value) => String(value || "").trim() === legacyId).length > 1) {
+      addPathError(ownerIndex, "legacyIds", `duplicates legacy ID '${legacyId}'`);
     }
   }
   const header = fs.readFileSync(HEADER_PATH, "utf8");
@@ -119,6 +198,10 @@ function run(args = process.argv.slice(2)) {
   const addons = readManifest();
   const errors = validateManifest(addons);
   if (errors.length > 0) throw new Error(errors.join("\n"));
+  if (args.includes("--check-manifest")) {
+    console.log("Add-on manifest validation passed.");
+    return;
+  }
   const expected = renderCatalog(addons);
   if (args.includes("--write")) {
     fs.writeFileSync(CATALOG_PATH, expected);

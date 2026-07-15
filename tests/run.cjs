@@ -16,6 +16,7 @@ const coreSizeGate = require("../scripts/core-size-gate.cjs");
 const cssAudit = require("../scripts/css-audit.cjs");
 const addonBaseline = require("../scripts/addon-baseline.cjs");
 const addonCatalog = require("../scripts/addon-catalog.cjs");
+const addonBuildTools = require("../scripts/addon-build-tools.cjs");
 const addonBuilder = require("../addons/build-addon.js");
 
 const ROOT = path.join(__dirname, "..");
@@ -2297,6 +2298,92 @@ runTest("ADDON-BASELINE-01 records deterministic metadata, behavior, and size ev
   assert.strictEqual(first.deterministic.outputHasTimestamps, false);
   assert.strictEqual(first.deterministic.outputHasAbsolutePaths, false);
   assert.deepStrictEqual(addonBaseline.snapshotWorkingTree(), before);
+});
+
+runTest("ADDON-BUILD-TOOLS-01 validates manifest paths and metadata rules", () => {
+  const manifest = ADDON_MANIFEST.addons.map((addon) => ({ ...addon, capabilities: [...addon.capabilities], matches: [...addon.matches], grants: [...addon.grants] }));
+  const invalid = { ...manifest[0], entry: "addons/wrong/src/index.js", grants: ["none", "GM_setValue"], capabilities: ["not-a-capability"], runAt: "tomorrow" };
+  const errors = addonCatalog.validateManifest([invalid], { checkFiles: false });
+  assert.ok(errors.some((error) => error.startsWith("addons[0].entry:")));
+  assert.ok(errors.some((error) => error.startsWith("addons[0].grants:")));
+  assert.ok(errors.some((error) => error.startsWith("addons[0].capabilities:")));
+  assert.ok(errors.some((error) => error.startsWith("addons[0].runAt:")));
+
+  const legacyCollision = { ...manifest[1], legacyIds: [manifest[0].id] };
+  assert.ok(addonCatalog.validateManifest([manifest[0], legacyCollision], { checkFiles: false })
+    .some((error) => error.startsWith("addons[1].legacyIds:")));
+});
+
+runTest("ADDON-BUILD-TOOLS-01 accepts canonical and documented tiny layouts", () => {
+  assert.deepStrictEqual(addonBuildTools.validateStructure(ADDON_MANIFEST.addons), []);
+  const tempRoot = fs.mkdtempSync(path.join(TMP_DIR, "addon-structure-"));
+  try {
+    const mainPath = path.join(tempRoot, "addons", "tiny-addon", "src", "main.js");
+    fs.mkdirSync(path.dirname(mainPath), { recursive: true });
+    fs.writeFileSync(mainPath, "console.log('tiny');\n");
+    assert.deepStrictEqual(
+      addonBuildTools.validateStructure([
+        {
+          id: "tiny-addon",
+          entry: "addons/tiny-addon/src/main.js",
+          outfile: "addons/tiny-addon/dist/tiny-addon.user.js",
+        },
+      ], { rootDir: tempRoot }),
+      [],
+    );
+  } finally {
+    fs.rmSync(tempRoot, { recursive: true, force: true });
+  }
+});
+
+runTest("ADDON-BUILD-TOOLS-01 smoke builds every add-on in regular and release modes", async () => {
+  const before = addonBaseline.snapshotWorkingTree();
+  const report = await addonBuildTools.runSmokeBuild();
+  assert.strictEqual(report.selectedAddons.length, ADDON_MANIFEST.addons.length);
+  assert.strictEqual(report.builds.length, ADDON_MANIFEST.addons.length * 2);
+  assert.deepStrictEqual(report.modes, ["regular", "release"]);
+  assert.ok(report.builds.every((build) => build.metafile === "<temporary>"));
+  assert.ok(report.builds.every((build) => build.outputHasTimestamps === false));
+  assert.ok(report.builds.every((build) => build.outputHasAbsolutePaths === false));
+  assert.strictEqual(report.validation.unchanged, true);
+  assert.deepStrictEqual(addonBaseline.snapshotWorkingTree(), before);
+});
+
+runTest("ADDON-BUILD-TOOLS-01 preserves current release stripping behavior", async () => {
+  const addon = ADDON_MANIFEST.addons.find((entry) => entry.id === "halloween-theme-addon");
+  const tempRoot = fs.mkdtempSync(path.join(TMP_DIR, "addon-release-strip-"));
+  try {
+    const regular = await addonBuilder.buildAddonToPath(addon, false, {
+      outputPath: path.join(tempRoot, "regular.user.js"),
+      deterministicHeader: true,
+    });
+    const release = await addonBuilder.buildAddonToPath(addon, true, {
+      outputPath: path.join(tempRoot, "release.user.js"),
+      deterministicHeader: true,
+    });
+    const debugCall = /(?:^|[;{}\n])\s*(?:void\s+|await\s+)?debugLog\s*\(/;
+    assert.match(regular.code, debugCall);
+    assert.doesNotMatch(release.code, debugCall);
+    assert.strictEqual(release.header, regular.header);
+    assert.strictEqual(require("../stripDebugLogs").stripDebugLogs.name, "strip-debug-logs");
+  } finally {
+    fs.rmSync(tempRoot, { recursive: true, force: true });
+  }
+});
+
+runTest("ADDON-BUILD-TOOLS-01 normalizes Windows and POSIX metafile paths", () => {
+  const normalized = addonBuildTools.normalizeMetafile({
+    inputs: {
+      "D:\\programming\\js\\userscript\\latest highlighter\\addons\\tiny\\src\\main.js": { bytesInOutput: 1 },
+      "addons/tiny/src/other.js": { bytesInOutput: 2 },
+    },
+    outputs: {
+      "D:\\temp\\tiny.user.js": { bytes: 3 },
+    },
+  });
+  const serialized = JSON.stringify(normalized);
+  assert.doesNotMatch(serialized, /\\/);
+  assert.doesNotMatch(serialized, /[A-Za-z]:[\\/]/);
 });
 
 runTest("ADDON-SCOPE-02 validates authoritative metadata and preserves headers", () => {

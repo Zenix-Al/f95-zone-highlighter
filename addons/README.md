@@ -440,6 +440,43 @@ UI integration footprint. The trusted-add-on contradiction recorded by the basel
 by `ADDON-TRUST-GATING-01`; the shared access resolver now keeps trust, blocked state, status text,
 and execution authorization consistent.
 
+## Independent add-on validation
+
+The repository-specific build-tools check validates the manifest, catalog, source layout, and
+both esbuild modes without invoking the production versioning/cache path:
+
+```powershell
+npm run lint:addons
+npm run check:addons:manifest
+npm run check:addons:catalog
+npm run check:addons:structure
+npm run build:addons:smoke
+npm run check:addons
+```
+
+`build:addons:smoke` builds every manifest entry in regular and release mode. The mode-specific
+commands are `npm run build:addons:smoke:regular` and
+`npm run build:addons:smoke:release`. A single add-on can be selected with, for example:
+
+```powershell
+node scripts/addon-build-tools.cjs --addon example-addon --release
+```
+
+Smoke output and one esbuild metafile per add-on/mode are written to a temporary directory by
+default. `--outdir <path>` is available for inspection, but CI should use the default. Smoke
+headers contain no build timestamp, and the command rejects changes to versions, manifest,
+cache, tracked `dist/`, or root version state.
+
+Manifest validation reports indexed paths such as `addons[0].entry` and checks unique IDs and
+legacy IDs, folder/ID/entry/output alignment, capabilities, scopes, runtime modes, matches,
+grants, and run timing. Structure validation requires `src/main.js` and the matching `dist/`
+output path. Tiny add-ons may keep all behavior in `src/main.js` and omit `api/`, `app/`,
+`core/`, `ui/`, or `constants.js`; canonical multi-module add-ons may use those folders.
+
+Release stripping remains owned by the existing root `stripDebugLogs.js` esbuild plugin. The
+build-tools package characterizes that plugin and consumes it without relocating or changing
+its name or behavior.
+
 ## Validation Checklist
 
 Before publishing an add-on:

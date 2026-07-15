@@ -48,4 +48,33 @@ export default defineConfig([
       globals: globals.node,
     },
   },
+  {
+    files: ["addons/*/src/**/*.js", "addons/shared/**/*.js"],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        ...gmGlobals,
+        GM_addValueChangeListener: "readonly",
+        GM_removeValueChangeListener: "readonly",
+        __ADDON_ID__: "readonly",
+        __ADDON_NAME__: "readonly",
+        __ADDON_VERSION__: "readonly",
+        __ADDON_DESCRIPTION__: "readonly",
+        __ADDON_CAPABILITIES__: "readonly",
+        __ADDON_REQUIRES_CORE__: "readonly",
+        __ADDON_PAGE_SCOPES__: "readonly",
+        __ADDON_RUNTIME_MODE__: "readonly",
+        __ADDON_MATCHES__: "readonly",
+        debugLog: "readonly",
+      },
+    },
+    plugins: {
+      "unused-imports": unusedImports,
+    },
+    rules: {
+      "no-undef": "error",
+      "no-unused-vars": ["warn", { vars: "all", args: "after-used", ignoreRestSiblings: false }],
+      "unused-imports/no-unused-vars": "warn",
+    },
+  },
 ]);

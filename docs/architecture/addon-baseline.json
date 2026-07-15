@@ -1654,7 +1654,7 @@
       "id": "latest-filters-addon",
       "source": {
         "fileCount": 8,
-        "authoredBytes": 48744,
+        "authoredBytes": 48737,
         "physicalLines": 1524,
         "nonblankLines": 1243,
         "files": [
@@ -1672,7 +1672,7 @@
           },
           {
             "path": "addons/latest-filters-addon/src/main.js",
-            "bytes": 23868,
+            "bytes": 23861,
             "physicalLines": 761,
             "nonblankLines": 639
           },
@@ -1711,12 +1711,12 @@
       "builds": {
         "regular": {
           "mode": "regular",
-          "bytes": 47522,
-          "gzipBytes": 11241,
+          "bytes": 47690,
+          "gzipBytes": 11280,
           "contributors": [
             {
               "path": "addons/latest-filters-addon/src/main.js",
-              "bytes": 21008
+              "bytes": 21002
             },
             {
               "path": "addons/latest-filters-addon/src/ui/panel.css",
@@ -1724,7 +1724,7 @@
             },
             {
               "path": "addons/latest-filters-addon/src/renderer.js",
-              "bytes": 5649
+              "bytes": 5823
             },
             {
               "path": "addons/latest-filters-addon/src/presets.js",
@@ -1766,12 +1766,12 @@
         },
         "release": {
           "mode": "release",
-          "bytes": 42862,
-          "gzipBytes": 9951,
+          "bytes": 42982,
+          "gzipBytes": 9969,
           "contributors": [
             {
               "path": "addons/latest-filters-addon/src/main.js",
-              "bytes": 15769
+              "bytes": 15763
             },
             {
               "path": "addons/latest-filters-addon/src/ui/panel.css",
@@ -1779,7 +1779,7 @@
             },
             {
               "path": "addons/latest-filters-addon/src/renderer.js",
-              "bytes": 4641
+              "bytes": 4783
             },
             {
               "path": "addons/latest-filters-addon/src/presets.js",

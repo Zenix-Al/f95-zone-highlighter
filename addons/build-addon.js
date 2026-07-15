@@ -181,7 +181,7 @@ function resolveAddonNamespace(addon) {
   return `https://github.com/Zenix-Al/f95-zone-highlighter/addons/${safeId}`;
 }
 
-function headerForAddon(addon) {
+function headerForAddon(addon, { includeTimestamp = true } = {}) {
   const lines = [
     "// ==UserScript==",
     `// @name         ${addon.name}`,
@@ -207,7 +207,11 @@ function headerForAddon(addon) {
   lines.push(`// @run-at       ${addon.runAt || "document-idle"}`);
   lines.push("// ==/UserScript==");
   lines.push("// ------------------------------------------------------------");
-  lines.push(`// Built on ${new Date().toISOString()} -- AUTO-GENERATED`);
+  if (includeTimestamp) {
+    lines.push(`// Built on ${new Date().toISOString()} -- AUTO-GENERATED`);
+  } else {
+    lines.push("// Deterministic smoke build -- temporary output only");
+  }
   lines.push(
     addon.requiresCore
       ? "// Requires F95UE core userscript (add-on exits early when core is not detected): https://greasyfork.org/en/scripts/546518-f95zone-ultimate-enhancer"
@@ -265,6 +269,61 @@ async function buildAddon(addon, isRelease) {
   console.log(`✅ ${addon.id} -> ${path.relative(ROOT, outfile)} (${sizeKb} KB)`);
 
   return { builtCode, header, outfile, addonId: addon.id };
+}
+
+async function buildAddonToPath(
+  addon,
+  isRelease,
+  { outputPath, deterministicHeader = false, metafile = false } = {},
+) {
+  const entry = path.join(ROOT, addon.entry);
+  if (!fs.existsSync(entry)) {
+    throw new Error(`Missing add-on entry: ${addon.entry}`);
+  }
+  if (!outputPath) throw new Error("Smoke build requires an output path.");
+
+  const result = await esbuild.build({
+    entryPoints: [entry],
+    bundle: true,
+    format: "iife",
+    write: false,
+    metafile,
+    legalComments: "none",
+    loader: {
+      ".html": "text",
+      ".css": "text",
+    },
+    minifyWhitespace: Boolean(isRelease),
+    minifyIdentifiers: false,
+    minifySyntax: Boolean(isRelease),
+    plugins: isRelease ? [stripDebugLogs] : [],
+    define: {
+      __ADDON_ID__: JSON.stringify(addon.id),
+      __ADDON_NAME__: JSON.stringify(addon.name || addon.id || "Add-on"),
+      __ADDON_VERSION__: JSON.stringify(addon.version || "0.1.0"),
+      __ADDON_DESCRIPTION__: JSON.stringify(addon.description || ""),
+      __ADDON_CAPABILITIES__: JSON.stringify(normalizeArray(addon.capabilities, [])),
+      __ADDON_REQUIRES_CORE__: addon.requiresCore ? "true" : "false",
+      __ADDON_PAGE_SCOPES__: JSON.stringify(normalizeArray(addon.pageScopes, [])),
+      __ADDON_RUNTIME_MODE__: JSON.stringify(addon.runtimeMode || "core-required"),
+      __ADDON_MATCHES__: JSON.stringify(normalizeArray(addon.matches, [])),
+    },
+  });
+
+  const builtCode = result.outputFiles[0].text || result.outputFiles[0].contents.toString("utf8");
+  const header = headerForAddon(addon, { includeTimestamp: !deterministicHeader });
+  const absoluteOutput = path.resolve(ROOT, outputPath);
+  fs.mkdirSync(path.dirname(absoluteOutput), { recursive: true });
+  fs.writeFileSync(absoluteOutput, header + builtCode);
+  return {
+    addonId: addon.id,
+    mode: isRelease ? "release" : "regular",
+    outputPath: absoluteOutput,
+    bytes: fs.statSync(absoluteOutput).size,
+    code: builtCode,
+    header,
+    metafile: result.metafile || null,
+  };
 }
 
 async function beautifyFromCode(code, header, outPath) {
@@ -389,6 +448,7 @@ if (require.main === module) {
 
 module.exports = {
   buildAddon,
+  buildAddonToPath,
   computeAddonHash,
   headerForAddon,
   readManifest,

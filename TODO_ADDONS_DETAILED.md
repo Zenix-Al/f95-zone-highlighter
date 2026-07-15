@@ -642,22 +642,22 @@ Give add-on work the same non-mutating validation quality as core work.
 
 ### Required implementation
 
-- [ ] Add or complete a non-mutating add-on smoke-build mode.
-- [ ] Support:
+- [x] Add or complete a non-mutating add-on smoke-build mode.
+- [x] Support:
   - one add-on;
   - all add-ons;
   - regular build;
   - release build;
   - temporary output directory;
   - esbuild metafile output.
-- [ ] Ensure validation does not change:
+- [x] Ensure validation does not change:
   - add-on versions;
   - manifest content;
   - build cache;
   - tracked `dist/`;
   - root version.
-- [ ] Add `lint:addons` covering `addons/*/src/**/*.js` and `addons/shared/**/*.js`.
-- [ ] Add manifest validation for:
+- [x] Add `lint:addons` covering `addons/*/src/**/*.js` and `addons/shared/**/*.js`.
+- [x] Add manifest validation for:
   - unique IDs;
   - folder/ID/entry/output alignment;
   - valid capabilities;
@@ -665,33 +665,33 @@ Give add-on work the same non-mutating validation quality as core work.
   - valid runtime modes;
   - valid matches/grants/run timing;
   - unique legacy IDs.
-- [ ] Add deterministic catalog generation/checking.
-- [ ] Add structure validation with documented tiny-add-on exceptions.
-- [ ] Characterize release stripping before changing any shared strip-plugin path.
-- [ ] If build-only strip plugins are moved under `scripts/`, preserve exports, behavior, and plugin names exactly.
-- [ ] Add package commands for:
+- [x] Add deterministic catalog generation/checking.
+- [x] Add structure validation with documented tiny-add-on exceptions.
+- [x] Characterize release stripping before changing any shared strip-plugin path.
+- [x] If build-only strip plugins are moved under `scripts/`, preserve exports, behavior, and plugin names exactly. (No relocation was required.)
+- [x] Add package commands for:
   - add-on lint;
   - manifest check;
   - catalog check;
   - structure check;
   - smoke build;
   - full add-on check.
-- [ ] Update contributor documentation.
+- [x] Update contributor documentation.
 
 ### Required tests
 
-- [ ] Every manifest entry builds in regular and release smoke mode.
-- [ ] No validation command changes the working tree.
-- [ ] Invalid manifest fixtures fail with exact paths.
-- [ ] Structure validation passes canonical and documented tiny layouts.
-- [ ] Release stripping behavior is byte-identical before/after path relocation.
-- [ ] Windows and POSIX path fixtures pass.
+- [x] Every manifest entry builds in regular and release smoke mode.
+- [x] No validation command changes the working tree.
+- [x] Invalid manifest fixtures fail with exact paths.
+- [x] Structure validation passes canonical and documented tiny layouts.
+- [x] Release stripping behavior is byte-identical before/after path relocation. (The plugin path was retained; the characterization test pins its current output.)
+- [x] Windows and POSIX path fixtures pass.
 
 ### Acceptance criteria
 
-- [ ] Add-on validation is independently runnable.
-- [ ] CI can verify every add-on without version bumps.
-- [ ] Build tooling does not become a generic framework unrelated to current add-ons.
+- [x] Add-on validation is independently runnable.
+- [x] CI can verify every add-on without version bumps.
+- [x] Build tooling does not become a generic framework unrelated to current add-ons.
 
 ---
 
