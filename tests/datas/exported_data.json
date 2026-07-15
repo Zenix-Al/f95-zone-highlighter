@@ -44,7 +44,6 @@
     "enableCrossTabSync": true,
     "allowUntrustedAddons": false,
     "disableAddonsService": false,
-    "disableHelpMessage": true
   },
   "latestSettings": {
     "autoRefresh": true,

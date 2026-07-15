@@ -42,9 +42,11 @@ Do not modify these paths or contracts in this plan:
 
 ## Fixed design decisions
 
-### 1. Zero legacy storage migrations
+### 1. Evidence-backed one-time storage migration
 
-The following targeted legacy lists are removed and are not relocated:
+The previous unconditional zero-migration decision is superseded for the release-blocking configuration recovery incident. Retain only evidence-backed, one-time, marker-gated migrations for real released storage layouts. The normal post-migration startup path must not inspect legacy storage or execute migration transforms.
+
+The following obsolete field-cleanup lists are not permanent migration stages:
 
 ```js
 const LEGACY_THREAD_SETTINGS_KEYS = Object.freeze([
@@ -57,14 +59,9 @@ const LEGACY_THREAD_SETTINGS_KEYS = Object.freeze([
 export const LEGACY_STORAGE_KEYS = Object.freeze(["minVersion"]);
 ```
 
-There will be:
+The restored migration is intentionally bounded to the historical surface-level layout proven by Git history and `config-ref.json`, including pre-envelope installations that stored the complete raw config object at `f95ue:config` or its backup key. It also separates `tags` and `prefixes` into cache keys, drops removed metrics/transient fields, verifies the canonical write, and sets one migration-generation marker only after success. Cleanup is a best-effort post-verification step over the explicit historical key list; unknown keys remain untouched.
 
-- no `minVersion` root-key migration;
-- no direct-download thread-setting cleanup migration;
-- no legacy per-section storage import;
-- no legacy-key deletion pass;
-- no targeted legacy allowlist in schema validation;
-- no automatic rewrite merely to remove old fields.
+After the supported historical installations have migrated, or after an explicit compatibility-breaking release decision, remove `src/services/configMigrationService.js`, the bounded source list, marker handling, and migration tests together. Do not remove it while released installations can still be at the pre-canonical surface-key layout.
 
 **Important:** zero migration steps does **not** mean changing the persisted envelope schema version from `1` to `0`. Existing canonical envelopes already use schema version `1`; lowering it would make valid version-1 data look like unsupported future data.
 
@@ -76,7 +73,7 @@ export const CONFIG_MIGRATIONS = Object.freeze([]);
 export const CONFIG_MIGRATION_COUNT = 0;
 ```
 
-A current version-1 envelope skips migration because there are zero migration steps. Unsupported older envelope versions recover from backup or defaults rather than running a migration.
+A current version-1 envelope with the current migration marker uses the fast path. Unsupported older envelope versions still recover from backup or enter the bounded historical migration path only when the marker is absent or old.
 
 ### 2. Config persistence constants belong in `src/config/`
 
@@ -175,6 +172,48 @@ A package is complete only when all applicable items pass:
 - [x] Removed config fields do not erase valid sibling settings.
 - [x] No new compatibility shim, wrapper, registry, or abstraction is added without a current caller.
 - [x] Documentation is updated only where the core contract changed.
+
+---
+
+## CORE-CONFIG-MIGRATION-RECOVERY-01 — Restore historical configuration safely and isolate regenerable storage
+
+**Status:** release-blocking investigation and implementation package; complete before resuming any later cleanup.
+
+- [x] Verify the historical surface-key lineage against `10a0e54`, `e51cf89`, `b1f737f`, current source, and `config-ref.json`.
+- [x] Restore a bounded, one-time, marker-gated migration service.
+- [x] Recover explicit surface preferences without importing metrics, transient events, or unknown keys.
+- [x] Preserve add-on state through owned normalization and section-specific merge rules.
+- [x] Move tags and prefixes to separate cache keys without putting catalogs in canonical or backup envelopes.
+- [x] Verify canonical, backup, cache, and marker writes before completion; retain source data until verification.
+- [x] Add startup readiness protection so pre-load saves cannot write default-heavy config.
+- [x] Keep marked fast startup free of legacy scans, migration transforms, and config/cache writes.
+- [x] Cover real-world, synthetic-bloat, write/read-back/marker/cleanup failures, cache isolation, concurrency, readiness, and idempotency tests.
+- [x] Document ownership, disposition, recovery, removal boundary, storage measurements, and remaining risks.
+- [x] Run the global definition of done and leave later cleanup packages paused.
+
+## CORE-CONFIG-INTERACTION-REGRESSION-02 - Restore responsive tag editing and deterministic Latest Overlay lifecycle
+
+**Status:** release-blocking regression package; later TODO cleanup packages remain paused until this package passes.
+
+**Behavior references:** `c9426f8`, `f9dd404`, `e51cf89`, and the current working branch.
+
+### Regression boundary
+
+Preserve the framework hardening validation, atomic persistence, revisioning, backup recovery, synchronization, and shared config-change application work. Restore the pre-regression interaction contract without reverting the broader hardening changes or introducing a second persistence architecture.
+
+### Required implementation and acceptance criteria
+
+- [x] Reproduce stale tag rendering, lost rapid tag operations, and Latest Overlay off/on lifecycle failures with focused tests.
+- [x] Provide one serialized `updateConfig(updater, options)` repository API that builds drafts from the latest committed config and commits them through the existing persistence boundary.
+- [x] Make add, remove, reorder, and cross-list tag mutations await the shared update API before rendering or reporting success.
+- [x] Route tag-list effects through shared config metadata; remove duplicate manual tag effect triggering.
+- [x] Register dialog-owned Latest Overlay and Thread Overlay config metadata so toggles and settings use the shared effect path.
+- [x] Ensure rapid Latest Overlay transitions settle to the final requested state and cleanly release lifecycle resources.
+- [x] Keep fetched tags/prefixes in dedicated cache keys and keep small tag-list updates out of cache/catalog writes.
+- [x] Serialize concurrent config writes without lost updates or duplicate revision races.
+- [x] Measure small tag-list and catalog updates for 10, 1,000, and 10,000 tags plus representative prefix categories.
+- [x] Document the root cause, update contract, effect ownership, persistence activity, measurements, and remaining compatibility boundary.
+- [x] Run package tests and the global definition of done; do not begin later cleanup packages.
 
 ---
 
@@ -516,40 +555,40 @@ Remove orphan modules, exports, wrappers, and duplicate helpers left after repea
 
 ### Required implementation
 
-- [ ] Produce an audit list grouped as:
+- [x] Produce an audit list grouped as:
   - unreachable file;
   - unused export;
   - compatibility re-export;
   - duplicate pure helper;
   - stale generated-manifest reference;
   - dead CSS/HTML identifier.
-- [ ] Check dynamic access before deletion:
+- [x] Check dynamic access before deletion:
   - generated feature exports;
   - string action IDs;
   - event names;
   - settings metadata paths;
   - HTML/CSS IDs and classes;
   - userscript globals.
-- [ ] Delete only entries with an explicit evidence note.
-- [ ] Prefer deleting a wrapper over adding another barrel.
-- [ ] Remove empty folders and stale documentation references.
-- [ ] Keep any public compatibility export that is still documented or tested.
-- [ ] Do not inspect or alter excluded add-on paths.
+- [x] Delete only entries with an explicit evidence note.
+- [x] Prefer deleting a wrapper over adding another barrel.
+- [x] Remove empty folders and stale documentation references.
+- [x] Keep any public compatibility export that is still documented or tested.
+- [x] Do not inspect or alter excluded add-on paths.
 
 ### Required tests
 
-- [ ] Audit fixtures distinguish static import usage from string/event usage.
-- [ ] Generated feature manifest check passes.
-- [ ] Main bootstrap and every core feature registration still load.
-- [ ] No deleted symbol is referenced by source, tests, docs, or generated output.
-- [ ] Build smoke passes with no unresolved imports.
+- [x] Audit fixtures distinguish static import usage from string/event usage.
+- [x] Generated feature manifest check passes.
+- [x] Main bootstrap and every core feature registration still load.
+- [x] No deleted symbol is referenced by source, tests, docs, or generated output.
+- [x] Build smoke passes with no unresolved imports.
 
 ### Acceptance criteria
 
-- [ ] Every deletion has reachability evidence.
-- [ ] No speculative helper consolidation is mixed into the package.
-- [ ] Source and bundle reductions are both reported.
-- [ ] Behavior remains unchanged.
+- [x] Every deletion has reachability evidence.
+- [x] No speculative helper consolidation is mixed into the package.
+- [x] Source and bundle reductions are both reported.
+- [x] Behavior remains unchanged.
 
 ---
 
@@ -585,41 +624,41 @@ Inspect at minimum:
 
 ### Required implementation
 
-- [ ] Add a selector inventory using:
+- [x] Add a selector inventory using:
   - static `ui.html`;
   - JS `className`, `classList`, `id`, selectors, and templates;
   - settings-renderer-generated identifiers;
   - documented dynamic selector allowlist.
-- [ ] Report:
+- [x] Report:
   - definitely used;
   - dynamically used;
   - duplicate selector blocks;
   - conflicting declarations;
   - unreferenced candidates.
-- [ ] Add UI characterization screenshots or DOM/style assertions for critical surfaces before large edits.
-- [ ] Merge exact duplicate rules.
-- [ ] Consolidate repeated tokens through existing CSS variables only when output shrinks.
-- [ ] Remove dead selectors after runtime fixture coverage.
-- [ ] Remove metric-only and obsolete Config Transfer feature styles.
-- [ ] Remove dead static HTML elements and attributes.
-- [ ] Measure both authored CSS/HTML and final bundle deltas.
-- [ ] Revert any abstraction that increases the final bundle without a maintainability benefit.
+- [x] Add UI characterization screenshots or DOM/style assertions for critical surfaces before large edits.
+- [x] Merge exact duplicate rules.
+- [x] Consolidate repeated tokens through existing CSS variables only when output shrinks.
+- [x] Remove dead selectors after runtime fixture coverage.
+- [x] Remove metric-only and obsolete Config Transfer feature styles.
+- [x] Remove dead static HTML elements and attributes.
+- [x] Measure both authored CSS/HTML and final bundle deltas.
+- [x] Revert any abstraction that increases the final bundle without a maintainability benefit.
 
 ### Required tests
 
-- [ ] Settings modal opens and renders all current core sections.
-- [ ] Tag search, chips, drag states, color controls, toast, dock, dialogs, and feature-health UI retain required classes and behavior.
-- [ ] Mobile breakpoint fixtures retain usable controls.
-- [ ] Dynamic selector allowlist is explicit and tested.
-- [ ] No add-on selector is removed or changed.
-- [ ] CSS selector audit is deterministic.
+- [x] Settings modal opens and renders all current core sections.
+- [x] Tag search, chips, drag states, color controls, toast, dock, dialogs, and feature-health UI retain required classes and behavior.
+- [x] Mobile breakpoint fixtures retain usable controls.
+- [x] Dynamic selector allowlist is explicit and tested.
+- [x] No add-on selector is removed or changed.
+- [x] CSS selector audit is deterministic.
 
 ### Acceptance criteria
 
-- [ ] Every removed selector is proven unused.
-- [ ] Duplicate rules are materially reduced.
-- [ ] No visual redesign is hidden as cleanup.
-- [ ] Final userscript size decreases or the change is justified solely by removal of correctness risk.
+- [x] Every removed selector is proven unused.
+- [x] Duplicate rules are materially reduced.
+- [x] No visual redesign is hidden as cleanup.
+- [x] Final userscript size decreases or the change is justified solely by removal of correctness risk.
 
 ### Scope guardrails
 
@@ -658,33 +697,33 @@ Measure before editing:
 
 ### Required implementation
 
-- [ ] Delete migration-only schema behavior with no current transfer or persistence caller.
-- [ ] Remove an index only when all public schema APIs remain deterministic.
-- [ ] Consolidate helpers only when at least three equivalent call sites exist or emitted code becomes smaller.
-- [ ] Keep defaults, schema constraints, and metadata coverage tests.
-- [ ] Keep exact-path validation issues.
-- [ ] Keep strict unknown-key rejection for commits/import.
-- [ ] Keep tolerant sibling preservation for stored data.
-- [ ] Avoid splitting files merely to lower per-file line counts.
-- [ ] Revert source-only “cleanup” that increases bundle size without a correctness benefit.
+- [x] Delete migration-only schema behavior with no current transfer or persistence caller.
+- [x] Remove an index only when all public schema APIs remain deterministic.
+- [x] Consolidate helpers only when at least three equivalent call sites exist or emitted code becomes smaller.
+- [x] Keep defaults, schema constraints, and metadata coverage tests.
+- [x] Keep exact-path validation issues.
+- [x] Keep strict unknown-key rejection for commits/import.
+- [x] Keep tolerant sibling preservation for stored data.
+- [x] Avoid splitting files merely to lower per-file line counts.
+- [x] Revert source-only “cleanup” that increases bundle size without a correctness benefit.
 
 ### Required tests
 
-- [ ] Every persistent default retains schema coverage.
-- [ ] Default values validate.
-- [ ] Strict mode rejects unknown and malformed nested fields.
-- [ ] Tolerant mode preserves valid siblings.
-- [ ] Exportable/syncable metadata remains correct.
-- [ ] Path metadata lookup handles arrays and wildcard object keys.
-- [ ] Atomic commit/load/recovery tests remain unchanged.
-- [ ] Before/after benchmark and bundle reports are attached.
+- [x] Every persistent default retains schema coverage.
+- [x] Default values validate.
+- [x] Strict mode rejects unknown and malformed nested fields.
+- [x] Tolerant mode preserves valid siblings.
+- [x] Exportable/syncable metadata remains correct.
+- [x] Path metadata lookup handles arrays and wildcard object keys.
+- [x] Atomic commit/load/recovery tests remain unchanged.
+- [x] Before/after benchmark and bundle reports are attached.
 
 ### Acceptance criteria
 
-- [ ] Validation behavior is unchanged except intentional removal of legacy/metrics fields.
-- [ ] At least one duplicated runtime structure or unreachable branch is removed.
-- [ ] The bundle does not grow.
-- [ ] No validation dependency is added.
+- [x] Validation behavior is unchanged except intentional removal of legacy/metrics fields.
+- [x] At least one duplicated runtime structure or unreachable branch is removed.
+- [x] The bundle does not grow.
+- [x] No validation dependency is added.
 
 ---
 
@@ -700,26 +739,40 @@ Measure before editing:
 
 ### Required implementation
 
-- [ ] Remove `metrics` from the core service/repository map.
-- [ ] Document `src/config/persistence.js` and zero migration steps.
-- [ ] State that removed unknown fields are sanitized without a load-time rewrite.
-- [ ] Document that Config Transfer is a service plus UI adapter, not a feature.
-- [ ] Remove instructions to update feature-owned config-transfer validation.
-- [ ] Remove stale instructions to manually maintain `crossTabKeys` when schema metadata is authoritative.
-- [ ] Document non-version-bumping core audit and smoke-build commands.
-- [ ] Add a short ownership boundary:
+- [x] Remove `metrics` from the core service/repository map.
+- [x] Document `src/config/persistence.js` and zero migration steps.
+- [x] State that removed unknown fields are sanitized without a load-time rewrite.
+- [x] Document that Config Transfer is a service plus UI adapter, not a feature.
+- [x] Remove instructions to update feature-owned config-transfer validation.
+- [x] Remove stale instructions to manually maintain `crossTabKeys` when schema metadata is authoritative.
+
+## CORE-CONFIG-SYNC-REMOVE-01 — Remove unreleased core configuration synchronization
+
+Status: completed in the current branch.
+
+- Removed the unreleased core `enableCrossTabSync` setting, listener grants, sync service,
+  synchronization metadata, UI control, and remote effect replay tests.
+- Kept schema version `1`, zero schema migration steps, revision/writer metadata, atomic commits,
+  backup recovery, and tolerant sibling-preserving sanitization.
+- Existing version-1 data containing `globalSettings.enableCrossTabSync` is dropped from the
+  in-memory candidate without a marked-load storage rewrite; no replacement migration framework
+  was added.
+- Retained add-on-owned manager transports, including masked-direct-addon value listeners, outside
+  the core configuration boundary.
+- [x] Document non-version-bumping core audit and smoke-build commands.
+- [x] Add a short ownership boundary:
   - core cleanup belongs in this plan;
   - add-on runtime/catalog/bridge work belongs in a separate add-on plan.
-- [ ] Update status indexes so add-on tasks are not presented as core-cleaning prerequisites.
-- [ ] Keep historical changelog entries unchanged.
+- [x] Update status indexes so add-on tasks are not presented as core-cleaning prerequisites.
+- [x] Keep historical changelog entries unchanged.
 
 ### Acceptance criteria
 
-- [ ] Documentation names no deleted metrics or migration module.
-- [ ] Contributor config instructions point to defaults, schema, persistence metadata, and tests.
-- [ ] Config Transfer ownership matches the source tree.
-- [ ] Core and add-on work are clearly separated.
-- [ ] No unrelated documentation rewrite is included.
+- [x] Documentation names no deleted metrics or migration module.
+- [x] Contributor config instructions point to defaults, schema, persistence metadata, and tests.
+- [x] Config Transfer ownership matches the source tree.
+- [x] Core and add-on work are clearly separated.
+- [x] No unrelated documentation rewrite is included.
 
 ---
 
@@ -735,18 +788,18 @@ Measure before editing:
 
 ### Required implementation
 
-- [ ] Store the accepted post-cleanup baseline.
-- [ ] Gate:
+- [x] Store the accepted post-cleanup baseline.
+- [x] Gate:
   - core authored bytes by area;
   - readable release bytes;
   - uglified release bytes;
   - gzip bytes as informational;
   - cycle/import-direction regressions.
-- [ ] Use both percentage and absolute thresholds so tiny changes do not fail.
-- [ ] Report largest positive deltas and owning files.
-- [ ] Add an explicit baseline-update command requiring a rationale file or commit note.
-- [ ] Keep add-on source and add-on builds outside this core-only gate.
-- [ ] Run:
+- [x] Use both percentage and absolute thresholds so tiny changes do not fail.
+- [x] Report largest positive deltas and owning files.
+- [x] Add an explicit baseline-update command requiring a rationale file or commit note.
+- [x] Keep add-on source and add-on builds outside this core-only gate.
+- [x] Run:
   - lint;
   - tests;
   - manifest check;
@@ -756,11 +809,11 @@ Measure before editing:
 
 ### Acceptance criteria
 
-- [ ] A legitimate tiny change does not fail.
-- [ ] A meaningful unexplained increase identifies the responsible area/files.
-- [ ] Validation never bumps versions or modifies release artifacts.
-- [ ] Baseline changes are deliberate and reviewable.
-- [ ] The gate does not count add-on bytes as core growth.
+- [x] A legitimate tiny change does not fail.
+- [x] A meaningful unexplained increase identifies the responsible area/files.
+- [x] Validation never bumps versions or modifies release artifacts.
+- [x] Baseline changes are deliberate and reviewable.
+- [x] The gate does not count add-on bytes as core growth.
 
 ---
 

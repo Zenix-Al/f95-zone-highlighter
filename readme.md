@@ -13,7 +13,7 @@ All-in-one userscript for F95Zone with a lean core and official add-on support.
 - Shadow DOM config UI (isolated styling)
 - Tag management (search, preferred/excluded/marked lists, drag reorder)
 - Color customization
-- Optional cross-tab settings sync
+- Optional add-on integrations with isolated manager transport
 - Feature health diagnostics
 
 ### Latest Updates page features
@@ -84,9 +84,12 @@ Direct download support is handled by the Masked + Direct Download Add-on for Bu
 
 - Persistent user config: `config` in `src/config/state.js`
 - Default config values: `src/config/defaults.js`
+- Schema and export/sync metadata: `src/config/schema.js`
+- Persistence keys and schema version policy: `src/config/persistence.js`
 - Page definitions: `src/config/pageDefinitions.js`
 - Runtime state (non-persistent): state manager in `src/config/state.js`
 - Persistence API: `src/services/settingsService.js`
+- Config Transfer domain: `src/services/configTransfer/`; browser/dialog adapter: `src/ui/configTransfer/`
 - Public config barrel: `src/config.js`
 
 ### UI/settings system
@@ -105,10 +108,14 @@ Direct download support is handled by the Masked + Direct Download Add-on for Bu
 - `src/features/*`: individual features
 - `src/config/*`: default config, runtime state, page definitions, selectors, timings
 - `src/core/*`: framework internals
-- `src/services/*`: persistence, sync, safety, tags, and configuration transfer
+- `src/services/*`: persistence, sync, safety, tags, configuration transfer, and bounded storage recovery
 - `src/ui/*`: modal UI, settings renderers, components, CSS
 - `build.js`: bundle + userscript header generation + version bump
 - `tests/run.cjs`: lightweight Node test suite
+
+Core and add-on ownership are separate: core cleanup covers `src/config/**`, `src/core/**`,
+non-add-on services/features, core UI, tests, and core tooling. Add-on runtime, catalog, bridge,
+trust, and add-on UI work remains in `addons/**` and its separate plan.
 
 ## Development Setup
 
@@ -134,7 +141,17 @@ npm run build:addons:release
 npm run lint
 npm run lint:fix
 npm run test
+npm run audit:core
+npm run check:core
+npm run check:core:size
+npm run build:core:smoke
+npm run audit:css
+npm run check:css
 ```
+
+The core audit and smoke commands are non-version-bumping checks. The regular release build
+regenerates distributions and updates `version.json`; use it only when a release artifact is
+requested.
 
 ### Build behavior
 
@@ -328,7 +345,8 @@ Base settings that are not owned by a feature can still live in `src/ui/settings
 7. Handle persistence/sync needs
 
 - If config shape changes, ensure `loadData` merge/sanitize still works.
-- For cross-tab synced sections, keep `crossTabKeys` aligned.
+- Core configuration is not synchronized across tabs. Keep any add-on transport and observed
+  storage keys inside the owning add-on.
 - If a setting is exportable/importable, update its `exportable` metadata in `src/config/schema.js`.
 
 8. Validate

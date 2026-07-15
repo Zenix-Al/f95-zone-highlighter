@@ -96,7 +96,7 @@ Creates a setting label and optionally adds a tooltip/help badge.
 
 ### `settings/globalSettings.js`
 
-Global settings controls: config-button visibility, cross-tab sync, config import/export, feature-health reporting, and disabling the rotating help message. Some entries are action buttons rather than persisted values.
+Global settings controls: config-button visibility, config import/export, and feature-health reporting. Some entries are action buttons rather than persisted values.
 
 ### `settings/colorSettings.js`
 
@@ -106,8 +106,8 @@ Color section defines configurable color values. Effects update CSS variables, q
 
 The registry is the authoritative index for base, feature, and add-on settings
 metadata. It resolves immutable snapshots by section, metadata ID, config path,
-and owner ID. Metadata IDs and config paths are globally unique so sync effect
-replay has one authoritative descriptor. Dynamic registration returns a cleanup
+and owner ID. Metadata IDs and config paths are globally unique so local commit/import effects
+have one authoritative descriptor. Dynamic registration returns a cleanup
 function that removes its entries when the owner unloads.
 
 Latest and Thread settings are feature-owned and register through
@@ -122,7 +122,7 @@ Latest and Thread settings are feature-owned and register through
 5. Define an effect for live page updates.
 6. Contribute the metadata to the correct section.
 7. Ensure the top-level config key is handled by settings validation/migration.
-8. Add cross-tab metadata when synchronized changes require effects.
+8. Keep effect metadata local to the commit/import application boundary.
 9. Test persistence, reset behavior, and rerendering.
 
 Example:

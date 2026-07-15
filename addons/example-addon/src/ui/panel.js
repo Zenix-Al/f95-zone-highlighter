@@ -100,6 +100,7 @@ export function renderExamplePanel(state) {
         [
           renderButton("meta-access", "addon.access"),
           renderButton("meta-throttle", "addon.throttle"),
+          renderButton("meta-page", "page.getContext"),
         ].join(""),
         metaResult,
       )}
@@ -151,6 +152,7 @@ export function renderExamplePanel(state) {
         "Watch DOM additions through the core observer bridge.",
         [
           renderButton("observer-watch", "observer.watch"),
+          renderButton("observer-wait", "observer.waitFor"),
           renderButton("observer-add-node", "add test node"),
           renderButton("observer-unwatch", "observer.unwatch"),
         ].join(""),
@@ -167,6 +169,7 @@ export function renderExamplePanel(state) {
           renderButton("update-extra", "ui.update"),
           renderButton("unmount-extra", "ui.unmount"),
           renderButton("dialog-open", "ui.dialog.open"),
+          renderButton("dialog-update", "ui.dialog.update"),
           renderButton("dialog-confirm", "ui.confirm"),
           renderButton("dialog-close", "ui.dialog.close"),
           renderButton("dock-set", "ui.dock.setButtons"),

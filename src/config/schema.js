@@ -174,36 +174,20 @@ const addons = node("object", defaultAddonsSettings, {
   additionalProperties: false,
 });
 const CONFIG_SCHEMA = {
-  tags: node("array", defaultTags, { items: tag, uniqueBy: "id", exportable: true, syncable: true }),
+  tags: node("array", defaultTags, { items: tag, uniqueBy: "id", exportable: true }),
   prefixes: prefixCatalog,
-  preferredTags: node("array", [], { items: finiteNumber(0, { min: 1, integer: true }), unique: true, exportable: true, syncable: true }),
-  excludedTags: node("array", [], { items: finiteNumber(0, { min: 1, integer: true }), unique: true, exportable: true, syncable: true }),
-  markedTags: node("array", [], { items: finiteNumber(0, { min: 1, integer: true }), unique: true, exportable: true, syncable: true }),
-  color: { ...color, exportable: true, syncable: true },
-  overlaySettings: { ...overlaySettings, exportable: true, syncable: true },
-  threadSettings: { ...threadSettings, exportable: true, syncable: true },
-  globalSettings: { ...globalSettings, exportable: true, syncable: true },
-  latestSettings: { ...latestSettings, exportable: true, syncable: true },
-  addons: { ...addons, syncable: true },
+  preferredTags: node("array", [], { items: finiteNumber(0, { min: 1, integer: true }), unique: true, exportable: true }),
+  excludedTags: node("array", [], { items: finiteNumber(0, { min: 1, integer: true }), unique: true, exportable: true }),
+  markedTags: node("array", [], { items: finiteNumber(0, { min: 1, integer: true }), unique: true, exportable: true }),
+  color: { ...color, exportable: true },
+  overlaySettings: { ...overlaySettings, exportable: true },
+  threadSettings: { ...threadSettings, exportable: true },
+  globalSettings: { ...globalSettings, exportable: true },
+  latestSettings: { ...latestSettings, exportable: true },
+  addons,
   savedNotifID: node("number", defaultSavedNotifID, { nullable: true, min: 1, integer: true }),
 };
 
-const DEFAULTS = Object.freeze({
-  tags: defaultTags,
-  prefixes: defaultPrefixes,
-  preferredTags: [],
-  excludedTags: [],
-  markedTags: [],
-  color: defaultColors,
-  overlaySettings: defaultOverlaySettings,
-  threadSettings: defaultThreadSetting,
-  globalSettings: defaultGlobalSettings,
-  latestSettings: defaultLatestSettings,
-  addons: defaultAddonsSettings,
-  savedNotifID: defaultSavedNotifID,
-});
-
-const PATH_INDEX = new Map();
 const METADATA_INDEX = new Map();
 
 function buildIndexes() {
@@ -211,11 +195,9 @@ function buildIndexes() {
     const metadata = Object.freeze({
       persisted: true,
       exportable: Boolean(inherited.exportable || descriptor.exportable),
-      syncable: Boolean(inherited.syncable || descriptor.syncable),
       sensitive: Boolean(inherited.sensitive || descriptor.sensitive),
       reloadRequired: Boolean(inherited.reloadRequired || descriptor.reloadRequired),
     });
-    PATH_INDEX.set(path, descriptor);
     METADATA_INDEX.set(path, metadata);
     if (descriptor.properties) {
       for (const [key, child] of Object.entries(descriptor.properties)) walk(child, `${path}.${key}`, metadata);
@@ -230,6 +212,9 @@ function buildIndexes() {
 
 deepFreeze(CONFIG_SCHEMA);
 buildIndexes();
+const ROOT_DEFAULT_CONFIG = Object.freeze(Object.fromEntries(
+  Object.entries(CONFIG_SCHEMA).map(([key, descriptor]) => [key, descriptor.defaultValue]),
+));
 export { CONFIG_SCHEMA };
 
 function typeOf(value) {
@@ -360,7 +345,9 @@ function validateNode(value, descriptor, path, context) {
     : value;
 }
 
-export function getDefaultConfig() { return clone(DEFAULTS); }
+export function getDefaultConfig() {
+  return clone(ROOT_DEFAULT_CONFIG);
+}
 
 export function mergeWithDefaults(data) {
   return sanitizeConfig(data, { mode: "tolerant" }).data;
@@ -368,10 +355,6 @@ export function mergeWithDefaults(data) {
 
 export function getExportableConfigKeys() {
   return Object.keys(CONFIG_SCHEMA).filter((path) => METADATA_INDEX.get(path)?.exportable);
-}
-
-export function getSyncedConfigPaths() {
-  return Object.keys(CONFIG_SCHEMA).filter((path) => METADATA_INDEX.get(path)?.syncable);
 }
 
 export function getPersistedConfigPaths() {
@@ -390,8 +373,10 @@ export function getConfigPathMetadata(path) {
     let specificity = 0;
     let matches = true;
     for (let index = 0; index < segments.length; index++) {
-      if (patternSegments[index] === "*") continue;
-      if (patternSegments[index] !== segments[index]) {
+      const patternSegment = patternSegments[index];
+      const segment = segments[index];
+      if (patternSegment === "*" || (patternSegment === "*[]" && segment.endsWith("[]"))) continue;
+      if (patternSegment !== segment) {
         matches = false;
         break;
       }

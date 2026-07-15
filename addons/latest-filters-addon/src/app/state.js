@@ -1,0 +1,25 @@
+export function createLatestFiltersState() {
+  return {
+    enabled: true,
+    showPageButton: true,
+    presets: [],
+    searchQuery: "",
+    panelOpen: false,
+    rootEl: null,
+    dialogEl: null,
+    mountTimer: 0,
+    mountAttemptCount: 0,
+    routeListenersBound: false,
+    terminal: false,
+    styleRegistered: false,
+    fallbackStyleOwned: false,
+    rootBindingsCleanup: null,
+    dialogBindingsCleanup: null,
+    routeCleanup: null,
+    currentContext: null,
+    tagPrefs: null,
+    tagPrefsLoaded: false,
+    tagPrefsError: "",
+    pendingCancellers: new Set(),
+  };
+}

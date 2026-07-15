@@ -6,10 +6,15 @@ import {
   sanitizeAddonIdList,
   VALID_ADDON_STATUSES,
 } from "./shared.js";
-import { getTrustedCatalogEntry, isBuiltinTrustedAddonId } from "./catalog.js";
+import { getCanonicalAddonId, getTrustedCatalogEntry } from "./catalog.js";
+import { resolveAddonAccess } from "./access.js";
+import { validateAddonRuntimeMetadata } from "./scope.js";
 
 const REGISTRY_LISTENERS = new Set();
 let addonsRuntimeRegistry = [];
+// Kept outside the public registry entry so the bridge response shape remains
+// unchanged. This records which runtime identity currently owns a canonical ID.
+let runtimeRegistrationSources = new Map();
 
 function clonePlainValue(value) {
   if (Array.isArray(value)) {
@@ -41,6 +46,8 @@ function cloneAddonEntry(addon) {
       ? addon.panelActions.map((entry) => clonePlainValue(entry))
       : [],
     pageScopes: Array.isArray(addon.pageScopes) ? [...addon.pageScopes] : [],
+    runtimeMode: String(addon.runtimeMode || ""),
+    matches: Array.isArray(addon.matches) ? [...addon.matches] : [],
     requestedCapabilities: Array.isArray(addon.requestedCapabilities)
       ? [...addon.requestedCapabilities]
       : [],
@@ -53,24 +60,28 @@ function createRegistrySnapshot() {
 }
 
 function findRegistryIndex(addonId) {
-  return addonsRuntimeRegistry.findIndex((addon) => addon.id === addonId);
+  const canonicalId = getCanonicalAddonId(addonId);
+  return addonsRuntimeRegistry.findIndex((addon) => addon.id === canonicalId);
 }
 
 function normalizeAddonEntry(addon, existingAddon = null) {
   if (!addon || typeof addon !== "object") return null;
 
-  const id = sanitizeAddonId(addon.id);
+  const metadata = validateAddonRuntimeMetadata(addon, { registration: true });
+  if (!metadata.ok) return null;
+
+  const id = getCanonicalAddonId(addon.id);
   const name = String(addon.name || existingAddon?.name || "").trim();
   if (!id || !name) return null;
 
   const requestedStatus = String(addon.status || existingAddon?.status || "installed").trim();
-  const untrustedAllowed = Boolean(config.globalSettings?.allowUntrustedAddons);
-  const trustedIds = new Set(sanitizeAddonIdList(config.addons?.trustedIds));
-  const trusted =
-    trustedIds.has(id) ||
-    Boolean(getTrustedCatalogEntry(id)?.trusted) ||
-    isBuiltinTrustedAddonId(id);
-  const blocked = !trusted && !untrustedAllowed;
+  const access = resolveAddonAccess({
+    id,
+    registered: { ...addon, status: requestedStatus },
+    catalogEntry: getTrustedCatalogEntry(id),
+    trustedIds: sanitizeAddonIdList(config.addons?.trustedIds),
+    allowUntrusted: Boolean(config.globalSettings?.allowUntrustedAddons),
+  });
 
   const requestedCapabilities = sanitizeAddonCapabilities(
     Array.isArray(addon.requestedCapabilities)
@@ -84,17 +95,15 @@ function normalizeAddonEntry(addon, existingAddon = null) {
             : [],
   );
 
-  const capabilities = blocked ? [] : requestedCapabilities;
+  const capabilities = access.isBlocked ? [] : requestedCapabilities;
 
   let status = VALID_ADDON_STATUSES.has(requestedStatus) ? requestedStatus : "installed";
   let statusMessage =
     String(addon.statusMessage || existingAddon?.statusMessage || "").trim() || "";
 
-  if (blocked) {
+  if (access.isBlocked) {
     status = "disabled";
-    statusMessage =
-      statusMessage ||
-      "Blocked: enable 'Allow untrusted add-ons' in settings to allow full API access.";
+    statusMessage = statusMessage || getAccessStatusMessage(access.blockReason);
   }
 
   const panelActions = Array.isArray(addon.panelActions)
@@ -107,6 +116,12 @@ function normalizeAddonEntry(addon, existingAddon = null) {
     ? addon.pageScopes
     : Array.isArray(existingAddon?.pageScopes)
       ? existingAddon.pageScopes
+      : [];
+  const runtimeMode = String(addon.runtimeMode || existingAddon?.runtimeMode || "").trim().toLowerCase();
+  const matches = Array.isArray(addon.matches)
+    ? addon.matches.map((entry) => String(entry || "").trim()).filter(Boolean)
+    : Array.isArray(existingAddon?.matches)
+      ? [...existingAddon.matches]
       : [];
 
   return {
@@ -170,12 +185,34 @@ function normalizeAddonEntry(addon, existingAddon = null) {
           .toLowerCase(),
       )
       .filter(Boolean),
+    runtimeMode,
+    matches,
     requestedCapabilities,
     capabilities,
-    trusted,
-    blocked,
+    trusted: access.isTrusted,
+    blocked: access.isBlocked,
+    isTrusted: access.isTrusted,
+    trustSource: access.trustSource,
+    identityStatus: access.identityStatus,
+    isEnabled: access.isEnabled,
+    isBlocked: access.isBlocked,
+    blockReason: access.blockReason,
+    canEnable: access.canEnable,
     updatedAt: Number(addon.updatedAt || Date.now()),
   };
+}
+
+function getAccessStatusMessage(blockReason) {
+  if (blockReason === "identity_error") {
+    return "Blocked: add-on identity could not be matched to the trusted catalog.";
+  }
+  if (blockReason === "activation_mismatch") {
+    return "Blocked: this add-on is not activated for the current URL.";
+  }
+  if (blockReason === "out_of_scope") {
+    return "Blocked: this add-on is outside the current page scope.";
+  }
+  return "Blocked: enable 'Allow untrusted add-ons' in settings to allow full API access.";
 }
 
 function emitRegistryChange() {
@@ -191,6 +228,7 @@ function emitRegistryChange() {
 
 function replaceRegistry(addons) {
   addonsRuntimeRegistry = Array.isArray(addons) ? addons.map((addon) => cloneAddonEntry(addon)) : [];
+  runtimeRegistrationSources = new Map(addonsRuntimeRegistry.map((addon) => [addon.id, addon.id]));
   emitRegistryChange();
   return createRegistrySnapshot();
 }
@@ -200,7 +238,7 @@ export function listRegisteredAddons() {
 }
 
 export function getRegisteredAddon(addonId) {
-  const normalizedId = sanitizeAddonId(addonId);
+  const normalizedId = getCanonicalAddonId(addonId);
   if (!normalizedId) return null;
   const index = findRegistryIndex(normalizedId);
   if (index < 0) return null;
@@ -215,10 +253,20 @@ export function replaceRegisteredAddons(addons) {
 }
 
 export function registerAddon(addon) {
-  const normalizedId = sanitizeAddonId(addon?.id);
+  const sourceId = sanitizeAddonId(addon?.id);
+  const normalizedId = getCanonicalAddonId(sourceId);
   const existingIndex = normalizedId ? findRegistryIndex(normalizedId) : -1;
   const existingAddon = existingIndex >= 0 ? addonsRuntimeRegistry[existingIndex] : null;
-  const normalized = normalizeAddonEntry(addon, existingAddon);
+  const existingSource = normalizedId ? runtimeRegistrationSources.get(normalizedId) : null;
+
+  // A canonical registration supersedes an old runtime alias. Two different
+  // aliases cannot race into two cards; the first source remains authoritative
+  // until the canonical runtime appears.
+  if (existingIndex >= 0 && existingSource && existingSource !== sourceId && sourceId !== normalizedId) {
+    return createRegistrySnapshot();
+  }
+
+  const normalized = normalizeAddonEntry({ ...addon, id: normalizedId }, existingAddon);
   if (!normalized) return createRegistrySnapshot();
 
   if (existingIndex >= 0) {
@@ -226,25 +274,27 @@ export function registerAddon(addon) {
   } else {
     addonsRuntimeRegistry.push(normalized);
   }
+  runtimeRegistrationSources.set(normalizedId, sourceId || normalizedId);
 
   emitRegistryChange();
   return createRegistrySnapshot();
 }
 
 export function unregisterAddon(addonId) {
-  const normalizedId = sanitizeAddonId(addonId);
+  const normalizedId = getCanonicalAddonId(addonId);
   if (!normalizedId) return createRegistrySnapshot();
 
   const index = findRegistryIndex(normalizedId);
   if (index < 0) return createRegistrySnapshot();
 
   addonsRuntimeRegistry.splice(index, 1);
+  runtimeRegistrationSources.delete(normalizedId);
   emitRegistryChange();
   return createRegistrySnapshot();
 }
 
 export function updateAddonStatus(addonId, status, statusMessage = "") {
-  const normalizedId = sanitizeAddonId(addonId);
+  const normalizedId = getCanonicalAddonId(addonId);
   if (!normalizedId) return createRegistrySnapshot();
 
   const index = findRegistryIndex(normalizedId);
@@ -281,6 +331,10 @@ export function reapplyAddonSecurityPolicies() {
     .map((addon) => normalizeAddonEntry(addon, addon))
     .filter(Boolean);
   return replaceRegistry(normalized);
+}
+
+export function validateAddonRegistration(addon) {
+  return validateAddonRuntimeMetadata(addon, { registration: true });
 }
 
 registerDiagnosticsProvider("addonRegistry", () => {

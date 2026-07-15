@@ -5,7 +5,6 @@ flowchart TD
     A[src/ui/index.js] --> B[Shadow DOM host]
     A --> C[Configuration dock button]
     A --> D[UI and document CSS]
-    A --> E[Cross-tab synchronization]
 
     C --> F[Settings modal lifecycle]
     F --> G[Static HTML skeleton]
@@ -20,8 +19,6 @@ flowchart TD
     J --> O[tagsService]
     J --> P[safetyService]
     K --> Q[addonsService and add-on registry]
-    E --> R[syncService]
-    R --> I
 
     M --> S[Userscript storage]
     O --> S

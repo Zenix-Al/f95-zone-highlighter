@@ -2,23 +2,23 @@
   "reportSchemaVersion": 1,
   "tool": "css-audit",
   "stylesheet": "src/ui/assets/css.css",
-  "authoredBytes": 32106,
+  "authoredBytes": 31122,
   "bundle": {
     "readable": {
-      "fullBytes": 585931,
-      "gzipBytes": 124260,
-      "contributionBytes": 26401
+      "fullBytes": 633664,
+      "gzipBytes": 133256,
+      "contributionBytes": 25542
     },
     "uglified": {
-      "fullBytes": 301645,
-      "gzipBytes": 88371,
-      "contributionBytes": 26387
+      "fullBytes": 322955,
+      "gzipBytes": 94521,
+      "contributionBytes": 25528
     }
   },
-  "ruleCount": 221,
-  "styleRuleCount": 221,
-  "selectorCount": 241,
-  "declarationCount": 914,
+  "ruleCount": 215,
+  "styleRuleCount": 215,
+  "selectorCount": 234,
+  "declarationCount": 881,
   "mediaQueryCount": 4,
   "keyframeCount": 0,
   "customProperties": [],
@@ -1158,123 +1158,88 @@
       "atRules": []
     },
     {
-      "selector": ".modal-footer-hint",
+      "selector": ".config-dialog-backdrop",
       "sourceLine": 1441,
       "atRules": []
     },
     {
-      "selector": ".modal-footer-hint-actions",
-      "sourceLine": 1455,
-      "atRules": []
-    },
-    {
-      "selector": ".modal-footer-hint-death",
-      "sourceLine": 1462,
-      "atRules": []
-    },
-    {
-      "selector": ".modal-footer-hint-separator",
-      "sourceLine": 1462,
-      "atRules": []
-    },
-    {
-      "selector": ".hint-text",
-      "sourceLine": 1469,
-      "atRules": []
-    },
-    {
-      "selector": ".modal-footer-hint-feedback",
-      "sourceLine": 1475,
-      "atRules": []
-    },
-    {
-      "selector": ".modal-footer-hint-feedback:hover",
-      "sourceLine": 1488,
-      "atRules": []
-    },
-    {
-      "selector": ".config-dialog-backdrop",
-      "sourceLine": 1493,
-      "atRules": []
-    },
-    {
       "selector": ".config-dialog-panel",
-      "sourceLine": 1504,
+      "sourceLine": 1452,
       "atRules": []
     },
     {
       "selector": ".config-dialog-title",
-      "sourceLine": 1513,
+      "sourceLine": 1461,
       "atRules": []
     },
     {
       "selector": ".config-dialog-description",
-      "sourceLine": 1520,
+      "sourceLine": 1468,
       "atRules": []
     },
     {
       "selector": ".config-dialog-settings",
-      "sourceLine": 1527,
+      "sourceLine": 1475,
       "atRules": []
     },
     {
       "selector": ".config-dialog-input",
-      "sourceLine": 1535,
+      "sourceLine": 1483,
       "atRules": []
     },
     {
       "selector": ".config-dialog-input:focus",
-      "sourceLine": 1544,
+      "sourceLine": 1492,
       "atRules": []
     },
     {
       "selector": ".config-dialog-error",
-      "sourceLine": 1549,
+      "sourceLine": 1497,
       "atRules": []
     },
     {
       "selector": ".config-dialog-actions",
-      "sourceLine": 1556,
+      "sourceLine": 1504,
       "atRules": []
     },
     {
       "selector": ".config-reorder-list",
-      "sourceLine": 1564,
+      "sourceLine": 1512,
       "atRules": []
     },
     {
       "selector": ".config-reorder-item",
-      "sourceLine": 1571,
+      "sourceLine": 1519,
       "atRules": []
     },
     {
       "selector": ".config-reorder-label",
-      "sourceLine": 1581,
+      "sourceLine": 1529,
       "atRules": []
     },
     {
       "selector": ".config-reorder-handle",
-      "sourceLine": 1588,
+      "sourceLine": 1536,
       "atRules": []
     },
     {
       "selector": ".config-reorder-btn",
-      "sourceLine": 1592,
+      "sourceLine": 1540,
       "atRules": []
     },
     {
       "selector": ".config-reorder-btn:hover:not(:disabled)",
-      "sourceLine": 1609,
+      "sourceLine": 1557,
       "atRules": []
     },
     {
       "selector": ".config-reorder-btn:disabled",
-      "sourceLine": 1615,
+      "sourceLine": 1563,
       "atRules": []
     },
     {
       "selector": ".config-transfer-dialog-error",
-      "sourceLine": 1620,
+      "sourceLine": 1568,
       "atRules": []
     }
   ],
@@ -1395,7 +1360,7 @@
         },
         {
           "file": "src/ui/components/addons/settingsController.js",
-          "line": 156,
+          "line": 163,
           "excerpt": "const addinsPanel = shadowRoot.getElementById(\"settings-panel-addins\");"
         }
       ],
@@ -1451,22 +1416,22 @@
       "callSites": [
         {
           "file": "src/ui/components/modal.js",
-          "line": 9,
+          "line": 7,
           "excerpt": "stateManager.get(\"shadowRoot\").getElementById(\"tag-config-modal\").style.display = \"block\";"
         },
         {
           "file": "src/ui/components/modal.js",
-          "line": 12,
+          "line": 10,
           "excerpt": "stateManager.get(\"shadowRoot\").getElementById(\"tag-config-modal\").style.display = \"none\";"
         },
         {
           "file": "src/ui/components/modal.js",
-          "line": 18,
+          "line": 15,
           "excerpt": "modal.id = \"tag-config-modal\";"
         },
         {
           "file": "src/ui/components/modal.js",
-          "line": 18,
+          "line": 15,
           "excerpt": "modal.id = \"tag-config-modal\";"
         },
         {
@@ -1518,7 +1483,7 @@
         },
         {
           "file": "src/ui/settings/tagsSettings.js",
-          "line": 16,
+          "line": 37,
           "excerpt": "const searchInput = shadowRoot.getElementById(\"tags-search\");"
         }
       ],
@@ -1549,8 +1514,23 @@
           "excerpt": "container = createEl(\"div\", { attrs: { id: \"toast-container\" } });"
         },
         {
+          "file": "tests/fixtures/configInteractionHarness.js",
+          "line": 141,
+          "excerpt": "const loadToasts = [...document.querySelectorAll(\"#toast-container .toast\")]"
+        },
+        {
+          "file": "tests/fixtures/configInteractionHarness.js",
+          "line": 149,
+          "excerpt": "const interactiveToasts = [...document.querySelectorAll(\"#toast-container .toast\")]"
+        },
+        {
+          "file": "tests/fixtures/configInteractionHarness.js",
+          "line": 176,
+          "excerpt": "toasts: [...document.querySelectorAll(\"#toast-container .toast\")]"
+        },
+        {
           "file": "tests/run.cjs",
-          "line": 2101,
+          "line": 2375,
           "excerpt": "const container = docWithBody.getElementById(\"toast-container\");"
         }
       ],
@@ -2740,23 +2720,6 @@
       "protectedReason": null
     },
     {
-      "selector": ".hint-text",
-      "category": "static-reference",
-      "callSites": [
-        {
-          "file": "src/ui/assets/ui.html",
-          "line": 167,
-          "excerpt": "<span class=\"hint-text\">Hover over options text to see detailed settings</span>"
-        },
-        {
-          "file": "src/ui/assets/ui.html",
-          "line": 167,
-          "excerpt": "<span class=\"hint-text\">Hover over options text to see detailed settings</span>"
-        }
-      ],
-      "protectedReason": null
-    },
-    {
       "selector": ".hue",
       "category": "dynamic-reference",
       "callSites": [
@@ -2917,121 +2880,6 @@
           "file": "src/ui/assets/ui.html",
           "line": 130,
           "excerpt": "<div id=\"color-error-notif\" class=\"modal-error-notif\"></div>"
-        }
-      ],
-      "protectedReason": null
-    },
-    {
-      "selector": ".modal-footer-hint",
-      "category": "static-reference",
-      "callSites": [
-        {
-          "file": "src/ui/assets/ui.html",
-          "line": 161,
-          "excerpt": "<div class=\"modal-footer-hint\">"
-        },
-        {
-          "file": "src/ui/assets/ui.html",
-          "line": 162,
-          "excerpt": "<div class=\"modal-footer-hint-actions\">"
-        },
-        {
-          "file": "src/ui/assets/ui.html",
-          "line": 163,
-          "excerpt": "<span class=\"modal-footer-hint-death\" aria-hidden=\"true\">X death</span>"
-        },
-        {
-          "file": "src/ui/assets/ui.html",
-          "line": 164,
-          "excerpt": "<span class=\"modal-footer-hint-separator\" aria-hidden=\"true\">|</span>"
-        },
-        {
-          "file": "src/ui/assets/ui.html",
-          "line": 165,
-          "excerpt": "<button class=\"modal-footer-hint-feedback\" aria-label=\"Send feedback\">Feedback</button>"
-        },
-        {
-          "file": "src/ui/assets/ui.html",
-          "line": 161,
-          "excerpt": "<div class=\"modal-footer-hint\">"
-        },
-        {
-          "file": "src/ui/assets/ui.html",
-          "line": 162,
-          "excerpt": "<div class=\"modal-footer-hint-actions\">"
-        },
-        {
-          "file": "src/ui/assets/ui.html",
-          "line": 163,
-          "excerpt": "<span class=\"modal-footer-hint-death\" aria-hidden=\"true\">X death</span>"
-        }
-      ],
-      "protectedReason": null
-    },
-    {
-      "selector": ".modal-footer-hint-actions",
-      "category": "static-reference",
-      "callSites": [
-        {
-          "file": "src/ui/assets/ui.html",
-          "line": 162,
-          "excerpt": "<div class=\"modal-footer-hint-actions\">"
-        },
-        {
-          "file": "src/ui/assets/ui.html",
-          "line": 162,
-          "excerpt": "<div class=\"modal-footer-hint-actions\">"
-        }
-      ],
-      "protectedReason": null
-    },
-    {
-      "selector": ".modal-footer-hint-death",
-      "category": "static-reference",
-      "callSites": [
-        {
-          "file": "src/ui/assets/ui.html",
-          "line": 163,
-          "excerpt": "<span class=\"modal-footer-hint-death\" aria-hidden=\"true\">X death</span>"
-        },
-        {
-          "file": "src/ui/assets/ui.html",
-          "line": 163,
-          "excerpt": "<span class=\"modal-footer-hint-death\" aria-hidden=\"true\">X death</span>"
-        }
-      ],
-      "protectedReason": null
-    },
-    {
-      "selector": ".modal-footer-hint-feedback",
-      "category": "static-reference",
-      "callSites": [
-        {
-          "file": "src/ui/assets/ui.html",
-          "line": 165,
-          "excerpt": "<button class=\"modal-footer-hint-feedback\" aria-label=\"Send feedback\">Feedback</button>"
-        },
-        {
-          "file": "src/ui/assets/ui.html",
-          "line": 165,
-          "excerpt": "<button class=\"modal-footer-hint-feedback\" aria-label=\"Send feedback\">Feedback</button>"
-        }
-      ],
-      "protectedReason": null
-    },
-    {
-      "selector": ".modal-footer-hint-separator",
-      "category": "static-reference",
-      "callSites": [
-        {
-          "file": "src/ui/assets/ui.html",
-          "line": 164,
-          "excerpt": "<span class=\"modal-footer-hint-separator\" aria-hidden=\"true\">|</span>"
-        },
-        {
-          "file": "src/ui/assets/ui.html",
-          "line": 164,
-          "excerpt": "<span class=\"modal-footer-hint-separator\" aria-hidden=\"true\">|</span>"
         }
       ],
       "protectedReason": null
@@ -4077,7 +3925,7 @@
         },
         {
           "selectorText": ".config-dialog-input:focus",
-          "sourceLine": 1544
+          "sourceLine": 1492
         }
       ]
     },
@@ -4120,7 +3968,7 @@
         },
         {
           "selectorText": ".config-reorder-btn:hover:not(:disabled)",
-          "sourceLine": 1609
+          "sourceLine": 1557
         }
       ]
     },
@@ -4237,7 +4085,7 @@
         },
         {
           "selectorText": ".config-reorder-handle",
-          "sourceLine": 1588
+          "sourceLine": 1536
         }
       ]
     }
@@ -4586,7 +4434,7 @@
       "selectorText": ".config-reorder-btn",
       "atRules": [],
       "authoredBytes": 343,
-      "sourceLine": 1592
+      "sourceLine": 1540
     },
     {
       "type": "style",
@@ -4656,7 +4504,7 @@
       "selectorText": ".config-transfer-dialog-error",
       "atRules": [],
       "authoredBytes": 279,
-      "sourceLine": 1620
+      "sourceLine": 1568
     }
   ],
   "removedSelectors": [],
@@ -4771,53 +4619,53 @@
   "comparison": {
     "authoredBytes": {
       "before": 33564,
-      "after": 32106,
-      "delta": -1458
+      "after": 31122,
+      "delta": -2442
     },
     "readableBundleContributionBytes": {
       "before": 27394,
-      "after": 26401,
-      "delta": -993
+      "after": 25542,
+      "delta": -1852
     },
     "readableBundleFullBytes": {
       "before": 586580,
-      "after": 585931,
-      "delta": -649
+      "after": 633664,
+      "delta": 47084
     },
     "readableBundleGzipBytes": {
       "before": 124202,
-      "after": 124260,
-      "delta": 58
+      "after": 133256,
+      "delta": 9054
     },
     "uglifiedBundleContributionBytes": {
       "before": 27380,
-      "after": 26387,
-      "delta": -993
+      "after": 25528,
+      "delta": -1852
     },
     "uglifiedBundleFullBytes": {
       "before": 302505,
-      "after": 301645,
-      "delta": -860
+      "after": 322955,
+      "delta": 20450
     },
     "uglifiedBundleGzipBytes": {
       "before": 88402,
-      "after": 88371,
-      "delta": -31
+      "after": 94521,
+      "delta": 6119
     },
     "selectorCount": {
       "before": 252,
-      "after": 241,
-      "delta": -11
+      "after": 234,
+      "delta": -18
     },
     "declarationCount": {
       "before": 952,
-      "after": 914,
-      "delta": -38
+      "after": 881,
+      "delta": -71
     },
     "styleRuleCount": {
       "before": 231,
-      "after": 221,
-      "delta": -10
+      "after": 215,
+      "delta": -16
     },
     "mediaQueryCount": {
       "before": 4,
@@ -5197,6 +5045,133 @@
         ]
       }
     ],
-    "removedSelectors": []
+    "removedSelectors": [
+      {
+        "selector": ".hint-text",
+        "evidence": [
+          {
+            "file": "src/ui/assets/ui.html",
+            "line": 167,
+            "excerpt": "<span class=\"hint-text\">Hover over options text to see detailed settings</span>"
+          },
+          {
+            "file": "src/ui/assets/ui.html",
+            "line": 167,
+            "excerpt": "<span class=\"hint-text\">Hover over options text to see detailed settings</span>"
+          }
+        ],
+        "reason": "Selector no longer appears in the parsed stylesheet."
+      },
+      {
+        "selector": ".modal-footer-hint",
+        "evidence": [
+          {
+            "file": "src/ui/assets/ui.html",
+            "line": 161,
+            "excerpt": "<div class=\"modal-footer-hint\">"
+          },
+          {
+            "file": "src/ui/assets/ui.html",
+            "line": 162,
+            "excerpt": "<div class=\"modal-footer-hint-actions\">"
+          },
+          {
+            "file": "src/ui/assets/ui.html",
+            "line": 163,
+            "excerpt": "<span class=\"modal-footer-hint-death\" aria-hidden=\"true\">X death</span>"
+          },
+          {
+            "file": "src/ui/assets/ui.html",
+            "line": 164,
+            "excerpt": "<span class=\"modal-footer-hint-separator\" aria-hidden=\"true\">|</span>"
+          },
+          {
+            "file": "src/ui/assets/ui.html",
+            "line": 165,
+            "excerpt": "<button class=\"modal-footer-hint-feedback\" aria-label=\"Send feedback\">Feedback</button>"
+          },
+          {
+            "file": "src/ui/assets/ui.html",
+            "line": 161,
+            "excerpt": "<div class=\"modal-footer-hint\">"
+          },
+          {
+            "file": "src/ui/assets/ui.html",
+            "line": 162,
+            "excerpt": "<div class=\"modal-footer-hint-actions\">"
+          },
+          {
+            "file": "src/ui/assets/ui.html",
+            "line": 163,
+            "excerpt": "<span class=\"modal-footer-hint-death\" aria-hidden=\"true\">X death</span>"
+          }
+        ],
+        "reason": "Selector no longer appears in the parsed stylesheet."
+      },
+      {
+        "selector": ".modal-footer-hint-actions",
+        "evidence": [
+          {
+            "file": "src/ui/assets/ui.html",
+            "line": 162,
+            "excerpt": "<div class=\"modal-footer-hint-actions\">"
+          },
+          {
+            "file": "src/ui/assets/ui.html",
+            "line": 162,
+            "excerpt": "<div class=\"modal-footer-hint-actions\">"
+          }
+        ],
+        "reason": "Selector no longer appears in the parsed stylesheet."
+      },
+      {
+        "selector": ".modal-footer-hint-death",
+        "evidence": [
+          {
+            "file": "src/ui/assets/ui.html",
+            "line": 163,
+            "excerpt": "<span class=\"modal-footer-hint-death\" aria-hidden=\"true\">X death</span>"
+          },
+          {
+            "file": "src/ui/assets/ui.html",
+            "line": 163,
+            "excerpt": "<span class=\"modal-footer-hint-death\" aria-hidden=\"true\">X death</span>"
+          }
+        ],
+        "reason": "Selector no longer appears in the parsed stylesheet."
+      },
+      {
+        "selector": ".modal-footer-hint-feedback",
+        "evidence": [
+          {
+            "file": "src/ui/assets/ui.html",
+            "line": 165,
+            "excerpt": "<button class=\"modal-footer-hint-feedback\" aria-label=\"Send feedback\">Feedback</button>"
+          },
+          {
+            "file": "src/ui/assets/ui.html",
+            "line": 165,
+            "excerpt": "<button class=\"modal-footer-hint-feedback\" aria-label=\"Send feedback\">Feedback</button>"
+          }
+        ],
+        "reason": "Selector no longer appears in the parsed stylesheet."
+      },
+      {
+        "selector": ".modal-footer-hint-separator",
+        "evidence": [
+          {
+            "file": "src/ui/assets/ui.html",
+            "line": 164,
+            "excerpt": "<span class=\"modal-footer-hint-separator\" aria-hidden=\"true\">|</span>"
+          },
+          {
+            "file": "src/ui/assets/ui.html",
+            "line": 164,
+            "excerpt": "<span class=\"modal-footer-hint-separator\" aria-hidden=\"true\">|</span>"
+          }
+        ],
+        "reason": "Selector no longer appears in the parsed stylesheet."
+      }
+    ]
   }
 }

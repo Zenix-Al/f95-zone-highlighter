@@ -3,7 +3,8 @@
 Services the UI depends on:
 
 - `settingsService`: load/validate/migrate/persist configuration
-- `syncService`: cross-tab persistence observation and replay
+- Core configuration has no cross-tab persistence observer. Add-on transports remain isolated in
+  their owning add-on service.
 - `tagsService`: tag search, storage, pruning
 - `safetyService`: tag/color warnings and invalid-state checks
 - `addonsService`: registry, lifecycle, commands, storage

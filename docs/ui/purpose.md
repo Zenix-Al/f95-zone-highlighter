@@ -8,14 +8,14 @@ The `src/ui` directory implements the userscript's configuration interface and t
 - tag management
 - add-on discovery, control, and settings
 - feature-health diagnostics
-- transient UI such as dialogs, toasts, and help messages
+- transient UI such as dialogs and toasts
 
 The UI coordinates with:
 
 - the central configuration object
 - persistence services
 - tag and safety services
-- cross-tab synchronization
+- add-on integrations with their own isolated transport where needed
 - add-on runtime services
 - feature reprocessing queues
 - the shared listener and style registries

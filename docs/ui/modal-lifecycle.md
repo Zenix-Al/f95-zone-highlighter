@@ -20,7 +20,6 @@ The static HTML deliberately leaves dynamic settings and add-on content to JavaS
 The modal component:
 
 - Initializes modal UI before opening.
-- Starts the rotating help-message cycle.
 - Shows and hides the modal.
 - Injects `ui.html` into the shadow root.
 - Closes when the backdrop is clicked.

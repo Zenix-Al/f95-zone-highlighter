@@ -9,6 +9,7 @@ export const VALID_ADDON_CAPABILITIES = new Set([
   "toast",
   "feature",
   "storage",
+  "page",
   "observer",
   "routing",
   "idb",

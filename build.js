@@ -88,8 +88,6 @@ async function beautifyFromCode(code, header, outPath) {
   const reserved = [
     "GM_setValue",
     "GM_getValue",
-    "GM_addValueChangeListener",
-    "GM_removeValueChangeListener",
     "GM_xmlhttpRequest",
     "GM_registerMenuCommand",
     "GM_unregisterMenuCommand",

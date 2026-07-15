@@ -55,7 +55,7 @@ If manifest validation fails (duplicate IDs, invalid bootstrapMode), bootstrap s
 ## Component Interactions
 
 1. **Features (`src/features`)**:
-   Features are the actual functionalities visible to the user (e.g., `latest-overlay`, `audio`). They are wrapped using `createFeature()` or `createStyledFeature()` from the core. Features define their own `enable()` and `disable()` logic, which the core framework schedules, executes, and monitors for failures or timeouts.
+   Features are the actual functionalities visible to the user (e.g., `latest-overlay`, `thread-overlay`). They are wrapped using `createFeature()` or `createStyledFeature()` from the core. Features define their own `enable()` and `disable()` logic, which the core framework schedules, executes, and monitors for failures or timeouts.
 
 2. **Core (`src/core`)**:
    The core provides the scaffolding for features:
@@ -76,7 +76,10 @@ If manifest validation fails (duplicate IDs, invalid bootstrapMode), bootstrap s
 
 3. **Services (`src/services`)**:
    Services handle cross-cutting concerns:
-   - `settingsService.js`: Manages user configuration.
+   - `settingsService.js`: Owns storage I/O orchestration, validation, revisions, recovery, and live-config commits.
+   - `configChangeApplication.js`: Applies config changes and effects through the shared pipeline.
+   - `configTransfer/`: DOM-free transfer documents, preview, validation, and transactional import.
+   - `configMigrationService.js`: Bounded, marker-gated recovery of the historical surface-key layout.
    - `tagsService.js`: Handles asynchronous fetching and caching of tags.
    - `addonsService.js`: Allows third-party scripts to interface with Latest Highlighter.
 
@@ -87,12 +90,22 @@ If manifest validation fails (duplicate IDs, invalid bootstrapMode), bootstrap s
 - **Config**: Defined in `src/config/defaults.js` and loaded dynamically.
 - **State**: The `stateManager.js` handles global state (e.g., current route, detected page type) and notifies subscribers when state changes.
 
-### Config readiness contract
+### Config and ownership contracts
 
-Config loading happens very early (fast bootstrap) but some features require the full config to be validated/migrated before they run. The contract is:
+Config loading happens very early (fast bootstrap) but some features require the full config to be validated before they run. The contract is:
 
 - `ensureConfigLoaded()` must complete before features that depend on validated/persisted config are enabled.
-- Configuration migration must be atomic: migrate into a temporary object and replace active config only after validation passes.
+- The persisted envelope remains schema version `1`; `src/config/persistence.js` exposes zero schema migration steps. The separate migration service only handles the released historical surface-key layout and is marker-gated.
+- Tolerant sanitization preserves valid siblings, reports bounded issues, and does not rewrite storage during load.
+- Config Transfer keeps document construction and normalization in its service and browser file/dialog behavior in its UI adapter.
 - Features that can run without full config should opt into `fastBootstrap` to improve perceived startup time.
 
-Documenting which features require validated config helps avoid race conditions during bootstrap and cross-tab sync.
+Core cleanup does not include add-on runtime, catalog, bridge, trust, or add-on UI work. Those paths
+have their own ownership and release plan.
+
+For reproducible core size checks without a version bump, run `npm run audit:core`,
+`npm run check:core`, and `npm run build:core:smoke`; CSS evidence uses `npm run audit:css` and
+`npm run check:css`.
+
+Documenting which features require validated config helps avoid race conditions during bootstrap and
+keeps add-on transport ownership separate from core persistence.

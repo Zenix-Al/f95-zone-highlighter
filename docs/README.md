@@ -20,3 +20,9 @@ Welcome to the documentation for the Latest Highlighter userscript. This directo
   - [UI](ui/index.md) - Rendering principles and Shadow DOM usage.
     - [Components](ui/components.md) - Reusable UI widgets (dialogs, toasts, picker).
   - [Config](config/index.md) - Configuration, defaults, and page definitions.
+
+## Maintenance scope
+
+Core cleanup documentation covers `src/config/**`, `src/core/**`, non-add-on services and
+features, core UI, tests, and core tooling. Add-on runtime, catalog, bridge, trust, and add-on UI
+work is tracked separately under `addons/**`; it is not a prerequisite for the core-cleaning plan.

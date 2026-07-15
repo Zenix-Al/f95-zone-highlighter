@@ -5,6 +5,7 @@ This is a standalone execution plan for **add-on work only**, derived primarily 
 - focus on making add-ons structurally consistent, cancellable, testable, and easier to extend;
 - review the current bridge usage for evidence-backed new public APIs;
 - finish the add-on action/service decomposition;
+- diagnose and fix the current trust-gating regression where a trusted add-on can be blocked as untrusted;
 - end with a dedicated add-on-service and add-on-build size audit;
 - **do not redesign or reinforce the registration handshake yet**.
 
@@ -77,6 +78,23 @@ Existing post-registration protections remain required:
 
 A future security plan may revisit registration identity after the add-on runtime is structurally stable and measurable.
 
+### Resolved functional blocker: trusted add-on rejected as untrusted
+
+Observed on **2026-07-14** with **F95UE Masked + Direct Download Add-on 0.3.45**:
+
+- the card shows `DISABLED`, `TRUSTED`, and `ACTIVE HERE`;
+- the same card says: `Blocked by main settings: enable untrusted add-ons or trust this add-on.`;
+- the add-on cannot currently run;
+- the root cause was a stale runtime projection: the known-add-on snapshot took
+  trust from the catalog but copied `blocked` and the policy message from the
+  runtime entry, while the add-on separately consumed the `addon.access`
+  decision.
+
+This was an internally contradictory state. `ADDON-TRUST-GATING-01` now uses
+one identity-aware access resolver for registration, management projection, and
+execution-time authorization. The regression fixture is retained in
+`tests/run.cjs`; genuinely untrusted add-ons remain restricted.
+
 ---
 
 ## How to use this document
@@ -114,6 +132,8 @@ A package is complete only when all applicable items pass:
 - [ ] No late asynchronous callback mutates UI or state after disable, route invalidation, or teardown.
 - [ ] Teardown acknowledgment is emitted exactly once.
 - [ ] Public bridge action response shapes remain compatible unless explicitly versioned.
+- [ ] Effective trust, displayed trust badge, blocked reason, and enable-control state cannot contradict each other.
+- [ ] A trusted add-on is never blocked solely by the untrusted-add-on policy, while genuinely untrusted add-ons remain blocked when policy requires it.
 - [ ] Registration-handshake security is unchanged.
 - [ ] Before/after source and build-size measurements are attached when a package claims simplification.
 
@@ -205,11 +225,12 @@ Do not add:
 
 ## Required execution order
 
-### Wave 0 — Baseline and metadata contract
+### Wave 0 — Baseline, metadata, and trust-gating contract
 
 1. `ADDON-BASELINE-01`
 2. `ADDON-SCOPE-02`
-3. `ADDON-BUILD-TOOLS-01`
+3. `ADDON-TRUST-GATING-01`
+4. `ADDON-BUILD-TOOLS-01`
 
 ### Wave 1 — Canonical runtime and API evidence
 
@@ -234,6 +255,26 @@ These may run in parallel after the golden/runtime contracts are available:
 - `ADDON-LIBRARY-02`
 - `ADDON-MASKED-DIRECT-01`
 - `SITE-REPAIR-01` after `ADDON-IDENTITY-01`
+
+### Wave 3 canonical-template rule
+
+Every Wave 3 production add-on package must explicitly use the completed
+`addons/example-addon` implementation as its structural, API-wrapper, and lifecycle
+reference. Each package must compare its current add-on against that template before
+editing and then preserve its own domain behavior while adopting the same boundaries:
+
+- manifest-injected metadata only;
+- composition-only `main.js`;
+- `core/adaptor.js` for bridge adaptation;
+- thin action-specific `api/**` wrappers;
+- `app/` state, commands, lifecycle, and domain orchestration;
+- `ui/` rendering, styles, and browser event bindings;
+- explicit ownership, cancellation, late-commit suppression, reversible disable, and
+  exactly-once terminal teardown acknowledgment.
+
+This is a per-add-on normalization rule, not permission to copy Example demos or create
+a shared framework. Public action IDs, payloads, response shapes, metadata, storage,
+IDB, host behavior, and user-facing flows remain add-on-specific compatibility contracts.
 
 ### Wave 4 — Complete Site Repair
 
@@ -263,8 +304,8 @@ The size audit is deliberately last so it measures the accepted add-on architect
 
 ## ADDON-BASELINE-01 — Record current add-on behavior, source shape, and build sizes
 
-**Priority:** Critical  
-**Depends on:** None  
+**Priority:** Critical
+**Depends on:** None
 **Primary files:** `addons/**`, `src/services/addonsService.js`, `src/services/addons/**`, `package.json`, new audit script and baseline report, tests
 
 ### Agent execution command
@@ -277,11 +318,11 @@ Create a reproducible baseline before changing scopes, structures, APIs, or serv
 
 ### Required implementation
 
-- [ ] Record manifest entries, IDs, versions, entry paths, output paths, matches, grants, run timing, capabilities, and core requirements.
-- [ ] Record current trusted-catalog projection.
-- [ ] Record current public action IDs and descriptors.
-- [ ] Record current exports from `addonsService.js`.
-- [ ] Record each add-on's:
+- [x] Record manifest entries, IDs, versions, entry paths, output paths, matches, grants, run timing, capabilities, and core requirements.
+- [x] Record current trusted-catalog projection.
+- [x] Record current public action IDs and descriptors.
+- [x] Record current exports from `addonsService.js`.
+- [x] Record each add-on's:
   - authored source bytes;
   - file count;
   - physical and nonblank lines;
@@ -289,14 +330,14 @@ Create a reproducible baseline before changing scopes, structures, APIs, or serv
   - release build bytes;
   - gzip bytes for comparison;
   - largest bundled source contributors through esbuild metafiles.
-- [ ] Record add-on service totals for:
+- [x] Record add-on service totals for:
   - `src/services/addonsService.js`;
   - `src/services/addons/**`;
   - add-on-specific core UI integration.
-- [ ] Add non-mutating smoke-build support if it does not already exist.
-- [ ] Build into a temporary directory.
-- [ ] Do not update versions, build cache, manifest versions, or tracked `dist/`.
-- [ ] Create behavior snapshots for:
+- [x] Add non-mutating smoke-build support if it does not already exist.
+- [x] Build into a temporary directory.
+- [x] Do not update versions, build cache, manifest versions, or tracked `dist/`.
+- [x] Create behavior snapshots for:
   - registration;
   - enable;
   - disable;
@@ -306,21 +347,21 @@ Create a reproducible baseline before changing scopes, structures, APIs, or serv
   - core absent;
   - out-of-scope action;
   - capability rejection.
-- [ ] Store a stable JSON baseline without timestamps or absolute machine paths.
+- [x] Store a stable JSON baseline without timestamps or absolute machine paths.
 
 ### Required tests
 
-- [ ] Two unchanged runs produce identical JSON.
-- [ ] Smoke builds leave the working tree unchanged.
-- [ ] Every manifest entry produces a size record.
-- [ ] Every public action appears exactly once in the baseline.
-- [ ] The audit distinguishes add-on userscript bytes from core add-on-service bytes.
+- [x] Two unchanged runs produce identical JSON.
+- [x] Smoke builds leave the working tree unchanged.
+- [x] Every manifest entry produces a size record.
+- [x] Every public action appears exactly once in the baseline.
+- [x] The audit distinguishes add-on userscript bytes from core add-on-service bytes.
 
 ### Acceptance criteria
 
-- [ ] Later packages can show real before/after deltas.
-- [ ] No production behavior changes.
-- [ ] No arbitrary size limit is introduced yet.
+- [x] Later packages can show real before/after deltas.
+- [x] No production behavior changes.
+- [x] No arbitrary size limit is introduced yet.
 
 ---
 
@@ -370,56 +411,56 @@ Treat these as separate contracts:
 
 ### Required implementation
 
-- [ ] Add required `pageScopes` and `runtimeMode` metadata to every manifest entry.
-- [ ] Keep `requiresCore` only as a temporary compatibility input if necessary.
-- [ ] Make `runtimeMode` authoritative and reject contradictory fields.
-- [ ] Inject `__ADDON_PAGE_SCOPES__` and `__ADDON_RUNTIME_MODE__` during builds.
-- [ ] Include injected metadata in build change hashes.
-- [ ] Keep matches, grants, and run timing in generated userscript headers.
-- [ ] Update canonical runtime construction to consume injected metadata.
-- [ ] Validate scopes against the supported vocabulary.
-- [ ] Reject duplicate, empty, unknown, and missing scopes where core registration is expected.
-- [ ] Validate runtime-mode combinations:
+- [x] Add required `pageScopes` and `runtimeMode` metadata to every manifest entry.
+- [x] Keep `requiresCore` only as a temporary compatibility input if necessary.
+- [x] Make `runtimeMode` authoritative and reject contradictory fields.
+- [x] Inject `__ADDON_PAGE_SCOPES__` and `__ADDON_RUNTIME_MODE__` during builds.
+- [x] Include injected metadata in build change hashes.
+- [x] Keep matches, grants, and run timing in generated userscript headers.
+- [x] Update canonical runtime construction to consume injected metadata.
+- [x] Validate scopes against the supported vocabulary.
+- [x] Reject duplicate, empty, unknown, and missing scopes where core registration is expected.
+- [x] Validate runtime-mode combinations:
   - `core-required` needs an F95Zone activation match;
   - `standalone` must not register;
   - `hybrid` needs both core and standalone activation contexts.
-- [ ] Add a bounded userscript-match resolver for repository-supported match syntax.
-- [ ] Split known add-on status into:
+- [x] Add a bounded userscript-match resolver for repository-supported match syntax.
+- [x] Split known add-on status into:
   - `matchesCurrentPage`;
   - `scopeApplies`;
   - `supportsCurrentPage`.
-- [ ] Use one shared scope-intersection resolver for catalog status and execution authorization.
-- [ ] Keep activation-match checks out of post-registration action authorization.
-- [ ] Replace hard-coded feature-toggle scope exceptions with descriptor metadata:
+- [x] Use one shared scope-intersection resolver for catalog status and execution authorization.
+- [x] Keep activation-match checks out of post-registration action authorization.
+- [x] Replace hard-coded feature-toggle scope exceptions with descriptor metadata:
   - `scopePolicy: "management"`;
   - `scopePolicy: "runtime"`.
-- [ ] Mark `addon.access`, `addon.throttle`, `feature.enable`, and `feature.disable` as management operations.
-- [ ] Keep storage, IDB, observer, toast, refresh, and UI actions runtime-scoped unless explicitly changed later.
-- [ ] Reject unsupported registration scopes as `invalid_registration`.
-- [ ] Generate `src/services/addons/trusted-catalog.json` deterministically from the manifest.
-- [ ] Preserve its public path and header resource name.
-- [ ] Add a check mode that fails on manifest/catalog drift.
-- [ ] Document the metadata decision table in `addons/README.md`.
+- [x] Mark `addon.access`, `addon.throttle`, `feature.enable`, and `feature.disable` as management operations.
+- [x] Keep storage, IDB, observer, toast, refresh, and UI actions runtime-scoped unless explicitly changed later.
+- [x] Reject unsupported registration scopes as `invalid_registration`.
+- [x] Generate `src/services/addons/trusted-catalog.json` deterministically from the manifest.
+- [x] Preserve its public path and header resource name.
+- [x] Add a check mode that fails on manifest/catalog drift.
+- [x] Document the metadata decision table in `addons/README.md`.
 
 ### Required tests
 
-- [ ] Header snapshots preserve every current match, grant, and run timing.
-- [ ] Scope fixtures cover ordinary F95Zone, thread, Latest, and `/masked/`.
-- [ ] Unknown scopes and invalid runtime modes are rejected.
-- [ ] Management actions work outside runtime scope.
-- [ ] Runtime actions remain blocked outside runtime scope.
-- [ ] Catalog support never claims activation on a route absent from the match list.
-- [ ] Manifest/catalog generation is deterministic.
-- [ ] The core header keeps the same trusted-catalog resource path/name.
-- [ ] Registration event transport, handshake fields, and identity-security behavior remain unchanged.
+- [x] Header snapshots preserve every current match, grant, and run timing.
+- [x] Scope fixtures cover ordinary F95Zone, thread, Latest, and `/masked/`.
+- [x] Unknown scopes and invalid runtime modes are rejected.
+- [x] Management actions work outside runtime scope.
+- [x] Runtime actions remain blocked outside runtime scope.
+- [x] Catalog support never claims activation on a route absent from the match list.
+- [x] Manifest/catalog generation is deterministic.
+- [x] The core header keeps the same trusted-catalog resource path/name.
+- [x] Registration event transport, handshake fields, and identity-security behavior remain unchanged.
 
 ### Acceptance criteria
 
-- [ ] No supported add-on registers an impossible scope.
-- [ ] Activation metadata is not used as a substitute for action authorization.
-- [ ] The manifest is authoritative for build and catalog metadata.
-- [ ] Management controls remain usable without weakening runtime action policy.
-- [ ] No registration-handshake security change is mixed into the package.
+- [x] No supported add-on registers an impossible scope.
+- [x] Activation metadata is not used as a substitute for action authorization.
+- [x] The manifest is authoritative for build and catalog metadata.
+- [x] Management controls remain usable without weakening runtime action policy.
+- [x] No registration-handshake security change is mixed into the package.
 
 ### Scope guardrails
 
@@ -428,6 +469,180 @@ Treat these as separate contracts:
 - Do not change `runAt` to solve a scope problem.
 - Do not make arbitrary actions management-scoped.
 - Do not add registration nonces, secrets, challenge-response, or identity attestation.
+
+---
+
+## ADDON-TRUST-GATING-01 — Diagnose and fix trusted add-ons blocked as untrusted
+
+**Priority:** Critical
+**Depends on:** `ADDON-SCOPE-02`
+**Primary files:** `src/services/addonsService.js`, `src/services/addons/catalog.js`, `src/services/addons/knownAddons.js`, `src/services/addons/registry.js`, add-on state repository modules, add-on management card/status UI, trusted-catalog generation/output, main add-on settings, tests
+
+### Agent execution command
+
+> Execute `ADDON-TRUST-GATING-01` only. Reproduce the observed state where an add-on is simultaneously shown as trusted and blocked by the untrusted-add-on policy, then run the same contract matrix against every current manifest add-on. Find and document the root cause before changing behavior. Do not work around the defect by enabling all untrusted add-ons, auto-trusting add-ons, or weakening registration/access checks.
+
+### Objective
+
+Make effective trust, access gating, status badges, blocked reasons, and enable controls derive from one coherent policy result.
+
+### Observed regression fixture
+
+Reproduce this exact case before editing production logic:
+
+- add-on: `masked-direct-addon`;
+- displayed name/version: `F95UE Masked + Direct Download Add-on`, `0.3.45`;
+- displayed badges: `DISABLED`, `TRUSTED`, `ACTIVE HERE`;
+- displayed blocking message: `Blocked by main settings: enable untrusted add-ons or trust this add-on.`;
+- actual result: the add-on cannot run;
+- known cause: a stale runtime projection combined catalog trust with an old
+  blocked status/message; add-ons also initialized before consuming the shared
+  `addon.access` decision.
+
+The package must not assume that the catalog, state repository, registry, UI, cache, or runtime identity is at fault until tracing proves it.
+
+### All-add-on coverage boundary
+
+This is an add-on-wide regression, not a Masked + Direct-only fix. The matrix
+must include every add-on entry in `addons/addons.manifest.json`, including
+`image-repair-addon`, `masked-direct-addon`, `library-addon`, `example-addon`,
+`latest-filters-addon`, and `halloween-theme-addon`. For each add-on, use its
+canonical manifest ID, current catalog entry, current capabilities, runtime
+mode, page scopes, and userscript activation matches. Add-ons added later must
+be included automatically by the manifest-driven test rather than silently
+omitted from the matrix.
+
+### Required investigation
+
+- [x] Reproduce the issue with a deterministic fixture and, where applicable, both:
+  - clean/default add-on state;
+  - upgraded or previously persisted add-on state.
+- [x] Capture every input used to derive the card and runtime decision:
+  - canonical add-on ID and any legacy ID;
+  - trusted-catalog match;
+  - persisted per-add-on trust override;
+  - global allow-untrusted setting;
+  - installed/registered identity;
+  - enabled state;
+  - blocked state and reason;
+  - activation match and current scope;
+  - cached versus current status snapshot.
+- [x] Trace trust independently through:
+  - manifest/catalog generation;
+  - catalog loading;
+  - state normalization;
+  - registry/registration;
+  - known-add-on projection;
+  - management action authorization;
+  - UI badge/banner rendering;
+  - execution-time reauthorization.
+- [x] Check specifically for:
+  - canonical-ID or legacy-ID mismatch;
+  - stale trusted-catalog data;
+  - catalog/state merge-order errors;
+  - disabled state being mislabeled as blocked;
+  - UI reading trust from a different snapshot than authorization;
+  - stale memoized/card state after settings changes;
+  - contradictory fallback defaults when catalog data is unavailable;
+  - different trust rules at registration and at action execution.
+- [x] Record the proven root cause in the pull request and in a regression-test name or fixture comment.
+- [x] Do not broaden this package into registration-handshake redesign.
+- [x] Repeat the trust/status investigation for every current manifest add-on,
+  including clean/default state and persisted disabled/enabled state.
+- [x] Trace each core-required or hybrid add-on from ping/wait-for-core through
+  registration, `addon.access`, feature/action invocation, status updates, and
+  teardown; record any add-on-specific trust or blocked-state source.
+- [x] Confirm standalone add-ons do not attempt core registration and are tested
+  through their documented standalone path separately.
+- [x] Verify every add-on uses the canonical handshake/adaptor and public API
+  response shapes; reject direct or stale trust decisions that can bypass the
+  shared access result. Do not add new handshake fields or API capabilities.
+
+### Required implementation
+
+- [x] Introduce or consolidate one effective-access resolver that returns explicit, separately named fields such as:
+  - `isTrusted`;
+  - `trustSource`;
+  - `isEnabled`;
+  - `isBlocked`;
+  - `blockReason`;
+  - `canEnable`;
+  - `matchesCurrentPage`;
+  - `scopeApplies`;
+  - `supportsCurrentPage`.
+- [x] Make registry authorization, known-add-on/card projection, badges, banners, and enable-control behavior consume the same effective trust/access decision or a stable projection of it.
+- [x] Keep disabled state distinct from policy blocking:
+  - a trusted but disabled add-on is `disabled`, not `untrusted`;
+  - its Enable control remains usable when no other policy blocks it.
+- [x] Ensure a trusted-catalog entry or valid user trust override satisfies the untrusted-add-on gate consistently at registration, management-action, and execution-time checks.
+- [x] Keep genuinely untrusted add-ons blocked when the global policy disallows them.
+- [x] If catalog identity cannot be resolved, surface a specific deterministic diagnostic state rather than simultaneously rendering `TRUSTED` and an untrusted-policy block.
+- [x] Define invariants that reject or normalize impossible combinations before they reach UI:
+  - `isTrusted === true` cannot pair with `blockReason === "untrusted_disallowed"`;
+  - `isBlocked === false` cannot render a blocking banner;
+  - `canEnable === true` must correspond to an enable path that passes current management policy.
+- [x] Refresh the status projection after:
+  - global allow-untrusted changes;
+  - per-add-on trust changes;
+  - enable/disable changes;
+  - catalog load/reload;
+  - registration/unregistration;
+  - canonical-ID normalization.
+- [x] Add bounded diagnostics suitable for tests without exposing secrets or changing handshake payloads.
+- [x] Preserve current public response shapes unless an internal-only field can be added without affecting consumers.
+- [x] Do not auto-trust official-looking IDs, versions, names, URLs, or runtime registrations.
+- [x] Make the shared access result the only source for trust, blocked reason,
+  enable state, and granted capabilities for every registered add-on; add-on
+  code may react to the result but must not reconstruct it from names, IDs,
+  status text, or cached state.
+- [x] Keep handshake and API usage contract-correct for every add-on without
+  changing event names, transport, identity fields, capabilities, scopes,
+  response shapes, or userscript metadata.
+
+### Required tests
+
+- [x] Exact Masked + Direct regression fixture no longer produces the contradictory card.
+- [x] Catalog-trusted + global allow-untrusted off + disabled:
+  - shows trusted and disabled;
+  - does not show an untrusted-policy block;
+  - Enable succeeds when all other policy checks pass.
+- [x] Catalog-trusted + global allow-untrusted off + enabled remains runnable.
+- [x] User-trusted + global allow-untrusted off behaves like trusted.
+- [x] Untrusted + global allow-untrusted off remains blocked with the untrusted-specific reason and no trusted badge.
+- [x] Untrusted + global allow-untrusted on follows the documented enabled/disabled state.
+- [x] A missing or mismatched catalog identity yields one explicit diagnostic state, not conflicting trust indicators.
+- [x] Trust/settings changes update the card and authorization decision without requiring a page reload.
+- [x] Registration-time and execution-time trust decisions agree.
+- [x] Canonical/legacy ID normalization cannot create two different trust decisions for one card/runtime.
+- [x] The fix does not change userscript matches, grants, run timing, capabilities, scopes, registration transport, or handshake security.
+- [x] A manifest-driven matrix passes for every catalog-trusted add-on with:
+  - global allow-untrusted disabled;
+  - persisted disabled state;
+  - persisted enabled state;
+  - registration present and absent;
+  - current supported and unsupported pages;
+  - card badges, blocked reason, enable control, `addon.access`, and one
+    representative permitted API action agreeing.
+- [x] The same matrix proves every genuinely untrusted fixture remains blocked
+  when global allow-untrusted is disabled and receives no privileged
+  capabilities or API access.
+- [x] Every core-required/hybrid add-on passes a handshake/API characterization
+  test covering ping, registration, access response, status update, enable,
+  disable, and teardown; standalone add-ons pass their no-core path.
+- [x] A static audit finds no add-on-specific copy of the untrusted gate,
+  blocked message, trust resolver, or privileged API authorization.
+
+### Acceptance criteria
+
+- [x] The observed add-on can run when it is effectively trusted and enabled.
+- [x] The UI can no longer show `TRUSTED` while claiming the same add-on is blocked for being untrusted.
+- [x] Disabled, untrusted-blocked, unsupported, out-of-scope, and identity/catalog-error states remain distinct.
+- [x] The actual root cause is documented and locked by a regression test.
+- [x] Genuinely untrusted add-ons are not made less restricted.
+- [x] Registration-handshake security remains unchanged.
+- [x] Every current add-on is covered by the same coherent trust/access and
+  handshake/API contract; no add-on can regress to the stale trusted-plus-blocked
+  state independently of the shared core fix.
 
 ---
 
@@ -447,22 +662,22 @@ Give add-on work the same non-mutating validation quality as core work.
 
 ### Required implementation
 
-- [ ] Add or complete a non-mutating add-on smoke-build mode.
-- [ ] Support:
+- [x] Add or complete a non-mutating add-on smoke-build mode.
+- [x] Support:
   - one add-on;
   - all add-ons;
   - regular build;
   - release build;
   - temporary output directory;
   - esbuild metafile output.
-- [ ] Ensure validation does not change:
+- [x] Ensure validation does not change:
   - add-on versions;
   - manifest content;
   - build cache;
   - tracked `dist/`;
   - root version.
-- [ ] Add `lint:addons` covering `addons/*/src/**/*.js` and `addons/shared/**/*.js`.
-- [ ] Add manifest validation for:
+- [x] Add `lint:addons` covering `addons/*/src/**/*.js` and `addons/shared/**/*.js`.
+- [x] Add manifest validation for:
   - unique IDs;
   - folder/ID/entry/output alignment;
   - valid capabilities;
@@ -470,40 +685,40 @@ Give add-on work the same non-mutating validation quality as core work.
   - valid runtime modes;
   - valid matches/grants/run timing;
   - unique legacy IDs.
-- [ ] Add deterministic catalog generation/checking.
-- [ ] Add structure validation with documented tiny-add-on exceptions.
-- [ ] Characterize release stripping before changing any shared strip-plugin path.
-- [ ] If build-only strip plugins are moved under `scripts/`, preserve exports, behavior, and plugin names exactly.
-- [ ] Add package commands for:
+- [x] Add deterministic catalog generation/checking.
+- [x] Add structure validation with documented tiny-add-on exceptions.
+- [x] Characterize release stripping before changing any shared strip-plugin path.
+- [x] If build-only strip plugins are moved under `scripts/`, preserve exports, behavior, and plugin names exactly. (No relocation was required.)
+- [x] Add package commands for:
   - add-on lint;
   - manifest check;
   - catalog check;
   - structure check;
   - smoke build;
   - full add-on check.
-- [ ] Update contributor documentation.
+- [x] Update contributor documentation.
 
 ### Required tests
 
-- [ ] Every manifest entry builds in regular and release smoke mode.
-- [ ] No validation command changes the working tree.
-- [ ] Invalid manifest fixtures fail with exact paths.
-- [ ] Structure validation passes canonical and documented tiny layouts.
-- [ ] Release stripping behavior is byte-identical before/after path relocation.
-- [ ] Windows and POSIX path fixtures pass.
+- [x] Every manifest entry builds in regular and release smoke mode.
+- [x] No validation command changes the working tree.
+- [x] Invalid manifest fixtures fail with exact paths.
+- [x] Structure validation passes canonical and documented tiny layouts.
+- [x] Release stripping behavior is byte-identical before/after path relocation. (The plugin path was retained; the characterization test pins its current output.)
+- [x] Windows and POSIX path fixtures pass.
 
 ### Acceptance criteria
 
-- [ ] Add-on validation is independently runnable.
-- [ ] CI can verify every add-on without version bumps.
-- [ ] Build tooling does not become a generic framework unrelated to current add-ons.
+- [x] Add-on validation is independently runnable.
+- [x] CI can verify every add-on without version bumps.
+- [x] Build tooling does not become a generic framework unrelated to current add-ons.
 
 ---
 
 ## ADDON-GOLDEN-01 — Make Example Add-on the canonical runtime template
 
 **Priority:** Critical  
-**Depends on:** `ADDON-SCOPE-02`, `ADDON-BUILD-TOOLS-01`  
+**Depends on:** `ADDON-SCOPE-02`, `ADDON-TRUST-GATING-01`, `ADDON-BUILD-TOOLS-01`
 **Primary files:** `addons/example-addon/src/**`, `addons/example-addon/CHANGELOG.md`, `addons/README.md`, manifest, shared helpers, tests
 
 ### Agent execution command
@@ -516,52 +731,52 @@ Make the example a safe reference for metadata, lifecycle, API wrappers, cancell
 
 ### Required implementation
 
-- [ ] Use `pageScopes: ["f95zone"]`.
-- [ ] Use manifest-injected runtime metadata only.
-- [ ] Keep `main.js` limited to:
+- [x] Use `pageScopes: ["f95zone"]`.
+- [x] Use manifest-injected runtime metadata only.
+- [x] Keep `main.js` limited to:
   - runtime construction;
   - adaptor/app composition;
   - core availability check;
   - bootstrap;
   - fatal error reporting.
-- [ ] Separate:
+- [x] Separate:
   - lifecycle/command handling;
   - state;
   - API demos;
   - long-running work;
   - UI rendering;
   - UI event binding.
-- [ ] Keep raw action IDs under `src/api/**` or the adaptor.
-- [ ] Make listeners, timers, observers, mounts, dialogs, dock buttons, styles, and pending requests explicitly owned.
-- [ ] Make enable/disable/refresh repeatable.
-- [ ] Reserve permanent unbinding for terminal teardown/unregister.
-- [ ] Cancel bulk work and suppress late UI commits after disable/teardown.
-- [ ] Add deterministic teardown acknowledgment.
-- [ ] Document canonical folder boundaries:
+- [x] Keep raw action IDs under `src/api/**` or the adaptor.
+- [x] Make listeners, timers, observers, mounts, dialogs, dock buttons, styles, and pending requests explicitly owned.
+- [x] Make enable/disable/refresh repeatable.
+- [x] Reserve permanent unbinding for terminal teardown/unregister.
+- [x] Cancel bulk work and suppress late UI commits after disable/teardown.
+- [x] Add deterministic teardown acknowledgment.
+- [x] Document canonical folder boundaries:
   - `main.js`;
   - `core/`;
   - `api/`;
   - `app/`;
   - `ui/`;
   - optional domain folders.
-- [ ] Do not turn the example into a shared framework package.
-- [ ] Ensure every demonstration still exists after splitting.
+- [x] Do not turn the example into a shared framework package.
+- [x] Ensure every demonstration still exists after splitting.
 
 ### Required tests
 
-- [ ] Normal F95Zone bootstrap succeeds without scope errors.
-- [ ] Repeated enable/disable/refresh works.
-- [ ] Terminal teardown releases every resource.
-- [ ] Teardown acknowledgment is exactly once.
-- [ ] Late bulk results cannot update closed UI.
-- [ ] Raw action IDs do not appear in app/UI modules.
-- [ ] Structure and lint checks pass.
+- [x] Normal F95Zone bootstrap succeeds without scope errors.
+- [x] Repeated enable/disable/refresh works.
+- [x] Terminal teardown releases every resource.
+- [x] Teardown acknowledgment is exactly once.
+- [x] Late bulk results cannot update closed UI.
+- [x] Raw action IDs do not appear in app/UI modules.
+- [x] Structure and lint checks pass.
 
 ### Acceptance criteria
 
-- [ ] The example can be copied without inheriting scope or lifecycle defects.
-- [ ] Its main app module is an orchestration facade.
-- [ ] Documentation and source layout match.
+- [x] The example can be copied without inheriting scope or lifecycle defects.
+- [x] Its main app module is an orchestration facade.
+- [x] Documentation and source layout match.
 
 ---
 
@@ -613,17 +828,17 @@ The exact public wire format does not need to change if this context can be asse
 
 ### Required implementation
 
-- [ ] Give each add-on app a monotonically increasing lifecycle generation.
-- [ ] Abort or invalidate pending work when:
+- [x] Give each add-on app a monotonically increasing lifecycle generation.
+- [x] Abort or invalidate pending work when:
   - disable starts;
   - a newer refresh supersedes an older one;
   - route context changes;
   - terminal teardown starts.
-- [ ] Prevent stale work from committing UI/state.
-- [ ] Serialize conflicting lifecycle operations.
-- [ ] Make duplicate enable/disable/refresh commands idempotent.
-- [ ] Distinguish reversible disable from terminal teardown.
-- [ ] Require terminal teardown to:
+- [x] Prevent stale work from committing UI/state.
+- [x] Serialize conflicting lifecycle operations.
+- [x] Make duplicate enable/disable/refresh commands idempotent.
+- [x] Distinguish reversible disable from terminal teardown.
+- [x] Require terminal teardown to:
   1. stop accepting new work;
   2. abort pending operations;
   3. stop feature/domain controllers;
@@ -631,30 +846,30 @@ The exact public wire format does not need to change if this context can be asse
   5. remove listeners/observers/timers;
   6. unregister or acknowledge as required;
   7. settle exactly once.
-- [ ] Add a bounded teardown timeout/watchdog in core service behavior.
-- [ ] Make best-effort hard cleanup owner-specific after timeout.
-- [ ] Keep expected cancellation separate from failures.
-- [ ] Add snapshots for active add-on-owned resources and pending operations.
-- [ ] Add a small shared helper only after proving the pattern in Example plus another fixture.
-- [ ] Preserve current registration handshake and action response shapes.
+- [x] Add a bounded teardown timeout/watchdog in core service behavior.
+- [x] Make best-effort hard cleanup owner-specific after timeout.
+- [x] Keep expected cancellation separate from failures.
+- [x] Add snapshots for active add-on-owned resources and pending operations.
+- [x] Add a small shared helper only after proving the pattern in Example plus another fixture.
+- [x] Preserve current registration handshake and action response shapes.
 
 ### Required tests
 
-- [ ] enable → disable → enable leaves the add-on enabled.
-- [ ] refresh during disable cannot recreate UI.
-- [ ] route change invalidates old work.
-- [ ] disable during import/retry cancels late commits.
-- [ ] repeated teardown acknowledges once.
-- [ ] teardown timeout triggers deterministic hard cleanup.
-- [ ] cancellation does not count as normal failure.
-- [ ] registration transport and identity-security behavior are unchanged.
+- [x] enable → disable → enable leaves the add-on enabled.
+- [x] refresh during disable cannot recreate UI.
+- [x] route change invalidates old work.
+- [x] disable during import/retry cancels late commits.
+- [x] repeated teardown acknowledges once.
+- [x] teardown timeout triggers deterministic hard cleanup.
+- [x] cancellation does not count as normal failure.
+- [x] registration transport and identity-security behavior are unchanged.
 
 ### Acceptance criteria
 
-- [ ] Production add-ons can implement one documented lifecycle.
-- [ ] Resource leaks are visible and testable.
-- [ ] Disable remains reversible.
-- [ ] No handshake hardening is introduced.
+- [x] Production add-ons can implement one documented lifecycle.
+- [x] Resource leaks are visible and testable.
+- [x] Disable remains reversible.
+- [x] No handshake hardening is introduced.
 
 ---
 
@@ -674,41 +889,41 @@ Allow an official add-on rename without losing enabled state, settings, installa
 
 ### Required implementation
 
-- [ ] Add optional `legacyIds` to manifest metadata.
-- [ ] Validate aliases with the same ID sanitizer.
-- [ ] Reject collisions with:
+- [x] Add optional `legacyIds` to manifest metadata.
+- [x] Validate aliases with the same ID sanitizer.
+- [x] Reject collisions with:
   - active IDs;
   - other aliases;
   - folder IDs;
   - catalog IDs.
-- [ ] Resolve catalog, installed snapshots, and UI cards through the canonical ID.
-- [ ] Move alias/state normalization into the add-on state repository.
-- [ ] Do not depend on a generic core config-migration service.
-- [ ] Atomically merge legacy add-on state:
+- [x] Resolve catalog, installed snapshots, and UI cards through the canonical ID.
+- [x] Move alias/state normalization into the add-on state repository.
+- [x] Do not depend on a generic core config-migration service.
+- [x] Atomically merge legacy add-on state:
   - explicit current values win;
   - missing current values inherit;
   - earliest install and latest last-seen timestamps are retained;
   - current status/panel metadata wins;
   - old bucket is removed only after canonical persistence succeeds.
-- [ ] Make normalization idempotent.
-- [ ] If old and new userscripts register simultaneously, show one canonical card and reject conflicting active runtime registrations deterministically.
-- [ ] Keep alias data out of runtime builds unless a current consumer requires it.
-- [ ] Document release sequencing.
+- [x] Make normalization idempotent.
+- [x] If old and new userscripts register simultaneously, show one canonical card and reject conflicting active runtime registrations deterministically.
+- [x] Keep alias data out of runtime builds unless a current consumer requires it.
+- [x] Document release sequencing.
 
 ### Required tests
 
-- [ ] Legacy-only state normalizes.
-- [ ] Mixed current/legacy state merges correctly.
-- [ ] Failed persistence leaves legacy state recoverable.
-- [ ] Repeated normalization is a no-op.
-- [ ] Catalog trust/download data resolves to canonical ID.
-- [ ] Old/new simultaneous runtime registrations do not create duplicate cards.
+- [x] Legacy-only state normalizes.
+- [x] Mixed current/legacy state merges correctly.
+- [x] Failed persistence leaves legacy state recoverable.
+- [x] Repeated normalization is a no-op.
+- [x] Catalog trust/download data resolves to canonical ID.
+- [x] Old/new simultaneous runtime registrations do not create duplicate cards.
 
 ### Acceptance criteria
 
-- [ ] Renaming an add-on does not reset it.
-- [ ] Users see one canonical add-on entry.
-- [ ] Alias handling is repository-owned and independent of registration-handshake security.
+- [x] Renaming an add-on does not reset it.
+- [x] Users see one canonical add-on entry.
+- [x] Alias handling is repository-owned and independent of registration-handshake security.
 
 ---
 
@@ -785,18 +1000,18 @@ Evaluate at minimum:
 
 ### Required tests
 
-- [ ] The inventory includes every production add-on.
-- [ ] Every raw action string is accounted for.
-- [ ] Every proposed public API has at least two consumers or a documented exceptional threshold.
-- [ ] Rejected APIs include a reason.
-- [ ] No registration-handshake security item is accepted in this audit.
+- [x] The inventory includes every production add-on.
+- [x] Every raw action string is accounted for.
+- [x] Every proposed public API has at least two consumers or a documented exceptional threshold.
+- [x] Rejected APIs include a reason.
+- [x] No registration-handshake security item is accepted in this audit.
 
 ### Acceptance criteria
 
-- [ ] The report distinguishes public API gaps from add-on-local boilerplate.
-- [ ] No speculative action is added.
-- [ ] The next package has a bounded approved API list.
-- [ ] API work is ranked by correctness reduction first and byte reduction second.
+- [x] The report distinguishes public API gaps from add-on-local boilerplate.
+- [x] No speculative action is added.
+- [x] The next package has a bounded approved API list.
+- [x] API work is ranked by correctness reduction first and byte reduction second.
 
 ---
 
@@ -818,7 +1033,7 @@ Replace repeated fragile workarounds with a small, versioned, bounded public sur
 
 For every approved API:
 
-- [ ] Define one descriptor containing:
+- [x] Define one descriptor containing:
   - action ID;
   - protocol version;
   - capability alternatives;
@@ -828,18 +1043,18 @@ For every approved API:
   - timeout;
   - executor;
   - ownership/cleanup rule.
-- [ ] Add thin add-on wrappers under `src/api/**`.
-- [ ] Add at least two real consumers.
-- [ ] Remove the replaced workarounds.
-- [ ] Update Example Add-on demonstrations.
-- [ ] Document success, failure, cancellation, and cleanup semantics.
-- [ ] Keep payload/result sizes bounded.
-- [ ] Reauthorize immediately before externally visible async commit.
-- [ ] Preserve unsupported-action behavior for older core versions.
-- [ ] Add capability negotiation or graceful fallback in add-ons where mixed versions are supported.
-- [ ] Do not expose core DOM internals.
-- [ ] Do not add arbitrary script execution.
-- [ ] Do not change registration-handshake authentication.
+- [x] Add thin add-on wrappers under `src/api/**`.
+- [x] Add at least two real consumers.
+- [x] Remove the replaced workarounds.
+- [x] Update Example Add-on demonstrations.
+- [x] Document success, failure, cancellation, and cleanup semantics.
+- [x] Keep payload/result sizes bounded.
+- [x] Reauthorize immediately before externally visible async commit.
+- [x] Preserve unsupported-action behavior for older core versions.
+- [x] Add capability negotiation or graceful fallback in add-ons where mixed versions are supported.
+- [x] Do not expose core DOM internals.
+- [x] Do not add arbitrary script execution.
+- [x] Do not change registration-handshake authentication.
 
 ### API-specific minimum rules
 
@@ -885,21 +1100,21 @@ For every approved API:
 
 ### Required tests
 
-- [ ] Descriptor contract snapshots.
-- [ ] Capability and scope rejection.
-- [ ] Timeout/cancellation.
-- [ ] Owner cleanup.
-- [ ] Older-core fallback.
-- [ ] Two production consumers per implemented API.
-- [ ] Removed workaround no longer exists.
-- [ ] Registration handshake remains unchanged.
+- [x] Descriptor contract snapshots.
+- [x] Capability and scope rejection.
+- [x] Timeout/cancellation.
+- [x] Owner cleanup.
+- [x] Older-core fallback.
+- [x] Two production consumers per implemented API.
+- [x] Removed workaround no longer exists.
+- [x] Registration handshake remains unchanged.
 
 ### Acceptance criteria
 
-- [ ] The public action list grows only by audited APIs.
-- [ ] Consumers become simpler or safer.
-- [ ] No API exists with only a demo consumer.
-- [ ] Net source/bundle and maintenance impact is recorded.
+- [x] The public action list grows only by audited APIs.
+- [x] Consumers become simpler or safer.
+- [x] No API exists with only a demo consumer.
+- [x] Net source/bundle and maintenance impact is recorded.
 
 ---
 
@@ -913,6 +1128,29 @@ For every approved API:
 
 > Execute `ADDON-HALLOWEEN-01` only. Preserve visible behavior while replacing invalid scope, raw bridge, and cleanup structure.
 
+### Golden-template comparison and normalization boundary
+
+The current add-on is a flat `main.js` plus `constants.js`/`coreBridge.js`: it performs
+registration, access checks, raw style/observer actions, DOM style injection, logo
+mutation, anonymous command listening, and teardown in one module. Compared with
+`example-addon`, it has no `core/adaptor.js`, thin `api/**`, app instance, UI boundary,
+owned restoration records, serialized lifecycle, or refresh path.
+
+The implementation must use `addons/example-addon` as the mandatory reference while
+preserving Halloween behavior. In addition to the scope fixes below, it must:
+
+- use injected metadata directly from `main.js`;
+- move bridge calls behind thin API wrappers and keep `main.js` composition-only;
+- place enable/disable/refresh/teardown and restoration state in an app module;
+- place markup/style text and browser bindings in `ui/**`;
+- own the command listener, core style, logo/srcset restoration records, and any route
+  refresh work; disable must be reversible and teardown must acknowledge once;
+- prevent stale refresh/apply work from restoring or reapplying the theme after disable.
+
+Required tests must include a structure check against the Example boundaries and a
+repository search/assertion proving raw core action invocation is confined to `api/**`
+or the adaptor. The package must not copy Example's API playground demonstrations.
+
 ### Current defects
 
 - unsupported `global` and `download` scopes;
@@ -924,37 +1162,43 @@ For every approved API:
 
 ### Required implementation
 
-- [ ] Use manifest `pageScopes: ["f95zone"]`.
-- [ ] Register with `runtime.pageScopes`.
-- [ ] Request only required capabilities.
-- [ ] Use core-owned style action.
-- [ ] Adopt canonical boundaries:
+- [x] Use manifest `pageScopes: ["f95zone"]`.
+- [x] Register with `runtime.pageScopes`.
+- [x] Request only required capabilities.
+- [x] Use core-owned style action.
+- [x] Adopt canonical boundaries:
   - `core/adaptor.js`;
   - thin `api/**`;
   - `app/createHalloweenThemeApp.js`;
   - `ui/**`;
   - small `main.js`.
-- [ ] Narrow logo selectors.
-- [ ] Keep app-owned restoration records.
-- [ ] Make apply/remove idempotent.
-- [ ] Handle enable, disable, refresh, before-page-change, and teardown.
-- [ ] Unbind terminal listeners.
-- [ ] Acknowledge teardown exactly once.
-- [ ] Do not request storage, observer, Notification, or broad capabilities unless actual code requires them.
+- [x] Narrow logo selectors.
+- [x] Keep app-owned restoration records.
+- [x] Make apply/remove idempotent.
+- [x] Handle enable, disable, refresh, before-page-change, and teardown.
+- [x] Unbind terminal listeners.
+- [x] Acknowledge teardown exactly once.
+- [x] Do not request storage, observer, Notification, or broad capabilities unless actual code requires them.
+- [x] Complete the Example Add-on structure comparison and adopt its metadata, adaptor, API, app, and UI boundaries without copying its demos.
+- [x] Keep all raw core action invocations inside `api/**` or `core/adaptor.js`.
+- [x] Track every owned listener, timer, style, restoration record, and pending operation through disable and terminal teardown.
 
 ### Required tests
 
-- [ ] Ordinary, thread, Latest, and masked routes work.
-- [ ] Repeated enable creates no duplicate style/records.
-- [ ] Disable restores original logo values.
-- [ ] Route refresh reapplies to replaced logo nodes.
-- [ ] Teardown leaves no listener or style.
+- [x] Ordinary, thread, Latest, and masked routes work.
+- [x] Repeated enable creates no duplicate style/records.
+- [x] Disable restores original logo values.
+- [x] Route refresh reapplies to replaced logo nodes.
+- [x] Teardown leaves no listener or style.
+- [x] Example-boundary and raw-action searches pass for the normalized source tree.
+- [x] Late route/apply work cannot recreate theme UI after disable or teardown.
 
 ### Acceptance criteria
 
-- [ ] No unsupported scope remains.
-- [ ] No raw bridge dispatch remains outside adaptor/API.
-- [ ] Cleanup follows the runtime contract.
+- [x] No unsupported scope remains.
+- [x] No raw bridge dispatch remains outside adaptor/API.
+- [x] Cleanup follows the runtime contract.
+- [x] The add-on is structurally copyable from `example-addon` while retaining Halloween-specific behavior.
 
 ---
 
@@ -968,38 +1212,68 @@ For every approved API:
 
 > Execute `ADDON-LATEST-FILTERS-01` only. Keep Latest-only behavior and preserve saved presets.
 
+### Golden-template comparison and normalization boundary
+
+The current add-on keeps mutable singleton state, runtime metadata fallbacks, storage
+helpers, rendering, bridge calls, route listeners, mount retries, dialogs, and command
+handling in `main.js`; its preset module is useful domain code but is not an app/API
+boundary. It also has direct raw bridge calls in `main.js`, direct GM fallback logic,
+untracked retry/debounce work, and browser UI fallback paths.
+
+Use `addons/example-addon` as the mandatory structural and lifecycle reference. The
+normalization must additionally:
+
+- make `main.js` metadata/adaptor/app composition and bootstrap only;
+- create `core/adaptor.js`, thin `api/**` wrappers, `app/` state/lifecycle/commands,
+  and `ui/` render/binding modules;
+- keep preset normalization/repository logic as a domain module consumed by the app,
+  with storage compatibility behind an API/storage adapter;
+- give route listeners, mount retries, debounce timers, dialogs, styles, mounts,
+  pending storage, and route generations explicit owners and cancellation;
+- ensure disable, refresh, re-enable, and teardown cannot allow stale async work to
+  recreate Latest UI or overwrite current preset state.
+
+Add structure and raw-action-boundary tests modeled on Example without changing the
+Latest-only public flow or saved formats.
+
 ### Required implementation
 
-- [ ] Keep `pageScopes: ["latest"]`.
-- [ ] Keep the existing Latest-only activation match.
-- [ ] Move mutable singleton state into an app instance.
-- [ ] Keep constants static.
-- [ ] Adopt canonical `core/`, `api/`, `app/`, and `ui/` boundaries.
-- [ ] Separate preset normalization/repository from rendering.
-- [ ] Keep GM compatibility behind a storage adapter.
-- [ ] Correct panel active-page metadata.
-- [ ] Track and cancel:
+- [x] Keep `pageScopes: ["latest"]`.
+- [x] Keep the existing Latest-only activation match.
+- [x] Move mutable singleton state into an app instance.
+- [x] Keep constants static.
+- [x] Adopt canonical `core/`, `api/`, `app/`, and `ui/` boundaries.
+- [x] Separate preset normalization/repository from rendering.
+- [x] Keep GM compatibility behind a storage adapter.
+- [x] Correct panel active-page metadata.
+- [x] Track and cancel:
   - mount retries;
   - route listeners;
   - dialog listeners;
   - pending storage;
   - debounced updates.
-- [ ] Preserve storage keys and preset formats.
-- [ ] Use approved APIs from `ADDON-API-EXTENSIONS-01` only where they remove existing workarounds.
+- [x] Preserve storage keys and preset formats.
+- [x] Use approved APIs from `ADDON-API-EXTENSIONS-01` only where they remove existing workarounds.
+- [x] Complete the Example Add-on structure comparison and use injected metadata only.
+- [x] Keep all raw core action invocations inside `api/**` or `core/adaptor.js`; app/domain/UI modules consume wrappers.
+- [x] Make lifecycle generations invalidate mount, storage, dialog, and route work before any late UI/state commit.
 
 ### Required tests
 
-- [ ] Existing presets/settings load.
-- [ ] Latest bootstrap, disable, re-enable, refresh, and teardown.
-- [ ] Rapid route replacement creates no duplicates.
-- [ ] Outside Latest, installed/idle status remains accurate and management toggles work.
-- [ ] Cancelled retries cannot recreate UI.
+- [x] Existing presets/settings load.
+- [x] Latest bootstrap, disable, re-enable, refresh, and teardown.
+- [x] Rapid route replacement creates no duplicates.
+- [x] Outside Latest, installed/idle status remains accurate and management toggles work.
+- [x] Cancelled retries cannot recreate UI.
+- [x] Example-boundary and raw-action searches pass for the normalized source tree.
+- [x] Repeated lifecycle tests prove no stale mount, dialog, preset, or listener commit.
 
 ### Acceptance criteria
 
-- [ ] Scope remains intentionally narrow.
-- [ ] No mutable state is exported from constants.
-- [ ] Main/adaptor modules contain no rendering logic.
+- [x] Scope remains intentionally narrow.
+- [x] No mutable state is exported from constants.
+- [x] Main/adaptor modules contain no rendering logic.
+- [x] The resulting layout follows `example-addon` without changing Latest-only behavior or saved formats.
 
 ---
 
@@ -1012,6 +1286,32 @@ For every approved API:
 ### Agent execution command
 
 > Execute `ADDON-LIBRARY-02` only. Preserve Library data behavior and the merged site-wide scope fix.
+
+### Golden-template comparison and normalization boundary
+
+The current Library add-on already has useful `api/library`, `library`, `thread`, and
+`ui` domain folders, but `main.js` still owns runtime state, registration, command
+dispatch, dock orchestration, lifecycle, timers, and raw bridge calls. UI application
+modules and library clients also receive/use the bridge directly, and runtime metadata
+still has fallback construction in `constants.js`.
+
+Use `addons/example-addon` as the mandatory reference for the final shape. In addition
+to the Library-specific requirements below, the package must:
+
+- add a bridge-only `core/adaptor.js` and thin action-specific `api/**` wrappers;
+- make `main.js` composition-only and move runtime state, commands, lifecycle, and
+  manager orchestration into app modules;
+- keep Library/thread/domain modules and UI renderers/bindings free of raw core action
+  invocation; they consume injected API capabilities instead;
+- track imports, progress dialogs, manager dialogs, dock/style resources, listeners,
+  timers, IDB work, and pending operations with owner/generation cancellation;
+- make disable reversible, suppress late import/UI commits, and make terminal teardown
+  release every owner and acknowledge exactly once;
+- use manifest-injected metadata without weakening the existing Library storage, IDB,
+  legacy-record, or import/export compatibility contracts.
+
+Required tests must include Example-boundary structure checks, raw-action searches for
+domain/UI code, and repeated enable/disable/refresh/teardown coverage.
 
 ### Required implementation
 
@@ -1032,6 +1332,9 @@ For every approved API:
 - [ ] Preserve database names, stores, indexes, storage keys, legacy records, and import/export formats.
 - [ ] Route debug output through shared debug behavior.
 - [ ] Adopt approved new APIs only when the audit names Library as a consumer.
+- [ ] Complete the Example Add-on structure comparison and use injected metadata only.
+- [ ] Keep raw core action invocations inside `api/**` or `core/adaptor.js`; library/thread/domain/UI modules consume wrappers.
+- [ ] Make app generations and owner cleanup suppress late import, IDB, dialog, dock, and table commits.
 
 ### Required tests
 
@@ -1040,12 +1343,15 @@ For every approved API:
 - [ ] Existing records remain compatible.
 - [ ] Disable during import prevents late writes/UI.
 - [ ] Re-enable creates no duplicate manager/dock listeners.
+- [ ] Example-boundary and raw-action searches pass for the normalized source tree.
+- [ ] Repeated lifecycle and exactly-once teardown tests cover manager, import, dock, style, listener, and timer ownership.
 
 ### Acceptance criteria
 
 - [ ] Site-wide scope is not regressed.
 - [ ] Domain modules know no raw bridge event/action strings.
 - [ ] Structure and lint checks pass.
+- [ ] The final Library layout follows `example-addon` while preserving all Library domain and persistence behavior.
 
 ---
 
@@ -1058,6 +1364,32 @@ For every approved API:
 ### Agent execution command
 
 > Execute `ADDON-MASKED-DIRECT-01` only. Preserve every existing host match, grant, document-idle timing, selector, route-context field, and supported flow.
+
+### Golden-template comparison and normalization boundary
+
+The current hybrid add-on has a large metadata-fallback `main.js` that owns the core
+bridge, F95 registration/access, settings, style, commands, teardown, and console
+helper. External host controllers are already separated under `hosts/**`, but the F95
+mode has no Example-style `core/adaptor.js`, thin `api/**`, app lifecycle boundary, or
+UI binding boundary. It also uses shared teardown arrays and many host timers,
+listeners, observers, and pending operations that must remain independent but owned.
+
+Use `addons/example-addon` as the mandatory reference for the F95 core mode only:
+
+- make `main.js` injected-metadata composition/bootstrap only;
+- add `core/adaptor.js`, thin core API wrappers, F95 `app/` lifecycle/commands/state,
+  and `ui/` rendering/binding modules;
+- keep `hosts/**`, GM cross-host state, route-context transport, and standalone host
+  behavior behind domain adapters that never import or invoke the core adaptor;
+- assign explicit owners, generations, abort/cancel paths, and late-commit guards to
+  F95 UI, route context, host handoffs, timers, listeners, observers, and pending
+  operations; terminal teardown must be idempotent and acknowledge once;
+- preserve every existing userscript header field, external flow, selector, timing,
+  storage key, request/identity field, and public response shape.
+
+Required tests must prove the Example-boundary structure for F95 mode, no raw core
+actions in host/domain/UI modules, no core events on external hosts, and repeated
+F95 enable/disable/refresh/teardown without affecting standalone flows.
 
 ### Required implementation
 
@@ -1080,6 +1412,9 @@ For every approved API:
 - [ ] Define behavior for an already-open external-host flow after F95-side disable.
 - [ ] Preserve selectors and timings unless a fixture proves a bug.
 - [ ] Keep host adapters independent from the core adaptor.
+- [ ] Complete the Example Add-on comparison for F95 mode and use injected metadata only.
+- [ ] Keep raw F95 core action invocations inside F95 `api/**` or `core/adaptor.js`; host adapters remain core-free.
+- [ ] Use generation/owner cancellation for F95 and cross-host handoff work without changing standalone transport behavior.
 
 ### Required tests
 
@@ -1092,6 +1427,8 @@ For every approved API:
 - [ ] Route context expiry/mismatch/cleanup works.
 - [ ] Disable prevents new F95 flows.
 - [ ] Every existing host adapter has success, timeout, and missing-selector fixtures.
+- [ ] Example-boundary and raw-action searches pass for F95 modules while external hosts remain core-free.
+- [ ] Repeated F95 lifecycle and exactly-once teardown tests cover styles, listeners, timers, observers, and pending handoffs.
 
 ### Acceptance criteria
 
@@ -1099,6 +1436,7 @@ For every approved API:
 - [ ] Core and standalone modes are obvious.
 - [ ] No host controller imports the core adaptor.
 - [ ] Registration-handshake security is unchanged.
+- [ ] F95 mode follows `example-addon` boundaries without imposing those boundaries on standalone host adapters.
 
 ---
 
@@ -1118,6 +1456,47 @@ For every approved API:
 - display name: `F95UE Site Repair`
 - output: `addons/site-repair-addon/dist/site-repair-addon.user.js`
 - legacy ID: `image-repair-addon`
+
+### Release identity preservation
+
+- Preserve the existing Image Repair userscript's `@namespace` byte-for-byte when
+  publishing the rebrand.
+- Change the userscript display name (`@name`) and user-facing branding to
+  `F95UE Site Repair`; do not create a new GreasyFork script solely because the
+  display name changes. The existing listing must remain update-compatible.
+- Preserve the existing GreasyFork/update identity fields already used by the
+  current userscript. The canonical add-on ID/folder and `legacyIds` are
+  catalog, runtime, and state identities; they do not authorize generating a new
+  userscript namespace.
+- Add a header regression test proving that the pre- and post-rebrand namespace
+  values are identical while the display name changes.
+- If the current namespace cannot be recovered from source or accepted header
+  metadata, stop and report that concrete blocker before changing it.
+
+### Scope guardrail
+
+- Do not generate a new namespace or a second GreasyFork identity for this
+  rebrand.
+
+### Golden-template comparison and normalization boundary
+
+The current Image Repair source is a legacy flat `app.js`/`feature.js`/`ui.js` shape
+with a `coreBridge.js` re-export, direct raw API calls, direct command-event handling,
+anonymous page-ready/retry timers, mutable feature/UI state, and a console global.
+The new Site Repair implementation must start from the completed `example-addon`
+template rather than reproducing that legacy shape.
+
+The rebrand must therefore create canonical `main.js`, `core/`, `api/`, `app/`, and
+`ui/` boundaries with injected metadata, thin API wrappers, an app-owned lifecycle,
+explicit resource ownership, cancellation, late-commit suppression, reversible
+disable, and exactly-once teardown acknowledgment. Repair modules may remain domain
+modules under the app, but must not invoke raw bridge actions or own untracked global
+listeners/timers. Preserve the recovered namespace, legacy ID/state alias, repair
+behavior, and all header compatibility requirements above.
+
+Required tests must include a structural comparison against `example-addon`, raw-action
+boundary checks, repeated lifecycle/teardown tests, and proof that the rebrand does not
+inherit the legacy app's cleanup defects.
 
 ### Required implementation
 
@@ -1139,6 +1518,9 @@ For every approved API:
   - `repairs.imageAttachments.enabled`;
   - reserved `repairs.latestAjax.enabled`.
 - [ ] Teardown modules in reverse startup order.
+- [ ] Build the new Site Repair source from the Example Add-on structure, not from the legacy Image Repair flat app.
+- [ ] Keep raw core action invocations inside `api/**` or `core/adaptor.js`; repair domains and UI consume wrappers.
+- [ ] Give repair modules and shared app lifecycle explicit owner/generation cancellation and late-commit suppression.
 
 ### Required tests
 
@@ -1147,11 +1529,13 @@ For every approved API:
 - [ ] Image repair success, exhaustion, mid-retry disable, removed node, and route change.
 - [ ] No stale UI/state after invalidation.
 - [ ] Site Repair can remain registered while a route-inapplicable repair stays idle.
+- [ ] Example-boundary, raw-action, repeated-lifecycle, and exactly-once teardown tests pass.
 
 ### Acceptance criteria
 
 - [ ] Branding supports multiple repair modules.
 - [ ] Existing users do not lose state.
+- [ ] Site Repair follows the Golden Add-on structure while preserving the legacy namespace, state alias, and repair behavior.
 - [ ] Image repair is independently startable/stoppable.
 
 ---
@@ -1621,6 +2005,9 @@ After every accepted package:
 - [ ] `git diff --check`
 - [ ] all current matches/grants/run timing preserved unless explicitly changed
 - [ ] no unsupported scope remains
+- [ ] trusted badge, effective trust, blocked reason, and enable-control behavior agree
+- [ ] trusted add-ons are not rejected by the untrusted-add-on gate
+- [ ] genuinely untrusted add-ons remain blocked when the main setting disallows them
 - [ ] no raw bridge action/event outside adaptors or approved shared runtime
 - [ ] no duplicate resources after lifecycle repetition
 - [ ] no late async commits after invalidation
@@ -1641,6 +2028,7 @@ The completed plan should leave:
 - manifest-driven activation, runtime mode, scope, and catalog metadata;
 - one canonical add-on structure;
 - one documented post-registration lifecycle contract;
+- one coherent trust/access decision shared by runtime authorization and add-on management UI;
 - production add-ons with explicit cancellation and cleanup;
 - Masked Direct with clearly separated core and standalone modes;
 - Site Repair as the owner of optional site workarounds;

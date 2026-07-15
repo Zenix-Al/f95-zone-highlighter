@@ -82,10 +82,8 @@ export const defaultLatestSettings = {
 export const defaultGlobalSettings = {
   configVisibility: true,
   closeNotifOnClick: true,
-  enableCrossTabSync: false,
   allowUntrustedAddons: false,
   disableAddonsService: false,
-  disableHelpMessage: false,
 };
 
 export const defaultAddonsApiThrottleSettings = {

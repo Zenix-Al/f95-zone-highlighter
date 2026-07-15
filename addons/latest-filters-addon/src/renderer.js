@@ -85,10 +85,17 @@ export function getStyleText(rootId) {
  * @param {string} styleId - the <style> element's id attribute
  */
 export function ensureStyle(rootId, styleId) {
-  if (document.getElementById(styleId)) return;
+  const existing = document.getElementById(styleId);
+  if (existing) return existing;
   const style = createEl("style", null, null, styleId);
   style.textContent = buildCss(rootId);
   document.head.append(style);
+  return style;
+}
+
+export function removeStyle(styleId) {
+  const style = document.getElementById(styleId);
+  style?.remove?.();
 }
 
 // ─── DOM template ─────────────────────────────────────────────────────────────

@@ -468,6 +468,25 @@ export function closeAddonDialog(addonId, dialogId = "", reason = "addon-request
   return { ok: true, value: removeAddonDialogs(addonId, dialogId, reason) };
 }
 
+export function updateAddonDialog(addonId, payload = {}) {
+  const dialogId = sanitizeAddonDialogId(payload?.dialogId || payload?.id || "");
+  const html = sanitizeAddonHtml(payload?.html || payload?.template || "");
+  if (!dialogId) return { ok: false, reason: "dialog_id_required" };
+  if (!html.trim()) return { ok: false, reason: "html_required" };
+
+  const entry = addonDialogRegistry.get(addonId)?.get(dialogId);
+  if (!entry?.contentEl) return { ok: false, reason: "dialog_not_found" };
+  if (entry.contentEl.dataset?.addonId !== addonId) {
+    return { ok: false, reason: "dialog_owner_mismatch" };
+  }
+
+  entry.contentEl.innerHTML = html;
+  return {
+    ok: true,
+    value: { dialogId, contentId: entry.contentEl.id },
+  };
+}
+
 export function registerAddonStyle(addonId, payload = {}) {
   const styleId = sanitizeAddonStyleId(payload?.styleId || payload?.id || "");
   if (!styleId) return { ok: false, reason: "style_id_required" };

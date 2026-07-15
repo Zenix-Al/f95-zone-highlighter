@@ -24,7 +24,7 @@ This split is important when debugging layout, z-index, event propagation, focus
 5. Adds the configuration dock/button.
 6. Applies configured color variables.
 7. Updates config-button visibility.
-8. Enables/disables cross-tab synchronization.
+8. Applies local setting effects through the shared config-change boundary.
 
 ## Accessing the Shadow Root
 

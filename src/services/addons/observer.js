@@ -7,6 +7,43 @@ import {
 } from "./shared.js";
 
 const OBSERVER_SUBSCRIPTIONS = new Map();
+const WAIT_SUBSCRIPTIONS = new Map();
+
+const MAX_WAIT_SELECTOR_LENGTH = 200;
+const MIN_WAIT_TIMEOUT_MS = 100;
+const MAX_WAIT_TIMEOUT_MS = 4000;
+
+export function normalizeObserverWaitSelector(value) {
+  const selector = String(value || "").trim();
+  if (!selector || selector.length > MAX_WAIT_SELECTOR_LENGTH) return "";
+  // Keep the public wait API bounded to simple element/class/id/data selectors.
+  // Pseudo selectors, commas, universal selectors, and traversal expressions
+  // would make ownership and cost difficult to reason about.
+  if (/[,*:[\]]/.test(selector) || /[+~]/.test(selector)) return "";
+  if (!/^(?:[a-z][a-z0-9-]*)?(?:[#.][a-z0-9_-]+)*$/i.test(selector)) return "";
+  return selector;
+}
+
+function waitSubscriptionKey(addonId, observerId) {
+  return `${addonId}:${observerId}`;
+}
+
+function finishWait(key, result) {
+  const entry = WAIT_SUBSCRIPTIONS.get(key);
+  if (!entry) return false;
+  WAIT_SUBSCRIPTIONS.delete(key);
+  clearTimeout(entry.timer);
+  removeObserverCallback(entry.callbackId);
+  entry.resolve(result);
+  return true;
+}
+
+function removeWaitSubscription(addonId, observerId, result = { ok: false, reason: "cancelled" }) {
+  return finishWait(waitSubscriptionKey(addonId, observerId), {
+    ...result,
+    value: { observerId },
+  });
+}
 
 function observerSubscriptionKey(addonId, subscriptionId) {
   return `${addonId}:${subscriptionId}`;
@@ -46,6 +83,60 @@ export function cleanupAddonObserverSubscriptions(addonId) {
     removeObserverCallback(entry.callbackId);
     OBSERVER_SUBSCRIPTIONS.delete(key);
   }
+
+  for (const entry of [...WAIT_SUBSCRIPTIONS.values()]) {
+    if (entry.addonId === normalizedId) {
+      removeWaitSubscription(normalizedId, entry.observerId);
+    }
+  }
+}
+
+export function waitForAddonObserver(addonId, payload = {}) {
+  const normalizedId = sanitizeAddonId(addonId);
+  if (!normalizedId) return Promise.resolve({ ok: false, reason: "invalid_addon_id" });
+
+  const observerId = sanitizeObserverSubscriptionId(payload?.observerId);
+  if (!observerId) return Promise.resolve({ ok: false, reason: "observer_id_required" });
+
+  const selector = normalizeObserverWaitSelector(payload?.selector);
+  if (!selector) return Promise.resolve({ ok: false, reason: "selector_not_allowed" });
+
+  const timeoutMs = Number(payload?.timeoutMs);
+  if (!Number.isFinite(timeoutMs)) return Promise.resolve({ ok: false, reason: "timeout_required" });
+  const boundedTimeout = Math.max(MIN_WAIT_TIMEOUT_MS, Math.min(MAX_WAIT_TIMEOUT_MS, timeoutMs));
+  const key = waitSubscriptionKey(normalizedId, observerId);
+  if (WAIT_SUBSCRIPTIONS.has(key)) {
+    return Promise.resolve({ ok: false, reason: "observer_wait_exists" });
+  }
+  if (typeof document === "undefined" || !document.body) {
+    return Promise.resolve({ ok: false, reason: "document_not_ready" });
+  }
+
+  const findMatch = () => {
+    try {
+      return document.querySelector(selector);
+    } catch {
+      return null;
+    }
+  };
+  if (findMatch()) {
+    return Promise.resolve({ ok: true, value: { observerId, matched: true } });
+  }
+
+  return new Promise((resolve) => {
+    const callbackId = `addon-observer:wait:${normalizedId}:${observerId}`;
+    const finishMatched = () => {
+      if (findMatch()) finishWait(key, { ok: true, value: { observerId, matched: true } });
+    };
+    const filter = (mutationsList) => mutationsList.some((mutation) => mutation.type === "childList");
+    const timer = setTimeout(
+      () => finishWait(key, { ok: false, reason: "observer_timeout", value: { observerId, matched: false } }),
+      boundedTimeout,
+    );
+
+    WAIT_SUBSCRIPTIONS.set(key, { addonId: normalizedId, observerId, callbackId, timer, resolve });
+    addObserverCallback(callbackId, finishMatched, { filter, healthId: "Add-ons Service" });
+  });
 }
 
 export function watchAddonObserver(addonId, payload = {}) {
@@ -124,6 +215,7 @@ export function unwatchAddonObserver(addonId, payload = {}) {
   if (!observerId) return { ok: false, reason: "observer_id_required" };
 
   const key = observerSubscriptionKey(normalizedId, observerId);
+  removeWaitSubscription(normalizedId, observerId);
   const existing = OBSERVER_SUBSCRIPTIONS.get(key);
   if (!existing) return { ok: true, observerId };
 

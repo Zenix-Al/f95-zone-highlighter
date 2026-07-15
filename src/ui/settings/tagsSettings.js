@@ -9,6 +9,27 @@ import {
   renderPreferred,
 } from "../components/tag-search";
 import { showToast } from "../components/toast";
+import {
+  reprocessLatestTilesAfterSettingsChange,
+  refreshThreadOverlayAfterSettingsChange,
+} from "../settingsRuntime/effectTasks.js";
+import {
+  getSettingsMetadataByOwner,
+  registerSettingsMetadata,
+} from "../settings/metaRegistry.js";
+
+function applyTagConfigEffects() {
+  reprocessLatestTilesAfterSettingsChange();
+  refreshThreadOverlayAfterSettingsChange();
+}
+
+if (getSettingsMetadataByOwner("base:tags").length === 0) {
+  registerSettingsMetadata("tags", {
+    preferredTags: { config: "preferredTags", effects: { custom: applyTagConfigEffects } },
+    excludedTags: { config: "excludedTags", effects: { custom: applyTagConfigEffects } },
+    markedTags: { config: "markedTags", effects: { custom: applyTagConfigEffects } },
+  }, "base:tags");
+}
 
 export function initTagsPanelUi(shadowRoot) {
   if (!shadowRoot) return;

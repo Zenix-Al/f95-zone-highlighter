@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Adopt the Example Add-on runtime boundaries with instance-owned lifecycle state,
+  cancellable mount/route/dialog work, and a storage adapter that preserves the
+  existing preset keys and record formats.
+
 ## 0.3.16 - small ui change
 
 - Add confirmation before updateing a preset to prevent accidental overwrites.

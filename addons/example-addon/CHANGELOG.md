@@ -1,3 +1,11 @@
+## [Unreleased] - Canonical add-on template
+
+- keep `main.js` limited to injected runtime construction, core ping, composition, and fatal error reporting
+- isolate app state, command dispatch, serialized lifecycle behavior, and bulk work under `app/`
+- isolate DOM event binding under `ui/bindings.js`
+- make disable, refresh, and terminal teardown abort stale work and acknowledge teardown once
+- preserve every API playground demonstration and existing storage/IDB identifiers
+
 ## [0.2.5] - Throttled bulk import demo
 
 - expose payload ceilings through `addon.throttle` so add-ons can batch against real core limits

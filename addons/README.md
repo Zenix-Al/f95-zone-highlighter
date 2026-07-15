@@ -77,9 +77,41 @@ Add an entry to `addons/addons.manifest.json`:
   "grants": ["none"],
   "runAt": "document-idle",
   "requiresCore": true,
+  "runtimeMode": "core-required",
+  "pageScopes": ["f95zone"],
+  "downloadUrl": "https://example.invalid/my-addon",
   "capabilities": ["toast", "feature", "storage"]
 }
 ```
+
+The manifest is authoritative for add-on activation and core metadata. `pageScopes` may
+contain only `f95zone`, `thread`, or `latest`; `runtimeMode` is one of
+`core-required`, `standalone`, or `hybrid`. `requiresCore` remains a compatibility field
+and must agree with the runtime mode. Userscript `matches`, `grants`, and `runAt` remain
+independent injection metadata and are never used as action authorization.
+
+### Stable identities and legacy aliases
+
+The manifest `id` is the canonical add-on identity and remains the folder, output filename, catalog
+key, state key, and UI-card key. A shipped identity that must be retired may declare optional
+`legacyIds`, for example `"legacyIds": ["old-example-addon"]`. Each alias must be a sanitized,
+unique ID; it must not collide with an active manifest ID, an add-on folder, or a catalog ID, and an
+alias may belong to only one canonical add-on. Do not use an alias to rename Image Repair in the
+identity package.
+
+Core resolves aliases before reading or committing add-on state. When both identities exist,
+canonical fields win conflicts; `installedSeenAt` keeps the earliest valid value and `lastSeenAt`
+keeps the latest. State and installed metadata are moved in one revisioned config commit. Failed
+commits leave the old alias data intact for retry, while a repeated successful normalization is a
+no-op. Catalog entries, installed snapshots, management cards, and runtime registrations expose
+one canonical card. A canonical runtime supersedes an old-alias runtime; competing aliases do not
+create a second card. Alias resolution does not alter registration transport, handshake identity,
+userscript headers, or action response shapes.
+
+Release sequencing for a real rename is: publish the alias-aware core/catalog and state repository
+first; publish the userscript with its canonical ID while allowing the old runtime to register;
+verify one canonical card and successful state normalization; only then remove the alias in a later
+release. The alias is metadata only and is not injected into add-on bundles.
 
 The builder injects these constants into the bundle:
 
@@ -89,6 +121,9 @@ The builder injects these constants into the bundle:
 - `__ADDON_DESCRIPTION__`
 - `__ADDON_CAPABILITIES__`
 - `__ADDON_REQUIRES_CORE__`
+- `__ADDON_PAGE_SCOPES__`
+- `__ADDON_RUNTIME_MODE__`
+- `__ADDON_MATCHES__`
 
 It also generates the userscript header, including matches, grants, version, author, namespace, and core requirement notice.
 
@@ -110,6 +145,9 @@ const runtime = {
     ? __ADDON_CAPABILITIES__
     : [],
   requiresCore: Boolean(__ADDON_REQUIRES_CORE__),
+  pageScopes: Array.isArray(__ADDON_PAGE_SCOPES__) ? __ADDON_PAGE_SCOPES__ : [],
+  runtimeMode: __ADDON_RUNTIME_MODE__,
+  matches: Array.isArray(__ADDON_MATCHES__) ? __ADDON_MATCHES__ : [],
 };
 
 const core = createCoreAdaptor(runtime.addonId);
@@ -117,7 +155,7 @@ const app = createAddonApp({ core, runtime });
 
 async function bootstrap() {
   const ping = await waitForCorePing(core);
-  if (!ping.ok && runtime.requiresCore) return;
+  if (!ping.ok && runtime.runtimeMode === "core-required") return;
   await app.bootstrap();
 }
 
@@ -162,10 +200,11 @@ Always filter incoming events by `detail.addonId`.
 | `feature`           | `feature.enable`, `feature.disable`, `feature.refresh`                                        |
 | `storage`           | `storage.get`, `storage.set`, `storage.getUsage`, `config.getTagPrefs`                        |
 | `idb`               | `idb.get`, `idb.put`, `idb.delete`, `idb.bulkPut`, `idb.bulkDelete`, `idb.query`, `idb.count` |
-| `observer`          | `observer.watch`, `observer.unwatch`                                                          |
+| `page`              | `page.getContext` — bounded, read-only route/page context (`hostname`, `pathname`, `pageType`, `threadId`, and route generation); no DOM objects are returned. |
+| `observer`          | `observer.watch`, `observer.unwatch`, `observer.waitFor`                                      |
 | `ui.style` or `ui`  | `ui.style.register`, `ui.style.unregister`                                                    |
 | `ui.mount` or `ui`  | `ui.mount`, `ui.update`, `ui.unmount`                                                         |
-| `ui.dialog` or `ui` | `ui.dialog.open`, `ui.dialog.close`, `ui.confirm`                                             |
+| `ui.dialog` or `ui` | `ui.dialog.open`, `ui.dialog.close`, `ui.dialog.update`, `ui.confirm`                         |
 | `ui.dock` or `ui`   | `ui.dock.setButtons`, `ui.dock.removeButtons`                                                 |
 
 Two read-only meta actions are available after registration:
@@ -197,6 +236,22 @@ export function setStoredValue(core, key, value) {
 
 This makes permissions visible, payloads consistent, and API changes easy to locate.
 
+The approved additive APIs have bounded contracts and protocol version `1`:
+
+- `page.getContext` is read-only and returns normalized, size-limited page metadata. It
+  does not expose core state, DOM nodes, or arbitrary page execution.
+- `observer.waitFor` accepts one simple tag/class/id selector, a required timeout from
+  100 to 4,000 ms, and an add-on-owned `observerId`. It is one-shot and cancellable by
+  `observer.unwatch`; core removes the callback on match, timeout, cancellation, or
+  add-on teardown.
+- `ui.dialog.update` updates only a dialog already owned by the calling add-on. Content
+  is sanitized and size-limited while the dialog and content identity remain stable;
+  missing or foreign dialogs return a structured failure.
+
+These APIs are additive. Add-ons that receive `unsupported_action` from an older core
+use their local bounded fallback and keep the original user flow. The core action bridge,
+registration handshake, response envelope, and existing public action IDs are unchanged.
+
 ## Registration Metadata
 
 A runtime registration should provide at least `id`, `name`, `version`, `description`, `status`, and `capabilities`. It may also provide:
@@ -207,6 +262,7 @@ A runtime registration should provide at least `id`, `name`, `version`, `descrip
 - `panelSettingsTitle`, `panelSettingsDescription`, and `panelSettingsStorageKey`
 - `panelSettingsDefaults` and `panelSettings`
 - `pageScopes`
+- `runtimeMode` and `matches`
 
 Example:
 
@@ -219,7 +275,9 @@ core.registerAddon({
   status: "installed",
   statusMessage: "Ready.",
   capabilities: runtime.capabilities,
-  pageScopes: ["thread", "latest"],
+  pageScopes: runtime.pageScopes,
+  runtimeMode: runtime.runtimeMode,
+  matches: runtime.matches,
   panelActions: [{ id: "open-panel", label: "Open", variant: "primary" }],
 });
 ```
@@ -337,6 +395,27 @@ Cleanup actions are designed to remain available during teardown pressure, but t
 
 Core also applies a teardown watchdog and hard-cleans owned observers and UI when an add-on fails to acknowledge teardown.
 
+### Runtime contract after registration
+
+Core-connected add-ons use the shared `addons/shared/runtimeLifecycle.js` contract
+after registration. The observable states are `new`, `starting`, `enabled`,
+`disabling`, `disabled`, `refreshing`, `tearing-down`, `terminated`, and `failed`.
+Lifecycle operations are serialized; duplicate enable, disable, and refresh requests
+are idempotent, while terminal teardown is a one-shot operation.
+
+Each command handler receives or derives a context containing `commandId`, `command`,
+`reason`, `generation`, `routeContext`, `signal`, and `terminal`. Disable, superseding
+refresh, route invalidation, and teardown abort the owned signal or advance the
+generation. A callback must check `signal.aborted` or `isCurrent()` before committing
+state or UI. Expected cancellation is reported separately from ordinary failures.
+
+The runtime helper exposes `getSnapshot()`, `getResourceSnapshot()`, and
+`getPendingOperationSnapshot()`. Resource entries are owner-scoped and must be
+released on reversible disable or terminal teardown. Teardown stops new work, aborts
+pending work, releases feature resources, and acknowledges `teardown-complete` once;
+core applies a bounded owner-specific watchdog cleanup when that acknowledgment is
+missed.
+
 ## Observer Rules
 
 Each observer subscription needs a stable `observerId`. Core filters out DOM owned by the same add-on to prevent self-triggered render loops. Keep callbacks lightweight and unwatch subscriptions when they are no longer needed.
@@ -348,6 +427,12 @@ await core.invokeCoreAction("observer.watch", {
 
 await core.invokeCoreAction("observer.unwatch", {
   observerId: "my-observer",
+});
+
+const wait = await core.invokeCoreAction("observer.waitFor", {
+  observerId: "initial-content",
+  selector: ".content-block",
+  timeoutMs: 3000,
 });
 ```
 
@@ -368,6 +453,21 @@ node addons/build-addon.js example-addon --release
 node addons/build-addon.js example-addon --force
 ```
 
+Validate and regenerate the trusted catalog from the manifest with:
+
+```powershell
+npm run check:addons:catalog
+npm run generate:addons:catalog
+```
+
+The generator is deterministic and preserves the core header resource name and path
+(`trustedAddonCatalog` → `src/services/addons/trusted-catalog.json`). Catalog support is
+the intersection of userscript activation-match coverage and the current core page
+scope. It does not replace execution authorization: trust, enabled/blocked state,
+capabilities, and the action's `management` or `runtime` scope policy are checked
+separately. A `standalone` add-on does not register with core; a `hybrid` add-on uses
+core only on its F95Zone activation routes.
+
 The builder:
 
 - bundles JavaScript, imported HTML, and imported CSS with esbuild;
@@ -379,6 +479,97 @@ The builder:
 - skips unchanged targets unless `--force` is supplied.
 
 Because a successful changed build updates manifest versions, review `addons/addons.manifest.json` with the generated artifact.
+
+Every core-required or hybrid add-on uses the shared `addons/shared/coreBridge.js`
+contract. Bootstrap must complete the core ping, register the add-on, and consume
+`addon.access` before starting privileged API work or feature behavior. Trust,
+blocked state, granted capabilities, and enablement come from core; add-on code
+must not reconstruct the untrusted policy or its blocked message. The bridge
+keeps the existing event names, handshake fields, action response shapes, and
+teardown acknowledgment behavior unchanged.
+
+### Example Add-on template boundaries
+
+The Example Add-on is the copyable runtime template. Its `main.js` only constructs
+manifest-injected runtime metadata, creates the bridge and app, waits for core, starts
+bootstrap, and reports fatal bootstrap failures. Within `src/`:
+
+- `core/` owns bridge adaptation;
+- `api/` owns thin action-specific wrappers and raw action IDs;
+- `app/state.js` owns runtime state and stable storage/IDB payload definitions;
+- `app/lifecycle.js` serializes enable, disable, refresh, and terminal teardown;
+- `app/commands.js` owns core command dispatch and teardown routing;
+- `app/createExampleAddonApp.js` composes app behavior and delegates rendering/UI to `ui/`;
+- `ui/` owns markup, CSS, dialog views, render helpers, and DOM event bindings;
+- optional domain modules such as bulk-work controllers belong under `app/` or a named domain folder.
+
+Every listener, timeout, observer test node, mount, dock button, dialog, style, and pending
+bulk operation is add-on-owned. Disable cancels owned asynchronous work and releases reversible
+resources; terminal teardown removes command/UI listeners and sends `teardown-complete` once.
+
+## Non-mutating baseline and smoke build
+
+`ADDON-BASELINE-01` uses a separate audit path so measurement does not invoke the production
+builder. It writes regular and release bundles only under a temporary directory, uses a
+deterministic header without the normal build timestamp, and records manifest/catalog metadata,
+action descriptors, lifecycle snapshots, source shape, gzip sizes, and esbuild contributors.
+
+```bash
+npm run audit:addons
+npm run check:addons:baseline
+npm run build:addons:smoke
+npm run audit:addons:api
+npm run check:addons:api
+```
+
+These commands do not update add-on versions, `.build-cache.json`, `addons.manifest.json`, or
+tracked `dist/`. The baseline separates add-on userscript bundles from the core add-on-service and
+UI integration footprint. The trusted-add-on contradiction recorded by the baseline was resolved
+by `ADDON-TRUST-GATING-01`; the shared access resolver now keeps trust, blocked state, status text,
+and execution authorization consistent.
+
+`ADDON-API-AUDIT-01` writes `docs/architecture/addon-api-audit.json` and the readable
+`docs/architecture/addon-api-audit.md`. It inventories all manifest add-ons, raw action call sites,
+bridge events, listeners, polling, URL parsing, DOM assumptions, direct GM access, and cancellation
+scaffolding. It is source-only and does not add actions, change the handshake, or build release
+artifacts. Use `npm run check:addons:api` to verify the report is deterministic and current.
+
+## Independent add-on validation
+
+The repository-specific build-tools check validates the manifest, catalog, source layout, and
+both esbuild modes without invoking the production versioning/cache path:
+
+```powershell
+npm run lint:addons
+npm run check:addons:manifest
+npm run check:addons:catalog
+npm run check:addons:structure
+npm run build:addons:smoke
+npm run check:addons
+```
+
+`build:addons:smoke` builds every manifest entry in regular and release mode. The mode-specific
+commands are `npm run build:addons:smoke:regular` and
+`npm run build:addons:smoke:release`. A single add-on can be selected with, for example:
+
+```powershell
+node scripts/addon-build-tools.cjs --addon example-addon --release
+```
+
+Smoke output and one esbuild metafile per add-on/mode are written to a temporary directory by
+default. `--outdir <path>` is available for inspection, but CI should use the default. Smoke
+headers contain no build timestamp, and the command rejects changes to versions, manifest,
+cache, tracked `dist/`, or root version state.
+
+Manifest validation reports indexed paths such as `addons[0].entry` and checks unique IDs and
+legacy IDs, folder/ID/entry/output alignment, capabilities, scopes, runtime modes, matches,
+grants, and run timing. Structure validation requires `src/main.js` and the matching `dist/`
+output path. Tiny add-ons may keep all behavior in `src/main.js` and omit `api/`, `app/`,
+`core/`, `ui/`, or `constants.js`; canonical multi-module add-ons may use those folders.
+
+Release stripping remains owned by the existing root `stripDebugLogs.js` esbuild plugin. The
+build-tools package characterizes that plugin and consumes it without relocating or changing
+its name or behavior.
 
 ## Validation Checklist
 

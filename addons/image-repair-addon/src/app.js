@@ -8,6 +8,7 @@ import {
   TOAST_UPDATE_INTERVAL,
 } from "./constants.js";
 import { createCoreBridge } from "./coreBridge.js";
+import { waitForElement } from "./api/observer.js";
 import { createImageRepairUi } from "./ui.js";
 import { createRetryManager } from "./feature.js";
 import { debugLog } from "../../shared/debugLog.js";
@@ -33,13 +34,20 @@ function createStatusMessages() {
   };
 }
 
-async function waitForPageReady() {
-  // Wait for document.readyState to be complete
-  if (document.readyState !== "complete") {
-    await new Promise((resolve) => {
-      window.addEventListener("load", resolve, { once: true });
-    });
-  }
+async function waitForPageReady(bridge) {
+  const waitForLoadFallback = () => document.readyState === "complete"
+    ? { ok: true, value: { observerId: "image-repair-page-ready", matched: true } }
+    : new Promise((resolve) => window.addEventListener("load", () => resolve({
+      ok: true,
+      value: { observerId: "image-repair-page-ready", matched: true },
+    }), { once: true }));
+  await waitForElement(
+    bridge,
+    "image-repair-page-ready",
+    "body",
+    3000,
+    waitForLoadFallback,
+  );
 
   // Also wait for F95Zone's loading overlay to disappear (if present)
   // F95Zone shows a loading indicator during navigation
@@ -159,7 +167,9 @@ export function startImageRepairAddon() {
         panelBody:
           "Retries failed attachment images (attachments.f95zone.to). Use Enable / Disable to control whether the watcher is active.",
         capabilities: runtime.capabilities,
-        pageScopes: ["thread"],
+        pageScopes: runtime.pageScopes,
+        runtimeMode: runtime.runtimeMode,
+        matches: runtime.matches,
       },
     });
   }
@@ -272,23 +282,28 @@ export function startImageRepairAddon() {
   async function bootstrap() {
     debugLog(runtime.addonId, "Bootstrapping add-on...");
     const ping = await bridge.waitForCorePing();
-    if (!ping.ok && runtime.requiresCore) {
+    if (!ping.ok && runtime.runtimeMode === "core-required") {
       debugLog(runtime.addonId, "F95UE core not detected; add-on skipped.", { data: { ping } });
       return;
     }
     debugLog(runtime.addonId, "F95UE core detected and responsive.", { data: { ping } });
+    bindAddonCommandListener();
     // Register first so permission-checked storage actions can resolve this add-on.
     registerAddon();
     debugLog(runtime.addonId, "Add-on registered with core.", { data: { ping } });
     try {
+      const access = await bridge.invokeCoreAction("addon.access", {});
+      if (!access?.ok || access.value?.blocked) {
+        isEnabled = false;
+        pushStatusUpdate();
+        return;
+      }
       const stored = await storageGet("enabled", true);
       isEnabled = stored !== false && stored !== "false";
 
-      bindAddonCommandListener();
-
       if (isEnabled) {
         // Wait for page to fully load before enabling observer
-        await waitForPageReady();
+        await waitForPageReady(bridge);
 
         await registerUiStyle();
         feature.enable();

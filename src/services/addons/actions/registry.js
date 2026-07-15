@@ -7,6 +7,9 @@ function readonlyDescriptor(descriptor) {
     requiredCapabilities: Object.freeze([...descriptor.requiredCapabilities]),
     timeoutMs: descriptor.timeoutMs,
     auditCategory: descriptor.auditCategory,
+    scopePolicy: descriptor.scopePolicy,
+    ...(descriptor.ownership ? { ownership: descriptor.ownership } : {}),
+    ...(descriptor.cleanup ? { cleanup: descriptor.cleanup } : {}),
   });
 }
 
@@ -23,6 +26,10 @@ export function registerAction(descriptor) {
     requiredCapabilities: Object.freeze([...(descriptor.requiredCapabilities || [])]),
     timeoutMs: Math.max(1, Number(descriptor.timeoutMs) || 5_000),
     auditCategory: String(descriptor.auditCategory || "addon-action"),
+    scopePolicy: descriptor.scopePolicy === "management" ? "management" : "runtime",
+    ownership: typeof descriptor.ownership === "string" ? descriptor.ownership : "",
+    cleanup: typeof descriptor.cleanup === "string" ? descriptor.cleanup : "",
+    validateResult: typeof descriptor.validateResult === "function" ? descriptor.validateResult : null,
     redactResult: typeof descriptor.redactResult === "function" ? descriptor.redactResult : (result) => result,
   });
   actions.set(id, normalized);
@@ -46,7 +53,12 @@ export async function executeActionDescriptor(descriptor, context) {
       Promise.resolve(descriptor.execute(context)),
       new Promise((_, reject) => { timeoutId = setTimeout(() => reject(new Error("action_timeout")), descriptor.timeoutMs); }),
     ]);
-    return descriptor.redactResult(result);
+    const redacted = descriptor.redactResult(result);
+    const resultValidation = descriptor.validateResult?.(redacted);
+    if (resultValidation !== undefined && resultValidation !== true && resultValidation?.ok !== true) {
+      return { ok: false, reason: resultValidation?.reason || "invalid_action_result" };
+    }
+    return redacted;
   } catch (error) {
     return { ok: false, reason: error?.message === "action_timeout" ? "action_timeout" : "action_failed" };
   } finally { clearTimeout(timeoutId); }

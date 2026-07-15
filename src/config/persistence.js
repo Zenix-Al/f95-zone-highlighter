@@ -2,6 +2,10 @@ export const CONFIG_STORAGE_KEYS = Object.freeze({
   current: "f95ue:config",
   backup: "f95ue:config:last-known-good",
   recovery: "f95ue:config:recovery",
+  migrationVersion: "f95ue:config:migration-version",
+  migrationLock: "f95ue:config:migration-lock",
+  tagsCache: "f95ue:cache:tags",
+  prefixesCache: "f95ue:cache:prefixes",
 });
 
 export const CONFIG_SCHEMA_VERSION = 1;

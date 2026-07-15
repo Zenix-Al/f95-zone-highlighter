@@ -12,7 +12,8 @@ export function createAddonPanelActions(doc, addon) {
 
   const supportsFeatureToggle =
     addon.status !== "not-installed" &&
-    (addon.capabilities?.includes("feature") || (!addon.activeOnPage && addon.installedSeenAt > 0));
+    (addon.capabilities?.includes("feature") || (!addon.activeOnPage && addon.installedSeenAt > 0)) &&
+    (addon.status !== "disabled" || addon.canEnable !== false);
 
   if (supportsFeatureToggle) {
     const isDisabled = addon.status === "disabled";

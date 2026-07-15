@@ -1,5 +1,4 @@
 import {
-  bindRuntimeCommands,
   notifyTeardownComplete,
   registerAddonRuntime,
   updateAddonRuntimeStatus,
@@ -7,30 +6,37 @@ import {
 import { getAddonAccess, getCoreThrottle } from "../api/meta.js";
 import { disableFeature, enableFeature, refreshFeature } from "../api/feature.js";
 import {
-  EXAMPLE_BULK_PROGRESS_DIALOG_ID,
   EXAMPLE_DIALOG_ID,
   EXAMPLE_DOCK_BUTTONS,
   EXAMPLE_DOCK_MOUNT_ID,
-  EXAMPLE_DUMMY_BULK_TOTAL,
   EXAMPLE_EXTRA_MOUNT_ID,
-  EXAMPLE_IDB_DB_NAME,
   EXAMPLE_IDB_PRIMARY_KEY,
-  EXAMPLE_IDB_STORE_NAME,
   EXAMPLE_OBSERVER_ID,
   EXAMPLE_PANEL_DIALOG_ID,
   EXAMPLE_STORAGE_KEY,
   EXAMPLE_STYLE_ID,
 } from "../constants.js";
+import { createBulkImportController } from "./bulkImport.js";
+import { createExampleCommandController } from "./commands.js";
+import { createExampleLifecycle } from "./lifecycle.js";
+import {
+  buildIdbPayload,
+  createIdbBulkDeletePayload,
+  createIdbRowsPreview,
+  createInitialState,
+  createPrimaryRecord,
+  summarizeTagPrefs,
+} from "./state.js";
 import {
   bulkDeleteRecords,
-  bulkPutRecords,
   countRecords,
   deleteRecord,
   getRecord,
   putRecord,
   queryRecords,
 } from "../api/idb.js";
-import { watchObserver, unwatchObserver } from "../api/observer.js";
+import { waitForObserver, watchObserver, unwatchObserver } from "../api/observer.js";
+import { getPageContext } from "../api/page.js";
 import {
   getStoredValue,
   getStorageUsage,
@@ -38,221 +44,51 @@ import {
   setStoredValue,
 } from "../api/storage.js";
 import { showCoreToast } from "../api/toast.js";
-import { closeDialog, confirmDialog, openDialog } from "../api/ui/dialog.js";
+import { closeDialog, confirmDialog, openDialog, updateDialog } from "../api/ui/dialog.js";
 import { removeDockButtons, setDockButtons } from "../api/ui/dock.js";
 import { mountUi, unmountUi, updateUi } from "../api/ui/mount.js";
 import { registerStyle, unregisterStyle } from "../api/ui/style.js";
 import exampleCssText from "../ui/example.css";
-import {
-  createBulkImportProgressMarkup,
-  updateBulkImportProgressView,
-} from "../ui/bulkImportProgressDialog.js";
 import { renderExampleDialog } from "../ui/dialog.js";
 import { renderDockMarkup } from "../ui/dockRenderer.js";
 import { renderExtraMount } from "../ui/extraMount.js";
 import { renderExamplePanel } from "../ui/panel.js";
-
-const PAYLOAD_SIZE_ENCODER = typeof TextEncoder !== "undefined" ? new TextEncoder() : null;
-const DEFAULT_IDB_PAYLOAD_LIMIT_BYTES = 128 * 1024;
-const DEFAULT_IDB_BULK_ITEMS_LIMIT = 25;
-const DEFAULT_CORE_ACTION_INTERVAL_MS = 80;
-const BULK_IMPORT_RETRYABLE_REASONS = new Set(["rate_limited", "too_many_concurrent_requests"]);
-
-function createInitialState() {
-  return {
-    enabled: true,
-    lastAction: "bootstrap",
-    lastResult: "starting...",
-    logs: [],
-    meta: {
-      access: null,
-      throttle: null,
-    },
-    storage: {
-      value: null,
-      usage: null,
-      tagPrefsSummary: null,
-    },
-    idb: {
-      lastRecord: null,
-      rows: [],
-      count: 0,
-      bulkImport: {
-        status: "idle",
-        processed: 0,
-        total: 0,
-        completedBatches: 0,
-        totalBatches: 0,
-        failed: 0,
-        cancelled: false,
-      },
-    },
-    observer: {
-      isWatching: false,
-      eventCount: 0,
-      lastBatchSize: 0,
-      lastNodeTags: [],
-    },
-    ui: {
-      styleRegistered: false,
-      dockLauncherMounted: false,
-      panelOpen: false,
-      extraMountActive: false,
-      extraMountRevision: 0,
-      dockButtonsActive: false,
-      dialogOpen: false,
-      lastConfirm: "",
-    },
-  };
-}
-
-function buildIdbPayload(extra = {}) {
-  return {
-    dbName: EXAMPLE_IDB_DB_NAME,
-    storeName: EXAMPLE_IDB_STORE_NAME,
-    keyPath: "id",
-    indexes: [{ name: "updatedAt", keyPath: "updatedAt" }],
-    ...extra,
-  };
-}
-
-function createPrimaryRecord() {
-  return {
-    id: EXAMPLE_IDB_PRIMARY_KEY,
-    label: "Hello from idb.put",
-    updatedAt: Date.now(),
-  };
-}
+import { createExampleUiBindings } from "../ui/bindings.js";
 
 export function createExampleAddonApp({ core, runtime }) {
   const state = createInitialState();
-  let unbindAddonCommands = () => {};
-  let panelClickHandler = null;
-  let dockClickHandler = null;
-  let activeBulkImport = null;
+  let terminal = false;
+  const ownedTimeouts = new Map();
+  const ownedObserverNodes = new Set();
+  let ownedResourceSequence = 0;
 
   function wait(ms) {
     return new Promise((resolve) => {
-      window.setTimeout(resolve, Math.max(0, Number(ms) || 0));
-    });
-  }
-
-  function measurePayloadBytes(payload) {
-    try {
-      const json = JSON.stringify(payload ?? null);
-      return PAYLOAD_SIZE_ENCODER ? PAYLOAD_SIZE_ENCODER.encode(json).length : json.length;
-    } catch {
-      return Number.MAX_SAFE_INTEGER;
-    }
-  }
-
-  function resolveThrottleEnvelope(rawThrottle = null) {
-    const source = rawThrottle && typeof rawThrottle === "object" ? rawThrottle : {};
-    const coreAction = source.coreAction && typeof source.coreAction === "object" ? source.coreAction : {};
-    const payloadLimits =
-      source.payloadLimits && typeof source.payloadLimits === "object" ? source.payloadLimits : {};
-    const idb = payloadLimits.idb && typeof payloadLimits.idb === "object" ? payloadLimits.idb : {};
-
-    return {
-      coreAction: {
-        windowMs: Math.max(250, Number(coreAction.windowMs || 5000)),
-        maxCount: Math.max(1, Number(coreAction.maxCount || 100)),
-        maxConcurrent: Math.max(1, Number(coreAction.maxConcurrent || 1)),
-        suggestedMinIntervalMs: Math.max(
-          0,
-          Number(coreAction.suggestedMinIntervalMs || DEFAULT_CORE_ACTION_INTERVAL_MS),
-        ),
-      },
-      payloadLimits: {
-        idb: {
-          maxPayloadBytes: Math.max(
-            4096,
-            Number(idb.maxPayloadBytes || DEFAULT_IDB_PAYLOAD_LIMIT_BYTES),
-          ),
-          maxBulkItems: Math.max(
-            1,
-            Number(idb.maxBulkItems || DEFAULT_IDB_BULK_ITEMS_LIMIT),
-          ),
-        },
-      },
-    };
-  }
-
-  function createDummyBulkRecords(throttleInfo) {
-    const payloadLimit = Math.max(
-      DEFAULT_IDB_PAYLOAD_LIMIT_BYTES,
-      Number(throttleInfo?.payloadLimits?.idb?.maxPayloadBytes || DEFAULT_IDB_PAYLOAD_LIMIT_BYTES),
-    );
-    const repeatedTextLength = Math.max(4096, Math.min(32768, Math.floor(payloadLimit / 4)));
-    const repeatedText = "X".repeat(repeatedTextLength);
-    const seed = Date.now();
-
-    return Array.from({ length: EXAMPLE_DUMMY_BULK_TOTAL }, (_, index) => ({
-      id: `dummy-bulk-${seed}-${index + 1}`,
-      label: `Dummy Bulk Record ${index + 1}`,
-      updatedAt: seed + index,
-      bucket: `batch-${Math.floor(index / 6) + 1}`,
-      body: repeatedText,
-    }));
-  }
-
-  function createIdbBulkPayload(entries) {
-    return buildIdbPayload({
-      entries: entries.map((value) => ({ value })),
-    });
-  }
-
-  function createIdbBulkDeletePayload(keys) {
-    return buildIdbPayload({ keys });
-  }
-
-  function createIdbRowsPreview(rows) {
-    return (Array.isArray(rows) ? rows : []).map((row) => {
-      const value = row?.value && typeof row.value === "object" ? row.value : row;
-      if (!value || typeof value !== "object" || typeof value.body !== "string") return row;
-      const previewValue = {
-        ...value,
-        body: `${value.body.slice(0, 80)}... [${value.body.length} characters]`,
+      const token = {};
+      const resourceId = `timer:${++ownedResourceSequence}`;
+      const finish = () => {
+        if (!ownedTimeouts.has(token)) return;
+        ownedTimeouts.delete(token);
+        lifecycle?.releaseResource?.(resourceId);
+        resolve();
       };
-      return row?.value && typeof row.value === "object" ? { ...row, value: previewValue } : previewValue;
+      token.timer = window.setTimeout(finish, Math.max(0, Number(ms) || 0));
+      token.finish = finish;
+      ownedTimeouts.set(token, token);
+      lifecycle?.registerResource?.(resourceId, () => {
+        if (!ownedTimeouts.has(token)) return;
+        ownedTimeouts.delete(token);
+        window.clearTimeout(token.timer);
+        resolve();
+      }, "timer");
     });
   }
 
-  function buildIdbBulkBatches(records, throttleInfo) {
-    const maxPayloadBytes = Math.max(
-      4096,
-      Number(throttleInfo?.payloadLimits?.idb?.maxPayloadBytes || DEFAULT_IDB_PAYLOAD_LIMIT_BYTES),
-    );
-    const maxBulkItems = Math.max(
-      1,
-      Number(throttleInfo?.payloadLimits?.idb?.maxBulkItems || DEFAULT_IDB_BULK_ITEMS_LIMIT),
-    );
-    const payloadBudget = Math.max(1024, maxPayloadBytes - 1024);
-    const batches = [];
-    let currentBatch = [];
-
-    for (const record of records) {
-      const candidateBatch = [...currentBatch, record];
-      const candidatePayload = createIdbBulkPayload(candidateBatch);
-      const candidateBytes = measurePayloadBytes(candidatePayload);
-
-      if (
-        currentBatch.length > 0 &&
-        (candidateBatch.length > maxBulkItems || candidateBytes > payloadBudget)
-      ) {
-        batches.push([...currentBatch]);
-        currentBatch = [record];
-        continue;
-      }
-
-      currentBatch = candidateBatch;
+  function cancelOwnedTimeouts() {
+    for (const token of ownedTimeouts.values()) {
+      window.clearTimeout(token.timer);
+      token.finish();
     }
-
-    if (currentBatch.length > 0) {
-      batches.push([...currentBatch]);
-    }
-
-    return batches;
   }
 
   function getDialogContentElement(dialogId) {
@@ -261,194 +97,14 @@ export function createExampleAddonApp({ core, runtime }) {
     );
   }
 
-  function updateOpenDialogContent(dialogId, html) {
+  async function updateOpenDialogContent(dialogId, html) {
+    const result = await updateDialog(core, dialogId, html);
+    if (result?.ok) return true;
+    if (result?.reason !== "unsupported_action") return false;
     const contentEl = getDialogContentElement(dialogId);
     if (!contentEl) return false;
     contentEl.innerHTML = html;
     return true;
-  }
-
-  function updateBulkImportSummary(nextPatch = {}) {
-    state.idb.bulkImport = {
-      ...state.idb.bulkImport,
-      ...nextPatch,
-    };
-  }
-
-  function updateBulkImportProgressDialog(progress) {
-    const root = getDialogContentElement(EXAMPLE_BULK_PROGRESS_DIALOG_ID);
-    updateBulkImportProgressView(root, progress, activeBulkImport?.total || 0);
-  }
-
-  async function openBulkImportProgressDialog(progress, throttleInfo) {
-    const result = await openDialog(core, {
-      dialogId: EXAMPLE_BULK_PROGRESS_DIALOG_ID,
-      title: "Dummy Bulk Import",
-      html: createBulkImportProgressMarkup({
-        total: progress.total,
-        totalBatches: progress.totalBatches,
-        throttle: throttleInfo,
-      }),
-      closeOnBackdrop: true,
-      closeOnEsc: true,
-      size: "sm",
-    });
-    if (!result?.ok) {
-      throw new Error(`Progress dialog failed: ${result?.reason || "unknown"}`);
-    }
-    updateBulkImportProgressDialog(progress);
-  }
-
-  async function closeBulkImportProgressDialog(reason = "bulk-import-finished", cancelImport = false) {
-    if (!activeBulkImport) return;
-    if (cancelImport) {
-      activeBulkImport.cancelled = true;
-    }
-    activeBulkImport.closing = true;
-    await closeDialog(core, EXAMPLE_BULK_PROGRESS_DIALOG_ID, reason);
-  }
-
-  function requestBulkImportCancellation() {
-    if (!activeBulkImport) return false;
-    activeBulkImport.cancelled = true;
-    updateBulkImportSummary({
-      status: "cancelling",
-      cancelled: true,
-    });
-    updateBulkImportProgressDialog({
-      ...state.idb.bulkImport,
-      cancelled: true,
-    });
-    return true;
-  }
-
-  async function invokeBulkPutWithRetry(payload, throttleInfo) {
-    const minIntervalMs = Math.max(
-      0,
-      Number(throttleInfo?.coreAction?.suggestedMinIntervalMs || DEFAULT_CORE_ACTION_INTERVAL_MS),
-    );
-    let lastResult = null;
-
-    for (let attempt = 0; attempt < 3; attempt += 1) {
-      lastResult = await bulkPutRecords(core, payload);
-      if (lastResult?.ok || !BULK_IMPORT_RETRYABLE_REASONS.has(String(lastResult?.reason || ""))) {
-        return lastResult;
-      }
-      await wait(Math.max(250, minIntervalMs * (attempt + 1)));
-    }
-
-    return lastResult;
-  }
-
-  async function runDummyBulkImport() {
-    if (activeBulkImport) {
-      return { ok: false, reason: "bulk_import_active" };
-    }
-
-    const throttleResult = await getCoreThrottle(core);
-    const throttleInfo = resolveThrottleEnvelope(
-      throttleResult?.ok ? throttleResult.value : state.meta.throttle,
-    );
-
-    if (throttleResult?.ok) {
-      state.meta.throttle = throttleResult.value;
-    }
-
-    const records = createDummyBulkRecords(throttleInfo);
-    const batches = buildIdbBulkBatches(records, throttleInfo);
-    const progress = {
-      status: "running",
-      processed: 0,
-      total: records.length,
-      completedBatches: 0,
-      totalBatches: batches.length,
-      failed: 0,
-      cancelled: false,
-    };
-
-    activeBulkImport = {
-      cancelled: false,
-      closing: false,
-      total: records.length,
-    };
-    updateBulkImportSummary(progress);
-    await openBulkImportProgressDialog(progress, throttleInfo);
-    await syncPanel();
-
-    const minIntervalMs = Math.max(
-      0,
-      Number(throttleInfo?.coreAction?.suggestedMinIntervalMs || DEFAULT_CORE_ACTION_INTERVAL_MS),
-    );
-
-    for (let batchIndex = 0; batchIndex < batches.length; batchIndex += 1) {
-      if (activeBulkImport?.cancelled) {
-        break;
-      }
-
-      const batch = batches[batchIndex];
-      const payload = createIdbBulkPayload(batch);
-      const startedAt = Date.now();
-      const result = await invokeBulkPutWithRetry(payload, throttleInfo);
-
-      if (!result?.ok) {
-        progress.failed += batch.length;
-        progress.status = "failed";
-        updateBulkImportSummary(progress);
-        updateBulkImportProgressDialog(progress);
-        await syncPanel();
-        await closeBulkImportProgressDialog("bulk-import-failed", false);
-        activeBulkImport = null;
-        return result;
-      }
-
-      progress.processed += batch.length;
-      progress.completedBatches += 1;
-      updateBulkImportSummary(progress);
-      updateBulkImportProgressDialog(progress);
-      await syncPanel();
-
-      const elapsedMs = Date.now() - startedAt;
-      const waitMs = minIntervalMs - elapsedMs;
-      if (waitMs > 0 && batchIndex < batches.length - 1) {
-        await wait(waitMs);
-      }
-    }
-
-    if (activeBulkImport?.cancelled) {
-      progress.status = "cancelled";
-      progress.cancelled = true;
-    } else {
-      progress.status = "completed";
-    }
-
-    updateBulkImportSummary(progress);
-    updateBulkImportProgressDialog(progress);
-    await wait(progress.cancelled ? 150 : 300);
-    await closeBulkImportProgressDialog(
-      progress.cancelled ? "bulk-import-cancelled" : "bulk-import-complete",
-      false,
-    );
-
-    const countResult = await countRecords(core, buildIdbPayload({}));
-    state.idb.count = countResult?.ok ? Number(countResult.value || 0) : state.idb.count;
-    state.idb.lastRecord = {
-      dummyImported: progress.processed,
-      totalRequested: progress.total,
-      totalBatches: progress.totalBatches,
-      cancelled: progress.cancelled,
-    };
-    activeBulkImport = null;
-    await syncPanel();
-
-    return {
-      ok: true,
-      value: {
-        processed: progress.processed,
-        total: progress.total,
-        totalBatches: progress.totalBatches,
-        cancelled: progress.cancelled,
-      },
-    };
   }
 
   function appendLog(message) {
@@ -477,7 +133,9 @@ export function createExampleAddonApp({ core, runtime }) {
       panelBody:
         "Core API playground demonstrating every current addon-facing action through the api folder.",
       capabilities: runtime.capabilities,
-      pageScopes: ["thread", "latest", "download"],
+      pageScopes: runtime.pageScopes,
+      runtimeMode: runtime.runtimeMode,
+      matches: runtime.matches,
     });
   }
 
@@ -491,10 +149,10 @@ export function createExampleAddonApp({ core, runtime }) {
   }
 
   async function syncPanel() {
-    if (!state.enabled || !state.ui.panelOpen) return;
+    if (!state.enabled || terminal || !state.ui.panelOpen) return;
 
     const html = renderExamplePanel(state);
-    if (updateOpenDialogContent(EXAMPLE_PANEL_DIALOG_ID, html)) {
+    if (await updateOpenDialogContent(EXAMPLE_PANEL_DIALOG_ID, html)) {
       return;
     }
 
@@ -507,6 +165,10 @@ export function createExampleAddonApp({ core, runtime }) {
 
     if (!result?.ok) {
       throw new Error(`Panel sync failed: ${result?.reason || "unknown"}`);
+    }
+    if (!state.enabled || terminal) {
+      await closeDialog(core, EXAMPLE_PANEL_DIALOG_ID, "stale-panel-sync");
+      return;
     }
     state.ui.panelOpen = true;
   }
@@ -538,12 +200,12 @@ export function createExampleAddonApp({ core, runtime }) {
       throw new Error(`Dock launcher mount failed: ${result?.reason || "unknown"}`);
     }
     state.ui.dockLauncherMounted = true;
-    bindDockMountEvents();
+    uiBindings.bindDockMountEvents();
     return result;
   }
 
   async function unmountDockLauncher() {
-    unbindDockMountEvents();
+    uiBindings.unbindDockMountEvents();
     const result = await unmountUi(core, EXAMPLE_DOCK_MOUNT_ID);
     if (result?.ok) {
       state.ui.dockLauncherMounted = false;
@@ -601,40 +263,15 @@ export function createExampleAddonApp({ core, runtime }) {
     state.ui.dockButtonsActive = false;
     await unmountExtra();
     await unmountDockLauncher();
-    if (dialogCloseResult?.ok && panelCloseResult?.ok) {
+    if (state.ui.styleRegistered || dialogCloseResult?.ok || panelCloseResult?.ok) {
       const styleResult = await unregisterStyle(core, EXAMPLE_STYLE_ID);
       if (styleResult?.ok) state.ui.styleRegistered = false;
     }
   }
 
   async function enableUi() {
-    await ensureStyleRegistered();
-    await mountDockLauncher();
-  }
-
-  async function setEnabled(nextEnabled) {
-    state.enabled = Boolean(nextEnabled);
-    if (state.enabled) {
-      await enableUi();
-    } else {
-      await disableUi("disable");
-    }
-    pushStatusUpdate();
-    if (state.enabled) {
-      await syncPanel();
-    }
-  }
-
-  function summarizeTagPrefs(value) {
-    if (!value || typeof value !== "object") return null;
-    return {
-      tags: Array.isArray(value.tags) ? value.tags.length : 0,
-      preferredTags: Array.isArray(value.preferredTags) ? value.preferredTags.length : 0,
-      excludedTags: Array.isArray(value.excludedTags) ? value.excludedTags.length : 0,
-      markedTags: Array.isArray(value.markedTags) ? value.markedTags.length : 0,
-      colorKeys:
-        value.color && typeof value.color === "object" ? Object.keys(value.color).length : 0,
-    };
+    if (!state.ui.styleRegistered) await ensureStyleRegistered();
+    if (!state.ui.dockLauncherMounted) await mountDockLauncher();
   }
 
   function createObserverTestNode() {
@@ -642,7 +279,30 @@ export function createExampleAddonApp({ core, runtime }) {
     node.textContent = `Observer test node ${Date.now()}`;
     node.style.display = "none";
     document.body.appendChild(node);
-    window.setTimeout(() => node.remove(), 1500);
+    ownedObserverNodes.add(node);
+    const token = {};
+    const resourceId = `observer-node:${++ownedResourceSequence}`;
+    const timer = window.setTimeout(() => {
+      ownedTimeouts.delete(token);
+      ownedObserverNodes.delete(node);
+      lifecycle?.releaseResource?.(resourceId);
+      node.remove();
+    }, 1500);
+    token.timer = timer;
+    token.finish = () => {
+      ownedTimeouts.delete(token);
+      ownedObserverNodes.delete(node);
+      lifecycle?.releaseResource?.(resourceId);
+      window.clearTimeout(timer);
+      node.remove();
+    };
+    ownedTimeouts.set(token, token);
+    lifecycle?.registerResource?.(resourceId, () => {
+      ownedTimeouts.delete(token);
+      ownedObserverNodes.delete(node);
+      window.clearTimeout(timer);
+      node.remove();
+    }, "observer-node");
   }
 
   async function refreshMetaSection() {
@@ -659,7 +319,115 @@ export function createExampleAddonApp({ core, runtime }) {
       : { error: throttleResult?.reason || "unknown" };
   }
 
+  const bulkImport = createBulkImportController({
+    core,
+    state,
+    syncPanel,
+    getDialogContentElement,
+    wait,
+  });
+
+  function handleUiActionError(action, error) {
+    setLastResult(action, { ok: false, reason: error?.message || "unknown_error" });
+    if (state.enabled) void syncPanel();
+  }
+
+  function handleDialogClosed(kind) {
+    if (kind === "panel") {
+      state.ui.panelOpen = false;
+      return;
+    }
+    if (kind === "bulk") {
+      if (state.enabled) void syncPanel();
+      return;
+    }
+    if (kind === "dialog") {
+      state.ui.dialogOpen = false;
+      if (state.enabled) void syncPanel();
+    }
+  }
+
+  function handleObserverNodes(detail) {
+    state.observer.eventCount += 1;
+    state.observer.lastBatchSize = Array.isArray(detail.nodes) ? detail.nodes.length : 0;
+    state.observer.lastNodeTags = Array.isArray(detail.nodes)
+      ? detail.nodes
+          .map((node) => String(node?.tagName || "").trim())
+          .filter(Boolean)
+          .slice(0, 5)
+      : [];
+    appendLog(
+      `observer.nodes: batch=${state.observer.lastBatchSize}, tags=${state.observer.lastNodeTags.join(", ") || "-"}`,
+    );
+    if (state.enabled) void syncPanel();
+  }
+
+  const uiBindings = createExampleUiBindings({
+    addonId: runtime.addonId,
+    isEnabled: () => state.enabled,
+    onAction: (action) => handleAction(action).catch((error) => handleUiActionError(action, error)),
+    onDockAction: (actionId) => handleDockAction(actionId).catch((error) => handleUiActionError(actionId, error)),
+  });
+  let lifecycle = null;
+  const commandController = createExampleCommandController({
+    core,
+    state,
+    getLifecycle: () => lifecycle,
+    bulkImport,
+    onDockAction: handleDockAction,
+    onDialogClosed: handleDialogClosed,
+    onObserverNodes: handleObserverNodes,
+    onError: (action, error, fallback) => {
+      setLastResult(action, { ok: false, reason: error?.message || fallback });
+    },
+  });
+
+  lifecycle = createExampleLifecycle({
+    onEnable: async ({ isCurrent }) => {
+      state.enabled = true;
+      await enableUi();
+      if (!isCurrent()) return { ok: false, reason: "enable_superseded" };
+      pushStatusUpdate();
+      await syncPanel();
+      return { ok: true };
+    },
+    onDisable: async () => {
+      state.enabled = false;
+      bulkImport.requestCancellation();
+      cancelOwnedTimeouts();
+      for (const node of ownedObserverNodes) node.remove?.();
+      ownedObserverNodes.clear();
+      await disableUi("disable");
+      pushStatusUpdate();
+      return { ok: true };
+    },
+    onRefresh: async ({ isCurrent }) => {
+      await refreshMetaSection();
+      if (!isCurrent()) return { ok: false, reason: "refresh_superseded" };
+      if (state.enabled) await syncPanel();
+      setLastResult("refresh-command", { ok: true });
+      return { ok: true };
+    },
+    onTeardown: async ({ reason }) => {
+      terminal = true;
+      state.enabled = false;
+      bulkImport.requestCancellation();
+      cancelOwnedTimeouts();
+      for (const node of ownedObserverNodes) node.remove?.();
+      ownedObserverNodes.clear();
+      await disableUi(reason);
+      commandController.unbind();
+      uiBindings.unbindPanelClicks();
+      uiBindings.unbindDockMountEvents();
+      return { ok: true };
+    },
+    onTeardownAcknowledged: async (reason) => {
+      notifyTeardownComplete(core, reason);
+    },
+  });
+
   async function handleAction(action) {
+    if (!state.enabled || terminal) return;
     switch (action) {
       case "meta-access": {
         const result = await getAddonAccess(core);
@@ -755,7 +523,7 @@ export function createExampleAddonApp({ core, runtime }) {
         break;
       }
       case "idb-bulk-put": {
-        const result = await runDummyBulkImport();
+        const result = await bulkImport.run();
         setLastResult(action, result);
         break;
       }
@@ -781,7 +549,7 @@ export function createExampleAddonApp({ core, runtime }) {
         break;
       }
       case "bulk-import-cancel": {
-        requestBulkImportCancellation();
+        bulkImport.requestCancellation();
         setLastResult(action, { ok: true, value: "cancellation requested" });
         return;
       }
@@ -820,6 +588,11 @@ export function createExampleAddonApp({ core, runtime }) {
         if (result?.ok) {
           state.observer.isWatching = true;
         }
+        setLastResult(action, result);
+        break;
+      }
+      case "observer-wait": {
+        const result = await waitForObserver(core, `${EXAMPLE_OBSERVER_ID}-wait`, "body", 1000);
         setLastResult(action, result);
         break;
       }
@@ -897,6 +670,16 @@ export function createExampleAddonApp({ core, runtime }) {
         setLastResult(action, result);
         break;
       }
+      case "dialog-update": {
+        const result = await updateDialog(core, EXAMPLE_DIALOG_ID, `${renderExampleDialog()}<p>Dialog content updated through <code>ui.dialog.update</code>.</p>`);
+        setLastResult(action, result);
+        break;
+      }
+      case "meta-page": {
+        const result = await getPageContext(core);
+        setLastResult(action, result ? { ok: true, value: result } : { ok: false, reason: "unsupported_action" });
+        break;
+      }
       case "dialog-confirm": {
         const result = await confirmDialog(core, {
           title: "ui.confirm example",
@@ -935,88 +718,6 @@ export function createExampleAddonApp({ core, runtime }) {
     await syncPanel();
   }
 
-  function bindPanelClicks() {
-    if (panelClickHandler) return;
-
-    panelClickHandler = (event) => {
-      const button = event.target?.closest?.("button[data-example-action]");
-      if (!button) return;
-
-      const action = String(button.dataset.exampleAction || "").trim();
-      if (!action) return;
-
-      event.preventDefault();
-      void handleAction(action).catch((error) => {
-        setLastResult(action, { ok: false, reason: error?.message || "unknown_error" });
-        if (state.enabled) {
-          void syncPanel();
-        }
-      });
-    };
-
-    document.addEventListener("click", panelClickHandler, true);
-  }
-
-  function unbindPanelClicks() {
-    if (!panelClickHandler) return;
-    document.removeEventListener("click", panelClickHandler, true);
-    panelClickHandler = null;
-  }
-
-  function resolveDockActionButton(event) {
-    const path = typeof event?.composedPath === "function" ? event.composedPath() : [];
-    let inExampleDock = false;
-    let actionEl = null;
-
-    for (const node of path) {
-      if (!node || node.nodeType !== 1) continue;
-
-      if (!inExampleDock) {
-        const role = String(node.getAttribute?.("data-role") || "").trim();
-        if (role === "exampleDock") {
-          inExampleDock = true;
-        }
-      }
-
-      if (!actionEl && typeof node.matches === "function" && node.matches("button[data-action]")) {
-        actionEl = node;
-      }
-
-      if (inExampleDock && actionEl) break;
-    }
-
-    if (!inExampleDock || !actionEl) return null;
-    return actionEl;
-  }
-
-  function bindDockMountEvents() {
-    if (dockClickHandler) return;
-
-    dockClickHandler = (event) => {
-      if (!state.enabled) return;
-      const actionEl = resolveDockActionButton(event);
-      if (!actionEl) return;
-
-      const action = String(actionEl.dataset.action || "").trim();
-      if (!action) return;
-
-      event.preventDefault();
-      if (action === "open-example") {
-        void handleAction("panel-open").catch((error) => {
-          setLastResult("panel-open", { ok: false, reason: error?.message || "unknown_error" });
-        });
-      }
-    };
-
-    window.addEventListener("click", dockClickHandler, true);
-  }
-
-  function unbindDockMountEvents() {
-    if (!dockClickHandler) return;
-    window.removeEventListener("click", dockClickHandler, true);
-    dockClickHandler = null;
-  }
-
   async function handleDockAction(actionId) {
     if (actionId === "show-toast") {
       await handleAction("toast-show");
@@ -1031,98 +732,27 @@ export function createExampleAddonApp({ core, runtime }) {
     }
   }
 
-  function bindAddonCommands() {
-    unbindAddonCommands = bindRuntimeCommands(core, (detail) => {
-      const command = String(detail.command || "").trim();
-      switch (command) {
-        case "enable":
-          void setEnabled(true);
-          break;
-        case "disable":
-          void setEnabled(false);
-          break;
-        case "refresh":
-          void refreshMetaSection()
-            .then(() => syncPanel())
-            .then(() => setLastResult("refresh-command", { ok: true }))
-            .catch((error) =>
-              setLastResult("refresh-command", {
-                ok: false,
-                reason: error?.message || "refresh_failed",
-              }),
-            );
-          break;
-        case "dock-action":
-          void handleDockAction(String(detail.actionId || "").trim());
-          break;
-        case "dialog-closed":
-          if (String(detail.dialogId || "").trim() === EXAMPLE_PANEL_DIALOG_ID) {
-            state.ui.panelOpen = false;
-            return;
-          }
-          if (String(detail.dialogId || "").trim() === EXAMPLE_BULK_PROGRESS_DIALOG_ID) {
-            if (activeBulkImport && !activeBulkImport.closing) {
-              activeBulkImport.cancelled = true;
-              updateBulkImportSummary({
-                status: "cancelling",
-                cancelled: true,
-              });
-              if (state.enabled) void syncPanel();
-            }
-            return;
-          }
-          if (String(detail.dialogId || "").trim() === EXAMPLE_DIALOG_ID) {
-            state.ui.dialogOpen = false;
-            if (state.enabled) void syncPanel();
-          }
-          break;
-        case "observer.nodes":
-          if (String(detail.observerId || "").trim() === EXAMPLE_OBSERVER_ID) {
-            state.observer.eventCount += 1;
-            state.observer.lastBatchSize = Array.isArray(detail.nodes) ? detail.nodes.length : 0;
-            state.observer.lastNodeTags = Array.isArray(detail.nodes)
-              ? detail.nodes
-                  .map((node) => String(node?.tagName || "").trim())
-                  .filter(Boolean)
-                  .slice(0, 5)
-              : [];
-            appendLog(
-              `observer.nodes: batch=${state.observer.lastBatchSize}, tags=${state.observer.lastNodeTags.join(", ") || "-"}`,
-            );
-            if (state.enabled) void syncPanel();
-          }
-          break;
-        case "teardown":
-          void teardownAddon(String(detail.reason || "teardown"));
-          break;
-        default:
-          break;
-      }
-    });
-  }
-
-  async function teardownAddon(reason = "teardown") {
-    await disableUi(reason);
-    if (reason !== "disable") {
-      unbindAddonCommands();
-      unbindPanelClicks();
-      unbindDockMountEvents();
-    }
-    notifyTeardownComplete(core, reason);
-  }
-
   async function bootstrap() {
-    bindPanelClicks();
-    bindAddonCommands();
+    uiBindings.bindPanelClicks();
+    commandController.bind();
     registerAddon();
 
-    await enableUi();
+    const access = await getAddonAccess(core);
+    if (!access?.ok || access.value?.blocked) {
+      state.enabled = false;
+      pushStatusUpdate();
+      return;
+    }
+
     await refreshMetaSection();
-    pushStatusUpdate();
+    await lifecycle.enable();
     setLastResult("bootstrap", { ok: true, value: "example addon ready" });
   }
 
   return {
     bootstrap,
+    getRuntimeSnapshot: () => lifecycle?.getSnapshot?.() || null,
+    getResourceSnapshot: () => lifecycle?.getResourceSnapshot?.() || [],
+    getPendingOperationSnapshot: () => lifecycle?.getPendingOperationSnapshot?.() || [],
   };
 }

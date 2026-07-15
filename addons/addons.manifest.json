@@ -4,7 +4,7 @@
       "id": "image-repair-addon",
       "name": "F95UE Image Repair Add-on",
       "description": "Automatically retries broken attachment images on F95Zone threads.",
-      "version": "0.2.3",
+      "version": "0.2.4",
       "author": "X Death",
       "entry": "addons/image-repair-addon/src/main.js",
       "outfile": "addons/image-repair-addon/dist/image-repair-addon.user.js",
@@ -16,6 +16,11 @@
       ],
       "runAt": "document-idle",
       "requiresCore": true,
+      "runtimeMode": "core-required",
+      "pageScopes": [
+        "thread"
+      ],
+      "downloadUrl": "https://greasyfork.org/en/scripts/572502-f95ue-image-repair-add-on",
       "capabilities": [
         "toast",
         "feature",
@@ -29,7 +34,7 @@
       "id": "masked-direct-addon",
       "name": "F95UE Masked + Direct Download Add-on",
       "description": "Combines masked-link skipper and direct-download flows into one trusted add-on.",
-      "version": "0.3.46",
+      "version": "0.3.47",
       "author": "X Death",
       "entry": "addons/masked-direct-addon/src/main.js",
       "outfile": "addons/masked-direct-addon/dist/masked-direct-addon.user.js",
@@ -59,10 +64,17 @@
       ],
       "runAt": "document-idle",
       "requiresCore": true,
+      "runtimeMode": "hybrid",
+      "pageScopes": [
+        "f95zone"
+      ],
+      "downloadUrl": "https://greasyfork.org/en/scripts/572503-f95ue-masked-direct-download-add-on",
       "capabilities": [
         "toast",
         "feature",
         "storage",
+        "page",
+        "observer",
         "ui",
         "ui.style"
       ]
@@ -71,7 +83,7 @@
       "id": "library-addon",
       "name": "F95UE Library Add-on",
       "description": "Quick-add threads to a personal library and manage entries with a dedicated add-on UI.",
-      "version": "0.3.54",
+      "version": "0.3.55",
       "author": "X Death",
       "entry": "addons/library-addon/src/main.js",
       "outfile": "addons/library-addon/dist/library-addon.user.js",
@@ -83,10 +95,16 @@
       ],
       "runAt": "document-idle",
       "requiresCore": true,
+      "runtimeMode": "core-required",
+      "pageScopes": [
+        "f95zone"
+      ],
+      "downloadUrl": "https://greasyfork.org/en/scripts/572506-f95ue-library-add-on",
       "capabilities": [
         "toast",
         "feature",
         "storage",
+        "page",
         "idb",
         "ui",
         "ui.mount",
@@ -96,9 +114,12 @@
     },
     {
       "id": "example-addon",
+      "legacyIds": [
+        "example-addon-legacy"
+      ],
       "name": "F95UE Example Add-on",
       "description": "Core API playground demonstrating every current addon-facing action through api modules.",
-      "version": "0.2.8",
+      "version": "0.2.9",
       "author": "X Death",
       "entry": "addons/example-addon/src/main.js",
       "outfile": "addons/example-addon/dist/example-addon.user.js",
@@ -110,10 +131,16 @@
       ],
       "runAt": "document-idle",
       "requiresCore": true,
+      "runtimeMode": "core-required",
+      "pageScopes": [
+        "f95zone"
+      ],
+      "downloadUrl": "https://greasyfork.org/en/scripts/583616-f95ue-example-add-on",
       "capabilities": [
         "toast",
         "feature",
         "storage",
+        "page",
         "observer",
         "idb",
         "ui.style",
@@ -139,10 +166,17 @@
       ],
       "runAt": "document-idle",
       "requiresCore": true,
+      "runtimeMode": "core-required",
+      "pageScopes": [
+        "latest"
+      ],
+      "downloadUrl": "https://greasyfork.org/en/scripts/573076-f95ue-latest-filters-add-on",
       "capabilities": [
         "toast",
         "feature",
         "storage",
+        "page",
+        "observer",
         "ui",
         "ui.style",
         "ui.mount",
@@ -153,7 +187,7 @@
       "id": "halloween-theme-addon",
       "name": "F95UE Halloween Theme Add-on",
       "description": "Forces Halloween logo/background theme with simple apply and teardown lifecycle.",
-      "version": "2.0.12",
+      "version": "2.0.13",
       "author": "X Death",
       "entry": "addons/halloween-theme-addon/src/main.js",
       "outfile": "addons/halloween-theme-addon/dist/halloween-theme-addon.user.js",
@@ -165,8 +199,14 @@
       ],
       "runAt": "document-idle",
       "requiresCore": true,
+      "runtimeMode": "core-required",
+      "pageScopes": [
+        "f95zone"
+      ],
+      "downloadUrl": "https://greasyfork.org/en/scripts/573070-f95ue-halloween-theme-add-on",
       "capabilities": [
-        "feature"
+        "feature",
+        "ui.style"
       ]
     }
   ]

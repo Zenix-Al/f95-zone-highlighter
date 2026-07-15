@@ -12,16 +12,28 @@ const {
   validateFeatureManifestEntries,
 } = require("../scripts/featureManifest.cjs");
 const coreAudit = require("../scripts/core-source-audit.cjs");
+const coreSizeGate = require("../scripts/core-size-gate.cjs");
 const cssAudit = require("../scripts/css-audit.cjs");
+const addonBaseline = require("../scripts/addon-baseline.cjs");
+const addonApiAudit = require("../scripts/addon-api-audit.cjs");
+const addonCatalog = require("../scripts/addon-catalog.cjs");
+const addonBuildTools = require("../scripts/addon-build-tools.cjs");
+const addonBuilder = require("../addons/build-addon.js");
 
 const ROOT = path.join(__dirname, "..");
 const TMP_DIR = path.join(__dirname, ".tmp");
+const ADDON_MANIFEST = JSON.parse(
+  fs.readFileSync(path.join(ROOT, "addons", "addons.manifest.json"), "utf8"),
+);
+const TRUSTED_ADDON_CATALOG = JSON.parse(
+  fs.readFileSync(path.join(ROOT, "src", "services", "addons", "trusted-catalog.json"), "utf8"),
+);
 
 if (!fs.existsSync(TMP_DIR)) {
   fs.mkdirSync(TMP_DIR, { recursive: true });
 }
 
-function loadModule(relativePath) {
+function loadModule(relativePath, options = {}) {
   const entry = path.join(ROOT, relativePath);
   const outFile = path.join(
     TMP_DIR,
@@ -33,6 +45,7 @@ function loadModule(relativePath) {
     bundle: true,
     format: "cjs",
     platform: "node",
+    loader: options.loader,
     define: {
       __F95UE_DEBUG__: "false",
     },
@@ -62,6 +75,35 @@ function runTest(name, testFn) {
   });
 }
 
+function collectJavaScriptFiles(directory) {
+  if (!fs.existsSync(directory)) return [];
+  return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    if (entry.isDirectory() && entry.name === "dist") return [];
+    const filePath = path.join(directory, entry.name);
+    if (entry.isDirectory()) return collectJavaScriptFiles(filePath);
+    return entry.isFile() && filePath.endsWith(".js") ? [filePath] : [];
+  });
+}
+
+async function seedReadyConfig(gm, settings, config) {
+  const data = JSON.parse(JSON.stringify(config));
+  const tags = data.tags || [];
+  const prefixes = data.prefixes || { items: [], categories: {} };
+  data.tags = [];
+  data.prefixes = { items: [], categories: {} };
+  await gm.setValue(settings.CONFIG_ENVELOPE_KEY, {
+    schemaVersion: 1,
+    revision: 1,
+    writerId: "ready-fixture",
+    updatedAt: 1,
+    data,
+  });
+  await gm.setValue(settings.CONFIG_BACKUP_KEY, null);
+  await gm.setValue(settings.CONFIG_MIGRATION_VERSION_KEY, 1);
+  await gm.setValue(settings.CONFIG_TAGS_CACHE_KEY, tags);
+  await gm.setValue(settings.CONFIG_PREFIXES_CACHE_KEY, prefixes);
+}
+
 const { createStateManager } = loadModule("src/core/StateManager.js");
 const { pageDefinitions } = loadModule("src/config.js");
 const { featureMatchesPageScopes } = loadModule("src/core/featureScope.js");
@@ -74,12 +116,12 @@ const {
 } = loadModule("src/core/routeState.js");
 const { runBootstrapPipeline } = loadModule("src/core/bootstrap.js");
 const {
+  CONFIG_SCHEMA,
   getConfigPathMetadata,
   getDefaultConfig,
   getExportableConfigKeys,
   getPersistedConfigPaths,
   getSchemaPathIndex,
-  getSyncedConfigPaths,
   mergeWithDefaults,
   sanitizeConfig,
   validateConfig,
@@ -162,7 +204,12 @@ const { setByPath } = loadModule("src/utils/objectPath.js");
 const { flushQueuedToasts, showToast } = loadModule(
   "src/ui/components/toast.js",
 );
-const { isAddonOwnedObserverNode } = loadModule(
+const {
+  isAddonOwnedObserverNode,
+  normalizeObserverWaitSelector,
+  unwatchAddonObserver,
+  waitForAddonObserver,
+} = loadModule(
   "src/services/addons/observer.js",
 );
 const {
@@ -174,6 +221,7 @@ const {
 const { createAddonDockGroup } = loadModule(
   "src/ui/components/addons/addonDockGroup.js",
 );
+const { invokeOptionalCoreAction } = loadModule("addons/shared/apiFallback.js");
 const { normalizePrefixesFromLatestUpdates } = loadModule(
   "src/services/prefixService.js",
 );
@@ -446,6 +494,29 @@ runTest("CORE-LEAN-BASE-01 reports deterministic cycles and orphan exports as hi
   } finally { fs.rmSync(fixtureRoot, { recursive: true, force: true }); }
 });
 
+runTest("CORE-DEAD-CODE-01 audit fixtures distinguish static imports from strings and events", () => {
+  const fixtureRoot = fs.mkdtempSync(path.join(TMP_DIR, "core-dead-code-reachability-"));
+  try {
+    const files = {
+      "src/core/entry.js": "import { staticValue } from './static.js'; export const entry = staticValue;\n",
+      "src/core/static.js": "export const staticValue = true;\n",
+      "src/core/stringAndEvent.js": "const action = 'dynamic-action'; window.addEventListener('dynamic-event', () => action);\n",
+      "src/core/dynamic.js": "export const dynamicValue = true;\n",
+    };
+    for (const [relative, source] of Object.entries(files)) {
+      const target = path.join(fixtureRoot, relative);
+      fs.mkdirSync(path.dirname(target), { recursive: true });
+      fs.writeFileSync(target, source);
+    }
+    const report = coreAudit.auditCoreSource(fixtureRoot);
+    const byPath = new Map(report.graph.files.map((file) => [file.path, file]));
+    assert.strictEqual(byPath.get("src/core/static.js").fanIn, 1);
+    assert.strictEqual(byPath.get("src/core/dynamic.js").fanIn, 0);
+    assert.ok(report.graph.orphanFiles.includes("src/core/dynamic.js"));
+    assert.ok(!report.graph.orphanFiles.includes("src/core/static.js"));
+  } finally { fs.rmSync(fixtureRoot, { recursive: true, force: true }); }
+});
+
 runTest("CORE-LEAN-BASE-01 compares baseline size fields with deterministic deltas", () => {
   const current = {
     authored: { authoredBytes: 120 },
@@ -467,12 +538,93 @@ runTest("CORE-LEAN-BASE-01 compares baseline size fields with deterministic delt
   assert.deepStrictEqual(comparison.uglifiedGzipBytes, { current: 140, baseline: 150, delta: -10 });
 });
 
+runTest("CORE-SIZE-GATE-01 allows tiny core growth and excludes add-on bundle growth", () => {
+  const baseline = {
+    authored: {
+      authoredBytes: 10000,
+      bytesByArea: { config: 4000, core: 2000, services: 2000, features: 1000, ui: 1000 },
+      bytesByFile: { "src/config/base.js": 4000 },
+      graph: { cycles: [], crossBoundaryImports: [] },
+    },
+    bundle: {
+      readable: { bytes: 20000, coreBytes: 10000, gzipBytes: 5000 },
+      uglified: { bytes: 12000, coreBytes: 5000, gzipBytes: 3500 },
+    },
+  };
+  const current = JSON.parse(JSON.stringify(baseline));
+  current.authored.authoredBytes += 100;
+  current.authored.bytesByArea.config += 100;
+  current.authored.bytesByFile["src/config/base.js"] += 100;
+  current.bundle.readable.bytes += 100000;
+  current.bundle.uglified.bytes += 100000;
+  current.bundle.readable.gzipBytes += 1000;
+  current.bundle.uglified.gzipBytes += 1000;
+  const result = coreSizeGate.evaluateGate(current, baseline);
+  assert.strictEqual(result.passed, true);
+  assert.strictEqual(result.metrics.readable.delta, 0);
+  assert.strictEqual(result.metrics.gzip.readable.informational, true);
+});
+
+runTest("CORE-SIZE-GATE-01 reports meaningful growth with owning files", () => {
+  const baseline = {
+    authored: {
+      bytesByArea: { config: 4000, core: 2000 },
+      bytesByFile: { "src/config/base.js": 4000 },
+      graph: { cycles: [], crossBoundaryImports: [{ from: "config", to: "core", count: 1, examples: [] }] },
+    },
+    bundle: {
+      readable: { bytes: 20000, coreBytes: 10000, gzipBytes: 5000 },
+      uglified: { bytes: 12000, coreBytes: 5000, gzipBytes: 3500 },
+    },
+  };
+  const current = JSON.parse(JSON.stringify(baseline));
+  current.authored.bytesByArea.config += 2000;
+  current.authored.bytesByFile["src/config/new.js"] = 2000;
+  current.bundle.readable.coreBytes += 3000;
+  current.bundle.uglified.coreBytes += 1500;
+  const result = coreSizeGate.evaluateGate(current, baseline);
+  assert.strictEqual(result.passed, false);
+  assert.ok(result.failures.some((failure) => failure.includes("authored:config") && failure.includes("src/config/new.js")));
+  assert.ok(result.failures.some((failure) => failure.includes("readable-core-input")));
+  assert.ok(result.largestPositiveDeltas.some((entry) => entry.path === "src/config/new.js"));
+});
+
+runTest("CORE-SIZE-GATE-01 rejects new cycles and import directions", () => {
+  const baseline = {
+    authored: { bytesByArea: {}, bytesByFile: {}, graph: { cycles: [], crossBoundaryImports: [] } },
+    bundle: { readable: { coreBytes: 0, bytes: 0, gzipBytes: 0 }, uglified: { coreBytes: 0, bytes: 0, gzipBytes: 0 } },
+  };
+  const current = JSON.parse(JSON.stringify(baseline));
+  current.authored.graph.cycles = ["src/core/a.js -> src/core/b.js"];
+  current.authored.graph.crossBoundaryImports = [{ from: "core", to: "services", count: 1, examples: [{ from: "src/core/a.js", to: "src/services/b.js" }] }];
+  const result = coreSizeGate.evaluateGate(current, baseline);
+  assert.strictEqual(result.passed, false);
+  assert.ok(result.failures.some((failure) => failure.includes("new import cycles")));
+  assert.ok(result.failures.some((failure) => failure.includes("core->services")));
+});
+
+runTest("CORE-SIZE-GATE-01 baseline updates require a rationale", () => {
+  const fixtureRoot = fs.mkdtempSync(path.join(TMP_DIR, "core-size-gate-rationale-"));
+  try {
+    assert.throws(() => coreSizeGate.rationaleRecord(fixtureRoot, null, null), /require/);
+    const rationale = path.join(fixtureRoot, "rationale.md");
+    fs.writeFileSync(rationale, "Accepted after reviewing the core-only baseline.\n");
+    const result = coreSizeGate.rationaleRecord(fixtureRoot, rationale, null);
+    assert.strictEqual(result.type, "file");
+    assert.strictEqual(result.path, "rationale.md");
+  } finally { fs.rmSync(fixtureRoot, { recursive: true, force: true }); }
+});
+
 runTest("CORE-LEAN-BASE-01 smoke builds report sizes without mutating tracked state", async () => {
   const beforeStatus = childProcess.execFileSync("git", ["status", "--short"], { cwd: ROOT, encoding: "utf8" });
   const beforeVersion = fs.readFileSync(path.join(ROOT, "version.json"));
   const result = await coreAudit.runCoreSmokeBuild({ rootDir: ROOT });
   assert.ok(result.readable.bytes > result.uglified.bytes);
+  assert.ok(Number.isInteger(result.readable.coreBytes));
+  assert.ok(result.readable.coreBytes < result.readable.bytes);
   assert.ok(result.readable.gzipBytes > 0);
+  assert.ok(Number.isInteger(result.uglified.coreBytes));
+  assert.ok(result.uglified.coreBytes < result.uglified.bytes);
   assert.ok(result.uglified.gzipBytes > 0);
   assert.ok(result.uglified.contributors.length > 0);
   assert.strictEqual(childProcess.execFileSync("git", ["status", "--short"], { cwd: ROOT, encoding: "utf8" }), beforeStatus);
@@ -785,7 +937,7 @@ runTest("CONFIG-01 schema covers defaults, metadata, and deterministic pure APIs
       items: [{ id: 1, name: "Example", class: "example" }],
       categories: { games: [{ id: null, name: "Games", prefixIds: [1] }] },
     },
-    globalSettings: { enableCrossTabSync: true },
+    globalSettings: { configVisibility: false },
     addons: {
       byAddon: { "example-addon": { state: { enabled: true, mode: "safe" } } },
       installedMeta: { "example-addon": { name: "Example", version: "1.0", installedSeenAt: 1, lastSeenAt: 2 } },
@@ -809,21 +961,8 @@ runTest("CONFIG-01 schema covers defaults, metadata, and deterministic pure APIs
     "threadSettings",
   ].sort());
   assert.strictEqual(getExportableConfigKeys().includes("metrics"), false);
-  assert.deepStrictEqual(getSyncedConfigPaths().sort(), [
-    "addons",
-    "color",
-    "excludedTags",
-    "globalSettings",
-    "latestSettings",
-    "markedTags",
-    "overlaySettings",
-    "preferredTags",
-    "tags",
-    "threadSettings",
-  ].sort());
-  assert.strictEqual(getSyncedConfigPaths().includes("metrics"), false);
   assert.strictEqual(getConfigPathMetadata("latestSettings.priorityWeights.rating").exportable, true);
-  assert.strictEqual(getConfigPathMetadata("addons.byAddon.example-addon.state.enabled").syncable, true);
+  assert.strictEqual(Object.hasOwn(getConfigPathMetadata("addons.byAddon.example-addon.state.enabled"), "syncable"), false);
   assert.strictEqual(getConfigPathMetadata("missing.path"), null);
   assert.ok(getSchemaPathIndex()["latestSettings.tagModifiers.preferred"]);
 
@@ -831,6 +970,22 @@ runTest("CONFIG-01 schema covers defaults, metadata, and deterministic pure APIs
   assert.strictEqual(merged.latestSettings.autoRefresh, true);
   assert.strictEqual(typeof merged.latestSettings.minVersion, "number");
   assert.notStrictEqual(merged.latestSettings, defaults.latestSettings);
+});
+
+runTest("CORE-CONFIG-RUNTIME-LEAN-01 keeps descriptor defaults and metadata covered", () => {
+  const defaults = getDefaultConfig();
+  for (const [key, descriptor] of Object.entries(CONFIG_SCHEMA)) {
+    assert.ok(Object.hasOwn(defaults, key), key);
+    assert.deepStrictEqual(defaults[key], descriptor.defaultValue, key);
+  }
+
+  assert.ok(getConfigPathMetadata("tags[3].id"));
+  assert.ok(getConfigPathMetadata("prefixes.categories.games[3].prefixIds[2]"));
+  assert.strictEqual(getConfigPathMetadata("addons.byAddon.example-addon.state.enabled").persisted, true);
+
+  const schemaSource = fs.readFileSync(path.join(ROOT, "src/config/schema.js"), "utf8");
+  assert.doesNotMatch(schemaSource, /\bPATH_INDEX\b/);
+  assert.doesNotMatch(schemaSource, /\bconst DEFAULTS\b/);
 });
 
 runTest("CONFIG-01 strict mode covers nested constraints and feature validators", () => {
@@ -882,6 +1037,7 @@ runTest("CORE-METRICS-REMOVE-01 drops persisted metrics while preserving valid s
       updatedAt: 4,
       data,
     });
+    await gm.setValue(settings.CONFIG_MIGRATION_VERSION_KEY, 1);
     const before = JSON.stringify(gm.snapshot());
     const loaded = await settings.loadConfig();
     assert.strictEqual(loaded.status, "sanitized");
@@ -1643,6 +1799,124 @@ runTest("OBSERVE health events redact details, deduplicate, and cap retention", 
   assert.ok(getHealthEvents().length <= 100);
 });
 
+runTest("ADDON-API-EXTENSIONS-01 keeps approved descriptors bounded and cancellable", async () => {
+  const descriptors = new Map(getRegisteredAddonActionSnapshot().map((entry) => [entry.id, entry]));
+  assert.deepStrictEqual(
+    ["page.getContext", "observer.waitFor", "ui.dialog.update"].map((id) => descriptors.get(id)?.id),
+    ["page.getContext", "observer.waitFor", "ui.dialog.update"],
+  );
+  assert.deepStrictEqual(descriptors.get("page.getContext"), {
+    id: "page.getContext",
+    protocolVersion: 1,
+    requiredCapabilities: ["page"],
+    timeoutMs: 5000,
+    auditCategory: "page",
+    scopePolicy: "runtime",
+    ownership: "request-scoped-read-only",
+    cleanup: "none; no live references or resources are returned",
+  });
+  assert.deepStrictEqual(descriptors.get("observer.waitFor"), {
+    id: "observer.waitFor",
+    protocolVersion: 1,
+    requiredCapabilities: ["observer"],
+    timeoutMs: 5000,
+    auditCategory: "observer",
+    scopePolicy: "runtime",
+    ownership: "addon-scoped one-shot observer subscription",
+    cleanup: "remove on match, timeout, unwatch, or addon teardown",
+  });
+  assert.deepStrictEqual(descriptors.get("ui.dialog.update"), {
+    id: "ui.dialog.update",
+    protocolVersion: 1,
+    requiredCapabilities: ["ui", "ui.dialog"],
+    timeoutMs: 5000,
+    auditCategory: "ui",
+    scopePolicy: "runtime",
+    ownership: "addon-owned dialog content",
+    cleanup: "dialog teardown removes the owned entry; update fails after ownership ends",
+  });
+  assert.strictEqual(isAddonActionAllowed(new Set(["storage"]), "page.getContext"), false);
+  assert.strictEqual(isAddonActionAllowed(new Set(["page"]), "page.getContext"), true);
+  assert.strictEqual(normalizeObserverWaitSelector(".content-block_filter-title"), ".content-block_filter-title");
+  assert.strictEqual(normalizeObserverWaitSelector("div, body"), "");
+  assert.strictEqual(normalizeObserverWaitSelector(":has(*)"), "");
+
+  let fallbackCalled = false;
+  const fallbackResult = await invokeOptionalCoreAction(
+    {
+      invokeCoreAction: async (action, payload, timeoutMs) => {
+        assert.strictEqual(action, "observer.waitFor");
+        assert.deepStrictEqual(payload, { observerId: "legacy", selector: "body", timeoutMs: 3000 });
+        assert.strictEqual(timeoutMs, 3500);
+        return { ok: false, reason: "unsupported_action" };
+      },
+    },
+    "observer.waitFor",
+    { observerId: "legacy", selector: "body", timeoutMs: 3000 },
+    async () => {
+      fallbackCalled = true;
+      return { ok: true, value: { matched: true, fallback: true } };
+    },
+    3500,
+  );
+  assert.strictEqual(fallbackCalled, true);
+  assert.deepStrictEqual(fallbackResult, { ok: true, value: { matched: true, fallback: true } });
+
+  const pageResult = await invokeRegisteredAddonCoreAction({
+    addonId: "example-addon",
+    action: "page.getContext",
+    payload: {},
+    allowed: new Set(["page"]),
+    deps: {},
+    limits: {},
+    authorize: () => null,
+  });
+  assert.strictEqual(pageResult.ok, true);
+  assert.ok(Number.isInteger(pageResult.value.routeGeneration));
+  assert.ok(Array.isArray(pageResult.value.pageScopes));
+
+  const invalidWait = await invokeRegisteredAddonCoreAction({
+    addonId: "example-addon",
+    action: "observer.waitFor",
+    payload: { observerId: "invalid", selector: "body" },
+    allowed: new Set(["observer"]),
+    deps: {},
+    limits: {},
+    authorize: () => null,
+  });
+  assert.deepStrictEqual(invalidWait, { ok: false, reason: "timeout_required" });
+
+  const sandbox = createDomSandbox();
+  try {
+    const immediate = await waitForAddonObserver("api-test", {
+      observerId: "immediate",
+      selector: "body",
+      timeoutMs: 1000,
+    });
+    assert.deepStrictEqual(immediate, {
+      ok: true,
+      value: { observerId: "immediate", matched: true },
+    });
+
+    const pending = waitForAddonObserver("api-test", {
+      observerId: "cancelled",
+      selector: ".api-test-never-mounted",
+      timeoutMs: 1000,
+    });
+    assert.deepStrictEqual(unwatchAddonObserver("api-test", { observerId: "cancelled" }), {
+      ok: true,
+      observerId: "cancelled",
+    });
+    assert.deepStrictEqual(await pending, {
+      ok: false,
+      reason: "cancelled",
+      value: { observerId: "cancelled" },
+    });
+  } finally {
+    sandbox.restore();
+  }
+});
+
 runTest("OBSERVE diagnostics providers return snapshots on demand", () => {
   const unregister = registerDiagnosticsProvider("observe-test", () => ({ count: 2 }));
   assert.deepStrictEqual(getHealthDiagnostics().snapshots["observe-test"], { count: 2 });
@@ -2129,6 +2403,1195 @@ runTest("ADDON-BRIDGE protocol rejects malformed envelopes and replay IDs", () =
   );
 });
 
+runTest("ADDON-BASELINE-01 records deterministic metadata, behavior, and size evidence", async () => {
+  const before = addonBaseline.snapshotWorkingTree();
+  const first = await addonBaseline.createBaseline();
+  const second = await addonBaseline.createBaseline();
+  const committed = JSON.parse(fs.readFileSync(path.join(ROOT, "docs/architecture/addon-baseline.json"), "utf8"));
+
+  assert.deepStrictEqual(first, second);
+  assert.deepStrictEqual(first, committed);
+  assert.deepStrictEqual(
+    first.manifest.entries.map((entry) => entry.id).sort(),
+    first.addons.map((entry) => entry.id).sort(),
+  );
+  assert.strictEqual(new Set(first.publicActions.map((action) => action.id)).size, first.publicActions.length);
+  assert.ok(first.behaviorSnapshots.registration);
+  assert.ok(first.behaviorSnapshots.teardown);
+  assert.strictEqual(first.coreServiceFootprint.addonsService.fileCount, 1);
+  assert.ok(first.coreServiceFootprint.servicesAddons.authoredBytes > 0);
+  assert.ok(first.coreServiceFootprint.uiIntegration.authoredBytes > 0);
+  assert.strictEqual(first.deterministic.outputHasTimestamps, false);
+  assert.strictEqual(first.deterministic.outputHasAbsolutePaths, false);
+  assert.deepStrictEqual(addonBaseline.snapshotWorkingTree(), before);
+});
+
+runTest("ADDON-API-AUDIT-01 covers every add-on and bounds the next API package", () => {
+  const first = addonApiAudit.createAuditReport();
+  const second = addonApiAudit.createAuditReport();
+  assert.deepStrictEqual(first, second);
+  assert.strictEqual(first.inventory.coverage.everyManifestAddonInventoried, true);
+  assert.strictEqual(first.inventory.coverage.rawActionIdsAccountedFor, true);
+  assert.strictEqual(first.inventory.addOns.length, ADDON_MANIFEST.addons.length);
+  assert.ok(first.rawActions.some((entry) => entry.id === "ui.dialog.close" && entry.callSites.length > 0));
+  assert.ok(first.inventory.addOns.some((entry) => entry.id === "masked-direct-addon" && entry.directGmAccess.length > 0));
+  assert.ok(first.inventory.addOns.some((entry) => entry.id === "latest-filters-addon" && entry.urlAndPageParsing.length > 0));
+  for (const candidate of first.candidates.filter((entry) => entry.decision === "implement")) {
+    assert.ok(candidate.consumerCount >= 2, `${candidate.candidateActionId} needs two consumers`);
+    assert.ok(candidate.payloadBounds && candidate.resultBounds);
+    assert.ok(candidate.ownershipCleanup);
+  }
+  assert.deepStrictEqual(first.approvedNextPackage, [
+    "page.getContext",
+    "observer.waitFor",
+    "ui.dialog.update",
+    "addons.shared.cancellableTask",
+  ]);
+  assert.strictEqual(first.security.publicActionChanges, 0);
+  assert.match(first.security.registrationHandshake, /preserved/);
+  assert.strictEqual(
+    addonApiAudit.renderMarkdown(first),
+    fs.readFileSync(path.join(ROOT, "docs/architecture/addon-api-audit.md"), "utf8"),
+  );
+});
+
+runTest("ADDON-BUILD-TOOLS-01 validates manifest paths and metadata rules", () => {
+  const manifest = ADDON_MANIFEST.addons.map((addon) => ({ ...addon, capabilities: [...addon.capabilities], matches: [...addon.matches], grants: [...addon.grants] }));
+  const invalid = { ...manifest[0], entry: "addons/wrong/src/index.js", grants: ["none", "GM_setValue"], capabilities: ["not-a-capability"], runAt: "tomorrow" };
+  const errors = addonCatalog.validateManifest([invalid], { checkFiles: false });
+  assert.ok(errors.some((error) => error.startsWith("addons[0].entry:")));
+  assert.ok(errors.some((error) => error.startsWith("addons[0].grants:")));
+  assert.ok(errors.some((error) => error.startsWith("addons[0].capabilities:")));
+  assert.ok(errors.some((error) => error.startsWith("addons[0].runAt:")));
+
+  const legacyCollision = { ...manifest[1], legacyIds: [manifest[0].id] };
+  assert.ok(addonCatalog.validateManifest([manifest[0], legacyCollision], { checkFiles: false })
+    .some((error) => error.startsWith("addons[1].legacyIds:")));
+});
+
+runTest("ADDON-BUILD-TOOLS-01 accepts canonical and documented tiny layouts", () => {
+  assert.deepStrictEqual(addonBuildTools.validateStructure(ADDON_MANIFEST.addons), []);
+  const tempRoot = fs.mkdtempSync(path.join(TMP_DIR, "addon-structure-"));
+  try {
+    const mainPath = path.join(tempRoot, "addons", "tiny-addon", "src", "main.js");
+    fs.mkdirSync(path.dirname(mainPath), { recursive: true });
+    fs.writeFileSync(mainPath, "console.log('tiny');\n");
+    assert.deepStrictEqual(
+      addonBuildTools.validateStructure([
+        {
+          id: "tiny-addon",
+          entry: "addons/tiny-addon/src/main.js",
+          outfile: "addons/tiny-addon/dist/tiny-addon.user.js",
+        },
+      ], { rootDir: tempRoot }),
+      [],
+    );
+  } finally {
+    fs.rmSync(tempRoot, { recursive: true, force: true });
+  }
+});
+
+runTest("ADDON-BUILD-TOOLS-01 smoke builds every add-on in regular and release modes", async () => {
+  const before = addonBaseline.snapshotWorkingTree();
+  const report = await addonBuildTools.runSmokeBuild();
+  assert.strictEqual(report.selectedAddons.length, ADDON_MANIFEST.addons.length);
+  assert.strictEqual(report.builds.length, ADDON_MANIFEST.addons.length * 2);
+  assert.deepStrictEqual(report.modes, ["regular", "release"]);
+  assert.ok(report.builds.every((build) => build.metafile === "<temporary>"));
+  assert.ok(report.builds.every((build) => build.outputHasTimestamps === false));
+  assert.ok(report.builds.every((build) => build.outputHasAbsolutePaths === false));
+  assert.strictEqual(report.validation.unchanged, true);
+  assert.deepStrictEqual(addonBaseline.snapshotWorkingTree(), before);
+});
+
+runTest("ADDON-BUILD-TOOLS-01 preserves current release stripping behavior", async () => {
+  const addon = ADDON_MANIFEST.addons.find((entry) => entry.id === "image-repair-addon");
+  const tempRoot = fs.mkdtempSync(path.join(TMP_DIR, "addon-release-strip-"));
+  try {
+    const regular = await addonBuilder.buildAddonToPath(addon, false, {
+      outputPath: path.join(tempRoot, "regular.user.js"),
+      deterministicHeader: true,
+    });
+    const release = await addonBuilder.buildAddonToPath(addon, true, {
+      outputPath: path.join(tempRoot, "release.user.js"),
+      deterministicHeader: true,
+    });
+    const debugCall = /(?:^|[;{}\n])\s*(?:void\s+|await\s+)?debugLog\s*\(/;
+    assert.match(regular.code, debugCall);
+    assert.doesNotMatch(release.code, debugCall);
+    assert.strictEqual(release.header, regular.header);
+    assert.strictEqual(require("../stripDebugLogs").stripDebugLogs.name, "strip-debug-logs");
+  } finally {
+    fs.rmSync(tempRoot, { recursive: true, force: true });
+  }
+});
+
+runTest("ADDON-BUILD-TOOLS-01 normalizes Windows and POSIX metafile paths", () => {
+  const normalized = addonBuildTools.normalizeMetafile({
+    inputs: {
+      "D:\\programming\\js\\userscript\\latest highlighter\\addons\\tiny\\src\\main.js": { bytesInOutput: 1 },
+      "addons/tiny/src/other.js": { bytesInOutput: 2 },
+    },
+    outputs: {
+      "D:\\temp\\tiny.user.js": { bytes: 3 },
+    },
+  });
+  const serialized = JSON.stringify(normalized);
+  assert.doesNotMatch(serialized, /\\/);
+  assert.doesNotMatch(serialized, /[A-Za-z]:[\\/]/);
+});
+
+runTest("ADDON-GOLDEN-01 keeps Example Add-on composition and API boundaries", () => {
+  const addonRoot = path.join(ROOT, "addons", "example-addon", "src");
+  const mainSource = fs.readFileSync(path.join(addonRoot, "main.js"), "utf8");
+  const appSource = fs.readFileSync(path.join(addonRoot, "app", "createExampleAddonApp.js"), "utf8");
+  const appSources = collectJavaScriptFiles(path.join(addonRoot, "app"))
+    .map((filePath) => fs.readFileSync(filePath, "utf8"))
+    .join("\n");
+  const uiSources = collectJavaScriptFiles(path.join(addonRoot, "ui"))
+    .map((filePath) => fs.readFileSync(filePath, "utf8"))
+    .join("\n");
+  const manifestEntry = ADDON_MANIFEST.addons.find((addon) => addon.id === "example-addon");
+
+  assert.ok(manifestEntry);
+  assert.deepStrictEqual(manifestEntry.pageScopes, ["f95zone"]);
+  assert.match(mainSource, /__ADDON_ID__/);
+  assert.match(mainSource, /waitForCorePing/);
+  assert.match(mainSource, /createCoreAdaptor/);
+  assert.match(mainSource, /createExampleAddonApp/);
+  assert.match(mainSource, /app\.bootstrap\(\)/);
+  assert.doesNotMatch(mainSource, /invokeCoreAction|registerAddonRuntime|openDialog/);
+  assert.match(appSource, /createExampleLifecycle/);
+  assert.match(appSource, /createBulkImportController/);
+  assert.doesNotMatch(appSources, /\.invokeCoreAction\(/);
+  assert.doesNotMatch(uiSources, /\.invokeCoreAction\(/);
+  assert.ok(fs.existsSync(path.join(addonRoot, "core", "adaptor.js")));
+  assert.ok(fs.existsSync(path.join(addonRoot, "api", "bridge.js")));
+  assert.ok(fs.existsSync(path.join(addonRoot, "app", "state.js")));
+  assert.ok(fs.existsSync(path.join(addonRoot, "app", "lifecycle.js")));
+  assert.ok(fs.existsSync(path.join(addonRoot, "app", "commands.js")));
+  assert.ok(fs.existsSync(path.join(addonRoot, "ui", "panel.js")));
+  assert.ok(fs.existsSync(path.join(addonRoot, "ui", "bindings.js")));
+});
+
+runTest("ADDON-HALLOWEEN-01 follows the Example boundaries and confines bridge actions", () => {
+  const addonRoot = path.join(ROOT, "addons", "halloween-theme-addon", "src");
+  const manifestEntry = ADDON_MANIFEST.addons.find((addon) => addon.id === "halloween-theme-addon");
+  const mainSource = fs.readFileSync(path.join(addonRoot, "main.js"), "utf8");
+  const sourceFiles = collectJavaScriptFiles(addonRoot);
+  const nonBridgeSources = sourceFiles
+    .filter((filePath) => !filePath.includes(`${path.sep}api${path.sep}`) && !filePath.includes(`${path.sep}core${path.sep}`))
+    .map((filePath) => fs.readFileSync(filePath, "utf8"))
+    .join("\n");
+
+  assert.ok(manifestEntry);
+  assert.deepStrictEqual(manifestEntry.pageScopes, ["f95zone"]);
+  assert.deepStrictEqual(manifestEntry.capabilities, ["feature", "ui.style"]);
+  assert.match(mainSource, /__ADDON_ID__/);
+  assert.match(mainSource, /createCoreAdaptor/);
+  assert.match(mainSource, /createHalloweenThemeApp/);
+  assert.doesNotMatch(mainSource, /invokeCoreAction|dispatchCoreCommand|addEventListener|querySelectorAll/);
+  assert.doesNotMatch(nonBridgeSources, /\.invokeCoreAction\(|\.dispatchCoreCommand\(/);
+  for (const relativePath of [
+    "core/adaptor.js",
+    "api/bridge.js",
+    "api/meta.js",
+    "api/ui/style.js",
+    "app/commands.js",
+    "app/lifecycle.js",
+    "app/createHalloweenThemeApp.js",
+    "ui/theme.js",
+  ]) {
+    assert.ok(fs.existsSync(path.join(addonRoot, relativePath)), relativePath);
+  }
+});
+
+runTest("ADDON-HALLOWEEN-01 preserves route behavior and owns reversible theme lifecycle", async () => {
+  const manifestEntry = ADDON_MANIFEST.addons.find((addon) => addon.id === "halloween-theme-addon");
+  const routeUrls = [
+    "https://f95zone.to/",
+    "https://f95zone.to/threads/example.1/",
+    "https://f95zone.to/sam/latest_alpha/",
+    "https://f95zone.to/masked/example/",
+  ];
+  assert.ok(routeUrls.every((url) => new URL(url).hostname === "f95zone.to"));
+  assert.deepStrictEqual(manifestEntry.pageScopes, ["f95zone"]);
+  assert.ok(manifestEntry.matches.every((match) => match === "*://f95zone.to/*"));
+
+  const sandbox = createDomSandbox(routeUrls[0]);
+  const actions = [];
+  let commandHandler = null;
+  let unbound = false;
+  let teardownAcknowledgements = 0;
+  const core = {
+    registerAddon(addon) { actions.push({ action: "register", addon }); return { ok: true }; },
+    updateStatus(status, message) { actions.push({ action: "status", status, message }); return { ok: true }; },
+    bindAddonCommands(handler) { commandHandler = handler; return () => { unbound = true; commandHandler = null; }; },
+    notifyTeardownComplete(reason) { teardownAcknowledgements += 1; actions.push({ action: "teardown-ack", reason }); return { ok: true }; },
+    async getAddonAccess() { return { ok: true, value: { blocked: false } }; },
+    async invokeCoreAction(action, payload) {
+      actions.push({ action, payload });
+      return { ok: true, value: {} };
+    },
+  };
+  try {
+    document.body.innerHTML = '<img id="logo" src="/assets/logo.png" srcset="/assets/logo.png 1x">';
+    const { createHalloweenThemeApp } = loadModule("addons/halloween-theme-addon/src/app/createHalloweenThemeApp.js");
+    const app = createHalloweenThemeApp({
+      core,
+      runtime: {
+        addonId: "halloween-theme-addon",
+        addonName: "Halloween Theme",
+        addonVersion: "2.0.12",
+        addonDescription: "Halloween",
+        capabilities: ["feature", "ui.style"],
+        pageScopes: ["f95zone"],
+        runtimeMode: "core-required",
+        matches: ["*://f95zone.to/*"],
+      },
+    });
+
+    await app.bootstrap();
+    const lifecycle = app.getLifecycle();
+    const image = document.querySelector("#logo");
+    assert.strictEqual(image.getAttribute("src"), "/assets/halloween/logo.png");
+    assert.strictEqual(app.getState().restorationCount, 1);
+    assert.strictEqual(actions.filter((entry) => entry.action === "ui.style.register").length, 1);
+
+    await lifecycle.enable({ reason: "repeat-enable" });
+    assert.strictEqual(actions.filter((entry) => entry.action === "ui.style.register").length, 1);
+
+    document.body.innerHTML = '<img id="replaced-logo" src="/assets/logo.png">';
+    assert.ok(commandHandler);
+    commandHandler({
+      command: "before-page-change",
+      reason: "route-refresh",
+      routeContext: { url: routeUrls[2] },
+    });
+    await new Promise((resolve) => window.setTimeout(resolve, 0));
+    assert.strictEqual(lifecycle.getResourceSnapshot().some((entry) => entry.id === "route-refresh-timer"), true);
+    await new Promise((resolve) => window.setTimeout(resolve, 125));
+    const replacedImage = document.querySelector("#replaced-logo");
+    assert.strictEqual(replacedImage.getAttribute("src"), "/assets/halloween/logo.png");
+
+    document.body.innerHTML = '<img id="late-logo" src="/assets/logo.png">';
+    commandHandler({ command: "refresh", reason: "late-refresh" });
+    await lifecycle.disable({ reason: "test-disable" });
+    await new Promise((resolve) => window.setTimeout(resolve, 125));
+    assert.strictEqual(replacedImage.getAttribute("src"), "/assets/logo.png");
+    assert.strictEqual(document.querySelector("#late-logo").getAttribute("src"), "/assets/logo.png");
+    assert.strictEqual(app.getState().restorationCount, 0);
+    assert.strictEqual(actions.filter((entry) => entry.action === "ui.style.unregister").length, 1);
+
+    await lifecycle.enable({ reason: "test-reenable" });
+    await lifecycle.teardown({ reason: "test-teardown" });
+    await lifecycle.teardown({ reason: "duplicate-teardown" });
+    assert.strictEqual(unbound, true);
+    assert.strictEqual(teardownAcknowledgements, 1);
+    assert.deepStrictEqual(lifecycle.getResourceSnapshot(), []);
+    assert.deepStrictEqual(lifecycle.getPendingOperationSnapshot(), []);
+    assert.deepStrictEqual(app.getResourceSnapshot(), []);
+    assert.deepStrictEqual(app.getPendingOperationSnapshot(), []);
+    assert.strictEqual(app.getState().restorationCount, 0);
+    assert.strictEqual(actions.filter((entry) => entry.action === "ui.style.unregister").length, 2);
+    assert.strictEqual(commandHandler, null);
+  } finally {
+    sandbox.restore();
+  }
+});
+
+runTest("ADDON-LATEST-FILTERS-01 keeps Latest scope and canonical module boundaries", () => {
+  const addonRoot = path.join(ROOT, "addons", "latest-filters-addon", "src");
+  const manifestEntry = ADDON_MANIFEST.addons.find((addon) => addon.id === "latest-filters-addon");
+  const mainSource = fs.readFileSync(path.join(addonRoot, "main.js"), "utf8");
+  const nonBridgeSources = collectJavaScriptFiles(addonRoot)
+    .filter((filePath) => !filePath.includes(`${path.sep}api${path.sep}`) && !filePath.includes(`${path.sep}core${path.sep}`))
+    .map((filePath) => fs.readFileSync(filePath, "utf8"))
+    .join("\n");
+
+  assert.ok(manifestEntry);
+  assert.deepStrictEqual(manifestEntry.pageScopes, ["latest"]);
+  assert.deepStrictEqual(manifestEntry.matches, ["*://f95zone.to/sam/latest_alpha/*"]);
+  assert.deepStrictEqual(manifestEntry.grants, ["GM.getValue", "GM.setValue"]);
+  assert.strictEqual(manifestEntry.runAt, "document-idle");
+  assert.ok(manifestEntry.capabilities.includes("page"));
+  assert.ok(manifestEntry.capabilities.includes("observer"));
+  assert.match(mainSource, /__ADDON_ID__/);
+  assert.match(mainSource, /createCoreAdaptor/);
+  assert.match(mainSource, /createLatestFiltersApp/);
+  assert.match(mainSource, /app\.bootstrap\(\)/);
+  assert.doesNotMatch(mainSource, /invokeCoreAction|registerAddonRuntime|renderPanelContent|addEventListener/);
+  assert.doesNotMatch(nonBridgeSources, /\.invokeCoreAction\(|\.dispatchCoreCommand\(/);
+  assert.doesNotMatch(fs.readFileSync(path.join(addonRoot, "constants.js"), "utf8"), /export const state/);
+  for (const relativePath of [
+    "core/adaptor.js",
+    "api/bridge.js",
+    "api/storage.js",
+    "api/page.js",
+    "api/observer.js",
+    "api/ui/dialog.js",
+    "app/state.js",
+    "app/repository.js",
+    "app/lifecycle.js",
+    "app/commands.js",
+    "app/createLatestFiltersApp.js",
+    "ui/bindings.js",
+    "ui/renderer.js",
+  ]) {
+    assert.ok(fs.existsSync(path.join(addonRoot, relativePath)), relativePath);
+  }
+  assert.strictEqual(fs.existsSync(path.join(addonRoot, "coreBridge.js")), false);
+});
+
+runTest("ADDON-LATEST-FILTERS-01 preserves preset formats and storage keys behind adapters", async () => {
+  const sandbox = createDomSandbox("https://f95zone.to/sam/latest_alpha/");
+  try {
+  const { createStorageAdapter } = loadModule("addons/latest-filters-addon/src/api/storage.js");
+  const { createLatestFiltersRepository } = loadModule("addons/latest-filters-addon/src/app/repository.js");
+  const localKey = "addon:latest-filters-addon:presets";
+  const rawPreset = { id: "legacy-preset", name: "Safe", url: "https://f95zone.to/sam/latest_alpha/?tags=1&page=3" };
+  const gm = createFakeGM({ [localKey]: [rawPreset] });
+  const coreWrites = [];
+  const core = {
+    async invokeCoreAction(action, payload) {
+      if (action === "storage.get") {
+        if (payload.key === "settings") return { ok: true, value: { enabled: true, state: { showPageButton: false } } };
+        return { ok: true, value: payload.defaultValue };
+      }
+      if (action === "storage.set") { coreWrites.push(payload); return { ok: true }; }
+      if (action === "config.getTagPrefs") return { ok: true, value: { tags: [] } };
+      return { ok: false, reason: "unknown_test_action" };
+    },
+  };
+  const repository = createLatestFiltersRepository(createStorageAdapter({ core, addonId: "latest-filters-addon", gm }));
+  const settings = await repository.loadSettings();
+  const presets = await repository.loadPresets();
+  assert.strictEqual(settings.state.showPageButton, false);
+  assert.strictEqual(presets[0].id, "legacy-preset");
+  assert.strictEqual(presets[0].normalizedUrl, "https://f95zone.to/sam/latest_alpha/?tags=1");
+
+  await repository.savePresets(presets);
+  assert.deepStrictEqual(gm.logs().writes, [localKey]);
+  assert.ok(gm.snapshot()[localKey][0].summary);
+
+  const failingGm = createFakeGM({}, { failSet: true });
+  const fallbackRepository = createLatestFiltersRepository(createStorageAdapter({ core, addonId: "latest-filters-addon", gm: failingGm }));
+  await fallbackRepository.savePresets(presets);
+  assert.ok(coreWrites.some((entry) => entry.key === "presets"));
+  } finally {
+    sandbox.restore();
+  }
+});
+
+runTest("ADDON-LATEST-FILTERS-01 owns repeated lifecycle and suppresses canceled mount retries", async () => {
+  const sandbox = createDomSandbox("https://f95zone.to/sam/latest_alpha/");
+  const clock = createFakeClock();
+  const actions = [];
+  let commandHandler = null;
+  let teardownAcknowledgements = 0;
+  const settings = { enabled: true, state: { showPageButton: true } };
+  const core = {
+    registerAddon(addon) { actions.push({ action: "register", addon }); return { ok: true }; },
+    updateStatus(status, message) { actions.push({ action: "status", status, message }); return { ok: true }; },
+    bindAddonCommands(handler) { commandHandler = handler; return () => { commandHandler = null; }; },
+    notifyTeardownComplete() { teardownAcknowledgements += 1; return { ok: true }; },
+    async getAddonAccess() { return { ok: true, value: { blocked: false } }; },
+    async invokeCoreAction(action, payload) {
+      actions.push({ action, payload });
+      if (action === "storage.get" && payload.key === "settings") return { ok: true, value: settings };
+      if (action === "storage.get" && payload.key === "presets") return { ok: true, value: [] };
+      if (action === "storage.set") return { ok: true };
+      if (action === "config.getTagPrefs") return { ok: true, value: { tags: [], preferredTags: [], excludedTags: [], markedTags: [], color: {} } };
+      if (action === "page.getContext") return { ok: true, value: { pageScopes: ["latest"], pageType: "latest", url: location.href } };
+      if (action === "observer.waitFor") return { ok: false, reason: "unsupported_action" };
+      return { ok: false, reason: "unsupported_action" };
+    },
+  };
+  const previousSetTimeout = sandbox.window.setTimeout;
+  const previousClearTimeout = sandbox.window.clearTimeout;
+  sandbox.window.setTimeout = clock.setTimeout;
+  sandbox.window.clearTimeout = clock.clearTimeout;
+  try {
+    document.body.innerHTML = "";
+    const { createLatestFiltersApp } = loadModule("addons/latest-filters-addon/src/app/createLatestFiltersApp.js", {
+      loader: { ".css": "text", ".html": "text" },
+    });
+    const app = createLatestFiltersApp({
+      core,
+      runtime: {
+        addonId: "latest-filters-addon",
+        addonName: "Latest Filters",
+        addonVersion: "0.3.18",
+        addonDescription: "Latest filters",
+        capabilities: ADDON_MANIFEST.addons.find((entry) => entry.id === "latest-filters-addon").capabilities,
+        pageScopes: ["latest"],
+        runtimeMode: "core-required",
+        matches: ["*://f95zone.to/sam/latest_alpha/*"],
+      },
+      gm: null,
+    });
+
+    await app.bootstrap();
+    await Promise.resolve();
+    await Promise.resolve();
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.ok(commandHandler);
+    assert.strictEqual(app.getState().enabled, true);
+    assert.strictEqual(app.getState().routeListenersBound, true);
+    assert.strictEqual(clock.pending() > 0, true);
+
+    commandHandler({ command: "before-page-change", commandId: "route-1", reason: "rapid-route-1", routeContext: { url: location.href } });
+    commandHandler({ command: "before-page-change", commandId: "route-2", reason: "rapid-route-2", routeContext: { url: location.href } });
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.strictEqual(app.getResourceSnapshot().filter((entry) => entry.id === "latest-route-listeners").length, 1);
+
+    await app.getLifecycle().disable({ commandId: "disable-1", reason: "test-disable" });
+    await clock.tick(5000);
+    assert.strictEqual(document.getElementById("f95ue-latest-filters-addon"), null);
+    assert.deepStrictEqual(app.getResourceSnapshot(), []);
+    assert.deepStrictEqual(app.getPendingOperationSnapshot(), []);
+
+    await app.getLifecycle().enable({ commandId: "enable-1", reason: "test-enable" });
+    await app.getLifecycle().disable({ commandId: "disable-2", reason: "test-disable-again" });
+    await app.getLifecycle().teardown({ commandId: "teardown-1", reason: "test-teardown" });
+    await app.getLifecycle().teardown({ commandId: "teardown-2", reason: "duplicate" });
+    assert.strictEqual(teardownAcknowledgements, 1);
+    assert.deepStrictEqual(app.getResourceSnapshot(), []);
+    assert.deepStrictEqual(app.getPendingOperationSnapshot(), []);
+    assert.strictEqual(commandHandler, null);
+  } finally {
+    sandbox.window.setTimeout = previousSetTimeout;
+    sandbox.window.clearTimeout = previousClearTimeout;
+    sandbox.restore();
+  }
+});
+
+runTest("ADDON-LATEST-FILTERS-01 keeps management toggles available outside Latest", async () => {
+  const sandbox = createDomSandbox("https://f95zone.to/threads/example.1/");
+  const actions = [];
+  let commandHandler = null;
+  const core = {
+    registerAddon(addon) { actions.push({ action: "register", addon }); return { ok: true }; },
+    updateStatus(status) { actions.push({ action: "status", status }); return { ok: true }; },
+    bindAddonCommands(handler) { commandHandler = handler; return () => { commandHandler = null; }; },
+    notifyTeardownComplete() { return { ok: true }; },
+    async getAddonAccess() { return { ok: true, value: { blocked: false } }; },
+    async invokeCoreAction(action, payload) {
+      if (action === "storage.get" && payload.key === "settings") return { ok: true, value: { enabled: true, state: { showPageButton: true } } };
+      if (action === "storage.get") return { ok: true, value: [] };
+      if (action === "storage.set") return { ok: true };
+      if (action === "config.getTagPrefs") return { ok: true, value: { tags: [] } };
+      return { ok: false, reason: "unsupported_action" };
+    },
+  };
+  try {
+    const { createLatestFiltersApp } = loadModule("addons/latest-filters-addon/src/app/createLatestFiltersApp.js", {
+      loader: { ".css": "text", ".html": "text" },
+    });
+    const app = createLatestFiltersApp({
+      core,
+      runtime: {
+        addonId: "latest-filters-addon",
+        addonName: "Latest Filters",
+        addonVersion: "0.3.18",
+        addonDescription: "Latest filters",
+        capabilities: ["toast", "feature", "storage", "page", "observer", "ui", "ui.style", "ui.mount", "ui.dialog"],
+        pageScopes: ["latest"],
+        runtimeMode: "core-required",
+        matches: ["*://f95zone.to/sam/latest_alpha/*"],
+      },
+      gm: null,
+    });
+    await app.bootstrap();
+    assert.strictEqual(app.getState().enabled, true);
+    assert.strictEqual(document.getElementById("f95ue-latest-filters-addon"), null);
+    assert.strictEqual(actions.some((entry) => entry.action === "ui.mount"), false);
+    commandHandler({ command: "disable", commandId: "outside-disable", reason: "user" });
+    await new Promise((resolve) => setImmediate(resolve));
+    commandHandler({ command: "enable", commandId: "outside-enable", reason: "user" });
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.strictEqual(app.getState().enabled, true);
+    assert.ok(actions.some((entry) => entry.action === "status"));
+    await app.getLifecycle().teardown({ reason: "test-teardown" });
+  } finally {
+    sandbox.restore();
+  }
+});
+
+runTest("ADDON-GOLDEN-01 boots normally on the declared F95Zone scope", async () => {
+  const previousWindow = global.window;
+  const previousDocument = global.document;
+  const domWindow = new Window();
+  global.window = domWindow;
+  global.document = domWindow.document;
+  const registrations = [];
+  const actions = [];
+  let commandHandler = null;
+  let resolveTeardown;
+  const teardownAcknowledged = new Promise((resolve) => {
+    resolveTeardown = resolve;
+  });
+  const core = {
+    registerAddon: (addon) => {
+      registrations.push(addon);
+      return { ok: true };
+    },
+    updateStatus: (status, message) => {
+      actions.push({ action: "status", status, message });
+      return { ok: true };
+    },
+    bindAddonCommands: (handler) => {
+      commandHandler = handler;
+      return () => { commandHandler = null; };
+    },
+    notifyTeardownComplete: (reason) => {
+      actions.push({ action: "teardown-ack", reason });
+      resolveTeardown(reason);
+      return { ok: true };
+    },
+    invokeCoreAction: async (action) => {
+      actions.push({ action });
+      if (action === "addon.access") return { ok: true, value: { blocked: false } };
+      if (action === "addon.throttle") return { ok: true, value: {} };
+      return { ok: true };
+    },
+  };
+  try {
+    const { createExampleAddonApp } = loadModule("addons/example-addon/src/app/createExampleAddonApp.js", {
+      loader: { ".css": "text", ".html": "text" },
+    });
+    const app = createExampleAddonApp({
+      core,
+      runtime: {
+        addonId: "example-addon",
+        addonName: "Example Add-on",
+        addonVersion: "0.2.8",
+        addonDescription: "Example",
+        capabilities: ADDON_MANIFEST.addons.find((addon) => addon.id === "example-addon").capabilities,
+        pageScopes: ["f95zone"],
+        runtimeMode: "core-required",
+        matches: ["*://f95zone.to/*"],
+      },
+    });
+    await app.bootstrap();
+    assert.strictEqual(registrations.length, 2);
+    assert.deepStrictEqual(registrations[0].pageScopes, ["f95zone"]);
+    assert.strictEqual(actions.some((entry) => entry.action === "scope.error"), false);
+    assert.ok(actions.some((entry) => entry.action === "ui.style.register"));
+    assert.ok(actions.some((entry) => entry.action === "ui.mount"));
+    commandHandler({ command: "teardown", reason: "terminal-bootstrap-test" });
+    commandHandler({ command: "teardown", reason: "duplicate-terminal-bootstrap-test" });
+    assert.strictEqual(await teardownAcknowledged, "terminal-bootstrap-test");
+    assert.strictEqual(actions.filter((entry) => entry.action === "teardown-ack").length, 1);
+    assert.ok(actions.some((entry) => entry.action === "ui.dock.removeButtons"));
+    assert.ok(actions.some((entry) => entry.action === "ui.unmount"));
+    assert.ok(actions.some((entry) => entry.action === "ui.style.unregister"));
+  } finally {
+    global.window = previousWindow;
+    global.document = previousDocument;
+  }
+});
+
+runTest("ADDON-GOLDEN-01 serializes lifecycle, suppresses stale commits, and acknowledges teardown once", async () => {
+  const { createExampleLifecycle } = loadModule("addons/example-addon/src/app/lifecycle.js");
+  const events = [];
+  let releaseEnable;
+  let enableStarted;
+  const enableStartedPromise = new Promise((resolve) => {
+    enableStarted = resolve;
+  });
+  const enableGate = new Promise((resolve) => {
+    releaseEnable = resolve;
+  });
+  const lifecycle = createExampleLifecycle({
+    onEnable: async ({ isCurrent }) => {
+      events.push("enable:start");
+      enableStarted();
+      await enableGate;
+      if (!isCurrent()) {
+        events.push("enable:stale");
+        return { ok: false, reason: "enable_superseded" };
+      }
+      events.push("enable:commit");
+      return { ok: true };
+    },
+    onDisable: async () => {
+      events.push("disable");
+      return { ok: true };
+    },
+    onRefresh: async () => {
+      events.push("refresh");
+      return { ok: true };
+    },
+    onTeardown: async ({ reason }) => {
+      events.push(`teardown:${reason}`);
+      return { ok: true };
+    },
+    onTeardownAcknowledged: async (reason) => {
+      events.push(`ack:${reason}`);
+    },
+  });
+
+  const enablePromise = lifecycle.enable();
+  await enableStartedPromise;
+  const disablePromise = lifecycle.disable();
+  releaseEnable();
+  assert.deepStrictEqual(await enablePromise, { ok: false, reason: "enable_superseded" });
+  assert.deepStrictEqual(await disablePromise, { ok: true });
+
+  assert.deepStrictEqual(await lifecycle.enable(), { ok: true });
+  assert.deepStrictEqual(await lifecycle.refresh(), { ok: true });
+  assert.deepStrictEqual(await lifecycle.teardown("terminal-test"), { ok: true });
+  assert.deepStrictEqual(await lifecycle.teardown("ignored-second-reason"), { ok: true });
+  assert.strictEqual(events.filter((event) => event.startsWith("teardown:")).length, 1);
+  assert.deepStrictEqual(events.filter((event) => event.startsWith("ack:")), ["ack:terminal-test"]);
+  assert.strictEqual(lifecycle.isTerminated(), true);
+  assert.strictEqual(lifecycle.isTeardownAcknowledged(), true);
+  assert.deepStrictEqual(await lifecycle.enable(), { ok: false, reason: "terminated" });
+});
+
+runTest("ADDON-GOLDEN-01 keeps owned cancellation and late-commit guards in the app", () => {
+  const appSource = fs.readFileSync(path.join(ROOT, "addons/example-addon/src/app/createExampleAddonApp.js"), "utf8");
+  const bulkSource = fs.readFileSync(path.join(ROOT, "addons/example-addon/src/app/bulkImport.js"), "utf8");
+  assert.match(appSource, /ownedTimeouts/);
+  assert.match(appSource, /ownedObserverNodes/);
+  assert.match(appSource, /cancelOwnedTimeouts/);
+  assert.match(appSource, /bulkImport\.requestCancellation\(\)/);
+  assert.match(appSource, /unregisterStyle/);
+  assert.match(appSource, /commandController\.unbind\(\)/);
+  assert.match(appSource, /notifyTeardownComplete/);
+  assert.match(appSource, /if \(!state\.enabled \|\| terminal\)/);
+  assert.match(bulkSource, /handleDialogClosed/);
+  assert.match(bulkSource, /active\.closing = true/);
+  assert.match(bulkSource, /finally \{\s*active = null;/s);
+});
+
+runTest("ADDON-RUNTIME-CONTRACT-01 exposes serialized command context and lifecycle snapshots", async () => {
+  const { createAddonRuntimeLifecycle, LIFECYCLE_STATES } = loadModule("addons/shared/runtimeLifecycle.js");
+  const contexts = [];
+  let releaseEnable;
+  const enableGate = new Promise((resolve) => { releaseEnable = resolve; });
+  const lifecycle = createAddonRuntimeLifecycle({
+    addonId: "runtime-fixture",
+    onEnable: async (context) => {
+      contexts.push(context);
+      await enableGate;
+      return context.isCurrent() ? { ok: true } : { ok: false, reason: "stale" };
+    },
+    onDisable: async (context) => {
+      contexts.push(context);
+      return { ok: true };
+    },
+    onRefresh: async (context) => {
+      contexts.push(context);
+      return { ok: true };
+    },
+    onTeardown: async (context) => {
+      contexts.push(context);
+      return { ok: true };
+    },
+  });
+
+  assert.deepStrictEqual(lifecycle.states, LIFECYCLE_STATES);
+  const enablePromise = lifecycle.enable({ commandId: "enable-1", routeContext: { route: "a" } });
+  await Promise.resolve();
+  const disablePromise = lifecycle.disable({ commandId: "disable-1", reason: "user" });
+  releaseEnable();
+  assert.deepStrictEqual(await enablePromise, { ok: false, reason: "stale" });
+  assert.deepStrictEqual(await disablePromise, { ok: true });
+  assert.strictEqual(lifecycle.getState(), "disabled");
+  assert.strictEqual(contexts[0].commandId, "enable-1");
+  assert.strictEqual(contexts[0].command, "enable");
+  assert.ok(contexts[0].signal instanceof AbortSignal);
+  assert.strictEqual(contexts[0].terminal, false);
+  assert.strictEqual(contexts[1].generation > contexts[0].generation, true);
+
+  const release = lifecycle.registerResource("fixture-style", () => {}, "style");
+  const pending = lifecycle.trackPendingOperation("fixture-import", Promise.resolve("done"), { kind: "import" });
+  assert.strictEqual(lifecycle.getSnapshot().resources[0].kind, "style");
+  assert.strictEqual(lifecycle.getSnapshot().pendingOperations[0].kind, "import");
+  release();
+  await pending;
+  assert.deepStrictEqual(lifecycle.getResourceSnapshot(), []);
+  assert.deepStrictEqual(lifecycle.getPendingOperationSnapshot(), []);
+  await lifecycle.teardown({ commandId: "teardown-1", reason: "test" });
+  await lifecycle.teardown({ commandId: "teardown-2", reason: "ignored" });
+  assert.strictEqual(lifecycle.getState(), "terminated");
+  assert.strictEqual(lifecycle.isTeardownAcknowledged(), true);
+  assert.deepStrictEqual(await lifecycle.enable(), { ok: false, reason: "terminated" });
+});
+
+runTest("ADDON-RUNTIME-CONTRACT-01 invalidates route work and keeps disable reversible", async () => {
+  const { createAddonRuntimeLifecycle } = loadModule("addons/shared/runtimeLifecycle.js");
+  const commits = [];
+  let releaseRefresh;
+  const refreshGate = new Promise((resolve) => { releaseRefresh = resolve; });
+  const lifecycle = createAddonRuntimeLifecycle({
+    onEnable: async () => { commits.push("enable"); return { ok: true }; },
+    onDisable: async () => { commits.push("disable"); return { ok: true }; },
+    onRefresh: async (context) => {
+      await refreshGate;
+      if (!context.isCurrent()) return { ok: false, reason: "route_stale" };
+      commits.push("refresh");
+      return { ok: true };
+    },
+  });
+  await lifecycle.enable();
+  const refresh = lifecycle.refresh({ routeContext: { route: "old" } });
+  await Promise.resolve();
+  lifecycle.invalidate("route-change", { route: "new" });
+  releaseRefresh();
+  assert.deepStrictEqual(await refresh, { ok: false, reason: "route_stale" });
+  assert.deepStrictEqual(commits, ["enable"]);
+  assert.strictEqual(lifecycle.getState(), "enabled");
+  const disablePromise = lifecycle.disable({ reason: "user" });
+  const refreshDuringDisable = lifecycle.refresh({ reason: "stale-refresh" });
+  assert.deepStrictEqual(await disablePromise, { ok: true });
+  assert.deepStrictEqual(await refreshDuringDisable, { ok: false, reason: "disabled" });
+  await lifecycle.enable();
+  assert.deepStrictEqual(commits, ["enable", "disable", "enable"]);
+});
+
+runTest("ADDON-RUNTIME-CONTRACT-01 core watchdog hard-cleans one owner and ignores duplicate acknowledgments", async () => {
+  const sandbox = createDomSandbox();
+  const cleaned = [];
+  try {
+    const { createAddonLifecycleOrchestrator } = loadModule("src/services/addons/lifecycle.js");
+    const orchestrator = createAddonLifecycleOrchestrator({
+      sanitizeAddonId: (value) => String(value || "").trim(),
+      listRegisteredAddons: () => [{ id: "watchdog-fixture" }],
+      cleanupAddonObserverSubscriptions: (addonId) => cleaned.push(`observer:${addonId}`),
+      cleanupAddonUi: (addonId) => cleaned.push(`ui:${addonId}`),
+      teardownWatchdogMs: 5,
+    });
+    orchestrator.requestTeardown("watchdog-fixture", "timeout-test");
+    await new Promise((resolve) => setTimeout(resolve, 15));
+    assert.deepStrictEqual(cleaned, ["ui:watchdog-fixture", "observer:watchdog-fixture", "ui:watchdog-fixture"]);
+    const snapshot = orchestrator.getSnapshot();
+    assert.strictEqual(snapshot.watchdogs.length, 0);
+    assert.strictEqual(snapshot.owners[0].state, "terminated");
+    assert.strictEqual(snapshot.owners[0].hardCleaned, true);
+    assert.strictEqual(orchestrator.acknowledgeTeardown("watchdog-fixture"), false);
+  } finally {
+    sandbox.restore();
+  }
+});
+
+runTest("ADDON-SCOPE-02 validates authoritative metadata and preserves headers", () => {
+  const manifest = addonCatalog.readManifest ? addonCatalog.readManifest() : JSON.parse(fs.readFileSync(path.join(ROOT, "addons/addons.manifest.json"), "utf8")).addons;
+  assert.deepStrictEqual(addonCatalog.validateManifest(manifest), []);
+  const catalog = addonCatalog.buildTrustedCatalog(manifest);
+  assert.deepStrictEqual(catalog.map((entry) => entry.id), [...catalog].map((entry) => entry.id).sort());
+  for (const addon of manifest) {
+    const header = addonBuilder.headerForAddon(addon);
+    for (const match of addon.matches) assert.ok(header.includes(`// @match        ${match}`));
+    for (const grant of addon.grants) assert.ok(header.includes(`// @grant        ${grant}`));
+    assert.ok(header.includes(`// @run-at       ${addon.runAt}`));
+    assert.ok(header.includes(`// @version      ${addon.version}`));
+  }
+  const header = fs.readFileSync(path.join(ROOT, "header.txt"), "utf8");
+  assert.ok(header.includes("@resource     trustedAddonCatalog https://cdn.jsdelivr.net/gh/Zenix-Al/f95-zone-highlighter@main/src/services/addons/trusted-catalog.json"));
+  assert.strictEqual(addonCatalog.renderCatalog(manifest), addonCatalog.renderCatalog([...manifest].reverse()));
+});
+
+runTest("ADDON-SCOPE-02 injects manifest scope metadata without changing header metadata", async () => {
+  const manifest = addonCatalog.readManifest();
+  const relativeOutfile = "tests/.tmp/addon-scope-injection.user.js";
+  const outfile = path.join(ROOT, relativeOutfile);
+  try {
+    await addonBuilder.buildAddon({ ...manifest.find((entry) => entry.id === "image-repair-addon"), outfile: relativeOutfile }, false);
+    const output = fs.readFileSync(outfile, "utf8");
+    assert.ok(output.includes("core-required"));
+    assert.ok(output.includes("thread"));
+    assert.ok(output.includes("*://f95zone.to/threads/*"));
+  } finally {
+    fs.rmSync(outfile, { force: true });
+  }
+});
+
+runTest("ADDON-SCOPE-02 separates activation matching, runtime scopes, and registration modes", () => {
+  const scope = loadModule("src/services/addons/scope.js");
+  assert.strictEqual(scope.matchesUserscriptPattern("https://f95zone.to/threads/example.1/", "*://f95zone.to/threads/*"), true);
+  assert.strictEqual(scope.matchesUserscriptPattern("https://f95zone.to/sam/latest_alpha/", "*://f95zone.to/threads/*"), false);
+  assert.strictEqual(scope.matchesUserscriptPattern("https://f95zone.to/masked/example/", "*://f95zone.to/masked/*"), true);
+  assert.strictEqual(scope.matchesUserscriptPattern("https://sub.buzzheavier.com/file/1", "*://*.buzzheavier.com/*"), true);
+  assert.deepStrictEqual(scope.resolveScopeIntersection(["f95zone", "latest"], ["latest"]), ["latest"]);
+  assert.deepStrictEqual(
+    scope.validateAddonRuntimeMetadata({ runtimeMode: "core-required", requiresCore: true, pageScopes: ["download"], matches: ["*://f95zone.to/*"] }).errors,
+    ["unknown_page_scope"],
+  );
+  assert.ok(scope.validateAddonRuntimeMetadata({ runtimeMode: "unsupported", requiresCore: true, pageScopes: ["f95zone"], matches: ["*://f95zone.to/*"] }).errors.includes("invalid_runtime_mode"));
+  const malformedScopes = scope.validateAddonRuntimeMetadata({ runtimeMode: "core-required", requiresCore: true, pageScopes: ["thread", "thread", ""], matches: ["*://f95zone.to/*"] }).errors;
+  assert.ok(malformedScopes.includes("duplicate_page_scope"));
+  assert.ok(malformedScopes.includes("empty_page_scope"));
+  assert.ok(scope.validateAddonRuntimeMetadata({ runtimeMode: "standalone", requiresCore: false, pageScopes: [], matches: ["*://f95zone.to/*"] }, { registration: true }).errors.includes("standalone_must_not_register"));
+  const registry = loadModule("src/services/addons/registry.js");
+  registry.registerAddon({ id: "invalid-scope-addon", name: "Invalid", runtimeMode: "core-required", requiresCore: true, pageScopes: ["download"], matches: ["*://f95zone.to/*"] });
+  assert.strictEqual(registry.getRegisteredAddon("invalid-scope-addon"), null);
+  assert.ok(scope.validateAddonRuntimeMetadata({ runtimeMode: "hybrid", requiresCore: true, pageScopes: ["f95zone"], matches: ["*://f95zone.to/*", "*://example.com/*"] }).ok);
+  const { buildKnownAddonsSnapshot } = loadModule("src/services/addons/knownAddons.js");
+  const latest = buildKnownAddonsSnapshot({
+    catalog: [{ id: "latest", name: "Latest", pageScopes: ["latest"], matches: ["*://f95zone.to/sam/latest_alpha/*"], trusted: true }],
+    currentScopes: ["latest"],
+    currentUrl: "https://f95zone.to/sam/latest_alpha/",
+  })[0];
+  assert.strictEqual(latest.matchesCurrentPage, true);
+  assert.strictEqual(latest.scopeApplies, true);
+  assert.strictEqual(latest.supportsCurrentPage, true);
+  const thread = buildKnownAddonsSnapshot({
+    catalog: [{ id: "latest", name: "Latest", pageScopes: ["latest"], matches: ["*://f95zone.to/sam/latest_alpha/*"], trusted: true }],
+    currentScopes: ["thread"],
+    currentUrl: "https://f95zone.to/threads/example.1/",
+  })[0];
+  assert.strictEqual(thread.matchesCurrentPage, false);
+  assert.strictEqual(thread.scopeApplies, false);
+  assert.strictEqual(thread.supportsCurrentPage, false);
+});
+
+runTest("ADDON-IDENTITY-01 canonicalizes catalog aliases and runtime conflicts", () => {
+  const catalog = loadModule("src/services/addons/catalog.js");
+  assert.strictEqual(catalog.getCanonicalAddonId("EXAMPLE.ADDON-LEGACY"), "example-addon");
+  assert.strictEqual(catalog.getTrustedCatalogEntry("example-addon-legacy").id, "example-addon");
+  assert.deepStrictEqual(catalog.getTrustedCatalogEntry("example-addon").legacyIds, ["example-addon-legacy"]);
+
+  const registry = loadModule("src/services/addons/registry.js");
+  const metadata = {
+    name: "Example Runtime",
+    version: "1.0.0",
+    description: "fixture",
+    runtimeMode: "core-required",
+    requiresCore: true,
+    pageScopes: ["f95zone"],
+    matches: ["*://f95zone.to/*"],
+    capabilities: ["toast"],
+  };
+  registry.registerAddon({ ...metadata, id: "example-addon-legacy" });
+  registry.registerAddon({ ...metadata, id: "example-addon", name: "Canonical Runtime" });
+  const snapshot = registry.listRegisteredAddons();
+  assert.strictEqual(snapshot.length, 1);
+  assert.strictEqual(snapshot[0].id, "example-addon");
+  assert.strictEqual(snapshot[0].name, "Canonical Runtime");
+  assert.strictEqual(registry.getRegisteredAddon("example-addon-legacy").id, "example-addon");
+
+  const { buildKnownAddonsSnapshot } = loadModule("src/services/addons/knownAddons.js");
+  const cards = buildKnownAddonsSnapshot({
+    registered: [{ ...metadata, id: "example-addon-legacy", name: "Old Runtime" }, { ...metadata, id: "example-addon", name: "Canonical Runtime" }],
+    catalog: [{ id: "example-addon", legacyIds: ["example-addon-legacy"], name: "Catalog Example", trusted: true, pageScopes: ["f95zone"], matches: ["*://f95zone.to/*"] }],
+    installedMeta: { "example-addon-legacy": { name: "Old Installed", installedSeenAt: 2, lastSeenAt: 3 } },
+    currentScopes: ["f95zone"],
+    currentUrl: "https://f95zone.to/",
+    catalogFresh: true,
+  });
+  assert.strictEqual(cards.length, 1);
+  assert.strictEqual(cards[0].id, "example-addon");
+  assert.strictEqual(cards[0].name, "Canonical Runtime");
+});
+
+runTest("ADDON-IDENTITY-01 merges state atomically with deterministic precedence and retry", async () => {
+  const previousGM = global.GM;
+  const seedGM = createFakeGM();
+  global.GM = seedGM;
+  try {
+    const settings = loadModule("src/services/settingsService.js");
+    const { config } = loadModule("src/config.js");
+    await seedReadyConfig(seedGM, settings, config);
+
+    const state = loadModule("src/services/addons/state.js");
+    const committed = await state.persistAddonsState({
+      byAddon: {
+        "example-addon-legacy": { state: { enabled: false, legacyOnly: true, shared: "old" } },
+        "example-addon": { state: { enabled: true, shared: "canonical" } },
+      },
+      installedMeta: {
+        "example-addon-legacy": { name: "Old", installedSeenAt: 20, lastSeenAt: 30 },
+        "example-addon": { name: "Canonical", installedSeenAt: 10, lastSeenAt: 40 },
+      },
+    });
+    assert.strictEqual(committed.ok, true);
+    assert.deepStrictEqual(state.getAddonState("example-addon-legacy"), { enabled: true, legacyOnly: true, shared: "canonical" });
+    const normalizedMeta = state.getInstalledAddonMeta("example-addon-legacy");
+    assert.strictEqual(normalizedMeta.name, "Canonical");
+    assert.strictEqual(normalizedMeta.installedSeenAt, 10);
+    assert.strictEqual(normalizedMeta.lastSeenAt, 40);
+    assert.deepStrictEqual(Object.keys(state.listInstalledAddonMeta()), ["example-addon"]);
+    const writesAfterCommit = seedGM.logs().writes.length;
+    assert.deepStrictEqual(await state.normalizeAddonIdentities(), { ok: true, changed: false });
+    assert.strictEqual(seedGM.logs().writes.length, writesAfterCommit);
+
+    const failingSeed = createFakeGM();
+    global.GM = failingSeed;
+    const seedSettings = loadModule("src/services/settingsService.js");
+    const seedConfig = loadModule("src/config.js").config;
+    await seedReadyConfig(failingSeed, seedSettings, seedConfig);
+    const seededEnvelope = failingSeed.snapshot()[seedSettings.CONFIG_ENVELOPE_KEY];
+    seededEnvelope.data.addons.byAddon = { "example-addon-legacy": { state: { enabled: false } } };
+    await failingSeed.setValue(seedSettings.CONFIG_ENVELOPE_KEY, seededEnvelope);
+    const failingGM = createFakeGM(failingSeed.snapshot(), { failSet: true });
+    global.GM = failingGM;
+    const retryState = loadModule("src/services/addons/state.js");
+    const failed = await retryState.persistAddonsState({
+      byAddon: { "example-addon-legacy": { state: { enabled: false } } },
+      installedMeta: {},
+    });
+    assert.strictEqual(failed.ok, false);
+    assert.deepStrictEqual(retryState.getAddonState("example-addon"), { enabled: false });
+    assert.ok(Object.hasOwn(failingGM.snapshot()[settings.CONFIG_ENVELOPE_KEY].data.addons.byAddon, "example-addon-legacy"));
+  } finally {
+    global.GM = previousGM;
+  }
+});
+
+runTest("ADDON-TRUST-GATING-01 reproduces the stale trusted-and-blocked masked fixture", () => {
+  const { buildKnownAddonsSnapshot } = loadModule("src/services/addons/knownAddons.js");
+  const snapshot = buildKnownAddonsSnapshot({
+    registered: [{
+      id: "masked-direct-addon",
+      name: "F95UE Masked + Direct Download Add-on",
+      version: "0.3.45",
+      status: "disabled",
+      statusMessage: "Blocked by main settings: enable untrusted add-ons or trust this add-on.",
+      trusted: true,
+      blocked: true,
+      pageScopes: ["f95zone"],
+      matches: ["*://f95zone.to/threads/*"],
+      capabilities: [],
+    }],
+    catalog: [{
+      id: "masked-direct-addon",
+      name: "F95UE Masked + Direct Download Add-on",
+      version: "0.3.45",
+      trusted: true,
+      pageScopes: ["f95zone"],
+      matches: ["*://f95zone.to/threads/*"],
+    }],
+    currentScopes: ["f95zone"],
+    currentUrl: "https://f95zone.to/threads/example.1/",
+    catalogFresh: true,
+  })[0];
+
+  assert.strictEqual(snapshot.name, "F95UE Masked + Direct Download Add-on");
+  assert.strictEqual(snapshot.version, "0.3.45");
+  assert.strictEqual(snapshot.trusted, true);
+  assert.strictEqual(snapshot.blocked, false);
+  assert.strictEqual(snapshot.status, "disabled");
+  assert.strictEqual(snapshot.activeOnPage, true);
+  assert.strictEqual(
+    snapshot.statusMessage,
+    "Disabled from core. It will remain off when the add-on loads.",
+  );
+  assert.strictEqual(snapshot.blockReason, null);
+  assert.strictEqual(snapshot.canEnable, true);
+  // The pre-fix fixture had trusted=true, blocked=true, and the untrusted
+  // policy message. The shared projection normalizes that stale runtime state.
+  assert.ok(!(snapshot.trusted && snapshot.blocked));
+});
+
+runTest("ADDON-TRUST-GATING-01 shares trust, identity, enabled, and scope decisions", () => {
+  const { resolveAddonAccess } = loadModule("src/services/addons/access.js");
+  const common = {
+    id: "MASKED.DIRECT.ADDON",
+    registered: {
+      id: "MASKED.DIRECT.ADDON",
+      status: "installed",
+      pageScopes: ["f95zone"],
+      matches: ["*://f95zone.to/threads/*"],
+    },
+    trustedIds: [],
+    allowUntrusted: false,
+    currentScopes: ["f95zone"],
+    currentUrl: "https://f95zone.to/threads/example.1/",
+  };
+  const catalogTrusted = resolveAddonAccess({
+    ...common,
+    catalogEntry: { id: "masked-direct-addon", trusted: true },
+  });
+  assert.deepStrictEqual(
+    {
+      isTrusted: catalogTrusted.isTrusted,
+      isBlocked: catalogTrusted.isBlocked,
+      blockReason: catalogTrusted.blockReason,
+      supportsCurrentPage: catalogTrusted.supportsCurrentPage,
+    },
+    { isTrusted: true, isBlocked: false, blockReason: null, supportsCurrentPage: true },
+  );
+
+  const userTrusted = resolveAddonAccess({ ...common, trustedIds: ["masked-direct-addon"] });
+  assert.strictEqual(userTrusted.trustSource, "user");
+  assert.strictEqual(userTrusted.isBlocked, false);
+
+  const untrusted = resolveAddonAccess({
+    ...common,
+    id: "unknown-addon",
+    registered: { ...common.registered, id: "unknown-addon" },
+  });
+  assert.deepStrictEqual(
+    { isTrusted: untrusted.isTrusted, isBlocked: untrusted.isBlocked, blockReason: untrusted.blockReason },
+    { isTrusted: false, isBlocked: true, blockReason: "untrusted_disallowed" },
+  );
+  assert.strictEqual(resolveAddonAccess({ ...common, allowUntrusted: true, desiredEnabled: false }).isBlocked, false);
+
+  const missingCatalog = resolveAddonAccess({ ...common, catalogEntry: null });
+  assert.strictEqual(missingCatalog.identityStatus, "unresolved");
+  assert.strictEqual(missingCatalog.blockReason, "untrusted_disallowed");
+  const mismatchedCatalog = resolveAddonAccess({ ...common, catalogEntry: { id: "other-addon", trusted: true } });
+  assert.strictEqual(mismatchedCatalog.identityStatus, "mismatch");
+  assert.strictEqual(mismatchedCatalog.blockReason, "identity_error");
+
+  const disabled = resolveAddonAccess({
+    ...common,
+    catalogEntry: { id: "masked-direct-addon", trusted: true },
+    registered: { ...common.registered, status: "disabled" },
+  });
+  assert.strictEqual(disabled.isEnabled, false);
+  assert.strictEqual(disabled.isBlocked, false);
+  assert.strictEqual(disabled.canEnable, true);
+
+  const registry = loadModule("src/services/addons/registry.js");
+  registry.registerAddon({
+    id: "example-addon",
+    name: "F95UE Example Add-on",
+    status: "disabled",
+    capabilities: ["feature", "storage"],
+    runtimeMode: "core-required",
+    requiresCore: true,
+    pageScopes: ["f95zone"],
+    matches: ["*://f95zone.to/*"],
+  });
+  const trustedDisabled = registry.getRegisteredAddon("example-addon");
+  assert.strictEqual(trustedDisabled.trusted, true);
+  assert.strictEqual(trustedDisabled.blocked, false);
+  assert.strictEqual(trustedDisabled.canEnable, true);
+  assert.ok(trustedDisabled.capabilities.includes("feature"));
+
+  registry.registerAddon({
+    id: "untrusted-regression-addon",
+    name: "Untrusted Regression Add-on",
+    status: "installed",
+    capabilities: ["feature", "storage"],
+    runtimeMode: "core-required",
+    requiresCore: true,
+    pageScopes: ["f95zone"],
+    matches: ["*://f95zone.to/*"],
+  });
+  const untrustedRegistered = registry.getRegisteredAddon("untrusted-regression-addon");
+  assert.strictEqual(untrustedRegistered.trusted, false);
+  assert.strictEqual(untrustedRegistered.blocked, true);
+  assert.deepStrictEqual(untrustedRegistered.capabilities, []);
+
+  const addonService = loadModule("src/services/addonsService.js");
+  assert.strictEqual(
+    addonService.getAddonExecutionBlockReason(trustedDisabled, ["f95zone"]),
+    "addon_disabled",
+  );
+  assert.strictEqual(
+    addonService.getAddonExecutionBlockReason(untrustedRegistered, ["f95zone"]),
+    "addon_untrusted",
+  );
+
+  const catalogModule = loadModule("src/services/addons/catalog.js");
+  const previousResourceLoader = global.GM_getResourceText;
+  try {
+    global.GM_getResourceText = () => JSON.stringify([
+      { id: "reload-addon", trusted: true, name: "Reloaded" },
+    ]);
+    catalogModule.reloadTrustedAddonCatalog();
+    assert.strictEqual(catalogModule.getTrustedCatalogEntry("RELOAD.ADDON").trusted, true);
+  } finally {
+    if (typeof previousResourceLoader === "undefined") delete global.GM_getResourceText;
+    else global.GM_getResourceText = previousResourceLoader;
+    catalogModule.reloadTrustedAddonCatalog();
+  }
+});
+
+runTest("ADDON-TRUST-GATING-01 covers every catalog-trusted add-on", () => {
+  const { buildKnownAddonsSnapshot } = loadModule("src/services/addons/knownAddons.js");
+  const catalogById = new Map(TRUSTED_ADDON_CATALOG.map((entry) => [entry.id, entry]));
+  const pageUrlFor = (entry) => entry.pageScopes.includes("latest")
+    ? "https://f95zone.to/sam/latest_alpha/"
+    : entry.matches.some((match) => String(match).includes("/threads/"))
+      ? "https://f95zone.to/threads/example.1/"
+      : "https://f95zone.to/";
+  const currentScopeFor = (entry) => [entry.pageScopes[0] || "f95zone"];
+
+  for (const entry of ADDON_MANIFEST.addons) {
+    const catalogEntry = catalogById.get(entry.id);
+    assert.ok(catalogEntry?.trusted === true, `${entry.id} must be catalog-trusted for this matrix`);
+    const base = {
+      id: entry.id,
+      name: entry.name,
+      version: entry.version,
+      pageScopes: entry.pageScopes,
+      matches: entry.matches,
+      capabilities: entry.capabilities,
+    };
+    const common = {
+      catalog: [catalogEntry],
+      currentScopes: currentScopeFor(entry),
+      currentUrl: pageUrlFor(entry),
+      catalogFresh: true,
+      allowUntrusted: false,
+    };
+    const disabled = buildKnownAddonsSnapshot({
+      ...common,
+      registered: [{ ...base, status: "disabled" }],
+    })[0];
+    const enabled = buildKnownAddonsSnapshot({
+      ...common,
+      registered: [{ ...base, status: "installed" }],
+    })[0];
+    const untrusted = buildKnownAddonsSnapshot({
+      ...common,
+      catalog: [],
+      registered: [{ ...base, status: "installed" }],
+    })[0];
+
+    assert.strictEqual(disabled.isTrusted, true, `${entry.id} disabled trust`);
+    assert.strictEqual(disabled.isBlocked, false, `${entry.id} disabled block`);
+    assert.strictEqual(disabled.status, "disabled", `${entry.id} disabled status`);
+    assert.strictEqual(disabled.canEnable, true, `${entry.id} enable control`);
+    assert.deepStrictEqual(disabled.capabilities, entry.capabilities, `${entry.id} disabled capabilities`);
+    assert.strictEqual(enabled.isTrusted, true, `${entry.id} enabled trust`);
+    assert.strictEqual(enabled.isBlocked, false, `${entry.id} enabled block`);
+    assert.strictEqual(enabled.blockReason, null, `${entry.id} enabled reason`);
+    assert.deepStrictEqual(enabled.capabilities, entry.capabilities, `${entry.id} enabled capabilities`);
+    assert.strictEqual(untrusted.isTrusted, false, `${entry.id} untrusted trust`);
+    assert.strictEqual(untrusted.isBlocked, true, `${entry.id} untrusted block`);
+    assert.strictEqual(untrusted.blockReason, "untrusted_disallowed", `${entry.id} untrusted reason`);
+    assert.deepStrictEqual(untrusted.capabilities, [], `${entry.id} untrusted capabilities`);
+  }
+});
+
+runTest("ADDON-TRUST-GATING-01 requires one handshake and access contract per add-on", () => {
+  const sharedBridge = fs.readFileSync(path.join(ROOT, "addons/shared/coreBridge.js"), "utf8");
+  assert.ok(sharedBridge.includes('"ping"'), "shared bridge must ping before registration");
+  assert.ok(sharedBridge.includes('"addon.access"'), "shared bridge must expose addon.access");
+  assert.ok(sharedBridge.includes('detail.addonId'), "shared bridge must filter command identity");
+  assert.ok(sharedBridge.includes('"teardown-complete"'), "shared bridge must acknowledge teardown");
+
+  for (const entry of ADDON_MANIFEST.addons) {
+    const addonRoot = path.join(ROOT, path.dirname(entry.entry), "..");
+    const files = collectJavaScriptFiles(addonRoot);
+    const source = files.map((filePath) => fs.readFileSync(filePath, "utf8")).join("\n");
+    assert.ok(source.includes("waitForCorePing"), `${entry.id} must perform the core handshake`);
+    assert.ok(/registerAddon|registerAddonRuntime|dispatchCoreCommand\("register"/.test(source), `${entry.id} must register through the bridge`);
+    assert.ok(/getAddonAccess|addon\.access/.test(source), `${entry.id} must consume the shared access result`);
+    assert.ok(source.includes("invokeCoreAction"), `${entry.id} must use permission-checked core actions`);
+    assert.ok(/(?:detail|d)\.addonId|bindAddonCommands/.test(source), `${entry.id} must filter core commands by identity`);
+    assert.ok(!source.includes("Blocked by main settings: enable untrusted add-ons or trust this add-on."), `${entry.id} must not own the core trust message`);
+  }
+});
+
+runTest("ADDON-SCOPE-02 keeps management actions outside runtime scope", () => {
+  const { getAddonActionScopePolicy } = loadModule("src/services/addons/actions/policy.js");
+  const { getAddonActionBlockReason } = loadModule("src/services/addonsService.js");
+  const addon = { trusted: true, blocked: false, status: "installed", pageScopes: ["thread"] };
+  assert.strictEqual(getAddonActionScopePolicy("addon.access"), "management");
+  assert.strictEqual(getAddonActionScopePolicy("feature.enable"), "management");
+  assert.strictEqual(getAddonActionScopePolicy("storage.get"), "runtime");
+  assert.strictEqual(getAddonActionBlockReason(addon, "feature.enable"), null);
+  assert.strictEqual(getAddonActionBlockReason(addon, "storage.get"), "addon_out_of_scope");
+});
+
 runTest("ADDON-BRIDGE listener shutdown permits one clean reinitialization", () => {
   const previousWindow = global.window;
   const previousDocument = global.document;
@@ -2261,11 +3724,7 @@ runTest("TEST-01 DOM sanitizer strips active content while retaining safe add-on
 
 runTest("TEST-01 deterministic helpers isolate GM storage and timers", async () => {
   const gm = createFakeGM({ value: 1 });
-  const changes = [];
-  const id = gm.addValueChangeListener("value", (...args) => changes.push(args.slice(0, 3)));
   await gm.setValue("value", 2);
-  gm.removeValueChangeListener(id);
-  assert.deepStrictEqual(changes, [["value", 1, 2]]);
   const clock = createFakeClock();
   const events = [];
   clock.setTimeout(() => events.push("late"), 10);
@@ -2384,7 +3843,7 @@ runTest("TEST-01 persistence commit is atomic on storage failure", async () => {
     const before = JSON.stringify(config);
     const result = await settings.commitConfig({ ...config, latestSettings: { ...config.latestSettings, minVersion: 0.9 } });
     assert.strictEqual(result.committed, false);
-    assert.strictEqual(result.issues[0].code, "storage_error");
+    assert.strictEqual(result.issues[0].code, "config_not_ready");
     assert.deepStrictEqual(gm.snapshot(), {});
     assert.strictEqual(JSON.stringify(config), before);
   } finally { global.GM = previousGM; }
@@ -2397,9 +3856,10 @@ runTest("TEST-01 persistence commit atomically stores a valid canonical envelope
   try {
     const settings = loadModule("src/services/settingsService.js");
     const { config } = loadModule("src/config.js");
+    await seedReadyConfig(gm, settings, config);
     const result = await settings.commitConfig(config, { origin: "TEST-01" });
     assert.strictEqual(result.committed, true);
-    assert.strictEqual(gm.snapshot()[settings.CONFIG_ENVELOPE_KEY].revision, 1);
+    assert.strictEqual(gm.snapshot()[settings.CONFIG_ENVELOPE_KEY].revision, 2);
     assert.strictEqual(gm.snapshot()[settings.CONFIG_ENVELOPE_KEY].data.latestSettings.minVersion, config.latestSettings.minVersion);
   } finally { global.GM = previousGM; }
 });
@@ -2425,6 +3885,7 @@ runTest("PERSIST-01 successful commits advance revisions and retain last-known-g
   try {
     const settings = loadModule("src/services/settingsService.js");
     const { config } = loadModule("src/config.js");
+    await seedReadyConfig(gm, settings, config);
     const first = await settings.commitConfig(config, { origin: "PERSIST-01" });
     const second = await settings.commitConfig({
       ...first.config,
@@ -2432,12 +3893,12 @@ runTest("PERSIST-01 successful commits advance revisions and retain last-known-g
     }, { origin: "PERSIST-01" });
     assert.strictEqual(first.committed, true);
     assert.strictEqual(second.committed, true);
-    assert.strictEqual(first.revision, 1);
-    assert.strictEqual(second.revision, 2);
-    assert.strictEqual(gm.snapshot()[settings.CONFIG_BACKUP_KEY].revision, 1);
+    assert.strictEqual(first.revision, 2);
+    assert.strictEqual(second.revision, 3);
+    assert.strictEqual(gm.snapshot()[settings.CONFIG_BACKUP_KEY].revision, 2);
     assert.strictEqual(gm.snapshot()[settings.CONFIG_ENVELOPE_KEY].data.latestSettings.minVersion, 0.9);
     assert.deepStrictEqual(second.revisionMetadata, {
-      revision: 2,
+      revision: second.revision,
       writerId: second.envelope.writerId,
       updatedAt: second.envelope.updatedAt,
     });
@@ -2454,7 +3915,12 @@ runTest("PERSIST-01 failed multi-write commit preserves canonical and live state
   const seed = await settings.commitConfig(config, { origin: "PERSIST-01" });
   const previousEnvelope = seedGM.snapshot()[settings.CONFIG_ENVELOPE_KEY];
 
-  const failingGM = createFakeGM({ [settings.CONFIG_ENVELOPE_KEY]: previousEnvelope }, { failSetAt: 2 });
+  const failingGM = createFakeGM({
+    [settings.CONFIG_ENVELOPE_KEY]: previousEnvelope,
+    [settings.CONFIG_MIGRATION_VERSION_KEY]: 1,
+    [settings.CONFIG_TAGS_CACHE_KEY]: [],
+    [settings.CONFIG_PREFIXES_CACHE_KEY]: { items: [], categories: {} },
+  }, { failSetAt: 2 });
   global.GM = failingGM;
   try {
     settings = loadModule("src/services/settingsService.js");
@@ -2492,6 +3958,9 @@ runTest("CORE-CONFIG-STORAGE-01 version-zero canonical data recovers from a vali
     };
     await gm.setValue(settings.CONFIG_ENVELOPE_KEY, oldEnvelope);
     await gm.setValue(settings.CONFIG_BACKUP_KEY, backupEnvelope);
+    await gm.setValue(settings.CONFIG_MIGRATION_VERSION_KEY, 1);
+    await gm.setValue(settings.CONFIG_TAGS_CACHE_KEY, []);
+    await gm.setValue(settings.CONFIG_PREFIXES_CACHE_KEY, { items: [], categories: {} });
     const loaded = await settings.loadConfig();
     assert.strictEqual(loaded.recovered, true);
     assert.strictEqual(loaded.status, "recovered");
@@ -2523,6 +3992,9 @@ runTest("PERSIST-01 valid backup recovers corrupt canonical data", async () => {
       data: null,
     });
     await gm.setValue(settings.CONFIG_BACKUP_KEY, validBackup);
+    await gm.setValue(settings.CONFIG_MIGRATION_VERSION_KEY, 1);
+    await gm.setValue(settings.CONFIG_TAGS_CACHE_KEY, []);
+    await gm.setValue(settings.CONFIG_PREFIXES_CACHE_KEY, { items: [], categories: {} });
     const loaded = await settings.loadConfig();
     assert.strictEqual(loaded.source, "backup");
     assert.strictEqual(loaded.recovered, true);
@@ -2541,8 +4013,10 @@ runTest("PERSIST-01 corrupt canonical and backup load defaults with a recovery m
     await gm.setValue(settings.CONFIG_BACKUP_KEY, { schemaVersion: 1, revision: 3, writerId: "also-bad", updatedAt: 3, data: null });
     const loaded = await settings.loadConfig();
     assert.strictEqual(loaded.source, "defaults");
+    assert.strictEqual(loaded.status, "migration-failed");
     assert.strictEqual(loaded.degraded, true);
-    assert.strictEqual(gm.snapshot()[settings.CONFIG_RECOVERY_MARKER_KEY].kind, "corrupt");
+    assert.strictEqual(gm.snapshot()[settings.CONFIG_RECOVERY_MARKER_KEY].kind, "migration-failed");
+    assert.strictEqual(gm.snapshot()[settings.CONFIG_MIGRATION_VERSION_KEY], undefined);
   } finally { global.GM = previousGM; }
 });
 
@@ -2558,13 +4032,36 @@ runTest("CORE-CONFIG-STORAGE-01 missing canonical data ignores obsolete standalo
     const settings = loadModule("src/services/settingsService.js");
     const loaded = await settings.loadConfig();
     const snapshot = gm.snapshot();
-    assert.strictEqual(loaded.status, "defaults");
-    assert.strictEqual(loaded.source, "defaults");
-    assert.deepStrictEqual(snapshot, {
-      tags: [{ id: 1, name: "Legacy" }],
-      minVersion: 0.7,
-      threadSettings: { marked: true, skipMaskedLink: true },
-    });
+    assert.strictEqual(loaded.status, "migrated");
+    assert.strictEqual(loaded.source, "legacy-migration");
+    assert.strictEqual(loaded.data.latestSettings.minVersion, 0.7);
+    assert.strictEqual(loaded.data.threadSettings.marked, true);
+    assert.deepStrictEqual(snapshot[settings.CONFIG_TAGS_CACHE_KEY], [{ id: 1, name: "Legacy" }]);
+    assert.strictEqual(snapshot[settings.CONFIG_MIGRATION_VERSION_KEY], 1);
+    assert.strictEqual(snapshot.tags, undefined);
+    assert.strictEqual(snapshot.minVersion, undefined);
+    assert.strictEqual(snapshot.threadSettings, undefined);
+  } finally { global.GM = previousGM; }
+});
+
+runTest("CORE-CONFIG-MIGRATION-RECOVERY-01 migrates a legacy complete config stored at the canonical key", async () => {
+  const previousGM = global.GM;
+  const fixture = loadModule("tests/fixtures/configMigrationHarness.js");
+  const reference = fixture.loadConfigReference({ compactCatalogs: true });
+  const gm = createFakeGM({ ["f95ue:config"]: reference });
+  global.GM = gm;
+  try {
+    const settings = loadModule("src/services/settingsService.js");
+    const loaded = await settings.loadConfig();
+    const snapshot = gm.snapshot();
+    const canonical = snapshot[settings.CONFIG_ENVELOPE_KEY];
+    assert.strictEqual(loaded.status, "migrated");
+    assert.strictEqual(loaded.source, "legacy-migration");
+    assert.strictEqual(settings.isConfigReady(), true);
+    assert.strictEqual(canonical.schemaVersion, 1);
+    assert.strictEqual(canonical.data.addons.byAddon["example-addon"].state.enabled, true);
+    assert.strictEqual(Object.hasOwn(canonical.data, "metrics"), false);
+    assert.strictEqual(snapshot[settings.CONFIG_MIGRATION_VERSION_KEY], 1);
   } finally { global.GM = previousGM; }
 });
 
@@ -2578,17 +4075,23 @@ runTest("CORE-CONFIG-STORAGE-01 sanitized version-one data preserves valid sibli
     const data = {
       ...JSON.parse(JSON.stringify(config)),
       minVersion: 0.7,
+      globalSettings: { ...config.globalSettings, enableCrossTabSync: true, configVisibility: false },
       threadSettings: { ...config.threadSettings, marked: true, skipMaskedLink: true },
     };
     await gm.setValue(settings.CONFIG_ENVELOPE_KEY, {
       schemaVersion: 1, revision: 3, writerId: "writer", updatedAt: 3, data,
     });
+    await gm.setValue(settings.CONFIG_MIGRATION_VERSION_KEY, 1);
+    await gm.setValue(settings.CONFIG_TAGS_CACHE_KEY, []);
+    await gm.setValue(settings.CONFIG_PREFIXES_CACHE_KEY, { items: [], categories: {} });
     const before = JSON.stringify(gm.snapshot());
     const result = await loadModule("tests/fixtures/configStorageHarness.js").loadWithHealth();
     assert.strictEqual(result.loaded.status, "sanitized");
     assert.strictEqual(result.loaded.data.latestSettings.minVersion, config.latestSettings.minVersion);
     assert.strictEqual(result.loaded.data.threadSettings.marked, true);
     assert.strictEqual(Object.hasOwn(result.loaded.data, "minVersion"), false);
+    assert.strictEqual(Object.hasOwn(result.loaded.data.globalSettings, "enableCrossTabSync"), false);
+    assert.strictEqual(result.loaded.data.globalSettings.configVisibility, false);
     assert.strictEqual(Object.hasOwn(result.loaded.data.threadSettings, "skipMaskedLink"), false);
     assert.strictEqual(JSON.stringify(gm.snapshot()), before);
     assert.strictEqual(result.events.filter((event) => event.code === "CONFIG_SANITIZED").length, 1);
@@ -2602,6 +4105,362 @@ runTest("CORE-CONFIG-STORAGE-01 persistence contract has version one and zero mi
   assert.deepStrictEqual(persistence.CONFIG_MIGRATIONS, []);
   assert.strictEqual(persistence.isCurrentConfigVersion(1), true);
   assert.strictEqual(persistence.isSupportedConfigVersion(0), false);
+});
+
+runTest("CORE-CONFIG-MIGRATION-RECOVERY-01 recovers the supplied real-world surface layout", async () => {
+  const previousGM = global.GM;
+  const fixture = loadModule("tests/fixtures/configMigrationHarness.js");
+  const reference = fixture.loadConfigReference({ compactCatalogs: true });
+  const gm = createFakeGM(reference);
+  global.GM = gm;
+  try {
+    const settings = loadModule("src/services/settingsService.js");
+    const loaded = await settings.loadConfig();
+    const snapshot = gm.snapshot();
+    const canonical = snapshot[settings.CONFIG_ENVELOPE_KEY];
+    assert.strictEqual(loaded.status, "migrated");
+    assert.strictEqual(Object.hasOwn(loaded.data.globalSettings, "disableHelpMessage"), false);
+    assert.strictEqual(loaded.data.latestSettings.autoRefresh, true);
+    assert.strictEqual(loaded.data.latestSettings.webNotif, true);
+    assert.deepStrictEqual(loaded.data.preferredTags, reference.preferredTags);
+    assert.deepStrictEqual(loaded.data.excludedTags, reference.excludedTags);
+    assert.deepStrictEqual(loaded.data.markedTags, reference.markedTags);
+    assert.strictEqual(loaded.data.threadSettings.preferredShadow, false);
+    assert.strictEqual(loaded.data.addons.byAddon["latest-filters-addon"].state.enabled, true);
+    assert.ok(Array.isArray(loaded.data.addons.byAddon["latest-filters-addon"].state.presets));
+    assert.strictEqual(Object.hasOwn(canonical.data, "metrics"), false);
+    assert.strictEqual(canonical.data.tags.length, 0);
+    assert.deepStrictEqual(canonical.data.prefixes, { items: [], categories: {} });
+    assert.deepStrictEqual(snapshot[settings.CONFIG_TAGS_CACHE_KEY], reference.tags);
+    assert.deepStrictEqual(snapshot[settings.CONFIG_PREFIXES_CACHE_KEY], reference.prefixes);
+    assert.strictEqual(snapshot.tags, undefined);
+    assert.strictEqual(snapshot.prefixes, undefined);
+    assert.strictEqual(snapshot.globalSettings, undefined);
+    assert.strictEqual(snapshot.metrics, undefined);
+    assert.strictEqual(snapshot[settings.CONFIG_MIGRATION_VERSION_KEY], 1);
+  } finally { global.GM = previousGM; }
+});
+
+runTest("CORE-CONFIG-MIGRATION-RECOVERY-01 current marker uses the fast path only", async () => {
+  const previousGM = global.GM;
+  const gm = createFakeGM({
+    ["f95ue:config:migration-version"]: 1,
+    ["f95ue:config"]: {
+      schemaVersion: 1, revision: 7, writerId: "ready", updatedAt: 7,
+      data: getDefaultConfig(),
+    },
+    ["f95ue:cache:tags"]: [{ id: 1, name: "Cached" }],
+    ["f95ue:cache:prefixes"]: { items: [], categories: {} },
+    color: { completed: "#000000" },
+    metrics: { failed: 10 },
+  });
+  global.GM = gm;
+  try {
+    const settings = loadModule("src/services/settingsService.js");
+    const before = gm.logs();
+    const loaded = await settings.loadConfig();
+    const logs = gm.logs();
+    assert.strictEqual(loaded.status, "loaded");
+    assert.deepStrictEqual(loaded.data.tags, [{ id: 1, name: "Cached" }]);
+    assert.deepStrictEqual(logs.writes, before.writes);
+    assert.deepStrictEqual(logs.deletes, before.deletes);
+    assert.deepStrictEqual(logs.reads, ["f95ue:config:migration-version", "f95ue:config", "f95ue:cache:tags", "f95ue:cache:prefixes"]);
+  } finally { global.GM = previousGM; }
+});
+
+runTest("CORE-CONFIG-MIGRATION-RECOVERY-01 invalid historical leaves preserve valid siblings", async () => {
+  const previousGM = global.GM;
+  const gm = createFakeGM({
+    globalSettings: { configVisibility: "bad", disableHelpMessage: true, enableCrossTabSync: true },
+    latestSettings: { autoRefresh: true, priorityWeights: { rating: 4, engagement: "bad" } },
+  });
+  global.GM = gm;
+  try {
+    const settings = loadModule("src/services/settingsService.js");
+    const loaded = await settings.loadConfig();
+    assert.strictEqual(loaded.status, "migrated");
+    assert.strictEqual(Object.hasOwn(loaded.data.globalSettings, "disableHelpMessage"), false);
+    assert.strictEqual(Object.hasOwn(loaded.data.globalSettings, "enableCrossTabSync"), false);
+    assert.strictEqual(loaded.data.globalSettings.configVisibility, true);
+    assert.strictEqual(loaded.data.latestSettings.autoRefresh, true);
+    assert.strictEqual(loaded.data.latestSettings.priorityWeights.rating, 4);
+    assert.strictEqual(loaded.data.latestSettings.priorityWeights.engagement, 1.5);
+  } finally { global.GM = previousGM; }
+});
+
+runTest("CORE-CONFIG-MIGRATION-RECOVERY-01 fresh installs get a marker and repeat startup is write-free", async () => {
+  const previousGM = global.GM;
+  const gm = createFakeGM();
+  global.GM = gm;
+  try {
+    let settings = loadModule("src/services/settingsService.js");
+    const first = await settings.loadConfig();
+    assert.strictEqual(first.status, "migrated");
+    const firstRevision = gm.snapshot()[settings.CONFIG_ENVELOPE_KEY].revision;
+    const writesBefore = gm.logs().writes.length;
+    const deletesBefore = gm.logs().deletes.length;
+    settings = loadModule("src/services/settingsService.js");
+    const second = await settings.loadConfig();
+    assert.strictEqual(second.status, "loaded");
+    assert.strictEqual(gm.snapshot()[settings.CONFIG_ENVELOPE_KEY].revision, firstRevision);
+    assert.strictEqual(gm.logs().writes.length, writesBefore);
+    assert.strictEqual(gm.logs().deletes.length, deletesBefore);
+  } finally { global.GM = previousGM; }
+});
+
+runTest("CORE-CONFIG-MIGRATION-RECOVERY-01 cache writes do not rotate the core envelope", async () => {
+  const previousGM = global.GM;
+  const gm = createFakeGM();
+  global.GM = gm;
+  try {
+    const settings = loadModule("src/services/settingsService.js");
+    const { config } = loadModule("src/config.js");
+    await seedReadyConfig(gm, settings, config);
+    await settings.loadConfig();
+    const before = gm.logs();
+    const tags = Array.from({ length: 10 }, (_, index) => ({ id: index + 1, name: `Tag ${index + 1}` }));
+    const result = await settings.saveConfigKeys({ tags });
+    const writes = gm.logs().writes.slice(before.writes.length);
+    assert.strictEqual(result.committed, true);
+    assert.deepStrictEqual(writes, [settings.CONFIG_TAGS_CACHE_KEY]);
+    assert.deepStrictEqual(gm.snapshot()[settings.CONFIG_ENVELOPE_KEY].revision, 1);
+    assert.strictEqual(gm.snapshot()[settings.CONFIG_BACKUP_KEY], null);
+  } finally { global.GM = previousGM; }
+});
+
+runTest("CORE-CONFIG-MIGRATION-RECOVERY-01 prefix and add-on updates stay in their ownership boundaries", async () => {
+  const previousGM = global.GM;
+  const gm = createFakeGM();
+  global.GM = gm;
+  try {
+    const settings = loadModule("src/services/settingsService.js");
+    const { config } = loadModule("src/config.js");
+    await seedReadyConfig(gm, settings, config);
+    await settings.loadConfig();
+    const beforePrefix = gm.logs();
+    const prefixResult = await settings.saveConfigKeys({ prefixes: { items: [{ id: 1, name: "Engine", class: "label" }], categories: {} } });
+    const prefixWrites = gm.logs().writes.slice(beforePrefix.writes.length);
+    assert.strictEqual(prefixResult.committed, true);
+    assert.deepStrictEqual(prefixWrites, [settings.CONFIG_PREFIXES_CACHE_KEY]);
+
+    const beforeAddon = gm.logs();
+    const addonResult = await settings.saveConfigKeys({ addons: { byAddon: { "example-addon": { state: { enabled: true, presets: ["safe"] } } } } });
+    const addonWrites = gm.logs().writes.slice(beforeAddon.writes.length);
+    assert.strictEqual(addonResult.committed, true);
+    assert.deepStrictEqual(addonWrites, [settings.CONFIG_BACKUP_KEY, settings.CONFIG_ENVELOPE_KEY]);
+    assert.strictEqual(addonWrites.includes(settings.CONFIG_TAGS_CACHE_KEY), false);
+    assert.strictEqual(addonWrites.includes(settings.CONFIG_PREFIXES_CACHE_KEY), false);
+  } finally { global.GM = previousGM; }
+});
+
+runTest("CORE-CONFIG-MIGRATION-RECOVERY-01 migration failures keep source data and marker unset", async () => {
+  const previousGM = global.GM;
+  const source = { preferredTags: [9], latestSettings: { autoRefresh: true } };
+  const gm = createFakeGM(source, { failSetKey: "f95ue:config" });
+  global.GM = gm;
+  try {
+    const settings = loadModule("src/services/settingsService.js");
+    const loaded = await settings.loadConfig();
+    assert.strictEqual(loaded.status, "migration-failed");
+    assert.deepStrictEqual(gm.snapshot().preferredTags, [9]);
+    assert.strictEqual(gm.snapshot()[settings.CONFIG_MIGRATION_VERSION_KEY], undefined);
+    assert.strictEqual(gm.snapshot()[settings.CONFIG_ENVELOPE_KEY], undefined);
+  } finally { global.GM = previousGM; }
+});
+
+runTest("CORE-CONFIG-MIGRATION-RECOVERY-01 marker and read-back failures never complete migration", async () => {
+  for (const option of [
+    { failSetKey: "f95ue:config:migration-version" },
+    { afterSet: (key, values) => {
+      if (key !== "f95ue:config") return;
+      values.set(key, { schemaVersion: 1, revision: 999, writerId: "corrupt", updatedAt: 0, data: null });
+    } },
+  ]) {
+    const previousGM = global.GM;
+    const gm = createFakeGM({ preferredTags: [7] }, option);
+    global.GM = gm;
+    try {
+      const settings = loadModule("src/services/settingsService.js");
+      const loaded = await settings.loadConfig();
+      assert.strictEqual(loaded.status, "migration-failed");
+      assert.strictEqual(gm.snapshot()[settings.CONFIG_MIGRATION_VERSION_KEY], undefined);
+      assert.deepStrictEqual(gm.snapshot().preferredTags, [7]);
+    } finally { global.GM = previousGM; }
+  }
+});
+
+runTest("CORE-CONFIG-MIGRATION-RECOVERY-01 cleanup failure leaves verified data and marker intact", async () => {
+  const previousGM = global.GM;
+  const gm = createFakeGM({ preferredTags: [8] }, { failDelete: true });
+  global.GM = gm;
+  try {
+    const settings = loadModule("src/services/settingsService.js");
+    const loaded = await settings.loadConfig();
+    assert.strictEqual(loaded.status, "migrated");
+    assert.strictEqual(gm.snapshot()[settings.CONFIG_MIGRATION_VERSION_KEY], 1);
+    assert.deepStrictEqual(gm.snapshot().preferredTags, [8]);
+    assert.ok(gm.snapshot()[settings.CONFIG_ENVELOPE_KEY]);
+  } finally { global.GM = previousGM; }
+});
+
+runTest("CORE-CONFIG-MIGRATION-RECOVERY-01 concurrent startup has one migration winner", async () => {
+  const previousGM = global.GM;
+  const gm = createFakeGM({ preferredTags: [11] });
+  global.GM = gm;
+  try {
+    const firstSettings = loadModule("src/services/settingsService.js");
+    const secondSettings = loadModule("src/services/settingsService.js");
+    const [first, second] = await Promise.all([firstSettings.loadConfig(), secondSettings.loadConfig()]);
+    assert.ok([first.status, second.status].includes("migrated"));
+    assert.strictEqual(gm.snapshot()[firstSettings.CONFIG_MIGRATION_VERSION_KEY], 1);
+    assert.ok([first.status, second.status].includes("loaded"));
+    assert.notStrictEqual(first.status, second.status);
+  } finally { global.GM = previousGM; }
+});
+
+runTest("CORE-CONFIG-MIGRATION-RECOVERY-01 save waits for migration readiness", async () => {
+  const previousGM = global.GM;
+  const gm = createFakeGM({ preferredTags: [13], latestSettings: { autoRefresh: true } });
+  global.GM = gm;
+  try {
+    const settings = loadModule("src/services/settingsService.js");
+    const loadPromise = settings.loadConfig();
+    const savePromise = settings.saveConfigKeys({ globalSettings: { configVisibility: false } });
+    const [loaded, saved] = await Promise.all([loadPromise, savePromise]);
+    assert.strictEqual(loaded.status, "migrated");
+    assert.strictEqual(saved.committed, true);
+    assert.deepStrictEqual(saved.config.preferredTags, [13]);
+    assert.strictEqual(saved.config.globalSettings.configVisibility, false);
+  } finally { global.GM = previousGM; }
+});
+
+runTest("CORE-CONFIG-MIGRATION-RECOVERY-01 canonical size is isolated from tag and prefix catalog size", () => {
+  const migration = loadModule("src/services/configMigrationService.js");
+  const makeTags = (count) => Array.from({ length: count }, (_, index) => ({ id: index + 1, name: `Tag ${index}` }));
+  const makePrefixes = (count) => ({
+    items: makeTags(count).map((item) => ({ ...item, class: "label--blue" })),
+    categories: { games: [{ id: 1, name: "All", prefixes: makeTags(count).map((item) => ({ ...item, class: "label--blue" })), prefixIds: makeTags(count).map((item) => item.id) }] },
+  });
+  const small = migration.buildMigrationPlan({ surfaceValues: { tags: makeTags(10), prefixes: makePrefixes(10) } });
+  const large = migration.buildMigrationPlan({ surfaceValues: { tags: makeTags(10000), prefixes: makePrefixes(300) } });
+  assert.strictEqual(JSON.stringify(migration.getCanonicalData(small.data)).length, JSON.stringify(migration.getCanonicalData(large.data)).length);
+  assert.ok(JSON.stringify(large.caches.tags).length > JSON.stringify(small.caches.tags).length);
+  assert.ok(JSON.stringify(large.caches.prefixes).length > JSON.stringify(small.caches.prefixes).length);
+});
+
+runTest("CORE-CONFIG-INTERACTION-REGRESSION-02 reproduces stale tag rendering after a detached save", async () => {
+  const previousGM = global.GM;
+  const previousRequestAnimationFrame = global.requestAnimationFrame;
+  const dom = createDomSandbox();
+  global.requestAnimationFrame = (callback) => callback();
+  global.GM = createFakeGM();
+  try {
+    const harness = loadModule("tests/fixtures/configInteractionHarness.js");
+    const result = await harness.reproduceStaleTagRender();
+    assert.deepStrictEqual(result.renderedLists[0], [1, 7]);
+    assert.strictEqual(harness.getTagEffectMetadata().config, "preferredTags");
+    assert.strictEqual(typeof harness.getTagEffectMetadata().effects.custom, "function");
+  } finally {
+    global.GM = previousGM;
+    global.requestAnimationFrame = previousRequestAnimationFrame;
+    dom.restore();
+  }
+});
+
+runTest("CORE-CONFIG-INTERACTION-REGRESSION-02 serializes rapid tag edits without losing operations", async () => {
+  const previousGM = global.GM;
+  const previousRequestAnimationFrame = global.requestAnimationFrame;
+  const dom = createDomSandbox();
+  global.requestAnimationFrame = (callback) => callback();
+  global.GM = createFakeGM();
+  try {
+    const result = await loadModule("tests/fixtures/configInteractionHarness.js").runSerializedTagMutationSequence();
+    assert.deepStrictEqual(result.config.preferredTags, [2, 1, 8]);
+    assert.deepStrictEqual(result.config.excludedTags, []);
+    assert.deepStrictEqual(result.config.markedTags, [7]);
+    assert.ok(result.renders.length >= 5);
+  } finally {
+    global.GM = previousGM;
+    global.requestAnimationFrame = previousRequestAnimationFrame;
+    dom.restore();
+  }
+});
+
+runTest("CORE-CONFIG-INTERACTION-REGRESSION-02 measures catalog persistence without rotating core config", async () => {
+  const previousGM = global.GM;
+  const previousRequestAnimationFrame = global.requestAnimationFrame;
+  const dom = createDomSandbox();
+  global.requestAnimationFrame = (callback) => callback();
+  global.GM = createFakeGM();
+  try {
+    const measurements = await loadModule("tests/fixtures/configInteractionHarness.js").measureCatalogPersistence();
+    assert.ok(measurements.every((entry) => entry.committed));
+    const coreMeasurement = measurements.find((entry) => entry.kind === "tag-list");
+    const cacheMeasurements = measurements.filter((entry) => entry.kind !== "tag-list");
+    assert.deepStrictEqual(coreMeasurement.writes, ["f95ue:config:last-known-good", "f95ue:config"]);
+    assert.ok(coreMeasurement.reads.includes("f95ue:config"));
+    assert.ok(cacheMeasurements.every((entry) => entry.writes.length === 1));
+    assert.ok(cacheMeasurements.every((entry) => entry.writes[0].includes("cache:")));
+    assert.strictEqual(new Set(measurements.map((entry) => entry.canonicalBytes)).size, 1);
+    console.log(`CORE-CONFIG-INTERACTION-REGRESSION-02 measurements ${JSON.stringify(measurements)}`);
+  } finally {
+    global.GM = previousGM;
+    global.requestAnimationFrame = previousRequestAnimationFrame;
+    dom.restore();
+  }
+});
+
+runTest("CORE-CONFIG-INTERACTION-REGRESSION-02 serializes Latest Overlay off-on lifecycle transitions", async () => {
+  const previousGM = global.GM;
+  const previousRequestAnimationFrame = global.requestAnimationFrame;
+  const dom = createDomSandbox("https://f95zone.to/sam/latest_alpha/");
+  global.requestAnimationFrame = (callback) => callback();
+  global.GM = createFakeGM();
+  try {
+    const result = await loadModule("tests/fixtures/configInteractionHarness.js").runLatestOverlayToggleSequence();
+    assert.strictEqual(result.finalToggle, true);
+    assert.strictEqual(result.status, "ACTIVE");
+  } finally {
+    global.GM = previousGM;
+    global.requestAnimationFrame = previousRequestAnimationFrame;
+    dom.restore();
+  }
+});
+
+runTest("CORE-CONFIG-INTERACTION-REGRESSION-02 suppresses load toasts while retaining interactive notifications", async () => {
+  const previousGM = global.GM;
+  const previousRequestAnimationFrame = global.requestAnimationFrame;
+  const dom = createDomSandbox();
+  global.requestAnimationFrame = (callback) => callback();
+  global.GM = createFakeGM();
+  try {
+    const result = await loadModule("tests/fixtures/configInteractionHarness.js").runLoadEffectNotificationContract();
+    assert.strictEqual(result.customCalls, 2);
+    assert.deepStrictEqual(result.loadToasts, []);
+    assert.deepStrictEqual(result.interactiveToasts, ["Notification probe disabled"]);
+  } finally {
+    global.GM = previousGM;
+    global.requestAnimationFrame = previousRequestAnimationFrame;
+    dom.restore();
+  }
+});
+
+runTest("CORE-CONFIG-INTERACTION-REGRESSION-02 settings load does not announce persisted feature state", async () => {
+  const previousGM = global.GM;
+  const previousRequestAnimationFrame = global.requestAnimationFrame;
+  const dom = createDomSandbox();
+  global.requestAnimationFrame = (callback) => callback();
+  global.GM = createFakeGM();
+  try {
+    const result = await loadModule("tests/fixtures/configInteractionHarness.js").runSettingsLoadNotificationContract();
+    assert.strictEqual(result.source, "canonical");
+    assert.strictEqual(result.toggle, false);
+    assert.deepStrictEqual(result.toasts, []);
+  } finally {
+    global.GM = previousGM;
+    global.requestAnimationFrame = previousRequestAnimationFrame;
+    dom.restore();
+  }
 });
 
 runTest("TEST-01 config import preview rejects invalid data without mutating state", async () => {
@@ -2700,7 +4559,7 @@ runTest("TRANSFER-01 successful import commits complete sections through shared 
       schemaVersion: 1,
       settings: {
         color: { completed: "#abc" },
-        globalSettings: { enableCrossTabSync: true },
+        globalSettings: { configVisibility: false },
         latestSettings: { minVersion: 0.9 },
         tags: [{ id: 7, name: "Imported" }],
       },
@@ -2708,7 +4567,7 @@ runTest("TRANSFER-01 successful import commits complete sections through shared 
     assert.strictEqual(result.ok, true);
     assert.strictEqual(result.committed, true);
     assert.strictEqual(result.config.color.completed, "#abc");
-    assert.strictEqual(result.config.globalSettings.enableCrossTabSync, true);
+    assert.strictEqual(result.config.globalSettings.configVisibility, false);
     assert.strictEqual(result.config.latestSettings.minVersion, 0.9);
     assert.deepStrictEqual(result.config.tags, [{ id: 7, name: "Imported" }]);
     assert.deepStrictEqual(result.changedSections.sort(), ["color", "globalSettings", "latestSettings", "tags"].sort());
@@ -2739,70 +4598,12 @@ runTest("TRANSFER-LEAN-01 successful commit applies registered effects exactly o
   } finally { global.GM = previousGM; }
 });
 
-runTest("TEST-01 sync rejects stale envelopes and ignores local loop events", async () => {
-  const previousGM = global.GM;
-  const gm = createFakeGM();
-  global.GM = gm;
-  try {
-    const sync = loadModule("src/services/syncService.js");
-    const { config } = loadModule("src/config.js");
-    const data = JSON.parse(JSON.stringify(config));
-    const newer = { schemaVersion: 1, revision: 2, updatedAt: 20, writerId: "tab-b", data };
-    const stale = { schemaVersion: 1, revision: 1, updatedAt: 10, writerId: "tab-a", data };
-    assert.strictEqual(sync.applyIncoming(newer), true);
-    assert.strictEqual(sync.applyIncoming(stale), false);
-  } finally { global.GM = previousGM; }
-});
-
-runTest("SYNC-01 compares revisions deterministically and prevents remote echo loops", async () => {
-  const previousGM = global.GM;
-  const gm = createFakeGM();
-  global.GM = gm;
-  try {
-    const tabA = loadModule("tests/fixtures/syncTabHarness.js");
-    const tabB = loadModule("tests/fixtures/syncTabHarness.js");
-    await Promise.all([tabA.enableSync(), tabB.enableSync()]);
-    const data = tabA.snapshotConfig();
-    data.latestSettings.minVersion = 0.9;
-    const envelope = { schemaVersion: 1, revision: 1, updatedAt: 10, writerId: "tab-a", data };
-    gm.emitRemote("f95ue:config", envelope);
-    assert.strictEqual(tabA.snapshotConfig().latestSettings.minVersion, 0.9);
-    assert.strictEqual(tabB.snapshotConfig().latestSettings.minVersion, 0.9);
-    gm.emitRemote("f95ue:config", envelope);
-    assert.strictEqual(tabB.snapshotConfig().latestSettings.minVersion, 0.9);
-
-    const tieData = tabA.snapshotConfig();
-    tieData.latestSettings.minVersion = 0.8;
-    gm.emitRemote("f95ue:config", { schemaVersion: 1, revision: 2, updatedAt: 20, writerId: "tab-a", data: tieData });
-    tieData.latestSettings.minVersion = 0.7;
-    gm.emitRemote("f95ue:config", { schemaVersion: 1, revision: 2, updatedAt: 20, writerId: "tab-b", data: tieData });
-    assert.strictEqual(tabA.snapshotConfig().latestSettings.minVersion, 0.7);
-    assert.strictEqual(tabB.snapshotConfig().latestSettings.minVersion, 0.7);
-    tabA.resetSync(); tabB.resetSync();
-  } finally { global.GM = previousGM; }
-});
-
-runTest("SYNC-01 replays static, tag, nested, and dynamic metadata through one pipeline", async () => {
-  const result = await loadModule("tests/fixtures/syncCoverageHarness.js").runSyncCoverage();
-  const seen = new Set(result.seen.map(([name]) => name));
-  for (const name of ["color", "overlay", "thread", "latest", "modifier", "global", "tag", "preference"]) {
-    assert.ok(seen.has(name), name);
-  }
-  assert.ok(result.appliedPaths.some((path) => path.startsWith("latestSettings.priorityWeights")));
-  assert.ok(result.appliedPaths.some((path) => path.startsWith("tags[0]")));
-});
-
-runTest("SYNC-01 isolates effect failures and continues unrelated replay", async () => {
-  const result = await loadModule("tests/fixtures/syncCoverageHarness.js").runEffectFailureIsolation();
-  assert.deepStrictEqual(result.seen, ["succeeding"]);
-  assert.strictEqual(typeof result.value, "number");
-});
-
-runTest("TEST-01 cross-tab sync replays registered effects across config sections", () => {
-  const harness = loadModule("tests/fixtures/syncEffectHarness.js");
-  const result = harness.runSyncEffectReplay();
-  assert.strictEqual(result.applied, true);
-  assert.deepStrictEqual(result.seen.map(([section]) => section).sort(), ["global", "latest"]);
+runTest("CORE-CONFIG-SYNC-REMOVE-01 removes the unreleased core sync surface", () => {
+  const defaults = getDefaultConfig();
+  assert.strictEqual(Object.hasOwn(defaults.globalSettings, "enableCrossTabSync"), false);
+  assert.strictEqual(Object.hasOwn(getConfigPathMetadata("globalSettings"), "syncable"), false);
+  assert.strictEqual(fs.existsSync(path.join(ROOT, "src/services/syncService.js")), false);
+  assert.doesNotMatch(fs.readFileSync(path.join(ROOT, "src/ui/settings/globalSettings.js"), "utf8"), /cross.?tab/i);
 });
 
 runTest("TEST-01 BFCache page lifecycle suspends, resumes fresh route work, and fully tears down", async () => {
@@ -2858,7 +4659,10 @@ runTest("TEST-01 add-on UI ownership rejects cross-owner mutation and cleans eve
     assert.strictEqual(host.updateAddonUi("addon-b", { mountId: "panel", html: "stolen" }).reason, "mount_not_found");
     assert.strictEqual(host.registerAddonStyle("addon-a", { styleId: "panel", cssText: ".panel { color: red; }" }).ok, true);
     assert.strictEqual(host.openAddonDialog("addon-a", { dialogId: "dialog", html: "<div>Dialog</div>" }).ok, true);
+    assert.strictEqual(host.updateAddonDialog("addon-b", { dialogId: "dialog", html: "stolen" }).reason, "dialog_not_found");
+    assert.strictEqual(host.updateAddonDialog("addon-a", { dialogId: "dialog", html: "<p>Updated safely</p>" }).ok, true);
     host.cleanupAddonUi("addon-a");
+    assert.strictEqual(host.updateAddonDialog("addon-a", { dialogId: "dialog", html: "late" }).reason, "dialog_not_found");
     const owners = host.getAddonUiPolicySnapshot().owners;
     assert.deepStrictEqual(owners, { docks: [], dialogs: [], mounts: [], pendingMounts: [], styles: [] });
     host.resetAddonUiHostForTests();

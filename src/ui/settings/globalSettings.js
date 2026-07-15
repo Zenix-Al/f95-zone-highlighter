@@ -1,9 +1,7 @@
 import { openConfigTransferDialog } from "../configTransfer/index.js";
-import { crossTabSyncFeature } from "../../services/syncService";
 import { updateButtonVisibility } from "../components/configButton";
 import { createEnabledDisabledToast, createToggleSetting } from "./metaFactory";
 import { showFeatureHealthBox } from "../components/featureHealth/index.js";
-import { syncHelpMessageFooter } from "../components/helpMessage.js";
 import { contributeToSection } from "../settingsRuntime/sectionsRegistry.js";
 
 export const globalSettingsMeta = {
@@ -16,16 +14,6 @@ export const globalSettingsMeta = {
       enabled: "shown",
       disabled: "hidden",
     }),
-  }),
-  enableCrossTabSync: createToggleSetting({
-    text: "Sync settings across tabs",
-    tooltip:
-      "Automatically apply changes made in other tabs(requires to refresh other tabs) experimental",
-    config: "globalSettings.enableCrossTabSync",
-    custom: () => {
-      crossTabSyncFeature.toggle(crossTabSyncFeature.isEnabled());
-    },
-    toast: createEnabledDisabledToast("(experimental)Cross-tab settings sync"),
   }),
   configTransfer: {
     type: "button",
@@ -47,17 +35,5 @@ export const globalSettingsMeta = {
       }
     },
   },
-  disableHelpMessage: createToggleSetting({
-    text: "Disable help message (dont)",
-    tooltip: "y u do dis?",
-    config: "globalSettings.disableHelpMessage",
-    custom: () => {
-      syncHelpMessageFooter();
-    },
-    toast: createEnabledDisabledToast("Help message", {
-      enabled: "disabled",
-      disabled: "enabled",
-    }),
-  }),
 };
 contributeToSection("global", globalSettingsMeta, "base:global");
