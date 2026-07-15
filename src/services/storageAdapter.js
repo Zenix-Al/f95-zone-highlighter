@@ -8,8 +8,6 @@ export function createStorageAdapter(api = globalThis.GM) {
       if (typeof getApi().getValues === "function") return (await getApi().getValues(keys)) || {};
       return Object.fromEntries(await Promise.all(keys.map(async (key) => [key, await getApi().getValue(key)])));
     },
-    subscribe: (key, listener) => getApi().addValueChangeListener?.(key, listener),
-    unsubscribe: (id) => getApi().removeValueChangeListener?.(id),
   };
 }
 

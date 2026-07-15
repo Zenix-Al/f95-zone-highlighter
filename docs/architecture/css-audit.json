@@ -5,13 +5,13 @@
   "authoredBytes": 32106,
   "bundle": {
     "readable": {
-      "fullBytes": 585931,
-      "gzipBytes": 124260,
+      "fullBytes": 602589,
+      "gzipBytes": 127277,
       "contributionBytes": 26401
     },
     "uglified": {
-      "fullBytes": 301645,
-      "gzipBytes": 88371,
+      "fullBytes": 308620,
+      "gzipBytes": 90358,
       "contributionBytes": 26387
     }
   },
@@ -1518,7 +1518,7 @@
         },
         {
           "file": "src/ui/settings/tagsSettings.js",
-          "line": 16,
+          "line": 37,
           "excerpt": "const searchInput = shadowRoot.getElementById(\"tags-search\");"
         }
       ],
@@ -1549,8 +1549,23 @@
           "excerpt": "container = createEl(\"div\", { attrs: { id: \"toast-container\" } });"
         },
         {
+          "file": "tests/fixtures/configInteractionHarness.js",
+          "line": 141,
+          "excerpt": "const loadToasts = [...document.querySelectorAll(\"#toast-container .toast\")]"
+        },
+        {
+          "file": "tests/fixtures/configInteractionHarness.js",
+          "line": 149,
+          "excerpt": "const interactiveToasts = [...document.querySelectorAll(\"#toast-container .toast\")]"
+        },
+        {
+          "file": "tests/fixtures/configInteractionHarness.js",
+          "line": 176,
+          "excerpt": "toasts: [...document.querySelectorAll(\"#toast-container .toast\")]"
+        },
+        {
           "file": "tests/run.cjs",
-          "line": 2101,
+          "line": 2229,
           "excerpt": "const container = docWithBody.getElementById(\"toast-container\");"
         }
       ],
@@ -4781,13 +4796,13 @@
     },
     "readableBundleFullBytes": {
       "before": 586580,
-      "after": 585931,
-      "delta": -649
+      "after": 602589,
+      "delta": 16009
     },
     "readableBundleGzipBytes": {
       "before": 124202,
-      "after": 124260,
-      "delta": 58
+      "after": 127277,
+      "delta": 3075
     },
     "uglifiedBundleContributionBytes": {
       "before": 27380,
@@ -4796,13 +4811,13 @@
     },
     "uglifiedBundleFullBytes": {
       "before": 302505,
-      "after": 301645,
-      "delta": -860
+      "after": 308620,
+      "delta": 6115
     },
     "uglifiedBundleGzipBytes": {
       "before": 88402,
-      "after": 88371,
-      "delta": -31
+      "after": 90358,
+      "delta": 1956
     },
     "selectorCount": {
       "before": 252,

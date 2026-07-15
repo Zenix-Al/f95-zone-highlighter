@@ -240,6 +240,7 @@ function sourceReport(rootDir) {
     meaningfulLines: fileReports.reduce((sum, file) => sum + file.meaningfulLines, 0),
     authoredBytes: fileReports.reduce((sum, file) => sum + file.bytes, 0),
     bytesByArea,
+    bytesByFile: Object.fromEntries(fileReports.map((file) => [file.path, file.bytes])),
     largestFiles: fileReports.slice(0, 20),
     graph: {
       files: fileReports.map((file) => ({ path: file.path, fanIn: file.fanIn, fanOut: file.fanOut })),
@@ -292,13 +293,19 @@ async function buildOne(rootDir, tempDir, name, { release, uglified }) {
   });
   const bytes = fs.readFileSync(outfile);
   const meta = result.metafile;
+  const contributors = bundleContributors(rootDir, meta);
+  const coreContributors = contributors.filter((entry) => isAuditedSource(entry.path));
+  const excludedContributors = contributors.filter((entry) => !isAuditedSource(entry.path));
+  const sumBytes = (entries) => entries.reduce((sum, entry) => sum + entry.bytes, 0);
   return {
     mode: release ? "release" : "regular",
     bytes: bytes.length,
     gzipBytes: zlib.gzipSync(bytes, { mtime: 0 }).length,
-    contributors: bundleContributors(rootDir, meta).slice(0, 20),
-    coreContributors: bundleContributors(rootDir, meta, (input) => isAuditedSource(input)).slice(0, 20),
-    excludedContributors: bundleContributors(rootDir, meta, (input) => !isAuditedSource(input)).slice(0, 20),
+    coreBytes: sumBytes(coreContributors),
+    excludedBytes: sumBytes(excludedContributors),
+    contributors: contributors.slice(0, 20),
+    coreContributors: coreContributors.slice(0, 20),
+    excludedContributors: excludedContributors.slice(0, 20),
   };
 }
 

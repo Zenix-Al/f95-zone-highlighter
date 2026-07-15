@@ -1,4 +1,4 @@
-/* global __ADDON_ID__, __ADDON_NAME__, __ADDON_VERSION__, __ADDON_DESCRIPTION__, __ADDON_CAPABILITIES__, __ADDON_REQUIRES_CORE__ */
+/* global __ADDON_ID__, __ADDON_NAME__, __ADDON_VERSION__, __ADDON_DESCRIPTION__, __ADDON_CAPABILITIES__, __ADDON_REQUIRES_CORE__, __ADDON_PAGE_SCOPES__, __ADDON_RUNTIME_MODE__, __ADDON_MATCHES__ */
 export const state = {
   isEnabled: true,
   showPageButton: true,
@@ -43,5 +43,8 @@ export function getRuntimeConfig() {
         : "Adds one Saved Filters button on Latest Updates with active preset tracking.",
     capabilities: Array.isArray(__ADDON_CAPABILITIES__) ? __ADDON_CAPABILITIES__ : [],
     requiresCore: Boolean(__ADDON_REQUIRES_CORE__),
+    pageScopes: Array.isArray(__ADDON_PAGE_SCOPES__) ? __ADDON_PAGE_SCOPES__ : ["latest"],
+    runtimeMode: typeof __ADDON_RUNTIME_MODE__ === "string" ? __ADDON_RUNTIME_MODE__ : "core-required",
+    matches: Array.isArray(__ADDON_MATCHES__) ? __ADDON_MATCHES__ : ["*://f95zone.to/sam/latest_alpha/*"],
   };
 }

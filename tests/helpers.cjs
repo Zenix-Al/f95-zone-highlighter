@@ -14,20 +14,19 @@ function createDomSandbox(url = "https://f95zone.to/threads/example.1/") {
   };
 }
 
-function createFakeGM(initial = {}, { failSet = false, failSetAt = null, failDelete = false } = {}) {
+function createFakeGM(initial = {}, { failSet = false, failSetAt = null, failSetKey = null, failDelete = false, failGet = false, failGetAt = null, failGetKey = null, afterSet = null } = {}) {
   const values = new Map(Object.entries(initial));
-  const listeners = new Map();
-  let nextId = 1;
+  const reads = [];
+  const writes = [];
+  const deletes = [];
   let setCount = 0;
-  const emit = (key, oldValue, newValue, remote = false) => listeners.forEach((entry) => { if (entry.key === key) entry.listener(key, oldValue, newValue, remote); });
+  let getCount = 0;
   return {
-    async getValue(key, fallback) { return values.has(key) ? values.get(key) : fallback; },
-    async setValue(key, value) { setCount += 1; if (failSet || (Number.isInteger(failSetAt) && setCount === failSetAt)) throw new Error("fake_set_failed"); const oldValue = values.get(key); values.set(key, value); emit(key, oldValue, value); },
-    async deleteValue(key) { if (failDelete) throw new Error("fake_delete_failed"); const oldValue = values.get(key); values.delete(key); emit(key, oldValue, undefined); },
-    addValueChangeListener(key, listener) { const id = nextId++; listeners.set(id, { key, listener }); return id; },
-    removeValueChangeListener(id) { listeners.delete(id); },
+    async getValue(key, fallback) { getCount += 1; reads.push(key); if (failGet || key === failGetKey || (Number.isInteger(failGetAt) && getCount === failGetAt)) throw new Error("fake_get_failed"); return values.has(key) ? values.get(key) : fallback; },
+    async setValue(key, value) { setCount += 1; writes.push(key); if (failSet || key === failSetKey || (Number.isInteger(failSetAt) && setCount === failSetAt)) throw new Error("fake_set_failed"); values.set(key, value); afterSet?.(key, values); },
+    async deleteValue(key) { deletes.push(key); if (failDelete) throw new Error("fake_delete_failed"); values.delete(key); },
     snapshot() { return Object.fromEntries(values); },
-    emitRemote(key, value) { const oldValue = values.get(key); values.set(key, value); emit(key, oldValue, value, true); },
+    logs() { return { reads: [...reads], writes: [...writes], deletes: [...deletes] }; },
   };
 }
 

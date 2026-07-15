@@ -9,7 +9,7 @@ This file documents `tagsService` and `safetyService` responsibilities, caching,
   - `search(query)` → incremental results with debounce.
   - `addTag(list, tag)` / `removeTag(list, tag)` / `reorder(list, fromIndex, toIndex)`.
   - `pruneObsolete()` to remove tags not present in upstream sources.
-- Persist tag lists separately from core settings to allow independent reprocessing.
+- Persist fetched tag catalogs separately in the tag cache; preferred, excluded, and marked lists remain core configuration sections and use the serialized config-update boundary.
 
 ## `safetyService` responsibilities
 

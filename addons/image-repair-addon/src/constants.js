@@ -1,4 +1,4 @@
-/* global __ADDON_ID__, __ADDON_NAME__, __ADDON_VERSION__, __ADDON_DESCRIPTION__, __ADDON_CAPABILITIES__, __ADDON_REQUIRES_CORE__ */
+/* global __ADDON_ID__, __ADDON_NAME__, __ADDON_VERSION__, __ADDON_DESCRIPTION__, __ADDON_CAPABILITIES__, __ADDON_REQUIRES_CORE__, __ADDON_PAGE_SCOPES__, __ADDON_RUNTIME_MODE__, __ADDON_MATCHES__ */
 
 export const CORE_EVENT = "f95ue:addons-dev-command";
 export const ADDON_COMMAND_EVENT = "f95ue:addon-command";
@@ -23,5 +23,8 @@ export function getRuntimeConfig() {
         : "Automatically retries broken attachment images on F95Zone threads.",
     capabilities: Array.isArray(__ADDON_CAPABILITIES__) ? __ADDON_CAPABILITIES__ : [],
     requiresCore: Boolean(__ADDON_REQUIRES_CORE__),
+    pageScopes: Array.isArray(__ADDON_PAGE_SCOPES__) ? __ADDON_PAGE_SCOPES__ : ["thread"],
+    runtimeMode: typeof __ADDON_RUNTIME_MODE__ === "string" ? __ADDON_RUNTIME_MODE__ : "core-required",
+    matches: Array.isArray(__ADDON_MATCHES__) ? __ADDON_MATCHES__ : ["*://f95zone.to/threads/*"],
   };
 }

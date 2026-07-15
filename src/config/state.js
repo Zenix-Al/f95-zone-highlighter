@@ -45,7 +45,6 @@ const runtimeState = {
   tagsUpdateStatus: "IDLE",
   tagsUpdateRan: false,
   ...Object.fromEntries(Object.keys(pageDefinitions).map((key) => [key, false])),
-  isCrossTabSyncInitialized: false,
   isNoticeDismissalEnabled: false,
   latestOverlayStatus: "IDLE",
   latestOverlayPageCategory: "games",
@@ -63,14 +62,6 @@ export const STATUS = Object.freeze({
   PREFERRED_SHADOW: "preferred-shadow",
   EXCLUDED_SHADOW: "excluded-shadow",
 });
-
-export const crossTabKeys = {
-  color: true,
-  overlaySettings: true,
-  threadSettings: true,
-  latestSettings: true,
-  addons: true,
-};
 
 export const helpMessages = [
   "type /help if you're lost, or just moan really loud",
@@ -97,7 +88,6 @@ export const helpMessages = [
   "hover over options text to see detailed settings",
   "overlay colors can be customized in the color settings section",
   "not all links are masked",
-  "enable cross-tab sync to keep settings consistent across tabs(experimental)",
   "auto-refresh in latest view is just clicking the website own feature",
   "latest notification require auto-refresh enabled",
   "you can add tags to preferred/excluded as much as you want",

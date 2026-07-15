@@ -52,8 +52,8 @@ export function createAddonCard(doc, addon, options = {}) {
   badges.appendChild(
     createBadge(
       doc,
-      addon.trusted ? "Trusted" : "Untrusted",
-      addon.trusted ? "installed" : "disabled",
+      (addon.isTrusted ?? addon.trusted) ? "Trusted" : "Untrusted",
+      (addon.isTrusted ?? addon.trusted) ? "installed" : "disabled",
     ),
   );
 
@@ -67,7 +67,7 @@ export function createAddonCard(doc, addon, options = {}) {
     );
   }
 
-  if (addon.blocked) {
+  if (addon.isBlocked ?? addon.blocked) {
     badges.appendChild(createBadge(doc, "Blocked", "error"));
   }
 
@@ -117,7 +117,8 @@ export function createAddonCard(doc, addon, options = {}) {
     const supportsFeatureToggle =
       addon.status !== "not-installed" &&
       (addon.capabilities?.includes("feature") ||
-        (!addon.activeOnPage && addon.installedSeenAt > 0));
+        (!addon.activeOnPage && addon.installedSeenAt > 0)) &&
+      (addon.status !== "disabled" || addon.canEnable !== false);
     const supportsPinning = addon.status !== "not-installed";
 
     if (supportsFeatureToggle) {

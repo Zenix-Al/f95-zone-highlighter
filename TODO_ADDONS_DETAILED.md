@@ -5,6 +5,7 @@ This is a standalone execution plan for **add-on work only**, derived primarily 
 - focus on making add-ons structurally consistent, cancellable, testable, and easier to extend;
 - review the current bridge usage for evidence-backed new public APIs;
 - finish the add-on action/service decomposition;
+- diagnose and fix the current trust-gating regression where a trusted add-on can be blocked as untrusted;
 - end with a dedicated add-on-service and add-on-build size audit;
 - **do not redesign or reinforce the registration handshake yet**.
 
@@ -77,6 +78,23 @@ Existing post-registration protections remain required:
 
 A future security plan may revisit registration identity after the add-on runtime is structurally stable and measurable.
 
+### Resolved functional blocker: trusted add-on rejected as untrusted
+
+Observed on **2026-07-14** with **F95UE Masked + Direct Download Add-on 0.3.45**:
+
+- the card shows `DISABLED`, `TRUSTED`, and `ACTIVE HERE`;
+- the same card says: `Blocked by main settings: enable untrusted add-ons or trust this add-on.`;
+- the add-on cannot currently run;
+- the root cause was a stale runtime projection: the known-add-on snapshot took
+  trust from the catalog but copied `blocked` and the policy message from the
+  runtime entry, while the add-on separately consumed the `addon.access`
+  decision.
+
+This was an internally contradictory state. `ADDON-TRUST-GATING-01` now uses
+one identity-aware access resolver for registration, management projection, and
+execution-time authorization. The regression fixture is retained in
+`tests/run.cjs`; genuinely untrusted add-ons remain restricted.
+
 ---
 
 ## How to use this document
@@ -114,6 +132,8 @@ A package is complete only when all applicable items pass:
 - [ ] No late asynchronous callback mutates UI or state after disable, route invalidation, or teardown.
 - [ ] Teardown acknowledgment is emitted exactly once.
 - [ ] Public bridge action response shapes remain compatible unless explicitly versioned.
+- [ ] Effective trust, displayed trust badge, blocked reason, and enable-control state cannot contradict each other.
+- [ ] A trusted add-on is never blocked solely by the untrusted-add-on policy, while genuinely untrusted add-ons remain blocked when policy requires it.
 - [ ] Registration-handshake security is unchanged.
 - [ ] Before/after source and build-size measurements are attached when a package claims simplification.
 
@@ -205,11 +225,12 @@ Do not add:
 
 ## Required execution order
 
-### Wave 0 — Baseline and metadata contract
+### Wave 0 — Baseline, metadata, and trust-gating contract
 
 1. `ADDON-BASELINE-01`
 2. `ADDON-SCOPE-02`
-3. `ADDON-BUILD-TOOLS-01`
+3. `ADDON-TRUST-GATING-01`
+4. `ADDON-BUILD-TOOLS-01`
 
 ### Wave 1 — Canonical runtime and API evidence
 
@@ -263,8 +284,8 @@ The size audit is deliberately last so it measures the accepted add-on architect
 
 ## ADDON-BASELINE-01 — Record current add-on behavior, source shape, and build sizes
 
-**Priority:** Critical  
-**Depends on:** None  
+**Priority:** Critical
+**Depends on:** None
 **Primary files:** `addons/**`, `src/services/addonsService.js`, `src/services/addons/**`, `package.json`, new audit script and baseline report, tests
 
 ### Agent execution command
@@ -277,11 +298,11 @@ Create a reproducible baseline before changing scopes, structures, APIs, or serv
 
 ### Required implementation
 
-- [ ] Record manifest entries, IDs, versions, entry paths, output paths, matches, grants, run timing, capabilities, and core requirements.
-- [ ] Record current trusted-catalog projection.
-- [ ] Record current public action IDs and descriptors.
-- [ ] Record current exports from `addonsService.js`.
-- [ ] Record each add-on's:
+- [x] Record manifest entries, IDs, versions, entry paths, output paths, matches, grants, run timing, capabilities, and core requirements.
+- [x] Record current trusted-catalog projection.
+- [x] Record current public action IDs and descriptors.
+- [x] Record current exports from `addonsService.js`.
+- [x] Record each add-on's:
   - authored source bytes;
   - file count;
   - physical and nonblank lines;
@@ -289,14 +310,14 @@ Create a reproducible baseline before changing scopes, structures, APIs, or serv
   - release build bytes;
   - gzip bytes for comparison;
   - largest bundled source contributors through esbuild metafiles.
-- [ ] Record add-on service totals for:
+- [x] Record add-on service totals for:
   - `src/services/addonsService.js`;
   - `src/services/addons/**`;
   - add-on-specific core UI integration.
-- [ ] Add non-mutating smoke-build support if it does not already exist.
-- [ ] Build into a temporary directory.
-- [ ] Do not update versions, build cache, manifest versions, or tracked `dist/`.
-- [ ] Create behavior snapshots for:
+- [x] Add non-mutating smoke-build support if it does not already exist.
+- [x] Build into a temporary directory.
+- [x] Do not update versions, build cache, manifest versions, or tracked `dist/`.
+- [x] Create behavior snapshots for:
   - registration;
   - enable;
   - disable;
@@ -306,21 +327,21 @@ Create a reproducible baseline before changing scopes, structures, APIs, or serv
   - core absent;
   - out-of-scope action;
   - capability rejection.
-- [ ] Store a stable JSON baseline without timestamps or absolute machine paths.
+- [x] Store a stable JSON baseline without timestamps or absolute machine paths.
 
 ### Required tests
 
-- [ ] Two unchanged runs produce identical JSON.
-- [ ] Smoke builds leave the working tree unchanged.
-- [ ] Every manifest entry produces a size record.
-- [ ] Every public action appears exactly once in the baseline.
-- [ ] The audit distinguishes add-on userscript bytes from core add-on-service bytes.
+- [x] Two unchanged runs produce identical JSON.
+- [x] Smoke builds leave the working tree unchanged.
+- [x] Every manifest entry produces a size record.
+- [x] Every public action appears exactly once in the baseline.
+- [x] The audit distinguishes add-on userscript bytes from core add-on-service bytes.
 
 ### Acceptance criteria
 
-- [ ] Later packages can show real before/after deltas.
-- [ ] No production behavior changes.
-- [ ] No arbitrary size limit is introduced yet.
+- [x] Later packages can show real before/after deltas.
+- [x] No production behavior changes.
+- [x] No arbitrary size limit is introduced yet.
 
 ---
 
@@ -370,56 +391,56 @@ Treat these as separate contracts:
 
 ### Required implementation
 
-- [ ] Add required `pageScopes` and `runtimeMode` metadata to every manifest entry.
-- [ ] Keep `requiresCore` only as a temporary compatibility input if necessary.
-- [ ] Make `runtimeMode` authoritative and reject contradictory fields.
-- [ ] Inject `__ADDON_PAGE_SCOPES__` and `__ADDON_RUNTIME_MODE__` during builds.
-- [ ] Include injected metadata in build change hashes.
-- [ ] Keep matches, grants, and run timing in generated userscript headers.
-- [ ] Update canonical runtime construction to consume injected metadata.
-- [ ] Validate scopes against the supported vocabulary.
-- [ ] Reject duplicate, empty, unknown, and missing scopes where core registration is expected.
-- [ ] Validate runtime-mode combinations:
+- [x] Add required `pageScopes` and `runtimeMode` metadata to every manifest entry.
+- [x] Keep `requiresCore` only as a temporary compatibility input if necessary.
+- [x] Make `runtimeMode` authoritative and reject contradictory fields.
+- [x] Inject `__ADDON_PAGE_SCOPES__` and `__ADDON_RUNTIME_MODE__` during builds.
+- [x] Include injected metadata in build change hashes.
+- [x] Keep matches, grants, and run timing in generated userscript headers.
+- [x] Update canonical runtime construction to consume injected metadata.
+- [x] Validate scopes against the supported vocabulary.
+- [x] Reject duplicate, empty, unknown, and missing scopes where core registration is expected.
+- [x] Validate runtime-mode combinations:
   - `core-required` needs an F95Zone activation match;
   - `standalone` must not register;
   - `hybrid` needs both core and standalone activation contexts.
-- [ ] Add a bounded userscript-match resolver for repository-supported match syntax.
-- [ ] Split known add-on status into:
+- [x] Add a bounded userscript-match resolver for repository-supported match syntax.
+- [x] Split known add-on status into:
   - `matchesCurrentPage`;
   - `scopeApplies`;
   - `supportsCurrentPage`.
-- [ ] Use one shared scope-intersection resolver for catalog status and execution authorization.
-- [ ] Keep activation-match checks out of post-registration action authorization.
-- [ ] Replace hard-coded feature-toggle scope exceptions with descriptor metadata:
+- [x] Use one shared scope-intersection resolver for catalog status and execution authorization.
+- [x] Keep activation-match checks out of post-registration action authorization.
+- [x] Replace hard-coded feature-toggle scope exceptions with descriptor metadata:
   - `scopePolicy: "management"`;
   - `scopePolicy: "runtime"`.
-- [ ] Mark `addon.access`, `addon.throttle`, `feature.enable`, and `feature.disable` as management operations.
-- [ ] Keep storage, IDB, observer, toast, refresh, and UI actions runtime-scoped unless explicitly changed later.
-- [ ] Reject unsupported registration scopes as `invalid_registration`.
-- [ ] Generate `src/services/addons/trusted-catalog.json` deterministically from the manifest.
-- [ ] Preserve its public path and header resource name.
-- [ ] Add a check mode that fails on manifest/catalog drift.
-- [ ] Document the metadata decision table in `addons/README.md`.
+- [x] Mark `addon.access`, `addon.throttle`, `feature.enable`, and `feature.disable` as management operations.
+- [x] Keep storage, IDB, observer, toast, refresh, and UI actions runtime-scoped unless explicitly changed later.
+- [x] Reject unsupported registration scopes as `invalid_registration`.
+- [x] Generate `src/services/addons/trusted-catalog.json` deterministically from the manifest.
+- [x] Preserve its public path and header resource name.
+- [x] Add a check mode that fails on manifest/catalog drift.
+- [x] Document the metadata decision table in `addons/README.md`.
 
 ### Required tests
 
-- [ ] Header snapshots preserve every current match, grant, and run timing.
-- [ ] Scope fixtures cover ordinary F95Zone, thread, Latest, and `/masked/`.
-- [ ] Unknown scopes and invalid runtime modes are rejected.
-- [ ] Management actions work outside runtime scope.
-- [ ] Runtime actions remain blocked outside runtime scope.
-- [ ] Catalog support never claims activation on a route absent from the match list.
-- [ ] Manifest/catalog generation is deterministic.
-- [ ] The core header keeps the same trusted-catalog resource path/name.
-- [ ] Registration event transport, handshake fields, and identity-security behavior remain unchanged.
+- [x] Header snapshots preserve every current match, grant, and run timing.
+- [x] Scope fixtures cover ordinary F95Zone, thread, Latest, and `/masked/`.
+- [x] Unknown scopes and invalid runtime modes are rejected.
+- [x] Management actions work outside runtime scope.
+- [x] Runtime actions remain blocked outside runtime scope.
+- [x] Catalog support never claims activation on a route absent from the match list.
+- [x] Manifest/catalog generation is deterministic.
+- [x] The core header keeps the same trusted-catalog resource path/name.
+- [x] Registration event transport, handshake fields, and identity-security behavior remain unchanged.
 
 ### Acceptance criteria
 
-- [ ] No supported add-on registers an impossible scope.
-- [ ] Activation metadata is not used as a substitute for action authorization.
-- [ ] The manifest is authoritative for build and catalog metadata.
-- [ ] Management controls remain usable without weakening runtime action policy.
-- [ ] No registration-handshake security change is mixed into the package.
+- [x] No supported add-on registers an impossible scope.
+- [x] Activation metadata is not used as a substitute for action authorization.
+- [x] The manifest is authoritative for build and catalog metadata.
+- [x] Management controls remain usable without weakening runtime action policy.
+- [x] No registration-handshake security change is mixed into the package.
 
 ### Scope guardrails
 
@@ -428,6 +449,180 @@ Treat these as separate contracts:
 - Do not change `runAt` to solve a scope problem.
 - Do not make arbitrary actions management-scoped.
 - Do not add registration nonces, secrets, challenge-response, or identity attestation.
+
+---
+
+## ADDON-TRUST-GATING-01 — Diagnose and fix trusted add-ons blocked as untrusted
+
+**Priority:** Critical
+**Depends on:** `ADDON-SCOPE-02`
+**Primary files:** `src/services/addonsService.js`, `src/services/addons/catalog.js`, `src/services/addons/knownAddons.js`, `src/services/addons/registry.js`, add-on state repository modules, add-on management card/status UI, trusted-catalog generation/output, main add-on settings, tests
+
+### Agent execution command
+
+> Execute `ADDON-TRUST-GATING-01` only. Reproduce the observed state where an add-on is simultaneously shown as trusted and blocked by the untrusted-add-on policy, then run the same contract matrix against every current manifest add-on. Find and document the root cause before changing behavior. Do not work around the defect by enabling all untrusted add-ons, auto-trusting add-ons, or weakening registration/access checks.
+
+### Objective
+
+Make effective trust, access gating, status badges, blocked reasons, and enable controls derive from one coherent policy result.
+
+### Observed regression fixture
+
+Reproduce this exact case before editing production logic:
+
+- add-on: `masked-direct-addon`;
+- displayed name/version: `F95UE Masked + Direct Download Add-on`, `0.3.45`;
+- displayed badges: `DISABLED`, `TRUSTED`, `ACTIVE HERE`;
+- displayed blocking message: `Blocked by main settings: enable untrusted add-ons or trust this add-on.`;
+- actual result: the add-on cannot run;
+- known cause: a stale runtime projection combined catalog trust with an old
+  blocked status/message; add-ons also initialized before consuming the shared
+  `addon.access` decision.
+
+The package must not assume that the catalog, state repository, registry, UI, cache, or runtime identity is at fault until tracing proves it.
+
+### All-add-on coverage boundary
+
+This is an add-on-wide regression, not a Masked + Direct-only fix. The matrix
+must include every add-on entry in `addons/addons.manifest.json`, including
+`image-repair-addon`, `masked-direct-addon`, `library-addon`, `example-addon`,
+`latest-filters-addon`, and `halloween-theme-addon`. For each add-on, use its
+canonical manifest ID, current catalog entry, current capabilities, runtime
+mode, page scopes, and userscript activation matches. Add-ons added later must
+be included automatically by the manifest-driven test rather than silently
+omitted from the matrix.
+
+### Required investigation
+
+- [x] Reproduce the issue with a deterministic fixture and, where applicable, both:
+  - clean/default add-on state;
+  - upgraded or previously persisted add-on state.
+- [x] Capture every input used to derive the card and runtime decision:
+  - canonical add-on ID and any legacy ID;
+  - trusted-catalog match;
+  - persisted per-add-on trust override;
+  - global allow-untrusted setting;
+  - installed/registered identity;
+  - enabled state;
+  - blocked state and reason;
+  - activation match and current scope;
+  - cached versus current status snapshot.
+- [x] Trace trust independently through:
+  - manifest/catalog generation;
+  - catalog loading;
+  - state normalization;
+  - registry/registration;
+  - known-add-on projection;
+  - management action authorization;
+  - UI badge/banner rendering;
+  - execution-time reauthorization.
+- [x] Check specifically for:
+  - canonical-ID or legacy-ID mismatch;
+  - stale trusted-catalog data;
+  - catalog/state merge-order errors;
+  - disabled state being mislabeled as blocked;
+  - UI reading trust from a different snapshot than authorization;
+  - stale memoized/card state after settings changes;
+  - contradictory fallback defaults when catalog data is unavailable;
+  - different trust rules at registration and at action execution.
+- [x] Record the proven root cause in the pull request and in a regression-test name or fixture comment.
+- [x] Do not broaden this package into registration-handshake redesign.
+- [x] Repeat the trust/status investigation for every current manifest add-on,
+  including clean/default state and persisted disabled/enabled state.
+- [x] Trace each core-required or hybrid add-on from ping/wait-for-core through
+  registration, `addon.access`, feature/action invocation, status updates, and
+  teardown; record any add-on-specific trust or blocked-state source.
+- [x] Confirm standalone add-ons do not attempt core registration and are tested
+  through their documented standalone path separately.
+- [x] Verify every add-on uses the canonical handshake/adaptor and public API
+  response shapes; reject direct or stale trust decisions that can bypass the
+  shared access result. Do not add new handshake fields or API capabilities.
+
+### Required implementation
+
+- [x] Introduce or consolidate one effective-access resolver that returns explicit, separately named fields such as:
+  - `isTrusted`;
+  - `trustSource`;
+  - `isEnabled`;
+  - `isBlocked`;
+  - `blockReason`;
+  - `canEnable`;
+  - `matchesCurrentPage`;
+  - `scopeApplies`;
+  - `supportsCurrentPage`.
+- [x] Make registry authorization, known-add-on/card projection, badges, banners, and enable-control behavior consume the same effective trust/access decision or a stable projection of it.
+- [x] Keep disabled state distinct from policy blocking:
+  - a trusted but disabled add-on is `disabled`, not `untrusted`;
+  - its Enable control remains usable when no other policy blocks it.
+- [x] Ensure a trusted-catalog entry or valid user trust override satisfies the untrusted-add-on gate consistently at registration, management-action, and execution-time checks.
+- [x] Keep genuinely untrusted add-ons blocked when the global policy disallows them.
+- [x] If catalog identity cannot be resolved, surface a specific deterministic diagnostic state rather than simultaneously rendering `TRUSTED` and an untrusted-policy block.
+- [x] Define invariants that reject or normalize impossible combinations before they reach UI:
+  - `isTrusted === true` cannot pair with `blockReason === "untrusted_disallowed"`;
+  - `isBlocked === false` cannot render a blocking banner;
+  - `canEnable === true` must correspond to an enable path that passes current management policy.
+- [x] Refresh the status projection after:
+  - global allow-untrusted changes;
+  - per-add-on trust changes;
+  - enable/disable changes;
+  - catalog load/reload;
+  - registration/unregistration;
+  - canonical-ID normalization.
+- [x] Add bounded diagnostics suitable for tests without exposing secrets or changing handshake payloads.
+- [x] Preserve current public response shapes unless an internal-only field can be added without affecting consumers.
+- [x] Do not auto-trust official-looking IDs, versions, names, URLs, or runtime registrations.
+- [x] Make the shared access result the only source for trust, blocked reason,
+  enable state, and granted capabilities for every registered add-on; add-on
+  code may react to the result but must not reconstruct it from names, IDs,
+  status text, or cached state.
+- [x] Keep handshake and API usage contract-correct for every add-on without
+  changing event names, transport, identity fields, capabilities, scopes,
+  response shapes, or userscript metadata.
+
+### Required tests
+
+- [x] Exact Masked + Direct regression fixture no longer produces the contradictory card.
+- [x] Catalog-trusted + global allow-untrusted off + disabled:
+  - shows trusted and disabled;
+  - does not show an untrusted-policy block;
+  - Enable succeeds when all other policy checks pass.
+- [x] Catalog-trusted + global allow-untrusted off + enabled remains runnable.
+- [x] User-trusted + global allow-untrusted off behaves like trusted.
+- [x] Untrusted + global allow-untrusted off remains blocked with the untrusted-specific reason and no trusted badge.
+- [x] Untrusted + global allow-untrusted on follows the documented enabled/disabled state.
+- [x] A missing or mismatched catalog identity yields one explicit diagnostic state, not conflicting trust indicators.
+- [x] Trust/settings changes update the card and authorization decision without requiring a page reload.
+- [x] Registration-time and execution-time trust decisions agree.
+- [x] Canonical/legacy ID normalization cannot create two different trust decisions for one card/runtime.
+- [x] The fix does not change userscript matches, grants, run timing, capabilities, scopes, registration transport, or handshake security.
+- [x] A manifest-driven matrix passes for every catalog-trusted add-on with:
+  - global allow-untrusted disabled;
+  - persisted disabled state;
+  - persisted enabled state;
+  - registration present and absent;
+  - current supported and unsupported pages;
+  - card badges, blocked reason, enable control, `addon.access`, and one
+    representative permitted API action agreeing.
+- [x] The same matrix proves every genuinely untrusted fixture remains blocked
+  when global allow-untrusted is disabled and receives no privileged
+  capabilities or API access.
+- [x] Every core-required/hybrid add-on passes a handshake/API characterization
+  test covering ping, registration, access response, status update, enable,
+  disable, and teardown; standalone add-ons pass their no-core path.
+- [x] A static audit finds no add-on-specific copy of the untrusted gate,
+  blocked message, trust resolver, or privileged API authorization.
+
+### Acceptance criteria
+
+- [x] The observed add-on can run when it is effectively trusted and enabled.
+- [x] The UI can no longer show `TRUSTED` while claiming the same add-on is blocked for being untrusted.
+- [x] Disabled, untrusted-blocked, unsupported, out-of-scope, and identity/catalog-error states remain distinct.
+- [x] The actual root cause is documented and locked by a regression test.
+- [x] Genuinely untrusted add-ons are not made less restricted.
+- [x] Registration-handshake security remains unchanged.
+- [x] Every current add-on is covered by the same coherent trust/access and
+  handshake/API contract; no add-on can regress to the stale trusted-plus-blocked
+  state independently of the shared core fix.
 
 ---
 
@@ -503,7 +698,7 @@ Give add-on work the same non-mutating validation quality as core work.
 ## ADDON-GOLDEN-01 — Make Example Add-on the canonical runtime template
 
 **Priority:** Critical  
-**Depends on:** `ADDON-SCOPE-02`, `ADDON-BUILD-TOOLS-01`  
+**Depends on:** `ADDON-SCOPE-02`, `ADDON-TRUST-GATING-01`, `ADDON-BUILD-TOOLS-01`
 **Primary files:** `addons/example-addon/src/**`, `addons/example-addon/CHANGELOG.md`, `addons/README.md`, manifest, shared helpers, tests
 
 ### Agent execution command
@@ -1119,6 +1314,27 @@ For every approved API:
 - output: `addons/site-repair-addon/dist/site-repair-addon.user.js`
 - legacy ID: `image-repair-addon`
 
+### Release identity preservation
+
+- Preserve the existing Image Repair userscript's `@namespace` byte-for-byte when
+  publishing the rebrand.
+- Change the userscript display name (`@name`) and user-facing branding to
+  `F95UE Site Repair`; do not create a new GreasyFork script solely because the
+  display name changes. The existing listing must remain update-compatible.
+- Preserve the existing GreasyFork/update identity fields already used by the
+  current userscript. The canonical add-on ID/folder and `legacyIds` are
+  catalog, runtime, and state identities; they do not authorize generating a new
+  userscript namespace.
+- Add a header regression test proving that the pre- and post-rebrand namespace
+  values are identical while the display name changes.
+- If the current namespace cannot be recovered from source or accepted header
+  metadata, stop and report that concrete blocker before changing it.
+
+### Scope guardrail
+
+- Do not generate a new namespace or a second GreasyFork identity for this
+  rebrand.
+
 ### Required implementation
 
 - [ ] Create the new add-on from canonical structure.
@@ -1621,6 +1837,9 @@ After every accepted package:
 - [ ] `git diff --check`
 - [ ] all current matches/grants/run timing preserved unless explicitly changed
 - [ ] no unsupported scope remains
+- [ ] trusted badge, effective trust, blocked reason, and enable-control behavior agree
+- [ ] trusted add-ons are not rejected by the untrusted-add-on gate
+- [ ] genuinely untrusted add-ons remain blocked when the main setting disallows them
 - [ ] no raw bridge action/event outside adaptors or approved shared runtime
 - [ ] no duplicate resources after lifecycle repetition
 - [ ] no late async commits after invalidation
@@ -1641,6 +1860,7 @@ The completed plan should leave:
 - manifest-driven activation, runtime mode, scope, and catalog metadata;
 - one canonical add-on structure;
 - one documented post-registration lifecycle contract;
+- one coherent trust/access decision shared by runtime authorization and add-on management UI;
 - production add-ons with explicit cancellation and cleanup;
 - Masked Direct with clearly separated core and standalone modes;
 - Site Repair as the owner of optional site workarounds;

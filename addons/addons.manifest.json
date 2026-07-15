@@ -16,6 +16,9 @@
       ],
       "runAt": "document-idle",
       "requiresCore": true,
+      "runtimeMode": "core-required",
+      "pageScopes": ["thread"],
+      "downloadUrl": "https://greasyfork.org/en/scripts/572502-f95ue-image-repair-add-on",
       "capabilities": [
         "toast",
         "feature",
@@ -59,6 +62,9 @@
       ],
       "runAt": "document-idle",
       "requiresCore": true,
+      "runtimeMode": "hybrid",
+      "pageScopes": ["f95zone"],
+      "downloadUrl": "https://greasyfork.org/en/scripts/572503-f95ue-masked-direct-download-add-on",
       "capabilities": [
         "toast",
         "feature",
@@ -83,6 +89,9 @@
       ],
       "runAt": "document-idle",
       "requiresCore": true,
+      "runtimeMode": "core-required",
+      "pageScopes": ["f95zone"],
+      "downloadUrl": "https://greasyfork.org/en/scripts/572506-f95ue-library-add-on",
       "capabilities": [
         "toast",
         "feature",
@@ -110,6 +119,9 @@
       ],
       "runAt": "document-idle",
       "requiresCore": true,
+      "runtimeMode": "core-required",
+      "pageScopes": ["f95zone"],
+      "downloadUrl": "https://greasyfork.org/en/scripts/583616-f95ue-example-add-on",
       "capabilities": [
         "toast",
         "feature",
@@ -139,6 +151,9 @@
       ],
       "runAt": "document-idle",
       "requiresCore": true,
+      "runtimeMode": "core-required",
+      "pageScopes": ["latest"],
+      "downloadUrl": "https://greasyfork.org/en/scripts/573076-f95ue-latest-filters-add-on",
       "capabilities": [
         "toast",
         "feature",
@@ -165,6 +180,9 @@
       ],
       "runAt": "document-idle",
       "requiresCore": true,
+      "runtimeMode": "core-required",
+      "pageScopes": ["f95zone"],
+      "downloadUrl": "https://greasyfork.org/en/scripts/573070-f95ue-halloween-theme-add-on",
       "capabilities": [
         "feature"
       ]

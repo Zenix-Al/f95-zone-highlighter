@@ -26,6 +26,8 @@ function ensureInstalledMetaBucket(addons, addonId) {
       version: "",
       description: "",
       pageScopes: [],
+      runtimeMode: "",
+      matches: [],
       capabilities: [],
       panelTitle: "",
       panelBody: "",
@@ -126,6 +128,10 @@ export async function upsertInstalledAddonMeta(addonId, partial = {}) {
   bucket.pageScopes = Array.isArray(partial.pageScopes)
     ? partial.pageScopes.map((entry) => String(entry || "").trim().toLowerCase()).filter(Boolean)
     : Array.isArray(bucket.pageScopes) ? bucket.pageScopes : [];
+  bucket.runtimeMode = String(partial.runtimeMode || bucket.runtimeMode || "").trim().toLowerCase();
+  bucket.matches = Array.isArray(partial.matches)
+    ? partial.matches.map((entry) => String(entry || "").trim()).filter(Boolean)
+    : Array.isArray(bucket.matches) ? bucket.matches : [];
   bucket.capabilities = Array.isArray(partial.capabilities)
     ? partial.capabilities.map((entry) => String(entry || "").trim()).filter(Boolean)
     : Array.isArray(bucket.capabilities) ? bucket.capabilities : [];

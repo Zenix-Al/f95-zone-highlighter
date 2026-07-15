@@ -15,7 +15,7 @@ The UI coordinates with:
 - the central configuration object
 - persistence services
 - tag and safety services
-- cross-tab synchronization
+- add-on integrations with their own isolated transport where needed
 - add-on runtime services
 - feature reprocessing queues
 - the shared listener and style registries

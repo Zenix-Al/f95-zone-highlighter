@@ -1,18 +1,20 @@
-# Config Schema and Migrations
+# Config Schema and Persistence
 
-This document describes the configuration schema, current persisted version policy, and recommended practices for safe, testable upgrades.
+This document describes the configuration schema, current persisted version policy, bounded
+historical storage recovery, and recommended practices for safe, testable upgrades.
 
 ## Goals
 
 - Provide a single source of schema truth and versioning for configuration.
 - Keep persisted configuration at schema version `1`; unsupported older versions recover from backup or defaults.
+- Keep schema migration steps at zero; historical surface-key recovery is a separate bounded compatibility service.
 - Ensure config updates are atomic and recoverable on failure.
-- Support cross-tab synchronization with revision metadata.
+- Keep revision metadata available for atomic persistence and recovery.
 
 ## Schema basics
 
 - Default values live in `src/config/defaults.js`; they are not the validation contract. Explicit descriptors and metadata live in `src/config/schema.js`.
-- The schema exposes `validateConfig`, `validateConfigSection`, `sanitizeConfig`, `mergeWithDefaults`, `getDefaultConfig`, `getExportableConfigKeys`, `getSyncedConfigPaths`, and `getConfigPathMetadata`. Strict mode rejects unknown or invalid values; tolerant mode reports issues while preserving valid siblings and filling defaults.
+- The schema exposes `validateConfig`, `validateConfigSection`, `sanitizeConfig`, `mergeWithDefaults`, `getDefaultConfig`, `getExportableConfigKeys`, and `getConfigPathMetadata`. Strict mode rejects unknown or invalid values; tolerant mode reports issues while preserving valid siblings and filling defaults.
 - Schema issues contain a path, stable code, expected constraint, and safe received-type summary. Schema validation is pure: storage, migration writes, sync subscriptions, UI effects, and transfer-document parsing remain in their owning services.
 - Persisted configuration should store an explicit `schemaVersion` at top-level alongside configuration keys, e.g.: 
 
@@ -23,7 +25,7 @@ This document describes the configuration schema, current persisted version poli
 }
 ```
 
-- Keep schema changes additive when possible. Persisted storage currently has zero migration steps; transfer-document normalization remains separate from persisted-envelope loading.
+- Keep schema changes additive when possible. The current release has one evidence-backed, marker-gated migration for the historical surface-key layout; transfer-document normalization remains separate from persisted-envelope loading.
 
 ### Adding a persistent field
 
@@ -34,39 +36,46 @@ This document describes the configuration schema, current persisted version poli
 
 ## Persisted version policy
 
-1. `CONFIG_SCHEMA_VERSION` remains `1` in `src/config/persistence.js`.
-2. `CONFIG_MIGRATIONS` is an immutable empty registry and `CONFIG_MIGRATION_COUNT` is `0`.
-3. Version `0` and other mismatches are unsupported persisted envelopes; the settings repository uses last-known-good recovery or defaults.
-4. Tolerant sanitization preserves valid siblings and does not rewrite the canonical envelope.
+1. `src/config/persistence.js` owns `CONFIG_STORAGE_KEYS`, `CONFIG_SCHEMA_VERSION`, version checks, and the migration registry.
+2. `CONFIG_SCHEMA_VERSION` remains `1`; `CONFIG_MIGRATIONS` remains an immutable empty schema-step registry and `CONFIG_MIGRATION_COUNT` remains `0`.
+3. `f95ue:config:migration-version = 1` gates the one-time surface-key recovery. Current-marker startups do not inspect legacy keys or execute transforms.
+4. Version `0` and other mismatches are unsupported persisted envelopes; the settings repository uses last-known-good recovery or the bounded historical source path when the marker is absent.
+5. Tolerant sanitization preserves valid siblings and does not rewrite the canonical envelope during a marked fast load.
 
 ## Load and recovery pattern
 
-1. Load defaults.
-2. Read the canonical version-1 envelope.
-3. Sanitize current-version data on a clone and apply the result through the shared config-change boundary.
-4. For an unsupported version, validate the last-known-good envelope and recover it atomically, or load defaults.
-5. Persist only explicit commits or backup recovery; sanitized canonical loads do not write storage.
+1. Read the migration marker.
+2. With the current marker, read the canonical version-1 envelope and the separate tag/prefix caches; sanitize clones and apply through the shared config-change boundary.
+3. With an absent or old marker, read only the bounded historical key list, build a detached candidate, validate caches separately, persist and verify the canonical/backup/cache result, then set the marker.
+4. For an unsupported or corrupt canonical envelope on the marked fast path, validate the last-known-good envelope and recover it atomically, or load defaults without scanning legacy keys.
+5. Explicit commits use the canonical path; tag/prefix refreshes use cache keys and do not rotate the canonical backup.
 
 Notes:
 - Storage I/O remains in `storageAdapter`; persistence policy and recovery remain in `settingsService`.
 
 ## Validation and test strategy
 
-- Test the current version, unsupported versions, backup recovery, tolerant sibling preservation, and zero migration calls.
+- Test the current version, unsupported versions, backup recovery, tolerant sibling preservation,
+  and zero schema-migration calls on the marked fast path. The absent/old-marker path is separately
+  covered for the bounded historical surface-key recovery service.
 - Tests should assert both structural correctness and that no user-visible semantics regress (e.g., a toggle remains true/false where intended).
 - Run persistence tests in CI on every PR that modifies defaults or the persistence contract.
 
-## Cross-tab synchronization implications
+## Cross-tab ownership
 
-- Persisted writes carry `{ schemaVersion, revision, writerId, updatedAt }`; sync compares that tuple deterministically.
-- When applying a remote change with `syncService`, validate the version-1 envelope and use the shared config-change application pipeline; the sync path does not migrate or persist the remote change.
-- When a persisted field changes, ensure `metaRegistry` covers its section so other tabs can replay effects deterministically.
+- Persisted writes carry `{ schemaVersion, revision, writerId, updatedAt }` for atomic commits,
+  backup recovery, and diagnostics. Core no longer observes those writes in other tabs or applies
+  remote lifecycle effects.
+- Add-ons may retain their own manager transport and listeners. Their storage keys, callbacks,
+  lifecycle, and cleanup remain add-on-owned and are not part of the core config contract.
+- `configChangeApplication` is the shared local commit/import effect boundary; it is not a second
+  core synchronization engine.
 
 ## Backups and recovery
 
 - Keep a `lastKnownGood` snapshot in storage after successful commits and use it for bounded recovery from corrupt canonical data.
 
-There is no persisted migration runner or migration directory in the current contract. Future schema changes require an explicitly scoped design decision; this package does not add a generic migration framework.
+`src/services/configMigrationService.js` is intentionally temporary compatibility code for released surface-key storage. Remove it, the marker/cleanup path, and its fixtures only after those installations can no longer require recovery or after an explicit compatibility-breaking release decision. It must not grow into a speculative migration framework.
 
 ## Monitoring and observability
 

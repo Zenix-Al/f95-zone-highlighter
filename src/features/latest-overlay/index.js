@@ -2,10 +2,14 @@ import { config, defaultLatestSettings, defaultOverlaySettings } from "../../con
 import { createStyledFeature } from "../../core/createStyledFeature.js";
 import { reprocessLatestTilesAfterSettingsChange } from "../../ui/settingsRuntime/effectTasks.js";
 import { checkOverlaySettings } from "../../services/safetyService.js";
-import { saveConfigKeys } from "../../services/settingsService.js";
+import { updateConfig } from "../../services/settingsService.js";
 import { openReorderDialog, openSettingsDialog } from "../../ui/components/dialog.js";
 import { showToast } from "../../ui/components/toast.js";
 import { createEnabledDisabledToast, createToggleSetting } from "../../ui/settings/metaFactory.js";
+import {
+  getSettingsMetadataByOwner,
+  registerSettingsMetadata,
+} from "../../ui/settings/metaRegistry.js";
 import {
   enableLatestOverlay,
   disableLatestOverlay,
@@ -135,11 +139,10 @@ async function openOverlayColorOrderEditor() {
 
   if (result === null) return;
 
-  const persisted = await saveConfigKeys({
-    latestSettings: { ...config.latestSettings, latestOverlayColorOrder: [...result] },
-  });
+  const persisted = await updateConfig((draft) => {
+    draft.latestSettings.latestOverlayColorOrder = [...result];
+  }, { origin: "latest-overlay:color-order" });
   if (!persisted.committed) return;
-  effectReprocessAllTiles();
   showToast("Overlay color order updated.");
 }
 
@@ -349,9 +352,9 @@ export const overlayStyleSetting = {
     { key: "border", label: "Colored border" },
   ],
   effects: {
-    custom: (v) => {
+    custom: (v, { notify = true } = {}) => {
       effectReprocessAllTiles();
-      showToast(`Overlay style saved: ${v}`);
+      if (notify) showToast(`Overlay style saved: ${v}`);
     },
   },
 };
@@ -390,6 +393,28 @@ const latestOverlaySettingsDialogMeta = {
   overlayStyle: overlayStyleSetting,
   resetButton: resetLatestOverlaySettingsButton,
 };
+if (getSettingsMetadataByOwner("feature:latest-overlay-dialog").length === 0) {
+  registerSettingsMetadata(
+    "latest-overlay-dialog",
+    Object.fromEntries(
+      Object.entries(latestOverlaySettingsDialogMeta)
+        .map(([key, meta]) => [`latestOverlay.${key}`, meta]),
+    ),
+    "feature:latest-overlay-dialog",
+  );
+}
+if (getSettingsMetadataByOwner("feature:latest-overlay-runtime").length === 0) {
+  registerSettingsMetadata(
+    "latest-overlay-runtime",
+    {
+      latestOverlayColorOrderEffect: {
+        config: "latestSettings.latestOverlayColorOrder",
+        effects: { custom: effectReprocessAllTiles },
+      },
+    },
+    "feature:latest-overlay-runtime",
+  );
+}
 let latestOverlaySettingsDialog = null;
 
 function openLatestOverlaySettingsDialog() {
@@ -459,14 +484,13 @@ async function resetConfigToDefaults() {
     priorityWeights: { ...defaultLatestSettings.priorityWeights },
     tagModifiers: { ...defaultLatestSettings.tagModifiers },
   };
-  const persisted = await saveConfigKeys({
-    latestSettings: nextLatestSettings,
-    overlaySettings: { ...defaultOverlaySettings },
-  });
+  const persisted = await updateConfig((draft) => {
+    draft.latestSettings = nextLatestSettings;
+    draft.overlaySettings = { ...defaultOverlaySettings };
+  }, { origin: "latest-overlay:reset" });
   if (!persisted.committed) return;
   latestOverlaySettingsDialog?.close();
   latestOverlaySettingsDialog = null;
   checkOverlaySettings();
-  effectReprocessAllTiles();
   showToast("Latest overlay settings have been reset to default.");
 }

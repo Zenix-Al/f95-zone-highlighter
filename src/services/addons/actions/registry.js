@@ -7,6 +7,7 @@ function readonlyDescriptor(descriptor) {
     requiredCapabilities: Object.freeze([...descriptor.requiredCapabilities]),
     timeoutMs: descriptor.timeoutMs,
     auditCategory: descriptor.auditCategory,
+    scopePolicy: descriptor.scopePolicy,
   });
 }
 
@@ -23,6 +24,7 @@ export function registerAction(descriptor) {
     requiredCapabilities: Object.freeze([...(descriptor.requiredCapabilities || [])]),
     timeoutMs: Math.max(1, Number(descriptor.timeoutMs) || 5_000),
     auditCategory: String(descriptor.auditCategory || "addon-action"),
+    scopePolicy: descriptor.scopePolicy === "management" ? "management" : "runtime",
     redactResult: typeof descriptor.redactResult === "function" ? descriptor.redactResult : (result) => result,
   });
   actions.set(id, normalized);

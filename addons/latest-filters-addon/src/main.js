@@ -606,7 +606,9 @@ function registerAddon() {
         },
       ],
       capabilities: runtime.capabilities,
-      pageScopes: ["latest"],
+      pageScopes: runtime.pageScopes,
+      runtimeMode: runtime.runtimeMode,
+      matches: runtime.matches,
     },
   });
 }
@@ -737,7 +739,7 @@ function reportAddonBroken(error) {
 
 async function bootstrap() {
   const ping = await bridge.waitForCorePing();
-  if (!ping?.ok && runtime.requiresCore) {
+  if (!ping?.ok && runtime.runtimeMode === "core-required") {
     console.warn(`[${runtime.addonId}] Core not detected; exiting.`);
     return;
   }
@@ -747,6 +749,12 @@ async function bootstrap() {
 
   // Register first so core storage actions are authorized during initial load.
   registerAddon();
+  const access = await bridge.invokeCoreAction("addon.access", {});
+  if (!access?.ok || access.value?.blocked) {
+    state.isEnabled = false;
+    pushStatusUpdate();
+    return;
+  }
   await refreshRuntimeState();
 }
 

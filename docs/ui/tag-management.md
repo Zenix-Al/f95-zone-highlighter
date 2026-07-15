@@ -47,17 +47,17 @@ Mutation operations:
 - Reorder within a list.
 - Move between lists.
 - Persist through the tag service.
-- Trigger visual reprocessing.
-- Show toasts.
+- Await the serialized config update before rendering the changed lists.
+- Show success toasts only after the update commits.
 
-## Effects (`components/tag-search/tagEffects.js`)
+## Effects
 
-Queues feature refreshes after tag changes:
+Tag-list effects are registered as shared config metadata by `settings/tagsSettings.js`:
 
 - Latest-update tile reprocessing.
 - Thread tag reprocessing.
 
-This ensures that the page reflects new tag rules without a reload.
+This ensures that local edits, imports, and synchronized changes use the same effect pipeline without duplicate manual triggers. The old component-local effect helper was removed.
 
 ## Drag and Drop (`components/tag-search/tagDrag.js`)
 

@@ -22,6 +22,8 @@ whose relevant contents are already in the conversation.
 - `src/features/<feature>/`: core feature implementations.
 - `src/generated/features.generated.js`: generated feature manifest; never hand-edit it.
 - `src/config/defaults.js`: persisted configuration defaults.
+- `src/config/schema.js`: validation, defaults coverage, and export/sync metadata.
+- `src/config/persistence.js`: schema version 1, storage keys, and the empty schema-migration registry.
 - `src/config/state.js`: config object and runtime state manager.
 - `src/config/pageDefinitions.js`: declarative page detection rules and runtime page flags.
 - `src/core/`: lifecycle, page bridge, observer, task, listener, and teardown primitives.
@@ -55,8 +57,10 @@ whose relevant contents are already in the conversation.
 4. Add persisted defaults to `src/config/defaults.js` when needed.
 5. Add or change routes only in `src/config/pageDefinitions.js`; page state paths are
    derived from its keys.
-6. Update `src/features/config-transfer/validation.js` if config import/export must accept
-   a new setting.
+6. Add persistent fields to `src/config/defaults.js` and `src/config/schema.js`, then cover
+   strict validation, tolerant sanitization, and metadata in tests. Config Transfer consumes
+   that shared schema through `src/services/configTransfer/`; browser file and dialog behavior
+   belongs in `src/ui/configTransfer/`.
 
 Do not manually import a new feature into `src/loader.js` or register it in
 `src/core/featureCatalog.js`. `scripts/featureManifest.cjs` discovers `*Feature` exports.
@@ -77,12 +81,29 @@ npm test
 git diff --check
 ```
 
+For core-only size evidence, use the non-version-bumping audit and smoke commands:
+
+```powershell
+npm run audit:core
+npm run check:core
+npm run build:core:smoke
+npm run audit:css
+npm run check:css
+```
+
+These commands write audit reports or temporary smoke outputs; they do not run the release
+build, bump `version.json`, or update tracked `dist/` files.
+
 - Add focused tests for page matching, feature discovery/scope, config migration, or other
   behavior changed by the task.
 - Do not run `npm run build` merely to validate source: it regenerates distributions and
   bumps `version.json`.
 - Build only when the user asks for generated artifacts or a release/version bump.
 - Add-on builds and versions are independent; build only the add-on in scope.
+
+Core cleanup and persistence work covers `src/config/**`, `src/core/**`, non-add-on services and
+features, core UI, and their tests/docs. Add-on runtime, catalog, bridge, trust, and add-on UI
+work belongs to the separate add-on plan; do not treat it as a prerequisite for core cleanup.
 
 ## Debugging Boundaries
 

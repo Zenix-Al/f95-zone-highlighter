@@ -1,4 +1,4 @@
-/* global __ADDON_ID__, __ADDON_NAME__, __ADDON_VERSION__, __ADDON_DESCRIPTION__, __ADDON_CAPABILITIES__, __ADDON_REQUIRES_CORE__, GM_openInTab, GM, GM_addValueChangeListener, GM_removeValueChangeListener, grecaptcha */
+/* global __ADDON_ID__, __ADDON_NAME__, __ADDON_VERSION__, __ADDON_DESCRIPTION__, __ADDON_CAPABILITIES__, __ADDON_REQUIRES_CORE__, __ADDON_PAGE_SCOPES__, __ADDON_RUNTIME_MODE__, __ADDON_MATCHES__, GM_openInTab, GM, GM_addValueChangeListener, GM_removeValueChangeListener, grecaptcha */
 import { createCoreBridge } from "./coreBridge.js";
 import { ADDON_COMMAND_EVENT, RESOLVE_BTN_CLASS } from "./constants.js";
 import {
@@ -39,6 +39,11 @@ const runtime = {
     ? __ADDON_CAPABILITIES__
     : [],
   requiresCore: Boolean(__ADDON_REQUIRES_CORE__),
+  pageScopes: Array.isArray(__ADDON_PAGE_SCOPES__) ? __ADDON_PAGE_SCOPES__ : ["f95zone"],
+  runtimeMode: typeof __ADDON_RUNTIME_MODE__ === "string" ? __ADDON_RUNTIME_MODE__ : "hybrid",
+  matches: Array.isArray(__ADDON_MATCHES__)
+    ? __ADDON_MATCHES__
+    : ["*://f95zone.to/threads/*", "*://f95zone.to/masked/*"],
 };
 
 const bridge = createCoreBridge(runtime.addonId);
@@ -257,9 +262,6 @@ function isHostAllowedInSettings(hostname, flags) {
 }
 
 function statusMessage() {
-  if (isBlockedByCore) {
-    return "Blocked by main settings: enable untrusted add-ons or trust this add-on.";
-  }
   return isEnabled
     ? "Masked-link skipper and direct-download routing are active."
     : "Masked/direct add-on is currently disabled.";
@@ -384,7 +386,9 @@ function registerAddon() {
       panelSettingsDefaults: ADDON_SETTINGS_DEFAULT,
       panelSettings: ADDON_PANEL_SETTINGS,
       capabilities: runtime.capabilities,
-      pageScopes: ["thread", "download", "direct-download"],
+      pageScopes: runtime.pageScopes,
+      runtimeMode: runtime.runtimeMode,
+      matches: runtime.matches,
     },
   });
 }
@@ -607,14 +611,16 @@ async function bootstrap() {
     await sleep(300 + i * 250);
   }
 
-  if (!ping.ok && runtime.requiresCore) {
+  const coreRequiredForPage = runtime.runtimeMode === "core-required" ||
+    (runtime.runtimeMode === "hybrid" && !downloadHost && !recaptchaFrame);
+  if (!ping.ok && coreRequiredForPage) {
     const accessProbe = await bridge.getAddonAccess();
     if (accessProbe?.ok) {
       ping = { ok: true, apiVersion: "probed" };
     }
   }
 
-  if (!ping.ok && runtime.requiresCore) {
+  if (!ping.ok && coreRequiredForPage) {
     console.info(
       `[${runtime.addonId}] F95UE core not detected; add-on skipped.`,
     );

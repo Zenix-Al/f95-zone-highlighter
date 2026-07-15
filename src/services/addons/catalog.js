@@ -7,37 +7,57 @@ const CATALOG_FALLBACK = Object.freeze([
     id: "image-repair-addon",
     name: "Image Repair Add-on",
     downloadUrl: "https://greasyfork.org/en/scripts/572502-f95ue-image-repair-add-on",
+    pageScopes: ["thread"],
+    runtimeMode: "core-required",
+    matches: ["*://f95zone.to/threads/*"],
     trusted: true,
   },
   {
     id: "masked-direct-addon",
     name: "Masked + Direct Download Add-on",
     downloadUrl: "https://greasyfork.org/en/scripts/572503-f95ue-masked-direct-download-add-on",
+    pageScopes: ["f95zone"],
+    runtimeMode: "hybrid",
+    matches: ["*://f95zone.to/threads/*", "*://f95zone.to/masked/*", "*://buzzheavier.com/*", "*://*.buzzheavier.com/*", "*://bzzhr.to/*", "*://*.bzzhr.to/*", "*://gofile.io/*", "*://pixeldrain.com/*", "*://datanodes.to/*", "*://www.mediafire.com/file/*", "*://mediafire.com/file/*", "*://workupload.com/file/*", "*://workupload.com/start/*", "*://*.workupload.com/file/*", "*://*.workupload.com/start/*"],
     trusted: true,
   },
   {
     id: "library-addon",
     name: "Library Add-on",
     downloadUrl: "https://greasyfork.org/en/scripts/572506-f95ue-library-add-on",
+    pageScopes: ["f95zone"],
+    runtimeMode: "core-required",
+    matches: ["*://f95zone.to/*"],
     trusted: true,
   },
   {
     id: "example-addon",
     name: "Example Add-on",
     downloadUrl: "",
+    pageScopes: ["f95zone"],
+    runtimeMode: "core-required",
+    matches: ["*://f95zone.to/*"],
     trusted: true,
   },
   {
     id: "latest-filters-addon",
     name: "Latest Filters Add-on",
     downloadUrl: "",
+    pageScopes: ["latest"],
+    runtimeMode: "core-required",
+    matches: ["*://f95zone.to/sam/latest_alpha/*"],
+    trusted: true,
+  },
+  {
+    id: "halloween-theme-addon",
+    name: "Halloween Theme Add-on",
+    downloadUrl: "https://greasyfork.org/en/scripts/573070-f95ue-halloween-theme-add-on",
+    pageScopes: ["f95zone"],
+    runtimeMode: "core-required",
+    matches: ["*://f95zone.to/*"],
     trusted: true,
   },
 ]);
-
-const BUILTIN_TRUSTED_ADDON_IDS = new Set(
-  CATALOG_FALLBACK.map((entry) => sanitizeAddonId(entry.id)),
-);
 
 // Try to load the catalog from the @resource declaration (fetched by the
 // userscript manager at install/update time from jsDelivr.
@@ -84,6 +104,16 @@ export function initTrustedAddonCatalog() {
   getCatalogResource();
 }
 
+/** Reload the catalog resource and rebuild its normalized identity cache. */
+export function reloadTrustedAddonCatalog() {
+  TRUSTED_ADDON_CATALOG = CATALOG_FALLBACK;
+  rebuildNormalizedCatalogCache();
+  _catalogFresh = false;
+  _catalogInitialized = false;
+  initTrustedAddonCatalog();
+  return listTrustedAddonCatalog();
+}
+
 function ensureCatalogInitialized() {
   if (!_catalogInitialized) {
     initTrustedAddonCatalog();
@@ -107,10 +137,4 @@ export function getTrustedCatalogEntry(addonId) {
   ensureCatalogInitialized();
   const entry = TRUSTED_ADDON_CATALOG_BY_ID.get(id);
   return entry ? { ...entry } : null;
-}
-
-export function isBuiltinTrustedAddonId(addonId) {
-  const id = sanitizeAddonId(addonId);
-  if (!id) return false;
-  return BUILTIN_TRUSTED_ADDON_IDS.has(id);
 }

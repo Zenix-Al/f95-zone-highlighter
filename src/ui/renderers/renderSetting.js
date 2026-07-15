@@ -1,5 +1,5 @@
 import { config } from "../../config.js";
-import { saveConfigKeys } from "../../services/settingsService";
+import { updateConfig } from "../../services/settingsService.js";
 import { createInput } from "./createInput";
 import { createLabel } from "./createLabel";
 import { coerceSettingValue } from "./coerceSettingValue.js";
@@ -106,19 +106,13 @@ export function renderSetting(key, meta) {
       input.value = String(newValue);
     }
 
-    const nextConfig = JSON.parse(JSON.stringify(config));
-    const didSet = setByPath(nextConfig, meta.config, newValue);
-    if (!didSet) {
-      return;
-    }
-
-    const topLevelKey = meta.config.split(".")[0];
-    void saveConfigKeys({
-      [topLevelKey]: nextConfig[topLevelKey],
+    void updateConfig((draft) => setByPath(draft, meta.config, newValue), {
+      origin: `settings:${meta.config}`,
     }).then((result) => {
       if (!result.committed) {
-        if (meta.type === "toggle") input.checked = Boolean(previousValue);
-        else input.value = String(previousValue ?? "");
+        const rollbackValue = getByPath(result.previousConfig || config, meta.config);
+        if (meta.type === "toggle") input.checked = Boolean(rollbackValue);
+        else input.value = String(rollbackValue ?? "");
       }
     });
   });

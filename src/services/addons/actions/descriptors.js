@@ -7,6 +7,7 @@ import {
   actionUiUpdate,
 } from "../coreActions.js";
 import { registerAction } from "./registry.js";
+import { getAddonActionScopePolicy } from "./policy.js";
 
 const ACTIONS = Object.freeze({
   "toast.show": ["toast"], "feature.enable": ["feature"], "feature.disable": ["feature"], "feature.refresh": ["feature"],
@@ -62,6 +63,7 @@ for (const [id, requiredCapabilities] of Object.entries(ACTIONS)) {
     validatePayload: validators[id] || objectPayload,
     timeoutMs: 5_000,
     auditCategory: id.split(".")[0],
+    scopePolicy: getAddonActionScopePolicy(id),
     execute: (context) => executeLegacyHandler(id, context),
     redactResult: (result) => result && typeof result === "object" ? result : { ok: false, reason: "invalid_action_result" },
   });

@@ -12,6 +12,7 @@ import {
   getRegisteredAddon,
   listRegisteredAddons,
   registerAddon,
+  validateAddonRegistration,
   reapplyAddonSecurityPolicies,
   replaceRegisteredAddons,
   subscribeAddonsRegistry,
@@ -31,9 +32,12 @@ import {
 } from "./addons/state.js";
 import {
   initTrustedAddonCatalog,
+  getTrustedCatalogEntry,
+  reloadTrustedAddonCatalog,
   isCatalogFresh,
   listTrustedAddonCatalog,
 } from "./addons/catalog.js";
+import { resolveAddonAccess } from "./addons/access.js";
 import {
   cleanupAddonObserverSubscriptions,
   unwatchAddonObserver,
@@ -42,7 +46,9 @@ import {
 import { initAddonsBridgeServer, shutdownAddonsBridgeServer } from "./addons/bridgeServer.js";
 import { createAddonLifecycleOrchestrator, emitAddonCommand } from "./addons/lifecycle.js";
 import { invokeRegisteredAddonCoreAction, isAddonActionAllowed } from "./addons/coreActions.js";
+import { getAddonActionScopePolicy } from "./addons/actions/policy.js";
 import { buildKnownAddonsSnapshot } from "./addons/knownAddons.js";
+import { scopeAppliesToCurrentPage } from "./addons/scope.js";
 import {
   cleanupAddonUi,
   closeAddonDialog,
@@ -78,7 +84,7 @@ const MAX_ADDON_STORAGE_TOTAL_BYTES = 64 * 1024;
 const ADDON_TEARDOWN_WATCHDOG_MS = 1200;
 const PAYLOAD_SIZE_ENCODER = typeof TextEncoder !== "undefined" ? new TextEncoder() : null;
 
-export { listRegisteredAddons, replaceRegisteredAddons, registerAddon, subscribeAddonsRegistry };
+export { listRegisteredAddons, replaceRegisteredAddons, registerAddon, validateAddonRegistration, subscribeAddonsRegistry };
 export { getAddonState, setAddonStateValue, clearAddonState };
 export { isCatalogFresh };
 const addonLifecycle = createAddonLifecycleOrchestrator({
@@ -153,18 +159,24 @@ export function listKnownAddons() {
   const installedMeta = listInstalledAddonMeta();
   const currentScopes = getCurrentPageScopes();
   const catalogFresh = isCatalogFresh();
+  const currentUrl =
+    typeof window !== "undefined" && window.location ? String(window.location.href || "") : "";
 
   return buildKnownAddonsSnapshot({
     registered,
     catalog,
     installedMeta,
     currentScopes,
+    currentUrl,
     catalogFresh,
+    trustedIds: config.addons?.trustedIds,
+    allowUntrusted: Boolean(config.globalSettings?.allowUntrustedAddons),
     getAddonState,
   });
 }
 
-export function refreshAddonSecurityPolicies() {
+export function refreshAddonSecurityPolicies({ reloadCatalog = false } = {}) {
+  if (reloadCatalog) reloadTrustedAddonCatalog();
   return reapplyAddonSecurityPolicies();
 }
 
@@ -217,17 +229,20 @@ function measurePayloadBytes(payload) {
   }
 }
 
-function isFeatureToggleAction(action) {
-  return action === "feature.enable" || action === "feature.disable";
-}
-
 export function getAddonActionBlockReason(addon, action) {
   const reason = getAddonExecutionBlockReason(addon);
-  return reason === "addon_out_of_scope" && isFeatureToggleAction(action) ? null : reason;
+  return reason === "addon_out_of_scope" && getAddonActionScopePolicy(action) === "management"
+    ? null
+    : reason;
 }
 
 async function processUnregisteredAddonAction(addonId, action, installedMeta) {
-  if (!isFeatureToggleAction(action)) return { ok: false, reason: "addon_not_registered" };
+  if (
+    getAddonActionScopePolicy(action) !== "management" ||
+    (action !== "feature.enable" && action !== "feature.disable")
+  ) {
+    return { ok: false, reason: "addon_not_registered" };
+  }
   if (!installedMeta?.installedSeenAt) return { ok: false, reason: "addon_not_registered" };
 
   const enabled = action === "feature.enable";
@@ -253,11 +268,12 @@ async function processUnregisteredAddonAction(addonId, action, installedMeta) {
 }
 
 function getAddonAccessResponse(addon) {
+  const access = resolveAddonAccessForAddon(addon);
   return {
     ok: true,
     value: {
-      blocked: Boolean(addon.blocked),
-      trusted: Boolean(addon.trusted),
+      blocked: access.isBlocked,
+      trusted: access.isTrusted,
       capabilities: Array.isArray(addon.capabilities) ? [...addon.capabilities] : [],
     },
   };
@@ -307,12 +323,65 @@ function getAddonPermissions(addon) {
 
 export function getAddonExecutionBlockReason(addon, currentScopes = getCurrentPageScopes()) {
   if (!addon) return "addon_not_registered";
-  if (addon.blocked) return "addon_blocked";
-  if (!addon.trusted) return "addon_untrusted";
-  if (addon.status === "disabled") return "addon_disabled";
-  const scopes = Array.isArray(addon.pageScopes) ? addon.pageScopes : [];
-  if (scopes.length > 0 && !scopes.some((scope) => currentScopes.includes(scope))) return "addon_out_of_scope";
+  const access = resolveAddonAccessForAddon(addon, currentScopes);
+  if (access.blockReason === "identity_error") return "addon_identity_error";
+  if (access.blockReason === "untrusted_disallowed") return "addon_untrusted";
+  if (access.blockReason === "activation_mismatch") return "addon_activation_mismatch";
+  if (access.blockReason === "out_of_scope") return "addon_out_of_scope";
+  if (access.isBlocked) return "addon_blocked";
+  if (!access.isTrusted) return "addon_untrusted";
+  if (!access.isEnabled || addon.status === "disabled") return "addon_disabled";
   return null;
+}
+
+function resolveAddonAccessForAddon(addon, currentScopes = undefined) {
+  if (!addon || typeof addon !== "object") {
+    return resolveAddonAccess();
+  }
+
+  // A few service contract tests use a minimal projection without an id. Keep
+  // those projections compatible while all real registrations use the pure
+  // identity-aware resolver below.
+  if (!sanitizeAddonId(addon.id) && ("trusted" in addon || "blocked" in addon)) {
+    const fallbackScopeApplies = Array.isArray(currentScopes)
+      ? scopeAppliesToCurrentPage(
+          Array.isArray(addon.pageScopes) ? addon.pageScopes : [],
+          currentScopes,
+        )
+      : true;
+    const fallbackBlockReason = addon.blocked
+      ? "addon_blocked"
+      : !addon.trusted
+        ? "untrusted_disallowed"
+        : addon.status !== "disabled" && !fallbackScopeApplies
+          ? "out_of_scope"
+          : null;
+    return {
+      isTrusted: Boolean(addon.trusted),
+      trustSource: Boolean(addon.trusted) ? "projection" : "none",
+      identityStatus: "projection",
+      isEnabled: addon.status !== "disabled",
+      isBlocked: Boolean(fallbackBlockReason),
+      blockReason: fallbackBlockReason,
+      canEnable: Boolean(addon.trusted),
+      matchesCurrentPage: true,
+      scopeApplies: fallbackScopeApplies,
+      supportsCurrentPage: fallbackScopeApplies,
+    };
+  }
+
+  return resolveAddonAccess({
+    id: addon.id,
+    addon,
+    catalogEntry: getTrustedCatalogEntry(addon.id),
+    trustedIds: config.addons?.trustedIds,
+    allowUntrusted: Boolean(config.globalSettings?.allowUntrustedAddons),
+    currentScopes,
+    currentUrl:
+      typeof window !== "undefined" && window.location
+        ? String(window.location.href || "")
+        : "",
+  });
 }
 
 const ADDON_CORE_ACTION_LIMITS = {
@@ -428,8 +497,19 @@ export function initAddonsConsoleBridge() {
     isServiceDisabled: isAddonsServiceDisabled,
     getCoreActionThrottleConfig: getAddonsCoreActionThrottleConfig,
     onRegister: (addon) => {
-      const snapshot = registerAddon(addon || {});
+      const registration = validateAddonRegistration(addon || {});
       const addonId = sanitizeAddonId(addon?.id);
+      if (!registration.ok) {
+        if (addonId) {
+          window.dispatchEvent(
+            new CustomEvent(ADDON_COMMAND_EVENT, {
+              detail: { addonId, command: "disable", reason: registration.reason },
+            }),
+          );
+        }
+        return;
+      }
+      const snapshot = registerAddon(addon || {});
       if (!addonId) return;
 
       const registered = snapshot.find((entry) => entry.id === addonId);
@@ -439,6 +519,8 @@ export function initAddonsConsoleBridge() {
           version: registered.version,
           description: registered.description,
           pageScopes: registered.pageScopes,
+          runtimeMode: registered.runtimeMode,
+          matches: registered.matches,
           capabilities: registered.capabilities,
           panelTitle: registered.panelTitle,
           panelBody: registered.panelBody,

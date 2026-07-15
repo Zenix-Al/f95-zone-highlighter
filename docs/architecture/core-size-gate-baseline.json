@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "sourceReport": "docs/architecture/core-size-baseline.json",
+  "sourceReportSha256": "0326ce44c2bdddc9ea61da9c98314cc17be538ae5a1a8dd46330a34bd562318a",
+  "thresholds": {
+    "authoredArea": {
+      "absoluteBytes": 1024,
+      "percentage": 1
+    },
+    "readable": {
+      "absoluteBytes": 2048,
+      "percentage": 1
+    },
+    "uglified": {
+      "absoluteBytes": 1024,
+      "percentage": 1
+    },
+    "gzip": {
+      "absoluteBytes": 4096,
+      "percentage": 2
+    }
+  },
+  "rationale": {
+    "type": "commit-note",
+    "text": "ADDON-TRUST-GATING-01 final stale-message invariant update changes excluded add-on inputs; measured core-only size and thresholds remain unchanged."
+  }
+}

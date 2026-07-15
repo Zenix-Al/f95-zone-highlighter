@@ -108,7 +108,7 @@ function bindCommands() {
 // ==================== BOOTSTRAP ====================
 async function bootstrap() {
   const ping = await bridge.waitForCorePing();
-  if (!ping.ok && runtime.requiresCore) return;
+  if (!ping.ok && runtime.runtimeMode === "core-required") return;
 
   bindCommands();
 
@@ -124,9 +124,17 @@ async function bootstrap() {
       panelTitle: runtime.addonName,
       panelBody: "Toggle to apply/remove Halloween theme (refresh recommended)",
       capabilities: runtime.capabilities,
-      pageScopes: ["thread", "latest", "download", "global"],
+      pageScopes: runtime.pageScopes,
+      runtimeMode: runtime.runtimeMode,
+      matches: runtime.matches,
     },
   });
+
+  const access = await bridge.invokeCoreAction("addon.access", {});
+  if (!access?.ok || access.value?.blocked) {
+    toggle(false);
+    return;
+  }
 
   if (isEnabled) applyTheme();
 }

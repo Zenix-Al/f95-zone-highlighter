@@ -12,6 +12,13 @@
     "build:addons:release": "node addons/build-addon.js --all --release",
     "build:addons:force": "node addons/build-addon.js --all --force",
     "build:addons:release:force": "node addons/build-addon.js --all --release --force",
+    "lint:addons": "eslint \"addons/**/*.js\" --ext .js",
+    "audit:addons": "node scripts/addon-baseline.cjs --output docs/architecture/addon-baseline.json",
+    "check:addons:baseline": "node scripts/addon-baseline.cjs --check docs/architecture/addon-baseline.json",
+    "check:addons:structure": "node scripts/addon-baseline.cjs --check-structure",
+    "generate:addons:catalog": "node scripts/addon-catalog.cjs --write",
+    "check:addons:catalog": "node scripts/addon-catalog.cjs --check",
+    "build:addons:smoke": "node scripts/addon-baseline.cjs --smoke-build",
     "build:addon:image-repair": "node addons/build-addon.js image-repair-addon",
     "build:addon:latest-filters": "node addons/build-addon.js latest-filters-addon",
     "lint": "eslint \"src/**\" --ext .js",
@@ -26,7 +33,9 @@
     "audit:css": "node scripts/css-audit.cjs --output docs/architecture/css-audit.json --compare docs/architecture/css-audit-baseline.json",
     "build:core:smoke": "node scripts/core-source-audit.cjs --smoke-build",
     "check:core": "node scripts/core-source-audit.cjs --check docs/architecture/core-size-baseline.json",
-    "check:css": "node scripts/css-audit.cjs --check docs/architecture/css-audit.json --compare docs/architecture/css-audit-baseline.json"
+    "check:css": "node scripts/css-audit.cjs --check docs/architecture/css-audit.json --compare docs/architecture/css-audit-baseline.json",
+    "check:core:size": "node scripts/core-size-gate.cjs --baseline docs/architecture/core-size-gate-baseline.json",
+    "update:core:size-baseline": "node scripts/core-size-gate.cjs --baseline docs/architecture/core-size-gate-baseline.json --update"
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",

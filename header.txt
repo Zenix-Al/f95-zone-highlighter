@@ -10,8 +10,6 @@
 // @grant        GM_getResourceText
 // @grant        GM.setValue
 // @grant        GM.getValue
-// @grant        GM_addValueChangeListener
-// @grant        GM_removeValueChangeListener
 // @run-at       document-start
 // @license      GPL-3.0-or-later
 // @homepageURL  https://f95zone.to/threads/f95zone-latest.250836/

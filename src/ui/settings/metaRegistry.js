@@ -134,8 +134,21 @@ export function getSettingsMetadataById(metadataId) {
 }
 
 export function getMetadataByConfigPath(path) {
-  const entry = entriesByConfigPath.get(normalizeId(path));
-  return entry ? readonlyEntry(entry) : null;
+  let candidate = normalizeId(path);
+  while (candidate) {
+    const entry = entriesByConfigPath.get(candidate);
+    if (entry) return readonlyEntry(entry);
+    const bracketIndex = candidate.lastIndexOf("[");
+    const dotIndex = candidate.lastIndexOf(".");
+    if (bracketIndex > dotIndex) {
+      candidate = candidate.slice(0, bracketIndex);
+    } else if (dotIndex >= 0) {
+      candidate = candidate.slice(0, dotIndex);
+    } else {
+      break;
+    }
+  }
+  return null;
 }
 
 export function getSettingsMetadataByOwner(ownerId) {

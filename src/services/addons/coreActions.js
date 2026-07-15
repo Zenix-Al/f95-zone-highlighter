@@ -1,6 +1,7 @@
 import { executeActionDescriptor, getAction, getActionSnapshot } from "./actions/registry.js";
 import { ADDON_UI_SLOT_POLICY, normalizeAddonMountSlot } from "./uiSanitizer.js";
 import { storageAdapter } from "../storageAdapter.js";
+import { getAddonActionScopePolicy } from "./actions/policy.js";
 import "./actions/descriptors.js";
 
 export function hasAnyCapability(allowed, alternatives = []) {
@@ -29,6 +30,8 @@ export async function invokeRegisteredAddonCoreAction({
   if (descriptor) return executeActionDescriptor(descriptor, { addonId, action, payload, deps, limits, allowed, authorize });
   return { ok: false, reason: "unsupported_action" };
 }
+
+export { getAddonActionScopePolicy };
 
 export function getRegisteredAddonActionSnapshot() { return getActionSnapshot(); }
 

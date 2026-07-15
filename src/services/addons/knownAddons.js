@@ -1,8 +1,9 @@
-function supportsCurrentPage(pageScopes = [], currentScopes = []) {
-  if (!Array.isArray(pageScopes) || pageScopes.length === 0) return true;
-  const scopes = currentScopes instanceof Set ? currentScopes : new Set(currentScopes);
-  return pageScopes.some((scope) => scopes.has(scope));
-}
+import {
+  matchesAnyUserscriptPattern,
+  scopeAppliesToCurrentPage,
+} from "./scope.js";
+import { resolveAddonAccess } from "./access.js";
+import { sanitizeAddonId } from "./shared.js";
 
 function computeAddonStatus({
   runtimeEntry,
@@ -11,7 +12,7 @@ function computeAddonStatus({
   hasExplicitDesiredState,
   desiredEnabled,
   hasKnownScopeMeta,
-  scopeApplies,
+  supportsCurrentPage,
   catalogFresh,
 }) {
   let status = runtimeEntry?.status || "disabled";
@@ -27,7 +28,7 @@ function computeAddonStatus({
       status = "installed";
       if (!hasKnownScopeMeta) {
         statusMessage = String(metaEntry?.statusMessage || "").trim() || "";
-      } else if (!scopeApplies) {
+      } else if (!supportsCurrentPage) {
         statusMessage = "Enabled. This add-on only activates on supported pages.";
       } else {
         statusMessage =
@@ -39,7 +40,7 @@ function computeAddonStatus({
     if (!hasKnownScopeMeta) {
       status = "installed";
       statusMessage = "Installed. Runtime scope metadata is unavailable on this page.";
-    } else if (scopeApplies) {
+    } else if (supportsCurrentPage) {
       status = "not-installed";
       statusMessage =
         "Not detected on this supported page. The add-on may be disabled or failed to load.";
@@ -60,26 +61,38 @@ export function buildKnownAddonsSnapshot({
   catalog = [],
   installedMeta = {},
   currentScopes = [],
+  currentUrl = "",
   catalogFresh = false,
+  trustedIds = [],
+  allowUntrusted = false,
   getAddonState = () => ({}),
 }) {
-  const byRegistered = new Map(registered.map((addon) => [addon.id, addon]));
-  const catalogById = new Map(catalog.map((entry) => [entry.id, entry]));
-  const catalogIds = new Set(catalog.map((entry) => entry.id));
+  const normalizeEntries = (entries) =>
+    entries
+      .map((entry) => [sanitizeAddonId(entry?.id), entry])
+      .filter(([id]) => id);
+  const byRegistered = new Map(normalizeEntries(registered));
+  const catalogById = new Map(normalizeEntries(catalog));
+  const normalizeKey = (value) => sanitizeAddonId(value);
+  const normalizedMeta = Object.fromEntries(
+    Object.entries(installedMeta || {})
+      .map(([id, entry]) => [normalizeKey(id), entry])
+      .filter(([id]) => id),
+  );
   const currentScopesSet = new Set(currentScopes);
   const allIds = new Set([
-    ...catalog.map((entry) => entry.id),
-    ...Object.keys(installedMeta || {}),
-    ...registered.map((entry) => entry.id),
+    ...catalog.map((entry) => normalizeKey(entry?.id)),
+    ...Object.keys(normalizedMeta),
+    ...registered.map((entry) => normalizeKey(entry?.id)),
   ]);
 
   const merged = [];
   for (const id of allIds) {
     const runtimeEntry = byRegistered.get(id) || null;
     const catalogEntry = catalogById.get(id) || null;
-    const metaEntry = installedMeta[id] || null;
+    const metaEntry = normalizedMeta[id] || null;
 
-    // Runtime registration takes priority for pageScopes; catalog is fallback.
+    // Runtime registration takes priority for metadata; catalog is fallback.
     const pageScopes = Array.isArray(runtimeEntry?.pageScopes)
       ? [...runtimeEntry.pageScopes]
       : Array.isArray(metaEntry?.pageScopes)
@@ -91,22 +104,59 @@ export function buildKnownAddonsSnapshot({
       (Array.isArray(runtimeEntry?.pageScopes) && runtimeEntry.pageScopes.length > 0) ||
       (Array.isArray(metaEntry?.pageScopes) && metaEntry.pageScopes.length > 0) ||
       (Array.isArray(catalogEntry?.pageScopes) && catalogEntry.pageScopes.length > 0);
-    const scopeApplies = supportsCurrentPage(pageScopes, currentScopesSet);
+    const scopeApplies = scopeAppliesToCurrentPage(pageScopes, currentScopesSet);
+    const activationMatches = Array.isArray(runtimeEntry?.matches)
+      ? [...runtimeEntry.matches]
+      : Array.isArray(metaEntry?.matches)
+        ? [...metaEntry.matches]
+        : Array.isArray(catalogEntry?.matches)
+          ? [...catalogEntry.matches]
+          : [];
+    const hasKnownActivationMeta = activationMatches.length > 0;
+    const matchesCurrentPage = hasKnownActivationMeta
+      ? matchesAnyUserscriptPattern(currentUrl, activationMatches)
+      : true;
+    const supportsCurrentPage = matchesCurrentPage && scopeApplies;
     const hasInstallSighting = Boolean(metaEntry?.installedSeenAt);
     const stateEntry = getAddonState(id);
     const desiredEnabled = stateEntry?.enabled;
     const hasExplicitDesiredState = typeof desiredEnabled === "boolean";
 
-    const { status, statusMessage } = computeAddonStatus({
+    let { status, statusMessage } = computeAddonStatus({
       runtimeEntry,
       metaEntry,
       hasInstallSighting,
       hasExplicitDesiredState,
       desiredEnabled,
       hasKnownScopeMeta,
-      scopeApplies,
+      supportsCurrentPage,
       catalogFresh,
     });
+
+    const access = resolveAddonAccess({
+      id,
+      registered: {
+        ...(runtimeEntry || {}),
+        status,
+        pageScopes,
+        matches: activationMatches,
+      },
+      catalogEntry,
+      trustedIds,
+      allowUntrusted,
+      desiredEnabled,
+      currentScopes,
+      currentUrl,
+    });
+
+    if (access.isBlocked) {
+      status = "disabled";
+      statusMessage = getAccessStatusMessage(access.blockReason, statusMessage);
+    } else if (/^Blocked(?: by main settings|:)/i.test(String(statusMessage || "").trim())) {
+      statusMessage = status === "disabled"
+        ? "Disabled from core. It will remain off when the add-on loads."
+        : "";
+    }
 
     // When catalog is stale, fields that only come from the remote catalog show
     // "" as a placeholder so users know the info is not available.
@@ -149,15 +199,28 @@ export function buildKnownAddonsSnapshot({
           : null,
       panelSettings: Array.isArray(runtimeEntry?.panelSettings) ? runtimeEntry.panelSettings : [],
       panelActions: Array.isArray(runtimeEntry?.panelActions) ? runtimeEntry.panelActions : [],
-      capabilities: Array.isArray(runtimeEntry?.capabilities)
-        ? [...runtimeEntry.capabilities]
-        : Array.isArray(metaEntry?.capabilities)
-          ? [...metaEntry.capabilities]
-          : [],
-      trusted: Boolean(runtimeEntry?.trusted || catalogIds.has(id)),
-      blocked: Boolean(runtimeEntry?.blocked),
+      capabilities: access.isBlocked
+        ? []
+        : Array.isArray(runtimeEntry?.capabilities)
+          ? [...runtimeEntry.capabilities]
+          : Array.isArray(metaEntry?.capabilities)
+            ? [...metaEntry.capabilities]
+            : [],
+      trusted: access.isTrusted,
+      blocked: access.isBlocked,
+      isTrusted: access.isTrusted,
+      trustSource: access.trustSource,
+      identityStatus: access.identityStatus,
+      isEnabled: access.isEnabled,
+      isBlocked: access.isBlocked,
+      blockReason: access.blockReason,
+      canEnable: access.canEnable,
       activeOnPage: Boolean(runtimeEntry),
-      supportsCurrentPage: scopeApplies,
+      runtimeMode: runtimeEntry?.runtimeMode || metaEntry?.runtimeMode || catalogEntry?.runtimeMode || "",
+      matches: activationMatches,
+      matchesCurrentPage,
+      scopeApplies,
+      supportsCurrentPage,
       pageScopes,
       catalogFresh,
       downloadUrl: String(catalogEntry?.downloadUrl || "").trim(),
@@ -168,4 +231,18 @@ export function buildKnownAddonsSnapshot({
   }
 
   return merged.sort((a, b) => String(a.name).localeCompare(String(b.name)));
+}
+
+function getAccessStatusMessage(blockReason, previousMessage = "") {
+  if (blockReason === "identity_error") {
+    return "Blocked: add-on identity could not be matched to the trusted catalog.";
+  }
+  if (blockReason === "activation_mismatch") {
+    return "Blocked: this add-on is not activated for the current URL.";
+  }
+  if (blockReason === "out_of_scope") {
+    return "Blocked: this add-on is outside the current page scope.";
+  }
+  return String(previousMessage || "").trim() ||
+    "Blocked: enable 'Allow untrusted add-ons' in settings to allow full API access.";
 }

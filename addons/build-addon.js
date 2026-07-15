@@ -3,6 +3,7 @@ const crypto = require("crypto");
 const fs = require("fs");
 const path = require("path");
 const { stripDebugLogs } = require("../stripDebugLogs");
+const { validateManifest } = require("../scripts/addon-catalog.cjs");
 let terser = null;
 try {
   terser = require("terser");
@@ -107,8 +108,11 @@ function computeAddonHash(addon, isRelease) {
       runAt: addon.runAt || "document-idle",
       capabilities: normalizeArray(addon.capabilities, []),
       requiresCore: Boolean(addon.requiresCore),
+      pageScopes: normalizeArray(addon.pageScopes, []),
+      runtimeMode: addon.runtimeMode || "core-required",
+      downloadUrl: addon.downloadUrl || "",
       isRelease: Boolean(isRelease),
-      buildToolVersion: 6,
+      buildToolVersion: 7,
     }),
   );
 
@@ -131,6 +135,10 @@ function readManifest() {
   const addons = Array.isArray(parsed.addons) ? parsed.addons : [];
   if (addons.length === 0) {
     throw new Error("No add-ons defined in addons.manifest.json");
+  }
+  const errors = validateManifest(addons);
+  if (errors.length > 0) {
+    throw new Error(errors.join("\n"));
   }
   return addons;
 }
@@ -241,6 +249,9 @@ async function buildAddon(addon, isRelease) {
       __ADDON_DESCRIPTION__: JSON.stringify(addon.description || ""),
       __ADDON_CAPABILITIES__: JSON.stringify(normalizeArray(addon.capabilities, [])),
       __ADDON_REQUIRES_CORE__: addon.requiresCore ? "true" : "false",
+      __ADDON_PAGE_SCOPES__: JSON.stringify(normalizeArray(addon.pageScopes, [])),
+      __ADDON_RUNTIME_MODE__: JSON.stringify(addon.runtimeMode || "core-required"),
+      __ADDON_MATCHES__: JSON.stringify(normalizeArray(addon.matches, [])),
     },
   });
 
@@ -369,7 +380,16 @@ async function main() {
   );
 }
 
-main().catch((error) => {
-  console.error("Add-on build failed:", error);
-  process.exit(1);
-});
+if (require.main === module) {
+  main().catch((error) => {
+    console.error("Add-on build failed:", error);
+    process.exit(1);
+  });
+}
+
+module.exports = {
+  buildAddon,
+  computeAddonHash,
+  headerForAddon,
+  readManifest,
+};

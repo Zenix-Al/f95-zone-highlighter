@@ -1,56 +1,189 @@
 [
   {
-    "id": "image-repair-addon",
-    "name": "Image Repair Add-on",
-    "description": "Automatically retries broken attachment images on thread pages.",
-    "version": "0.1.0",
-    "pageScopes": ["thread"],
-    "downloadUrl": "https://greasyfork.org/en/scripts/572502-f95ue-image-repair-add-on",
-    "trusted": true
-  },
-  {
-    "id": "masked-direct-addon",
-    "name": "Masked + Direct Download Add-on",
-    "description": "Combines masked-link skipper and direct-download flows in one trusted add-on.",
-    "version": "0.1.0",
-    "pageScopes": ["thread", "download"],
-    "downloadUrl": "https://greasyfork.org/en/scripts/572503-f95ue-masked-direct-download-add-on",
-    "trusted": true
-  },
-  {
-    "id": "library-addon",
-    "name": "Library Add-on",
-    "description": "Quickly save thread snapshots into a personal library and manage them in a dedicated UI.",
-    "version": "0.1.0",
-    "pageScopes": [],
-    "downloadUrl": "https://greasyfork.org/en/scripts/572506-f95ue-library-add-on",
-    "trusted": true
-  },
-  {
     "id": "example-addon",
-    "name": "Example Add-on",
+    "name": "F95UE Example Add-on",
     "description": "Core API playground demonstrating every current addon-facing action through api modules.",
-    "version": "0.2.5",
-    "pageScopes": ["thread", "latest", "download"],
+    "version": "0.2.8",
+    "pageScopes": [
+      "f95zone"
+    ],
+    "runtimeMode": "core-required",
+    "matches": [
+      "*://f95zone.to/*"
+    ],
+    "grants": [
+      "none"
+    ],
+    "runAt": "document-idle",
+    "requiresCore": true,
+    "capabilities": [
+      "toast",
+      "feature",
+      "storage",
+      "observer",
+      "idb",
+      "ui.style",
+      "ui.mount",
+      "ui.dialog",
+      "ui.dock"
+    ],
     "downloadUrl": "https://greasyfork.org/en/scripts/583616-f95ue-example-add-on",
     "trusted": true
   },
   {
+    "id": "halloween-theme-addon",
+    "name": "F95UE Halloween Theme Add-on",
+    "description": "Forces Halloween logo/background theme with simple apply and teardown lifecycle.",
+    "version": "2.0.12",
+    "pageScopes": [
+      "f95zone"
+    ],
+    "runtimeMode": "core-required",
+    "matches": [
+      "*://f95zone.to/*"
+    ],
+    "grants": [
+      "none"
+    ],
+    "runAt": "document-idle",
+    "requiresCore": true,
+    "capabilities": [
+      "feature"
+    ],
+    "downloadUrl": "https://greasyfork.org/en/scripts/573070-f95ue-halloween-theme-add-on",
+    "trusted": true
+  },
+  {
+    "id": "image-repair-addon",
+    "name": "F95UE Image Repair Add-on",
+    "description": "Automatically retries broken attachment images on F95Zone threads.",
+    "version": "0.2.3",
+    "pageScopes": [
+      "thread"
+    ],
+    "runtimeMode": "core-required",
+    "matches": [
+      "*://f95zone.to/threads/*"
+    ],
+    "grants": [
+      "none"
+    ],
+    "runAt": "document-idle",
+    "requiresCore": true,
+    "capabilities": [
+      "toast",
+      "feature",
+      "storage",
+      "observer",
+      "ui",
+      "ui.style"
+    ],
+    "downloadUrl": "https://greasyfork.org/en/scripts/572502-f95ue-image-repair-add-on",
+    "trusted": true
+  },
+  {
     "id": "latest-filters-addon",
-    "name": "Latest Filters Add-on",
-    "description": "Adds one saved-filters button on Latest Updates with a searchable preset list and active filter tracking.",
-    "version": "0.1.0",
-    "pageScopes": ["latest"],
+    "name": "F95UE Latest Filters Add-on",
+    "description": "Adds one Saved Filters button on Latest Updates with a searchable preset list and active filter tracking.",
+    "version": "0.3.18",
+    "pageScopes": [
+      "latest"
+    ],
+    "runtimeMode": "core-required",
+    "matches": [
+      "*://f95zone.to/sam/latest_alpha/*"
+    ],
+    "grants": [
+      "GM.getValue",
+      "GM.setValue"
+    ],
+    "runAt": "document-idle",
+    "requiresCore": true,
+    "capabilities": [
+      "toast",
+      "feature",
+      "storage",
+      "ui",
+      "ui.style",
+      "ui.mount",
+      "ui.dialog"
+    ],
     "downloadUrl": "https://greasyfork.org/en/scripts/573076-f95ue-latest-filters-add-on",
     "trusted": true
   },
   {
-    "id": "halloween-theme-addon",
-    "name": "Halloween Theme Add-on",
-    "description": "Forces Halloween logo/background theme with simple apply and teardown lifecycle.",
-    "version": "0.1.0",
-    "pageScopes": [],
-    "downloadUrl": "https://greasyfork.org/en/scripts/573070-f95ue-halloween-theme-add-on",
+    "id": "library-addon",
+    "name": "F95UE Library Add-on",
+    "description": "Quick-add threads to a personal library and manage entries with a dedicated add-on UI.",
+    "version": "0.3.54",
+    "pageScopes": [
+      "f95zone"
+    ],
+    "runtimeMode": "core-required",
+    "matches": [
+      "*://f95zone.to/*"
+    ],
+    "grants": [
+      "none"
+    ],
+    "runAt": "document-idle",
+    "requiresCore": true,
+    "capabilities": [
+      "toast",
+      "feature",
+      "storage",
+      "idb",
+      "ui",
+      "ui.mount",
+      "ui.style",
+      "ui.dialog"
+    ],
+    "downloadUrl": "https://greasyfork.org/en/scripts/572506-f95ue-library-add-on",
+    "trusted": true
+  },
+  {
+    "id": "masked-direct-addon",
+    "name": "F95UE Masked + Direct Download Add-on",
+    "description": "Combines masked-link skipper and direct-download flows into one trusted add-on.",
+    "version": "0.3.46",
+    "pageScopes": [
+      "f95zone"
+    ],
+    "runtimeMode": "hybrid",
+    "matches": [
+      "*://f95zone.to/threads/*",
+      "*://f95zone.to/masked/*",
+      "*://buzzheavier.com/*",
+      "*://*.buzzheavier.com/*",
+      "*://bzzhr.to/*",
+      "*://*.bzzhr.to/*",
+      "*://gofile.io/*",
+      "*://pixeldrain.com/*",
+      "*://datanodes.to/*",
+      "*://www.mediafire.com/file/*",
+      "*://mediafire.com/file/*",
+      "*://workupload.com/file/*",
+      "*://workupload.com/start/*",
+      "*://*.workupload.com/file/*",
+      "*://*.workupload.com/start/*"
+    ],
+    "grants": [
+      "GM_openInTab",
+      "GM.getValue",
+      "GM.setValue",
+      "GM_addValueChangeListener",
+      "GM_removeValueChangeListener"
+    ],
+    "runAt": "document-idle",
+    "requiresCore": true,
+    "capabilities": [
+      "toast",
+      "feature",
+      "storage",
+      "ui",
+      "ui.style"
+    ],
+    "downloadUrl": "https://greasyfork.org/en/scripts/572503-f95ue-masked-direct-download-add-on",
     "trusted": true
   }
 ]

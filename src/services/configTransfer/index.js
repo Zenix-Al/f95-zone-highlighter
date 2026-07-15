@@ -5,7 +5,7 @@ import {
   validateConfig,
 } from "../../config/schema.js";
 import { CONFIG_SCHEMA_VERSION } from "../../config/persistence.js";
-import { commitConfig } from "../settingsService.js";
+import { updateConfig } from "../settingsService.js";
 
 export const CONFIG_TRANSFER_FORMAT_VERSION = 1;
 
@@ -301,7 +301,11 @@ export function previewConfigImport(input) {
 export async function commitConfigImport(input) {
   const preview = previewConfigImport(input);
   if (!preview.ok) return preview;
-  const result = await commitConfig(preview.candidate, { origin: "import" });
+  const result = await updateConfig((draft) => {
+    for (const section of preview.changedSections || []) {
+      draft[section] = clone(preview.candidate[section]);
+    }
+  }, { origin: "import" });
   if (!result.committed) return { ...preview, ...result, ok: false };
   return {
     ...preview,

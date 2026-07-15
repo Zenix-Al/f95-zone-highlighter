@@ -477,7 +477,9 @@ export function createExampleAddonApp({ core, runtime }) {
       panelBody:
         "Core API playground demonstrating every current addon-facing action through the api folder.",
       capabilities: runtime.capabilities,
-      pageScopes: ["thread", "latest", "download"],
+      pageScopes: runtime.pageScopes,
+      runtimeMode: runtime.runtimeMode,
+      matches: runtime.matches,
     });
   }
 
@@ -1115,6 +1117,13 @@ export function createExampleAddonApp({ core, runtime }) {
     bindPanelClicks();
     bindAddonCommands();
     registerAddon();
+
+    const access = await core.invokeCoreAction("addon.access", {});
+    if (!access?.ok || access.value?.blocked) {
+      state.enabled = false;
+      pushStatusUpdate();
+      return;
+    }
 
     await enableUi();
     await refreshMetaSection();

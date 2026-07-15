@@ -18,8 +18,6 @@ const gmGlobals = [
   "GM_xmlhttpRequest",
   "GM_download",
   "unsafeWindow",
-  "GM_addValueChangeListener",
-  "GM_removeValueChangeListener",
   "GM_getResourceText",
   "GM",
   "grecaptcha",

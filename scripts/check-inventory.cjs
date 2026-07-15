@@ -6,13 +6,13 @@ const { buildFeatureManifestState } = require("./featureManifest.cjs");
 const PUBLIC_SERVICE_MODULES = Object.freeze([
   "addonsService.js",
   "configChangeApplication.js",
+  "configMigrationService.js",
   "configTransfer/index.js",
   "notificationService.js",
   "prefixService.js",
   "safetyService.js",
   "settingsService.js",
   "storageAdapter.js",
-  "syncService.js",
   "tagsService.js",
 ]);
 

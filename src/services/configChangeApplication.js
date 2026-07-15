@@ -48,9 +48,9 @@ function reportEffectFailure(path, error, origin) {
   reportFeatureWarning("Config", error, `effect:${path}:${origin}`);
 }
 
-function invokeEffect(meta, path, value, origin) {
+function invokeEffect(meta, path, value, origin, notify) {
   try {
-    const pending = applyEffects(meta, value);
+    const pending = applyEffects(meta, value, { origin, notify });
     return pending && typeof pending.then === "function"
       ? pending.catch((error) => reportEffectFailure(path, error, origin))
       : null;
@@ -64,33 +64,24 @@ export function applyConfigChange(
   nextConfig,
   {
     origin = "local",
-    syncableOnly = false,
     reloadRequired = null,
+    notify = true,
   } = {},
 ) {
   const previous = clone(config);
   const requestedNext = clone(nextConfig);
-  const requestedPaths = sortChangedPaths(changedPaths(previous, requestedNext));
-  const next = syncableOnly ? clone(previous) : requestedNext;
-  if (syncableOnly) {
-    const syncableRoots = new Set(
-      requestedPaths
-        .filter((path) => getConfigPathMetadata(path)?.syncable)
-        .map((path) => path.match(/^[^.[\]]+/)?.[0] || path),
-    );
-    for (const root of syncableRoots) next[root] = clone(requestedNext[root]);
-  }
+  const next = requestedNext;
   const paths = sortChangedPaths(changedPaths(previous, next));
   Object.assign(config, next);
 
   const effectPromises = [];
+  const invokedEffects = new Set();
   for (const path of paths) {
     const schemaMetadata = getConfigPathMetadata(path);
-    if (syncableOnly && !schemaMetadata?.syncable) continue;
-
     const metadata = getMetadataByConfigPath(path);
-    if (metadata) {
-      const pending = invokeEffect(metadata, path, valueAtPath(config, path), origin);
+    if (metadata && !invokedEffects.has(metadata.id)) {
+      invokedEffects.add(metadata.id);
+      const pending = invokeEffect(metadata, path, valueAtPath(config, path), origin, notify);
       if (pending) effectPromises.push(pending);
     }
 

@@ -77,9 +77,18 @@ Add an entry to `addons/addons.manifest.json`:
   "grants": ["none"],
   "runAt": "document-idle",
   "requiresCore": true,
+  "runtimeMode": "core-required",
+  "pageScopes": ["f95zone"],
+  "downloadUrl": "https://example.invalid/my-addon",
   "capabilities": ["toast", "feature", "storage"]
 }
 ```
+
+The manifest is authoritative for add-on activation and core metadata. `pageScopes` may
+contain only `f95zone`, `thread`, or `latest`; `runtimeMode` is one of
+`core-required`, `standalone`, or `hybrid`. `requiresCore` remains a compatibility field
+and must agree with the runtime mode. Userscript `matches`, `grants`, and `runAt` remain
+independent injection metadata and are never used as action authorization.
 
 The builder injects these constants into the bundle:
 
@@ -89,6 +98,9 @@ The builder injects these constants into the bundle:
 - `__ADDON_DESCRIPTION__`
 - `__ADDON_CAPABILITIES__`
 - `__ADDON_REQUIRES_CORE__`
+- `__ADDON_PAGE_SCOPES__`
+- `__ADDON_RUNTIME_MODE__`
+- `__ADDON_MATCHES__`
 
 It also generates the userscript header, including matches, grants, version, author, namespace, and core requirement notice.
 
@@ -110,6 +122,9 @@ const runtime = {
     ? __ADDON_CAPABILITIES__
     : [],
   requiresCore: Boolean(__ADDON_REQUIRES_CORE__),
+  pageScopes: Array.isArray(__ADDON_PAGE_SCOPES__) ? __ADDON_PAGE_SCOPES__ : [],
+  runtimeMode: __ADDON_RUNTIME_MODE__,
+  matches: Array.isArray(__ADDON_MATCHES__) ? __ADDON_MATCHES__ : [],
 };
 
 const core = createCoreAdaptor(runtime.addonId);
@@ -117,7 +132,7 @@ const app = createAddonApp({ core, runtime });
 
 async function bootstrap() {
   const ping = await waitForCorePing(core);
-  if (!ping.ok && runtime.requiresCore) return;
+  if (!ping.ok && runtime.runtimeMode === "core-required") return;
   await app.bootstrap();
 }
 
@@ -207,6 +222,7 @@ A runtime registration should provide at least `id`, `name`, `version`, `descrip
 - `panelSettingsTitle`, `panelSettingsDescription`, and `panelSettingsStorageKey`
 - `panelSettingsDefaults` and `panelSettings`
 - `pageScopes`
+- `runtimeMode` and `matches`
 
 Example:
 
@@ -219,7 +235,9 @@ core.registerAddon({
   status: "installed",
   statusMessage: "Ready.",
   capabilities: runtime.capabilities,
-  pageScopes: ["thread", "latest"],
+  pageScopes: runtime.pageScopes,
+  runtimeMode: runtime.runtimeMode,
+  matches: runtime.matches,
   panelActions: [{ id: "open-panel", label: "Open", variant: "primary" }],
 });
 ```
@@ -368,6 +386,21 @@ node addons/build-addon.js example-addon --release
 node addons/build-addon.js example-addon --force
 ```
 
+Validate and regenerate the trusted catalog from the manifest with:
+
+```powershell
+npm run check:addons:catalog
+npm run generate:addons:catalog
+```
+
+The generator is deterministic and preserves the core header resource name and path
+(`trustedAddonCatalog` → `src/services/addons/trusted-catalog.json`). Catalog support is
+the intersection of userscript activation-match coverage and the current core page
+scope. It does not replace execution authorization: trust, enabled/blocked state,
+capabilities, and the action's `management` or `runtime` scope policy are checked
+separately. A `standalone` add-on does not register with core; a `hybrid` add-on uses
+core only on its F95Zone activation routes.
+
 The builder:
 
 - bundles JavaScript, imported HTML, and imported CSS with esbuild;
@@ -379,6 +412,33 @@ The builder:
 - skips unchanged targets unless `--force` is supplied.
 
 Because a successful changed build updates manifest versions, review `addons/addons.manifest.json` with the generated artifact.
+
+Every core-required or hybrid add-on uses the shared `addons/shared/coreBridge.js`
+contract. Bootstrap must complete the core ping, register the add-on, and consume
+`addon.access` before starting privileged API work or feature behavior. Trust,
+blocked state, granted capabilities, and enablement come from core; add-on code
+must not reconstruct the untrusted policy or its blocked message. The bridge
+keeps the existing event names, handshake fields, action response shapes, and
+teardown acknowledgment behavior unchanged.
+
+## Non-mutating baseline and smoke build
+
+`ADDON-BASELINE-01` uses a separate audit path so measurement does not invoke the production
+builder. It writes regular and release bundles only under a temporary directory, uses a
+deterministic header without the normal build timestamp, and records manifest/catalog metadata,
+action descriptors, lifecycle snapshots, source shape, gzip sizes, and esbuild contributors.
+
+```bash
+npm run audit:addons
+npm run check:addons:baseline
+npm run build:addons:smoke
+```
+
+These commands do not update add-on versions, `.build-cache.json`, `addons.manifest.json`, or
+tracked `dist/`. The baseline separates add-on userscript bundles from the core add-on-service and
+UI integration footprint. The trusted-add-on contradiction recorded by the baseline was resolved
+by `ADDON-TRUST-GATING-01`; the shared access resolver now keeps trust, blocked state, status text,
+and execution authorization consistent.
 
 ## Validation Checklist
 

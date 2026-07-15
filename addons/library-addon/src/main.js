@@ -129,7 +129,9 @@ function registerAddon() {
       capabilities: runtime.capabilities,
       // The Library button is intentionally available across F95Zone; thread
       // pages only add Save/Remove controls on top of that site-wide surface.
-      pageScopes: ["f95zone"],
+      pageScopes: runtime.pageScopes,
+      runtimeMode: runtime.runtimeMode,
+      matches: runtime.matches,
     },
   });
 }
@@ -460,21 +462,26 @@ function reportAddonBroken(err) {
 
 async function bootstrap() {
   const ping = await waitForCoreReady();
-  if (!ping.ok && runtime.requiresCore) {
+  if (!ping.ok && runtime.runtimeMode === "core-required") {
     console.info(`[${runtime.addonId}] F95UE core not detected; add-on skipped.`);
     return;
   }
 
+  bindAddonCommandListener();
   registerAddon();
 
   try {
+    const access = await bridge.invokeCoreAction("addon.access", {});
+    if (!access?.ok || access.value?.blocked) {
+      isEnabled = false;
+      pushStatusUpdate();
+      return;
+    }
     await library.runLegacyMigration();
 
     const settings = await loadSettings();
     isEnabled = settings.enabled !== false;
     showPageButtons = settings.showPageButtons !== false;
-
-    bindAddonCommandListener();
 
     if (isEnabled) {
       await mountQuickAddIfApplicable();

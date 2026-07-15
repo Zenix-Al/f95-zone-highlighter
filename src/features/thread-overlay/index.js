@@ -10,6 +10,10 @@ import {
   createEnabledDisabledToast,
   createToggleSetting,
 } from "../../ui/settings/metaFactory.js";
+import {
+  getSettingsMetadataByOwner,
+  registerSettingsMetadata,
+} from "../../ui/settings/metaRegistry.js";
 import { checkOverlaySettings } from "../../services/safetyService.js";
 import { refreshThreadOverlayAfterSettingsChange } from "../../ui/settingsRuntime/effectTasks.js";
 
@@ -120,6 +124,16 @@ export const threadOverlaySettingsMeta = {
   threadOverlayToggle: threadOverlayToggleSetting,
   ...threadOverlayToggleMeta,
 };
+if (getSettingsMetadataByOwner("feature:thread-overlay-dialog").length === 0) {
+  registerSettingsMetadata(
+    "thread-overlay-dialog",
+    Object.fromEntries(
+      Object.entries(threadOverlaySettingsMeta)
+        .map(([key, meta]) => [`threadOverlay.${key}`, meta]),
+    ),
+    "feature:thread-overlay-dialog",
+  );
+}
 
 function openThreadOverlaySettingsDialog() {
   openSettingsDialog({

@@ -287,7 +287,10 @@ export function addObserverCallback(id, callback, options = {}) {
   });
   resourceManager.register(
     `observer:${id}`,
-    () => removeObserverCallback(id),
+    () => {
+      callbacks.delete(id);
+      stopObserver();
+    },
     options.ownerId || null,
   );
   startObserver();

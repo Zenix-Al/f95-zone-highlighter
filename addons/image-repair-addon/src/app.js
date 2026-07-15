@@ -159,7 +159,9 @@ export function startImageRepairAddon() {
         panelBody:
           "Retries failed attachment images (attachments.f95zone.to). Use Enable / Disable to control whether the watcher is active.",
         capabilities: runtime.capabilities,
-        pageScopes: ["thread"],
+        pageScopes: runtime.pageScopes,
+        runtimeMode: runtime.runtimeMode,
+        matches: runtime.matches,
       },
     });
   }
@@ -272,19 +274,24 @@ export function startImageRepairAddon() {
   async function bootstrap() {
     debugLog(runtime.addonId, "Bootstrapping add-on...");
     const ping = await bridge.waitForCorePing();
-    if (!ping.ok && runtime.requiresCore) {
+    if (!ping.ok && runtime.runtimeMode === "core-required") {
       debugLog(runtime.addonId, "F95UE core not detected; add-on skipped.", { data: { ping } });
       return;
     }
     debugLog(runtime.addonId, "F95UE core detected and responsive.", { data: { ping } });
+    bindAddonCommandListener();
     // Register first so permission-checked storage actions can resolve this add-on.
     registerAddon();
     debugLog(runtime.addonId, "Add-on registered with core.", { data: { ping } });
     try {
+      const access = await bridge.invokeCoreAction("addon.access", {});
+      if (!access?.ok || access.value?.blocked) {
+        isEnabled = false;
+        pushStatusUpdate();
+        return;
+      }
       const stored = await storageGet("enabled", true);
       isEnabled = stored !== false && stored !== "false";
-
-      bindAddonCommandListener();
 
       if (isEnabled) {
         // Wait for page to fully load before enabling observer

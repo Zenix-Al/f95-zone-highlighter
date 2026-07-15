@@ -48,10 +48,10 @@ function createActionButton(text, title, typeClass, onClick, onActionComplete) {
   btn.title = title;
   btn.className = `tag-btn ${typeClass}`;
 
-  btn.addEventListener("click", (e) => {
+  btn.addEventListener("click", async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    onClick();
+    await onClick();
     onActionComplete();
   });
 
