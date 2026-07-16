@@ -3,7 +3,7 @@
     "id": "example-addon",
     "name": "F95UE Example Add-on",
     "description": "Core API playground demonstrating every current addon-facing action through api modules.",
-    "version": "0.2.8",
+    "version": "0.2.14",
     "pageScopes": [
       "f95zone"
     ],
@@ -20,6 +20,7 @@
       "toast",
       "feature",
       "storage",
+      "page",
       "observer",
       "idb",
       "ui.style",
@@ -28,13 +29,16 @@
       "ui.dock"
     ],
     "downloadUrl": "https://greasyfork.org/en/scripts/583616-f95ue-example-add-on",
-    "trusted": true
+    "trusted": true,
+    "legacyIds": [
+      "example-addon-legacy"
+    ]
   },
   {
     "id": "halloween-theme-addon",
     "name": "F95UE Halloween Theme Add-on",
     "description": "Forces Halloween logo/background theme with simple apply and teardown lifecycle.",
-    "version": "2.0.12",
+    "version": "2.0.16",
     "pageScopes": [
       "f95zone"
     ],
@@ -54,38 +58,10 @@
     "trusted": true
   },
   {
-    "id": "image-repair-addon",
-    "name": "F95UE Image Repair Add-on",
-    "description": "Automatically retries broken attachment images on F95Zone threads.",
-    "version": "0.2.3",
-    "pageScopes": [
-      "thread"
-    ],
-    "runtimeMode": "core-required",
-    "matches": [
-      "*://f95zone.to/threads/*"
-    ],
-    "grants": [
-      "none"
-    ],
-    "runAt": "document-idle",
-    "requiresCore": true,
-    "capabilities": [
-      "toast",
-      "feature",
-      "storage",
-      "observer",
-      "ui",
-      "ui.style"
-    ],
-    "downloadUrl": "https://greasyfork.org/en/scripts/572502-f95ue-image-repair-add-on",
-    "trusted": true
-  },
-  {
     "id": "latest-filters-addon",
     "name": "F95UE Latest Filters Add-on",
     "description": "Adds one Saved Filters button on Latest Updates with a searchable preset list and active filter tracking.",
-    "version": "0.3.18",
+    "version": "0.3.20",
     "pageScopes": [
       "latest"
     ],
@@ -103,6 +79,8 @@
       "toast",
       "feature",
       "storage",
+      "page",
+      "observer",
       "ui",
       "ui.style",
       "ui.mount",
@@ -115,7 +93,7 @@
     "id": "library-addon",
     "name": "F95UE Library Add-on",
     "description": "Quick-add threads to a personal library and manage entries with a dedicated add-on UI.",
-    "version": "0.3.54",
+    "version": "0.3.59",
     "pageScopes": [
       "f95zone"
     ],
@@ -132,6 +110,7 @@
       "toast",
       "feature",
       "storage",
+      "page",
       "idb",
       "ui",
       "ui.mount",
@@ -145,7 +124,7 @@
     "id": "masked-direct-addon",
     "name": "F95UE Masked + Direct Download Add-on",
     "description": "Combines masked-link skipper and direct-download flows into one trusted add-on.",
-    "version": "0.3.46",
+    "version": "0.3.51",
     "pageScopes": [
       "f95zone"
     ],
@@ -180,10 +159,43 @@
       "toast",
       "feature",
       "storage",
+      "page",
+      "observer",
       "ui",
       "ui.style"
     ],
     "downloadUrl": "https://greasyfork.org/en/scripts/572503-f95ue-masked-direct-download-add-on",
     "trusted": true
+  },
+  {
+    "id": "site-repair-addon",
+    "name": "F95UE Site Repair",
+    "description": "Provides independently controlled repairs for F95Zone site behavior.",
+    "version": "0.2.6",
+    "pageScopes": [
+      "f95zone"
+    ],
+    "runtimeMode": "core-required",
+    "matches": [
+      "*://f95zone.to/*"
+    ],
+    "grants": [
+      "none"
+    ],
+    "runAt": "document-idle",
+    "requiresCore": true,
+    "capabilities": [
+      "toast",
+      "feature",
+      "storage",
+      "observer",
+      "ui",
+      "ui.style"
+    ],
+    "downloadUrl": "https://greasyfork.org/en/scripts/572502-f95ue-image-repair-add-on",
+    "trusted": true,
+    "legacyIds": [
+      "image-repair-addon"
+    ]
   }
 ]

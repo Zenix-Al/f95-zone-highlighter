@@ -60,7 +60,6 @@ export const defaultLatestSettings = {
   minVersion: 0.5,
   wideLatest: false,
   denseLatestGrid: false,
-  latestAjaxErrorRecovery: true,
   latestOverlayToggle: true,
   latestOverlayColorOrder: [
     "excluded",
@@ -97,7 +96,7 @@ export const defaultAddonsServiceSettings = {
 };
 
 export const defaultAddonsSettings = {
-  trustedIds: ["image-repair-addon", "masked-direct-addon", "example-addon"],
+  trustedIds: ["site-repair-addon", "masked-direct-addon", "example-addon"],
   byAddon: {},
   installedMeta: {},
   service: {

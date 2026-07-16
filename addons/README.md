@@ -209,10 +209,12 @@ Always filter incoming events by `detail.addonId`.
 
 Two read-only meta actions are available after registration:
 
-- `addon.access` returns trust, block, and granted-capability state.
+- `addon.access` returns trust, block, persisted `enabled`, and granted-capability state. Bootstrap must not enable the application when `enabled` is `false`; persisted core state is authoritative over the add-on's initial registration status.
 - `addon.throttle` returns live rate, concurrency, IDB payload, storage, and UI payload limits.
 
 Use `addon.throttle` before imports or other sustained workloads. Do not hard-code the current limits.
+
+Core enable/disable writes the desired state and status metadata in one serialized config commit. Disable is reversible, not terminal teardown. Cleanup-only actions (`observer.unwatch`, dock removal, unmount, dialog close, and style unregister) remain authorized while disabled so an add-on can release resources after receiving the command; core also removes its own UI and observer resources defensively. Enable must remount resources and rebind handlers rather than trusting pre-disable flags.
 
 ## API Modules
 
@@ -460,7 +462,7 @@ npm run generate:addons:catalog
 ```
 
 The generator is deterministic and preserves the core header resource name and path
-(`trustedAddonCatalog` → `addons/trusted-catalog.json`). Catalog support is
+(`trustedAddonCatalog` → `src/services/addons/trusted-catalog.json`). Catalog support is
 the intersection of userscript activation-match coverage and the current core page
 scope. It does not replace execution authorization: trust, enabled/blocked state,
 capabilities, and the action's `management` or `runtime` scope policy are checked
@@ -590,6 +592,6 @@ Before publishing an add-on:
 - [`example-addon`](example-addon/) — complete API and lifecycle playground; use this as the structural template.
 - [`library-addon`](library-addon/) — production IDB, import/export, dialog, mount, and settings example.
 - [`latest-filters-addon`](latest-filters-addon/) — page-slot mounting and focused feature UI.
-- [`image-repair-addon`](image-repair-addon/) — observer-based page enhancement.
+- [`site-repair-addon`](site-repair-addon/) — site-wide host for independently controlled Image Attachments and Latest Ajax repairs; preserves `image-repair-addon` as its legacy state identity.
 
 The Example Add-on intentionally includes actions that can remove its own styles, mounts, dialogs, dock buttons, and test data. That makes it useful for API regression testing, but it should be presented as a developer tool rather than a normal end-user feature.

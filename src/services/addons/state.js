@@ -1,5 +1,5 @@
 import { config } from "../../config.js";
-import { saveConfigKeys } from "../settingsService.js";
+import { saveConfigKeys, updateConfig } from "../settingsService.js";
 import { getCanonicalAddonId, listTrustedAddonCatalog } from "./catalog.js";
 import { sanitizeAddonId } from "./shared.js";
 
@@ -124,6 +124,37 @@ function ensureAddonStateBucketInRoot(addons, addonId) {
   return addonsRoot.byAddon[normalizedId].state;
 }
 
+function applyInstalledAddonMeta(addons, addonId, partial = {}) {
+  const bucket = ensureInstalledMetaBucket(addons, addonId);
+  const now = Date.now();
+  const incomingInstalledSeenAt = Number(partial.installedSeenAt || 0);
+  const incomingLastSeenAt = Number(partial.lastSeenAt || 0);
+
+  bucket.name = String(partial.name || bucket.name || "").trim();
+  bucket.version = String(partial.version || bucket.version || "").trim();
+  bucket.description = String(partial.description || bucket.description || "").trim();
+  bucket.panelTitle = String(partial.panelTitle || bucket.panelTitle || "").trim();
+  bucket.panelBody = String(partial.panelBody || bucket.panelBody || "").trim();
+  bucket.statusMessage = Object.prototype.hasOwnProperty.call(partial, "statusMessage")
+    ? String(partial.statusMessage || "").trim()
+    : String(bucket.statusMessage || "").trim();
+  bucket.pageScopes = Array.isArray(partial.pageScopes)
+    ? partial.pageScopes.map((entry) => String(entry || "").trim().toLowerCase()).filter(Boolean)
+    : Array.isArray(bucket.pageScopes) ? bucket.pageScopes : [];
+  bucket.runtimeMode = String(partial.runtimeMode || bucket.runtimeMode || "").trim().toLowerCase();
+  bucket.matches = Array.isArray(partial.matches)
+    ? partial.matches.map((entry) => String(entry || "").trim()).filter(Boolean)
+    : Array.isArray(bucket.matches) ? bucket.matches : [];
+  bucket.capabilities = Array.isArray(partial.capabilities)
+    ? partial.capabilities.map((entry) => String(entry || "").trim()).filter(Boolean)
+    : Array.isArray(bucket.capabilities) ? bucket.capabilities : [];
+  bucket.installedSeenAt = Number.isFinite(incomingInstalledSeenAt) && incomingInstalledSeenAt > 0
+    ? incomingInstalledSeenAt
+    : bucket.installedSeenAt || now;
+  bucket.lastSeenAt = Number.isFinite(incomingLastSeenAt) && incomingLastSeenAt > 0 ? incomingLastSeenAt : now;
+  return bucket;
+}
+
 export function getAddonState(addonId) {
   const normalizedId = resolveAddonId(addonId);
   if (!normalizedId) return {};
@@ -208,37 +239,30 @@ export async function setAddonStateValue(addonId, key, value) {
 export async function upsertInstalledAddonMeta(addonId, partial = {}) {
   const normalizedId = resolveAddonId(addonId);
   if (!normalizedId) return { ok: false, reason: "invalid_addon_id" };
+  let savedBucket = null;
+  const result = await updateConfig((draft) => {
+    const addons = ensureAddonsConfigBucket(draft.addons);
+    canonicalizeAddonIdentityRoot(addons);
+    savedBucket = { ...applyInstalledAddonMeta(addons, normalizedId, partial) };
+  }, { origin: `addons:meta:${normalizedId}` });
+  if (!result.committed) return { ok: false, reason: "storage_error", result };
+  return { ok: true, value: savedBucket };
+}
 
-  const addons = ensureAddonsConfigBucket(clone(config.addons));
-  const bucket = ensureInstalledMetaBucket(addons, normalizedId);
-  const now = Date.now();
-  const incomingInstalledSeenAt = Number(partial.installedSeenAt || 0);
-  const incomingLastSeenAt = Number(partial.lastSeenAt || 0);
-
-  bucket.name = String(partial.name || bucket.name || "").trim();
-  bucket.version = String(partial.version || bucket.version || "").trim();
-  bucket.description = String(partial.description || bucket.description || "").trim();
-  bucket.panelTitle = String(partial.panelTitle || bucket.panelTitle || "").trim();
-  bucket.panelBody = String(partial.panelBody || bucket.panelBody || "").trim();
-  bucket.statusMessage = String(partial.statusMessage || bucket.statusMessage || "").trim();
-  bucket.pageScopes = Array.isArray(partial.pageScopes)
-    ? partial.pageScopes.map((entry) => String(entry || "").trim().toLowerCase()).filter(Boolean)
-    : Array.isArray(bucket.pageScopes) ? bucket.pageScopes : [];
-  bucket.runtimeMode = String(partial.runtimeMode || bucket.runtimeMode || "").trim().toLowerCase();
-  bucket.matches = Array.isArray(partial.matches)
-    ? partial.matches.map((entry) => String(entry || "").trim()).filter(Boolean)
-    : Array.isArray(bucket.matches) ? bucket.matches : [];
-  bucket.capabilities = Array.isArray(partial.capabilities)
-    ? partial.capabilities.map((entry) => String(entry || "").trim()).filter(Boolean)
-    : Array.isArray(bucket.capabilities) ? bucket.capabilities : [];
-  bucket.installedSeenAt = Number.isFinite(incomingInstalledSeenAt) && incomingInstalledSeenAt > 0
-    ? incomingInstalledSeenAt
-    : bucket.installedSeenAt || now;
-  bucket.lastSeenAt = Number.isFinite(incomingLastSeenAt) && incomingLastSeenAt > 0 ? incomingLastSeenAt : now;
-
-  const persisted = await persistAddonsState(addons);
-  if (!persisted.ok) return { ok: false, reason: "storage_error" };
-  return { ok: true, value: { ...bucket } };
+/** Commit the desired runtime state and its status metadata as one serialized config update. */
+export async function setAddonEnabledState(addonId, enabled, partialMeta = {}) {
+  const normalizedId = resolveAddonId(addonId);
+  if (!normalizedId) return { ok: false, reason: "invalid_addon_id" };
+  const desiredEnabled = Boolean(enabled);
+  let savedMeta = null;
+  const result = await updateConfig((draft) => {
+    const addons = ensureAddonsConfigBucket(draft.addons);
+    canonicalizeAddonIdentityRoot(addons);
+    ensureAddonStateBucketInRoot(addons, normalizedId).enabled = desiredEnabled;
+    savedMeta = { ...applyInstalledAddonMeta(addons, normalizedId, partialMeta) };
+  }, { origin: `addons:${desiredEnabled ? "enable" : "disable"}:${normalizedId}` });
+  if (!result.committed) return { ok: false, reason: "storage_error", result };
+  return { ok: true, value: { enabled: desiredEnabled, meta: savedMeta }, result };
 }
 
 export async function clearAddonState(addonId) {

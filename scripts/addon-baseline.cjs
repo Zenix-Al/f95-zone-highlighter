@@ -9,7 +9,7 @@ const zlib = require("zlib");
 
 const ROOT = process.cwd();
 const MANIFEST_PATH = path.join(ROOT, "addons", "addons.manifest.json");
-const TRUSTED_CATALOG_PATH = path.join(ROOT, "addons", "trusted-catalog.json");
+const TRUSTED_CATALOG_PATH = path.join(ROOT, "src", "services", "addons", "trusted-catalog.json");
 const BASELINE_SCHEMA_VERSION = 1;
 const SOURCE_EXTENSIONS = new Set([".js", ".cjs", ".mjs", ".css", ".html"]);
 const SERVICE_SOURCE_EXTENSIONS = new Set([".js", ".json"]);
@@ -188,26 +188,20 @@ function sourceFootprint(files) {
 }
 
 function parseActionDescriptors() {
-  const source = fs.readFileSync(path.join(ROOT, "src/services/addons/actions/descriptors.js"), "utf8");
-  const actionBlock = source.match(/const ACTIONS = Object\.freeze\(\{([\s\S]*?)\n\}\);/)?.[1] || "";
-  const validatorBlock = source.match(/const validators = Object\.freeze\(\{([\s\S]*?)\n\}\);/)?.[1] || "";
-  const required = new Map();
-  for (const match of actionBlock.matchAll(/"([^\"]+)"\s*:\s*\[([^\]]*)\]/g)) {
-    required.set(match[1], match[2].split(",").map((value) => value.replace(/["']/g, "").trim()).filter(Boolean));
-  }
-  const validators = new Map();
-  for (const match of validatorBlock.matchAll(/"([^\"]+)"\s*:\s*([A-Za-z_$][\w$]*)/g)) validators.set(match[1], match[2]);
-  const policySource = fs.readFileSync(path.join(ROOT, "src/services/addons/actions/policy.js"), "utf8");
-  const policies = new Map();
-  for (const match of policySource.matchAll(/"([^\"]+)"\s*:\s*"([^\"]+)"/g)) policies.set(match[1], match[2]);
-  return [...required.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([id, capabilities]) => ({
-    id,
-    protocolVersion: 1,
-    requiredCapabilities: capabilities,
-    timeoutMs: 5000,
-    auditCategory: id.split(".")[0],
-    scopePolicy: policies.get(id) || "runtime",
-    payloadValidator: validators.get(id) || "objectPayload",
+  const built = esbuild.buildSync({
+    entryPoints: [path.join(ROOT, "src/services/addons/coreActions.js")],
+    bundle: true,
+    write: false,
+    format: "cjs",
+    platform: "node",
+    define: { __F95UE_DEBUG__: "false" },
+    logLevel: "silent",
+  });
+  const module = { exports: {} };
+  Function("module", "exports", "require", built.outputFiles[0].text)(module, module.exports, require);
+  return module.exports.getRegisteredAddonActionSnapshot().map((entry) => ({
+    ...entry,
+    payloadValidator: "family-owned",
   }));
 }
 
@@ -443,7 +437,7 @@ async function createBaseline({ rootDir = ROOT } = {}) {
       },
       manifest: { entries: addons },
       trustedCatalog: {
-        source: "addons/trusted-catalog.json",
+        source: "src/services/addons/trusted-catalog.json",
         projection: readTrustedCatalog(),
         runtimeFreshDefault: false,
       },

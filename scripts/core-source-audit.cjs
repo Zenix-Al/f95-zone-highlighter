@@ -16,7 +16,6 @@ const EXCLUDED_SOURCE_HINTS = Object.freeze([
   "src/services/addonsService.js",
   ADDON_UI_PREFIX,
   ADDON_UI_RENDERER,
-  "src/features/latest-ajax-error-recovery/",
 ]);
 const BASELINE_SCHEMA_VERSION = 1;
 

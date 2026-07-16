@@ -108,7 +108,6 @@ const latestSettings = node("object", defaultLatestSettings, {
     minVersion: finiteNumber(defaultLatestSettings.minVersion, { min: 0, max: 1000, validate: (value) => isValidVersion(value) ? null : { code: "range", expected: "version >= 0" } }),
     wideLatest: bool(defaultLatestSettings.wideLatest),
     denseLatestGrid: bool(defaultLatestSettings.denseLatestGrid),
-    latestAjaxErrorRecovery: bool(defaultLatestSettings.latestAjaxErrorRecovery),
     latestOverlayToggle: bool(defaultLatestSettings.latestOverlayToggle),
     latestOverlayColorOrder: node("array", defaultLatestSettings.latestOverlayColorOrder, {
       items: string("", { enum: ["excluded", "preferred", "completed", "onhold", "abandoned", "highVersion", "invalidVersion"] }),

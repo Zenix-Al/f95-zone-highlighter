@@ -28,6 +28,7 @@ import {
   listInstalledAddonMeta,
   persistAddonsState,
   removeInstalledAddonMeta,
+  setAddonEnabledState,
   setAddonStateValue,
   upsertInstalledAddonMeta,
 } from "./addons/state.js";
@@ -65,7 +66,9 @@ import {
   setAddonDockButtons,
   unmountAddonUi,
   unregisterAddonStyle,
+  updateAddonDialog,
   updateAddonUi,
+  getAddonUiPolicySnapshot,
 } from "./addons/uiHost.js";
 import {
   idbBulkDeleteForAddon,
@@ -85,6 +88,13 @@ const MAX_ADDON_STORAGE_VALUE_BYTES = 16 * 1024;
 const MAX_ADDON_STORAGE_TOTAL_BYTES = 64 * 1024;
 const ADDON_TEARDOWN_WATCHDOG_MS = 1200;
 const PAYLOAD_SIZE_ENCODER = typeof TextEncoder !== "undefined" ? new TextEncoder() : null;
+const DISABLED_ADDON_CLEANUP_ACTIONS = new Set([
+  "observer.unwatch",
+  "ui.dock.removeButtons",
+  "ui.unmount",
+  "ui.dialog.close",
+  "ui.style.unregister",
+]);
 
 export { listRegisteredAddons, replaceRegisteredAddons, registerAddon, validateAddonRegistration, subscribeAddonsRegistry };
 export { getAddonState, setAddonStateValue, clearAddonState };
@@ -242,6 +252,7 @@ export function getAddonActionBlockReason(addon, action) {
   ) {
     return null;
   }
+  if (reason === "addon_disabled" && DISABLED_ADDON_CLEANUP_ACTIONS.has(action)) return null;
   return reason === "addon_out_of_scope" && getAddonActionScopePolicy(action) === "management"
     ? null
     : reason;
@@ -261,18 +272,13 @@ async function processUnregisteredAddonAction(addonId, action, installedMeta) {
     ? ""
     : "Disabled from core. It will remain off when the add-on loads.";
 
-  const stateBucket = ensureAddonStateBucket(addonId);
-  stateBucket.enabled = enabled;
-
-  const persisted = await persistAddonsState();
-  const persistedMeta = await upsertInstalledAddonMeta(addonId, {
+  const persisted = await setAddonEnabledState(addonId, enabled, {
     statusMessage: nextStatusMessage,
   });
-  if (!persisted.ok || !persistedMeta.ok) return { ok: false, reason: "storage_error" };
+  if (!persisted.ok) return { ok: false, reason: "storage_error" };
 
   if (!enabled) {
     addonLifecycle.emitLifecycleCommand(addonId, "before-disable");
-    addonLifecycle.requestTeardown(addonId, "disable");
   }
 
   return { ok: true, value: { deferred: true, enabled } };
@@ -284,6 +290,8 @@ function getAddonAccessResponse(addon) {
     ok: true,
     value: {
       blocked: access.isBlocked,
+      blockReason: access.blockReason,
+      enabled: access.isEnabled,
       trusted: access.isTrusted,
       capabilities: Array.isArray(addon.capabilities) ? [...addon.capabilities] : [],
     },
@@ -381,17 +389,31 @@ function resolveAddonAccessForAddon(addon, currentScopes = undefined) {
     };
   }
 
+  const persistedState = getAddonState(addon.id);
   return resolveAddonAccess({
     id: addon.id,
     addon,
     catalogEntry: getTrustedCatalogEntry(addon.id),
     trustedIds: config.addons?.trustedIds,
     allowUntrusted: Boolean(config.globalSettings?.allowUntrustedAddons),
+    desiredEnabled: Object.prototype.hasOwnProperty.call(persistedState, "enabled")
+      ? persistedState.enabled
+      : undefined,
     currentScopes,
     currentUrl:
       typeof window !== "undefined" && window.location
         ? String(window.location.href || "")
         : "",
+});
+}
+
+function cleanupAddonRuntimeResources(addonId, reason = "disable") {
+  const before = getAddonUiPolicySnapshot().owners;
+  cleanupAddonObserverSubscriptions(addonId);
+  cleanupAddonUi(addonId);
+  const after = getAddonUiPolicySnapshot().owners;
+  debugLog("addonsService", `Cleaned core-owned add-on resources (id=${addonId}, reason=${reason}).`, {
+    data: { before, after },
   });
 }
 
@@ -413,6 +435,8 @@ const ADDON_CORE_ACTION_DEPS = Object.freeze({
   ensureAddonStateBucket,
   persistAddonsState,
   upsertInstalledAddonMeta,
+  setAddonEnabledState,
+  cleanupAddonRuntimeResources,
   measurePayloadBytes,
   idbGetForAddon,
   idbPutForAddon,
@@ -433,6 +457,7 @@ const ADDON_CORE_ACTION_DEPS = Object.freeze({
   sanitizeAddonDialogId,
   openAddonDialog,
   closeAddonDialog,
+  updateAddonDialog,
   openConfirmDialog,
   sanitizeAddonStyleId,
   registerAddonStyle,
@@ -534,7 +559,18 @@ export function initAddonsConsoleBridge() {
         }
         return;
       }
-      const snapshot = registerAddon(addon || {});
+      const persistedState = addonId ? getAddonState(addonId) : {};
+      const hasPersistedEnabled = Object.prototype.hasOwnProperty.call(persistedState, "enabled");
+      const desiredEnabled = hasPersistedEnabled
+        ? persistedState.enabled !== false
+        : String(addon?.status || "installed") !== "disabled";
+      const effectiveAddon = desiredEnabled ? addon : {
+        ...addon,
+        status: "disabled",
+        statusMessage: String(addon?.statusMessage || "Disabled from core.").trim(),
+      };
+      debugLog("addonsService", `Resolved registration lifecycle state (id=${addonId}, requested=${String(addon?.status || "")}, persisted=${hasPersistedEnabled ? String(persistedState.enabled) : "unset"}, effective=${desiredEnabled ? "enabled" : "disabled"}).`);
+      const snapshot = registerAddon(effectiveAddon || {});
       const registeredAddon = snapshot.find((entry) => entry.id === getCanonicalAddonId(addonId));
       debugLog("addonsService", `Accepted add-on registration (id=${addonId}, registered=${Boolean(registeredAddon)}, trusted=${String(registeredAddon?.trusted)}, blocked=${String(registeredAddon?.blocked)}, blockReason=${String(registeredAddon?.blockReason || "")}).`, {
         data: {
@@ -575,7 +611,7 @@ export function initAddonsConsoleBridge() {
         return;
       }
 
-      const stateBucket = ensureAddonStateBucket(addonId);
+      const stateBucket = getAddonState(addonId);
       // Enforce persisted disabled state once, but avoid re-emitting disable
       // when the addon is already registered as disabled (prevents feedback loops
       // for addons that re-register after status updates).

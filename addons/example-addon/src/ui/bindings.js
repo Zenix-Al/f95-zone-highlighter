@@ -1,3 +1,5 @@
+import { debugLog } from "../../../shared/debugLog.js";
+
 export function createExampleUiBindings({ onAction, onDockAction, isEnabled, addonId }) {
   let panelClickHandler = null;
   let dockClickHandler = null;
@@ -39,23 +41,32 @@ export function createExampleUiBindings({ onAction, onDockAction, isEnabled, add
   }
 
   function bindDockMountEvents() {
-    if (dockClickHandler) return;
+    if (dockClickHandler) {
+      debugLog(addonId, "Dock click listener already bound.");
+      return;
+    }
     dockClickHandler = (event) => {
-      if (!isEnabled()) return;
+      if (!isEnabled()) {
+        debugLog(addonId, "Dock click ignored because application is disabled.");
+        return;
+      }
       const actionEl = resolveDockActionButton(event);
       if (!actionEl) return;
       const action = String(actionEl.dataset.action || "").trim();
       if (!action) return;
+      debugLog(addonId, "Dock click action resolved.", { data: { action } });
       event.preventDefault();
       if (action === "open-example") void onDockAction("open-panel");
     };
     window.addEventListener("click", dockClickHandler, true);
+    debugLog(addonId, "Dock click listener bound.");
   }
 
   function unbindDockMountEvents() {
     if (!dockClickHandler) return;
     window.removeEventListener("click", dockClickHandler, true);
     dockClickHandler = null;
+    debugLog(addonId, "Dock click listener unbound.");
   }
 
   return {

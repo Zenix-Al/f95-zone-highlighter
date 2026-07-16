@@ -5,10 +5,10 @@
     "productionAddons": [
       "example-addon",
       "halloween-theme-addon",
-      "image-repair-addon",
       "latest-filters-addon",
       "library-addon",
-      "masked-direct-addon"
+      "masked-direct-addon",
+      "site-repair-addon"
     ],
     "included": [
       "addons/*/src/**",
@@ -27,11 +27,11 @@
   "inventory": {
     "addOns": [
       {
-        "id": "image-repair-addon",
+        "id": "site-repair-addon",
         "manifest": {
-          "entry": "addons/image-repair-addon/src/main.js",
+          "entry": "addons/site-repair-addon/src/main.js",
           "matches": [
-            "*://f95zone.to/threads/*"
+            "*://f95zone.to/*"
           ],
           "grants": [
             "none"
@@ -39,7 +39,7 @@
           "runAt": "document-idle",
           "runtimeMode": "core-required",
           "pageScopes": [
-            "thread"
+            "f95zone"
           ],
           "capabilities": [
             "toast",
@@ -51,23 +51,32 @@
           ]
         },
         "sourceFiles": [
-          "addons/image-repair-addon/src/api/observer.js",
-          "addons/image-repair-addon/src/app.js",
-          "addons/image-repair-addon/src/constants.js",
-          "addons/image-repair-addon/src/coreBridge.js",
-          "addons/image-repair-addon/src/feature.js",
-          "addons/image-repair-addon/src/main.js",
-          "addons/image-repair-addon/src/queue.js",
-          "addons/image-repair-addon/src/ui.js"
+          "addons/site-repair-addon/src/api/bridge.js",
+          "addons/site-repair-addon/src/api/meta.js",
+          "addons/site-repair-addon/src/api/observer.js",
+          "addons/site-repair-addon/src/api/storage.js",
+          "addons/site-repair-addon/src/api/ui/style.js",
+          "addons/site-repair-addon/src/app/commands.js",
+          "addons/site-repair-addon/src/app/createSiteRepairApp.js",
+          "addons/site-repair-addon/src/app/lifecycle.js",
+          "addons/site-repair-addon/src/app/settings.js",
+          "addons/site-repair-addon/src/constants.js",
+          "addons/site-repair-addon/src/core/adaptor.js",
+          "addons/site-repair-addon/src/main.js",
+          "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
+          "addons/site-repair-addon/src/repairs/imageAttachments/scheduler.js",
+          "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+          "addons/site-repair-addon/src/repairs/latestAjax/policy.js",
+          "addons/site-repair-addon/src/ui/imageStatus.js"
         ],
         "rawActions": [
           {
             "id": "addon.access",
             "callSites": [
               {
-                "path": "addons/image-repair-addon/src/app.js",
-                "line": 295,
-                "text": "const access = await bridge.invokeCoreAction(\"addon.access\", {});"
+                "path": "addons/site-repair-addon/src/api/meta.js",
+                "line": 1,
+                "text": "export function getAddonAccess(core) { return core.invokeCoreAction(\"addon.access\", {}); }"
               }
             ]
           },
@@ -75,19 +84,9 @@
             "id": "observer.unwatch",
             "callSites": [
               {
-                "path": "addons/image-repair-addon/src/app.js",
-                "line": 139,
-                "text": "await bridge.invokeCoreAction(\"observer.unwatch\", { observerId });"
-              }
-            ]
-          },
-          {
-            "id": "observer.waitFor",
-            "callSites": [
-              {
-                "path": "addons/image-repair-addon/src/api/observer.js",
-                "line": 6,
-                "text": "\"observer.waitFor\","
+                "path": "addons/site-repair-addon/src/api/observer.js",
+                "line": 5,
+                "text": "return core.invokeCoreAction(\"observer.unwatch\", { observerId });"
               }
             ]
           },
@@ -95,9 +94,19 @@
             "id": "observer.watch",
             "callSites": [
               {
-                "path": "addons/image-repair-addon/src/app.js",
-                "line": 137,
-                "text": "await bridge.invokeCoreAction(\"observer.watch\", { observerId, srcPrefix: IMAGE_HOST });"
+                "path": "addons/site-repair-addon/src/api/observer.js",
+                "line": 2,
+                "text": "return core.invokeCoreAction(\"observer.watch\", { observerId, srcPrefix });"
+              }
+            ]
+          },
+          {
+            "id": "page.getContext",
+            "callSites": [
+              {
+                "path": "addons/site-repair-addon/src/api/meta.js",
+                "line": 2,
+                "text": "export function getPageContext(core) { return core.invokeCoreAction(\"page.getContext\", {}); }"
               }
             ]
           },
@@ -105,9 +114,9 @@
             "id": "storage.get",
             "callSites": [
               {
-                "path": "addons/image-repair-addon/src/app.js",
-                "line": 144,
-                "text": "const result = await bridge.invokeCoreAction(\"storage.get\", { key, defaultValue });"
+                "path": "addons/site-repair-addon/src/api/storage.js",
+                "line": 2,
+                "text": "return core.invokeCoreAction(\"storage.get\", { key, defaultValue });"
               }
             ]
           },
@@ -115,19 +124,9 @@
             "id": "storage.set",
             "callSites": [
               {
-                "path": "addons/image-repair-addon/src/app.js",
-                "line": 149,
-                "text": "return bridge.invokeCoreAction(\"storage.set\", { key, value });"
-              }
-            ]
-          },
-          {
-            "id": "toast.show",
-            "callSites": [
-              {
-                "path": "addons/image-repair-addon/src/app.js",
-                "line": 275,
-                "text": "return bridge.invokeCoreAction(\"toast.show\", {"
+                "path": "addons/site-repair-addon/src/api/storage.js",
+                "line": 5,
+                "text": "return core.invokeCoreAction(\"storage.set\", { key, value });"
               }
             ]
           },
@@ -135,9 +134,9 @@
             "id": "ui.style.register",
             "callSites": [
               {
-                "path": "addons/image-repair-addon/src/app.js",
-                "line": 98,
-                "text": "const result = await bridge.invokeCoreAction(\"ui.style.register\", {"
+                "path": "addons/site-repair-addon/src/api/ui/style.js",
+                "line": 2,
+                "text": "return core.invokeCoreAction(\"ui.style.register\", { styleId, cssText });"
               }
             ]
           },
@@ -145,311 +144,257 @@
             "id": "ui.style.unregister",
             "callSites": [
               {
-                "path": "addons/image-repair-addon/src/app.js",
-                "line": 106,
-                "text": "await bridge.invokeCoreAction(\"ui.style.unregister\", {"
+                "path": "addons/site-repair-addon/src/api/ui/style.js",
+                "line": 5,
+                "text": "return core.invokeCoreAction(\"ui.style.unregister\", { styleId });"
               }
             ]
           }
         ],
-        "globalEventListeners": [
+        "globalEventListeners": [],
+        "bridgeEvents": [],
+        "storageKeys": [
           {
-            "path": "addons/image-repair-addon/src/app.js",
-            "line": 40,
-            "text": ": new Promise((resolve) => window.addEventListener(\"load\", () => resolve({"
-          },
-          {
-            "path": "addons/image-repair-addon/src/app.js",
-            "line": 240,
-            "text": "window.addEventListener(ADDON_COMMAND_EVENT, addonCommandHandler);"
+            "key": "SETTINGS_KEY=settings",
+            "callSites": [
+              {
+                "path": "addons/site-repair-addon/src/constants.js",
+                "line": 6,
+                "text": "export const SETTINGS_KEY = \"settings\";"
+              }
+            ]
           }
         ],
-        "bridgeEvents": [
-          {
-            "path": "addons/image-repair-addon/src/constants.js",
-            "line": 4,
-            "text": "export const ADDON_COMMAND_EVENT = \"f95ue:addon-command\";",
-            "eventName": "f95ue:addon-command"
-          },
-          {
-            "path": "addons/image-repair-addon/src/constants.js",
-            "line": 4,
-            "text": "export const ADDON_COMMAND_EVENT = \"f95ue:addon-command\";",
-            "eventName": "f95ue:addon-command"
-          },
-          {
-            "path": "addons/image-repair-addon/src/constants.js",
-            "line": 3,
-            "text": "export const CORE_EVENT = \"f95ue:addons-dev-command\";",
-            "eventName": "f95ue:addons-dev-command"
-          },
-          {
-            "path": "addons/image-repair-addon/src/constants.js",
-            "line": 3,
-            "text": "export const CORE_EVENT = \"f95ue:addons-dev-command\";",
-            "eventName": "f95ue:addons-dev-command"
-          }
-        ],
-        "storageKeys": [],
         "pollingAndTimers": [
           {
-            "path": "addons/image-repair-addon/src/app.js",
-            "line": 65,
-            "text": "const checkInterval = setInterval(() => {"
+            "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+            "line": 62,
+            "text": "const timer = windowLike.setTimeout(() => {"
           },
           {
-            "path": "addons/image-repair-addon/src/feature.js",
-            "line": 47,
-            "text": "setTimeout(() => {"
-          },
-          {
-            "path": "addons/image-repair-addon/src/queue.js",
-            "line": 19,
-            "text": "setTimeout(process, delay);"
-          },
-          {
-            "path": "addons/image-repair-addon/src/queue.js",
-            "line": 28,
-            "text": "setTimeout(process, 0);"
-          },
-          {
-            "path": "addons/image-repair-addon/src/ui.js",
-            "line": 117,
-            "text": "toastTimeout = setTimeout(() => {"
+            "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+            "line": 95,
+            "text": "pollTimer = windowLike.setInterval(() => {"
           }
         ],
-        "urlAndPageParsing": [],
+        "urlAndPageParsing": [
+          {
+            "path": "addons/site-repair-addon/src/app/createSiteRepairApp.js",
+            "line": 58,
+            "text": "routeApplicable = isImageAttachmentRepairApplicable(new URL(context?.url || location.href));"
+          },
+          {
+            "path": "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
+            "line": 5,
+            "text": "const url = new URL(String(value || \"\"), location.href);"
+          },
+          {
+            "path": "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
+            "line": 6,
+            "text": "url.searchParams.delete(\"site_repair_retry\");"
+          },
+          {
+            "path": "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
+            "line": 14,
+            "text": "return String(locationLike?.hostname || \"\").includes(\"f95zone.to\") &&"
+          },
+          {
+            "path": "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
+            "line": 15,
+            "text": "String(locationLike?.pathname || \"\").startsWith(\"/threads/\");"
+          },
+          {
+            "path": "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
+            "line": 61,
+            "text": "const url = new URL(record.originalUrl);"
+          },
+          {
+            "path": "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
+            "line": 62,
+            "text": "url.searchParams.set(\"site_repair_retry\", String(Date.now()));"
+          }
+        ],
         "coreDomAssumptions": [
           {
-            "path": "addons/image-repair-addon/src/app.js",
-            "line": 55,
-            "text": "const overlay = document.querySelector("
+            "path": "addons/site-repair-addon/src/ui/imageStatus.js",
+            "line": 5,
+            "text": "let root = document.getElementById(wrapperId);"
           },
           {
-            "path": "addons/image-repair-addon/src/feature.js",
-            "line": 98,
-            "text": "document.querySelectorAll(\"img\").forEach(enqueue);"
+            "path": "addons/site-repair-addon/src/ui/imageStatus.js",
+            "line": 8,
+            "text": "root = document.createElement(\"div\");"
           },
           {
-            "path": "addons/image-repair-addon/src/ui.js",
-            "line": 48,
-            "text": "if (document.getElementById(toastId)) return;"
+            "path": "addons/site-repair-addon/src/ui/imageStatus.js",
+            "line": 11,
+            "text": "document.body.appendChild(root);"
           },
           {
-            "path": "addons/image-repair-addon/src/ui.js",
-            "line": 86,
-            "text": "const wrapper = document.createElement(\"div\");"
-          },
-          {
-            "path": "addons/image-repair-addon/src/ui.js",
-            "line": 90,
-            "text": "document.body.appendChild(wrapper);"
-          },
-          {
-            "path": "addons/image-repair-addon/src/ui.js",
-            "line": 94,
-            "text": "document.getElementById(wrapperId)?.remove();"
-          },
-          {
-            "path": "addons/image-repair-addon/src/ui.js",
-            "line": 103,
-            "text": "const toast = document.getElementById(toastId);"
-          },
-          {
-            "path": "addons/image-repair-addon/src/ui.js",
-            "line": 112,
-            "text": "toast.querySelector(\".img-retry-count\").textContent = retryingImages.size;"
-          },
-          {
-            "path": "addons/image-repair-addon/src/ui.js",
-            "line": 113,
-            "text": "toast.querySelector(\".img-retry-plural\").textContent = retryingImages.size > 1 ? \"s\" : \"\";"
-          },
-          {
-            "path": "addons/image-repair-addon/src/ui.js",
-            "line": 118,
-            "text": "toast.querySelector(\".img-retry-succeeded\").textContent = metrics.succeeded;"
-          },
-          {
-            "path": "addons/image-repair-addon/src/ui.js",
-            "line": 119,
-            "text": "toast.querySelector(\".img-retry-failed\").textContent = metrics.failed;"
-          },
-          {
-            "path": "addons/image-repair-addon/src/ui.js",
-            "line": 120,
-            "text": "toast.querySelector(\".img-retry-avg\").textContent = metrics.avgCache.toFixed(1);"
+            "path": "addons/site-repair-addon/src/ui/imageStatus.js",
+            "line": 15,
+            "text": "return { cssText, update, destroy: () => document.getElementById(wrapperId)?.remove() };"
           }
         ],
         "directGmAccess": [],
         "cancellationAndTeardown": [
           {
-            "path": "addons/image-repair-addon/src/app.js",
-            "line": 67,
-            "text": "clearInterval(checkInterval);"
+            "path": "addons/site-repair-addon/src/app/commands.js",
+            "line": 12,
+            "text": "else if (detail.command === \"disable\") void lifecycle.disable(context);"
           },
           {
-            "path": "addons/image-repair-addon/src/app.js",
-            "line": 91,
-            "text": "toastId: \"img-retry-toast\","
+            "path": "addons/site-repair-addon/src/app/commands.js",
+            "line": 19,
+            "text": "else if (detail.command === \"teardown\") void lifecycle.teardown(context);"
           },
           {
-            "path": "addons/image-repair-addon/src/app.js",
+            "path": "addons/site-repair-addon/src/app/createSiteRepairApp.js",
+            "line": 74,
+            "text": "startedModules.push(async () => latestAjax.disable());"
+          },
+          {
+            "path": "addons/site-repair-addon/src/app/createSiteRepairApp.js",
+            "line": 87,
+            "text": "if (!context.isCurrent()) return { ok: false, reason: \"cancelled\" };"
+          },
+          {
+            "path": "addons/site-repair-addon/src/app/createSiteRepairApp.js",
             "line": 92,
-            "text": "wrapperId: \"image-retry-toast-wrapper\","
+            "text": "onRefresh: async (context) => { await stopModules(); await loadSettings(); const page = await getPageContext(core); if (!context.isCurrent()) return { ok: false, reason: \"cancelled\" }; await startApplicableModules(page?.value || context.routeContext); return { ok: true }; },"
           },
           {
-            "path": "addons/image-repair-addon/src/app.js",
-            "line": 168,
-            "text": "\"Retries failed attachment images (attachments.f95zone.to). Use Enable / Disable to control whether the watcher is active.\","
+            "path": "addons/site-repair-addon/src/app/createSiteRepairApp.js",
+            "line": 116,
+            "text": "window.__F95UE_SITE_REPAIR_ADDON__ = { enable: () => lifecycle.enable(\"console\"), disable: () => lifecycle.disable(\"console\"), snapshot: () => getRuntimeSnapshot() };"
           },
           {
-            "path": "addons/image-repair-addon/src/app.js",
-            "line": 195,
-            "text": "feature.disable();"
+            "path": "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
+            "line": 33,
+            "text": "scheduler.cancel(record.timerId);"
           },
           {
-            "path": "addons/image-repair-addon/src/app.js",
-            "line": 211,
-            "text": "async function teardownAddon(reason = \"teardown\") {"
+            "path": "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
+            "line": 56,
+            "text": "retry(record);"
           },
           {
-            "path": "addons/image-repair-addon/src/app.js",
-            "line": 212,
-            "text": "feature.disable();"
+            "path": "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
+            "line": 58,
+            "text": "function retry(record) {"
           },
           {
-            "path": "addons/image-repair-addon/src/app.js",
-            "line": 216,
-            "text": "bridge.dispatchCoreCommand(\"teardown-complete\", {"
+            "path": "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
+            "line": 73,
+            "text": "record.onError = () => retry(record);"
           },
           {
-            "path": "addons/image-repair-addon/src/app.js",
-            "line": 231,
-            "text": "} else if (command === \"disable\") {"
+            "path": "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
+            "line": 76,
+            "text": "if (image.complete && image.naturalWidth === 0) retry(record);"
           },
           {
-            "path": "addons/image-repair-addon/src/app.js",
-            "line": 233,
-            "text": "} else if (command === \"teardown\") {"
+            "path": "addons/site-repair-addon/src/repairs/imageAttachments/scheduler.js",
+            "line": 1,
+            "text": "export function createCancellableScheduler({ setTimer = setTimeout, clearTimer = clearTimeout } = {}) {"
           },
           {
-            "path": "addons/image-repair-addon/src/app.js",
-            "line": 234,
-            "text": "void teardownAddon(String(detail.reason || \"teardown\"));"
+            "path": "addons/site-repair-addon/src/repairs/imageAttachments/scheduler.js",
+            "line": 3,
+            "text": "let generation = 0;"
           },
           {
-            "path": "addons/image-repair-addon/src/app.js",
-            "line": 261,
-            "text": "disable() {"
+            "path": "addons/site-repair-addon/src/repairs/imageAttachments/scheduler.js",
+            "line": 5,
+            "text": "function schedule(id, callback, delayMs, expectedGeneration = generation) {"
           },
           {
-            "path": "addons/image-repair-addon/src/app.js",
-            "line": 268,
-            "text": "feature.disable();"
+            "path": "addons/site-repair-addon/src/repairs/imageAttachments/scheduler.js",
+            "line": 6,
+            "text": "cancel(id);"
           },
           {
-            "path": "addons/image-repair-addon/src/feature.js",
-            "line": 45,
-            "text": "img.src = img.dataset.originalSrc + \"?retry=\" + Date.now();"
+            "path": "addons/site-repair-addon/src/repairs/imageAttachments/scheduler.js",
+            "line": 9,
+            "text": "if (expectedGeneration === generation) callback();"
           },
           {
-            "path": "addons/image-repair-addon/src/feature.js",
-            "line": 77,
-            "text": "// If already broken, retry immediately"
+            "path": "addons/site-repair-addon/src/repairs/imageAttachments/scheduler.js",
+            "line": 14,
+            "text": "function cancel(id) {"
           },
           {
-            "path": "addons/image-repair-addon/src/feature.js",
-            "line": 101,
+            "path": "addons/site-repair-addon/src/repairs/imageAttachments/scheduler.js",
+            "line": 21,
+            "text": "generation += 1;"
+          },
+          {
+            "path": "addons/site-repair-addon/src/repairs/imageAttachments/scheduler.js",
+            "line": 22,
+            "text": "for (const id of [...timers.keys()]) cancel(id);"
+          },
+          {
+            "path": "addons/site-repair-addon/src/repairs/imageAttachments/scheduler.js",
+            "line": 23,
+            "text": "return generation;"
+          },
+          {
+            "path": "addons/site-repair-addon/src/repairs/imageAttachments/scheduler.js",
+            "line": 25,
+            "text": "return { schedule, cancel, invalidate, getGeneration: () => generation, getSnapshot: () => [...timers.keys()] };"
+          },
+          {
+            "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+            "line": 19,
+            "text": "let generation = 0;"
+          },
+          {
+            "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+            "line": 32,
+            "text": "if (pollTimer) windowLike.clearInterval(pollTimer);"
+          },
+          {
+            "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+            "line": 34,
+            "text": "for (const timer of retryTimers) windowLike.clearTimeout(timer);"
+          },
+          {
+            "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+            "line": 61,
+            "text": "const retryGeneration = generation;"
+          },
+          {
+            "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+            "line": 64,
+            "text": "if (!enabled || generation !== retryGeneration || !originalAjax) return;"
+          },
+          {
+            "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+            "line": 98,
+            "text": "windowLike.clearInterval(pollTimer);"
+          },
+          {
+            "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+            "line": 104,
             "text": "function disable() {"
           },
           {
-            "path": "addons/image-repair-addon/src/feature.js",
-            "line": 108,
-            "text": "disable,"
+            "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+            "line": 106,
+            "text": "generation += 1;"
           },
           {
-            "path": "addons/image-repair-addon/src/ui.js",
-            "line": 25,
-            "text": "#${toastId} .img-retry-spinner {"
-          },
-          {
-            "path": "addons/image-repair-addon/src/ui.js",
-            "line": 38,
-            "text": "#${toastId} .img-retry-stats {"
-          },
-          {
-            "path": "addons/image-repair-addon/src/ui.js",
-            "line": 50,
-            "text": "const spinner = createEl(\"span\", \"img-retry-spinner\");"
-          },
-          {
-            "path": "addons/image-repair-addon/src/ui.js",
-            "line": 52,
-            "text": "const count = createEl(\"span\", \"img-retry-count\", \"0\");"
-          },
-          {
-            "path": "addons/image-repair-addon/src/ui.js",
-            "line": 54,
-            "text": "const plural = createEl(\"span\", \"img-retry-plural\");"
-          },
-          {
-            "path": "addons/image-repair-addon/src/ui.js",
-            "line": 56,
-            "text": "const succeeded = createEl(\"span\", \"img-retry-succeeded\", \"0\");"
-          },
-          {
-            "path": "addons/image-repair-addon/src/ui.js",
-            "line": 58,
-            "text": "const failed = createEl(\"span\", \"img-retry-failed\", \"0\");"
-          },
-          {
-            "path": "addons/image-repair-addon/src/ui.js",
-            "line": 60,
-            "text": "const avg = createEl(\"span\", \"img-retry-avg\", \"0\");"
-          },
-          {
-            "path": "addons/image-repair-addon/src/ui.js",
-            "line": 62,
-            "text": "const stats = createEl(\"div\", \"img-retry-stats\");"
-          },
-          {
-            "path": "addons/image-repair-addon/src/ui.js",
-            "line": 95,
-            "text": "clearTimeout(toastUpdateTimer);"
-          },
-          {
-            "path": "addons/image-repair-addon/src/ui.js",
-            "line": 112,
-            "text": "toast.querySelector(\".img-retry-count\").textContent = retryingImages.size;"
-          },
-          {
-            "path": "addons/image-repair-addon/src/ui.js",
-            "line": 113,
-            "text": "toast.querySelector(\".img-retry-plural\").textContent = retryingImages.size > 1 ? \"s\" : \"\";"
-          },
-          {
-            "path": "addons/image-repair-addon/src/ui.js",
-            "line": 116,
-            "text": "clearTimeout(toastTimeout);"
-          },
-          {
-            "path": "addons/image-repair-addon/src/ui.js",
-            "line": 118,
-            "text": "toast.querySelector(\".img-retry-succeeded\").textContent = metrics.succeeded;"
-          },
-          {
-            "path": "addons/image-repair-addon/src/ui.js",
+            "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
             "line": 119,
-            "text": "toast.querySelector(\".img-retry-failed\").textContent = metrics.failed;"
+            "text": "generation,"
           },
           {
-            "path": "addons/image-repair-addon/src/ui.js",
-            "line": 120,
-            "text": "toast.querySelector(\".img-retry-avg\").textContent = metrics.avgCache.toFixed(1);"
+            "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+            "line": 126,
+            "text": "return { enable, disable, getSnapshot };"
           }
         ],
-        "rawActionCount": 9
+        "rawActionCount": 8
       },
       {
         "id": "masked-direct-addon",
@@ -497,8 +442,10 @@
         "sourceFiles": [
           "addons/masked-direct-addon/src/api/observer.js",
           "addons/masked-direct-addon/src/api/page.js",
+          "addons/masked-direct-addon/src/app/context.js",
+          "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
           "addons/masked-direct-addon/src/constants.js",
-          "addons/masked-direct-addon/src/coreBridge.js",
+          "addons/masked-direct-addon/src/core/adaptor.js",
           "addons/masked-direct-addon/src/directDownloadAttention.js",
           "addons/masked-direct-addon/src/directDownloadFlowController.js",
           "addons/masked-direct-addon/src/downloadDetector.js",
@@ -516,8 +463,10 @@
           "addons/masked-direct-addon/src/hosts/workupload.js",
           "addons/masked-direct-addon/src/main.js",
           "addons/masked-direct-addon/src/maskedPageController.js",
+          "addons/masked-direct-addon/src/ports/downloadSettingsRepository.js",
+          "addons/masked-direct-addon/src/ports/processingDownloadRepository.js",
+          "addons/masked-direct-addon/src/ports/routeContextRepository.js",
           "addons/masked-direct-addon/src/processingDownloadTrigger.js",
-          "addons/masked-direct-addon/src/routeContext.js",
           "addons/masked-direct-addon/src/threadPageController.js",
           "addons/masked-direct-addon/src/ui.js",
           "addons/masked-direct-addon/src/utils.js"
@@ -547,8 +496,8 @@
             "id": "storage.get",
             "callSites": [
               {
-                "path": "addons/masked-direct-addon/src/main.js",
-                "line": 430,
+                "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+                "line": 424,
                 "text": "const result = await bridge.invokeCoreAction(\"storage.get\", {"
               }
             ]
@@ -557,8 +506,8 @@
             "id": "storage.set",
             "callSites": [
               {
-                "path": "addons/masked-direct-addon/src/main.js",
-                "line": 439,
+                "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+                "line": 433,
                 "text": "return bridge.invokeCoreAction(\"storage.set\", { key, value });"
               }
             ]
@@ -567,8 +516,8 @@
             "id": "toast.show",
             "callSites": [
               {
-                "path": "addons/masked-direct-addon/src/main.js",
-                "line": 203,
+                "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+                "line": 205,
                 "text": ".invokeCoreAction(\"toast.show\", { message, type })"
               }
             ]
@@ -577,8 +526,8 @@
             "id": "ui.style.register",
             "callSites": [
               {
-                "path": "addons/masked-direct-addon/src/main.js",
-                "line": 444,
+                "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+                "line": 438,
                 "text": "const result = await bridge.invokeCoreAction(\"ui.style.register\", {"
               }
             ]
@@ -587,14 +536,19 @@
             "id": "ui.style.unregister",
             "callSites": [
               {
-                "path": "addons/masked-direct-addon/src/main.js",
-                "line": 458,
+                "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+                "line": 452,
                 "text": "const result = await bridge.invokeCoreAction(\"ui.style.unregister\", {"
               }
             ]
           }
         ],
         "globalEventListeners": [
+          {
+            "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+            "line": 515,
+            "text": "window.addEventListener(ADDON_COMMAND_EVENT, addonCommandHandler);"
+          },
           {
             "path": "addons/masked-direct-addon/src/downloadPageController.js",
             "line": 154,
@@ -609,11 +563,6 @@
             "path": "addons/masked-direct-addon/src/hosts/gofile.js",
             "line": 100,
             "text": "window.addEventListener(GOFILE_BRIDGE_RESULT_EVENT, onReply, { once: true });"
-          },
-          {
-            "path": "addons/masked-direct-addon/src/main.js",
-            "line": 521,
-            "text": "window.addEventListener(ADDON_COMMAND_EVENT, addonCommandHandler);"
           },
           {
             "path": "addons/masked-direct-addon/src/threadPageController.js",
@@ -636,7 +585,7 @@
           },
           {
             "path": "addons/masked-direct-addon/src/directDownloadAttention.js",
-            "line": 8,
+            "line": 11,
             "text": "const DIRECT_DOWNLOAD_ROUTE_REQUEST_ID_KEY = \"f95ue_dd_req\";",
             "eventName": "f95ue_dd_req"
           },
@@ -648,7 +597,7 @@
           },
           {
             "path": "addons/masked-direct-addon/src/directDownloadAttention.js",
-            "line": 6,
+            "line": 9,
             "text": "const ORIGIN_TAB_QUERY_KEY = \"f95ue_tab\";",
             "eventName": "f95ue_tab"
           },
@@ -690,7 +639,7 @@
           },
           {
             "path": "addons/masked-direct-addon/src/directDownloadAttention.js",
-            "line": 5,
+            "line": 8,
             "text": "const DIRECT_DOWNLOAD_TAB_ID_KEY = \"f95ue.addon.directDownload.tabId\";",
             "eventName": "f95ue.addon.directDownload.tabId"
           }
@@ -700,8 +649,8 @@
             "key": "ADDON_SETTINGS_KEY=settings",
             "callSites": [
               {
-                "path": "addons/masked-direct-addon/src/main.js",
-                "line": 61,
+                "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+                "line": 63,
                 "text": "const ADDON_SETTINGS_KEY = \"settings\";"
               }
             ]
@@ -726,7 +675,7 @@
               },
               {
                 "path": "addons/masked-direct-addon/src/directDownloadAttention.js",
-                "line": 8,
+                "line": 11,
                 "text": "const DIRECT_DOWNLOAD_ROUTE_REQUEST_ID_KEY = \"f95ue_dd_req\";"
               }
             ]
@@ -746,7 +695,7 @@
             "callSites": [
               {
                 "path": "addons/masked-direct-addon/src/directDownloadAttention.js",
-                "line": 5,
+                "line": 8,
                 "text": "const DIRECT_DOWNLOAD_TAB_ID_KEY = \"f95ue.addon.directDownload.tabId\";"
               }
             ]
@@ -776,7 +725,7 @@
             "callSites": [
               {
                 "path": "addons/masked-direct-addon/src/directDownloadAttention.js",
-                "line": 6,
+                "line": 9,
                 "text": "const ORIGIN_TAB_QUERY_KEY = \"f95ue_tab\";"
               }
             ]
@@ -851,58 +800,153 @@
         ],
         "urlAndPageParsing": [
           {
+            "path": "addons/masked-direct-addon/src/app/context.js",
+            "line": 7,
+            "text": "const hostname = String(locationLike?.hostname || \"\").toLowerCase();"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/context.js",
+            "line": 8,
+            "text": "const pathname = String(locationLike?.pathname || \"\");"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/context.js",
+            "line": 10,
+            "text": "if (F95_HOSTS.has(hostname)) {"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/context.js",
+            "line": 11,
+            "text": "const route = pathname.startsWith(\"/threads/\")"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/context.js",
+            "line": 13,
+            "text": ": pathname.startsWith(\"/masked/\")"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/context.js",
+            "line": 23,
+            "text": "if (isSupportedExternalHost(hostname)) {"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+            "line": 203,
+            "text": "if (location.hostname.includes(\"f95zone.to\")) {"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+            "line": 243,
+            "text": "location.hostname.includes(\"f95zone.to\") &&"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+            "line": 244,
+            "text": "location.pathname.startsWith(\"/threads\")"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+            "line": 250,
+            "text": "location.hostname.includes(\"f95zone.to\") &&"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+            "line": 255,
+            "text": "function isHostAllowedInSettings(hostname, flags) {"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+            "line": 256,
+            "text": "return isDirectDownloadHostEnabled(hostname, flags?.directDownloadPackages);"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+            "line": 319,
+            "text": "const isF95 = location.hostname.includes(\"f95zone.to\");"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+            "line": 325,
+            "text": "url: String(location.href || \"\"),"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+            "line": 602,
+            "text": "isSupportedExternalHost: (hostname) =>"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+            "line": 603,
+            "text": "Boolean(normalizeDirectDownloadHostForContext(hostname)),"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+            "line": 612,
+            "text": "`[${runtime.addonId}] Detected relevant page. Context: ${pageContext}. href=${location.href}`,"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+            "line": 676,
+            "text": "function normalizeDirectDownloadHostForContext(hostname) {"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+            "line": 677,
+            "text": "return normalizeDirectDownloadHost(hostname);"
+          },
+          {
             "path": "addons/masked-direct-addon/src/directDownloadAttention.js",
-            "line": 104,
+            "line": 107,
             "text": "new URL(location.href).searchParams.get("
           },
           {
             "path": "addons/masked-direct-addon/src/directDownloadAttention.js",
-            "line": 122,
+            "line": 125,
             "text": "href: location.href,"
           },
           {
             "path": "addons/masked-direct-addon/src/directDownloadFlowController.js",
-            "line": 39,
+            "line": 41,
             "text": "new URL(normalized).hostname,"
           },
           {
             "path": "addons/masked-direct-addon/src/directDownloadFlowController.js",
-            "line": 50,
+            "line": 52,
             "text": "const parsed = new URL(safeUrl);"
           },
           {
             "path": "addons/masked-direct-addon/src/directDownloadFlowController.js",
-            "line": 51,
+            "line": 53,
             "text": "if (!parsed.searchParams.get(originTabQueryKey)) {"
           },
           {
             "path": "addons/masked-direct-addon/src/directDownloadFlowController.js",
-            "line": 52,
+            "line": 54,
             "text": "parsed.searchParams.set(originTabQueryKey, ownerTabId);"
           },
           {
             "path": "addons/masked-direct-addon/src/directDownloadFlowController.js",
-            "line": 54,
+            "line": 56,
             "text": "if (!parsed.searchParams.get(DIRECT_DOWNLOAD_ROUTE_TS_KEY)) {"
           },
           {
             "path": "addons/masked-direct-addon/src/directDownloadFlowController.js",
-            "line": 55,
+            "line": 57,
             "text": "parsed.searchParams.set("
           },
           {
             "path": "addons/masked-direct-addon/src/directDownloadFlowController.js",
-            "line": 61,
+            "line": 63,
             "text": "parsed.searchParams.get(DIRECT_DOWNLOAD_ROUTE_REQUEST_ID_KEY) || \"\","
           },
           {
             "path": "addons/masked-direct-addon/src/directDownloadFlowController.js",
-            "line": 67,
+            "line": 69,
             "text": "parsed.searchParams.set("
           },
           {
             "path": "addons/masked-direct-addon/src/directDownloadFlowController.js",
-            "line": 125,
+            "line": 127,
             "text": "window.location.assign(safeUrl);"
           },
           {
@@ -1241,51 +1285,6 @@
             "text": "location.assign(preserveAutomationMarkers(startHref));"
           },
           {
-            "path": "addons/masked-direct-addon/src/main.js",
-            "line": 201,
-            "text": "if (location.hostname.includes(\"f95zone.to\")) {"
-          },
-          {
-            "path": "addons/masked-direct-addon/src/main.js",
-            "line": 241,
-            "text": "location.hostname.includes(\"f95zone.to\") &&"
-          },
-          {
-            "path": "addons/masked-direct-addon/src/main.js",
-            "line": 242,
-            "text": "location.pathname.startsWith(\"/threads\")"
-          },
-          {
-            "path": "addons/masked-direct-addon/src/main.js",
-            "line": 248,
-            "text": "location.hostname.includes(\"f95zone.to\") &&"
-          },
-          {
-            "path": "addons/masked-direct-addon/src/main.js",
-            "line": 262,
-            "text": "function isHostAllowedInSettings(hostname, flags) {"
-          },
-          {
-            "path": "addons/masked-direct-addon/src/main.js",
-            "line": 263,
-            "text": "return isDirectDownloadHostEnabled(hostname, flags?.directDownloadPackages);"
-          },
-          {
-            "path": "addons/masked-direct-addon/src/main.js",
-            "line": 326,
-            "text": "const isF95 = location.hostname.includes(\"f95zone.to\");"
-          },
-          {
-            "path": "addons/masked-direct-addon/src/main.js",
-            "line": 332,
-            "text": "url: String(location.href || \"\"),"
-          },
-          {
-            "path": "addons/masked-direct-addon/src/main.js",
-            "line": 608,
-            "text": "`[${runtime.addonId}] Detected relevant page. Context: ${pageContext}. href=${location.href}`,"
-          },
-          {
             "path": "addons/masked-direct-addon/src/maskedPageController.js",
             "line": 31,
             "text": "return location.hostname.includes(\"f95zone.to\") && location.pathname.startsWith(\"/masked\");"
@@ -1326,6 +1325,36 @@
             "text": "if (!location.href.includes(F95_CAPTCHA_SITEKEY)) return;"
           },
           {
+            "path": "addons/masked-direct-addon/src/ports/routeContextRepository.js",
+            "line": 111,
+            "text": "new URL(location.href).searchParams.get("
+          },
+          {
+            "path": "addons/masked-direct-addon/src/ports/routeContextRepository.js",
+            "line": 126,
+            "text": "new URL(location.href).searchParams.get(originTabQueryKey) || \"\","
+          },
+          {
+            "path": "addons/masked-direct-addon/src/ports/routeContextRepository.js",
+            "line": 138,
+            "text": "const parsed = new URL(location.href);"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/ports/routeContextRepository.js",
+            "line": 139,
+            "text": "const hasOriginTabId = Boolean(parsed.searchParams.get(originTabQueryKey));"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/ports/routeContextRepository.js",
+            "line": 141,
+            "text": "String(parsed.searchParams.get(AUTOMATION_MARKER_KEY) || \"\").trim() ==="
+          },
+          {
+            "path": "addons/masked-direct-addon/src/ports/routeContextRepository.js",
+            "line": 144,
+            "text": "parsed.searchParams.get(DIRECT_DOWNLOAD_ROUTE_TS_KEY) || 0,"
+          },
+          {
             "path": "addons/masked-direct-addon/src/processingDownloadTrigger.js",
             "line": 168,
             "text": "const parsed = new URL(sourceUrl);"
@@ -1334,36 +1363,6 @@
             "path": "addons/masked-direct-addon/src/processingDownloadTrigger.js",
             "line": 176,
             "text": "parsed.searchParams.delete(key);"
-          },
-          {
-            "path": "addons/masked-direct-addon/src/routeContext.js",
-            "line": 101,
-            "text": "new URL(location.href).searchParams.get("
-          },
-          {
-            "path": "addons/masked-direct-addon/src/routeContext.js",
-            "line": 116,
-            "text": "new URL(location.href).searchParams.get(originTabQueryKey) || \"\","
-          },
-          {
-            "path": "addons/masked-direct-addon/src/routeContext.js",
-            "line": 128,
-            "text": "const parsed = new URL(location.href);"
-          },
-          {
-            "path": "addons/masked-direct-addon/src/routeContext.js",
-            "line": 129,
-            "text": "const hasOriginTabId = Boolean(parsed.searchParams.get(originTabQueryKey));"
-          },
-          {
-            "path": "addons/masked-direct-addon/src/routeContext.js",
-            "line": 131,
-            "text": "String(parsed.searchParams.get(AUTOMATION_MARKER_KEY) || \"\").trim() ==="
-          },
-          {
-            "path": "addons/masked-direct-addon/src/routeContext.js",
-            "line": 134,
-            "text": "parsed.searchParams.get(DIRECT_DOWNLOAD_ROUTE_TS_KEY) || 0,"
           },
           {
             "path": "addons/masked-direct-addon/src/threadPageController.js",
@@ -1570,68 +1569,113 @@
         ],
         "directGmAccess": [
           {
+            "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+            "line": 1,
+            "text": "/* global __ADDON_ID__, __ADDON_NAME__, __ADDON_VERSION__, __ADDON_DESCRIPTION__, __ADDON_CAPABILITIES__, __ADDON_REQUIRES_CORE__, __ADDON_PAGE_SCOPES__, __ADDON_RUNTIME_MODE__, __ADDON_MATCHES__, GM_openInTab, GM, GM_addValueChangeListener, GM_removeValueChangeListener */"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+            "line": 151,
+            "text": "GMApi: GM,"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+            "line": 153,
+            "text": "typeof GM_addValueChangeListener === \"function\""
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+            "line": 154,
+            "text": "? GM_addValueChangeListener"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+            "line": 157,
+            "text": "typeof GM_removeValueChangeListener === \"function\""
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+            "line": 158,
+            "text": "? GM_removeValueChangeListener"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+            "line": 166,
+            "text": "GMApi: GM,"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+            "line": 167,
+            "text": "openInTab: GM_openInTab,"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+            "line": 217,
+            "text": "GMApi: GM,"
+          },
+          {
             "path": "addons/masked-direct-addon/src/directDownloadAttention.js",
-            "line": 33,
+            "line": 36,
             "text": "GMApi,"
           },
           {
             "path": "addons/masked-direct-addon/src/directDownloadAttention.js",
-            "line": 99,
+            "line": 102,
             "text": "if (!GMApi || typeof GMApi.setValue !== \"function\") return;"
           },
           {
             "path": "addons/masked-direct-addon/src/directDownloadAttention.js",
-            "line": 127,
+            "line": 130,
             "text": "await GMApi.setValue(DIRECT_DOWNLOAD_EVENT_KEY, payload);"
           },
           {
             "path": "addons/masked-direct-addon/src/directDownloadFlowController.js",
-            "line": 19,
+            "line": 21,
             "text": "GMApi,"
           },
           {
             "path": "addons/masked-direct-addon/src/directDownloadFlowController.js",
-            "line": 85,
+            "line": 87,
             "text": "await storeDownloadPageCloseDelay(GMApi, delay);"
           },
           {
             "path": "addons/masked-direct-addon/src/directDownloadFlowController.js",
-            "line": 90,
+            "line": 92,
             "text": "await setProcessingDownloadTrigger(GMApi, {"
           },
           {
             "path": "addons/masked-direct-addon/src/directDownloadFlowController.js",
-            "line": 132,
+            "line": 134,
             "text": "const trigger = await readProcessingDownloadTrigger(GMApi, {"
           },
           {
             "path": "addons/masked-direct-addon/src/directDownloadFlowController.js",
-            "line": 136,
+            "line": 138,
             "text": "await clearProcessingDownloadTrigger(GMApi, { requestId });"
           },
           {
             "path": "addons/masked-direct-addon/src/directDownloadFlowController.js",
-            "line": 164,
+            "line": 166,
             "text": "void clearProcessingDownloadTrigger(GMApi);"
           },
           {
             "path": "addons/masked-direct-addon/src/directDownloadFlowController.js",
-            "line": 182,
+            "line": 184,
             "text": "await clearProcessingDownloadTrigger(GMApi, { requestId });"
           },
           {
             "path": "addons/masked-direct-addon/src/directDownloadFlowController.js",
-            "line": 197,
+            "line": 199,
             "text": "const trigger = await readProcessingDownloadTrigger(GMApi, {"
           },
           {
             "path": "addons/masked-direct-addon/src/directDownloadFlowController.js",
-            "line": 245,
+            "line": 247,
             "text": "const trigger = await readProcessingDownloadTrigger(GMApi, {"
           },
           {
             "path": "addons/masked-direct-addon/src/directDownloadFlowController.js",
-            "line": 249,
+            "line": 251,
             "text": "await clearProcessingDownloadTrigger(GMApi, { requestId });"
           },
           {
@@ -1740,51 +1784,6 @@
             "text": "await GMApi.deleteValue(key);"
           },
           {
-            "path": "addons/masked-direct-addon/src/main.js",
-            "line": 1,
-            "text": "/* global __ADDON_ID__, __ADDON_NAME__, __ADDON_VERSION__, __ADDON_DESCRIPTION__, __ADDON_CAPABILITIES__, __ADDON_REQUIRES_CORE__, __ADDON_PAGE_SCOPES__, __ADDON_RUNTIME_MODE__, __ADDON_MATCHES__, GM_openInTab, GM, GM_addValueChangeListener, GM_removeValueChangeListener, grecaptcha */"
-          },
-          {
-            "path": "addons/masked-direct-addon/src/main.js",
-            "line": 149,
-            "text": "GMApi: GM,"
-          },
-          {
-            "path": "addons/masked-direct-addon/src/main.js",
-            "line": 151,
-            "text": "typeof GM_addValueChangeListener === \"function\""
-          },
-          {
-            "path": "addons/masked-direct-addon/src/main.js",
-            "line": 152,
-            "text": "? GM_addValueChangeListener"
-          },
-          {
-            "path": "addons/masked-direct-addon/src/main.js",
-            "line": 155,
-            "text": "typeof GM_removeValueChangeListener === \"function\""
-          },
-          {
-            "path": "addons/masked-direct-addon/src/main.js",
-            "line": 156,
-            "text": "? GM_removeValueChangeListener"
-          },
-          {
-            "path": "addons/masked-direct-addon/src/main.js",
-            "line": 164,
-            "text": "GMApi: GM,"
-          },
-          {
-            "path": "addons/masked-direct-addon/src/main.js",
-            "line": 165,
-            "text": "openInTab: GM_openInTab,"
-          },
-          {
-            "path": "addons/masked-direct-addon/src/main.js",
-            "line": 215,
-            "text": "GMApi: GM,"
-          },
-          {
             "path": "addons/masked-direct-addon/src/processingDownloadTrigger.js",
             "line": 75,
             "text": "export async function readProcessingDownloadTriggers(GMApi) {"
@@ -1857,6 +1856,36 @@
         ],
         "cancellationAndTeardown": [
           {
+            "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+            "line": 504,
+            "text": "} else if (command === \"disable\") {"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+            "line": 510,
+            "text": "} else if (command === \"teardown\") {"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+            "line": 527,
+            "text": "console.info(`[${runtime.addonId}] Teardown requested: ${reason}`);"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+            "line": 534,
+            "text": "// Send teardown-complete to core"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+            "line": 536,
+            "text": "bridge.dispatchCoreCommand(\"teardown-complete\", {"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+            "line": 550,
+            "text": "disable() {"
+          },
+          {
             "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
             "line": 205,
             "text": "clearInterval(pollTimer);"
@@ -1870,36 +1899,6 @@
             "path": "addons/masked-direct-addon/src/hosts/gofile.js",
             "line": 81,
             "text": "clearTimeout(timer);"
-          },
-          {
-            "path": "addons/masked-direct-addon/src/main.js",
-            "line": 510,
-            "text": "} else if (command === \"disable\") {"
-          },
-          {
-            "path": "addons/masked-direct-addon/src/main.js",
-            "line": 516,
-            "text": "} else if (command === \"teardown\") {"
-          },
-          {
-            "path": "addons/masked-direct-addon/src/main.js",
-            "line": 533,
-            "text": "console.info(`[${runtime.addonId}] Teardown requested: ${reason}`);"
-          },
-          {
-            "path": "addons/masked-direct-addon/src/main.js",
-            "line": 540,
-            "text": "// Send teardown-complete to core"
-          },
-          {
-            "path": "addons/masked-direct-addon/src/main.js",
-            "line": 542,
-            "text": "bridge.dispatchCoreCommand(\"teardown-complete\", {"
-          },
-          {
-            "path": "addons/masked-direct-addon/src/main.js",
-            "line": 556,
-            "text": "disable() {"
           },
           {
             "path": "addons/masked-direct-addon/src/maskedPageController.js",
@@ -1967,15 +1966,25 @@
           ]
         },
         "sourceFiles": [
+          "addons/library-addon/src/api/bridge.js",
           "addons/library-addon/src/api/library/client.js",
           "addons/library-addon/src/api/library/index.js",
           "addons/library-addon/src/api/library/storePayload.js",
           "addons/library-addon/src/api/library/throttle.js",
+          "addons/library-addon/src/api/meta.js",
           "addons/library-addon/src/api/observer.js",
           "addons/library-addon/src/api/page.js",
+          "addons/library-addon/src/api/storage.js",
+          "addons/library-addon/src/api/toast.js",
           "addons/library-addon/src/api/ui/dialog.js",
+          "addons/library-addon/src/api/ui/manager.js",
+          "addons/library-addon/src/api/ui/mount.js",
+          "addons/library-addon/src/api/ui/style.js",
+          "addons/library-addon/src/app/commands.js",
+          "addons/library-addon/src/app/createLibraryAddonApp.js",
+          "addons/library-addon/src/app/lifecycle.js",
           "addons/library-addon/src/constants.js",
-          "addons/library-addon/src/coreBridge.js",
+          "addons/library-addon/src/core/adaptor.js",
           "addons/library-addon/src/library/importWorkflow.js",
           "addons/library-addon/src/library/querying.js",
           "addons/library-addon/src/library/recordModel.js",
@@ -1985,7 +1994,6 @@
           "addons/library-addon/src/thread/quickActions.js",
           "addons/library-addon/src/ui/application/importExportWorkflow.js",
           "addons/library-addon/src/ui/application/importProgressController.js",
-          "addons/library-addon/src/ui/application/managerApi.js",
           "addons/library-addon/src/ui/assets/dock.css",
           "addons/library-addon/src/ui/assets/dock.html",
           "addons/library-addon/src/ui/assets/manager.css",
@@ -2020,9 +2028,9 @@
             "id": "addon.access",
             "callSites": [
               {
-                "path": "addons/library-addon/src/main.js",
-                "line": 499,
-                "text": "const access = await bridge.invokeCoreAction(\"addon.access\", {});"
+                "path": "addons/library-addon/src/api/meta.js",
+                "line": 1,
+                "text": "export const getAddonAccess = (core) => core.invokeCoreAction(\"addon.access\", {});"
               }
             ]
           },
@@ -2040,9 +2048,14 @@
             "id": "config.getTagPrefs",
             "callSites": [
               {
-                "path": "addons/library-addon/src/ui/manager/managerApp.js",
-                "line": 136,
-                "text": "const tagPrefsResult = await api.invokeCoreAction(\"config.getTagPrefs\", {});"
+                "path": "addons/library-addon/src/api/storage.js",
+                "line": 8,
+                "text": "export const getTagPrefs = (core) => core.invokeCoreAction(\"config.getTagPrefs\", {});"
+              },
+              {
+                "path": "addons/library-addon/src/api/ui/manager.js",
+                "line": 9,
+                "text": "return await bridge.invokeCoreAction(\"config.getTagPrefs\", {});"
               }
             ]
           },
@@ -2125,9 +2138,9 @@
             "id": "storage.get",
             "callSites": [
               {
-                "path": "addons/library-addon/src/main.js",
-                "line": 65,
-                "text": "const result = await bridge.invokeCoreAction(\"storage.get\", { key, defaultValue });"
+                "path": "addons/library-addon/src/api/storage.js",
+                "line": 2,
+                "text": "const result = await core.invokeCoreAction(\"storage.get\", { key, defaultValue });"
               }
             ]
           },
@@ -2135,9 +2148,9 @@
             "id": "storage.set",
             "callSites": [
               {
-                "path": "addons/library-addon/src/main.js",
-                "line": 70,
-                "text": "return bridge.invokeCoreAction(\"storage.set\", { key, value });"
+                "path": "addons/library-addon/src/api/storage.js",
+                "line": 7,
+                "text": "core.invokeCoreAction(\"storage.set\", { key, value });"
               }
             ]
           },
@@ -2145,9 +2158,9 @@
             "id": "toast.show",
             "callSites": [
               {
-                "path": "addons/library-addon/src/ui/utils/showToast.js",
-                "line": 4,
-                "text": "bridge.invokeCoreAction(\"toast.show\", {"
+                "path": "addons/library-addon/src/api/toast.js",
+                "line": 2,
+                "text": "core.invokeCoreAction(\"toast.show\", { message: String(message || \"\"), type });"
               }
             ]
           },
@@ -2155,7 +2168,7 @@
             "id": "ui.confirm",
             "callSites": [
               {
-                "path": "addons/library-addon/src/ui/application/managerApi.js",
+                "path": "addons/library-addon/src/api/ui/manager.js",
                 "line": 49,
                 "text": "const result = await bridge.invokeCoreAction(\"ui.confirm\", {"
               }
@@ -2165,12 +2178,12 @@
             "id": "ui.dialog.close",
             "callSites": [
               {
-                "path": "addons/library-addon/src/ui/application/importProgressController.js",
-                "line": 58,
-                "text": "await coreBridge.invokeCoreAction(\"ui.dialog.close\", {"
+                "path": "addons/library-addon/src/api/ui/dialog.js",
+                "line": 12,
+                "text": "return core.invokeCoreAction(\"ui.dialog.close\", { dialogId, reason });"
               },
               {
-                "path": "addons/library-addon/src/ui/application/managerApi.js",
+                "path": "addons/library-addon/src/api/ui/manager.js",
                 "line": 41,
                 "text": "const result = await bridge.invokeCoreAction(\"ui.dialog.close\", {"
               }
@@ -2180,12 +2193,12 @@
             "id": "ui.dialog.open",
             "callSites": [
               {
-                "path": "addons/library-addon/src/ui/application/importProgressController.js",
-                "line": 87,
-                "text": "result = await coreBridge.invokeCoreAction(\"ui.dialog.open\", {"
+                "path": "addons/library-addon/src/api/ui/dialog.js",
+                "line": 8,
+                "text": "return core.invokeCoreAction(\"ui.dialog.open\", payload);"
               },
               {
-                "path": "addons/library-addon/src/ui/application/managerApi.js",
+                "path": "addons/library-addon/src/api/ui/manager.js",
                 "line": 28,
                 "text": "const result = await bridge.invokeCoreAction(\"ui.dialog.open\", {"
               }
@@ -2205,9 +2218,9 @@
             "id": "ui.mount",
             "callSites": [
               {
-                "path": "addons/library-addon/src/main.js",
-                "line": 236,
-                "text": "const result = await bridge.invokeCoreAction(\"ui.mount\", {"
+                "path": "addons/library-addon/src/api/ui/mount.js",
+                "line": 1,
+                "text": "export const mountUi = (core, payload) => core.invokeCoreAction(\"ui.mount\", payload);"
               }
             ]
           },
@@ -2215,9 +2228,14 @@
             "id": "ui.style.register",
             "callSites": [
               {
-                "path": "addons/library-addon/src/ui/application/managerApi.js",
+                "path": "addons/library-addon/src/api/ui/manager.js",
                 "line": 13,
                 "text": "const result = await bridge.invokeCoreAction(\"ui.style.register\", {"
+              },
+              {
+                "path": "addons/library-addon/src/api/ui/style.js",
+                "line": 2,
+                "text": "core.invokeCoreAction(\"ui.style.register\", { styleId, cssText });"
               }
             ]
           },
@@ -2225,9 +2243,14 @@
             "id": "ui.style.unregister",
             "callSites": [
               {
-                "path": "addons/library-addon/src/ui/application/managerApi.js",
+                "path": "addons/library-addon/src/api/ui/manager.js",
                 "line": 21,
                 "text": "const result = await bridge.invokeCoreAction(\"ui.style.unregister\", {"
+              },
+              {
+                "path": "addons/library-addon/src/api/ui/style.js",
+                "line": 4,
+                "text": "core.invokeCoreAction(\"ui.style.unregister\", { styleId });"
               }
             ]
           },
@@ -2235,47 +2258,42 @@
             "id": "ui.unmount",
             "callSites": [
               {
-                "path": "addons/library-addon/src/main.js",
-                "line": 292,
-                "text": "await bridge.invokeCoreAction(\"ui.unmount\", { mountId: LIBRARY_DOCK_MOUNT_ID });"
+                "path": "addons/library-addon/src/api/ui/mount.js",
+                "line": 3,
+                "text": "core.invokeCoreAction(\"ui.unmount\", { mountId });"
               }
             ]
           }
         ],
         "globalEventListeners": [
           {
-            "path": "addons/library-addon/src/main.js",
-            "line": 228,
+            "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
+            "line": 214,
             "text": "window.addEventListener(\"click\", dockMountClickHandler, true);"
-          },
-          {
-            "path": "addons/library-addon/src/main.js",
-            "line": 452,
-            "text": "window.addEventListener(ADDON_COMMAND_EVENT, addonCommandHandler);"
           }
         ],
         "bridgeEvents": [
           {
             "path": "addons/library-addon/src/constants.js",
-            "line": 4,
+            "line": 2,
             "text": "export const ADDON_COMMAND_EVENT = \"f95ue:addon-command\";",
             "eventName": "f95ue:addon-command"
           },
           {
             "path": "addons/library-addon/src/constants.js",
-            "line": 4,
+            "line": 2,
             "text": "export const ADDON_COMMAND_EVENT = \"f95ue:addon-command\";",
             "eventName": "f95ue:addon-command"
           },
           {
             "path": "addons/library-addon/src/constants.js",
-            "line": 3,
+            "line": 1,
             "text": "export const CORE_EVENT = \"f95ue:addons-dev-command\";",
             "eventName": "f95ue:addons-dev-command"
           },
           {
             "path": "addons/library-addon/src/constants.js",
-            "line": 3,
+            "line": 1,
             "text": "export const CORE_EVENT = \"f95ue:addons-dev-command\";",
             "eventName": "f95ue:addons-dev-command"
           }
@@ -2286,7 +2304,7 @@
             "callSites": [
               {
                 "path": "addons/library-addon/src/constants.js",
-                "line": 12,
+                "line": 10,
                 "text": "export const LIBRARY_LEGACY_KEY = \"libraryRecords\";"
               }
             ]
@@ -2296,7 +2314,7 @@
             "callSites": [
               {
                 "path": "addons/library-addon/src/constants.js",
-                "line": 13,
+                "line": 11,
                 "text": "export const LIBRARY_MIGRATION_MARKER_KEY = \"libraryMigrationV1Done\";"
               }
             ]
@@ -2306,7 +2324,7 @@
             "callSites": [
               {
                 "path": "addons/library-addon/src/constants.js",
-                "line": 11,
+                "line": 9,
                 "text": "export const LIBRARY_STORAGE_KEY = \"settings\";"
               }
             ]
@@ -2324,11 +2342,6 @@
             "text": "return new Promise((resolve) => setTimeout(resolve, Math.max(0, Number(ms) || 0)));"
           },
           {
-            "path": "addons/library-addon/src/main.js",
-            "line": 52,
-            "text": "return new Promise((resolve) => setTimeout(resolve, ms));"
-          },
-          {
             "path": "addons/library-addon/src/ui/application/importExportWorkflow.js",
             "line": 16,
             "text": "return new Promise((resolve) => setTimeout(resolve, Math.max(0, Number(ms) || 0)));"
@@ -2340,7 +2353,7 @@
           },
           {
             "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
-            "line": 124,
+            "line": 126,
             "text": "state.searchDebounceTimer = window.setTimeout(async () => {"
           },
           {
@@ -2356,13 +2369,13 @@
         ],
         "urlAndPageParsing": [
           {
-            "path": "addons/library-addon/src/main.js",
-            "line": 41,
+            "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
+            "line": 40,
             "text": "const isF95 = location.hostname.includes(\"f95zone.to\");"
           },
           {
-            "path": "addons/library-addon/src/main.js",
-            "line": 47,
+            "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
+            "line": 46,
             "text": "url: String(location.href || \"\"),"
           },
           {
@@ -2449,7 +2462,7 @@
           },
           {
             "path": "addons/library-addon/src/ui/application/importExportWorkflow.js",
-            "line": 136,
+            "line": 140,
             "text": "const scopeEl = root.querySelector('[data-field=\"exportScope\"]');"
           },
           {
@@ -2471,11 +2484,6 @@
             "path": "addons/library-addon/src/ui/application/importProgressController.js",
             "line": 46,
             "text": "const root = activeImport?.contentId ? document.getElementById(activeImport.contentId) : null;"
-          },
-          {
-            "path": "addons/library-addon/src/ui/components/manager/dialogShell.js",
-            "line": 14,
-            "text": "if (document.getElementById(styleId)) return;"
           },
           {
             "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
@@ -2519,57 +2527,57 @@
           },
           {
             "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
-            "line": 14,
+            "line": 16,
             "text": "const wrap = root.querySelector(\".f95ue-library-table-wrap\") || root;"
           },
           {
             "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
-            "line": 106,
+            "line": 108,
             "text": "const advancedPanel = root.querySelector(\".f95ue-library-more-actions\");"
           },
           {
             "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
-            "line": 117,
+            "line": 119,
             "text": "const searchInput = root.querySelector('[data-field=\"search\"]');"
           },
           {
             "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
-            "line": 133,
+            "line": 135,
             "text": "const statusSelect = root.querySelector('[data-field=\"status\"]');"
           },
           {
             "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
-            "line": 143,
+            "line": 145,
             "text": "const sortSelect = root.querySelector('[data-field=\"sort\"]');"
           },
           {
             "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
-            "line": 155,
+            "line": 157,
             "text": "const importInput = root.querySelector('[data-field=\"importFile\"]');"
           },
           {
             "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
-            "line": 171,
+            "line": 173,
             "text": "const pageSizeSelect = root.querySelector('[data-field=\"pageSize\"]');"
           },
           {
             "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
-            "line": 185,
+            "line": 187,
             "text": "const tooltip = chipList.querySelector(\".f95ue-chip-tooltip\");"
           },
           {
             "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
-            "line": 191,
+            "line": 193,
             "text": "const tooltip = hoverText.querySelector(\".f95ue-hover-tooltip\");"
           },
           {
             "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
-            "line": 199,
+            "line": 201,
             "text": "root.querySelectorAll(\".f95ue-chip-list.is-flip\").forEach((el) => el.classList.remove(\"is-flip\"));"
           },
           {
             "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
-            "line": 200,
+            "line": 202,
             "text": "root.querySelectorAll(\".f95ue-hover-text.is-flip\").forEach((el) => el.classList.remove(\"is-flip\"));"
           },
           {
@@ -2614,17 +2622,22 @@
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 78,
+            "line": 77,
             "text": "const existing = document.getElementById(styleId);"
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 130,
+            "line": 138,
             "text": "appContext.dialogRoot = contentId ? document.getElementById(contentId) : null;"
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 149,
+            "line": 145,
+            "text": "const importInput = appContext.dialogRoot.querySelector("
+          },
+          {
+            "path": "addons/library-addon/src/ui/manager/managerApp.js",
+            "line": 170,
             "text": "appContext.dialogRoot.querySelector(\".f95ue-library-manager-window\")?.focus();"
           },
           {
@@ -2656,24 +2669,44 @@
         "directGmAccess": [],
         "cancellationAndTeardown": [
           {
-            "path": "addons/library-addon/src/main.js",
-            "line": 422,
+            "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
+            "line": 374,
+            "text": "onEnable: async ({ isCurrent }) => {"
+          },
+          {
+            "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
+            "line": 376,
+            "text": "return isCurrent() ? { ok: true } : { ok: false, reason: \"enable_superseded\" };"
+          },
+          {
+            "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
+            "line": 382,
+            "text": "onRefresh: async ({ isCurrent }) => {"
+          },
+          {
+            "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
+            "line": 384,
+            "text": "return isCurrent() ? { ok: true } : { ok: false, reason: \"refresh_superseded\" };"
+          },
+          {
+            "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
+            "line": 433,
             "text": "case \"disable\":"
           },
           {
-            "path": "addons/library-addon/src/main.js",
-            "line": 444,
+            "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
+            "line": 434,
+            "text": "void lifecycle.disable(detail);"
+          },
+          {
+            "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
+            "line": 458,
             "text": "case \"teardown\":"
           },
           {
-            "path": "addons/library-addon/src/main.js",
-            "line": 467,
-            "text": "if (reason !== \"disable\") {"
-          },
-          {
-            "path": "addons/library-addon/src/main.js",
-            "line": 470,
-            "text": "bridge.dispatchCoreCommand(\"teardown-complete\", {"
+            "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
+            "line": 459,
+            "text": "void lifecycle.teardown(detail);"
           },
           {
             "path": "addons/library-addon/src/ui/application/importProgressController.js",
@@ -2692,8 +2725,23 @@
           },
           {
             "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
-            "line": 122,
+            "line": 11,
+            "text": "const controller = new AbortController();"
+          },
+          {
+            "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
+            "line": 124,
             "text": "window.clearTimeout(state.searchDebounceTimer);"
+          },
+          {
+            "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
+            "line": 209,
+            "text": "if (state.searchDebounceTimer) window.clearTimeout(state.searchDebounceTimer);"
+          },
+          {
+            "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
+            "line": 211,
+            "text": "for (const timer of state.noteSaveTimers?.values?.() || []) window.clearTimeout(timer);"
           },
           {
             "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
@@ -2717,11 +2765,61 @@
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 51,
+            "line": 34,
+            "text": "let generation = 0;"
+          },
+          {
+            "path": "addons/library-addon/src/ui/manager/managerApp.js",
+            "line": 52,
             "text": "cancelText = \"Cancel\","
+          },
+          {
+            "path": "addons/library-addon/src/ui/manager/managerApp.js",
+            "line": 84,
+            "text": "generation += 1;"
+          },
+          {
+            "path": "addons/library-addon/src/ui/manager/managerApp.js",
+            "line": 121,
+            "text": "const openGeneration = ++generation;"
+          },
+          {
+            "path": "addons/library-addon/src/ui/manager/managerApp.js",
+            "line": 132,
+            "text": "if (openGeneration !== generation) {"
+          },
+          {
+            "path": "addons/library-addon/src/ui/manager/managerApp.js",
+            "line": 155,
+            "text": "if (openGeneration !== generation) return;"
+          },
+          {
+            "path": "addons/library-addon/src/ui/manager/managerApp.js",
+            "line": 169,
+            "text": "if (openGeneration !== generation) return;"
+          },
+          {
+            "path": "addons/library-addon/src/ui/manager/managerApp.js",
+            "line": 180,
+            "text": "const closeGeneration = ++generation;"
+          },
+          {
+            "path": "addons/library-addon/src/ui/manager/managerApp.js",
+            "line": 188,
+            "text": "// that belongs to that newer generation."
+          },
+          {
+            "path": "addons/library-addon/src/ui/manager/managerApp.js",
+            "line": 189,
+            "text": "if (generation !== closeGeneration && getActiveRoot()) {"
+          },
+          {
+            "path": "addons/library-addon/src/ui/manager/managerApp.js",
+            "line": 198,
+            "text": "getSnapshot: () => ({ dialogOpen: appContext.dialogOpen, generation }),"
           }
         ],
-        "rawActionCount": 24
+        "rawActionCount": 27
       },
       {
         "id": "example-addon",
@@ -3256,12 +3354,12 @@
         "globalEventListeners": [
           {
             "path": "addons/example-addon/src/ui/bindings.js",
-            "line": 15,
+            "line": 17,
             "text": "document.addEventListener(\"click\", panelClickHandler, true);"
           },
           {
             "path": "addons/example-addon/src/ui/bindings.js",
-            "line": 52,
+            "line": 61,
             "text": "window.addEventListener(\"click\", dockClickHandler, true);"
           }
         ],
@@ -3291,12 +3389,12 @@
         "pollingAndTimers": [
           {
             "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-            "line": 75,
+            "line": 78,
             "text": "token.timer = window.setTimeout(finish, Math.max(0, Number(ms) || 0));"
           },
           {
             "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-            "line": 285,
+            "line": 324,
             "text": "const timer = window.setTimeout(() => {"
           }
         ],
@@ -3304,22 +3402,22 @@
         "coreDomAssumptions": [
           {
             "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-            "line": 95,
+            "line": 98,
             "text": "return document.getElementById("
           },
           {
             "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-            "line": 106,
+            "line": 109,
             "text": "contentEl.innerHTML = html;"
           },
           {
             "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-            "line": 278,
+            "line": 317,
             "text": "const node = document.createElement(\"div\");"
           },
           {
             "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-            "line": 281,
+            "line": 320,
             "text": "document.body.appendChild(node);"
           },
           {
@@ -3340,6 +3438,11 @@
         ],
         "directGmAccess": [],
         "cancellationAndTeardown": [
+          {
+            "path": "addons/example-addon/src/api/bridge.js",
+            "line": 39,
+            "text": "debugLog(\"example-addon\", \"Teardown acknowledgment dispatched.\", { data: { reason } });"
+          },
           {
             "path": "addons/example-addon/src/api/feature.js",
             "line": 6,
@@ -3367,67 +3470,77 @@
           },
           {
             "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-            "line": 81,
+            "line": 84,
             "text": "window.clearTimeout(token.timer);"
           },
           {
             "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-            "line": 89,
+            "line": 92,
             "text": "window.clearTimeout(token.timer);"
           },
           {
             "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-            "line": 255,
+            "line": 287,
             "text": "async function disableUi(reason = \"disable\") {"
           },
           {
             "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-            "line": 296,
+            "line": 335,
             "text": "window.clearTimeout(timer);"
           },
           {
             "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-            "line": 303,
+            "line": 342,
             "text": "window.clearTimeout(timer);"
           },
           {
             "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-            "line": 386,
+            "line": 425,
             "text": "onEnable: async ({ isCurrent }) => {"
           },
           {
             "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-            "line": 389,
+            "line": 429,
             "text": "if (!isCurrent()) return { ok: false, reason: \"enable_superseded\" };"
           },
           {
             "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-            "line": 400,
+            "line": 436,
+            "text": "debugLog(runtime.addonId, \"Lifecycle disable started.\", { data: lifecycle?.getSnapshot?.() });"
+          },
+          {
+            "path": "addons/example-addon/src/app/createExampleAddonApp.js",
+            "line": 442,
             "text": "await disableUi(\"disable\");"
           },
           {
             "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-            "line": 404,
+            "line": 444,
+            "text": "debugLog(runtime.addonId, \"Lifecycle disable completed.\", {"
+          },
+          {
+            "path": "addons/example-addon/src/app/createExampleAddonApp.js",
+            "line": 449,
             "text": "onRefresh: async ({ isCurrent }) => {"
           },
           {
             "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-            "line": 406,
+            "line": 451,
             "text": "if (!isCurrent()) return { ok: false, reason: \"refresh_superseded\" };"
           },
           {
             "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-            "line": 473,
+            "line": 518,
             "text": "case \"feature-disable\": {"
           },
           {
             "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-            "line": 551,
+            "line": 596,
             "text": "case \"bulk-import-cancel\": {"
           },
           {
             "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-            "line": 553,
+            "line": 598,
             "text": "setLastResult(action, { ok: true, value: \"cancellation requested\" });"
           },
           {
@@ -3652,12 +3765,12 @@
         "globalEventListeners": [
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 174,
+            "line": 175,
             "text": "window.addEventListener(\"hashchange\", onRoute);"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 175,
+            "line": 176,
             "text": "window.addEventListener(\"popstate\", onRoute);"
           }
         ],
@@ -3687,7 +3800,7 @@
         "pollingAndTimers": [
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 307,
+            "line": 308,
             "text": "state.mountTimer = window.setTimeout(tryMount, MOUNT_RETRY_DELAY_MS);"
           },
           {
@@ -3699,72 +3812,72 @@
         "urlAndPageParsing": [
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 118,
+            "line": 119,
             "text": "const currentUrl = normalizeLatestUrl(location.href);"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 129,
+            "line": 130,
             "text": "currentSummary: currentPreset ? currentPreset.summary : summarizeUrl(location.href),"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 130,
+            "line": 131,
             "text": "currentSummaryParts: currentPreset ? currentPreset.summaryParts : summarizeUrlParts(location.href),"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 150,
+            "line": 151,
             "text": "url: String(location.href || \"\"),"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 171,
+            "line": 172,
             "text": "lifecycle.invalidate(\"route-change\", { url: String(location.href || \"\") });"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 172,
+            "line": 173,
             "text": "void lifecycle.refresh({ reason: \"route-change\", routeContext: { url: String(location.href || \"\") } }).catch((error) => onCommandError(\"route-refresh\", error));"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 396,
+            "line": 397,
             "text": "const currentUrl = String(location.href || \"\");"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 416,
+            "line": 417,
             "text": "const currentUrl = String(location.href || \"\");"
-          },
-          {
-            "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 447,
-            "text": "if (!targetUrl || preset.normalizedUrl === normalizeLatestUrl(location.href)) return;"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
             "line": 448,
-            "text": "const currentUrl = new URL(location.href, location.origin);"
+            "text": "if (!targetUrl || preset.normalizedUrl === normalizeLatestUrl(location.href)) return;"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
             "line": 449,
-            "text": "const nextUrl = new URL(targetUrl, location.origin);"
+            "text": "const currentUrl = new URL(location.href, location.origin);"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
             "line": 450,
-            "text": "if (currentUrl.origin === nextUrl.origin && currentUrl.pathname === nextUrl.pathname && currentUrl.search === nextUrl.search) {"
+            "text": "const nextUrl = new URL(targetUrl, location.origin);"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
             "line": 451,
+            "text": "if (currentUrl.origin === nextUrl.origin && currentUrl.pathname === nextUrl.pathname && currentUrl.search === nextUrl.search) {"
+          },
+          {
+            "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
+            "line": 452,
             "text": "location.hash = nextUrl.hash;"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 455,
+            "line": 456,
             "text": "location.assign(nextUrl.href);"
           },
           {
@@ -3821,32 +3934,32 @@
         "coreDomAssumptions": [
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 142,
+            "line": 143,
             "text": "return document.querySelector(\".content-block_filter-title\");"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 219,
+            "line": 220,
             "text": "document.getElementById(ROOT_ID)?.remove?.();"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 268,
+            "line": 269,
             "text": "state.rootEl = document.getElementById(ROOT_ID);"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 332,
+            "line": 333,
             "text": "dialogEl.querySelector(\"[data-role='search']\")?.focus?.();"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 352,
+            "line": 353,
             "text": "const dialogEl = contentId ? document.getElementById(contentId) : null;"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 394,
+            "line": 395,
             "text": "const nameInput = state.dialogEl?.querySelector(\"[data-role='save-name']\");"
           },
           {
@@ -3939,182 +4052,182 @@
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 160,
+            "line": 161,
             "text": "window.clearTimeout(state.mountTimer);"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 163,
+            "line": 164,
             "text": "lifecycle?.releaseResource?.(\"latest-mount-retry\");"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 233,
+            "line": 234,
             "text": "if (!isCurrent(context) || !state.enabled || !hasLatestScope(localPageContext())) return false;"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 237,
+            "line": 238,
             "text": "if (pageOp.cancelled() || !isCurrent(context) || !hasLatestScope(pageContext)) return false;"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 241,
+            "line": 242,
             "text": "if (styleOp.cancelled() || !isCurrent(context)) return false;"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 256,
+            "line": 257,
             "text": "if (mountOp.cancelled() || !isCurrent(context)) {"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 287,
+            "line": 288,
             "text": "lifecycle.releaseResource(\"latest-mount-retry\");"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 288,
+            "line": 289,
             "text": "if (!isCurrent(context) || !state.enabled || (!state.showPageButton && !forcePanelOnly) || !hasLatestScope(localPageContext())) return;"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 289,
+            "line": 290,
             "text": "const pageOp = beginPending(context, `retry-page:${++operationSequence}`, getPageContext(core, localPageContext), \"page\");"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 291,
+            "line": 292,
             "text": "if (pageOp.cancelled() || !isCurrent(context) || !hasLatestScope(pageContext)) return;"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 300,
+            "line": 301,
             "text": "if (waitOp.cancelled() || !isCurrent(context) || !hasLatestScope(localPageContext())) return;"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 308,
+            "line": 309,
             "text": "lifecycle.registerResource(\"latest-mount-retry\", () => {"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 309,
+            "line": 310,
             "text": "window.clearTimeout(state.mountTimer);"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 336,
+            "line": 337,
             "text": "if (!state.rootEl || state.panelOpen || !isCurrent(context)) return;"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 345,
+            "line": 346,
             "text": "if (op.cancelled() || !isCurrent(context)) return;"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 369,
+            "line": 370,
             "text": "if (!isCurrent(context)) return null;"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 373,
+            "line": 374,
             "text": "if (op.cancelled() || !isCurrent(context) || !saved) return null;"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 384,
+            "line": 385,
             "text": "if (context && !isCurrent(context)) return null;"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 393,
+            "line": 394,
             "text": "if (!isCurrent(context)) return;"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 407,
+            "line": 408,
             "text": "if (isCurrent(context)) {"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 415,
+            "line": 416,
             "text": "if (!preset || !isCurrent(context)) return;"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 422,
+            "line": 423,
             "text": "cancelLabel: \"Cancel\","
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 424,
+            "line": 425,
             "text": "if (!confirmation?.ok || !confirmation.value?.confirmed || !isCurrent(context)) return;"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 426,
+            "line": 427,
             "text": "if (isCurrent(context)) await showToast(core, `Updated ${preset.name}.`).catch(() => {});"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 431,
+            "line": 432,
             "text": "if (!preset || !isCurrent(context)) return;"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 436,
+            "line": 437,
             "text": "cancelLabel: \"Cancel\","
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 438,
+            "line": 439,
             "text": "if (!confirmation?.ok || !confirmation.value?.confirmed || !isCurrent(context)) return;"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 440,
+            "line": 441,
             "text": "if (isCurrent(context)) await showToast(core, `Deleted ${preset.name}.`).catch(() => {});"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 445,
+            "line": 446,
             "text": "if (!preset || !isCurrent()) return;"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 463,
+            "line": 464,
             "text": "if (settingsOp.cancelled() || presetsOp.cancelled() || tagsOp.cancelled() || !isCurrent(context)) return false;"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 483,
+            "line": 484,
             "text": "if (!loaded || !isCurrent(context)) return { ok: false, reason: \"refresh_superseded\" };"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 495,
+            "line": 496,
             "text": "if (!loaded || !isCurrent(context)) return { ok: false, reason: \"enable_superseded\" };"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 512,
+            "line": 513,
             "text": "await removePageUi(context, \"disable\");"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 513,
+            "line": 514,
             "text": "if (context.command === \"disable\") await saveSettingsFlag(context, false);"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 567,
+            "line": 568,
             "text": "await removePageUi(context, context.reason || \"teardown\");"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 579,
+            "line": 580,
             "text": "await lifecycle.disable({ reason: access?.value?.blockReason || \"access-denied\" });"
           },
           {
@@ -4171,14 +4284,12 @@
             "f95zone"
           ],
           "capabilities": [
-            "feature",
-            "ui.style"
+            "feature"
           ]
         },
         "sourceFiles": [
           "addons/halloween-theme-addon/src/api/bridge.js",
           "addons/halloween-theme-addon/src/api/meta.js",
-          "addons/halloween-theme-addon/src/api/ui/style.js",
           "addons/halloween-theme-addon/src/app/commands.js",
           "addons/halloween-theme-addon/src/app/createHalloweenThemeApp.js",
           "addons/halloween-theme-addon/src/app/lifecycle.js",
@@ -4187,35 +4298,14 @@
           "addons/halloween-theme-addon/src/main.js",
           "addons/halloween-theme-addon/src/ui/theme.js"
         ],
-        "rawActions": [
-          {
-            "id": "ui.style.register",
-            "callSites": [
-              {
-                "path": "addons/halloween-theme-addon/src/api/ui/style.js",
-                "line": 2,
-                "text": "return core.invokeCoreAction(\"ui.style.register\", { styleId, cssText });"
-              }
-            ]
-          },
-          {
-            "id": "ui.style.unregister",
-            "callSites": [
-              {
-                "path": "addons/halloween-theme-addon/src/api/ui/style.js",
-                "line": 6,
-                "text": "return core.invokeCoreAction(\"ui.style.unregister\", { styleId });"
-              }
-            ]
-          }
-        ],
+        "rawActions": [],
         "globalEventListeners": [],
         "bridgeEvents": [],
         "storageKeys": [],
         "pollingAndTimers": [
           {
             "path": "addons/halloween-theme-addon/src/app/createHalloweenThemeApp.js",
-            "line": 107,
+            "line": 92,
             "text": "const timer = window.setTimeout(() => {"
           }
         ],
@@ -4223,7 +4313,22 @@
         "coreDomAssumptions": [
           {
             "path": "addons/halloween-theme-addon/src/ui/theme.js",
-            "line": 18,
+            "line": 19,
+            "text": "let style = document.getElementById(id);"
+          },
+          {
+            "path": "addons/halloween-theme-addon/src/ui/theme.js",
+            "line": 21,
+            "text": "style = document.createElement(\"style\");"
+          },
+          {
+            "path": "addons/halloween-theme-addon/src/ui/theme.js",
+            "line": 31,
+            "text": "const style = document.getElementById(String(styleId || \"\").trim());"
+          },
+          {
+            "path": "addons/halloween-theme-addon/src/ui/theme.js",
+            "line": 37,
             "text": "const nodes = document.querySelectorAll(LOGO_SELECTOR);"
           }
         ],
@@ -4246,31 +4351,31 @@
           },
           {
             "path": "addons/halloween-theme-addon/src/app/createHalloweenThemeApp.js",
-            "line": 71,
+            "line": 68,
             "text": "if (!context.isCurrent()) {"
           },
           {
             "path": "addons/halloween-theme-addon/src/app/createHalloweenThemeApp.js",
-            "line": 105,
+            "line": 90,
             "text": "if (!state.enabled || !context.isCurrent()) return { ok: false, reason: \"disabled\" };"
           },
           {
             "path": "addons/halloween-theme-addon/src/app/createHalloweenThemeApp.js",
-            "line": 110,
+            "line": 95,
             "text": "if (context.isCurrent() && state.enabled && !state.terminal) applyHalloweenLogos(restorationRecords);"
           },
           {
             "path": "addons/halloween-theme-addon/src/app/createHalloweenThemeApp.js",
-            "line": 116,
+            "line": 101,
             "text": "window.clearTimeout(timer);"
           },
           {
             "path": "addons/halloween-theme-addon/src/app/createHalloweenThemeApp.js",
-            "line": 149,
+            "line": 134,
             "text": "await lifecycle.disable({ reason: access?.value?.blockReason || \"access-denied\" });"
           }
         ],
-        "rawActionCount": 2
+        "rawActionCount": 0
       }
     ],
     "bridgeEvents": [
@@ -4294,7 +4399,7 @@
           },
           {
             "path": "addons/masked-direct-addon/src/directDownloadAttention.js",
-            "line": 8,
+            "line": 11,
             "text": "const DIRECT_DOWNLOAD_ROUTE_REQUEST_ID_KEY = \"f95ue_dd_req\";"
           }
         ]
@@ -4314,7 +4419,7 @@
         "callSites": [
           {
             "path": "addons/masked-direct-addon/src/directDownloadAttention.js",
-            "line": 6,
+            "line": 9,
             "text": "const ORIGIN_TAB_QUERY_KEY = \"f95ue_tab\";"
           }
         ]
@@ -4323,16 +4428,6 @@
         "eventName": "f95ue:addon-command",
         "callSites": [
           {
-            "path": "addons/image-repair-addon/src/constants.js",
-            "line": 4,
-            "text": "export const ADDON_COMMAND_EVENT = \"f95ue:addon-command\";"
-          },
-          {
-            "path": "addons/image-repair-addon/src/constants.js",
-            "line": 4,
-            "text": "export const ADDON_COMMAND_EVENT = \"f95ue:addon-command\";"
-          },
-          {
             "path": "addons/masked-direct-addon/src/constants.js",
             "line": 1,
             "text": "export const ADDON_COMMAND_EVENT = \"f95ue:addon-command\";"
@@ -4344,12 +4439,12 @@
           },
           {
             "path": "addons/library-addon/src/constants.js",
-            "line": 4,
+            "line": 2,
             "text": "export const ADDON_COMMAND_EVENT = \"f95ue:addon-command\";"
           },
           {
             "path": "addons/library-addon/src/constants.js",
-            "line": 4,
+            "line": 2,
             "text": "export const ADDON_COMMAND_EVENT = \"f95ue:addon-command\";"
           }
         ]
@@ -4358,23 +4453,13 @@
         "eventName": "f95ue:addons-dev-command",
         "callSites": [
           {
-            "path": "addons/image-repair-addon/src/constants.js",
-            "line": 3,
-            "text": "export const CORE_EVENT = \"f95ue:addons-dev-command\";"
-          },
-          {
-            "path": "addons/image-repair-addon/src/constants.js",
-            "line": 3,
+            "path": "addons/library-addon/src/constants.js",
+            "line": 1,
             "text": "export const CORE_EVENT = \"f95ue:addons-dev-command\";"
           },
           {
             "path": "addons/library-addon/src/constants.js",
-            "line": 3,
-            "text": "export const CORE_EVENT = \"f95ue:addons-dev-command\";"
-          },
-          {
-            "path": "addons/library-addon/src/constants.js",
-            "line": 3,
+            "line": 1,
             "text": "export const CORE_EVENT = \"f95ue:addons-dev-command\";"
           }
         ]
@@ -4414,7 +4499,7 @@
         "callSites": [
           {
             "path": "addons/masked-direct-addon/src/directDownloadAttention.js",
-            "line": 5,
+            "line": 8,
             "text": "const DIRECT_DOWNLOAD_TAB_ID_KEY = \"f95ue.addon.directDownload.tabId\";"
           }
         ]
@@ -4433,14 +4518,14 @@
       "id": "addon.access",
       "callSites": [
         {
-          "path": "addons/image-repair-addon/src/app.js",
-          "line": 295,
-          "text": "const access = await bridge.invokeCoreAction(\"addon.access\", {});"
+          "path": "addons/site-repair-addon/src/api/meta.js",
+          "line": 1,
+          "text": "export function getAddonAccess(core) { return core.invokeCoreAction(\"addon.access\", {}); }"
         },
         {
-          "path": "addons/library-addon/src/main.js",
-          "line": 499,
-          "text": "const access = await bridge.invokeCoreAction(\"addon.access\", {});"
+          "path": "addons/library-addon/src/api/meta.js",
+          "line": 1,
+          "text": "export const getAddonAccess = (core) => core.invokeCoreAction(\"addon.access\", {});"
         },
         {
           "path": "addons/example-addon/src/api/meta.js",
@@ -4455,8 +4540,8 @@
       ],
       "consumers": [
         "example-addon",
-        "image-repair-addon",
-        "library-addon"
+        "library-addon",
+        "site-repair-addon"
       ],
       "consumerCount": 3
     },
@@ -4489,9 +4574,14 @@
       "id": "config.getTagPrefs",
       "callSites": [
         {
-          "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 136,
-          "text": "const tagPrefsResult = await api.invokeCoreAction(\"config.getTagPrefs\", {});"
+          "path": "addons/library-addon/src/api/storage.js",
+          "line": 8,
+          "text": "export const getTagPrefs = (core) => core.invokeCoreAction(\"config.getTagPrefs\", {});"
+        },
+        {
+          "path": "addons/library-addon/src/api/ui/manager.js",
+          "line": 9,
+          "text": "return await bridge.invokeCoreAction(\"config.getTagPrefs\", {});"
         },
         {
           "path": "addons/example-addon/src/api/storage.js",
@@ -4735,9 +4825,9 @@
       "id": "observer.unwatch",
       "callSites": [
         {
-          "path": "addons/image-repair-addon/src/app.js",
-          "line": 139,
-          "text": "await bridge.invokeCoreAction(\"observer.unwatch\", { observerId });"
+          "path": "addons/site-repair-addon/src/api/observer.js",
+          "line": 5,
+          "text": "return core.invokeCoreAction(\"observer.unwatch\", { observerId });"
         },
         {
           "path": "addons/example-addon/src/api/observer.js",
@@ -4752,18 +4842,13 @@
       ],
       "consumers": [
         "example-addon",
-        "image-repair-addon"
+        "site-repair-addon"
       ],
       "consumerCount": 2
     },
     {
       "id": "observer.waitFor",
       "callSites": [
-        {
-          "path": "addons/image-repair-addon/src/api/observer.js",
-          "line": 6,
-          "text": "\"observer.waitFor\","
-        },
         {
           "path": "addons/masked-direct-addon/src/api/observer.js",
           "line": 6,
@@ -4792,20 +4877,19 @@
       ],
       "consumers": [
         "example-addon",
-        "image-repair-addon",
         "latest-filters-addon",
         "library-addon",
         "masked-direct-addon"
       ],
-      "consumerCount": 5
+      "consumerCount": 4
     },
     {
       "id": "observer.watch",
       "callSites": [
         {
-          "path": "addons/image-repair-addon/src/app.js",
-          "line": 137,
-          "text": "await bridge.invokeCoreAction(\"observer.watch\", { observerId, srcPrefix: IMAGE_HOST });"
+          "path": "addons/site-repair-addon/src/api/observer.js",
+          "line": 2,
+          "text": "return core.invokeCoreAction(\"observer.watch\", { observerId, srcPrefix });"
         },
         {
           "path": "addons/example-addon/src/api/observer.js",
@@ -4820,13 +4904,18 @@
       ],
       "consumers": [
         "example-addon",
-        "image-repair-addon"
+        "site-repair-addon"
       ],
       "consumerCount": 2
     },
     {
       "id": "page.getContext",
       "callSites": [
+        {
+          "path": "addons/site-repair-addon/src/api/meta.js",
+          "line": 2,
+          "text": "export function getPageContext(core) { return core.invokeCoreAction(\"page.getContext\", {}); }"
+        },
         {
           "path": "addons/masked-direct-addon/src/api/page.js",
           "line": 4,
@@ -4857,27 +4946,28 @@
         "example-addon",
         "latest-filters-addon",
         "library-addon",
-        "masked-direct-addon"
+        "masked-direct-addon",
+        "site-repair-addon"
       ],
-      "consumerCount": 4
+      "consumerCount": 5
     },
     {
       "id": "storage.get",
       "callSites": [
         {
-          "path": "addons/image-repair-addon/src/app.js",
-          "line": 144,
-          "text": "const result = await bridge.invokeCoreAction(\"storage.get\", { key, defaultValue });"
+          "path": "addons/site-repair-addon/src/api/storage.js",
+          "line": 2,
+          "text": "return core.invokeCoreAction(\"storage.get\", { key, defaultValue });"
         },
         {
-          "path": "addons/masked-direct-addon/src/main.js",
-          "line": 430,
+          "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+          "line": 424,
           "text": "const result = await bridge.invokeCoreAction(\"storage.get\", {"
         },
         {
-          "path": "addons/library-addon/src/main.js",
-          "line": 65,
-          "text": "const result = await bridge.invokeCoreAction(\"storage.get\", { key, defaultValue });"
+          "path": "addons/library-addon/src/api/storage.js",
+          "line": 2,
+          "text": "const result = await core.invokeCoreAction(\"storage.get\", { key, defaultValue });"
         },
         {
           "path": "addons/example-addon/src/api/storage.js",
@@ -4897,10 +4987,10 @@
       ],
       "consumers": [
         "example-addon",
-        "image-repair-addon",
         "latest-filters-addon",
         "library-addon",
-        "masked-direct-addon"
+        "masked-direct-addon",
+        "site-repair-addon"
       ],
       "consumerCount": 5
     },
@@ -4927,19 +5017,19 @@
       "id": "storage.set",
       "callSites": [
         {
-          "path": "addons/image-repair-addon/src/app.js",
-          "line": 149,
+          "path": "addons/site-repair-addon/src/api/storage.js",
+          "line": 5,
+          "text": "return core.invokeCoreAction(\"storage.set\", { key, value });"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+          "line": 433,
           "text": "return bridge.invokeCoreAction(\"storage.set\", { key, value });"
         },
         {
-          "path": "addons/masked-direct-addon/src/main.js",
-          "line": 439,
-          "text": "return bridge.invokeCoreAction(\"storage.set\", { key, value });"
-        },
-        {
-          "path": "addons/library-addon/src/main.js",
-          "line": 70,
-          "text": "return bridge.invokeCoreAction(\"storage.set\", { key, value });"
+          "path": "addons/library-addon/src/api/storage.js",
+          "line": 7,
+          "text": "core.invokeCoreAction(\"storage.set\", { key, value });"
         },
         {
           "path": "addons/example-addon/src/api/storage.js",
@@ -4959,10 +5049,10 @@
       ],
       "consumers": [
         "example-addon",
-        "image-repair-addon",
         "latest-filters-addon",
         "library-addon",
-        "masked-direct-addon"
+        "masked-direct-addon",
+        "site-repair-addon"
       ],
       "consumerCount": 5
     },
@@ -4970,19 +5060,14 @@
       "id": "toast.show",
       "callSites": [
         {
-          "path": "addons/image-repair-addon/src/app.js",
-          "line": 275,
-          "text": "return bridge.invokeCoreAction(\"toast.show\", {"
-        },
-        {
-          "path": "addons/masked-direct-addon/src/main.js",
-          "line": 203,
+          "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+          "line": 205,
           "text": ".invokeCoreAction(\"toast.show\", { message, type })"
         },
         {
-          "path": "addons/library-addon/src/ui/utils/showToast.js",
-          "line": 4,
-          "text": "bridge.invokeCoreAction(\"toast.show\", {"
+          "path": "addons/library-addon/src/api/toast.js",
+          "line": 2,
+          "text": "core.invokeCoreAction(\"toast.show\", { message: String(message || \"\"), type });"
         },
         {
           "path": "addons/example-addon/src/api/toast.js",
@@ -5002,18 +5087,17 @@
       ],
       "consumers": [
         "example-addon",
-        "image-repair-addon",
         "latest-filters-addon",
         "library-addon",
         "masked-direct-addon"
       ],
-      "consumerCount": 5
+      "consumerCount": 4
     },
     {
       "id": "ui.confirm",
       "callSites": [
         {
-          "path": "addons/library-addon/src/ui/application/managerApi.js",
+          "path": "addons/library-addon/src/api/ui/manager.js",
           "line": 49,
           "text": "const result = await bridge.invokeCoreAction(\"ui.confirm\", {"
         },
@@ -5044,12 +5128,12 @@
       "id": "ui.dialog.close",
       "callSites": [
         {
-          "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 58,
-          "text": "await coreBridge.invokeCoreAction(\"ui.dialog.close\", {"
+          "path": "addons/library-addon/src/api/ui/dialog.js",
+          "line": 12,
+          "text": "return core.invokeCoreAction(\"ui.dialog.close\", { dialogId, reason });"
         },
         {
-          "path": "addons/library-addon/src/ui/application/managerApi.js",
+          "path": "addons/library-addon/src/api/ui/manager.js",
           "line": 41,
           "text": "const result = await bridge.invokeCoreAction(\"ui.dialog.close\", {"
         },
@@ -5080,12 +5164,12 @@
       "id": "ui.dialog.open",
       "callSites": [
         {
-          "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 87,
-          "text": "result = await coreBridge.invokeCoreAction(\"ui.dialog.open\", {"
+          "path": "addons/library-addon/src/api/ui/dialog.js",
+          "line": 8,
+          "text": "return core.invokeCoreAction(\"ui.dialog.open\", payload);"
         },
         {
-          "path": "addons/library-addon/src/ui/application/managerApi.js",
+          "path": "addons/library-addon/src/api/ui/manager.js",
           "line": 28,
           "text": "const result = await bridge.invokeCoreAction(\"ui.dialog.open\", {"
         },
@@ -5185,9 +5269,9 @@
       "id": "ui.mount",
       "callSites": [
         {
-          "path": "addons/library-addon/src/main.js",
-          "line": 236,
-          "text": "const result = await bridge.invokeCoreAction(\"ui.mount\", {"
+          "path": "addons/library-addon/src/api/ui/mount.js",
+          "line": 1,
+          "text": "export const mountUi = (core, payload) => core.invokeCoreAction(\"ui.mount\", payload);"
         },
         {
           "path": "addons/example-addon/src/api/ui/mount.js",
@@ -5216,19 +5300,24 @@
       "id": "ui.style.register",
       "callSites": [
         {
-          "path": "addons/image-repair-addon/src/app.js",
-          "line": 98,
+          "path": "addons/site-repair-addon/src/api/ui/style.js",
+          "line": 2,
+          "text": "return core.invokeCoreAction(\"ui.style.register\", { styleId, cssText });"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+          "line": 438,
           "text": "const result = await bridge.invokeCoreAction(\"ui.style.register\", {"
         },
         {
-          "path": "addons/masked-direct-addon/src/main.js",
-          "line": 444,
-          "text": "const result = await bridge.invokeCoreAction(\"ui.style.register\", {"
-        },
-        {
-          "path": "addons/library-addon/src/ui/application/managerApi.js",
+          "path": "addons/library-addon/src/api/ui/manager.js",
           "line": 13,
           "text": "const result = await bridge.invokeCoreAction(\"ui.style.register\", {"
+        },
+        {
+          "path": "addons/library-addon/src/api/ui/style.js",
+          "line": 2,
+          "text": "core.invokeCoreAction(\"ui.style.register\", { styleId, cssText });"
         },
         {
           "path": "addons/example-addon/src/api/ui/style.js",
@@ -5244,40 +5333,39 @@
           "path": "addons/latest-filters-addon/src/api/ui/style.js",
           "line": 2,
           "text": "return core.invokeCoreAction(\"ui.style.register\", { styleId, cssText });"
-        },
-        {
-          "path": "addons/halloween-theme-addon/src/api/ui/style.js",
-          "line": 2,
-          "text": "return core.invokeCoreAction(\"ui.style.register\", { styleId, cssText });"
         }
       ],
       "consumers": [
         "example-addon",
-        "halloween-theme-addon",
-        "image-repair-addon",
         "latest-filters-addon",
         "library-addon",
-        "masked-direct-addon"
+        "masked-direct-addon",
+        "site-repair-addon"
       ],
-      "consumerCount": 6
+      "consumerCount": 5
     },
     {
       "id": "ui.style.unregister",
       "callSites": [
         {
-          "path": "addons/image-repair-addon/src/app.js",
-          "line": 106,
-          "text": "await bridge.invokeCoreAction(\"ui.style.unregister\", {"
+          "path": "addons/site-repair-addon/src/api/ui/style.js",
+          "line": 5,
+          "text": "return core.invokeCoreAction(\"ui.style.unregister\", { styleId });"
         },
         {
-          "path": "addons/masked-direct-addon/src/main.js",
-          "line": 458,
+          "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+          "line": 452,
           "text": "const result = await bridge.invokeCoreAction(\"ui.style.unregister\", {"
         },
         {
-          "path": "addons/library-addon/src/ui/application/managerApi.js",
+          "path": "addons/library-addon/src/api/ui/manager.js",
           "line": 21,
           "text": "const result = await bridge.invokeCoreAction(\"ui.style.unregister\", {"
+        },
+        {
+          "path": "addons/library-addon/src/api/ui/style.js",
+          "line": 4,
+          "text": "core.invokeCoreAction(\"ui.style.unregister\", { styleId });"
         },
         {
           "path": "addons/example-addon/src/api/ui/style.js",
@@ -5293,30 +5381,24 @@
           "path": "addons/latest-filters-addon/src/api/ui/style.js",
           "line": 6,
           "text": "return core.invokeCoreAction(\"ui.style.unregister\", { styleId });"
-        },
-        {
-          "path": "addons/halloween-theme-addon/src/api/ui/style.js",
-          "line": 6,
-          "text": "return core.invokeCoreAction(\"ui.style.unregister\", { styleId });"
         }
       ],
       "consumers": [
         "example-addon",
-        "halloween-theme-addon",
-        "image-repair-addon",
         "latest-filters-addon",
         "library-addon",
-        "masked-direct-addon"
+        "masked-direct-addon",
+        "site-repair-addon"
       ],
-      "consumerCount": 6
+      "consumerCount": 5
     },
     {
       "id": "ui.unmount",
       "callSites": [
         {
-          "path": "addons/library-addon/src/main.js",
-          "line": 292,
-          "text": "await bridge.invokeCoreAction(\"ui.unmount\", { mountId: LIBRARY_DOCK_MOUNT_ID });"
+          "path": "addons/library-addon/src/api/ui/mount.js",
+          "line": 3,
+          "text": "core.invokeCoreAction(\"ui.unmount\", { mountId });"
         },
         {
           "path": "addons/example-addon/src/api/ui/mount.js",
@@ -5384,58 +5466,153 @@
       ],
       "callSites": [
         {
+          "path": "addons/masked-direct-addon/src/app/context.js",
+          "line": 7,
+          "text": "const hostname = String(locationLike?.hostname || \"\").toLowerCase();"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/app/context.js",
+          "line": 8,
+          "text": "const pathname = String(locationLike?.pathname || \"\");"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/app/context.js",
+          "line": 10,
+          "text": "if (F95_HOSTS.has(hostname)) {"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/app/context.js",
+          "line": 11,
+          "text": "const route = pathname.startsWith(\"/threads/\")"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/app/context.js",
+          "line": 13,
+          "text": ": pathname.startsWith(\"/masked/\")"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/app/context.js",
+          "line": 23,
+          "text": "if (isSupportedExternalHost(hostname)) {"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+          "line": 203,
+          "text": "if (location.hostname.includes(\"f95zone.to\")) {"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+          "line": 243,
+          "text": "location.hostname.includes(\"f95zone.to\") &&"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+          "line": 244,
+          "text": "location.pathname.startsWith(\"/threads\")"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+          "line": 250,
+          "text": "location.hostname.includes(\"f95zone.to\") &&"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+          "line": 255,
+          "text": "function isHostAllowedInSettings(hostname, flags) {"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+          "line": 256,
+          "text": "return isDirectDownloadHostEnabled(hostname, flags?.directDownloadPackages);"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+          "line": 319,
+          "text": "const isF95 = location.hostname.includes(\"f95zone.to\");"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+          "line": 325,
+          "text": "url: String(location.href || \"\"),"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+          "line": 602,
+          "text": "isSupportedExternalHost: (hostname) =>"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+          "line": 603,
+          "text": "Boolean(normalizeDirectDownloadHostForContext(hostname)),"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+          "line": 612,
+          "text": "`[${runtime.addonId}] Detected relevant page. Context: ${pageContext}. href=${location.href}`,"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+          "line": 676,
+          "text": "function normalizeDirectDownloadHostForContext(hostname) {"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+          "line": 677,
+          "text": "return normalizeDirectDownloadHost(hostname);"
+        },
+        {
           "path": "addons/masked-direct-addon/src/directDownloadAttention.js",
-          "line": 104,
+          "line": 107,
           "text": "new URL(location.href).searchParams.get("
         },
         {
           "path": "addons/masked-direct-addon/src/directDownloadAttention.js",
-          "line": 122,
+          "line": 125,
           "text": "href: location.href,"
         },
         {
           "path": "addons/masked-direct-addon/src/directDownloadFlowController.js",
-          "line": 39,
+          "line": 41,
           "text": "new URL(normalized).hostname,"
         },
         {
           "path": "addons/masked-direct-addon/src/directDownloadFlowController.js",
-          "line": 50,
+          "line": 52,
           "text": "const parsed = new URL(safeUrl);"
         },
         {
           "path": "addons/masked-direct-addon/src/directDownloadFlowController.js",
-          "line": 51,
+          "line": 53,
           "text": "if (!parsed.searchParams.get(originTabQueryKey)) {"
         },
         {
           "path": "addons/masked-direct-addon/src/directDownloadFlowController.js",
-          "line": 52,
+          "line": 54,
           "text": "parsed.searchParams.set(originTabQueryKey, ownerTabId);"
         },
         {
           "path": "addons/masked-direct-addon/src/directDownloadFlowController.js",
-          "line": 54,
+          "line": 56,
           "text": "if (!parsed.searchParams.get(DIRECT_DOWNLOAD_ROUTE_TS_KEY)) {"
         },
         {
           "path": "addons/masked-direct-addon/src/directDownloadFlowController.js",
-          "line": 55,
+          "line": 57,
           "text": "parsed.searchParams.set("
         },
         {
           "path": "addons/masked-direct-addon/src/directDownloadFlowController.js",
-          "line": 61,
+          "line": 63,
           "text": "parsed.searchParams.get(DIRECT_DOWNLOAD_ROUTE_REQUEST_ID_KEY) || \"\","
         },
         {
           "path": "addons/masked-direct-addon/src/directDownloadFlowController.js",
-          "line": 67,
+          "line": 69,
           "text": "parsed.searchParams.set("
         },
         {
           "path": "addons/masked-direct-addon/src/directDownloadFlowController.js",
-          "line": 125,
+          "line": 127,
           "text": "window.location.assign(safeUrl);"
         },
         {
@@ -5774,51 +5951,6 @@
           "text": "location.assign(preserveAutomationMarkers(startHref));"
         },
         {
-          "path": "addons/masked-direct-addon/src/main.js",
-          "line": 201,
-          "text": "if (location.hostname.includes(\"f95zone.to\")) {"
-        },
-        {
-          "path": "addons/masked-direct-addon/src/main.js",
-          "line": 241,
-          "text": "location.hostname.includes(\"f95zone.to\") &&"
-        },
-        {
-          "path": "addons/masked-direct-addon/src/main.js",
-          "line": 242,
-          "text": "location.pathname.startsWith(\"/threads\")"
-        },
-        {
-          "path": "addons/masked-direct-addon/src/main.js",
-          "line": 248,
-          "text": "location.hostname.includes(\"f95zone.to\") &&"
-        },
-        {
-          "path": "addons/masked-direct-addon/src/main.js",
-          "line": 262,
-          "text": "function isHostAllowedInSettings(hostname, flags) {"
-        },
-        {
-          "path": "addons/masked-direct-addon/src/main.js",
-          "line": 263,
-          "text": "return isDirectDownloadHostEnabled(hostname, flags?.directDownloadPackages);"
-        },
-        {
-          "path": "addons/masked-direct-addon/src/main.js",
-          "line": 326,
-          "text": "const isF95 = location.hostname.includes(\"f95zone.to\");"
-        },
-        {
-          "path": "addons/masked-direct-addon/src/main.js",
-          "line": 332,
-          "text": "url: String(location.href || \"\"),"
-        },
-        {
-          "path": "addons/masked-direct-addon/src/main.js",
-          "line": 608,
-          "text": "`[${runtime.addonId}] Detected relevant page. Context: ${pageContext}. href=${location.href}`,"
-        },
-        {
           "path": "addons/masked-direct-addon/src/maskedPageController.js",
           "line": 31,
           "text": "return location.hostname.includes(\"f95zone.to\") && location.pathname.startsWith(\"/masked\");"
@@ -5859,6 +5991,36 @@
           "text": "if (!location.href.includes(F95_CAPTCHA_SITEKEY)) return;"
         },
         {
+          "path": "addons/masked-direct-addon/src/ports/routeContextRepository.js",
+          "line": 111,
+          "text": "new URL(location.href).searchParams.get("
+        },
+        {
+          "path": "addons/masked-direct-addon/src/ports/routeContextRepository.js",
+          "line": 126,
+          "text": "new URL(location.href).searchParams.get(originTabQueryKey) || \"\","
+        },
+        {
+          "path": "addons/masked-direct-addon/src/ports/routeContextRepository.js",
+          "line": 138,
+          "text": "const parsed = new URL(location.href);"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/ports/routeContextRepository.js",
+          "line": 139,
+          "text": "const hasOriginTabId = Boolean(parsed.searchParams.get(originTabQueryKey));"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/ports/routeContextRepository.js",
+          "line": 141,
+          "text": "String(parsed.searchParams.get(AUTOMATION_MARKER_KEY) || \"\").trim() ==="
+        },
+        {
+          "path": "addons/masked-direct-addon/src/ports/routeContextRepository.js",
+          "line": 144,
+          "text": "parsed.searchParams.get(DIRECT_DOWNLOAD_ROUTE_TS_KEY) || 0,"
+        },
+        {
           "path": "addons/masked-direct-addon/src/processingDownloadTrigger.js",
           "line": 168,
           "text": "const parsed = new URL(sourceUrl);"
@@ -5867,36 +6029,6 @@
           "path": "addons/masked-direct-addon/src/processingDownloadTrigger.js",
           "line": 176,
           "text": "parsed.searchParams.delete(key);"
-        },
-        {
-          "path": "addons/masked-direct-addon/src/routeContext.js",
-          "line": 101,
-          "text": "new URL(location.href).searchParams.get("
-        },
-        {
-          "path": "addons/masked-direct-addon/src/routeContext.js",
-          "line": 116,
-          "text": "new URL(location.href).searchParams.get(originTabQueryKey) || \"\","
-        },
-        {
-          "path": "addons/masked-direct-addon/src/routeContext.js",
-          "line": 128,
-          "text": "const parsed = new URL(location.href);"
-        },
-        {
-          "path": "addons/masked-direct-addon/src/routeContext.js",
-          "line": 129,
-          "text": "const hasOriginTabId = Boolean(parsed.searchParams.get(originTabQueryKey));"
-        },
-        {
-          "path": "addons/masked-direct-addon/src/routeContext.js",
-          "line": 131,
-          "text": "String(parsed.searchParams.get(AUTOMATION_MARKER_KEY) || \"\").trim() ==="
-        },
-        {
-          "path": "addons/masked-direct-addon/src/routeContext.js",
-          "line": 134,
-          "text": "parsed.searchParams.get(DIRECT_DOWNLOAD_ROUTE_TS_KEY) || 0,"
         },
         {
           "path": "addons/masked-direct-addon/src/threadPageController.js",
@@ -5924,13 +6056,13 @@
           "text": "const host = new URL(normalized).hostname.toLowerCase();"
         },
         {
-          "path": "addons/library-addon/src/main.js",
-          "line": 41,
+          "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
+          "line": 40,
           "text": "const isF95 = location.hostname.includes(\"f95zone.to\");"
         },
         {
-          "path": "addons/library-addon/src/main.js",
-          "line": 47,
+          "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
+          "line": 46,
           "text": "url: String(location.href || \"\"),"
         },
         {
@@ -5965,72 +6097,72 @@
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 118,
+          "line": 119,
           "text": "const currentUrl = normalizeLatestUrl(location.href);"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 129,
+          "line": 130,
           "text": "currentSummary: currentPreset ? currentPreset.summary : summarizeUrl(location.href),"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 130,
+          "line": 131,
           "text": "currentSummaryParts: currentPreset ? currentPreset.summaryParts : summarizeUrlParts(location.href),"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 150,
+          "line": 151,
           "text": "url: String(location.href || \"\"),"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 171,
+          "line": 172,
           "text": "lifecycle.invalidate(\"route-change\", { url: String(location.href || \"\") });"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 172,
+          "line": 173,
           "text": "void lifecycle.refresh({ reason: \"route-change\", routeContext: { url: String(location.href || \"\") } }).catch((error) => onCommandError(\"route-refresh\", error));"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 396,
+          "line": 397,
           "text": "const currentUrl = String(location.href || \"\");"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 416,
+          "line": 417,
           "text": "const currentUrl = String(location.href || \"\");"
-        },
-        {
-          "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 447,
-          "text": "if (!targetUrl || preset.normalizedUrl === normalizeLatestUrl(location.href)) return;"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
           "line": 448,
-          "text": "const currentUrl = new URL(location.href, location.origin);"
+          "text": "if (!targetUrl || preset.normalizedUrl === normalizeLatestUrl(location.href)) return;"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
           "line": 449,
-          "text": "const nextUrl = new URL(targetUrl, location.origin);"
+          "text": "const currentUrl = new URL(location.href, location.origin);"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
           "line": 450,
-          "text": "if (currentUrl.origin === nextUrl.origin && currentUrl.pathname === nextUrl.pathname && currentUrl.search === nextUrl.search) {"
+          "text": "const nextUrl = new URL(targetUrl, location.origin);"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
           "line": 451,
+          "text": "if (currentUrl.origin === nextUrl.origin && currentUrl.pathname === nextUrl.pathname && currentUrl.search === nextUrl.search) {"
+        },
+        {
+          "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
+          "line": 452,
           "text": "location.hash = nextUrl.hash;"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 455,
+          "line": 456,
           "text": "location.assign(nextUrl.href);"
         },
         {
@@ -6107,46 +6239,56 @@
       "rank": 2,
       "reason": "At least four add-ons show bounded wait/poll behavior; central ownership directly reduces stale callbacks and cleanup risk.",
       "consumerIds": [
-        "image-repair-addon",
+        "site-repair-addon",
         "latest-filters-addon",
         "library-addon",
         "masked-direct-addon"
       ],
       "callSites": [
         {
-          "path": "addons/image-repair-addon/src/app.js",
-          "line": 37,
-          "text": "async function waitForPageReady(bridge) {"
+          "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+          "line": 23,
+          "text": "let pollTimer = 0;"
         },
         {
-          "path": "addons/image-repair-addon/src/app.js",
-          "line": 65,
-          "text": "const checkInterval = setInterval(() => {"
+          "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+          "line": 32,
+          "text": "if (pollTimer) windowLike.clearInterval(pollTimer);"
         },
         {
-          "path": "addons/image-repair-addon/src/app.js",
-          "line": 306,
-          "text": "await waitForPageReady(bridge);"
+          "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+          "line": 33,
+          "text": "pollTimer = 0;"
         },
         {
-          "path": "addons/image-repair-addon/src/feature.js",
-          "line": 47,
-          "text": "setTimeout(() => {"
+          "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+          "line": 62,
+          "text": "const timer = windowLike.setTimeout(() => {"
         },
         {
-          "path": "addons/image-repair-addon/src/queue.js",
-          "line": 19,
-          "text": "setTimeout(process, delay);"
+          "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+          "line": 93,
+          "text": "if (tryPatch() || pollTimer) return;"
         },
         {
-          "path": "addons/image-repair-addon/src/queue.js",
-          "line": 28,
-          "text": "setTimeout(process, 0);"
+          "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+          "line": 95,
+          "text": "pollTimer = windowLike.setInterval(() => {"
         },
         {
-          "path": "addons/image-repair-addon/src/ui.js",
-          "line": 117,
-          "text": "toastTimeout = setTimeout(() => {"
+          "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+          "line": 98,
+          "text": "windowLike.clearInterval(pollTimer);"
+        },
+        {
+          "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+          "line": 99,
+          "text": "pollTimer = 0;"
+        },
+        {
+          "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+          "line": 121,
+          "text": "polling: Boolean(pollTimer),"
         },
         {
           "path": "addons/masked-direct-addon/src/downloadDetector.js",
@@ -6234,11 +6376,6 @@
           "text": "return new Promise((resolve) => setTimeout(resolve, Math.max(0, Number(ms) || 0)));"
         },
         {
-          "path": "addons/library-addon/src/main.js",
-          "line": 52,
-          "text": "return new Promise((resolve) => setTimeout(resolve, ms));"
-        },
-        {
           "path": "addons/library-addon/src/ui/application/importExportWorkflow.js",
           "line": 16,
           "text": "return new Promise((resolve) => setTimeout(resolve, Math.max(0, Number(ms) || 0)));"
@@ -6250,7 +6387,7 @@
         },
         {
           "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
-          "line": 124,
+          "line": 126,
           "text": "state.searchDebounceTimer = window.setTimeout(async () => {"
         },
         {
@@ -6265,57 +6402,57 @@
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 159,
+          "line": 160,
           "text": "if (state.mountTimer) {"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 160,
+          "line": 161,
           "text": "window.clearTimeout(state.mountTimer);"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 161,
+          "line": 162,
           "text": "state.mountTimer = 0;"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 282,
+          "line": 283,
           "text": "function scheduleMount(context, forcePanelOnly = false) {"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 286,
+          "line": 287,
           "text": "state.mountTimer = 0;"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 307,
+          "line": 308,
           "text": "state.mountTimer = window.setTimeout(tryMount, MOUNT_RETRY_DELAY_MS);"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 309,
+          "line": 310,
           "text": "window.clearTimeout(state.mountTimer);"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 310,
+          "line": 311,
           "text": "state.mountTimer = 0;"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 486,
+          "line": 487,
           "text": "if (state.showPageButton && isLatestPage()) scheduleMount(context);"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 501,
+          "line": 502,
           "text": "if (state.showPageButton && isLatestPage()) scheduleMount(context);"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 541,
+          "line": 542,
           "text": "if (!mounted) { scheduleMount(context, !state.showPageButton); await showToast(core, \"Saved Filters is still mounting on the page.\").catch(() => {}); return; }"
         },
         {
@@ -6331,10 +6468,10 @@
       ],
       "consumerCount": 4,
       "consumers": [
-        "image-repair-addon",
         "latest-filters-addon",
         "library-addon",
-        "masked-direct-addon"
+        "masked-direct-addon",
+        "site-repair-addon"
       ]
     },
     {
@@ -6359,6 +6496,26 @@
       ],
       "callSites": [
         {
+          "path": "addons/library-addon/src/api/ui/dialog.js",
+          "line": 8,
+          "text": "return core.invokeCoreAction(\"ui.dialog.open\", payload);"
+        },
+        {
+          "path": "addons/library-addon/src/api/ui/dialog.js",
+          "line": 12,
+          "text": "return core.invokeCoreAction(\"ui.dialog.close\", { dialogId, reason });"
+        },
+        {
+          "path": "addons/library-addon/src/api/ui/manager.js",
+          "line": 28,
+          "text": "const result = await bridge.invokeCoreAction(\"ui.dialog.open\", {"
+        },
+        {
+          "path": "addons/library-addon/src/api/ui/manager.js",
+          "line": 41,
+          "text": "const result = await bridge.invokeCoreAction(\"ui.dialog.close\", {"
+        },
+        {
           "path": "addons/library-addon/src/ui/application/importProgressController.js",
           "line": 17,
           "text": "const root = activeImport?.contentId ? document.getElementById(activeImport.contentId) : null;"
@@ -6380,43 +6537,23 @@
         },
         {
           "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 58,
-          "text": "await coreBridge.invokeCoreAction(\"ui.dialog.close\", {"
-        },
-        {
-          "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 79,
+          "line": 76,
           "text": "contentId: \"\","
         },
         {
           "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 87,
-          "text": "result = await coreBridge.invokeCoreAction(\"ui.dialog.open\", {"
-        },
-        {
-          "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 108,
+          "line": 105,
           "text": "activeImport.contentId = String(result?.value?.contentId || \"\").trim();"
         },
         {
           "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 114,
+          "line": 112,
           "text": "updateProgressContent(progress);"
         },
         {
           "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 131,
+          "line": 136,
           "text": "updateProgressContent({ total: activeImport.total, cancelled: true });"
-        },
-        {
-          "path": "addons/library-addon/src/ui/application/managerApi.js",
-          "line": 28,
-          "text": "const result = await bridge.invokeCoreAction(\"ui.dialog.open\", {"
-        },
-        {
-          "path": "addons/library-addon/src/ui/application/managerApi.js",
-          "line": 41,
-          "text": "const result = await bridge.invokeCoreAction(\"ui.dialog.close\", {"
         },
         {
           "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
@@ -6425,12 +6562,12 @@
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 129,
+          "line": 137,
           "text": "const contentId = String(result?.value?.contentId || \"\").trim();"
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 130,
+          "line": 138,
           "text": "appContext.dialogRoot = contentId ? document.getElementById(contentId) : null;"
         },
         {
@@ -6445,7 +6582,7 @@
         },
         {
           "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-          "line": 106,
+          "line": 109,
           "text": "contentEl.innerHTML = html;"
         },
         {
@@ -6480,17 +6617,17 @@
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 137,
+          "line": 138,
           "text": "renderPanelContent(state.dialogEl, renderArgs());"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 351,
+          "line": 352,
           "text": "const contentId = String(result?.value?.contentId || \"\").trim();"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 352,
+          "line": 353,
           "text": "const dialogEl = contentId ? document.getElementById(contentId) : null;"
         },
         {
@@ -6541,19 +6678,14 @@
       ],
       "callSites": [
         {
-          "path": "addons/library-addon/src/main.js",
-          "line": 228,
+          "path": "addons/library-addon/src/api/ui/mount.js",
+          "line": 1,
+          "text": "export const mountUi = (core, payload) => core.invokeCoreAction(\"ui.mount\", payload);"
+        },
+        {
+          "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
+          "line": 214,
           "text": "window.addEventListener(\"click\", dockMountClickHandler, true);"
-        },
-        {
-          "path": "addons/library-addon/src/main.js",
-          "line": 236,
-          "text": "const result = await bridge.invokeCoreAction(\"ui.mount\", {"
-        },
-        {
-          "path": "addons/library-addon/src/main.js",
-          "line": 241,
-          "text": "debugLog(`[library-addon] ui.mount result:`, result);"
         }
       ],
       "consumerCount": 1,
@@ -6581,43 +6713,43 @@
       ],
       "callSites": [
         {
-          "path": "addons/masked-direct-addon/src/main.js",
+          "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
           "line": 1,
-          "text": "/* global __ADDON_ID__, __ADDON_NAME__, __ADDON_VERSION__, __ADDON_DESCRIPTION__, __ADDON_CAPABILITIES__, __ADDON_REQUIRES_CORE__, __ADDON_PAGE_SCOPES__, __ADDON_RUNTIME_MODE__, __ADDON_MATCHES__, GM_openInTab, GM, GM_addValueChangeListener, GM_removeValueChangeListener, grecaptcha */"
+          "text": "/* global __ADDON_ID__, __ADDON_NAME__, __ADDON_VERSION__, __ADDON_DESCRIPTION__, __ADDON_CAPABILITIES__, __ADDON_REQUIRES_CORE__, __ADDON_PAGE_SCOPES__, __ADDON_RUNTIME_MODE__, __ADDON_MATCHES__, GM_openInTab, GM, GM_addValueChangeListener, GM_removeValueChangeListener */"
         },
         {
-          "path": "addons/masked-direct-addon/src/main.js",
-          "line": 151,
+          "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+          "line": 153,
           "text": "typeof GM_addValueChangeListener === \"function\""
         },
         {
-          "path": "addons/masked-direct-addon/src/main.js",
-          "line": 152,
+          "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+          "line": 154,
           "text": "? GM_addValueChangeListener"
         },
         {
-          "path": "addons/masked-direct-addon/src/main.js",
-          "line": 155,
+          "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+          "line": 157,
           "text": "typeof GM_removeValueChangeListener === \"function\""
         },
         {
-          "path": "addons/masked-direct-addon/src/main.js",
-          "line": 156,
+          "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+          "line": 158,
           "text": "? GM_removeValueChangeListener"
         },
         {
-          "path": "addons/masked-direct-addon/src/main.js",
-          "line": 308,
+          "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+          "line": 301,
           "text": "const result = await storageGet(ADDON_SETTINGS_KEY, ADDON_SETTINGS_DEFAULT);"
         },
         {
-          "path": "addons/masked-direct-addon/src/main.js",
-          "line": 429,
+          "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+          "line": 423,
           "text": "async function storageGet(key, defaultValue) {"
         },
         {
-          "path": "addons/masked-direct-addon/src/main.js",
-          "line": 663,
+          "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+          "line": 659,
           "text": "const storedEnabled = await storageGet(\"enabled\", true);"
         }
       ],
@@ -6644,26 +6776,41 @@
       "consumerIds": [
         "example-addon",
         "halloween-theme-addon",
-        "image-repair-addon",
+        "site-repair-addon",
         "latest-filters-addon",
         "library-addon",
         "masked-direct-addon"
       ],
       "callSites": [
         {
-          "path": "addons/image-repair-addon/src/app.js",
-          "line": 295,
-          "text": "const access = await bridge.invokeCoreAction(\"addon.access\", {});"
+          "path": "addons/site-repair-addon/src/api/meta.js",
+          "line": 1,
+          "text": "export function getAddonAccess(core) { return core.invokeCoreAction(\"addon.access\", {}); }"
         },
         {
-          "path": "addons/masked-direct-addon/src/main.js",
-          "line": 567,
+          "path": "addons/site-repair-addon/src/app/createSiteRepairApp.js",
+          "line": 2,
+          "text": "import { getAddonAccess, getPageContext } from \"../api/meta.js\";"
+        },
+        {
+          "path": "addons/site-repair-addon/src/app/createSiteRepairApp.js",
+          "line": 109,
+          "text": "const access = await getAddonAccess(core);"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+          "line": 561,
           "text": "const access = await bridge.getAddonAccess();"
         },
         {
-          "path": "addons/masked-direct-addon/src/main.js",
-          "line": 642,
+          "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+          "line": 638,
           "text": "const accessProbe = await bridge.getAddonAccess();"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/core/adaptor.js",
+          "line": 8,
+          "text": "getAddonAccess: bridge.getAddonAccess,"
         },
         {
           "path": "addons/library-addon/src/api/library/client.js",
@@ -6686,14 +6833,24 @@
           "text": ": await bridge.invokeCoreAction(\"addon.throttle\", {});"
         },
         {
-          "path": "addons/library-addon/src/library/service.js",
-          "line": 12,
-          "text": "return resolveImportThrottleInfo(await api.getCoreThrottleInfo());"
+          "path": "addons/library-addon/src/api/meta.js",
+          "line": 1,
+          "text": "export const getAddonAccess = (core) => core.invokeCoreAction(\"addon.access\", {});"
         },
         {
-          "path": "addons/library-addon/src/main.js",
-          "line": 499,
-          "text": "const access = await bridge.invokeCoreAction(\"addon.access\", {});"
+          "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
+          "line": 8,
+          "text": "import { getAddonAccess } from \"../api/meta.js\";"
+        },
+        {
+          "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
+          "line": 493,
+          "text": "const access = await getAddonAccess(bridge);"
+        },
+        {
+          "path": "addons/library-addon/src/library/service.js",
+          "line": 11,
+          "text": "return resolveImportThrottleInfo(await api.getCoreThrottleInfo());"
         },
         {
           "path": "addons/example-addon/src/api/meta.js",
@@ -6732,27 +6889,27 @@
         },
         {
           "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-          "line": 310,
+          "line": 349,
           "text": "getAddonAccess(core),"
         },
         {
           "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-          "line": 311,
+          "line": 350,
           "text": "getCoreThrottle(core),"
         },
         {
           "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-          "line": 433,
+          "line": 478,
           "text": "const result = await getAddonAccess(core);"
         },
         {
           "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-          "line": 441,
+          "line": 486,
           "text": "const result = await getCoreThrottle(core);"
         },
         {
           "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-          "line": 740,
+          "line": 789,
           "text": "const access = await getAddonAccess(core);"
         },
         {
@@ -6782,7 +6939,7 @@
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 577,
+          "line": 578,
           "text": "const access = await getAddonAccess(core);"
         },
         {
@@ -6802,7 +6959,7 @@
         },
         {
           "path": "addons/halloween-theme-addon/src/app/createHalloweenThemeApp.js",
-          "line": 147,
+          "line": 132,
           "text": "const access = await getAddonAccess(core);"
         }
       ],
@@ -6810,10 +6967,10 @@
       "consumers": [
         "example-addon",
         "halloween-theme-addon",
-        "image-repair-addon",
         "latest-filters-addon",
         "library-addon",
-        "masked-direct-addon"
+        "masked-direct-addon",
+        "site-repair-addon"
       ]
     },
     {
@@ -6837,6 +6994,51 @@
       ],
       "callSites": [
         {
+          "path": "addons/library-addon/src/api/ui/dialog.js",
+          "line": 8,
+          "text": "return core.invokeCoreAction(\"ui.dialog.open\", payload);"
+        },
+        {
+          "path": "addons/library-addon/src/api/ui/dialog.js",
+          "line": 12,
+          "text": "return core.invokeCoreAction(\"ui.dialog.close\", { dialogId, reason });"
+        },
+        {
+          "path": "addons/library-addon/src/api/ui/manager.js",
+          "line": 28,
+          "text": "const result = await bridge.invokeCoreAction(\"ui.dialog.open\", {"
+        },
+        {
+          "path": "addons/library-addon/src/api/ui/manager.js",
+          "line": 41,
+          "text": "const result = await bridge.invokeCoreAction(\"ui.dialog.close\", {"
+        },
+        {
+          "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
+          "line": 21,
+          "text": "configureImportProgress,"
+        },
+        {
+          "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
+          "line": 22,
+          "text": "handleImportProgressDialogClosed,"
+        },
+        {
+          "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
+          "line": 23,
+          "text": "} from \"../ui/application/importProgressController.js\";"
+        },
+        {
+          "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
+          "line": 29,
+          "text": "configureImportProgress(bridge);"
+        },
+        {
+          "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
+          "line": 447,
+          "text": "handleImportProgressDialogClosed(detail);"
+        },
+        {
           "path": "addons/library-addon/src/library/importWorkflow.js",
           "line": 203,
           "text": "onProgress,"
@@ -6858,48 +7060,23 @@
         },
         {
           "path": "addons/library-addon/src/library/importWorkflow.js",
-          "line": 301,
+          "line": 305,
           "text": "reportProgress();"
         },
         {
           "path": "addons/library-addon/src/library/importWorkflow.js",
-          "line": 310,
+          "line": 314,
           "text": "reportProgress(cancelled ? \"cancelled\" : \"completed\");"
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 147,
+          "line": 146,
           "text": "const onProgress = typeof options.onProgress === \"function\" ? options.onProgress : () => {};"
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 153,
+          "line": 152,
           "text": "onProgress,"
-        },
-        {
-          "path": "addons/library-addon/src/main.js",
-          "line": 21,
-          "text": "configureImportProgress,"
-        },
-        {
-          "path": "addons/library-addon/src/main.js",
-          "line": 22,
-          "text": "handleImportProgressDialogClosed,"
-        },
-        {
-          "path": "addons/library-addon/src/main.js",
-          "line": 23,
-          "text": "} from \"./ui/application/importProgressController.js\";"
-        },
-        {
-          "path": "addons/library-addon/src/main.js",
-          "line": 28,
-          "text": "configureImportProgress(bridge);"
-        },
-        {
-          "path": "addons/library-addon/src/main.js",
-          "line": 433,
-          "text": "handleImportProgressDialogClosed(detail);"
         },
         {
           "path": "addons/library-addon/src/ui/application/importExportWorkflow.js",
@@ -6999,82 +7176,67 @@
         {
           "path": "addons/library-addon/src/ui/application/importProgressController.js",
           "line": 58,
-          "text": "await coreBridge.invokeCoreAction(\"ui.dialog.close\", {"
+          "text": "await closeDialog(coreBridge, IMPORT_PROGRESS_DIALOG_ID, reason);"
         },
         {
           "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 59,
-          "text": "dialogId: IMPORT_PROGRESS_DIALOG_ID,"
-        },
-        {
-          "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 64,
+          "line": 61,
           "text": "export function configureImportProgress(bridge) {"
         },
         {
           "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 68,
+          "line": 65,
           "text": "export async function openImportProgress(configOrTotal) {"
         },
         {
           "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 87,
-          "text": "result = await coreBridge.invokeCoreAction(\"ui.dialog.open\", {"
-        },
-        {
-          "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 88,
+          "line": 85,
           "text": "dialogId: IMPORT_PROGRESS_DIALOG_ID,"
         },
         {
           "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 90,
+          "line": 87,
           "text": "html: createImportProgressMarkup({"
         },
         {
           "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 113,
+          "line": 110,
           "text": "export function updateImportProgress(progress) {"
         },
         {
           "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 114,
+          "line": 112,
           "text": "updateProgressContent(progress);"
         },
         {
           "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 121,
+          "line": 122,
+          "text": "await closeProgressDialog(reason, true);"
+        },
+        {
+          "path": "addons/library-addon/src/ui/application/importProgressController.js",
+          "line": 126,
           "text": "export async function finishImportProgress(reason = \"import-complete\") {"
         },
         {
           "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 123,
+          "line": 128,
           "text": "await closeProgressDialog(reason, false);"
         },
         {
           "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 127,
+          "line": 132,
           "text": "export function handleImportProgressDialogClosed(detail = {}) {"
         },
         {
           "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 128,
+          "line": 133,
           "text": "if (String(detail.dialogId || \"\") !== IMPORT_PROGRESS_DIALOG_ID || !activeImport) return;"
         },
         {
           "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 131,
+          "line": 136,
           "text": "updateProgressContent({ total: activeImport.total, cancelled: true });"
-        },
-        {
-          "path": "addons/library-addon/src/ui/application/managerApi.js",
-          "line": 28,
-          "text": "const result = await bridge.invokeCoreAction(\"ui.dialog.open\", {"
-        },
-        {
-          "path": "addons/library-addon/src/ui/application/managerApi.js",
-          "line": 41,
-          "text": "const result = await bridge.invokeCoreAction(\"ui.dialog.close\", {"
         },
         {
           "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
@@ -7428,32 +7590,32 @@
         },
         {
           "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-          "line": 322,
+          "line": 361,
           "text": "const bulkImport = createBulkImportController({"
         },
         {
           "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-          "line": 376,
+          "line": 415,
           "text": "bulkImport,"
         },
         {
           "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-          "line": 396,
+          "line": 438,
           "text": "bulkImport.requestCancellation();"
         },
         {
           "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-          "line": 414,
+          "line": 459,
           "text": "bulkImport.requestCancellation();"
         },
         {
           "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-          "line": 526,
+          "line": 571,
           "text": "const result = await bulkImport.run();"
         },
         {
           "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-          "line": 552,
+          "line": 597,
           "text": "bulkImport.requestCancellation();"
         },
         {
@@ -7649,146 +7811,156 @@
       "rank": 4,
       "reason": "This is repeated add-on boilerplate rather than a missing core capability; keep ownership local and avoid expanding the core service.",
       "consumerIds": [
-        "image-repair-addon",
+        "site-repair-addon",
         "latest-filters-addon",
         "library-addon",
         "masked-direct-addon"
       ],
       "callSites": [
         {
-          "path": "addons/image-repair-addon/src/app.js",
-          "line": 65,
-          "text": "const checkInterval = setInterval(() => {"
+          "path": "addons/site-repair-addon/src/app/commands.js",
+          "line": 19,
+          "text": "else if (detail.command === \"teardown\") void lifecycle.teardown(context);"
         },
         {
-          "path": "addons/image-repair-addon/src/app.js",
-          "line": 91,
-          "text": "toastId: \"img-retry-toast\","
+          "path": "addons/site-repair-addon/src/app/createSiteRepairApp.js",
+          "line": 87,
+          "text": "if (!context.isCurrent()) return { ok: false, reason: \"cancelled\" };"
         },
         {
-          "path": "addons/image-repair-addon/src/app.js",
+          "path": "addons/site-repair-addon/src/app/createSiteRepairApp.js",
           "line": 92,
-          "text": "wrapperId: \"image-retry-toast-wrapper\","
+          "text": "onRefresh: async (context) => { await stopModules(); await loadSettings(); const page = await getPageContext(core); if (!context.isCurrent()) return { ok: false, reason: \"cancelled\" }; await startApplicableModules(page?.value || context.routeContext); return { ok: true }; },"
         },
         {
-          "path": "addons/image-repair-addon/src/app.js",
-          "line": 211,
-          "text": "async function teardownAddon(reason = \"teardown\") {"
+          "path": "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
+          "line": 33,
+          "text": "scheduler.cancel(record.timerId);"
         },
         {
-          "path": "addons/image-repair-addon/src/app.js",
-          "line": 216,
-          "text": "bridge.dispatchCoreCommand(\"teardown-complete\", {"
+          "path": "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
+          "line": 56,
+          "text": "retry(record);"
         },
         {
-          "path": "addons/image-repair-addon/src/app.js",
-          "line": 233,
+          "path": "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
+          "line": 58,
+          "text": "function retry(record) {"
+        },
+        {
+          "path": "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
+          "line": 73,
+          "text": "record.onError = () => retry(record);"
+        },
+        {
+          "path": "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
+          "line": 76,
+          "text": "if (image.complete && image.naturalWidth === 0) retry(record);"
+        },
+        {
+          "path": "addons/site-repair-addon/src/repairs/imageAttachments/scheduler.js",
+          "line": 1,
+          "text": "export function createCancellableScheduler({ setTimer = setTimeout, clearTimer = clearTimeout } = {}) {"
+        },
+        {
+          "path": "addons/site-repair-addon/src/repairs/imageAttachments/scheduler.js",
+          "line": 3,
+          "text": "let generation = 0;"
+        },
+        {
+          "path": "addons/site-repair-addon/src/repairs/imageAttachments/scheduler.js",
+          "line": 5,
+          "text": "function schedule(id, callback, delayMs, expectedGeneration = generation) {"
+        },
+        {
+          "path": "addons/site-repair-addon/src/repairs/imageAttachments/scheduler.js",
+          "line": 6,
+          "text": "cancel(id);"
+        },
+        {
+          "path": "addons/site-repair-addon/src/repairs/imageAttachments/scheduler.js",
+          "line": 9,
+          "text": "if (expectedGeneration === generation) callback();"
+        },
+        {
+          "path": "addons/site-repair-addon/src/repairs/imageAttachments/scheduler.js",
+          "line": 14,
+          "text": "function cancel(id) {"
+        },
+        {
+          "path": "addons/site-repair-addon/src/repairs/imageAttachments/scheduler.js",
+          "line": 21,
+          "text": "generation += 1;"
+        },
+        {
+          "path": "addons/site-repair-addon/src/repairs/imageAttachments/scheduler.js",
+          "line": 22,
+          "text": "for (const id of [...timers.keys()]) cancel(id);"
+        },
+        {
+          "path": "addons/site-repair-addon/src/repairs/imageAttachments/scheduler.js",
+          "line": 23,
+          "text": "return generation;"
+        },
+        {
+          "path": "addons/site-repair-addon/src/repairs/imageAttachments/scheduler.js",
+          "line": 25,
+          "text": "return { schedule, cancel, invalidate, getGeneration: () => generation, getSnapshot: () => [...timers.keys()] };"
+        },
+        {
+          "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+          "line": 19,
+          "text": "let generation = 0;"
+        },
+        {
+          "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+          "line": 61,
+          "text": "const retryGeneration = generation;"
+        },
+        {
+          "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+          "line": 62,
+          "text": "const timer = windowLike.setTimeout(() => {"
+        },
+        {
+          "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+          "line": 64,
+          "text": "if (!enabled || generation !== retryGeneration || !originalAjax) return;"
+        },
+        {
+          "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+          "line": 95,
+          "text": "pollTimer = windowLike.setInterval(() => {"
+        },
+        {
+          "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+          "line": 106,
+          "text": "generation += 1;"
+        },
+        {
+          "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+          "line": 119,
+          "text": "generation,"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+          "line": 510,
           "text": "} else if (command === \"teardown\") {"
         },
         {
-          "path": "addons/image-repair-addon/src/app.js",
-          "line": 234,
-          "text": "void teardownAddon(String(detail.reason || \"teardown\"));"
+          "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+          "line": 527,
+          "text": "console.info(`[${runtime.addonId}] Teardown requested: ${reason}`);"
         },
         {
-          "path": "addons/image-repair-addon/src/feature.js",
-          "line": 45,
-          "text": "img.src = img.dataset.originalSrc + \"?retry=\" + Date.now();"
+          "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+          "line": 534,
+          "text": "// Send teardown-complete to core"
         },
         {
-          "path": "addons/image-repair-addon/src/feature.js",
-          "line": 47,
-          "text": "setTimeout(() => {"
-        },
-        {
-          "path": "addons/image-repair-addon/src/feature.js",
-          "line": 77,
-          "text": "// If already broken, retry immediately"
-        },
-        {
-          "path": "addons/image-repair-addon/src/queue.js",
-          "line": 19,
-          "text": "setTimeout(process, delay);"
-        },
-        {
-          "path": "addons/image-repair-addon/src/queue.js",
-          "line": 28,
-          "text": "setTimeout(process, 0);"
-        },
-        {
-          "path": "addons/image-repair-addon/src/ui.js",
-          "line": 25,
-          "text": "#${toastId} .img-retry-spinner {"
-        },
-        {
-          "path": "addons/image-repair-addon/src/ui.js",
-          "line": 38,
-          "text": "#${toastId} .img-retry-stats {"
-        },
-        {
-          "path": "addons/image-repair-addon/src/ui.js",
-          "line": 50,
-          "text": "const spinner = createEl(\"span\", \"img-retry-spinner\");"
-        },
-        {
-          "path": "addons/image-repair-addon/src/ui.js",
-          "line": 52,
-          "text": "const count = createEl(\"span\", \"img-retry-count\", \"0\");"
-        },
-        {
-          "path": "addons/image-repair-addon/src/ui.js",
-          "line": 54,
-          "text": "const plural = createEl(\"span\", \"img-retry-plural\");"
-        },
-        {
-          "path": "addons/image-repair-addon/src/ui.js",
-          "line": 56,
-          "text": "const succeeded = createEl(\"span\", \"img-retry-succeeded\", \"0\");"
-        },
-        {
-          "path": "addons/image-repair-addon/src/ui.js",
-          "line": 58,
-          "text": "const failed = createEl(\"span\", \"img-retry-failed\", \"0\");"
-        },
-        {
-          "path": "addons/image-repair-addon/src/ui.js",
-          "line": 60,
-          "text": "const avg = createEl(\"span\", \"img-retry-avg\", \"0\");"
-        },
-        {
-          "path": "addons/image-repair-addon/src/ui.js",
-          "line": 62,
-          "text": "const stats = createEl(\"div\", \"img-retry-stats\");"
-        },
-        {
-          "path": "addons/image-repair-addon/src/ui.js",
-          "line": 112,
-          "text": "toast.querySelector(\".img-retry-count\").textContent = retryingImages.size;"
-        },
-        {
-          "path": "addons/image-repair-addon/src/ui.js",
-          "line": 113,
-          "text": "toast.querySelector(\".img-retry-plural\").textContent = retryingImages.size > 1 ? \"s\" : \"\";"
-        },
-        {
-          "path": "addons/image-repair-addon/src/ui.js",
-          "line": 117,
-          "text": "toastTimeout = setTimeout(() => {"
-        },
-        {
-          "path": "addons/image-repair-addon/src/ui.js",
-          "line": 118,
-          "text": "toast.querySelector(\".img-retry-succeeded\").textContent = metrics.succeeded;"
-        },
-        {
-          "path": "addons/image-repair-addon/src/ui.js",
-          "line": 119,
-          "text": "toast.querySelector(\".img-retry-failed\").textContent = metrics.failed;"
-        },
-        {
-          "path": "addons/image-repair-addon/src/ui.js",
-          "line": 120,
-          "text": "toast.querySelector(\".img-retry-avg\").textContent = metrics.avgCache.toFixed(1);"
+          "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+          "line": 536,
+          "text": "bridge.dispatchCoreCommand(\"teardown-complete\", {"
         },
         {
           "path": "addons/masked-direct-addon/src/downloadDetector.js",
@@ -7836,26 +8008,6 @@
           "text": "setTimeout(check, TIMINGS.POLL_INTERVAL);"
         },
         {
-          "path": "addons/masked-direct-addon/src/main.js",
-          "line": 516,
-          "text": "} else if (command === \"teardown\") {"
-        },
-        {
-          "path": "addons/masked-direct-addon/src/main.js",
-          "line": 533,
-          "text": "console.info(`[${runtime.addonId}] Teardown requested: ${reason}`);"
-        },
-        {
-          "path": "addons/masked-direct-addon/src/main.js",
-          "line": 540,
-          "text": "// Send teardown-complete to core"
-        },
-        {
-          "path": "addons/masked-direct-addon/src/main.js",
-          "line": 542,
-          "text": "bridge.dispatchCoreCommand(\"teardown-complete\", {"
-        },
-        {
           "path": "addons/masked-direct-addon/src/maskedPageController.js",
           "line": 87,
           "text": "const retry = await resolveMaskedLink(location.pathname, { token });"
@@ -7896,24 +8048,39 @@
           "text": "return new Promise((resolve) => setTimeout(resolve, Math.max(0, Number(ms) || 0)));"
         },
         {
-          "path": "addons/library-addon/src/library/importWorkflow.js",
-          "line": 4,
-          "text": "return new Promise((resolve) => setTimeout(resolve, Math.max(0, Number(ms) || 0)));"
+          "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
+          "line": 374,
+          "text": "onEnable: async ({ isCurrent }) => {"
         },
         {
-          "path": "addons/library-addon/src/main.js",
-          "line": 52,
-          "text": "return new Promise((resolve) => setTimeout(resolve, ms));"
+          "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
+          "line": 376,
+          "text": "return isCurrent() ? { ok: true } : { ok: false, reason: \"enable_superseded\" };"
         },
         {
-          "path": "addons/library-addon/src/main.js",
-          "line": 444,
+          "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
+          "line": 382,
+          "text": "onRefresh: async ({ isCurrent }) => {"
+        },
+        {
+          "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
+          "line": 384,
+          "text": "return isCurrent() ? { ok: true } : { ok: false, reason: \"refresh_superseded\" };"
+        },
+        {
+          "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
+          "line": 458,
           "text": "case \"teardown\":"
         },
         {
-          "path": "addons/library-addon/src/main.js",
-          "line": 470,
-          "text": "bridge.dispatchCoreCommand(\"teardown-complete\", {"
+          "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
+          "line": 459,
+          "text": "void lifecycle.teardown(detail);"
+        },
+        {
+          "path": "addons/library-addon/src/library/importWorkflow.js",
+          "line": 4,
+          "text": "return new Promise((resolve) => setTimeout(resolve, Math.max(0, Number(ms) || 0)));"
         },
         {
           "path": "addons/library-addon/src/ui/application/importExportWorkflow.js",
@@ -7942,7 +8109,12 @@
         },
         {
           "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
-          "line": 124,
+          "line": 11,
+          "text": "const controller = new AbortController();"
+        },
+        {
+          "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
+          "line": 126,
           "text": "state.searchDebounceTimer = window.setTimeout(async () => {"
         },
         {
@@ -7967,8 +8139,58 @@
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 51,
+          "line": 34,
+          "text": "let generation = 0;"
+        },
+        {
+          "path": "addons/library-addon/src/ui/manager/managerApp.js",
+          "line": 52,
           "text": "cancelText = \"Cancel\","
+        },
+        {
+          "path": "addons/library-addon/src/ui/manager/managerApp.js",
+          "line": 84,
+          "text": "generation += 1;"
+        },
+        {
+          "path": "addons/library-addon/src/ui/manager/managerApp.js",
+          "line": 121,
+          "text": "const openGeneration = ++generation;"
+        },
+        {
+          "path": "addons/library-addon/src/ui/manager/managerApp.js",
+          "line": 132,
+          "text": "if (openGeneration !== generation) {"
+        },
+        {
+          "path": "addons/library-addon/src/ui/manager/managerApp.js",
+          "line": 155,
+          "text": "if (openGeneration !== generation) return;"
+        },
+        {
+          "path": "addons/library-addon/src/ui/manager/managerApp.js",
+          "line": 169,
+          "text": "if (openGeneration !== generation) return;"
+        },
+        {
+          "path": "addons/library-addon/src/ui/manager/managerApp.js",
+          "line": 180,
+          "text": "const closeGeneration = ++generation;"
+        },
+        {
+          "path": "addons/library-addon/src/ui/manager/managerApp.js",
+          "line": 188,
+          "text": "// that belongs to that newer generation."
+        },
+        {
+          "path": "addons/library-addon/src/ui/manager/managerApp.js",
+          "line": 189,
+          "text": "if (generation !== closeGeneration && getActiveRoot()) {"
+        },
+        {
+          "path": "addons/library-addon/src/ui/manager/managerApp.js",
+          "line": 198,
+          "text": "getSnapshot: () => ({ dialogOpen: appContext.dialogOpen, generation }),"
         },
         {
           "path": "addons/latest-filters-addon/src/app/commands.js",
@@ -8012,162 +8234,162 @@
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 163,
+          "line": 164,
           "text": "lifecycle?.releaseResource?.(\"latest-mount-retry\");"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 233,
+          "line": 234,
           "text": "if (!isCurrent(context) || !state.enabled || !hasLatestScope(localPageContext())) return false;"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 237,
+          "line": 238,
           "text": "if (pageOp.cancelled() || !isCurrent(context) || !hasLatestScope(pageContext)) return false;"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 241,
+          "line": 242,
           "text": "if (styleOp.cancelled() || !isCurrent(context)) return false;"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 256,
+          "line": 257,
           "text": "if (mountOp.cancelled() || !isCurrent(context)) {"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 287,
+          "line": 288,
           "text": "lifecycle.releaseResource(\"latest-mount-retry\");"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 288,
+          "line": 289,
           "text": "if (!isCurrent(context) || !state.enabled || (!state.showPageButton && !forcePanelOnly) || !hasLatestScope(localPageContext())) return;"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 289,
+          "line": 290,
           "text": "const pageOp = beginPending(context, `retry-page:${++operationSequence}`, getPageContext(core, localPageContext), \"page\");"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 291,
+          "line": 292,
           "text": "if (pageOp.cancelled() || !isCurrent(context) || !hasLatestScope(pageContext)) return;"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 300,
+          "line": 301,
           "text": "if (waitOp.cancelled() || !isCurrent(context) || !hasLatestScope(localPageContext())) return;"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 307,
+          "line": 308,
           "text": "state.mountTimer = window.setTimeout(tryMount, MOUNT_RETRY_DELAY_MS);"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 308,
+          "line": 309,
           "text": "lifecycle.registerResource(\"latest-mount-retry\", () => {"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 336,
+          "line": 337,
           "text": "if (!state.rootEl || state.panelOpen || !isCurrent(context)) return;"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 345,
+          "line": 346,
           "text": "if (op.cancelled() || !isCurrent(context)) return;"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 369,
+          "line": 370,
           "text": "if (!isCurrent(context)) return null;"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 373,
+          "line": 374,
           "text": "if (op.cancelled() || !isCurrent(context) || !saved) return null;"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 384,
+          "line": 385,
           "text": "if (context && !isCurrent(context)) return null;"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 393,
+          "line": 394,
           "text": "if (!isCurrent(context)) return;"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 407,
+          "line": 408,
           "text": "if (isCurrent(context)) {"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 415,
+          "line": 416,
           "text": "if (!preset || !isCurrent(context)) return;"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 422,
+          "line": 423,
           "text": "cancelLabel: \"Cancel\","
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 424,
+          "line": 425,
           "text": "if (!confirmation?.ok || !confirmation.value?.confirmed || !isCurrent(context)) return;"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 426,
+          "line": 427,
           "text": "if (isCurrent(context)) await showToast(core, `Updated ${preset.name}.`).catch(() => {});"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 431,
+          "line": 432,
           "text": "if (!preset || !isCurrent(context)) return;"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 436,
+          "line": 437,
           "text": "cancelLabel: \"Cancel\","
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 438,
+          "line": 439,
           "text": "if (!confirmation?.ok || !confirmation.value?.confirmed || !isCurrent(context)) return;"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 440,
+          "line": 441,
           "text": "if (isCurrent(context)) await showToast(core, `Deleted ${preset.name}.`).catch(() => {});"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 445,
+          "line": 446,
           "text": "if (!preset || !isCurrent()) return;"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 463,
+          "line": 464,
           "text": "if (settingsOp.cancelled() || presetsOp.cancelled() || tagsOp.cancelled() || !isCurrent(context)) return false;"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 483,
+          "line": 484,
           "text": "if (!loaded || !isCurrent(context)) return { ok: false, reason: \"refresh_superseded\" };"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 495,
+          "line": 496,
           "text": "if (!loaded || !isCurrent(context)) return { ok: false, reason: \"enable_superseded\" };"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 567,
+          "line": 568,
           "text": "await removePageUi(context, context.reason || \"teardown\");"
         },
         {
@@ -8198,10 +8420,10 @@
       ],
       "consumerCount": 4,
       "consumers": [
-        "image-repair-addon",
         "latest-filters-addon",
         "library-addon",
-        "masked-direct-addon"
+        "masked-direct-addon",
+        "site-repair-addon"
       ]
     }
   ],

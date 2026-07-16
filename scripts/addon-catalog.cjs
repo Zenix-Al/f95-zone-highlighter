@@ -3,7 +3,7 @@ const path = require("path");
 
 const ROOT = path.resolve(__dirname, "..");
 const MANIFEST_PATH = path.join(ROOT, "addons", "addons.manifest.json");
-const CATALOG_PATH = path.join(ROOT, "addons", "trusted-catalog.json");
+const CATALOG_PATH = path.join(ROOT, "src", "services", "addons", "trusted-catalog.json");
 const HEADER_PATH = path.join(ROOT, "header.txt");
 const SUPPORTED_SCOPES = new Set(["f95zone", "thread", "latest"]);
 const RUNTIME_MODES = new Set(["core-required", "standalone", "hybrid"]);
@@ -177,17 +177,25 @@ function validateManifest(addons = readManifest(), { rootDir = ROOT, checkFiles 
   } catch {
     // Temporary validator fixtures may not include an add-ons directory.
   }
-  let catalogIds = new Set();
+  let catalogById = new Map();
   if (checkFiles) {
     try {
-      const existingCatalog = JSON.parse(fs.readFileSync(path.join(root, "addons", "trusted-catalog.json"), "utf8"));
-      catalogIds = new Set((Array.isArray(existingCatalog) ? existingCatalog : []).map((entry) => sanitizeAddonId(entry?.id)).filter(Boolean));
+      const existingCatalog = JSON.parse(fs.readFileSync(
+        path.join(root, "src", "services", "addons", "trusted-catalog.json"),
+        "utf8",
+      ));
+      catalogById = new Map((Array.isArray(existingCatalog) ? existingCatalog : [])
+        .map((entry) => [sanitizeAddonId(entry?.id), entry]).filter(([id]) => id));
     } catch {
-      catalogIds = new Set();
+      catalogById = new Map();
     }
   }
   for (const [legacyId, ownerIndex] of legacyIds) {
-    if (allIds.has(legacyId) || folderIds.has(legacyId) || (catalogIds.has(legacyId) && !allIds.has(legacyId))) {
+    const owner = addons[ownerIndex];
+    const previousCatalogEntry = catalogById.get(legacyId);
+    const isSamePublishedScript = previousCatalogEntry &&
+      String(previousCatalogEntry.downloadUrl || "") === String(owner?.downloadUrl || "");
+    if (allIds.has(legacyId) || folderIds.has(legacyId) || (previousCatalogEntry && !isSamePublishedScript)) {
       addPathError(ownerIndex, "legacyIds", `duplicates add-on identity '${legacyId}'`);
     }
   }
@@ -198,7 +206,7 @@ function validateManifest(addons = readManifest(), { rootDir = ROOT, checkFiles 
     }
   }
   const header = fs.readFileSync(HEADER_PATH, "utf8");
-  if (!header.includes("@resource     trustedAddonCatalog https://cdn.jsdelivr.net/gh/Zenix-Al/f95-zone-highlighter@main/addons/trusted-catalog.json")) {
+  if (!header.includes("@resource     trustedAddonCatalog https://cdn.jsdelivr.net/gh/Zenix-Al/f95-zone-highlighter@main/src/services/addons/trusted-catalog.json")) {
     errors.push("core header trusted catalog resource path/name changed");
   }
   return errors;

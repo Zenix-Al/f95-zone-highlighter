@@ -4,7 +4,7 @@ const path = require("path");
 
 const ROOT = path.resolve(__dirname, "..");
 const MANIFEST_PATH = path.join(ROOT, "addons", "addons.manifest.json");
-const ACTIONS_PATH = path.join(ROOT, "src", "services", "addons", "actions", "descriptors.js");
+const ACTIONS_PATH = path.join(ROOT, "src", "services", "addons", "actions", "families");
 const DEFAULT_JSON_OUTPUT = path.join(ROOT, "docs", "architecture", "addon-api-audit.json");
 const DEFAULT_MD_OUTPUT = path.join(ROOT, "docs", "architecture", "addon-api-audit.md");
 
@@ -37,9 +37,11 @@ function readManifest() {
 }
 
 function extractActionIds() {
-  const source = fs.readFileSync(ACTIONS_PATH, "utf8");
-  const ids = [...source.matchAll(/["']([a-z][a-z0-9-]*(?:\.[a-z][a-z0-9-]*)+)["']\s*:/gim)]
-    .map((match) => match[1]);
+  const source = collectFiles(ACTIONS_PATH).map((file) => fs.readFileSync(file, "utf8")).join("\n");
+  const ids = [
+    ...source.matchAll(/\bid\s*:\s*["']([a-z][a-z0-9-]*(?:\.[a-z][a-z0-9-]*)+)["']/gim),
+    ...source.matchAll(/\b(?:ui|toggle)\(["']([a-z][a-z0-9-]*(?:\.[a-z][a-z0-9-]*)+)["']/gim),
+  ].map((match) => match[1]);
   return [...new Set([...ids, "addon.access", "addon.throttle"])].sort();
 }
 
@@ -183,7 +185,7 @@ function candidateDefinitions() {
       decision: "implement",
       rank: 2,
       reason: "At least four add-ons show bounded wait/poll behavior; central ownership directly reduces stale callbacks and cleanup risk.",
-      consumerIds: ["image-repair-addon", "latest-filters-addon", "library-addon", "masked-direct-addon"],
+      consumerIds: ["site-repair-addon", "latest-filters-addon", "library-addon", "masked-direct-addon"],
     },
     {
       candidateActionId: "ui.dialog.update",
@@ -251,7 +253,7 @@ function candidateDefinitions() {
       decision: "defer",
       rank: 6,
       reason: "All core add-ons already use the two stable, separately authorized projections; combining them changes no demonstrated correctness failure and risks mixing management policy with throttling.",
-      consumerIds: ["example-addon", "halloween-theme-addon", "image-repair-addon", "latest-filters-addon", "library-addon", "masked-direct-addon"],
+      consumerIds: ["example-addon", "halloween-theme-addon", "site-repair-addon", "latest-filters-addon", "library-addon", "masked-direct-addon"],
     },
     {
       candidateActionId: "ui.progress",
@@ -285,7 +287,7 @@ function candidateDefinitions() {
       decision: "use local shared helper",
       rank: 4,
       reason: "This is repeated add-on boilerplate rather than a missing core capability; keep ownership local and avoid expanding the core service.",
-      consumerIds: ["image-repair-addon", "latest-filters-addon", "library-addon", "masked-direct-addon"],
+      consumerIds: ["site-repair-addon", "latest-filters-addon", "library-addon", "masked-direct-addon"],
     },
   ];
 }

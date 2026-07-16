@@ -4,12 +4,13 @@ import { debugLog } from "../../core/logger.js";
 // Only id, name, downloadUrl, and trusted flag — all other fields will be "-".
 const CATALOG_FALLBACK = Object.freeze([
   {
-    id: "image-repair-addon",
-    name: "Image Repair Add-on",
+    id: "site-repair-addon",
+    legacyIds: ["image-repair-addon"],
+    name: "F95UE Site Repair",
     downloadUrl: "https://greasyfork.org/en/scripts/572502-f95ue-image-repair-add-on",
-    pageScopes: ["thread"],
+    pageScopes: ["f95zone"],
     runtimeMode: "core-required",
-    matches: ["*://f95zone.to/threads/*"],
+    matches: ["*://f95zone.to/*"],
     trusted: true,
   },
   {

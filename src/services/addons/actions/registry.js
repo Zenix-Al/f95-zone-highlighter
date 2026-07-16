@@ -49,8 +49,12 @@ export async function executeActionDescriptor(descriptor, context) {
   }
   let timeoutId;
   try {
+    const executionContext = {
+      ...context,
+      reauthorize: () => typeof context?.authorize === "function" ? context.authorize() : null,
+    };
     const result = await Promise.race([
-      Promise.resolve(descriptor.execute(context)),
+      Promise.resolve(descriptor.execute(executionContext)),
       new Promise((_, reject) => { timeoutId = setTimeout(() => reject(new Error("action_timeout")), descriptor.timeoutMs); }),
     ]);
     const redacted = descriptor.redactResult(result);

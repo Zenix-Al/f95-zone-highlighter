@@ -5,10 +5,9 @@
 
 import {
   createManagerDialogMarkup,
-  ensureManagerStyle,
   getManagerStyleText,
 } from "../components/manager/dialogShell.js";
-import { createManagerApi } from "../application/managerApi.js";
+import { createManagerApi } from "../../api/ui/manager.js";
 import { bindManagerEvents } from "../controllers/bindManagerEvents.js";
 import { buildTagConfig } from "../utils/tagViewModel.js";
 import { showToast } from "../utils/showToast.js";
@@ -31,6 +30,8 @@ export function createLibraryManagerApp({
   // Initialize state
   const state = createInitialState();
   const appContext = createAppContext();
+  let unbindEvents = () => {};
+  let generation = 0;
 
   // Create API layer
   const api = createManagerApi(bridge, library);
@@ -67,9 +68,7 @@ export function createLibraryManagerApp({
   async function registerStyle() {
     const cssText = getManagerStyleText();
     const result = await api.registerStyle(styleId, cssText);
-    if (!result?.ok) {
-      ensureManagerStyle(styleId);
-    }
+    if (!result?.ok) throw new Error(`style_register_failed:${result?.reason || "unknown"}`);
   }
 
   async function unregisterStyle() {
@@ -82,6 +81,9 @@ export function createLibraryManagerApp({
 
   // Create bound version of close for handlers
   async function close(reason = "addon-close") {
+    generation += 1;
+    unbindEvents();
+    unbindEvents = () => {};
     if (!appContext.dialogOpen && !appContext.dialogRoot) {
       await unregisterStyle();
       return { ok: true, value: { alreadyClosed: true } };
@@ -116,6 +118,7 @@ export function createLibraryManagerApp({
   async function open() {
     if (appContext.dialogOpen && getActiveRoot()) return;
 
+    const openGeneration = ++generation;
     await registerStyle();
 
     const result = await api.openDialog(dialogId, "Library Manager", createManagerDialogMarkup());
@@ -126,14 +129,30 @@ export function createLibraryManagerApp({
       return;
     }
 
+    if (openGeneration !== generation) {
+      await api.closeDialog(dialogId, "stale-open");
+      return;
+    }
+
     const contentId = String(result?.value?.contentId || "").trim();
     appContext.dialogRoot = contentId ? document.getElementById(contentId) : null;
     appContext.dialogOpen = Boolean(appContext.dialogRoot);
 
     if (!appContext.dialogRoot) return;
 
+    // Preserve the semantic hidden state even while a page-host stylesheet is
+    // being registered or replaced during a rapid close -> reopen sequence.
+    const importInput = appContext.dialogRoot.querySelector(
+      'input[data-field="importFile"]',
+    );
+    if (importInput) {
+      importInput.hidden = true;
+      importInput.style.display = "none";
+    }
+
     // Load tag preference config from core (shared with main script).
-    const tagPrefsResult = await api.invokeCoreAction("config.getTagPrefs", {});
+    const tagPrefsResult = await api.getTagPrefs();
+    if (openGeneration !== generation) return;
     const tagPrefs = tagPrefsResult?.ok ? tagPrefsResult.value : null;
     state.tagConfig = buildTagConfig(tagPrefs || {});
 
@@ -141,24 +160,41 @@ export function createLibraryManagerApp({
     deps.root = appContext.dialogRoot;
 
     // Setup event listeners
-    bindManagerEvents(appContext.dialogRoot, state, handlers, deps);
+    unbindEvents();
+    unbindEvents = bindManagerEvents(appContext.dialogRoot, state, handlers, deps);
 
     // Load initial data
     state.liveThreadId = String(getLiveThreadSnapshot()?.threadId || "").trim();
     await reloadRows(appContext.dialogRoot, state, api, library, ROWS_STATUS_ID);
+    if (openGeneration !== generation) return;
     appContext.dialogRoot.querySelector(".f95ue-library-manager-window")?.focus();
   }
 
   async function handleDialogClosed(detail = {}) {
     if (String(detail.dialogId || "") !== dialogId) return;
+
+    // A delayed close notification for the previous surface must not tear
+    // down a newly opened surface with the same stable dialog id.
+    if (getActiveRoot()) return;
+
+    const closeGeneration = ++generation;
     appContext.dialogOpen = false;
     appContext.dialogRoot = null;
+    unbindEvents();
+    unbindEvents = () => {};
     await unregisterStyle();
+
+    // If an open started while style removal was in flight, restore the style
+    // that belongs to that newer generation.
+    if (generation !== closeGeneration && getActiveRoot()) {
+      await registerStyle();
+    }
   }
 
   return {
     open,
     close,
     handleDialogClosed,
+    getSnapshot: () => ({ dialogOpen: appContext.dialogOpen, generation }),
   };
 }

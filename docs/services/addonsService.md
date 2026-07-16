@@ -137,11 +137,12 @@ To prevent rogue add-ons from stalling the browser, `bridgeServer.js` enforces r
 To add a new capability or action to the add-on system:
 
 ### 1. Register one action descriptor
-Open `src/services/addons/actions/descriptors.js` (or add a cohesive descriptor
-module) and register the action with its public ID, protocol version, required
-capabilities, payload validator, timeout, audit category, and execution handler:
+Add the descriptor to its cohesive family under
+`src/services/addons/actions/families/`. The family co-locates the public ID,
+capabilities, payload validator, timeout, audit category, policy, redaction, and
+execution handler. `actions/composition.js` is the only registration root:
 ```javascript
-registerAction({
+defineAction({
   id: "myFeature.myAction",
   protocolVersion: 1,
   requiredCapabilities: ["myCapability"],
@@ -153,9 +154,9 @@ registerAction({
 ```
 
 ### 2. Implement the Action Handler
-Place the handler beside its descriptor or in the matching cohesive action
-module. The central invocation pipeline validates payloads, applies the timeout,
-and returns only the descriptor's declared response shape.
+Place the handler beside its descriptor in the matching family. The central
+invocation pipeline validates payloads, applies the timeout, reauthorizes at
+execution, and returns only the descriptor's declared response shape.
 ```javascript
 async function myHandler(addonId, payload, deps) {
   // Execute logic using core services/dependencies in `deps`

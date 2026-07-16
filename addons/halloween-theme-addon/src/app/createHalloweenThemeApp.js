@@ -4,13 +4,13 @@ import {
   updateAddonRuntimeStatus,
 } from "../api/bridge.js";
 import { getAddonAccess } from "../api/meta.js";
-import { registerStyle, unregisterStyle } from "../api/ui/style.js";
 import { HALLOWEEN_STYLE_ID, ROUTE_REFRESH_DELAY_MS } from "../constants.js";
 import { createHalloweenCommandController } from "./commands.js";
 import { createHalloweenLifecycle } from "./lifecycle.js";
 import {
   applyHalloweenLogos,
-  HALLOWEEN_BACKGROUND_CSS,
+  applyHalloweenBackground,
+  removeHalloweenBackground,
   restoreHalloweenLogos,
 } from "../ui/theme.js";
 
@@ -54,29 +54,19 @@ export function createHalloweenThemeApp({ core, runtime }) {
     });
   }
 
-  function trackPending(context, id, promise, kind = "operation") {
-    return context?.trackPendingOperation
-      ? context.trackPendingOperation(id, promise, { kind })
-      : promise;
-  }
-
   async function enableTheme(context) {
-    const styleResult = await trackPending(
-      context,
-      "style-register",
-      registerStyle(core, HALLOWEEN_STYLE_ID, HALLOWEEN_BACKGROUND_CSS),
+    applyHalloweenBackground(HALLOWEEN_STYLE_ID);
+    state.styleRegistered = true;
+    lifecycle?.registerResource?.(
+      "halloween-background-style",
+      () => {
+        removeHalloweenBackground(HALLOWEEN_STYLE_ID);
+        state.styleRegistered = false;
+      },
       "style",
     );
-    if (!styleResult?.ok) throw new Error(`ui.style.register failed: ${styleResult?.reason || "unknown"}`);
-    state.styleRegistered = true;
     if (!context.isCurrent()) {
-      await trackPending(
-        context,
-        "style-unregister-superseded",
-        unregisterStyle(core, HALLOWEEN_STYLE_ID),
-        "style",
-      );
-      state.styleRegistered = false;
+      lifecycle?.releaseResource?.("halloween-background-style");
       return { ok: false, reason: "enable_superseded" };
     }
     applyHalloweenLogos(restorationRecords);
@@ -85,18 +75,12 @@ export function createHalloweenThemeApp({ core, runtime }) {
     return { ok: true };
   }
 
-  async function disableTheme(context) {
+  async function disableTheme() {
     state.enabled = false;
     cancelRouteRefreshTimer();
     restoreHalloweenLogos(restorationRecords);
     if (state.styleRegistered) {
-      await trackPending(
-        context,
-        "style-unregister",
-        unregisterStyle(core, HALLOWEEN_STYLE_ID),
-        "style",
-      );
-      state.styleRegistered = false;
+      lifecycle?.releaseResource?.("halloween-background-style");
     }
     updateStatus();
     return { ok: true };
@@ -146,7 +130,7 @@ export function createHalloweenThemeApp({ core, runtime }) {
     commandController.bind();
     registerAddon();
     const access = await getAddonAccess(core);
-    if (!access?.ok || access.value?.blocked) {
+    if (!access?.ok || access.value?.blocked || access.value?.enabled === false) {
       await lifecycle.disable({ reason: access?.value?.blockReason || "access-denied" });
       return;
     }

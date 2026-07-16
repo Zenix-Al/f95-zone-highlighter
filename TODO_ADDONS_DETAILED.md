@@ -1316,43 +1316,43 @@ domain/UI code, and repeated enable/disable/refresh/teardown coverage.
 
 ### Required implementation
 
-- [ ] Preserve `pageScopes: ["f95zone"]`.
-- [ ] Replace broad `coreBridge.js` with adaptor plus thin APIs.
-- [ ] Reduce `main.js` to composition.
-- [ ] Move registration, command routing, enabled-state transitions, dock orchestration, and manager orchestration into app modules.
-- [ ] Keep library/thread/UI domain folders.
-- [ ] Prevent domain modules from invoking raw bridge actions.
-- [ ] Centralize runtime metadata and settings defaults.
-- [ ] Cancel/close in order:
+- [x] Preserve `pageScopes: ["f95zone"]`.
+- [x] Replace broad `coreBridge.js` with adaptor plus thin APIs.
+- [x] Reduce `main.js` to composition.
+- [x] Move registration, command routing, enabled-state transitions, dock orchestration, and manager orchestration into app modules.
+- [x] Keep library/thread/UI domain folders.
+- [x] Prevent domain modules from invoking raw bridge actions.
+- [x] Centralize runtime metadata and settings defaults.
+- [x] Cancel/close in order:
   - active import;
   - progress UI;
   - manager dialog;
   - dock resources;
   - IDB operations that support cancellation;
   - listeners and timers.
-- [ ] Preserve database names, stores, indexes, storage keys, legacy records, and import/export formats.
-- [ ] Route debug output through shared debug behavior.
-- [ ] Adopt approved new APIs only when the audit names Library as a consumer.
-- [ ] Complete the Example Add-on structure comparison and use injected metadata only.
-- [ ] Keep raw core action invocations inside `api/**` or `core/adaptor.js`; library/thread/domain/UI modules consume wrappers.
-- [ ] Make app generations and owner cleanup suppress late import, IDB, dialog, dock, and table commits.
+- [x] Preserve database names, stores, indexes, storage keys, legacy records, and import/export formats.
+- [x] Route debug output through shared debug behavior.
+- [x] Adopt approved new APIs only when the audit names Library as a consumer.
+- [x] Complete the Example Add-on structure comparison and use injected metadata only.
+- [x] Keep raw core action invocations inside `api/**` or `core/adaptor.js`; library/thread/domain/UI modules consume wrappers.
+- [x] Make app generations and owner cleanup suppress late import, IDB, dialog, dock, and table commits.
 
 ### Required tests
 
-- [ ] Manager/settings work on ordinary, thread, Latest, and masked routes.
-- [ ] Thread-only controls stay thread-only.
-- [ ] Existing records remain compatible.
-- [ ] Disable during import prevents late writes/UI.
-- [ ] Re-enable creates no duplicate manager/dock listeners.
-- [ ] Example-boundary and raw-action searches pass for the normalized source tree.
-- [ ] Repeated lifecycle and exactly-once teardown tests cover manager, import, dock, style, listener, and timer ownership.
+- [x] Manager/settings work on ordinary, thread, Latest, and masked routes.
+- [x] Thread-only controls stay thread-only.
+- [x] Existing records remain compatible.
+- [x] Disable during import prevents late writes/UI.
+- [x] Re-enable creates no duplicate manager/dock listeners.
+- [x] Example-boundary and raw-action searches pass for the normalized source tree.
+- [x] Repeated lifecycle and exactly-once teardown tests cover manager, import, dock, style, listener, and timer ownership.
 
 ### Acceptance criteria
 
-- [ ] Site-wide scope is not regressed.
-- [ ] Domain modules know no raw bridge event/action strings.
-- [ ] Structure and lint checks pass.
-- [ ] The final Library layout follows `example-addon` while preserving all Library domain and persistence behavior.
+- [x] Site-wide scope is not regressed.
+- [x] Domain modules know no raw bridge event/action strings.
+- [x] Structure and lint checks pass.
+- [x] The final Library layout follows `example-addon` while preserving all Library domain and persistence behavior.
 
 ---
 
@@ -1394,25 +1394,25 @@ F95 enable/disable/refresh/teardown without affecting standalone flows.
 
 ### Required implementation
 
-- [ ] Consume `runtimeMode: "hybrid"` and `pageScopes: ["f95zone"]`.
-- [ ] Remove hard-coded `thread`, `download`, and `direct-download` registration scopes.
-- [ ] Preserve all matches, grants, and `document-idle`.
-- [ ] Add an explicit classifier:
+- [x] Consume `runtimeMode: "hybrid"` and `pageScopes: ["f95zone"]`.
+- [x] Remove hard-coded `thread`, `download`, and `direct-download` registration scopes.
+- [x] Preserve all matches, grants, and `document-idle`.
+- [x] Add an explicit classifier:
   - `f95-core`;
   - `external-standalone`;
   - unsupported.
-- [ ] Register only on matched F95Zone thread and `/masked/` routes.
-- [ ] Never register or invoke core APIs on external hosts.
-- [ ] Do not claim support on ordinary F95Zone routes absent from activation matches.
+- [x] Register only on matched F95Zone thread and `/masked/` routes.
+- [x] Never register or invoke core APIs on external hosts.
+- [x] Do not claim support on ordinary F95Zone routes absent from activation matches.
 - [ ] Adopt canonical boundaries for F95 mode.
-- [ ] Keep external host logic behind `hosts/**` adapters.
-- [ ] Keep route-context handoff behind a dedicated port/repository with TTL and request ID.
-- [ ] Separate GM cross-host state from core-backed F95 settings.
-- [ ] Define one owner for enabled/settings state.
+- [x] Keep external host logic behind `hosts/**` adapters.
+- [x] Keep route-context handoff behind a dedicated port/repository with TTL and request ID.
+- [x] Separate GM cross-host state from core-backed F95 settings.
+- [x] Define one owner for enabled/settings state.
 - [ ] Put every timer/listener/observer under controller teardown.
-- [ ] Define behavior for an already-open external-host flow after F95-side disable.
-- [ ] Preserve selectors and timings unless a fixture proves a bug.
-- [ ] Keep host adapters independent from the core adaptor.
+- [x] Define behavior for an already-open external-host flow after F95-side disable.
+- [x] Preserve selectors and timings unless a fixture proves a bug.
+- [x] Keep host adapters independent from the core adaptor.
 - [ ] Complete the Example Add-on comparison for F95 mode and use injected metadata only.
 - [ ] Keep raw F95 core action invocations inside F95 `api/**` or `core/adaptor.js`; host adapters remain core-free.
 - [ ] Use generation/owner cancellation for F95 and cross-host handoff work without changing standalone transport behavior.
@@ -1423,9 +1423,9 @@ F95 enable/disable/refresh/teardown without affecting standalone flows.
 - [ ] Ordinary F95Zone does not activate/register.
 - [ ] External hosts emit no core bridge events.
 - [ ] Core absent on matched F95 exits safely.
-- [ ] Header preserves all current metadata.
+- [x] Header preserves all current metadata.
 - [ ] Catalog reports hybrid mode and exact activation coverage.
-- [ ] Route context expiry/mismatch/cleanup works.
+- [x] Route context expiry/mismatch/cleanup works.
 - [ ] Disable prevents new F95 flows.
 - [ ] Every existing host adapter has success, timeout, and missing-selector fixtures.
 - [ ] Example-boundary and raw-action searches pass for F95 modules while external hosts remain core-free.
@@ -1434,9 +1434,9 @@ F95 enable/disable/refresh/teardown without affecting standalone flows.
 ### Acceptance criteria
 
 - [ ] Removing download-like core scopes loses no external behavior.
-- [ ] Core and standalone modes are obvious.
-- [ ] No host controller imports the core adaptor.
-- [ ] Registration-handshake security is unchanged.
+- [x] Core and standalone modes are obvious.
+- [x] No host controller imports the core adaptor.
+- [x] Registration-handshake security is unchanged.
 - [ ] F95 mode follows `example-addon` boundaries without imposing those boundaries on standalone host adapters.
 
 ---
@@ -1501,43 +1501,43 @@ inherit the legacy app's cleanup defects.
 
 ### Required implementation
 
-- [ ] Create the new add-on from canonical structure.
-- [ ] Declare `legacyIds: ["image-repair-addon"]`.
-- [ ] Expand activation to all F95Zone pages.
-- [ ] Use `pageScopes: ["f95zone"]`.
-- [ ] Let individual repair modules decide route applicability.
-- [ ] Update public branding, descriptions, catalog/download metadata, docs, changelog, and console helper names.
-- [ ] Organize repair modules under explicit boundaries.
-- [ ] Preserve existing enabled state and settings through add-on state alias normalization.
-- [ ] Replace recursive uncancelled retry timers with a cancellable scheduler.
-- [ ] Track image error listeners by generation/owner.
-- [ ] Use stable original URLs for retries.
-- [ ] Remove dead queue/constants or make the queue canonical.
-- [ ] Keep native Notification optional and user-triggered, or use core toast/UI.
-- [ ] Create per-repair settings:
+- [x] Create the new add-on from canonical structure.
+- [x] Declare `legacyIds: ["image-repair-addon"]`.
+- [x] Expand activation to all F95Zone pages.
+- [x] Use `pageScopes: ["f95zone"]`.
+- [x] Let individual repair modules decide route applicability.
+- [x] Update public branding, descriptions, catalog/download metadata, docs, changelog, and console helper names.
+- [x] Organize repair modules under explicit boundaries.
+- [x] Preserve existing enabled state and settings through add-on state alias normalization.
+- [x] Replace recursive uncancelled retry timers with a cancellable scheduler.
+- [x] Track image error listeners by generation/owner.
+- [x] Use stable original URLs for retries.
+- [x] Remove dead queue/constants or make the queue canonical.
+- [x] Keep native Notification optional and user-triggered, or use core toast/UI.
+- [x] Create per-repair settings:
   - `enabled`;
   - `repairs.imageAttachments.enabled`;
   - reserved `repairs.latestAjax.enabled`.
-- [ ] Teardown modules in reverse startup order.
-- [ ] Build the new Site Repair source from the Example Add-on structure, not from the legacy Image Repair flat app.
-- [ ] Keep raw core action invocations inside `api/**` or `core/adaptor.js`; repair domains and UI consume wrappers.
-- [ ] Give repair modules and shared app lifecycle explicit owner/generation cancellation and late-commit suppression.
+- [x] Teardown modules in reverse startup order.
+- [x] Build the new Site Repair source from the Example Add-on structure, not from the legacy Image Repair flat app.
+- [x] Keep raw core action invocations inside `api/**` or `core/adaptor.js`; repair domains and UI consume wrappers.
+- [x] Give repair modules and shared app lifecycle explicit owner/generation cancellation and late-commit suppression.
 
 ### Required tests
 
-- [ ] Legacy state appears under one Site Repair card.
-- [ ] Enabled preference is preserved.
-- [ ] Image repair success, exhaustion, mid-retry disable, removed node, and route change.
-- [ ] No stale UI/state after invalidation.
-- [ ] Site Repair can remain registered while a route-inapplicable repair stays idle.
-- [ ] Example-boundary, raw-action, repeated-lifecycle, and exactly-once teardown tests pass.
+- [x] Legacy state appears under one Site Repair card.
+- [x] Enabled preference is preserved.
+- [x] Image repair success, exhaustion, mid-retry disable, removed node, and route change.
+- [x] No stale UI/state after invalidation.
+- [x] Site Repair can remain registered while a route-inapplicable repair stays idle.
+- [x] Example-boundary, raw-action, repeated-lifecycle, and exactly-once teardown tests pass.
 
 ### Acceptance criteria
 
-- [ ] Branding supports multiple repair modules.
-- [ ] Existing users do not lose state.
-- [ ] Site Repair follows the Golden Add-on structure while preserving the legacy namespace, state alias, and repair behavior.
-- [ ] Image repair is independently startable/stoppable.
+- [x] Branding supports multiple repair modules.
+- [x] Existing users do not lose state.
+- [x] Site Repair follows the Golden Add-on structure while preserving the legacy namespace, state alias, and repair behavior.
+- [x] Image repair is independently startable/stoppable.
 
 ---
 
@@ -1557,43 +1557,41 @@ Make Latest Ajax Recovery an optional Site Repair module while preserving safety
 
 ### Required implementation
 
-- [ ] Move pure normalization/retry-decision functions into Site Repair.
-- [ ] Move the jQuery patch into a narrowly scoped bundled adapter.
-- [ ] Do not expose arbitrary script injection through the bridge.
-- [ ] Preserve:
+- [x] Move pure normalization/retry-decision functions into Site Repair.
+- [x] Move the jQuery patch into a narrowly scoped bundled adapter.
+- [x] Do not expose arbitrary script injection through the bridge.
+- [x] Preserve:
   - one patch;
   - original restoration;
   - one safe retry;
   - no retry for 403/429.
-- [ ] Add generation/cancellation checks.
-- [ ] Activate only on Latest routes while Site Repair remains `f95zone`.
-- [ ] Prefer one-time compatibility import owned by the Site Repair/add-on state repository rather than a generic migration framework.
-- [ ] Explicit Site Repair value wins over a legacy core value.
-- [ ] Make the compatibility import idempotent and remove the old value only after successful add-on-state persistence when the core plan still exposes it.
-- [ ] Coordinate release order with core cleanup:
-  - land compatibility import before the old core field is removed; or
-  - document an intentional preference reset as a breaking decision.
-- [ ] Remove old setting metadata, core feature, generated manifest entry, and documentation listing.
-- [ ] Expose independent Image Attachments and Latest Ajax toggles in Site Repair.
+- [x] Add generation/cancellation checks.
+- [x] Activate only on Latest routes while Site Repair remains `f95zone`.
+- [x] Do not add a compatibility importer or generic migration framework for the unreleased core preference.
+- [x] Treat the Site Repair value as independent from the obsolete core value.
+- [x] Drop the obsolete core field through tolerant sanitization and the next normal config commit.
+- [x] Document the intentional preference reset as the compatibility decision.
+- [x] Remove old setting metadata, core feature, generated manifest entry, and documentation listing.
+- [x] Expose independent Image Attachments and Latest Ajax toggles in Site Repair.
 
 ### Required tests
 
-- [ ] Parser error, timeout, status 0, 5xx, 403, and 429.
-- [ ] Exactly one retry.
-- [ ] No retry after disable/route change.
-- [ ] jQuery present early and loaded later.
-- [ ] Duplicate enable does not double-patch.
-- [ ] Disable restores original Ajax.
-- [ ] Compatibility preference import is idempotent when available.
-- [ ] Core feature discovery no longer includes the feature.
-- [ ] Only Site Repair owns the marker/event.
+- [x] Parser error, timeout, status 0, 5xx, 403, and 429.
+- [x] Exactly one retry.
+- [x] No retry after disable/route change.
+- [x] jQuery present early and loaded later.
+- [x] Duplicate enable does not double-patch.
+- [x] Disable restores original Ajax.
+- [x] Intentional preference reset and obsolete-key removal behavior are tested.
+- [x] Core feature discovery no longer includes the feature.
+- [x] Only Site Repair owns the marker/event.
 
 ### Acceptance criteria
 
-- [ ] Main userscript no longer bundles the repair.
-- [ ] Site Repair supplies equal or safer behavior.
-- [ ] No duplicate patch remains.
-- [ ] Preference compatibility has an explicit tested decision.
+- [x] Main userscript no longer bundles the repair.
+- [x] Site Repair supplies equal or safer behavior.
+- [x] No duplicate patch remains.
+- [x] Preference compatibility has an explicit tested reset decision.
 
 ---
 

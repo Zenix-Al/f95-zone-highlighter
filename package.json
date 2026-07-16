@@ -25,7 +25,7 @@
     "build:addons:smoke": "node scripts/addon-build-tools.cjs --all --regular --release",
     "build:addons:smoke:regular": "node scripts/addon-build-tools.cjs --all --regular",
     "build:addons:smoke:release": "node scripts/addon-build-tools.cjs --all --release",
-    "build:addon:image-repair": "node addons/build-addon.js image-repair-addon",
+    "build:addon:site-repair": "node addons/build-addon.js site-repair-addon",
     "build:addon:latest-filters": "node addons/build-addon.js latest-filters-addon",
     "lint": "eslint \"src/**\" --ext .js",
     "lint:fix": "eslint \"src/**\" --ext .js --fix",

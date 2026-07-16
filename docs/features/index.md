@@ -14,7 +14,6 @@ Current features (automatically discovered):
 
 <!-- GENERATED:FEATURE-INVENTORY:START -->
 - `dismissNotificationFeature` — `src/features/dismiss-notification/index.js`
-- `latestAjaxErrorRecoveryFeature` — `src/features/latest-ajax-error-recovery/index.js`
 - `latestControlFeature` — `src/features/latest-control/index.js`
 - `latestOverlayFeature` — `src/features/latest-overlay/index.js`
 - `signatureCollapseFeature` — `src/features/signature-collapse/index.js`
@@ -25,7 +24,6 @@ Current features (automatically discovered):
 <!-- GENERATED:FEATURE-INVENTORY:END -->
 
 - `dismissNotificationFeature` — dismissal improvements and UI hooks.
-- `latestAjaxErrorRecoveryFeature` — automatic recovery for Latest page network failures.
 - `latestControlFeature` — controls and utilities for Latest behavior.
 - `latestOverlayFeature` — core Latest highlighting and overlay logic.
 - `signatureCollapseFeature` — collapse and manage large signatures.

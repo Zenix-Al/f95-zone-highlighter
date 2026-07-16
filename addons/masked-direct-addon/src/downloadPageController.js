@@ -7,9 +7,9 @@ import {
 import {
   isProcessingDownloadTriggerActive,
   readProcessingDownloadTriggers,
-} from "./processingDownloadTrigger.js";
+} from "./ports/processingDownloadRepository.js";
 import { normalizeDirectDownloadHost } from "./hosts/metadata.js";
-import { writeRouteContext } from "./routeContext.js";
+import { writeRouteContext } from "./ports/routeContextRepository.js";
 import { sleep } from "./utils.js";
 
 const STRIPPED_MARKER_RECOVERY_TTL_MS = 45 * 1000;

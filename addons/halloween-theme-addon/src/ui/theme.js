@@ -13,6 +13,25 @@ function replaceLogoPath(value) {
   return String(value || "").replaceAll("/assets/logo.png", "/assets/halloween/logo.png");
 }
 
+export function applyHalloweenBackground(styleId) {
+  const id = String(styleId || "").trim();
+  if (!id) return null;
+  let style = document.getElementById(id);
+  if (!style) {
+    style = document.createElement("style");
+    style.id = id;
+    style.dataset.addonOwner = "halloween-theme-addon";
+    document.head.appendChild(style);
+  }
+  style.textContent = HALLOWEEN_BACKGROUND_CSS;
+  return style;
+}
+
+export function removeHalloweenBackground(styleId) {
+  const style = document.getElementById(String(styleId || "").trim());
+  if (style?.dataset?.addonOwner === "halloween-theme-addon") style.remove();
+}
+
 export function applyHalloweenLogos(restorationRecords) {
   const records = restorationRecords instanceof Map ? restorationRecords : new Map();
   const nodes = document.querySelectorAll(LOGO_SELECTOR);

@@ -2,7 +2,7 @@ import {
   createImportProgressMarkup,
   updateImportProgressView,
 } from "../components/manager/importProgressDialog.js";
-import { updateDialog } from "../../api/ui/dialog.js";
+import { closeDialog, openDialog, updateDialog } from "../../api/ui/dialog.js";
 
 const IMPORT_PROGRESS_DIALOG_ID = "library-import-progress";
 
@@ -55,10 +55,7 @@ async function closeProgressDialog(reason, cancelImport = false) {
   if (!activeImport || !coreBridge) return;
   if (cancelImport) activeImport.cancelled = true;
   activeImport.closing = true;
-  await coreBridge.invokeCoreAction("ui.dialog.close", {
-    dialogId: IMPORT_PROGRESS_DIALOG_ID,
-    reason,
-  });
+  await closeDialog(coreBridge, IMPORT_PROGRESS_DIALOG_ID, reason);
 }
 
 export function configureImportProgress(bridge) {
@@ -84,7 +81,7 @@ export async function openImportProgress(configOrTotal) {
 
   let result = null;
   for (let attempt = 0; attempt < 3; attempt += 1) {
-    result = await coreBridge.invokeCoreAction("ui.dialog.open", {
+    result = await openDialog(coreBridge, {
       dialogId: IMPORT_PROGRESS_DIALOG_ID,
       title: "Importing Library",
       html: createImportProgressMarkup({
@@ -111,11 +108,19 @@ export async function openImportProgress(configOrTotal) {
 }
 
 export function updateImportProgress(progress) {
+  if (activeImport?.cancelled) return;
   updateProgressContent(progress);
 }
 
 export function isImportCancelled() {
   return Boolean(activeImport?.cancelled);
+}
+
+export async function cancelActiveImport(reason = "runtime-disabled") {
+  if (!activeImport) return { ok: true, value: { alreadyCancelled: true } };
+  activeImport.cancelled = true;
+  await closeProgressDialog(reason, true);
+  return { ok: true };
 }
 
 export async function finishImportProgress(reason = "import-complete") {

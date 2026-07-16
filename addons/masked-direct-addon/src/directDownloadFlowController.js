@@ -2,16 +2,18 @@ import {
   clearProcessingDownloadTrigger,
   readProcessingDownloadTrigger,
   setProcessingDownloadTrigger,
-} from "./processingDownloadTrigger.js";
+} from "./ports/processingDownloadRepository.js";
 import {
   DIRECT_DOWNLOAD_ROUTE_REQUEST_ID_KEY,
   DIRECT_DOWNLOAD_ROUTE_TS_KEY,
-  TIMINGS,
 } from "./constants.js";
-import { storeDownloadPageCloseDelay } from "./gmStorageHelper.js";
+import { storeDownloadPageCloseDelay } from "./ports/downloadSettingsRepository.js";
 import { smartCloseWhenReady } from "./downloadDetector.js";
 import { normalizeDirectDownloadHost } from "./hosts/metadata.js";
-import { clearRouteContext, getRouteRequestId } from "./routeContext.js";
+import {
+  clearRouteContext,
+  getRouteRequestId,
+} from "./ports/routeContextRepository.js";
 
 export function createDirectDownloadFlowController({
   addonId,

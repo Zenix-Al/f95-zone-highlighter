@@ -26,7 +26,7 @@ const ADDON_MANIFEST = JSON.parse(
   fs.readFileSync(path.join(ROOT, "addons", "addons.manifest.json"), "utf8"),
 );
 const TRUSTED_ADDON_CATALOG = JSON.parse(
-  fs.readFileSync(path.join(ROOT, "addons", "trusted-catalog.json"), "utf8"),
+  fs.readFileSync(path.join(ROOT, "src", "services", "addons", "trusted-catalog.json"), "utf8"),
 );
 
 if (!fs.existsSync(TMP_DIR)) {
@@ -235,10 +235,13 @@ const { getRecordHighlightClasses } = loadModule(
 );
 const { matchesPageDefinition } = loadModule("src/core/pageDetection.js");
 const { normalizeLatestAjaxErrorPayload, shouldRetryLatestAjaxError } = loadModule(
-  "src/features/latest-ajax-error-recovery/index.js",
+  "addons/site-repair-addon/src/repairs/latestAjax/policy.js",
 );
 const { __downloadPageControllerTestInternals } = loadModule(
   "addons/masked-direct-addon/src/downloadPageController.js",
+);
+const { classifyMaskedDirectContext } = loadModule(
+  "addons/masked-direct-addon/src/app/context.js",
 );
 
 runTest("page definitions match configured hosts and paths", () => {
@@ -369,7 +372,7 @@ runTest("generated feature manifest contains current feature exports", () => {
   const generated = fs.readFileSync(result.outputFile, "utf8");
 
   assert.ok(result.featureNames.includes("latestOverlayFeature"));
-  assert.ok(result.featureNames.includes("latestAjaxErrorRecoveryFeature"));
+  assert.strictEqual(result.featureNames.includes("latestAjaxErrorRecoveryFeature"), false);
   assert.ok(result.featureNames.includes("wideLatestPageFeature"));
   assert.ok(result.featureNames.includes("denseLatestGridFeature"));
   assert.ok(result.featureNames.includes("threadOverlayFeature"));
@@ -459,7 +462,6 @@ runTest("CORE-LEAN-BASE-01 excludes generated, add-on, and vendored source from 
       "src/services/addonsService.js": "export const addonService = true;\n",
       "src/ui/components/addons/excluded.js": "export const addonUi = true;\n",
       "src/ui/renderers/addonsRenderer.js": "export const renderer = true;\n",
-      "src/features/latest-ajax-error-recovery/index.js": "export const legacy = true;\n",
       "src/generated/features.generated.js": "export const generated = true;\n",
     };
     for (const [relative, source] of Object.entries(files)) {
@@ -2521,7 +2523,7 @@ runTest("ADDON-BUILD-TOOLS-01 smoke builds every add-on in regular and release m
 });
 
 runTest("ADDON-BUILD-TOOLS-01 preserves current release stripping behavior", async () => {
-  const addon = ADDON_MANIFEST.addons.find((entry) => entry.id === "image-repair-addon");
+  const addon = ADDON_MANIFEST.addons.find((entry) => entry.id === "example-addon");
   const tempRoot = fs.mkdtempSync(path.join(TMP_DIR, "addon-release-strip-"));
   try {
     const regular = await addonBuilder.buildAddonToPath(addon, false, {
@@ -2596,7 +2598,7 @@ runTest("ADDON-GOLDEN-01 keeps Example Add-on composition and API boundaries", (
 });
 
 runTest("ADDON-API config.getTagPrefs reads canonical live config", async () => {
-  const { actionConfigGetTagPrefs } = loadModule("src/services/addons/coreActions.js");
+  const { actionConfigGetTagPrefs } = loadModule("src/services/addons/actions/families/storage.js");
   const result = await actionConfigGetTagPrefs(
     (value) => JSON.stringify(value).length,
     1024,
@@ -2640,7 +2642,7 @@ runTest("ADDON-HALLOWEEN-01 follows the Example boundaries and confines bridge a
 
   assert.ok(manifestEntry);
   assert.deepStrictEqual(manifestEntry.pageScopes, ["f95zone"]);
-  assert.deepStrictEqual(manifestEntry.capabilities, ["feature", "ui.style"]);
+  assert.deepStrictEqual(manifestEntry.capabilities, ["feature"]);
   assert.match(mainSource, /__ADDON_ID__/);
   assert.match(mainSource, /createCoreAdaptor/);
   assert.match(mainSource, /createHalloweenThemeApp/);
@@ -2650,7 +2652,6 @@ runTest("ADDON-HALLOWEEN-01 follows the Example boundaries and confines bridge a
     "core/adaptor.js",
     "api/bridge.js",
     "api/meta.js",
-    "api/ui/style.js",
     "app/commands.js",
     "app/lifecycle.js",
     "app/createHalloweenThemeApp.js",
@@ -2698,7 +2699,7 @@ runTest("ADDON-HALLOWEEN-01 preserves route behavior and owns reversible theme l
         addonName: "Halloween Theme",
         addonVersion: "2.0.12",
         addonDescription: "Halloween",
-        capabilities: ["feature", "ui.style"],
+        capabilities: ["feature"],
         pageScopes: ["f95zone"],
         runtimeMode: "core-required",
         matches: ["*://f95zone.to/*"],
@@ -2710,10 +2711,13 @@ runTest("ADDON-HALLOWEEN-01 preserves route behavior and owns reversible theme l
     const image = document.querySelector("#logo");
     assert.strictEqual(image.getAttribute("src"), "/assets/halloween/logo.png");
     assert.strictEqual(app.getState().restorationCount, 1);
-    assert.strictEqual(actions.filter((entry) => entry.action === "ui.style.register").length, 1);
+    const backgroundStyle = document.getElementById("f95ue-halloween-theme-style");
+    assert.ok(backgroundStyle);
+    assert.match(backgroundStyle.textContent, /halloween\/web-left\.png/);
+    assert.strictEqual(actions.filter((entry) => entry.action === "ui.style.register").length, 0);
 
     await lifecycle.enable({ reason: "repeat-enable" });
-    assert.strictEqual(actions.filter((entry) => entry.action === "ui.style.register").length, 1);
+    assert.strictEqual(document.querySelectorAll("#f95ue-halloween-theme-style").length, 1);
 
     document.body.innerHTML = '<img id="replaced-logo" src="/assets/logo.png">';
     assert.ok(commandHandler);
@@ -2735,7 +2739,7 @@ runTest("ADDON-HALLOWEEN-01 preserves route behavior and owns reversible theme l
     assert.strictEqual(replacedImage.getAttribute("src"), "/assets/logo.png");
     assert.strictEqual(document.querySelector("#late-logo").getAttribute("src"), "/assets/logo.png");
     assert.strictEqual(app.getState().restorationCount, 0);
-    assert.strictEqual(actions.filter((entry) => entry.action === "ui.style.unregister").length, 1);
+    assert.strictEqual(document.getElementById("f95ue-halloween-theme-style"), null);
 
     await lifecycle.enable({ reason: "test-reenable" });
     await lifecycle.teardown({ reason: "test-teardown" });
@@ -2747,7 +2751,7 @@ runTest("ADDON-HALLOWEEN-01 preserves route behavior and owns reversible theme l
     assert.deepStrictEqual(app.getResourceSnapshot(), []);
     assert.deepStrictEqual(app.getPendingOperationSnapshot(), []);
     assert.strictEqual(app.getState().restorationCount, 0);
-    assert.strictEqual(actions.filter((entry) => entry.action === "ui.style.unregister").length, 2);
+    assert.strictEqual(document.getElementById("f95ue-halloween-theme-style"), null);
     assert.strictEqual(commandHandler, null);
   } finally {
     sandbox.restore();
@@ -3035,6 +3039,32 @@ runTest("ADDON-GOLDEN-01 boots normally on the declared F95Zone scope", async ()
     assert.strictEqual(actions.some((entry) => entry.action === "scope.error"), false);
     assert.ok(actions.some((entry) => entry.action === "ui.style.register"));
     assert.ok(actions.some((entry) => entry.action === "ui.mount"));
+    assert.strictEqual(actions.filter((entry) => entry.action === "ui.dock.setButtons").length, 0);
+
+    const dockSetAction = document.createElement("button");
+    dockSetAction.dataset.exampleAction = "dock-set";
+    document.body.appendChild(dockSetAction);
+    dockSetAction.dispatchEvent(new window.MouseEvent("click", { bubbles: true, composed: true }));
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.strictEqual(actions.filter((entry) => entry.action === "ui.dock.setButtons").length, 1);
+
+    commandHandler({ command: "disable", reason: "test-disable" });
+    await new Promise((resolve) => setImmediate(resolve));
+    commandHandler({ command: "enable", reason: "test-reenable" });
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.strictEqual(actions.filter((entry) => entry.action === "ui.dock.setButtons").length, 2);
+
+    const dock = document.createElement("div");
+    dock.setAttribute("data-role", "exampleDock");
+    const dockButton = document.createElement("button");
+    dockButton.type = "button";
+    dockButton.dataset.action = "open-example";
+    dock.appendChild(dockButton);
+    document.body.appendChild(dock);
+    dockButton.dispatchEvent(new window.MouseEvent("click", { bubbles: true, composed: true }));
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.ok(actions.some((entry) => entry.action === "ui.dialog.open"));
+
     commandHandler({ command: "teardown", reason: "terminal-bootstrap-test" });
     commandHandler({ command: "teardown", reason: "duplicate-terminal-bootstrap-test" });
     assert.strictEqual(await teardownAcknowledged, "terminal-bootstrap-test");
@@ -3246,7 +3276,7 @@ runTest("ADDON-SCOPE-02 validates authoritative metadata and preserves headers",
     assert.ok(header.includes(`// @version      ${addon.version}`));
   }
   const header = fs.readFileSync(path.join(ROOT, "header.txt"), "utf8");
-  assert.ok(header.includes("@resource     trustedAddonCatalog https://cdn.jsdelivr.net/gh/Zenix-Al/f95-zone-highlighter@main/addons/trusted-catalog.json"));
+  assert.ok(header.includes("@resource     trustedAddonCatalog https://cdn.jsdelivr.net/gh/Zenix-Al/f95-zone-highlighter@main/src/services/addons/trusted-catalog.json"));
   assert.strictEqual(addonCatalog.renderCatalog(manifest), addonCatalog.renderCatalog([...manifest].reverse()));
 });
 
@@ -3255,11 +3285,11 @@ runTest("ADDON-SCOPE-02 injects manifest scope metadata without changing header 
   const relativeOutfile = "tests/.tmp/addon-scope-injection.user.js";
   const outfile = path.join(ROOT, relativeOutfile);
   try {
-    await addonBuilder.buildAddon({ ...manifest.find((entry) => entry.id === "image-repair-addon"), outfile: relativeOutfile }, false);
+    await addonBuilder.buildAddon({ ...manifest.find((entry) => entry.id === "site-repair-addon"), outfile: relativeOutfile }, false);
     const output = fs.readFileSync(outfile, "utf8");
     assert.ok(output.includes("core-required"));
-    assert.ok(output.includes("thread"));
-    assert.ok(output.includes("*://f95zone.to/threads/*"));
+    assert.ok(output.includes("f95zone"));
+    assert.ok(output.includes("*://f95zone.to/*"));
   } finally {
     fs.rmSync(outfile, { force: true });
   }
@@ -3632,7 +3662,10 @@ runTest("ADDON-TRUST-GATING-01 requires one handshake and access contract per ad
     assert.ok(/registerAddon|registerAddonRuntime|dispatchCoreCommand\("register"/.test(source), `${entry.id} must register through the bridge`);
     assert.match(source, /requiresCore\s*:\s*(?:runtime\.)?requiresCore/, `${entry.id} must send requiresCore in registration metadata`);
     assert.ok(/getAddonAccess|addon\.access/.test(source), `${entry.id} must consume the shared access result`);
-    assert.ok(source.includes("invokeCoreAction"), `${entry.id} must use permission-checked core actions`);
+    assert.ok(
+      source.includes("invokeCoreAction") || entry.capabilities.every((capability) => capability === "feature"),
+      `${entry.id} must use permission-checked core actions unless its behavior is entirely local`,
+    );
     assert.ok(/(?:detail|d)\.addonId|bindAddonCommands/.test(source), `${entry.id} must filter core commands by identity`);
     assert.ok(!source.includes("Blocked by main settings: enable untrusted add-ons or trust this add-on."), `${entry.id} must not own the core trust message`);
   }
@@ -3653,9 +3686,10 @@ runTest("ADDON-SCOPE-02 keeps management actions outside runtime scope", () => {
 });
 
 runTest("ADDON-RUNTIME-CONTRACT-01 keeps core disable reversible", async () => {
-  const { actionFeatureEnableDisable } = loadModule("src/services/addons/coreActions.js");
+  const { actionFeatureEnableDisable } = loadModule("src/services/addons/actions/families/lifecycle.js");
   const commands = [];
   let cancelRequests = 0;
+  let cleanupRequests = 0;
   const persist = async () => ({ ok: true });
   const meta = async () => ({ ok: true });
   const state = { enabled: true };
@@ -3671,9 +3705,12 @@ runTest("ADDON-RUNTIME-CONTRACT-01 keeps core disable reversible", async () => {
     persist,
     meta,
     () => { cancelRequests += 1; },
+    undefined,
+    () => { cleanupRequests += 1; },
   );
   assert.deepStrictEqual(disabled, { ok: true });
   assert.strictEqual(cancelRequests, 0);
+  assert.strictEqual(cleanupRequests, 1);
   assert.deepStrictEqual(commands, [
     { addonId: "example-addon", command: "status:disabled" },
     { addonId: "example-addon", command: "before-disable" },
@@ -3690,13 +3727,76 @@ runTest("ADDON-RUNTIME-CONTRACT-01 keeps core disable reversible", async () => {
     persist,
     meta,
     () => { cancelRequests += 1; },
+    undefined,
+    () => { cleanupRequests += 1; },
   );
   assert.deepStrictEqual(enabled, { ok: true });
   assert.strictEqual(cancelRequests, 1);
+  assert.strictEqual(cleanupRequests, 1);
   assert.deepStrictEqual(commands, [
     { addonId: "example-addon", command: "status:installed" },
     { addonId: "example-addon", command: "enable" },
   ]);
+});
+
+runTest("ADDON lifecycle keeps persisted disable authoritative and permits cleanup only", async () => {
+  const previousGM = global.GM;
+  const fakeGM = createFakeGM();
+  global.GM = fakeGM;
+  try {
+    const settings = loadModule("src/services/settingsService.js");
+    const { config } = loadModule("src/config.js");
+    await seedReadyConfig(fakeGM, settings, config);
+    const service = loadModule("src/services/addonsService.js");
+    assert.strictEqual((await service.setAddonStateValue("example-addon", "enabled", false)).ok, true);
+    service.replaceRegisteredAddons([]);
+    service.registerAddon({
+      id: "example-addon",
+      name: "Example Add-on",
+      version: "1.0.0",
+      status: "installed",
+      runtimeMode: "core-required",
+      requiresCore: true,
+      pageScopes: ["f95zone"],
+      matches: ["*://f95zone.to/*"],
+      capabilities: ["feature", "ui.mount"],
+    });
+    const access = await service.invokeAddonCoreAction("example-addon", "addon.access", {});
+    assert.strictEqual(access.ok, true);
+    assert.strictEqual(access.value.enabled, false);
+    const registered = service.listRegisteredAddons()[0];
+    assert.strictEqual(service.getAddonActionBlockReason(registered, "ui.mount"), "addon_disabled");
+    assert.strictEqual(service.getAddonActionBlockReason(registered, "ui.unmount"), null);
+  } finally {
+    global.GM = previousGM;
+  }
+});
+
+runTest("ADDON lifecycle persists desired state and status metadata in one commit", async () => {
+  const previousGM = global.GM;
+  const fakeGM = createFakeGM();
+  global.GM = fakeGM;
+  try {
+    const settings = loadModule("src/services/settingsService.js");
+    const { config } = loadModule("src/config.js");
+    await seedReadyConfig(fakeGM, settings, config);
+    const state = loadModule("src/services/addons/state.js");
+    const beforeWrites = fakeGM.logs().writes.length;
+    const result = await state.setAddonEnabledState("example-addon", false, {
+      statusMessage: "Disabled from core.",
+    });
+    assert.strictEqual(result.ok, true);
+    assert.strictEqual(state.getAddonState("example-addon").enabled, false);
+    assert.strictEqual(state.getInstalledAddonMeta("example-addon").statusMessage, "Disabled from core.");
+    const writeKeys = fakeGM.logs().writes.slice(beforeWrites);
+    assert.deepStrictEqual(writeKeys, [settings.CONFIG_BACKUP_KEY, settings.CONFIG_ENVELOPE_KEY]);
+
+    await state.upsertInstalledAddonMeta("example-addon", { version: "1.2.3" });
+    assert.strictEqual(state.getAddonState("example-addon").enabled, false);
+    assert.strictEqual(state.getInstalledAddonMeta("example-addon").version, "1.2.3");
+  } finally {
+    global.GM = previousGM;
+  }
 });
 
 runTest("ADDON-BRIDGE listener shutdown permits one clean reinitialization", () => {
@@ -3767,7 +3867,7 @@ runTest("ADDON-UI fixed mount policy rejects body and selector targets", () => {
 });
 
 runTest("ADDON-UI dock mounts require the dock capability at execution", () => {
-  const { actionUiMount } = loadModule("src/services/addons/coreActions.js");
+  const { actionUiMount } = loadModule("src/services/addons/actions/families/ui.js");
   const mount = () => ({ ok: true });
   const sanitizeId = (value) => value;
   assert.strictEqual(
@@ -3827,6 +3927,104 @@ runTest("TEST-01 DOM sanitizer strips active content while retaining safe add-on
     assert.strictEqual(sandbox.document.querySelector("iframe"), null);
     assert.strictEqual(sandbox.document.querySelector("svg"), null);
   } finally { sandbox.restore(); }
+});
+
+runTest("ADDON-UI preserves the Library Manager hidden JSON file picker", () => {
+  const sandbox = createDomSandbox();
+  try {
+    const { sanitizeAddonHtml } = loadModule("src/services/addons/uiSanitizer.js");
+    const managerHtml = fs.readFileSync(
+      path.join(ROOT, "addons/library-addon/src/ui/assets/manager.html"),
+      "utf8",
+    );
+    sandbox.document.body.innerHTML = sanitizeAddonHtml(managerHtml);
+    const input = sandbox.document.querySelector('input[data-field="importFile"]');
+    assert.ok(input, "Library Manager import input must survive sanitization");
+    assert.strictEqual(input.hasAttribute("hidden"), true);
+    assert.strictEqual(input.getAttribute("accept"), "application/json,.json");
+    assert.strictEqual(input.getAttribute("type"), "file");
+    const managerCss = fs.readFileSync(
+      path.join(ROOT, "addons/library-addon/src/ui/assets/manager.css"),
+      "utf8",
+    );
+    assert.match(
+      managerCss,
+      /input\[data-field=["']importFile["']\]\s*\{\s*display:\s*none\s*!important;/,
+    );
+  } finally { sandbox.restore(); }
+});
+
+runTest("ADDON-LIBRARY dialog can close and reopen without exposing its file picker", async () => {
+  const sandbox = createDomSandbox("https://f95zone.to/threads/library-reopen.1/");
+  const actions = [];
+  let contentSequence = 0;
+  try {
+    const bridge = {
+      async invokeCoreAction(action, payload) {
+        actions.push({ action, payload });
+        if (action === "ui.style.register" || action === "ui.style.unregister") {
+          return { ok: true, value: {} };
+        }
+        if (action === "ui.dialog.open") {
+          const content = document.createElement("div");
+          content.id = `library-dialog-content-${++contentSequence}`;
+          content.dataset.addonId = "library-addon";
+          content.innerHTML = payload.html;
+          document.body.appendChild(content);
+          return { ok: true, value: { contentId: content.id } };
+        }
+        if (action === "ui.dialog.close") {
+          document.querySelector('[data-addon-id="library-addon"]')?.remove();
+          return { ok: true, value: { removed: 1 } };
+        }
+        if (action === "config.getTagPrefs") {
+          return { ok: true, value: { tags: [], preferredTags: [], excludedTags: [], markedTags: [], color: {} } };
+        }
+        return { ok: true, value: {} };
+      },
+    };
+    const library = {
+      async queryEntries() { return []; },
+      async getAllEntries() { return []; },
+    };
+    const { createLibraryManagerApp } = loadModule(
+      "addons/library-addon/src/ui/manager/managerApp.js",
+      { loader: { ".css": "text", ".html": "text" } },
+    );
+    const manager = createLibraryManagerApp({
+      bridge,
+      addonId: "library-addon",
+      library,
+      onMutated() {},
+      getCurrentThreadSnapshot: () => null,
+    });
+
+    await manager.open();
+    let input = document.querySelector('input[data-field="importFile"]');
+    assert.ok(input);
+    assert.strictEqual(input.hidden, true);
+    assert.strictEqual(input.style.display, "none");
+
+    await manager.close("test-close");
+    await manager.open();
+    input = document.querySelector('input[data-field="importFile"]');
+    assert.ok(input, "manager must mount again after close");
+    assert.strictEqual(input.hidden, true);
+    assert.strictEqual(input.style.display, "none");
+
+    await manager.handleDialogClosed({
+      dialogId: "library-addon-manager",
+      reason: "delayed-old-close",
+    });
+    assert.strictEqual(manager.getSnapshot().dialogOpen, true);
+    assert.ok(document.querySelector('input[data-field="importFile"]'));
+    assert.strictEqual(
+      actions.filter((entry) => entry.action === "ui.dialog.open").length,
+      2,
+    );
+  } finally {
+    sandbox.restore();
+  }
 });
 
 runTest("TEST-01 deterministic helpers isolate GM storage and timers", async () => {
@@ -4851,6 +5049,540 @@ runTest("TEST-01 malformed payloads are rejected across add-on action categories
     const result = await invokeRegisteredAddonCoreAction({ addonId: "test-addon", action, payload: null, deps: {}, limits: {}, authorize: () => null });
     assert.strictEqual(result.reason, "invalid_payload", action);
   }
+});
+
+runTest("ADDON-LIBRARY-02 follows canonical boundaries and preserves persistence constants", () => {
+  const addonRoot = path.join(ROOT, "addons/library-addon/src");
+  for (const relativePath of [
+    "main.js", "core/adaptor.js", "api/bridge.js", "api/storage.js",
+    "app/commands.js", "app/lifecycle.js", "app/createLibraryAddonApp.js",
+    "library/service.js", "thread/detector.js", "ui/manager/managerApp.js",
+  ]) assert.ok(fs.existsSync(path.join(addonRoot, relativePath)), relativePath);
+  assert.strictEqual(fs.existsSync(path.join(addonRoot, "coreBridge.js")), false);
+  const mainSource = fs.readFileSync(path.join(addonRoot, "main.js"), "utf8");
+  assert.ok(mainSource.split(/\r?\n/).length < 40);
+  const domainFiles = [];
+  for (const area of ["library", "thread", "ui"]) {
+    const pending = [path.join(addonRoot, area)];
+    while (pending.length) {
+      const current = pending.pop();
+      for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
+        const fullPath = path.join(current, entry.name);
+        if (entry.isDirectory()) pending.push(fullPath);
+        else if (entry.name.endsWith(".js")) domainFiles.push(fullPath);
+      }
+    }
+  }
+  for (const filePath of domainFiles) {
+    const source = fs.readFileSync(filePath, "utf8");
+    assert.doesNotMatch(source, /invokeCoreAction\s*\(/, path.relative(ROOT, filePath));
+  }
+  const constants = fs.readFileSync(path.join(addonRoot, "constants.js"), "utf8");
+  for (const value of ["library", "records", "settings", "libraryRecords", "libraryMigrationV1Done"]) {
+    assert.match(constants, new RegExp(`["]${value}["]`));
+  }
+  const manifestEntry = ADDON_MANIFEST.addons.find((entry) => entry.id === "library-addon");
+  assert.deepStrictEqual(manifestEntry.pageScopes, ["f95zone"]);
+  assert.deepStrictEqual(manifestEntry.matches, ["*://f95zone.to/*"]);
+});
+
+runTest("ADDON-LIBRARY-02 owns reversible lifecycle and exactly-once teardown", async () => {
+  const sandbox = createDomSandbox("https://f95zone.to/threads/library-test.42/");
+  const actions = [];
+  let commandHandler = null;
+  let teardownAcknowledgements = 0;
+  const stored = { settings: { enabled: true, showPageButtons: true }, libraryMigrationV1Done: true };
+  const core = {
+    registerAddon(addon) { actions.push({ action: "register", addon }); return { ok: true }; },
+    updateStatus(status, message) { actions.push({ action: "status", status, message }); return { ok: true }; },
+    bindAddonCommands(handler) { commandHandler = handler; return () => { commandHandler = null; }; },
+    notifyTeardownComplete(reason) { teardownAcknowledgements += 1; actions.push({ action: "teardown", reason }); },
+    async invokeCoreAction(action, payload) {
+      actions.push({ action, payload });
+      if (action === "addon.access") return { ok: true, value: { blocked: false, enabled: true } };
+      if (action === "storage.get") return { ok: true, value: Object.hasOwn(stored, payload.key) ? stored[payload.key] : payload.defaultValue };
+      if (action === "storage.set") { stored[payload.key] = payload.value; return { ok: true }; }
+      if (action === "page.getContext") return { ok: true, value: { pageScopes: ["f95zone", "thread"], pageType: "thread", routeGeneration: 1, url: location.href } };
+      if (action === "observer.waitFor") return { ok: false, reason: "unsupported_action" };
+      if (action === "idb.get") return { ok: true, value: null };
+      return { ok: true, value: {} };
+    },
+  };
+  try {
+    const { createLibraryAddonApp } = loadModule("addons/library-addon/src/app/createLibraryAddonApp.js", { loader: { ".css": "text", ".html": "text" } });
+    const app = createLibraryAddonApp({ core, runtime: {
+      addonId: "library-addon", addonName: "Library", addonVersion: "test",
+      addonDescription: "Library", capabilities: ADDON_MANIFEST.addons.find((entry) => entry.id === "library-addon").capabilities,
+      requiresCore: true, pageScopes: ["f95zone"], runtimeMode: "core-required", matches: ["*://f95zone.to/*"],
+    } });
+    await app.bootstrap();
+    assert.ok(commandHandler);
+    assert.strictEqual(actions.filter((entry) => entry.action === "ui.mount").length, 1);
+    assert.match(actions.find((entry) => entry.action === "ui.mount").payload.html, /Save to Library/);
+    await app.getLifecycle().disable({ commandId: "disable-1", reason: "test" });
+    assert.deepStrictEqual(app.getResourceSnapshot(), []);
+    await app.getLifecycle().enable({ commandId: "enable-1", reason: "test" });
+    await app.getLifecycle().refresh({ commandId: "refresh-1", reason: "route" });
+    assert.strictEqual(app.getResourceSnapshot().filter((entry) => entry.id === "library-dock-listener").length, 1);
+    await app.getLifecycle().teardown({ commandId: "teardown-1", reason: "terminal" });
+    await app.getLifecycle().teardown({ commandId: "teardown-2", reason: "duplicate" });
+    assert.strictEqual(teardownAcknowledgements, 1);
+    assert.deepStrictEqual(app.getResourceSnapshot(), []);
+    assert.deepStrictEqual(app.getPendingOperationSnapshot(), []);
+    assert.strictEqual(commandHandler, null);
+  } finally { sandbox.restore(); }
+});
+
+runTest("ADDON-LIBRARY-02 keeps site-wide management and thread-only controls across routes", async () => {
+  const routes = [
+    ["https://f95zone.to/forums/games.2/", ["f95zone"], false],
+    ["https://f95zone.to/threads/game.42/", ["f95zone", "thread"], true],
+    ["https://f95zone.to/sam/latest_alpha/", ["f95zone", "latest"], false],
+    ["https://f95zone.to/masked/abc", ["f95zone"], false],
+  ];
+  for (const [url, pageScopes, expectsThreadControls] of routes) {
+    const sandbox = createDomSandbox(url);
+    const actions = [];
+    const stored = { settings: { enabled: true, showPageButtons: true }, libraryMigrationV1Done: true };
+    const core = {
+      registerAddon(addon) { actions.push({ action: "register", addon }); },
+      updateStatus() {}, bindAddonCommands() { return () => {}; }, notifyTeardownComplete() {},
+      async invokeCoreAction(action, payload) {
+        actions.push({ action, payload });
+        if (action === "addon.access") return { ok: true, value: { blocked: false, enabled: true } };
+        if (action === "storage.get") return { ok: true, value: Object.hasOwn(stored, payload.key) ? stored[payload.key] : payload.defaultValue };
+        if (action === "storage.set") { stored[payload.key] = payload.value; return { ok: true }; }
+        if (action === "page.getContext") return { ok: true, value: { pageScopes, pageType: pageScopes.at(-1), routeGeneration: 1, url } };
+        if (action === "idb.get") return { ok: true, value: null };
+        return { ok: true, value: {} };
+      },
+    };
+    try {
+      const { createLibraryAddonApp } = loadModule("addons/library-addon/src/app/createLibraryAddonApp.js", { loader: { ".css": "text", ".html": "text" } });
+      const app = createLibraryAddonApp({ core, runtime: {
+        addonId: "library-addon", addonName: "Library", addonVersion: "test", addonDescription: "Library",
+        capabilities: [], requiresCore: true, pageScopes: ["f95zone"], runtimeMode: "core-required", matches: ["*://f95zone.to/*"],
+      } });
+      await app.bootstrap();
+      const registration = actions.find((entry) => entry.action === "register")?.addon;
+      assert.deepStrictEqual(registration.pageScopes, ["f95zone"]);
+      assert.ok(registration.panelSettings.some((setting) => setting.path === "showPageButtons"));
+      const dock = actions.find((entry) => entry.action === "ui.mount")?.payload?.html || "";
+      assert.strictEqual(/Save to Library/.test(dock), expectsThreadControls, url);
+      await app.getLifecycle().teardown({ reason: "route-test" });
+    } finally { sandbox.restore(); }
+  }
+});
+
+runTest("ADDON-LIBRARY-02 suppresses import batches and progress after cancellation", async () => {
+  const { executeLibraryImport } = loadModule("addons/library-addon/src/library/importWorkflow.js");
+  let cancelled = false;
+  let releaseFirst;
+  const firstStarted = new Promise((resolve) => { releaseFirst = resolve; });
+  let continueFirst;
+  const firstGate = new Promise((resolve) => { continueFirst = resolve; });
+  const writes = [];
+  const progress = [];
+  const run = executeLibraryImport({
+    records: [{ threadId: "1" }, { threadId: "2" }],
+    plan: {
+      total: 2, skipped: 0, totalBatches: 2, throttleInfo: {},
+      batches: [[{ mode: "add", value: { threadId: "1" } }], [{ mode: "add", value: { threadId: "2" } }]],
+    },
+    shouldCancel: () => cancelled,
+    onProgress: (value) => progress.push(value),
+    bulkPutEntries: async (entries) => { writes.push(entries); releaseFirst(); await firstGate; return { ok: true }; },
+    saveOperation: async () => ({ ok: true }),
+  });
+  await firstStarted;
+  cancelled = true;
+  continueFirst();
+  const result = await run;
+  assert.strictEqual(result.cancelled, true);
+  assert.strictEqual(writes.length, 1);
+  assert.strictEqual(progress.some((entry) => entry.completedBatches > 0), false);
+});
+
+runTest("ADDON-MASKED-DIRECT-01 classifies core, standalone, and unsupported contexts", () => {
+  const externalHosts = new Set([
+    "buzzheavier.com", "cdn.buzzheavier.com", "bzzhr.to", "gofile.io",
+    "pixeldrain.com", "datanodes.to", "www.mediafire.com", "workupload.com",
+  ]);
+  const classify = (url) => {
+    const parsed = new URL(url);
+    return classifyMaskedDirectContext(parsed, {
+      isSupportedExternalHost: (host) =>
+        externalHosts.has(host) || host.endsWith(".workupload.com"),
+    });
+  };
+  assert.deepStrictEqual(classify("https://f95zone.to/threads/game.1/"), {
+    kind: "f95-core", route: "thread", usesCore: true,
+  });
+  assert.deepStrictEqual(classify("https://f95zone.to/masked/abc"), {
+    kind: "f95-core", route: "masked", usesCore: true,
+  });
+  assert.strictEqual(classify("https://f95zone.to/forums/games.2/").kind, "unsupported");
+  assert.strictEqual(classify("https://gofile.io/d/abc").kind, "external-standalone");
+  assert.strictEqual(classify("https://unknown.example/file").kind, "unsupported");
+});
+
+runTest("ADDON-MASKED-DIRECT-01 preserves hybrid headers and canonical boundaries", () => {
+  const manifestEntry = ADDON_MANIFEST.addons.find(
+    (entry) => entry.id === "masked-direct-addon",
+  );
+  assert.strictEqual(manifestEntry.runtimeMode, "hybrid");
+  assert.deepStrictEqual(manifestEntry.pageScopes, ["f95zone"]);
+  assert.strictEqual(manifestEntry.runAt, "document-idle");
+  assert.deepStrictEqual(manifestEntry.grants, [
+    "GM_openInTab", "GM.getValue", "GM.setValue",
+    "GM_addValueChangeListener", "GM_removeValueChangeListener",
+  ]);
+  for (const relativePath of [
+    "main.js", "app/context.js", "app/createMaskedDirectApp.js",
+    "core/adaptor.js", "ports/routeContextRepository.js",
+    "ports/processingDownloadRepository.js", "ports/downloadSettingsRepository.js",
+  ]) {
+    assert.ok(
+      fs.existsSync(path.join(ROOT, "addons/masked-direct-addon/src", relativePath)),
+      relativePath,
+    );
+  }
+  const mainSource = fs.readFileSync(
+    path.join(ROOT, "addons/masked-direct-addon/src/main.js"), "utf8",
+  );
+  assert.ok(mainSource.split(/\r?\n/).length < 20);
+  for (const hostFile of fs.readdirSync(
+    path.join(ROOT, "addons/masked-direct-addon/src/hosts"),
+    { withFileTypes: true },
+  ).filter((entry) => entry.isFile() && entry.name.endsWith(".js"))) {
+    const source = fs.readFileSync(
+      path.join(ROOT, "addons/masked-direct-addon/src/hosts", hostFile.name),
+      "utf8",
+    );
+    assert.doesNotMatch(source, /invokeCoreAction|dispatchCoreCommand|createCoreBridge/);
+  }
+});
+
+runTest("ADDON-MASKED-DIRECT-01 expires and rejects mismatched route handoffs", () => {
+  const sandbox = createDomSandbox("https://datanodes.to/download/example");
+  const previousSessionStorage = global.sessionStorage;
+  try {
+    global.sessionStorage = sandbox.window.sessionStorage;
+    const repository = loadModule(
+      "addons/masked-direct-addon/src/ports/routeContextRepository.js",
+    );
+    repository.writeRouteContext({
+      ownerTabId: "origin-1", requestId: "request-1",
+      createdAt: Date.now(), host: "datanodes.to", sourceUrl: "https://datanodes.to/file/a",
+    });
+    assert.strictEqual(repository.readRouteContext("f95ue_tab", {
+      expectedRequestId: "request-1", expectedHost: "datanodes.to",
+    }).requestId, "request-1");
+    assert.strictEqual(repository.readRouteContext("f95ue_tab", {
+      expectedRequestId: "request-2",
+    }), null);
+    assert.strictEqual(repository.readRouteContext("f95ue_tab", {
+      expectedHost: "gofile.io",
+    }), null);
+    repository.writeRouteContext({
+      ownerTabId: "origin-1", requestId: "expired",
+      createdAt: Date.now() - (2 * 60 * 1000) - 1, host: "datanodes.to",
+    });
+    assert.strictEqual(repository.readRouteContext(), null);
+    assert.strictEqual(sessionStorage.getItem("f95ue.addon.maskedDirect.routeContext"), null);
+  } finally {
+    global.sessionStorage = previousSessionStorage;
+    sandbox.restore();
+  }
+});
+
+runTest("SITE-REPAIR-01 preserves published namespace while changing canonical identity", () => {
+  const siteRepair = ADDON_MANIFEST.addons.find((entry) => entry.id === "site-repair-addon");
+  assert.ok(siteRepair);
+  assert.deepStrictEqual(siteRepair.legacyIds, ["image-repair-addon"]);
+  assert.strictEqual(siteRepair.name, "F95UE Site Repair");
+  assert.deepStrictEqual(siteRepair.matches, ["*://f95zone.to/*"]);
+  assert.deepStrictEqual(siteRepair.pageScopes, ["f95zone"]);
+  assert.strictEqual(siteRepair.outfile, "addons/site-repair-addon/dist/site-repair-addon.user.js");
+  const oldNamespace = "https://github.com/Zenix-Al/f95-zone-highlighter/addons/image-repair-addon";
+  assert.strictEqual(siteRepair.namespace, oldNamespace);
+  const header = addonBuilder.headerForAddon(siteRepair, { includeTimestamp: false });
+  assert.match(header, /@name\s+F95UE Site Repair/);
+  assert.ok(header.includes(`// @namespace    ${oldNamespace}`));
+  assert.strictEqual(siteRepair.downloadUrl, "https://greasyfork.org/en/scripts/572502-f95ue-image-repair-add-on");
+});
+
+runTest("SITE-REPAIR-01 canonicalizes legacy state and preserves enabled preference", () => {
+  const { canonicalizeAddonIdentityRoot } = loadModule("src/services/addons/state.js");
+  const addons = {
+    byAddon: {
+      "image-repair-addon": {
+        state: {
+          enabled: false,
+          settings: { repairs: { imageAttachments: { enabled: false } } },
+        },
+      },
+    },
+    installedMeta: {
+      "image-repair-addon": { name: "F95UE Image Repair Add-on", installedSeenAt: 10 },
+    },
+  };
+  const result = canonicalizeAddonIdentityRoot(addons);
+  assert.strictEqual(result.changed, true);
+  assert.strictEqual(Object.hasOwn(addons.byAddon, "image-repair-addon"), false);
+  assert.strictEqual(addons.byAddon["site-repair-addon"].state.enabled, false);
+  assert.strictEqual(
+    addons.byAddon["site-repair-addon"].state.settings.repairs.imageAttachments.enabled,
+    false,
+  );
+  assert.strictEqual(Object.hasOwn(addons.installedMeta, "site-repair-addon"), true);
+});
+
+runTest("SITE-REPAIR-01 image scheduler covers success exhaustion cancellation removal and stable URLs", () => {
+  const sandbox = createDomSandbox("https://f95zone.to/threads/site-repair.1/");
+  try {
+    const { createImageAttachmentRepair, stableOriginalUrl } = loadModule(
+      "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
+    );
+    const callbacks = new Map();
+    const scheduler = {
+      generation: 0,
+      schedule(id, callback) { callbacks.set(id, callback); },
+      cancel(id) { return callbacks.delete(id); },
+      invalidate() { this.generation += 1; callbacks.clear(); },
+      getSnapshot() { return [...callbacks.keys()]; },
+    };
+    const successes = [];
+    const exhausted = [];
+    const repair = createImageAttachmentRepair({
+      imageHost: "https://attachments.f95zone.to/",
+      retryDelayMs: 1,
+      maxAttempts: 2,
+      scheduler,
+      onSuccess: (_image, attempts) => successes.push(attempts),
+      onExhausted: (_image, attempts) => exhausted.push(attempts),
+    });
+    const makeBroken = (id) => {
+      const image = document.createElement("img");
+      image.src = `https://attachments.f95zone.to/${id}.jpg?token=stable`;
+      Object.defineProperty(image, "complete", { configurable: true, value: true });
+      Object.defineProperty(image, "naturalWidth", { configurable: true, writable: true, value: 0 });
+      document.body.appendChild(image);
+      return image;
+    };
+    const successImage = makeBroken("success");
+    repair.start();
+    const successCallback = [...callbacks.values()][0];
+    successImage.naturalWidth = 100;
+    successCallback();
+    assert.deepStrictEqual(successes, [1]);
+    assert.strictEqual(
+      stableOriginalUrl(successImage.dataset.siteRepairOriginalSrc),
+      "https://attachments.f95zone.to/success.jpg?token=stable",
+    );
+
+    const exhaustedImage = makeBroken("exhausted");
+    repair.attach(exhaustedImage);
+    let callback = [...callbacks.values()][0];
+    callback();
+    callback = [...callbacks.values()][0];
+    callback();
+    assert.deepStrictEqual(exhausted, [2]);
+
+    const removedImage = makeBroken("removed");
+    repair.attach(removedImage);
+    callback = [...callbacks.values()][0];
+    removedImage.remove();
+    callback();
+    assert.strictEqual(repair.getSnapshot().pending, 0);
+
+    const cancelledImage = makeBroken("cancelled");
+    repair.attach(cancelledImage);
+    repair.stop();
+    assert.deepStrictEqual(repair.getSnapshot().timers, []);
+    cancelledImage.dispatchEvent(new window.Event("error"));
+    assert.strictEqual(repair.getSnapshot().pending, 0);
+  } finally {
+    sandbox.restore();
+  }
+});
+
+runTest("SITE-REPAIR-01 follows canonical boundaries and keeps route-inapplicable repair idle", async () => {
+  const addonRoot = path.join(ROOT, "addons/site-repair-addon/src");
+  for (const relative of [
+    "main.js", "core/adaptor.js", "api/bridge.js", "api/storage.js",
+    "app/createSiteRepairApp.js", "app/commands.js", "app/lifecycle.js",
+    "repairs/imageAttachments/imageRepair.js", "ui/imageStatus.js",
+  ]) assert.ok(fs.existsSync(path.join(addonRoot, relative)), relative);
+  assert.ok(fs.readFileSync(path.join(addonRoot, "main.js"), "utf8").split(/\r?\n/).length < 35);
+  for (const area of ["repairs", "ui"]) {
+    for (const file of collectJavaScriptFiles(path.join(addonRoot, area))) {
+      assert.doesNotMatch(fs.readFileSync(file, "utf8"), /invokeCoreAction\s*\(/, path.relative(ROOT, file));
+    }
+  }
+  const sandbox = createDomSandbox("https://f95zone.to/forums/games.2/");
+  const actions = [];
+  let commandHandler = null;
+  let acknowledgements = 0;
+  try {
+    const core = {
+      registerAddon(addon) { actions.push({ action: "register", addon }); },
+      updateStatus(status) { actions.push({ action: "status", status }); },
+      notifyTeardownComplete() { acknowledgements += 1; },
+      bindAddonCommands(handler) { commandHandler = handler; return () => { commandHandler = null; }; },
+      async invokeCoreAction(action, payload) {
+        actions.push({ action, payload });
+        if (action === "addon.access") return { ok: true, value: { blocked: false, enabled: true } };
+        if (action === "storage.get") return { ok: true, value: payload.defaultValue };
+        if (action === "storage.set") return { ok: true };
+        if (action === "page.getContext") return { ok: true, value: { pageScopes: ["f95zone"], url: location.href } };
+        return { ok: true };
+      },
+    };
+    const { createSiteRepairApp } = loadModule("addons/site-repair-addon/src/app/createSiteRepairApp.js");
+    const app = createSiteRepairApp({ core, runtime: {
+      addonId: "site-repair-addon", addonName: "F95UE Site Repair", addonVersion: "test",
+      addonDescription: "repairs", capabilities: ["storage", "page", "observer", "ui.style"],
+      requiresCore: true, pageScopes: ["f95zone"], runtimeMode: "core-required", matches: ["*://f95zone.to/*"],
+    } });
+    await app.bootstrap();
+    assert.ok(commandHandler);
+    assert.strictEqual(actions.some((entry) => entry.action === "observer.watch"), false);
+    assert.strictEqual(app.getRuntimeSnapshot().routeApplicable, false);
+    await app.getLifecycle().disable({ reason: "test" });
+    await app.getLifecycle().enable({ reason: "test" });
+    await app.getLifecycle().teardown({ reason: "terminal" });
+    await app.getLifecycle().teardown({ reason: "duplicate" });
+    assert.strictEqual(acknowledgements, 1);
+    assert.deepStrictEqual(app.getLifecycle().getResourceSnapshot(), []);
+    assert.deepStrictEqual(app.getLifecycle().getPendingOperationSnapshot(), []);
+  } finally {
+    sandbox.restore();
+  }
+});
+
+runTest("SITE-REPAIR-02 retries eligible Latest failures exactly once and preserves terminal errors", () => {
+  const { createLatestAjaxJqueryAdapter } = loadModule(
+    "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+  );
+  const timeouts = new Map();
+  let nextTimer = 1;
+  const calls = [];
+  function originalAjax(settingsOrUrl, maybeSettings) {
+    const settings = typeof settingsOrUrl === "object" ? settingsOrUrl : { ...maybeSettings, url: settingsOrUrl };
+    calls.push(settings);
+    return settings;
+  }
+  const windowLike = {
+    jQuery: { ajax: originalAjax },
+    setTimeout(callback) { const id = nextTimer++; timeouts.set(id, callback); return id; },
+    clearTimeout(id) { timeouts.delete(id); },
+    setInterval() { throw new Error("unexpected polling"); },
+    clearInterval() {},
+  };
+  const adapter = createLatestAjaxJqueryAdapter({ window: windowLike });
+  adapter.enable();
+  const patched = windowLike.jQuery.ajax;
+  adapter.enable();
+  assert.strictEqual(windowLike.jQuery.ajax, patched, "duplicate enable must not double-patch");
+
+  for (const fixture of [
+    ["parsererror", 200, true], ["timeout", 0, true], ["error", 0, true],
+    ["error", 503, true], ["error", 403, false], ["error", 429, false],
+  ]) {
+    const [textStatus, status, retry] = fixture;
+    let terminalCalls = 0;
+    patched({ url: "/sam/latest_data.php", error: () => { terminalCalls += 1; } });
+    calls.at(-1).error({ status }, textStatus, new Error(textStatus));
+    assert.strictEqual(timeouts.size > 0, retry, `${textStatus}/${status}`);
+    if (retry) {
+      const callback = [...timeouts.values()][0];
+      timeouts.clear();
+      callback();
+      const retried = calls.at(-1);
+      assert.strictEqual(retried.__f95ueSiteRepairRetried, true);
+      retried.error({ status }, textStatus, new Error(textStatus));
+      assert.strictEqual(timeouts.size, 0, "a retried request must not retry again");
+      assert.strictEqual(terminalCalls, 1);
+    } else {
+      assert.strictEqual(terminalCalls, 1);
+    }
+  }
+  adapter.disable();
+  assert.strictEqual(windowLike.jQuery.ajax, originalAjax);
+});
+
+runTest("SITE-REPAIR-02 cancels retries and late-jQuery polling by generation", () => {
+  const { createLatestAjaxJqueryAdapter } = loadModule(
+    "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+  );
+  const intervals = new Map();
+  const timeouts = new Map();
+  let id = 0;
+  const windowLike = {
+    setInterval(callback) { const timer = ++id; intervals.set(timer, callback); return timer; },
+    clearInterval(timer) { intervals.delete(timer); },
+    setTimeout(callback) { const timer = ++id; timeouts.set(timer, callback); return timer; },
+    clearTimeout(timer) { timeouts.delete(timer); },
+  };
+  const adapter = createLatestAjaxJqueryAdapter({ window: windowLike });
+  adapter.enable();
+  assert.strictEqual(intervals.size, 1);
+  let requestedSettings = null;
+  const originalAjax = (settings) => { requestedSettings = settings; return undefined; };
+  windowLike.jQuery = { ajax: originalAjax };
+  [...intervals.values()][0]();
+  assert.notStrictEqual(windowLike.jQuery.ajax, originalAjax, "jQuery loaded later must be patched");
+  windowLike.jQuery.ajax({ url: "/sam/latest_data.php" });
+  requestedSettings.error({ status: 500 }, "error");
+  assert.strictEqual(timeouts.size, 1);
+  adapter.disable();
+  assert.strictEqual(intervals.size, 0);
+  assert.strictEqual(timeouts.size, 0);
+  assert.strictEqual(windowLike.jQuery.ajax, originalAjax);
+  assert.strictEqual(adapter.getSnapshot().pendingRetries, 0);
+});
+
+runTest("SITE-REPAIR-02 drops the obsolete core preference without importing it", async () => {
+  const previousGM = global.GM;
+  const gm = createFakeGM();
+  global.GM = gm;
+  try {
+    const settings = loadModule("src/services/settingsService.js");
+    const { config } = loadModule("src/config.js");
+    await seedReadyConfig(gm, settings, config);
+    const envelope = gm.snapshot()[settings.CONFIG_ENVELOPE_KEY];
+    envelope.data.latestSettings.latestAjaxErrorRecovery = false;
+    await gm.setValue(settings.CONFIG_ENVELOPE_KEY, envelope);
+    const writes = gm.logs().writes.length;
+    const loaded = await settings.loadConfig();
+    assert.strictEqual(Object.hasOwn(loaded.data.latestSettings, "latestAjaxErrorRecovery"), false);
+    assert.strictEqual(Object.hasOwn(loaded.data.addons.byAddon, "site-repair-addon"), false);
+    assert.strictEqual(gm.logs().writes.length, writes);
+    const committed = await settings.commitConfig(loaded.data, { origin: "SITE-REPAIR-02:drop-obsolete-key" });
+    assert.strictEqual(committed.committed, true);
+    assert.strictEqual(
+      Object.hasOwn(gm.snapshot()[settings.CONFIG_ENVELOPE_KEY].data.latestSettings, "latestAjaxErrorRecovery"),
+      false,
+    );
+  } finally { global.GM = previousGM; }
+});
+
+runTest("SITE-REPAIR-02 leaves Site Repair as the sole patch owner", () => {
+  const coreFeature = path.join(ROOT, "src/features/latest-ajax-error-recovery");
+  assert.strictEqual(fs.existsSync(coreFeature), false);
+  const generated = fs.readFileSync(path.join(ROOT, "src/generated/features.generated.js"), "utf8");
+  assert.doesNotMatch(generated, /latestAjaxErrorRecoveryFeature|latest-ajax-error-recovery/);
+  const matches = [];
+  for (const file of collectJavaScriptFiles(path.join(ROOT, "src"))) {
+    if (/f95ueSiteRepairLatestAjax|f95ueLatestAjaxRecovery/.test(fs.readFileSync(file, "utf8"))) matches.push(file);
+  }
+  for (const file of collectJavaScriptFiles(path.join(ROOT, "addons"))) {
+    if (/f95ueSiteRepairLatestAjax|f95ueLatestAjaxRecovery/.test(fs.readFileSync(file, "utf8"))) matches.push(file);
+  }
+  assert.deepStrictEqual(matches.map((file) => path.relative(ROOT, file).replace(/\\/g, "/")), [
+    "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+  ]);
 });
 
 testChain.then(() => {

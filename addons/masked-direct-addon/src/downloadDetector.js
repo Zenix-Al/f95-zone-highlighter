@@ -11,7 +11,7 @@ import {
   DIRECT_DOWNLOAD_ROUTE_TTL_MS,
   TIMINGS,
 } from "./constants.js";
-import { hasFreshRouteContext } from "./routeContext.js";
+import { hasFreshRouteContext } from "./ports/routeContextRepository.js";
 import { sleep } from "./utils.js";
 
 const DETECTOR_TIMEOUT_MS = 100; // Poll interval

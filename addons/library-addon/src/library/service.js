@@ -3,9 +3,8 @@ import { createLibraryApiClient, resolveImportThrottleInfo } from "../api/librar
 import { executeLibraryImport, previewLibraryImport } from "./importWorkflow.js";
 import { getSortConfig, matchesLibraryFilters } from "./querying.js";
 import { normalizeRecord } from "./recordModel.js";
-import { storageGet, storageSet } from "../main.js";
 
-export function createLibraryService(bridge) {
+export function createLibraryService(bridge, storage) {
   const api = createLibraryApiClient(bridge);
 
   async function getImportThrottleInfo() {
@@ -208,13 +207,11 @@ export function createLibraryService(bridge) {
   }
 
   async function runLegacyMigration() {
-    const markerResult = await storageGet(LIBRARY_MIGRATION_MARKER_KEY, false);
-
-    if (markerResult?.ok && markerResult.value === true) {
+    const markerValue = await storage.get(LIBRARY_MIGRATION_MARKER_KEY, false);
+    if (markerValue === true) {
       return { ok: true, migrated: 0, skipped: true };
     }
-    const legacyResult = await storageGet(LIBRARY_LEGACY_KEY, null);
-    const rawLegacy = legacyResult?.ok ? legacyResult.value : null;
+    const rawLegacy = await storage.get(LIBRARY_LEGACY_KEY, null);
 
     let migrated = 0;
     if (Array.isArray(rawLegacy)) {
@@ -226,7 +223,8 @@ export function createLibraryService(bridge) {
       });
       migrated = Number(imported?.imported || 0);
     }
-    storageSet(LIBRARY_LEGACY_KEY, null);
+    await storage.set(LIBRARY_LEGACY_KEY, null);
+    await storage.set(LIBRARY_MIGRATION_MARKER_KEY, true);
 
     return { ok: true, migrated, skipped: false };
   }

@@ -33,8 +33,8 @@ The core script now provides a solid foundation + **modular add-on system**. Som
 
 You can enable or disable these individually from the main config panel:
 
-- **[Image Repair Add-on](https://greasyfork.org/en/scripts/572502-f95ue-image-repair-add-on)**  
-  Automatically retries broken attachment images (`attachments.f95zone.to`)
+- **[Site Repair](https://greasyfork.org/en/scripts/572502-f95ue-image-repair-add-on)**
+  Hosts independently controlled F95Zone repairs, currently including broken attachment-image retries.
 
 - **[Library Add-on](https://greasyfork.org/en/scripts/572506-f95ue-library-add-on)**  
   Save threads to your personal library with notes, ratings, status tracking, advanced search, pinning, and full import/export

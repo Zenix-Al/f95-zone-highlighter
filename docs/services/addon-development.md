@@ -11,6 +11,19 @@ userscript, verify old and new runtimes produce one canonical card, then remove 
 release. This does not change the bridge handshake, transport, headers, or public action response
 shapes.
 
+Site Repair is the concrete release example: `site-repair-addon` declares
+`image-repair-addon` as a legacy ID while explicitly retaining the old userscript
+namespace and GreasyFork download identity. Publish the alias-aware core/catalog
+before replacing the old userscript, then publish the renamed userscript to the
+existing listing.
+
+Site Repair also owns Latest Ajax Recovery. The unreleased core preference is not
+imported: `latestSettings.latestAjaxErrorRecovery` is now an unsupported field,
+is dropped from live configuration by tolerant sanitization, and disappears from
+the canonical envelope on the next normal config commit. Site Repair uses its own
+independent default. Do not release a core copy of the patch at the same time as
+the add-on patch.
+
 ---
 
 ## Recommended Add-on Structure

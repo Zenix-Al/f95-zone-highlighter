@@ -138,6 +138,10 @@ __ROOT__ .f95ue-library-bulkbar select {
   padding: 7px 9px;
 }
 
+__ROOT__ input[data-field="importFile"] {
+  display: none !important;
+}
+
 __ROOT__ .f95ue-library-search-wrap input {
   width: 100%;
   min-width: 0;
