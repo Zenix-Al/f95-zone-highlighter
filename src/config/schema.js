@@ -150,6 +150,8 @@ const addons = node("object", defaultAddonsSettings, {
           panelBody: string("", { maxLength: 10000 }),
           statusMessage: string("", { maxLength: 500 }),
           pageScopes: node("array", [], { items: string("", { maxLength: 200 }) }),
+          runtimeMode: string("", { maxLength: 50 }),
+          matches: node("array", [], { items: string("", { maxLength: 1000 }) }),
           capabilities: node("array", [], { items: string("", { maxLength: 200 }), unique: true }),
           installedSeenAt: finiteNumber(0, { min: 0 }),
           lastSeenAt: finiteNumber(0, { min: 0 }),

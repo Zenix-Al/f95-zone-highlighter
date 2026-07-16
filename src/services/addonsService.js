@@ -1,6 +1,7 @@
 import { stateManager, config, defaultAddonsApiThrottleSettings } from "../config.js";
 import { showToast } from "../ui/components/toast.js";
 import { openConfirmDialog } from "../ui/components/dialog.js";
+import { debugLog } from "../core/logger.js";
 import {
   ADDON_COMMAND_EVENT,
   ADDONS_API_VERSION,
@@ -235,6 +236,12 @@ function measurePayloadBytes(payload) {
 
 export function getAddonActionBlockReason(addon, action) {
   const reason = getAddonExecutionBlockReason(addon);
+  if (
+    reason === "addon_disabled" &&
+    (action === "feature.enable" || action === "feature.disable")
+  ) {
+    return null;
+  }
   return reason === "addon_out_of_scope" && getAddonActionScopePolicy(action) === "management"
     ? null
     : reason;
@@ -501,9 +508,23 @@ export function initAddonsConsoleBridge() {
     isServiceDisabled: isAddonsServiceDisabled,
     getCoreActionThrottleConfig: getAddonsCoreActionThrottleConfig,
     onRegister: (addon) => {
+      debugLog("addonsService", `Received add-on registration (id=${String(addon?.id || "")}, version=${String(addon?.version || "")}, status=${String(addon?.status || "")}, scopes=${Array.isArray(addon?.pageScopes) ? addon.pageScopes.join(",") : ""}, runtimeMode=${String(addon?.runtimeMode || "")}).`, {
+        data: {
+          id: addon?.id,
+          version: addon?.version,
+          status: addon?.status,
+          pageScopes: addon?.pageScopes,
+          runtimeMode: addon?.runtimeMode,
+          matches: addon?.matches,
+        },
+      });
       const registration = validateAddonRegistration(addon || {});
       const addonId = sanitizeAddonId(addon?.id);
       if (!registration.ok) {
+        debugLog("addonsService", `Rejected add-on registration (id=${addonId}, reason=${String(registration.reason || "")}, errors=${Array.isArray(registration.errors) ? registration.errors.join(",") : ""}).`, {
+          level: "warn",
+          data: { addonId, reason: registration.reason, errors: registration.errors },
+        });
         if (addonId) {
           window.dispatchEvent(
             new CustomEvent(ADDON_COMMAND_EVENT, {
@@ -514,9 +535,19 @@ export function initAddonsConsoleBridge() {
         return;
       }
       const snapshot = registerAddon(addon || {});
+      const registeredAddon = snapshot.find((entry) => entry.id === getCanonicalAddonId(addonId));
+      debugLog("addonsService", `Accepted add-on registration (id=${addonId}, registered=${Boolean(registeredAddon)}, trusted=${String(registeredAddon?.trusted)}, blocked=${String(registeredAddon?.blocked)}, blockReason=${String(registeredAddon?.blockReason || "")}).`, {
+        data: {
+          addonId,
+          registered: Boolean(registeredAddon),
+          trusted: registeredAddon?.trusted,
+          blocked: registeredAddon?.blocked,
+          blockReason: registeredAddon?.blockReason,
+        },
+      });
       if (!addonId) return;
 
-      const registered = snapshot.find((entry) => entry.id === getCanonicalAddonId(addonId));
+      const registered = registeredAddon;
       if (registered) {
         void upsertInstalledAddonMeta(addonId, {
           name: registered.name,
@@ -566,12 +597,17 @@ export function initAddonsConsoleBridge() {
       addonLifecycle.emitLifecycleCommand(addonId, "after-register", { capabilities, pageScopes });
     },
     onUnregister: (addonId) => {
+      debugLog("addonsService", "Received add-on unregister.", { data: { addonId } });
       unregisterAddon(addonId);
     },
     onUpdateStatus: (addonId, status, statusMessage) => {
+      debugLog("addonsService", `Received add-on status update (id=${String(addonId || "")}, status=${String(status || "")}).`, {
+        data: { addonId, status, statusMessage },
+      });
       updateAddonStatus(addonId, status, statusMessage || "");
     },
     onTeardownComplete: (addonId) => {
+      debugLog("addonsService", "Received add-on teardown acknowledgment.", { data: { addonId } });
       addonLifecycle.acknowledgeTeardown(addonId);
     },
     onInvokeCoreAction: (addonId, action, payload) =>

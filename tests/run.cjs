@@ -26,7 +26,7 @@ const ADDON_MANIFEST = JSON.parse(
   fs.readFileSync(path.join(ROOT, "addons", "addons.manifest.json"), "utf8"),
 );
 const TRUSTED_ADDON_CATALOG = JSON.parse(
-  fs.readFileSync(path.join(ROOT, "src", "services", "addons", "trusted-catalog.json"), "utf8"),
+  fs.readFileSync(path.join(ROOT, "addons", "trusted-catalog.json"), "utf8"),
 );
 
 if (!fs.existsSync(TMP_DIR)) {
@@ -970,6 +970,22 @@ runTest("CONFIG-01 schema covers defaults, metadata, and deterministic pure APIs
   assert.strictEqual(merged.latestSettings.autoRefresh, true);
   assert.strictEqual(typeof merged.latestSettings.minVersion, "number");
   assert.notStrictEqual(merged.latestSettings, defaults.latestSettings);
+});
+
+runTest("ADDON-SCOPE-02 persists runtime metadata in installed add-on state", () => {
+  const result = validateConfig({
+    addons: {
+      installedMeta: {
+        "example-addon": {
+          runtimeMode: "core-required",
+          matches: ["*://f95zone.to/*"],
+        },
+      },
+    },
+  }, { mode: "strict", partial: true });
+  assert.strictEqual(result.valid, true);
+  assert.strictEqual(result.data.addons.installedMeta["example-addon"].runtimeMode, "core-required");
+  assert.deepStrictEqual(result.data.addons.installedMeta["example-addon"].matches, ["*://f95zone.to/*"]);
 });
 
 runTest("CORE-CONFIG-RUNTIME-LEAN-01 keeps descriptor defaults and metadata covered", () => {
@@ -2544,6 +2560,7 @@ runTest("ADDON-BUILD-TOOLS-01 normalizes Windows and POSIX metafile paths", () =
 runTest("ADDON-GOLDEN-01 keeps Example Add-on composition and API boundaries", () => {
   const addonRoot = path.join(ROOT, "addons", "example-addon", "src");
   const mainSource = fs.readFileSync(path.join(addonRoot, "main.js"), "utf8");
+  const bridgeSource = fs.readFileSync(path.join(addonRoot, "api", "bridge.js"), "utf8");
   const appSource = fs.readFileSync(path.join(addonRoot, "app", "createExampleAddonApp.js"), "utf8");
   const appSources = collectJavaScriptFiles(path.join(addonRoot, "app"))
     .map((filePath) => fs.readFileSync(filePath, "utf8"))
@@ -2560,6 +2577,10 @@ runTest("ADDON-GOLDEN-01 keeps Example Add-on composition and API boundaries", (
   assert.match(mainSource, /createCoreAdaptor/);
   assert.match(mainSource, /createExampleAddonApp/);
   assert.match(mainSource, /app\.bootstrap\(\)/);
+  assert.match(mainSource, /Handshake bootstrap started/);
+  assert.match(bridgeSource, /Handshake ping dispatched/);
+  assert.match(bridgeSource, /Registration command dispatched/);
+  assert.match(bridgeSource, /Status command dispatched/);
   assert.doesNotMatch(mainSource, /invokeCoreAction|registerAddonRuntime|openDialog/);
   assert.match(appSource, /createExampleLifecycle/);
   assert.match(appSource, /createBulkImportController/);
@@ -2572,6 +2593,39 @@ runTest("ADDON-GOLDEN-01 keeps Example Add-on composition and API boundaries", (
   assert.ok(fs.existsSync(path.join(addonRoot, "app", "commands.js")));
   assert.ok(fs.existsSync(path.join(addonRoot, "ui", "panel.js")));
   assert.ok(fs.existsSync(path.join(addonRoot, "ui", "bindings.js")));
+});
+
+runTest("ADDON-API config.getTagPrefs reads canonical live config", async () => {
+  const { actionConfigGetTagPrefs } = loadModule("src/services/addons/coreActions.js");
+  const result = await actionConfigGetTagPrefs(
+    (value) => JSON.stringify(value).length,
+    1024,
+    () => ({
+      tags: [{ id: 7, name: "Example" }],
+      preferredTags: [7],
+      excludedTags: [8],
+      markedTags: [9],
+      color: { preferred: "#00ff00" },
+    }),
+  );
+  assert.deepStrictEqual(result, {
+    ok: true,
+    value: {
+      tags: [{ id: 7, name: "Example" }],
+      preferredTags: [7],
+      excludedTags: [8],
+      markedTags: [9],
+      color: { preferred: "#00ff00" },
+    },
+  });
+});
+
+runTest("ADDON-GOLDEN-01 bounds large API results before panel rendering", () => {
+  const { compactResultForPanel } = loadModule("addons/example-addon/src/app/state.js");
+  const result = compactResultForPanel({ ok: true, value: [{ body: "X".repeat(20000) }] });
+  assert.strictEqual(result.ok, true);
+  assert.match(result.value, /large result omitted from panel/);
+  assert.ok(JSON.stringify(result).length < 1000);
 });
 
 runTest("ADDON-HALLOWEEN-01 follows the Example boundaries and confines bridge actions", () => {
@@ -2968,6 +3022,7 @@ runTest("ADDON-GOLDEN-01 boots normally on the declared F95Zone scope", async ()
         addonVersion: "0.2.8",
         addonDescription: "Example",
         capabilities: ADDON_MANIFEST.addons.find((addon) => addon.id === "example-addon").capabilities,
+        requiresCore: true,
         pageScopes: ["f95zone"],
         runtimeMode: "core-required",
         matches: ["*://f95zone.to/*"],
@@ -2975,6 +3030,7 @@ runTest("ADDON-GOLDEN-01 boots normally on the declared F95Zone scope", async ()
     });
     await app.bootstrap();
     assert.strictEqual(registrations.length, 2);
+    assert.strictEqual(registrations[0].requiresCore, true);
     assert.deepStrictEqual(registrations[0].pageScopes, ["f95zone"]);
     assert.strictEqual(actions.some((entry) => entry.action === "scope.error"), false);
     assert.ok(actions.some((entry) => entry.action === "ui.style.register"));
@@ -3190,7 +3246,7 @@ runTest("ADDON-SCOPE-02 validates authoritative metadata and preserves headers",
     assert.ok(header.includes(`// @version      ${addon.version}`));
   }
   const header = fs.readFileSync(path.join(ROOT, "header.txt"), "utf8");
-  assert.ok(header.includes("@resource     trustedAddonCatalog https://cdn.jsdelivr.net/gh/Zenix-Al/f95-zone-highlighter@main/src/services/addons/trusted-catalog.json"));
+  assert.ok(header.includes("@resource     trustedAddonCatalog https://cdn.jsdelivr.net/gh/Zenix-Al/f95-zone-highlighter@main/addons/trusted-catalog.json"));
   assert.strictEqual(addonCatalog.renderCatalog(manifest), addonCatalog.renderCatalog([...manifest].reverse()));
 });
 
@@ -3574,6 +3630,7 @@ runTest("ADDON-TRUST-GATING-01 requires one handshake and access contract per ad
     const source = files.map((filePath) => fs.readFileSync(filePath, "utf8")).join("\n");
     assert.ok(source.includes("waitForCorePing"), `${entry.id} must perform the core handshake`);
     assert.ok(/registerAddon|registerAddonRuntime|dispatchCoreCommand\("register"/.test(source), `${entry.id} must register through the bridge`);
+    assert.match(source, /requiresCore\s*:\s*(?:runtime\.)?requiresCore/, `${entry.id} must send requiresCore in registration metadata`);
     assert.ok(/getAddonAccess|addon\.access/.test(source), `${entry.id} must consume the shared access result`);
     assert.ok(source.includes("invokeCoreAction"), `${entry.id} must use permission-checked core actions`);
     assert.ok(/(?:detail|d)\.addonId|bindAddonCommands/.test(source), `${entry.id} must filter core commands by identity`);
@@ -3590,6 +3647,56 @@ runTest("ADDON-SCOPE-02 keeps management actions outside runtime scope", () => {
   assert.strictEqual(getAddonActionScopePolicy("storage.get"), "runtime");
   assert.strictEqual(getAddonActionBlockReason(addon, "feature.enable"), null);
   assert.strictEqual(getAddonActionBlockReason(addon, "storage.get"), "addon_out_of_scope");
+  assert.strictEqual(getAddonActionBlockReason({ ...addon, status: "disabled" }, "feature.enable"), null);
+  assert.strictEqual(getAddonActionBlockReason({ ...addon, status: "disabled" }, "feature.disable"), null);
+  assert.strictEqual(getAddonActionBlockReason({ ...addon, status: "disabled" }, "storage.get"), "addon_disabled");
+});
+
+runTest("ADDON-RUNTIME-CONTRACT-01 keeps core disable reversible", async () => {
+  const { actionFeatureEnableDisable } = loadModule("src/services/addons/coreActions.js");
+  const commands = [];
+  let cancelRequests = 0;
+  const persist = async () => ({ ok: true });
+  const meta = async () => ({ ok: true });
+  const state = { enabled: true };
+  const updateStatus = (addonId, status) => commands.push({ addonId, command: `status:${status}` });
+  const emit = (addonId, command) => commands.push({ addonId, command });
+
+  const disabled = await actionFeatureEnableDisable(
+    "example-addon",
+    "feature.disable",
+    updateStatus,
+    emit,
+    () => state,
+    persist,
+    meta,
+    () => { cancelRequests += 1; },
+  );
+  assert.deepStrictEqual(disabled, { ok: true });
+  assert.strictEqual(cancelRequests, 0);
+  assert.deepStrictEqual(commands, [
+    { addonId: "example-addon", command: "status:disabled" },
+    { addonId: "example-addon", command: "before-disable" },
+    { addonId: "example-addon", command: "disable" },
+  ]);
+
+  commands.length = 0;
+  const enabled = await actionFeatureEnableDisable(
+    "example-addon",
+    "feature.enable",
+    updateStatus,
+    emit,
+    () => state,
+    persist,
+    meta,
+    () => { cancelRequests += 1; },
+  );
+  assert.deepStrictEqual(enabled, { ok: true });
+  assert.strictEqual(cancelRequests, 1);
+  assert.deepStrictEqual(commands, [
+    { addonId: "example-addon", command: "status:installed" },
+    { addonId: "example-addon", command: "enable" },
+  ]);
 });
 
 runTest("ADDON-BRIDGE listener shutdown permits one clean reinitialization", () => {

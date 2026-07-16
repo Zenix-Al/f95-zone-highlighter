@@ -1,5 +1,6 @@
 import { executeActionDescriptor, getAction, getActionSnapshot } from "./actions/registry.js";
 import { ADDON_UI_SLOT_POLICY, normalizeAddonMountSlot } from "./uiSanitizer.js";
+import { config } from "../../config.js";
 import { storageAdapter } from "../storageAdapter.js";
 import { getAddonActionScopePolicy } from "./actions/policy.js";
 import "./actions/descriptors.js";
@@ -38,7 +39,7 @@ export function getRegisteredAddonActionSnapshot() { return getActionSnapshot();
 /* Legacy handler table retained temporarily while descriptor modules are being registered. */
 export function createLegacyActionHandlers({ addonId, deps, limits }) {
   const {
-    showToast, emitAddonLifecycleCommand, requestAddonTeardown, cancelAddonTeardown, updateAddonStatus,
+    showToast, emitAddonLifecycleCommand, cancelAddonTeardown, updateAddonStatus,
     ensureAddonStateBucket, persistAddonsState, upsertInstalledAddonMeta, measurePayloadBytes,
     idbGetForAddon, idbPutForAddon, idbDeleteForAddon, idbBulkPutForAddon, idbBulkDeleteForAddon,
     idbQueryForAddon, idbCountForAddon, watchAddonObserver, unwatchAddonObserver, sanitizeDockButtons,
@@ -58,7 +59,6 @@ export function createLegacyActionHandlers({ addonId, deps, limits }) {
         ensureAddonStateBucket,
         persistAddonsState,
         upsertInstalledAddonMeta,
-        requestAddonTeardown,
         cancelAddonTeardown,
       ),
     "feature.disable": async () =>
@@ -70,7 +70,6 @@ export function createLegacyActionHandlers({ addonId, deps, limits }) {
         ensureAddonStateBucket,
         persistAddonsState,
         upsertInstalledAddonMeta,
-        requestAddonTeardown,
         cancelAddonTeardown,
       ),
     "feature.refresh": () => actionFeatureRefresh(addonId, emitAddonCommand),
@@ -191,7 +190,6 @@ async function actionFeatureEnableDisable(
   ensureAddonStateBucket,
   persistAddonsState,
   upsertInstalledAddonMeta,
-  requestAddonTeardown,
   cancelAddonTeardown,
 ) {
   const enabled = action === "feature.enable";
@@ -209,7 +207,6 @@ async function actionFeatureEnableDisable(
 
   if (!enabled) {
     emitAddonLifecycleCommand(addonId, "before-disable");
-    requestAddonTeardown(addonId, "disable");
   } else {
     cancelAddonTeardown?.(addonId);
   }
@@ -314,15 +311,10 @@ function actionStorageGetUsage(
   };
 }
 
-async function actionConfigGetTagPrefs(measurePayloadBytes, maxPayloadBytes) {
+async function actionConfigGetTagPrefs(measurePayloadBytes, maxPayloadBytes, getConfig = () => config) {
   try {
-    const [tags, preferredTags, excludedTags, markedTags, color] = await Promise.all([
-      storageAdapter.get("tags", []),
-      storageAdapter.get("preferredTags", []),
-      storageAdapter.get("excludedTags", []),
-      storageAdapter.get("markedTags", []),
-      storageAdapter.get("color", {}),
-    ]);
+    const currentConfig = getConfig?.() || {};
+    const { tags, preferredTags, excludedTags, markedTags, color } = currentConfig;
 
     const value = {
       tags: Array.isArray(tags) ? tags : [],

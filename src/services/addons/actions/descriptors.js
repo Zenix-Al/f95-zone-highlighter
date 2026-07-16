@@ -74,8 +74,8 @@ function actionUiDialogUpdate(
 function executeLegacyHandler(id, { addonId, payload, deps, limits, allowed }) {
   const h = {
     "toast.show": () => actionToastShow(deps.showToast, payload),
-    "feature.enable": () => actionFeatureEnableDisable(addonId, id, deps.updateAddonStatus, deps.emitAddonLifecycleCommand, deps.ensureAddonStateBucket, deps.persistAddonsState, deps.upsertInstalledAddonMeta, deps.requestAddonTeardown, deps.cancelAddonTeardown),
-    "feature.disable": () => actionFeatureEnableDisable(addonId, id, deps.updateAddonStatus, deps.emitAddonLifecycleCommand, deps.ensureAddonStateBucket, deps.persistAddonsState, deps.upsertInstalledAddonMeta, deps.requestAddonTeardown, deps.cancelAddonTeardown),
+    "feature.enable": () => actionFeatureEnableDisable(addonId, id, deps.updateAddonStatus, deps.emitAddonLifecycleCommand, deps.ensureAddonStateBucket, deps.persistAddonsState, deps.upsertInstalledAddonMeta, deps.cancelAddonTeardown),
+    "feature.disable": () => actionFeatureEnableDisable(addonId, id, deps.updateAddonStatus, deps.emitAddonLifecycleCommand, deps.ensureAddonStateBucket, deps.persistAddonsState, deps.upsertInstalledAddonMeta, deps.cancelAddonTeardown),
     "feature.refresh": () => actionFeatureRefresh(addonId, deps.emitAddonCommand),
     "storage.get": () => actionStorageGet(addonId, payload, deps.ensureAddonStateBucket, deps.persistAddonsState),
     "storage.set": () => actionStorageSet(addonId, payload, deps.measurePayloadBytes, limits.maxAddonStorageValueBytes, limits.maxAddonStorageTotalBytes, deps.ensureAddonStateBucket, deps.persistAddonsState),

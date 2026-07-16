@@ -140,6 +140,7 @@ function registerAddon() {
         },
       ],
       capabilities: runtime.capabilities,
+      requiresCore: runtime.requiresCore,
       // The Library button is intentionally available across F95Zone; thread
       // pages only add Save/Remove controls on top of that site-wide surface.
       pageScopes: runtime.pageScopes,
