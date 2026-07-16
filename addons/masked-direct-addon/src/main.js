@@ -411,6 +411,7 @@ function registerAddon() {
       panelSettingsDefaults: ADDON_SETTINGS_DEFAULT,
       panelSettings: ADDON_PANEL_SETTINGS,
       capabilities: runtime.capabilities,
+      requiresCore: runtime.requiresCore,
       pageScopes: runtime.pageScopes,
       runtimeMode: runtime.runtimeMode,
       matches: runtime.matches,

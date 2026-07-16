@@ -23,7 +23,7 @@
         "id": "image-repair-addon",
         "name": "F95UE Image Repair Add-on",
         "description": "Automatically retries broken attachment images on F95Zone threads.",
-        "version": "0.2.4",
+        "version": "0.2.5",
         "author": "X Death",
         "entry": "addons/image-repair-addon/src/main.js",
         "outfile": "addons/image-repair-addon/dist/image-repair-addon.user.js",
@@ -53,7 +53,7 @@
         "id": "masked-direct-addon",
         "name": "F95UE Masked + Direct Download Add-on",
         "description": "Combines masked-link skipper and direct-download flows into one trusted add-on.",
-        "version": "0.3.47",
+        "version": "0.3.48",
         "author": "X Death",
         "entry": "addons/masked-direct-addon/src/main.js",
         "outfile": "addons/masked-direct-addon/dist/masked-direct-addon.user.js",
@@ -102,7 +102,7 @@
         "id": "library-addon",
         "name": "F95UE Library Add-on",
         "description": "Quick-add threads to a personal library and manage entries with a dedicated add-on UI.",
-        "version": "0.3.55",
+        "version": "0.3.56",
         "author": "X Death",
         "entry": "addons/library-addon/src/main.js",
         "outfile": "addons/library-addon/dist/library-addon.user.js",
@@ -135,7 +135,7 @@
         "id": "example-addon",
         "name": "F95UE Example Add-on",
         "description": "Core API playground demonstrating every current addon-facing action through api modules.",
-        "version": "0.2.9",
+        "version": "0.2.11",
         "author": "X Death",
         "entry": "addons/example-addon/src/main.js",
         "outfile": "addons/example-addon/dist/example-addon.user.js",
@@ -169,7 +169,7 @@
         "id": "latest-filters-addon",
         "name": "F95UE Latest Filters Add-on",
         "description": "Adds one Saved Filters button on Latest Updates with a searchable preset list and active filter tracking.",
-        "version": "0.3.18",
+        "version": "0.3.19",
         "author": "X Death",
         "entry": "addons/latest-filters-addon/src/main.js",
         "outfile": "addons/latest-filters-addon/dist/latest-filters-addon.user.js",
@@ -203,7 +203,7 @@
         "id": "halloween-theme-addon",
         "name": "F95UE Halloween Theme Add-on",
         "description": "Forces Halloween logo/background theme with simple apply and teardown lifecycle.",
-        "version": "2.0.13",
+        "version": "2.0.14",
         "author": "X Death",
         "entry": "addons/halloween-theme-addon/src/main.js",
         "outfile": "addons/halloween-theme-addon/dist/halloween-theme-addon.user.js",
@@ -228,13 +228,13 @@
     ]
   },
   "trustedCatalog": {
-    "source": "src/services/addons/trusted-catalog.json",
+    "source": "addons/trusted-catalog.json",
     "projection": [
       {
         "id": "example-addon",
         "name": "F95UE Example Add-on",
         "description": "Core API playground demonstrating every current addon-facing action through api modules.",
-        "version": "0.2.9",
+        "version": "0.2.11",
         "pageScopes": [
           "f95zone"
         ],
@@ -249,7 +249,7 @@
         "id": "halloween-theme-addon",
         "name": "F95UE Halloween Theme Add-on",
         "description": "Forces Halloween logo/background theme with simple apply and teardown lifecycle.",
-        "version": "2.0.13",
+        "version": "2.0.14",
         "pageScopes": [
           "f95zone"
         ],
@@ -264,7 +264,7 @@
         "id": "image-repair-addon",
         "name": "F95UE Image Repair Add-on",
         "description": "Automatically retries broken attachment images on F95Zone threads.",
-        "version": "0.2.4",
+        "version": "0.2.5",
         "pageScopes": [
           "thread"
         ],
@@ -279,7 +279,7 @@
         "id": "latest-filters-addon",
         "name": "F95UE Latest Filters Add-on",
         "description": "Adds one Saved Filters button on Latest Updates with a searchable preset list and active filter tracking.",
-        "version": "0.3.18",
+        "version": "0.3.19",
         "pageScopes": [
           "latest"
         ],
@@ -294,7 +294,7 @@
         "id": "library-addon",
         "name": "F95UE Library Add-on",
         "description": "Quick-add threads to a personal library and manage entries with a dedicated add-on UI.",
-        "version": "0.3.55",
+        "version": "0.3.56",
         "pageScopes": [
           "f95zone"
         ],
@@ -309,7 +309,7 @@
         "id": "masked-direct-addon",
         "name": "F95UE Masked + Direct Download Add-on",
         "description": "Combines masked-link skipper and direct-download flows into one trusted add-on.",
-        "version": "0.3.47",
+        "version": "0.3.48",
         "pageScopes": [
           "f95zone"
         ],
@@ -1115,15 +1115,15 @@
       "id": "example-addon",
       "source": {
         "fileCount": 28,
-        "authoredBytes": 63622,
-        "physicalLines": 1965,
-        "nonblankLines": 1806,
+        "authoredBytes": 67720,
+        "physicalLines": 2071,
+        "nonblankLines": 1909,
         "files": [
           {
             "path": "addons/example-addon/src/api/bridge.js",
-            "bytes": 543,
-            "physicalLines": 19,
-            "nonblankLines": 15
+            "bytes": 1963,
+            "physicalLines": 53,
+            "nonblankLines": 48
           },
           {
             "path": "addons/example-addon/src/api/feature.js",
@@ -1205,9 +1205,9 @@
           },
           {
             "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-            "bytes": 24692,
-            "physicalLines": 758,
-            "nonblankLines": 718
+            "bytes": 26212,
+            "physicalLines": 793,
+            "nonblankLines": 753
           },
           {
             "path": "addons/example-addon/src/app/lifecycle.js",
@@ -1217,9 +1217,9 @@
           },
           {
             "path": "addons/example-addon/src/app/state.js",
-            "bytes": 2476,
-            "physicalLines": 83,
-            "nonblankLines": 77
+            "bytes": 2952,
+            "physicalLines": 100,
+            "nonblankLines": 92
           },
           {
             "path": "addons/example-addon/src/constants.js",
@@ -1235,9 +1235,9 @@
           },
           {
             "path": "addons/example-addon/src/main.js",
-            "bytes": 1393,
-            "physicalLines": 37,
-            "nonblankLines": 31
+            "bytes": 2075,
+            "physicalLines": 57,
+            "nonblankLines": 51
           },
           {
             "path": "addons/example-addon/src/ui/bindings.js",
@@ -1292,12 +1292,12 @@
       "builds": {
         "regular": {
           "mode": "regular",
-          "bytes": 77404,
-          "gzipBytes": 16847,
+          "bytes": 82516,
+          "gzipBytes": 18107,
           "contributors": [
             {
               "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-              "bytes": 23505
+              "bytes": 25030
             },
             {
               "path": "addons/shared/runtimeLifecycle.js",
@@ -1325,7 +1325,7 @@
             },
             {
               "path": "addons/example-addon/src/app/state.js",
-              "bytes": 2454
+              "bytes": 2946
             },
             {
               "path": "addons/example-addon/src/app/commands.js",
@@ -1336,12 +1336,20 @@
               "bytes": 2326
             },
             {
+              "path": "addons/example-addon/src/api/bridge.js",
+              "bytes": 1965
+            },
+            {
+              "path": "addons/example-addon/src/main.js",
+              "bytes": 1772
+            },
+            {
               "path": "addons/example-addon/src/constants.js",
               "bytes": 1102
             },
             {
-              "path": "addons/example-addon/src/main.js",
-              "bytes": 1098
+              "path": "addons/shared/debugLog.js",
+              "bytes": 948
             },
             {
               "path": "addons/example-addon/src/api/idb.js",
@@ -1356,10 +1364,6 @@
               "bytes": 543
             },
             {
-              "path": "addons/example-addon/src/api/bridge.js",
-              "bytes": 525
-            },
-            {
               "path": "addons/example-addon/src/api/storage.js",
               "bytes": 521
             },
@@ -1370,21 +1374,17 @@
             {
               "path": "addons/example-addon/src/api/ui/mount.js",
               "bytes": 313
-            },
-            {
-              "path": "addons/example-addon/src/api/feature.js",
-              "bytes": 289
             }
           ]
         },
         "release": {
           "mode": "release",
-          "bytes": 73375,
-          "gzipBytes": 15233,
+          "bytes": 73777,
+          "gzipBytes": 15316,
           "contributors": [
             {
               "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-              "bytes": 16180
+              "bytes": 16291
             },
             {
               "path": "addons/shared/runtimeLifecycle.js",
@@ -1412,7 +1412,7 @@
             },
             {
               "path": "addons/example-addon/src/app/state.js",
-              "bytes": 1757
+              "bytes": 2128
             },
             {
               "path": "addons/example-addon/src/ui/bindings.js",
@@ -1423,12 +1423,12 @@
               "bytes": 1559
             },
             {
-              "path": "addons/example-addon/src/main.js",
-              "bytes": 885
-            },
-            {
               "path": "addons/example-addon/src/constants.js",
               "bytes": 836
+            },
+            {
+              "path": "addons/example-addon/src/main.js",
+              "bytes": 741
             },
             {
               "path": "addons/example-addon/src/api/idb.js",
@@ -1440,7 +1440,7 @@
             },
             {
               "path": "addons/example-addon/src/api/bridge.js",
-              "bytes": 449
+              "bytes": 486
             },
             {
               "path": "addons/example-addon/src/api/observer.js",
@@ -1470,9 +1470,9 @@
       "id": "halloween-theme-addon",
       "source": {
         "fileCount": 10,
-        "authoredBytes": 10873,
-        "physicalLines": 312,
-        "nonblankLines": 280,
+        "authoredBytes": 10915,
+        "physicalLines": 313,
+        "nonblankLines": 281,
         "files": [
           {
             "path": "addons/halloween-theme-addon/src/api/bridge.js",
@@ -1500,9 +1500,9 @@
           },
           {
             "path": "addons/halloween-theme-addon/src/app/createHalloweenThemeApp.js",
-            "bytes": 5336,
-            "physicalLines": 163,
-            "nonblankLines": 150
+            "bytes": 5378,
+            "physicalLines": 164,
+            "nonblankLines": 151
           },
           {
             "path": "addons/halloween-theme-addon/src/app/lifecycle.js",
@@ -1539,8 +1539,8 @@
       "builds": {
         "regular": {
           "mode": "regular",
-          "bytes": 24943,
-          "gzipBytes": 6030,
+          "bytes": 24988,
+          "gzipBytes": 6038,
           "contributors": [
             {
               "path": "addons/shared/runtimeLifecycle.js",
@@ -1548,7 +1548,7 @@
             },
             {
               "path": "addons/halloween-theme-addon/src/app/createHalloweenThemeApp.js",
-              "bytes": 5078
+              "bytes": 5123
             },
             {
               "path": "addons/shared/coreBridge.js",
@@ -1598,8 +1598,8 @@
         },
         "release": {
           "mode": "release",
-          "bytes": 23140,
-          "gzipBytes": 5393,
+          "bytes": 23186,
+          "gzipBytes": 5402,
           "contributors": [
             {
               "path": "addons/shared/runtimeLifecycle.js",
@@ -1607,7 +1607,7 @@
             },
             {
               "path": "addons/halloween-theme-addon/src/app/createHalloweenThemeApp.js",
-              "bytes": 3750
+              "bytes": 3785
             },
             {
               "path": "addons/shared/coreBridge.js",
@@ -1661,9 +1661,9 @@
       "id": "image-repair-addon",
       "source": {
         "fileCount": 8,
-        "authoredBytes": 19645,
-        "physicalLines": 651,
-        "nonblankLines": 562,
+        "authoredBytes": 19688,
+        "physicalLines": 652,
+        "nonblankLines": 563,
         "files": [
           {
             "path": "addons/image-repair-addon/src/api/observer.js",
@@ -1673,9 +1673,9 @@
           },
           {
             "path": "addons/image-repair-addon/src/app.js",
-            "bytes": 10667,
-            "physicalLines": 329,
-            "nonblankLines": 292
+            "bytes": 10710,
+            "physicalLines": 330,
+            "nonblankLines": 293
           },
           {
             "path": "addons/image-repair-addon/src/constants.js",
@@ -1718,12 +1718,12 @@
       "builds": {
         "regular": {
           "mode": "regular",
-          "bytes": 24151,
-          "gzipBytes": 6409,
+          "bytes": 24197,
+          "gzipBytes": 6418,
           "contributors": [
             {
               "path": "addons/image-repair-addon/src/app.js",
-              "bytes": 10038
+              "bytes": 10084
             },
             {
               "path": "addons/shared/coreBridge.js",
@@ -1773,12 +1773,12 @@
         },
         "release": {
           "mode": "release",
-          "bytes": 20221,
-          "gzipBytes": 5206,
+          "bytes": 20271,
+          "gzipBytes": 5214,
           "contributors": [
             {
               "path": "addons/image-repair-addon/src/app.js",
-              "bytes": 6350
+              "bytes": 6384
             },
             {
               "path": "addons/image-repair-addon/src/ui.js",
@@ -1828,9 +1828,9 @@
       "id": "latest-filters-addon",
       "source": {
         "fileCount": 24,
-        "authoredBytes": 60611,
-        "physicalLines": 1691,
-        "nonblankLines": 1450,
+        "authoredBytes": 60653,
+        "physicalLines": 1692,
+        "nonblankLines": 1451,
         "files": [
           {
             "path": "addons/latest-filters-addon/src/api/bridge.js",
@@ -1894,9 +1894,9 @@
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "bytes": 24654,
-            "physicalLines": 593,
-            "nonblankLines": 545
+            "bytes": 24696,
+            "physicalLines": 594,
+            "nonblankLines": 546
           },
           {
             "path": "addons/latest-filters-addon/src/app/lifecycle.js",
@@ -1981,12 +1981,12 @@
       "builds": {
         "regular": {
           "mode": "regular",
-          "bytes": 72490,
-          "gzipBytes": 16264,
+          "bytes": 72535,
+          "gzipBytes": 16270,
           "contributors": [
             {
               "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-              "bytes": 24513
+              "bytes": 24558
             },
             {
               "path": "addons/shared/runtimeLifecycle.js",
@@ -2068,12 +2068,12 @@
         },
         "release": {
           "mode": "release",
-          "bytes": 65614,
-          "gzipBytes": 14492,
+          "bytes": 65660,
+          "gzipBytes": 14501,
           "contributors": [
             {
               "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-              "bytes": 18533
+              "bytes": 18568
             },
             {
               "path": "addons/latest-filters-addon/src/ui/panel.css",
@@ -2159,9 +2159,9 @@
       "id": "library-addon",
       "source": {
         "fileCount": 47,
-        "authoredBytes": 145858,
-        "physicalLines": 4793,
-        "nonblankLines": 4135,
+        "authoredBytes": 145899,
+        "physicalLines": 4794,
+        "nonblankLines": 4136,
         "files": [
           {
             "path": "addons/library-addon/src/api/library/client.js",
@@ -2243,9 +2243,9 @@
           },
           {
             "path": "addons/library-addon/src/main.js",
-            "bytes": 15975,
-            "physicalLines": 521,
-            "nonblankLines": 453
+            "bytes": 16016,
+            "physicalLines": 522,
+            "nonblankLines": 454
           },
           {
             "path": "addons/library-addon/src/thread/detector.js",
@@ -2450,8 +2450,8 @@
       "builds": {
         "regular": {
           "mode": "regular",
-          "bytes": 143772,
-          "gzipBytes": 30833,
+          "bytes": 143816,
+          "gzipBytes": 30844,
           "contributors": [
             {
               "path": "addons/library-addon/src/ui/assets/manager.css",
@@ -2459,7 +2459,7 @@
             },
             {
               "path": "addons/library-addon/src/main.js",
-              "bytes": 15289
+              "bytes": 15333
             },
             {
               "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
@@ -2537,8 +2537,8 @@
         },
         "release": {
           "mode": "release",
-          "bytes": 124206,
-          "gzipBytes": 26597,
+          "bytes": 124252,
+          "gzipBytes": 26607,
           "contributors": [
             {
               "path": "addons/library-addon/src/ui/assets/manager.css",
@@ -2546,7 +2546,7 @@
             },
             {
               "path": "addons/library-addon/src/main.js",
-              "bytes": 10703
+              "bytes": 10737
             },
             {
               "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
@@ -2628,9 +2628,9 @@
       "id": "masked-direct-addon",
       "source": {
         "fileCount": 26,
-        "authoredBytes": 120993,
-        "physicalLines": 4125,
-        "nonblankLines": 3573,
+        "authoredBytes": 121035,
+        "physicalLines": 4126,
+        "nonblankLines": 3574,
         "files": [
           {
             "path": "addons/masked-direct-addon/src/api/observer.js",
@@ -2748,9 +2748,9 @@
           },
           {
             "path": "addons/masked-direct-addon/src/main.js",
-            "bytes": 20955,
-            "physicalLines": 680,
-            "nonblankLines": 598
+            "bytes": 20997,
+            "physicalLines": 681,
+            "nonblankLines": 599
           },
           {
             "path": "addons/masked-direct-addon/src/maskedPageController.js",
@@ -2793,12 +2793,12 @@
       "builds": {
         "regular": {
           "mode": "regular",
-          "bytes": 116291,
-          "gzipBytes": 25221,
+          "bytes": 116335,
+          "gzipBytes": 25229,
           "contributors": [
             {
               "path": "addons/masked-direct-addon/src/main.js",
-              "bytes": 19054
+              "bytes": 19098
             },
             {
               "path": "addons/masked-direct-addon/src/downloadPageController.js",
@@ -2880,12 +2880,12 @@
         },
         "release": {
           "mode": "release",
-          "bytes": 96380,
-          "gzipBytes": 21287,
+          "bytes": 96426,
+          "gzipBytes": 21295,
           "contributors": [
             {
               "path": "addons/masked-direct-addon/src/main.js",
-              "bytes": 14418
+              "bytes": 14452
             },
             {
               "path": "addons/masked-direct-addon/src/downloadPageController.js",
@@ -2971,23 +2971,23 @@
   "coreServiceFootprint": {
     "addonsService": {
       "fileCount": 1,
-      "authoredBytes": 19137,
-      "physicalLines": 580,
-      "nonblankLines": 514,
+      "authoredBytes": 21140,
+      "physicalLines": 616,
+      "nonblankLines": 550,
       "files": [
         {
           "path": "src/services/addonsService.js",
-          "bytes": 19137,
-          "physicalLines": 580,
-          "nonblankLines": 514
+          "bytes": 21140,
+          "physicalLines": 616,
+          "nonblankLines": 550
         }
       ]
     },
     "servicesAddons": {
       "fileCount": 21,
-      "authoredBytes": 159879,
-      "physicalLines": 4416,
-      "nonblankLines": 3842,
+      "authoredBytes": 159358,
+      "physicalLines": 4398,
+      "nonblankLines": 3824,
       "files": [
         {
           "path": "src/services/addons/access.js",
@@ -2997,7 +2997,7 @@
         },
         {
           "path": "src/services/addons/actions/descriptors.js",
-          "bytes": 9194,
+          "bytes": 9140,
           "physicalLines": 115,
           "nonblankLines": 109
         },
@@ -3033,9 +3033,9 @@
         },
         {
           "path": "src/services/addons/coreActions.js",
-          "bytes": 21634,
-          "physicalLines": 626,
-          "nonblankLines": 573
+          "bytes": 21332,
+          "physicalLines": 618,
+          "nonblankLines": 565
         },
         {
           "path": "src/services/addons/idbStore.js",
@@ -3099,9 +3099,9 @@
         },
         {
           "path": "src/services/addons/trusted-catalog.json",
-          "bytes": 4813,
-          "physicalLines": 199,
-          "nonblankLines": 199
+          "bytes": 4648,
+          "physicalLines": 189,
+          "nonblankLines": 189
         },
         {
           "path": "src/services/addons/uiHost.js",

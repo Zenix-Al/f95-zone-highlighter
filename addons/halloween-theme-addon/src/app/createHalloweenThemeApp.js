@@ -47,6 +47,7 @@ export function createHalloweenThemeApp({ core, runtime }) {
       panelTitle: runtime.addonName,
       panelBody: "Toggle to apply/remove Halloween theme.",
       capabilities: runtime.capabilities,
+      requiresCore: runtime.requiresCore,
       pageScopes: runtime.pageScopes,
       runtimeMode: runtime.runtimeMode,
       matches: runtime.matches,

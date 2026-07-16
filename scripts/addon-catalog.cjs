@@ -3,7 +3,7 @@ const path = require("path");
 
 const ROOT = path.resolve(__dirname, "..");
 const MANIFEST_PATH = path.join(ROOT, "addons", "addons.manifest.json");
-const CATALOG_PATH = path.join(ROOT, "src", "services", "addons", "trusted-catalog.json");
+const CATALOG_PATH = path.join(ROOT, "addons", "trusted-catalog.json");
 const HEADER_PATH = path.join(ROOT, "header.txt");
 const SUPPORTED_SCOPES = new Set(["f95zone", "thread", "latest"]);
 const RUNTIME_MODES = new Set(["core-required", "standalone", "hybrid"]);
@@ -180,7 +180,7 @@ function validateManifest(addons = readManifest(), { rootDir = ROOT, checkFiles 
   let catalogIds = new Set();
   if (checkFiles) {
     try {
-      const existingCatalog = JSON.parse(fs.readFileSync(path.join(root, "src", "services", "addons", "trusted-catalog.json"), "utf8"));
+      const existingCatalog = JSON.parse(fs.readFileSync(path.join(root, "addons", "trusted-catalog.json"), "utf8"));
       catalogIds = new Set((Array.isArray(existingCatalog) ? existingCatalog : []).map((entry) => sanitizeAddonId(entry?.id)).filter(Boolean));
     } catch {
       catalogIds = new Set();
@@ -198,7 +198,7 @@ function validateManifest(addons = readManifest(), { rootDir = ROOT, checkFiles 
     }
   }
   const header = fs.readFileSync(HEADER_PATH, "utf8");
-  if (!header.includes("@resource     trustedAddonCatalog https://cdn.jsdelivr.net/gh/Zenix-Al/f95-zone-highlighter@main/src/services/addons/trusted-catalog.json")) {
+  if (!header.includes("@resource     trustedAddonCatalog https://cdn.jsdelivr.net/gh/Zenix-Al/f95-zone-highlighter@main/addons/trusted-catalog.json")) {
     errors.push("core header trusted catalog resource path/name changed");
   }
   return errors;

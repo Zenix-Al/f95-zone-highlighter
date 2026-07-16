@@ -254,15 +254,13 @@ registration handshake, response envelope, and existing public action IDs are un
 
 ## Registration Metadata
 
-A runtime registration should provide at least `id`, `name`, `version`, `description`, `status`, and `capabilities`. It may also provide:
+A runtime registration should provide at least `id`, `name`, `version`, `description`, `status`, `capabilities`, `requiresCore`, `pageScopes`, `runtimeMode`, and `matches`. `requiresCore` must agree with `runtimeMode`: it is `true` for `core-required` and `hybrid` registrations and `false` for standalone registrations. It may also provide:
 
 - `statusMessage`
 - `panelTitle` and `panelBody`
 - `panelActions`
 - `panelSettingsTitle`, `panelSettingsDescription`, and `panelSettingsStorageKey`
 - `panelSettingsDefaults` and `panelSettings`
-- `pageScopes`
-- `runtimeMode` and `matches`
 
 Example:
 
@@ -275,6 +273,7 @@ core.registerAddon({
   status: "installed",
   statusMessage: "Ready.",
   capabilities: runtime.capabilities,
+  requiresCore: runtime.requiresCore,
   pageScopes: runtime.pageScopes,
   runtimeMode: runtime.runtimeMode,
   matches: runtime.matches,
@@ -461,7 +460,7 @@ npm run generate:addons:catalog
 ```
 
 The generator is deterministic and preserves the core header resource name and path
-(`trustedAddonCatalog` → `src/services/addons/trusted-catalog.json`). Catalog support is
+(`trustedAddonCatalog` → `addons/trusted-catalog.json`). Catalog support is
 the intersection of userscript activation-match coverage and the current core page
 scope. It does not replace execution authorization: trust, enabled/blocked state,
 capabilities, and the action's `management` or `runtime` scope policy are checked

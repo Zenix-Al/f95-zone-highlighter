@@ -25,6 +25,7 @@ import {
   createIdbRowsPreview,
   createInitialState,
   createPrimaryRecord,
+  compactResultForPanel,
   summarizeTagPrefs,
 } from "./state.js";
 import {
@@ -48,6 +49,7 @@ import { closeDialog, confirmDialog, openDialog, updateDialog } from "../api/ui/
 import { removeDockButtons, setDockButtons } from "../api/ui/dock.js";
 import { mountUi, unmountUi, updateUi } from "../api/ui/mount.js";
 import { registerStyle, unregisterStyle } from "../api/ui/style.js";
+import { debugLog } from "../../../shared/debugLog.js";
 import exampleCssText from "../ui/example.css";
 import { renderExampleDialog } from "../ui/dialog.js";
 import { renderDockMarkup } from "../ui/dockRenderer.js";
@@ -116,12 +118,25 @@ export function createExampleAddonApp({ core, runtime }) {
   }
 
   function setLastResult(action, result) {
+    const displayResult = compactResultForPanel(result);
     state.lastAction = action;
-    state.lastResult = result;
-    appendLog(`${action}: ${typeof result === "string" ? result : JSON.stringify(result)}`);
+    state.lastResult = displayResult;
+    appendLog(`${action}: ${typeof displayResult === "string" ? displayResult : JSON.stringify(displayResult)}`);
   }
 
   function registerAddon() {
+    debugLog(runtime.addonId, "Registration payload prepared.", {
+      data: {
+        id: runtime.addonId,
+        version: runtime.addonVersion,
+        status: state.enabled ? "installed" : "disabled",
+        pageScopes: runtime.pageScopes,
+        runtimeMode: runtime.runtimeMode,
+        matches: runtime.matches,
+        capabilities: runtime.capabilities,
+        requiresCore: runtime.requiresCore,
+      },
+    });
     registerAddonRuntime(core, {
       id: runtime.addonId,
       name: runtime.addonName,
@@ -133,6 +148,7 @@ export function createExampleAddonApp({ core, runtime }) {
       panelBody:
         "Core API playground demonstrating every current addon-facing action through the api folder.",
       capabilities: runtime.capabilities,
+      requiresCore: runtime.requiresCore,
       pageScopes: runtime.pageScopes,
       runtimeMode: runtime.runtimeMode,
       matches: runtime.matches,
@@ -140,6 +156,12 @@ export function createExampleAddonApp({ core, runtime }) {
   }
 
   function pushStatusUpdate() {
+    debugLog(runtime.addonId, "Publishing runtime status.", {
+      data: {
+        status: state.enabled ? "installed" : "disabled",
+        enabled: state.enabled,
+      },
+    });
     updateAddonRuntimeStatus(
       core,
       state.enabled ? "installed" : "disabled",
@@ -733,18 +755,31 @@ export function createExampleAddonApp({ core, runtime }) {
   }
 
   async function bootstrap() {
+    debugLog(runtime.addonId, "Application handshake phase started.", {
+      data: { enabled: state.enabled, terminal },
+    });
     uiBindings.bindPanelClicks();
     commandController.bind();
     registerAddon();
 
     const access = await getAddonAccess(core);
+    debugLog(
+      runtime.addonId,
+      `Core access response (ok=${Boolean(access?.ok)}, blocked=${Boolean(access?.value?.blocked)}, trusted=${String(access?.value?.trusted)}, reason=${String(access?.reason || access?.value?.blockReason || "")}).`,
+      { data: access },
+    );
     if (!access?.ok || access.value?.blocked) {
       state.enabled = false;
       pushStatusUpdate();
+      debugLog(runtime.addonId, `Application held disabled by core access policy (reason=${String(access?.reason || access?.value?.blockReason || "blocked")}).`, {
+        level: "warn",
+        data: { access },
+      });
       return;
     }
 
     await refreshMetaSection();
+    debugLog(runtime.addonId, "Core access accepted; enabling application.");
     await lifecycle.enable();
     setLastResult("bootstrap", { ok: true, value: "example addon ready" });
   }

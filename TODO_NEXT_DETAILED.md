@@ -55,10 +55,10 @@ The core currently derives only these active scope names from page state: `f95zo
 
 - `feature.enable` and `feature.disable` are now intentionally exempted from `addon_out_of_scope`, but the exemption is hard-coded instead of being declared by action policy.
 - `supportsCurrentPage` and execution authorization calculate scope compatibility separately. They must share one scope-intersection resolver; known-add-on UI status then adds the separate userscript-match check so UI support cannot overclaim route coverage.
-- Runtime `pageScopes` are hard-coded inside add-on source while userscript `matches`, `grants`, `runAt`, capabilities, and core requirement are declared in `addons/addons.manifest.json`; `src/services/addons/trusted-catalog.json` contains another manually maintained projection. These sources already drift.
+- Runtime `pageScopes` are hard-coded inside add-on source while userscript `matches`, `grants`, `runAt`, capabilities, and core requirement are declared in `addons/addons.manifest.json`; the generated `addons/trusted-catalog.json` is the public projection. These sources already drift.
 - Userscript activation metadata and core authorization metadata are currently conflated. `@match` decides where the add-on userscript is injected, `@run-at` decides bootstrap timing, and core `pageScopes` authorize bridge actions only after registration. They must remain separate contracts.
 - `masked-direct-addon` is a hybrid userscript: F95Zone branches require/register with core, while external download-host branches intentionally run without core. The current boolean `requiresCore` cannot describe that accurately by itself.
-- `src/services/addons/trusted-catalog.json` must remain at its current public path because the core header loads it through `@resource`; however, its contents should be generated or deterministically checked from manifest metadata rather than hand-edited.
+- `addons/trusted-catalog.json` is the current public catalog path loaded by the core header through `@resource`. The former `src/services/addons/trusted-catalog.json` is a frozen legacy artifact for already-released core versions and must not be regenerated or read by the current development line.
 - Root-level `stripCssComments.js` and `stripDebugLogs.js` are build-only modules. They belong under `scripts/`, but both the core and add-on build paths must be updated and smoke-tested without version bumps.
 - The canonical add-on layout is documented, but only `example-addon` closely follows it. Its `createExampleAddonApp.js` is still a very large controller and its page-scope declaration is not a safe example.
 - `src/services/configTransferService.js` exists, but it imports `normalizeImportRoot` from `src/features/config-transfer/transferIO.js`; the service therefore still depends on the feature/UI layer.
@@ -112,7 +112,7 @@ These may run in parallel after `ADDON-GOLDEN-01`, except where noted:
 
 **Priority:** Critical  
 **Depends on:** None; the merged action-descriptor and bridge foundations listed above are required baseline.  
-**Primary files:** `addons/addons.manifest.json`, `addons/build-addon.js`, `addons/README.md`, `header.txt`, `src/config/pageDefinitions.js`, `src/services/addonsService.js`, `src/services/addons/knownAddons.js`, `src/services/addons/registry.js`, `src/services/addons/catalog.js`, `src/services/addons/actions/**`, `src/services/addons/trusted-catalog.json`, new catalog generator/validator under `scripts/`, `tests/**`
+**Primary files:** `addons/addons.manifest.json`, `addons/build-addon.js`, `addons/README.md`, `header.txt`, `src/config/pageDefinitions.js`, `src/services/addonsService.js`, `src/services/addons/knownAddons.js`, `src/services/addons/registry.js`, `src/services/addons/catalog.js`, `src/services/addons/actions/**`, `addons/trusted-catalog.json`, new catalog generator/validator under `scripts/`, `tests/**`
 
 ### Agent execution command
 
@@ -150,7 +150,7 @@ For `masked-direct-addon`:
 
 ### Trusted catalog decision
 
-Keep `src/services/addons/trusted-catalog.json` at the same path because `header.txt` references it via `@resource`. Change how it is maintained:
+Keep the public catalog at `addons/trusted-catalog.json` because `header.txt` references it via `@resource`. The former `src/services/addons/trusted-catalog.json` remains only as a frozen artifact for already-released core versions and is not part of current catalog generation:
 
 - Add catalog-only authoritative fields such as `downloadUrl` and `trusted` to each relevant manifest entry.
 - Generate the catalog JSON as a deterministic projection of `addons/addons.manifest.json`, including at least identity, description, version, `matches`, `runAt`, `runtimeMode`, `pageScopes`, capabilities, download URL, and trust state.
@@ -190,7 +190,7 @@ Keep `src/services/addons/trusted-catalog.json` at the same path because `header
 - [ ] `feature.enable` and `feature.disable` work while an installed add-on is outside its activation match or runtime scope.
 - [ ] `storage.get`, `storage.set`, `feature.refresh`, `observer.watch`, and `ui.mount` still return `addon_out_of_scope` when appropriate.
 - [ ] Catalog generation is deterministic and manifest/catalog drift fails validation.
-- [ ] The existing core header still references `src/services/addons/trusted-catalog.json` through the same `trustedAddonCatalog` resource name.
+- [ ] The existing core header references `addons/trusted-catalog.json` through the same `trustedAddonCatalog` resource name.
 
 ### Acceptance criteria
 
@@ -329,7 +329,7 @@ Make `example-addon` a genuinely safe golden standard for scope metadata, lifecy
 
 **Priority:** High  
 **Depends on:** `ADDON-SCOPE-02`  
-**Primary files:** `addons/addons.manifest.json`, `addons/build-addon.js`, `src/services/addons/catalog.js`, `src/services/addons/registry.js`, `src/services/addons/state.js`, `src/services/addons/knownAddons.js`, `src/services/addons/trusted-catalog.json`, `src/services/configMigrationService.js`, `tests/**`
+**Primary files:** `addons/addons.manifest.json`, `addons/build-addon.js`, `src/services/addons/catalog.js`, `src/services/addons/registry.js`, `src/services/addons/state.js`, `src/services/addons/knownAddons.js`, `addons/trusted-catalog.json`, `src/services/configMigrationService.js`, `tests/**`
 
 ### Agent execution command
 
@@ -502,7 +502,7 @@ Allow an official add-on ID/folder rename without losing enabled state, settings
 
 **Priority:** Critical  
 **Depends on:** `ADDON-GOLDEN-01`, `ADDON-SCOPE-02`  
-**Primary files:** `addons/masked-direct-addon/src/**`, `addons/masked-direct-addon/CHANGELOG.md`, `addons/addons.manifest.json`, generated `src/services/addons/trusted-catalog.json`, `tests/**`
+**Primary files:** `addons/masked-direct-addon/src/**`, `addons/masked-direct-addon/CHANGELOG.md`, `addons/addons.manifest.json`, generated `addons/trusted-catalog.json`, `tests/**`
 
 ### Agent execution command
 
@@ -567,7 +567,7 @@ Allow an official add-on ID/folder rename without losing enabled state, settings
 
 **Priority:** Critical  
 **Depends on:** `ADDON-GOLDEN-01`, `ADDON-IDENTITY-01`  
-**Primary files:** `addons/image-repair-addon/**`, new `addons/site-repair-addon/**`, `addons/addons.manifest.json`, `src/services/addons/trusted-catalog.json`, add-on state/config migration files, root/add-on documentation, `tests/**`
+**Primary files:** `addons/image-repair-addon/**`, new `addons/site-repair-addon/**`, `addons/addons.manifest.json`, `addons/trusted-catalog.json`, add-on state/config migration files, root/add-on documentation, `tests/**`
 
 ### Agent execution command
 

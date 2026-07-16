@@ -40,6 +40,23 @@ export function createInitialState() {
   };
 }
 
+const MAX_PANEL_RESULT_CHARS = 12_000;
+
+export function compactResultForPanel(result, maxChars = MAX_PANEL_RESULT_CHARS) {
+  let serialized;
+  try {
+    serialized = JSON.stringify(result ?? null);
+  } catch {
+    return { ok: false, reason: "result_not_serializable" };
+  }
+  if (serialized.length <= maxChars) return result;
+  return {
+    ok: result?.ok,
+    reason: result?.reason,
+    value: `[large result omitted from panel (${serialized.length} characters)]`,
+  };
+}
+
 export function buildIdbPayload(extra = {}) {
   return {
     dbName: EXAMPLE_IDB_DB_NAME,

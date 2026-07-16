@@ -167,6 +167,7 @@ export function startImageRepairAddon() {
         panelBody:
           "Retries failed attachment images (attachments.f95zone.to). Use Enable / Disable to control whether the watcher is active.",
         capabilities: runtime.capabilities,
+        requiresCore: runtime.requiresCore,
         pageScopes: runtime.pageScopes,
         runtimeMode: runtime.runtimeMode,
         matches: runtime.matches,

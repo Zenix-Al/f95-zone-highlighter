@@ -9,7 +9,7 @@ const zlib = require("zlib");
 
 const ROOT = process.cwd();
 const MANIFEST_PATH = path.join(ROOT, "addons", "addons.manifest.json");
-const TRUSTED_CATALOG_PATH = path.join(ROOT, "src", "services", "addons", "trusted-catalog.json");
+const TRUSTED_CATALOG_PATH = path.join(ROOT, "addons", "trusted-catalog.json");
 const BASELINE_SCHEMA_VERSION = 1;
 const SOURCE_EXTENSIONS = new Set([".js", ".cjs", ".mjs", ".css", ".html"]);
 const SERVICE_SOURCE_EXTENSIONS = new Set([".js", ".json"]);
@@ -443,7 +443,7 @@ async function createBaseline({ rootDir = ROOT } = {}) {
       },
       manifest: { entries: addons },
       trustedCatalog: {
-        source: "src/services/addons/trusted-catalog.json",
+        source: "addons/trusted-catalog.json",
         projection: readTrustedCatalog(),
         runtimeFreshDefault: false,
       },

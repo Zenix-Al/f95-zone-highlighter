@@ -103,6 +103,7 @@ export function createLatestFiltersApp({ core, runtime, gm = globalThis.GM } = {
       panelSettings: [{ path: "state.showPageButton", text: "Show page button" }],
       panelActions: [{ id: "open-filters", label: "Open Saved Filters", requiresActivePage: false }],
       capabilities: runtime.capabilities,
+      requiresCore: runtime.requiresCore,
       pageScopes: runtime.pageScopes,
       runtimeMode: runtime.runtimeMode,
       matches: runtime.matches,
