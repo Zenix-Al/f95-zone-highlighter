@@ -1235,6 +1235,7 @@ runTest("ADDON-LIBRARY-02 follows canonical boundaries and preserves persistence
 runTest("ADDON-LIBRARY-02 owns reversible lifecycle and exactly-once teardown", async () => {
   const sandbox = createDomSandbox("https://f95zone.to/threads/library-test.42/");
   const actions = [];
+  const mounts = new Map();
   let commandHandler = null;
   let teardownAcknowledgements = 0;
   const stored = { settings: { enabled: true, showPageButtons: true }, libraryMigrationV1Done: true };
@@ -1250,6 +1251,19 @@ runTest("ADDON-LIBRARY-02 owns reversible lifecycle and exactly-once teardown", 
       if (action === "storage.set") { stored[payload.key] = payload.value; return { ok: true }; }
       if (action === "page.getContext") return { ok: true, value: { pageScopes: ["f95zone", "thread"], pageType: "thread", routeGeneration: 1, url: location.href } };
       if (action === "observer.waitFor") return { ok: false, reason: "unsupported_action" };
+      if (action === "ui.mount") {
+        const mount = document.createElement("div");
+        mount.id = payload.mountId;
+        mount.innerHTML = payload.html;
+        document.body.appendChild(mount);
+        mounts.set(payload.mountId, mount);
+        return { ok: true, value: { mountId: payload.mountId } };
+      }
+      if (action === "ui.unmount") {
+        mounts.get(payload.mountId)?.remove();
+        mounts.delete(payload.mountId);
+        return { ok: true, value: { removed: 1 } };
+      }
       if (action === "idb.get") return { ok: true, value: null };
       return { ok: true, value: {} };
     },
@@ -1265,9 +1279,16 @@ runTest("ADDON-LIBRARY-02 owns reversible lifecycle and exactly-once teardown", 
     assert.ok(commandHandler);
     assert.strictEqual(actions.filter((entry) => entry.action === "ui.mount").length, 1);
     assert.match(actions.find((entry) => entry.action === "ui.mount").payload.html, /Save to Library/);
+    assert.ok(document.querySelector('[data-role="libraryDock"] [data-action="open-library"]'));
     await app.getLifecycle().disable({ commandId: "disable-1", reason: "test" });
+    assert.strictEqual(document.getElementById("library-dock-widget"), null);
     assert.deepStrictEqual(app.getResourceSnapshot(), []);
     await app.getLifecycle().enable({ commandId: "enable-1", reason: "test" });
+    assert.ok(document.querySelector('[data-role="libraryDock"] [data-action="open-library"]'));
+    document.querySelector('[data-role="libraryDock"] [data-action="open-library"]')
+      ?.dispatchEvent(new window.MouseEvent("click", { bubbles: true, composed: true }));
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.ok(actions.some((entry) => entry.action === "ui.dialog.open"), "re-enabled dock must open the manager");
     await app.getLifecycle().refresh({ commandId: "refresh-1", reason: "route" });
     assert.strictEqual(app.getResourceSnapshot().filter((entry) => entry.id === "library-dock-listener").length, 1);
     await app.getLifecycle().teardown({ commandId: "teardown-1", reason: "terminal" });
@@ -1509,6 +1530,7 @@ runTest("SITE-REPAIR-01 image scheduler covers success exhaustion cancellation r
       onSuccess: (_image, attempts) => successes.push(attempts),
       onExhausted: (_image, attempts) => exhausted.push(attempts),
     });
+    repair.configure({ maxAttempts: 2, retryDelayMs: 1 });
     const makeBroken = (id) => {
       const image = document.createElement("img");
       image.src = `https://attachments.f95zone.to/${id}.jpg?token=stable`;
@@ -1536,6 +1558,18 @@ runTest("SITE-REPAIR-01 image scheduler covers success exhaustion cancellation r
     callback();
     assert.deepStrictEqual(exhausted, [2]);
 
+    const rapidImage = document.createElement("img");
+    rapidImage.src = "https://attachments.f95zone.to/rapid.jpg";
+    Object.defineProperty(rapidImage, "complete", { configurable: true, value: false });
+    Object.defineProperty(rapidImage, "naturalWidth", { configurable: true, writable: true, value: 0 });
+    document.body.appendChild(rapidImage);
+    repair.attach(rapidImage);
+    rapidImage.dispatchEvent(new window.Event("error"));
+    rapidImage.dispatchEvent(new window.Event("error"));
+    rapidImage.dispatchEvent(new window.Event("error"));
+    assert.deepStrictEqual(exhausted, [2, 2]);
+    assert.strictEqual(repair.getSnapshot().pending, 0);
+
     const removedImage = makeBroken("removed");
     repair.attach(removedImage);
     callback = [...callbacks.values()][0];
@@ -1552,6 +1586,26 @@ runTest("SITE-REPAIR-01 image scheduler covers success exhaustion cancellation r
   } finally {
     sandbox.restore();
   }
+});
+
+runTest("SITE-REPAIR-01 normalizes image retry settings for the core panel", () => {
+  const { normalizeSiteRepairSettings } = loadModule(
+    "addons/site-repair-addon/src/app/settings.js",
+  );
+  const settings = normalizeSiteRepairSettings({
+    repairs: {
+      imageAttachments: {
+        enabled: true,
+        maxAttempts: 999,
+        retryDelayMs: 1,
+      },
+    },
+  });
+  assert.deepStrictEqual(settings.repairs.imageAttachments, {
+    enabled: true,
+    maxAttempts: 20,
+    retryDelayMs: 250,
+  });
 });
 
 runTest("SITE-REPAIR-01 follows canonical boundaries and keeps route-inapplicable repair idle", async () => {

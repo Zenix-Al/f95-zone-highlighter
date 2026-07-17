@@ -17,8 +17,8 @@ export function isImageAttachmentRepairApplicable(locationLike = location) {
 
 export function createImageAttachmentRepair({
   imageHost,
-  retryDelayMs,
-  maxAttempts,
+  retryDelayMs = 4000,
+  maxAttempts = 10,
   scheduler = createCancellableScheduler(),
   onProgress = () => {},
   onSuccess = () => {},
@@ -27,6 +27,8 @@ export function createImageAttachmentRepair({
   const records = new Map();
   let enabled = false;
   let sequence = 0;
+  let configuredRetryDelayMs = Math.max(0, Number(retryDelayMs) || 0);
+  let configuredMaxAttempts = Math.max(1, Math.floor(Number(maxAttempts) || 1));
 
   function detach(record) {
     record.image.removeEventListener("error", record.onError);
@@ -49,7 +51,7 @@ export function createImageAttachmentRepair({
       finish(record, "success");
       return;
     }
-    if (record.attempt >= maxAttempts) {
+    if (record.attempt >= configuredMaxAttempts) {
       finish(record, "exhausted");
       return;
     }
@@ -57,11 +59,15 @@ export function createImageAttachmentRepair({
   }
   function retry(record) {
     if (!enabled || !record.image.isConnected) return detach(record);
+    if (record.attempt >= configuredMaxAttempts) {
+      finish(record, "exhausted");
+      return;
+    }
     record.attempt += 1;
     const url = new URL(record.originalUrl);
     url.searchParams.set("site_repair_retry", String(Date.now()));
     record.image.src = url.href;
-    scheduler.schedule(record.timerId, () => inspect(record), retryDelayMs);
+    scheduler.schedule(record.timerId, () => inspect(record), configuredRetryDelayMs);
     onProgress(records.size);
   }
   function attach(image) {
@@ -86,8 +92,16 @@ export function createImageAttachmentRepair({
     for (const record of [...records.values()]) detach(record);
     onProgress(0);
   }
+  function configure({ retryDelayMs: nextDelay, maxAttempts: nextAttempts } = {}) {
+    if (Number.isFinite(Number(nextDelay))) {
+      configuredRetryDelayMs = Math.max(0, Number(nextDelay));
+    }
+    if (Number.isFinite(Number(nextAttempts))) {
+      configuredMaxAttempts = Math.max(1, Math.floor(Number(nextAttempts)));
+    }
+  }
   return {
-    start, stop, attach,
+    start, stop, attach, configure,
     getSnapshot: () => ({ enabled, pending: records.size, timers: scheduler.getSnapshot(), originals: [...records.values()].map((r) => r.originalUrl) }),
   };
 }

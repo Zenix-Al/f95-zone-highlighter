@@ -35,6 +35,11 @@ let addonCommandHandler = null;
 let currentSnapshot = null;
 let currentSaved = false;
 let dockMountClickHandler = null;
+let dockMountToken = 0;
+
+function isCurrentOperation(context) {
+  return !context || typeof context.isCurrent !== "function" || context.isCurrent();
+}
 
 function getLocalPageContext() {
   const isF95 = location.hostname.includes("f95zone.to");
@@ -136,6 +141,7 @@ function registerAddon() {
 }
 
 function openManager() {
+  if (!isEnabled) return;
   openLibraryManager({
     bridge,
     addonId: runtime.addonId,
@@ -219,7 +225,9 @@ function bindDockMountEvents() {
   debugLog(runtime.addonId, "Dock click listener bound.");
 }
 
-async function mountDockWidget({ showPrimaryButton, isSaved }) {
+async function mountDockWidget({ showPrimaryButton, isSaved, context = null }) {
+  if (!isEnabled || !isCurrentOperation(context)) return { ok: false, reason: "stale_mount" };
+  const mountToken = ++dockMountToken;
   debugLog(runtime.addonId, "Dock mount requested.", { data: { showPrimaryButton, isSaved } });
   const result = await mountUi(bridge, {
     mountId: LIBRARY_DOCK_MOUNT_ID,
@@ -227,19 +235,33 @@ async function mountDockWidget({ showPrimaryButton, isSaved }) {
     html: renderDockMarkup({ showPrimaryButton, isSaved }),
   });
   debugLog(runtime.addonId, "Dock mount settled.", { data: result });
+
+  // A disable or route change may have superseded this request while the core
+  // was waiting for the dock host. Do not bind a listener to a stale mount.
+  // If no newer mount was requested, remove the late result as well.
+  if (!isEnabled || !isCurrentOperation(context) || mountToken !== dockMountToken) {
+    if (mountToken === dockMountToken) {
+      await unmountUi(bridge, LIBRARY_DOCK_MOUNT_ID);
+    }
+    return { ok: false, reason: "stale_mount" };
+  }
+
+  if (!result?.ok) return result;
   bindDockMountEvents();
+  return result;
 }
 
-async function mountQuickAddIfApplicable() {
+async function mountQuickAddIfApplicable(context = null) {
+  if (!isCurrentOperation(context)) return { ok: false, reason: "stale_mount" };
   debugLog(runtime.addonId, "Dock applicability refresh.", { data: { isEnabled, showPageButtons } });
   if (!isEnabled || !showPageButtons) {
     currentSnapshot = null;
     currentSaved = false;
-    await unmountQuickAdd();
-    return;
+    return unmountQuickAdd();
   }
 
   const pageContext = await getPageContext(bridge, getLocalPageContext);
+  if (!isEnabled || !isCurrentOperation(context)) return { ok: false, reason: "stale_mount" };
   const threadPage = pageContext?.pageScopes?.includes("thread") || false;
   if (threadPage) {
     await waitForElement(
@@ -249,6 +271,7 @@ async function mountQuickAddIfApplicable() {
       2500,
       () => ({ ok: false, reason: "unsupported_action" }),
     );
+    if (!isEnabled || !isCurrentOperation(context)) return { ok: false, reason: "stale_mount" };
   }
 
   const snapshot = threadPage ? getThreadSnapshot() : null;
@@ -257,18 +280,19 @@ async function mountQuickAddIfApplicable() {
     currentSnapshot = null;
     currentSaved = false;
     debugLog(runtime.addonId, "Mounting site-wide manager dock without thread controls.");
-    await mountDockWidget({ showPrimaryButton: false, isSaved: false });
-    return;
+    return mountDockWidget({ showPrimaryButton: false, isSaved: false, context });
   }
 
   const saved = await library.isSaved(snapshot.threadId);
+  if (!isEnabled || !isCurrentOperation(context)) return { ok: false, reason: "stale_mount" };
   currentSnapshot = snapshot;
   currentSaved = Boolean(saved);
 
-  await mountDockWidget({ showPrimaryButton: true, isSaved: currentSaved });
+  return mountDockWidget({ showPrimaryButton: true, isSaved: currentSaved, context });
 }
 
 async function unmountQuickAdd() {
+  dockMountToken += 1;
   currentSnapshot = null;
   currentSaved = false;
   unbindDockMountEvents();
@@ -340,12 +364,12 @@ async function updateCurrentThreadFromDock() {
   await mountQuickAddIfApplicable();
 }
 
-async function setEnabled(nextEnabled) {
+async function setEnabled(nextEnabled, context = null) {
   isEnabled = Boolean(nextEnabled);
   await saveSettings({ enabled: isEnabled });
 
   if (isEnabled) {
-    await mountQuickAddIfApplicable();
+    await mountQuickAddIfApplicable(context);
   } else {
     await cancelActiveImport("disabled");
     await closeLibraryManager("disabled");
@@ -353,35 +377,41 @@ async function setEnabled(nextEnabled) {
     await unmountQuickAdd();
   }
 
+  if (!isCurrentOperation(context)) return { ok: false, reason: "lifecycle_superseded" };
   pushStatusUpdate();
+  return { ok: true };
 }
 
-async function refreshRuntimeState() {
+async function refreshRuntimeState(context = null) {
   const settings = await loadSettings();
+  if (!isCurrentOperation(context)) return { ok: false, reason: "refresh_superseded" };
   isEnabled = settings.enabled !== false;
   showPageButtons = settings.showPageButtons !== false;
 
   await unmountQuickAdd();
+  if (!isCurrentOperation(context)) return { ok: false, reason: "refresh_superseded" };
   if (isEnabled) {
-    await mountQuickAddIfApplicable();
+    await mountQuickAddIfApplicable(context);
   }
 
+  if (!isCurrentOperation(context)) return { ok: false, reason: "refresh_superseded" };
   pushStatusUpdate();
+  return { ok: true };
 }
 
 const lifecycle = createLibraryLifecycle({
   addonId: runtime.addonId,
-  onEnable: async ({ isCurrent }) => {
-    await setEnabled(true);
-    return isCurrent() ? { ok: true } : { ok: false, reason: "enable_superseded" };
+  onEnable: async (context) => {
+    const result = await setEnabled(true, context);
+    return context.isCurrent() ? result : { ok: false, reason: "enable_superseded" };
   },
-  onDisable: async () => {
-    await setEnabled(false);
-    return { ok: true };
+  onDisable: async (context) => {
+    const result = await setEnabled(false, context);
+    return context.isCurrent() ? result : { ok: false, reason: "disable_superseded" };
   },
-  onRefresh: async ({ isCurrent }) => {
-    await refreshRuntimeState();
-    return isCurrent() ? { ok: true } : { ok: false, reason: "refresh_superseded" };
+  onRefresh: async (context) => {
+    const result = await refreshRuntimeState(context);
+    return context.isCurrent() ? result : { ok: false, reason: "refresh_superseded" };
   },
   onTeardown: async ({ reason }) => {
     isEnabled = false;

@@ -3,7 +3,7 @@ import { getAddonAccess, getPageContext } from "../api/meta.js";
 import { getStoredValue, setStoredValue } from "../api/storage.js";
 import { watchImages, unwatchImages } from "../api/observer.js";
 import { registerStyle, unregisterStyle } from "../api/ui/style.js";
-import { DEFAULT_SETTINGS, IMAGE_HOST, IMAGE_OBSERVER_ID, IMAGE_STYLE_ID, MAX_ATTEMPTS, RETRY_DELAY_MS, SETTINGS_KEY } from "../constants.js";
+import { DEFAULT_SETTINGS, IMAGE_HOST, IMAGE_OBSERVER_ID, IMAGE_STYLE_ID, SETTINGS_KEY } from "../constants.js";
 import { createImageAttachmentRepair, isImageAttachmentRepairApplicable } from "../repairs/imageAttachments/imageRepair.js";
 import { createLatestAjaxJqueryAdapter } from "../repairs/latestAjax/jqueryAdapter.js";
 import { createImageRepairStatusUi } from "../ui/imageStatus.js";
@@ -19,7 +19,9 @@ export function createSiteRepairApp({ core, runtime }) {
   const startedModules = [];
   const ui = createImageRepairStatusUi({ addonId: runtime.addonId });
   const imageRepair = createImageAttachmentRepair({
-    imageHost: IMAGE_HOST, retryDelayMs: RETRY_DELAY_MS, maxAttempts: MAX_ATTEMPTS,
+    imageHost: IMAGE_HOST,
+    retryDelayMs: settings.repairs.imageAttachments.retryDelayMs,
+    maxAttempts: settings.repairs.imageAttachments.maxAttempts,
     onProgress: ui.update,
   });
   const latestAjax = createLatestAjaxJqueryAdapter();
@@ -37,6 +39,8 @@ export function createSiteRepairApp({ core, runtime }) {
       panelSettings: [
         { id: "enabled", path: "enabled", text: "Enable Site Repair" },
         { id: "imageAttachments", path: "repairs.imageAttachments.enabled", text: "Repair attachment images" },
+        { id: "imageMaxAttempts", path: "repairs.imageAttachments.maxAttempts", text: "Image retry limit", type: "number", min: 1, max: 20, step: 1, tooltip: "Maximum retries after the initial attachment request." },
+        { id: "imageRetryDelay", path: "repairs.imageAttachments.retryDelayMs", text: "Image retry interval (ms)", type: "number", min: 250, max: 30000, step: 250, tooltip: "Fallback delay between attachment retry checks." },
         { id: "latestAjax", path: "repairs.latestAjax.enabled", text: "Repair Latest Ajax errors" },
       ],
       capabilities: runtime.capabilities, requiresCore: runtime.requiresCore,
@@ -60,6 +64,7 @@ export function createSiteRepairApp({ core, runtime }) {
     if (!enabled || !settings.enabled) return;
     try {
       if (settings.repairs.imageAttachments.enabled && routeApplicable) {
+        imageRepair.configure(settings.repairs.imageAttachments);
         const style = await registerStyle(core, IMAGE_STYLE_ID, ui.cssText);
         if (!style?.ok) throw new Error(`style_register_failed:${style?.reason || "unknown"}`);
         startedModules.push(async () => unregisterStyle(core, IMAGE_STYLE_ID));
