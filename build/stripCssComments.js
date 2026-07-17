@@ -31,9 +31,7 @@ function stripCssText(text) {
 
     if (char === "/" && next === "*") {
       index += 2;
-      while (index < source.length && !(source[index] === "*" && source[index + 1] === "/")) {
-        index += 1;
-      }
+      while (index < source.length && !(source[index] === "*" && source[index + 1] === "/")) index += 1;
       index += 1;
       pendingSpace = true;
       continue;

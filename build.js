@@ -3,8 +3,8 @@ const fs = require("fs");
 const os = require("os");
 const path = require("path");
 
-const { stripCssComments } = require("./stripCssComments");
-const { stripDebugLogs } = require("./stripDebugLogs");
+const { stripCssComments } = require("./build/stripCssComments");
+const { stripDebugLogs } = require("./build/stripDebugLogs");
 const { checkFeatureManifest, generateFeatureManifest } = require("./scripts/featureManifest.cjs");
 let terser = null;
 try {
@@ -14,7 +14,7 @@ try {
 }
 
 const VERSION_FILE = path.join(__dirname, "version.json");
-const HEADER_TEMPLATE_PATH = path.join(__dirname, "header.txt");
+const HEADER_TEMPLATE_PATH = path.join(__dirname, "build", "header.txt");
 
 function readVersion() {
   let currentVersion = { major: 3, minor: 0, patch: 0 };

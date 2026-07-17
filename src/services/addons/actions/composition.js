@@ -8,13 +8,13 @@ import { uiActions } from "./families/ui.js";
 import { getAction, getActionSnapshot, registerAction } from "./registry.js";
 
 export const ACTION_FAMILIES = Object.freeze({
+  toast: toastActions,
   lifecycle: lifecycleActions,
   storage: storageActions,
+  page: pageActions,
   idb: idbActions,
   observer: observerActions,
-  page: pageActions,
   ui: uiActions,
-  toast: toastActions,
 });
 
 export const PUBLIC_ACTION_IDS = Object.freeze(
@@ -22,6 +22,7 @@ export const PUBLIC_ACTION_IDS = Object.freeze(
 );
 
 let composed = false;
+let composedSnapshot = null;
 
 export function assertActionCompositionComplete(snapshot = getActionSnapshot()) {
   const registered = snapshot.map((entry) => entry.id).sort();
@@ -40,9 +41,10 @@ export function ensureActionsRegistered() {
       for (const descriptor of descriptors) registerAction(descriptor);
     }
     composed = true;
+    composedSnapshot = getActionSnapshot();
+    assertActionCompositionComplete(composedSnapshot);
   }
-  assertActionCompositionComplete();
-  return getActionSnapshot();
+  return composedSnapshot;
 }
 
 export function getComposedAction(id) {

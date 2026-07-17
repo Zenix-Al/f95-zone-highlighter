@@ -76,13 +76,16 @@ export function resolveAddonAccess({
     blockReason = "identity_error";
   } else if (!isTrusted && !Boolean(allowUntrusted)) {
     blockReason = "untrusted_disallowed";
-  } else if (isEnabled && hasCurrentUrlContext && !matchesCurrentPage) {
-    blockReason = "activation_mismatch";
-  } else if (isEnabled && hasCurrentScopeContext && !scopeApplies) {
-    blockReason = "out_of_scope";
   }
 
   const isBlocked = Boolean(blockReason);
+  const availabilityReason = !isEnabled
+    ? "disabled"
+    : hasCurrentUrlContext && !matchesCurrentPage
+      ? "activation_mismatch"
+      : hasCurrentScopeContext && !scopeApplies
+        ? "out_of_scope"
+        : null;
   const canEnable = !catalogIdentity.mismatch && (isTrusted || Boolean(allowUntrusted));
 
   return {
@@ -93,6 +96,7 @@ export function resolveAddonAccess({
     isEnabled,
     isBlocked,
     blockReason,
+    availabilityReason,
     canEnable,
     matchesCurrentPage,
     scopeApplies,

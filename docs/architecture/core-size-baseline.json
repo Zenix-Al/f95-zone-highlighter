@@ -1537,10 +1537,10 @@
   "bundle": {
     "readable": {
       "mode": "regular",
-      "bytes": 633596,
-      "gzipBytes": 132924,
+      "bytes": 633434,
+      "gzipBytes": 133901,
       "coreBytes": 410071,
-      "excludedBytes": 217428,
+      "excludedBytes": 216599,
       "contributors": [
         {
           "path": "src/ui/assets/css.css",
@@ -1549,10 +1549,6 @@
         {
           "path": "src/services/settingsService.js",
           "bytes": 22490
-        },
-        {
-          "path": "src/services/addonsService.js",
-          "bytes": 19572
         },
         {
           "path": "src/config/schema.js",
@@ -1565,10 +1561,6 @@
         {
           "path": "src/features/latest-overlay/index.js",
           "bytes": 16307
-        },
-        {
-          "path": "src/services/addons/coreActions.js",
-          "bytes": 15856
         },
         {
           "path": "src/services/addons/uiHost.js",
@@ -1603,24 +1595,32 @@
           "bytes": 10824
         },
         {
-          "path": "src/services/addons/state.js",
-          "bytes": 10553
+          "path": "src/services/addons/knownAddons.js",
+          "bytes": 10436
         },
         {
-          "path": "src/services/addons/knownAddons.js",
-          "bytes": 9730
+          "path": "src/services/addons/state.js",
+          "bytes": 10019
         },
         {
           "path": "src/ui/components/darkColorPicker.js",
           "bytes": 9209
         },
         {
-          "path": "src/services/addons/actions/descriptors.js",
-          "bytes": 8759
-        },
-        {
           "path": "src/core/featureFactory.js",
           "bytes": 8557
+        },
+        {
+          "path": "src/services/addons/idbStore.js",
+          "bytes": 8500
+        },
+        {
+          "path": "src/ui/components/dialog.js",
+          "bytes": 8163
+        },
+        {
+          "path": "src/services/tagsService.js",
+          "bytes": 8100
         }
       ],
       "coreContributors": [
@@ -1707,14 +1707,6 @@
       ],
       "excludedContributors": [
         {
-          "path": "src/services/addonsService.js",
-          "bytes": 19572
-        },
-        {
-          "path": "src/services/addons/coreActions.js",
-          "bytes": 15856
-        },
-        {
           "path": "src/services/addons/uiHost.js",
           "bytes": 15704
         },
@@ -1731,16 +1723,12 @@
           "bytes": 11446
         },
         {
-          "path": "src/services/addons/state.js",
-          "bytes": 10553
-        },
-        {
           "path": "src/services/addons/knownAddons.js",
-          "bytes": 9730
+          "bytes": 10436
         },
         {
-          "path": "src/services/addons/actions/descriptors.js",
-          "bytes": 8759
+          "path": "src/services/addons/state.js",
+          "bytes": 10019
         },
         {
           "path": "src/services/addons/idbStore.js",
@@ -1751,6 +1739,10 @@
           "bytes": 7714
         },
         {
+          "path": "src/services/addons/catalog.js",
+          "bytes": 7594
+        },
+        {
           "path": "src/ui/renderers/addonsRenderer.js",
           "bytes": 7463
         },
@@ -1759,41 +1751,49 @@
           "bytes": 7452
         },
         {
+          "path": "src/services/addons/actions/families/ui.js",
+          "bytes": 6705
+        },
+        {
+          "path": "src/services/addons/invocation.js",
+          "bytes": 6652
+        },
+        {
           "path": "src/services/addons/lifecycle.js",
           "bytes": 6045
         },
         {
-          "path": "src/services/addons/settingsUi.js",
-          "bytes": 5765
-        },
-        {
           "path": "src/services/addons/scope.js",
-          "bytes": 5393
+          "bytes": 5956
         },
         {
-          "path": "src/services/addons/catalog.js",
-          "bytes": 5313
+          "path": "src/services/addons/settingsUi.js",
+          "bytes": 5757
         },
         {
           "path": "src/ui/components/addons/addonCard.js",
-          "bytes": 4984
+          "bytes": 4982
+        },
+        {
+          "path": "src/services/addons/actions/families/storage.js",
+          "bytes": 4684
+        },
+        {
+          "path": "src/services/addons/actions/families/idb.js",
+          "bytes": 4183
         },
         {
           "path": "src/loader.js",
           "bytes": 4167
-        },
-        {
-          "path": "src/ui/components/addons/addonDialog.js",
-          "bytes": 4126
         }
       ]
     },
     "uglified": {
       "mode": "release",
-      "bytes": 319061,
-      "gzipBytes": 93389,
+      "bytes": 320496,
+      "gzipBytes": 94259,
       "coreBytes": 214911,
-      "excludedBytes": 104138,
+      "excludedBytes": 105573,
       "contributors": [
         {
           "path": "src/ui/assets/css.css",
@@ -1812,16 +1812,8 @@
           "bytes": 9619
         },
         {
-          "path": "src/services/addonsService.js",
-          "bytes": 7898
-        },
-        {
           "path": "src/ui/components/addons/settingsController.js",
           "bytes": 7022
-        },
-        {
-          "path": "src/services/addons/coreActions.js",
-          "bytes": 6461
         },
         {
           "path": "src/services/addons/uiHost.js",
@@ -1856,12 +1848,8 @@
           "bytes": 5553
         },
         {
-          "path": "src/services/addons/actions/descriptors.js",
-          "bytes": 5435
-        },
-        {
           "path": "src/services/addons/knownAddons.js",
-          "bytes": 5013
+          "bytes": 5366
         },
         {
           "path": "src/ui/components/darkColorPicker.js",
@@ -1869,11 +1857,23 @@
         },
         {
           "path": "src/services/addons/state.js",
-          "bytes": 4731
+          "bytes": 4559
         },
         {
           "path": "src/services/addons/uiSanitizer.js",
           "bytes": 4152
+        },
+        {
+          "path": "src/features/latest-overlay/scoreCalculator.js",
+          "bytes": 3981
+        },
+        {
+          "path": "src/services/addons/idbStore.js",
+          "bytes": 3936
+        },
+        {
+          "path": "src/core/bootstrap.js",
+          "bytes": 3917
         }
       ],
       "coreContributors": [
@@ -1960,16 +1960,8 @@
       ],
       "excludedContributors": [
         {
-          "path": "src/services/addonsService.js",
-          "bytes": 7898
-        },
-        {
           "path": "src/ui/components/addons/settingsController.js",
           "bytes": 7022
-        },
-        {
-          "path": "src/services/addons/coreActions.js",
-          "bytes": 6461
         },
         {
           "path": "src/services/addons/uiHost.js",
@@ -1984,16 +1976,12 @@
           "bytes": 5553
         },
         {
-          "path": "src/services/addons/actions/descriptors.js",
-          "bytes": 5435
-        },
-        {
           "path": "src/services/addons/knownAddons.js",
-          "bytes": 5013
+          "bytes": 5366
         },
         {
           "path": "src/services/addons/state.js",
-          "bytes": 4731
+          "bytes": 4559
         },
         {
           "path": "src/services/addons/uiSanitizer.js",
@@ -2004,40 +1992,52 @@
           "bytes": 3936
         },
         {
+          "path": "src/services/addons/actions/families/ui.js",
+          "bytes": 3688
+        },
+        {
           "path": "src/ui/renderers/addonsRenderer.js",
           "bytes": 3632
         },
         {
+          "path": "src/services/addons/catalog.js",
+          "bytes": 3521
+        },
+        {
           "path": "src/services/addons/settingsUi.js",
-          "bytes": 3490
+          "bytes": 3495
         },
         {
           "path": "src/services/addons/observer.js",
           "bytes": 3311
         },
         {
-          "path": "src/services/addons/catalog.js",
-          "bytes": 2672
+          "path": "src/services/addons/invocation.js",
+          "bytes": 3225
         },
         {
           "path": "src/services/addons/scope.js",
-          "bytes": 2595
+          "bytes": 2912
         },
         {
           "path": "src/ui/components/addons/addonCard.js",
-          "bytes": 2476
+          "bytes": 2471
         },
         {
           "path": "src/services/addons/lifecycle.js",
           "bytes": 2413
         },
         {
+          "path": "src/services/addons/actions/families/idb.js",
+          "bytes": 2327
+        },
+        {
           "path": "src/ui/components/addons/addonDialog.js",
           "bytes": 2202
         },
         {
-          "path": "src/services/addons/actions/pageContext.js",
-          "bytes": 2148
+          "path": "src/services/addons/actions/families/storage.js",
+          "bytes": 2156
         }
       ]
     }

@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased - Framework hardening and core cleanup]
+
+- Finished the planned framework hardening, configuration persistence, transfer, lifecycle, routing, teardown, and core cleanup work recorded in `TODO_DETAILED.md` and `TODO_CORE_CLEANING_DETAILED.md`.
+- Removed obsolete core-only surfaces, kept configuration recovery and validation safe, and completed the final core audit and smoke verification without changing the release version.
+
+
 ## [5.1.0 - Framework cleanup and reliability improvements]
 
 - Finished moving Fast Capture into its own service and added safer limits for captured data, memory usage, expired entries, and stale page requests.

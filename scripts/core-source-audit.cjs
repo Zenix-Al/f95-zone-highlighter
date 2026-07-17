@@ -252,9 +252,9 @@ function sourceReport(rootDir) {
 }
 
 function getPlugins(rootDir, release) {
-  const stripCssComments = require(path.join(rootDir, "stripCssComments.js")).stripCssComments;
+  const stripCssComments = require(path.join(rootDir, "build", "stripCssComments.js")).stripCssComments;
   const plugins = [stripCssComments];
-  if (release) plugins.push(require(path.join(rootDir, "stripDebugLogs.js")).stripDebugLogs);
+  if (release) plugins.push(require(path.join(rootDir, "build", "stripDebugLogs.js")).stripDebugLogs);
   return plugins;
 }
 

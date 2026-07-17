@@ -84,7 +84,7 @@ readable bundle bytes by 5,137 (607,726 to 602,589), readable gzip by 1,417 byte
 comes from removing its storage-adapter listener wrappers, schema synchronization metadata,
 default/state/UI surfaces, and the shared application pipeline's sync-only branch.
 
-The two core listener grant lines were also removed from `header.txt` (91 metadata bytes). The
+The two core listener grant lines were also removed from `build/header.txt` (91 metadata bytes). The
 masked-direct add-on's listener grants, direct listener calls, callbacks, and cleanup remain in its
 own manifest and source. Revision/writer metadata remains in persistence for commits and recovery;
 it is no longer used to synchronize core configuration across tabs.

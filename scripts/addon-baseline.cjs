@@ -9,14 +9,14 @@ const zlib = require("zlib");
 
 const ROOT = process.cwd();
 const MANIFEST_PATH = path.join(ROOT, "addons", "addons.manifest.json");
-const TRUSTED_CATALOG_PATH = path.join(ROOT, "src", "services", "addons", "trusted-catalog.json");
+const TRUSTED_CATALOG_META_PATH = path.join(ROOT, "src", "generated", "trusted-addon-catalog.meta.json");
 const BASELINE_SCHEMA_VERSION = 1;
 const SOURCE_EXTENSIONS = new Set([".js", ".cjs", ".mjs", ".css", ".html"]);
 const SERVICE_SOURCE_EXTENSIONS = new Set([".js", ".json"]);
 
 let terser = null;
 try { terser = require("terser"); } catch { terser = null; }
-const { stripDebugLogs } = require(path.join(ROOT, "stripDebugLogs.js"));
+const { stripDebugLogs } = require(path.join(ROOT, "build", "stripDebugLogs.js"));
 
 function normalizePath(value) {
   return String(value || "").replace(/\\/g, "/").replace(/^\.\//, "");
@@ -75,7 +75,9 @@ function readManifest() {
 }
 
 function readTrustedCatalog() {
-  return readJson(TRUSTED_CATALOG_PATH)
+  const metadata = readJson(TRUSTED_CATALOG_META_PATH);
+  const document = readJson(path.join(ROOT, "src", "generated", String(metadata.catalogFile || "")));
+  return normalizeArray(document.catalog)
     .map((entry) => ({
       id: sanitizeAddonId(entry.id),
       name: String(entry.name || "").trim(),
@@ -199,9 +201,17 @@ function parseActionDescriptors() {
   });
   const module = { exports: {} };
   Function("module", "exports", "require", built.outputFiles[0].text)(module, module.exports, require);
+  const validatorNames = {
+    "page.getContext": "validatePageContextPayload",
+    "storage.get": "keyPayload",
+    "storage.set": "valuePayload",
+    "idb.get": "keyPayload",
+    "idb.put": "valuePayload",
+    "idb.delete": "keyPayload",
+  };
   return module.exports.getRegisteredAddonActionSnapshot().map((entry) => ({
     ...entry,
-    payloadValidator: "family-owned",
+    payloadValidator: validatorNames[entry.id] || "objectPayload",
   }));
 }
 
@@ -437,7 +447,7 @@ async function createBaseline({ rootDir = ROOT } = {}) {
       },
       manifest: { entries: addons },
       trustedCatalog: {
-        source: "src/services/addons/trusted-catalog.json",
+        source: `src/generated/${readJson(TRUSTED_CATALOG_META_PATH).catalogFile}`,
         projection: readTrustedCatalog(),
         runtimeFreshDefault: false,
       },

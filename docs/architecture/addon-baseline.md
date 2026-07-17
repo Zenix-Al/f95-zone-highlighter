@@ -21,7 +21,9 @@ version, cache, generated catalog, or tracked `dist/` file is written.
 
 `ADDON-SCOPE-02` makes manifest `pageScopes` and `runtimeMode` authoritative while preserving
 the existing userscript header matches, grants, and run timing. `scripts/addon-catalog.cjs`
-generates and checks the public `trustedAddonCatalog` resource deterministically. Activation
+generates and checks the identifier and content-hashed catalog under `src/generated/`
+deterministically. It also keeps `src/services/addons/trusted-catalog.json` published solely for
+legacy released cores; the current core does not read that compatibility file. Activation
 matching, core scope intersection, management policy, trust, and capability authorization are
 separate decisions.
 

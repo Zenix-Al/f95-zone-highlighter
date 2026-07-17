@@ -58,6 +58,13 @@ Small add-ons may combine modules, but keep these boundaries clear:
 
 Reusable code shared by multiple add-ons belongs in `addons/shared/`.
 
+The narrow `addons/shared/runtimeKit.js` contains only transport-facing wrappers
+(`createCoreAdaptor`, ping, registration, status, command binding, and teardown
+acknowledgment) proven equivalent across the normalized core-required add-ons. It does not own
+selectors, access policy, state transitions, domain behavior, or a service locator. The existing
+`runtimeLifecycle.js` owns explicit generation, cancellation, resource, pending-operation, and
+exactly-once teardown handles. Hybrid add-ons keep standalone host execution outside this kit.
+
 Add-ons do not need their own `package.json` or metadata file. Build metadata is centralized in `addons/addons.manifest.json`.
 
 ## Register an Add-on
@@ -461,8 +468,18 @@ npm run check:addons:catalog
 npm run generate:addons:catalog
 ```
 
-The generator is deterministic and preserves the core header resource name and path
-(`trustedAddonCatalog` → `src/services/addons/trusted-catalog.json`). Catalog support is
+The generator deterministically writes a small identifier document and an immutable,
+content-hashed catalog under `src/generated/`. The current core checks the identifier through
+jsDelivr at most once every six hours, downloads the catalog only when that identifier changes,
+and stores the validated catalog, identifier, check time, and update time in GM storage. The
+core header deliberately has no catalog `@resource` or `GM_getResourceText` grant.
+
+`src/services/addons/trusted-catalog.json` is also regenerated for already released legacy core
+versions whose headers still point to that URL. It is a compatibility publication artifact only:
+the current core neither imports nor falls back to it. Keep it until those legacy versions can be
+retired, then remove the file and its generator/check branch in a deliberate later package.
+
+Catalog support is
 the intersection of userscript activation-match coverage and the current core page
 scope. It does not replace execution authorization: trust, enabled/blocked state,
 capabilities, and the action's `management` or `runtime` scope policy are checked
@@ -535,6 +552,16 @@ bridge events, listeners, polling, URL parsing, DOM assumptions, direct GM acces
 scaffolding. It is source-only and does not add actions, change the handshake, or build release
 artifacts. Use `npm run check:addons:api` to verify the report is deterministic and current.
 
+`ADDON-SERVICE-SIZE-AUDIT-01` writes the final deterministic service and userscript measurements to
+`docs/architecture/addon-service-size-audit.json` and
+`docs/architecture/addon-service-size-audit.md`. It separates core add-on-service/UI bytes,
+shared runtime bytes, generated metadata, and each add-on's regular/release/gzip footprint;
+tests and tracked build output are excluded from authored totals. Use
+`npm run audit:addons:size` to regenerate and `npm run check:addons:size` to verify byte-identical
+output. Both commands build in temporary directories and do not enable a size budget, bump a
+version, update cache, or modify tracked distributions. Registration-handshake security is
+reported as deferred and unchanged.
+
 ## Independent add-on validation
 
 The repository-specific build-tools check validates the manifest, catalog, source layout, and
@@ -568,9 +595,9 @@ grants, and run timing. Structure validation requires `src/main.js` and the matc
 output path. Tiny add-ons may keep all behavior in `src/main.js` and omit `api/`, `app/`,
 `core/`, `ui/`, or `constants.js`; canonical multi-module add-ons may use those folders.
 
-Release stripping remains owned by the existing root `stripDebugLogs.js` esbuild plugin. The
-build-tools package characterizes that plugin and consumes it without relocating or changing
-its name or behavior.
+Release stripping remains owned by `build/stripDebugLogs.js` and
+`build/stripCssComments.js`. The build-tools package consumes these plugins without changing
+their names or behavior.
 
 ## Validation Checklist
 

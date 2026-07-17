@@ -13,7 +13,7 @@ The core script now provides a solid foundation + **modular add-on system**. Som
 - Notification dismissal
 - Powerful tag management (search + preferred/excluded/marked lists with drag-to-reorder)
 - Full color customization with sleek dark picker
-- Optional cross-tab settings sync
+- Atomic settings persistence with backup recovery
 - Feature health diagnostics
 
 **Latest Updates page**
@@ -34,7 +34,7 @@ The core script now provides a solid foundation + **modular add-on system**. Som
 You can enable or disable these individually from the main config panel:
 
 - **[Site Repair](https://greasyfork.org/en/scripts/572502-f95ue-image-repair-add-on)**
-  Hosts independently controlled F95Zone repairs, currently including broken attachment-image retries.
+  Hosts independently controlled F95Zone repairs, including broken attachment-image retries and Latest Ajax recovery.
 
 - **[Library Add-on](https://greasyfork.org/en/scripts/572506-f95ue-library-add-on)**  
   Save threads to your personal library with notes, ratings, status tracking, advanced search, pinning, and full import/export

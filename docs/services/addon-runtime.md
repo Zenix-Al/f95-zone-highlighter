@@ -2,6 +2,20 @@
 
 This document summarizes the add-on runtime, bridge, trust model, mounts, and recommended validation/testing.
 
+Normalized core-required add-ons use the narrow `addons/shared/runtimeKit.js` for their equivalent
+transport wrappers and core adaptor. The kit does not abstract selectors, policy, state, domain
+behavior, or lifecycle decisions. `addons/shared/runtimeLifecycle.js` remains the explicit owner
+of generation invalidation, AbortSignal cancellation, resource snapshots, pending operations,
+reversible disable, and exactly-once terminal acknowledgment. Masked + Direct retains its own
+hybrid bootstrap so external download hosts never invoke the core-required kit.
+
+`ADDON-RUNTIME-KIT-01` reduced authored source by 83 bytes in Example, 438 bytes in Halloween,
+438 bytes in Latest Filters, 376 bytes in Library, and 324 bytes in Site Repair. The accepted
+deterministic baseline records regular-build deltas of -13, -86, -84, -26, and -30 bytes
+respectively; release deltas are 0, 0, 0, +44, and +36 bytes. The small release increases in
+Library and Site Repair are retained as the measured cost of the shared re-export path, while
+the runtime kit remains tree-shaken to the wrappers each bundle uses. Masked + Direct is unchanged.
+
 ## Add-on registry and lifecycle
 
 - The add-on service (`addonsService`) manages:

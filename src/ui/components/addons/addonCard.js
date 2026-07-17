@@ -122,7 +122,7 @@ export function createAddonCard(doc, addon, options = {}) {
     const supportsPinning = addon.status !== "not-installed";
 
     if (supportsFeatureToggle) {
-      const isDisabled = addon.status === "disabled";
+      const isDisabled = addon.isEnabled === false;
       const toggleBtn = createActionButton(
         doc,
         isDisabled ? "Enable" : "Disable",

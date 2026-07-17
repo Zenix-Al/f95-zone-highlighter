@@ -17,6 +17,8 @@
     "check:addons:baseline": "node scripts/addon-baseline.cjs --check docs/architecture/addon-baseline.json",
     "audit:addons:api": "node scripts/addon-api-audit.cjs",
     "check:addons:api": "node scripts/addon-api-audit.cjs --check",
+    "audit:addons:size": "node scripts/addon-service-size-audit.cjs --output docs/architecture/addon-service-size-audit.json --markdown docs/architecture/addon-service-size-audit.md",
+    "check:addons:size": "node scripts/addon-service-size-audit.cjs --check docs/architecture/addon-service-size-audit.json",
     "check:addons:manifest": "node scripts/addon-catalog.cjs --check-manifest",
     "check:addons:structure": "node scripts/addon-build-tools.cjs --check-structure",
     "generate:addons:catalog": "node scripts/addon-catalog.cjs --write",

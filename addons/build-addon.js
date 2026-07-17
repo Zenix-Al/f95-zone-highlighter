@@ -2,8 +2,8 @@ const esbuild = require("esbuild");
 const crypto = require("crypto");
 const fs = require("fs");
 const path = require("path");
-const { stripDebugLogs } = require("../stripDebugLogs");
-const { validateManifest } = require("../scripts/addon-catalog.cjs");
+const { stripDebugLogs } = require("../build/stripDebugLogs");
+const { validateManifest, writeCatalogArtifacts } = require("../scripts/addon-catalog.cjs");
 let terser = null;
 try {
   terser = require("terser");
@@ -412,6 +412,7 @@ async function main() {
   // Update manifest with new versions
   writeManifest(bumpedAddons);
   addons = bumpedAddons;
+  writeCatalogArtifacts(addons);
 
   for (const item of changedTargets) {
     const updatedAddon = addons.find((a) => a.id === item.addon.id);

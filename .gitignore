@@ -54,6 +54,11 @@ logs/
 # Build / Dist
 dist/
 build/
+build/*
+!build/
+!build/header.txt
+!build/stripCssComments.js
+!build/stripDebugLogs.js
 out/
 coverage/
 *.egg-info/

@@ -5,6 +5,11 @@ import {
 import { resolveAddonAccess } from "./access.js";
 import { sanitizeAddonId } from "./shared.js";
 import { getCanonicalAddonId } from "./catalog.js";
+import { config, stateManager } from "../../config.js";
+import { isCatalogFresh, listTrustedAddonCatalog } from "./catalog.js";
+import { listRegisteredAddons } from "./registry.js";
+import { getCurrentAddonPageScopes } from "./scope.js";
+import { getAddonState, listInstalledAddonMeta } from "./state.js";
 
 function computeAddonStatus({
   runtimeEntry,
@@ -220,8 +225,10 @@ export function buildKnownAddonsSnapshot({
       panelActions: Array.isArray(runtimeEntry?.panelActions) ? runtimeEntry.panelActions : [],
       capabilities: access.isBlocked
         ? []
-        : Array.isArray(runtimeEntry?.capabilities)
-          ? [...runtimeEntry.capabilities]
+        : Array.isArray(runtimeEntry?.requestedCapabilities)
+          ? [...runtimeEntry.requestedCapabilities]
+          : Array.isArray(runtimeEntry?.capabilities)
+            ? [...runtimeEntry.capabilities]
           : Array.isArray(metaEntry?.capabilities)
             ? [...metaEntry.capabilities]
             : [],
@@ -264,4 +271,18 @@ function getAccessStatusMessage(blockReason, previousMessage = "") {
   }
   return String(previousMessage || "").trim() ||
     "Blocked: enable 'Allow untrusted add-ons' in settings to allow full API access.";
+}
+
+export function listKnownAddons() {
+  return buildKnownAddonsSnapshot({
+    registered: listRegisteredAddons(),
+    catalog: listTrustedAddonCatalog(),
+    installedMeta: listInstalledAddonMeta(),
+    currentScopes: getCurrentAddonPageScopes(stateManager),
+    currentUrl: typeof window !== "undefined" ? String(window.location?.href || "") : "",
+    catalogFresh: isCatalogFresh(),
+    trustedIds: config.addons?.trustedIds,
+    allowUntrusted: Boolean(config.globalSettings?.allowUntrustedAddons),
+    getAddonState,
+  });
 }

@@ -1,6 +1,6 @@
 import { config } from "../../config.js";
 import { saveConfigKeys, updateConfig } from "../settingsService.js";
-import { getCanonicalAddonId, listTrustedAddonCatalog } from "./catalog.js";
+import { getCanonicalAddonId, listTrustedAddonAliases } from "./catalog.js";
 import { sanitizeAddonId } from "./shared.js";
 
 function clone(value) {
@@ -55,13 +55,10 @@ export function canonicalizeAddonIdentityRoot(addons) {
   let changed = false;
   const aliases = [];
 
-  for (const entry of listTrustedAddonCatalog()) {
+  for (const entry of listTrustedAddonAliases()) {
     const canonicalId = sanitizeAddonId(entry?.id);
-    if (!canonicalId || !Array.isArray(entry?.legacyIds)) continue;
-    for (const legacyId of entry.legacyIds) {
-      const sourceId = sanitizeAddonId(legacyId);
-      if (sourceId && sourceId !== canonicalId) aliases.push([sourceId, canonicalId]);
-    }
+    const sourceId = sanitizeAddonId(entry?.legacyId);
+    if (sourceId && canonicalId && sourceId !== canonicalId) aliases.push([sourceId, canonicalId]);
   }
 
   for (const [sourceId, canonicalId] of aliases.sort(([a], [b]) => a.localeCompare(b))) {
@@ -287,4 +284,19 @@ export async function removeInstalledAddonMeta(addonId) {
   delete addons.installedMeta[normalizedId];
   const persisted = await persistAddonsState(addons);
   return persisted.ok ? { ok: true } : { ok: false, reason: "storage_error" };
+}
+
+/** Remove installation metadata and per-add-on state in one revisioned commit. */
+export async function removeAddonInstallationTrace(addonId) {
+  const normalizedId = resolveAddonId(addonId);
+  if (!normalizedId) return { ok: false, reason: "invalid_addon_id" };
+
+  const result = await updateConfig((draft) => {
+    const addons = ensureAddonsConfigBucket(draft.addons);
+    canonicalizeAddonIdentityRoot(addons);
+    delete addons.installedMeta[normalizedId];
+    delete addons.byAddon[normalizedId];
+  }, { origin: `addons:remove-trace:${normalizedId}` });
+
+  return result.committed ? { ok: true } : { ok: false, reason: "storage_error", result };
 }

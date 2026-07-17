@@ -3,7 +3,7 @@
     "id": "example-addon",
     "name": "F95UE Example Add-on",
     "description": "Core API playground demonstrating every current addon-facing action through api modules.",
-    "version": "0.2.14",
+    "version": "1.0.0",
     "pageScopes": [
       "f95zone"
     ],
@@ -38,7 +38,7 @@
     "id": "halloween-theme-addon",
     "name": "F95UE Halloween Theme Add-on",
     "description": "Forces Halloween logo/background theme with simple apply and teardown lifecycle.",
-    "version": "2.0.16",
+    "version": "1.0.0",
     "pageScopes": [
       "f95zone"
     ],
@@ -61,7 +61,7 @@
     "id": "latest-filters-addon",
     "name": "F95UE Latest Filters Add-on",
     "description": "Adds one Saved Filters button on Latest Updates with a searchable preset list and active filter tracking.",
-    "version": "0.3.20",
+    "version": "1.0.0",
     "pageScopes": [
       "latest"
     ],
@@ -93,7 +93,7 @@
     "id": "library-addon",
     "name": "F95UE Library Add-on",
     "description": "Quick-add threads to a personal library and manage entries with a dedicated add-on UI.",
-    "version": "0.3.59",
+    "version": "1.0.0",
     "pageScopes": [
       "f95zone"
     ],
@@ -124,7 +124,7 @@
     "id": "masked-direct-addon",
     "name": "F95UE Masked + Direct Download Add-on",
     "description": "Combines masked-link skipper and direct-download flows into one trusted add-on.",
-    "version": "0.3.51",
+    "version": "1.0.0",
     "pageScopes": [
       "f95zone"
     ],
@@ -171,7 +171,7 @@
     "id": "site-repair-addon",
     "name": "F95UE Site Repair",
     "description": "Provides independently controlled repairs for F95Zone site behavior.",
-    "version": "0.2.6",
+    "version": "1.0.0",
     "pageScopes": [
       "f95zone"
     ],
