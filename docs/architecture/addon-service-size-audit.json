@@ -30,11 +30,11 @@
     },
     "addons": {
       "count": 6,
-      "authoredBytes": 435464,
-      "regularBytes": 496101,
-      "releaseBytes": 359686,
-      "regularGzipBytes": 109591,
-      "releaseGzipBytes": 92392
+      "authoredBytes": 439569,
+      "regularBytes": 500047,
+      "releaseBytes": 362563,
+      "regularGzipBytes": 110261,
+      "releaseGzipBytes": 92985
     },
     "sharedRuntime": {
       "authoredBytes": 15841,
@@ -180,29 +180,29 @@
       {
         "addonId": "library-addon",
         "authoredBytes": {
-          "current": 149932,
-          "baseline": 149932,
+          "current": 151754,
+          "baseline": 151754,
           "delta": 0
         },
         "regularBytes": {
-          "current": 157944,
-          "baseline": 157634,
+          "current": 159633,
+          "baseline": 159323,
           "delta": 310
         },
         "releaseBytes": {
-          "current": 117325,
-          "baseline": 137592,
-          "delta": -20267
+          "current": 118623,
+          "baseline": 139341,
+          "delta": -20718
         },
         "regularGzipBytes": {
-          "current": 33714,
-          "baseline": 33632,
-          "delta": 82
+          "current": 33896,
+          "baseline": 33815,
+          "delta": 81
         },
         "releaseGzipBytes": {
-          "current": 28639,
-          "baseline": 29153,
-          "delta": -514
+          "current": 28835,
+          "baseline": 29363,
+          "delta": -528
         },
         "owningFiles": [
           "addons/library-addon/src/ui/assets/manager.css",
@@ -252,36 +252,36 @@
       {
         "addonId": "site-repair-addon",
         "authoredBytes": {
-          "current": 21525,
-          "baseline": 21525,
+          "current": 23808,
+          "baseline": 23808,
           "delta": 0
         },
         "regularBytes": {
-          "current": 36297,
-          "baseline": 35986,
+          "current": 38554,
+          "baseline": 38243,
           "delta": 311
         },
         "releaseBytes": {
-          "current": 25887,
-          "baseline": 32816,
-          "delta": -6929
+          "current": 27466,
+          "baseline": 34709,
+          "delta": -7243
         },
         "regularGzipBytes": {
-          "current": 8967,
-          "baseline": 8880,
+          "current": 9455,
+          "baseline": 9368,
           "delta": 87
         },
         "releaseGzipBytes": {
-          "current": 7663,
-          "baseline": 7737,
-          "delta": -74
+          "current": 8060,
+          "baseline": 8163,
+          "delta": -103
         },
         "owningFiles": [
           "addons/site-repair-addon/src/app/createSiteRepairApp.js",
           "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
           "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
-          "addons/site-repair-addon/src/app/commands.js",
-          "addons/site-repair-addon/src/main.js"
+          "addons/site-repair-addon/src/app/settings.js",
+          "addons/site-repair-addon/src/app/commands.js"
         ],
         "behaviorDelta": "No behavior change is made or inferred by this measurement package; accepted behavior is covered by TEST-ADDONS-01."
       }
@@ -6441,9 +6441,9 @@
       },
       "source": {
         "fileCount": 56,
-        "authoredBytes": 149932,
-        "physicalLines": 4912,
-        "nonblankLines": 4233,
+        "authoredBytes": 151754,
+        "physicalLines": 4942,
+        "nonblankLines": 4257,
         "largestFiles": [
           {
             "path": "addons/library-addon/src/ui/assets/manager.css",
@@ -6453,9 +6453,9 @@
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "bytes": 15965,
-            "physicalLines": 522,
-            "nonblankLines": 454
+            "bytes": 17787,
+            "physicalLines": 552,
+            "nonblankLines": 478
           },
           {
             "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
@@ -6659,9 +6659,9 @@
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "bytes": 15965,
-            "physicalLines": 522,
-            "nonblankLines": 454
+            "bytes": 17787,
+            "physicalLines": 552,
+            "nonblankLines": 478
           },
           {
             "path": "addons/library-addon/src/app/lifecycle.js",
@@ -6907,8 +6907,8 @@
       },
       "builds": {
         "regular": {
-          "bytes": 157944,
-          "gzipBytes": 33714,
+          "bytes": 159633,
+          "gzipBytes": 33896,
           "headerBytes": 967,
           "contributors": [
             {
@@ -6917,7 +6917,7 @@
             },
             {
               "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-              "bytes": 16358
+              "bytes": 18047
             },
             {
               "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
@@ -7107,7 +7107,7 @@
             ]
           },
           "storageIdbDomain": {
-            "bytes": 138878,
+            "bytes": 140567,
             "contributors": [
               {
                 "path": "addons/library-addon/src/ui/assets/manager.css",
@@ -7115,7 +7115,7 @@
               },
               {
                 "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-                "bytes": 16358
+                "bytes": 18047
               },
               {
                 "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
@@ -7193,8 +7193,8 @@
           }
         },
         "release": {
-          "bytes": 117325,
-          "gzipBytes": 28639,
+          "bytes": 118623,
+          "gzipBytes": 28835,
           "headerBytes": 967,
           "contributors": [
             {
@@ -7203,7 +7203,7 @@
             },
             {
               "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-              "bytes": 10934
+              "bytes": 12232
             },
             {
               "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
@@ -7389,7 +7389,7 @@
             ]
           },
           "storageIdbDomain": {
-            "bytes": 106379,
+            "bytes": 107677,
             "contributors": [
               {
                 "path": "addons/library-addon/src/ui/assets/manager.css",
@@ -7397,7 +7397,7 @@
               },
               {
                 "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-                "bytes": 10934
+                "bytes": 12232
               },
               {
                 "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
@@ -7498,29 +7498,29 @@
       "thirdPartyOrVendored": [],
       "baseline": {
         "authoredBytes": {
-          "current": 149932,
-          "baseline": 149932,
+          "current": 151754,
+          "baseline": 151754,
           "delta": 0
         },
         "regularBytes": {
-          "current": 157944,
-          "baseline": 157634,
+          "current": 159633,
+          "baseline": 159323,
           "delta": 310
         },
         "releaseBytes": {
-          "current": 117325,
-          "baseline": 137592,
-          "delta": -20267
+          "current": 118623,
+          "baseline": 139341,
+          "delta": -20718
         },
         "regularGzipBytes": {
-          "current": 33714,
-          "baseline": 33632,
-          "delta": 82
+          "current": 33896,
+          "baseline": 33815,
+          "delta": 81
         },
         "releaseGzipBytes": {
-          "current": 28639,
-          "baseline": 29153,
-          "delta": -514
+          "current": 28835,
+          "baseline": 29363,
+          "delta": -528
         },
         "owningFiles": [
           "addons/library-addon/src/ui/assets/manager.css",
@@ -8195,15 +8195,15 @@
       },
       "source": {
         "fileCount": 17,
-        "authoredBytes": 21525,
-        "physicalLines": 524,
-        "nonblankLines": 492,
+        "authoredBytes": 23808,
+        "physicalLines": 580,
+        "nonblankLines": 547,
         "largestFiles": [
           {
             "path": "addons/site-repair-addon/src/app/createSiteRepairApp.js",
-            "bytes": 6780,
-            "physicalLines": 125,
-            "nonblankLines": 122
+            "bytes": 7332,
+            "physicalLines": 130,
+            "nonblankLines": 127
           },
           {
             "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
@@ -8213,9 +8213,15 @@
           },
           {
             "path": "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
-            "bytes": 3112,
-            "physicalLines": 95,
-            "nonblankLines": 90
+            "bytes": 3748,
+            "physicalLines": 109,
+            "nonblankLines": 104
+          },
+          {
+            "path": "addons/site-repair-addon/src/app/settings.js",
+            "bytes": 1466,
+            "physicalLines": 46,
+            "nonblankLines": 43
           },
           {
             "path": "addons/site-repair-addon/src/app/commands.js",
@@ -8248,16 +8254,10 @@
             "nonblankLines": 16
           },
           {
-            "path": "addons/site-repair-addon/src/app/settings.js",
-            "bytes": 605,
-            "physicalLines": 17,
-            "nonblankLines": 15
-          },
-          {
             "path": "addons/site-repair-addon/src/constants.js",
-            "bytes": 500,
-            "physicalLines": 13,
-            "nonblankLines": 13
+            "bytes": 734,
+            "physicalLines": 21,
+            "nonblankLines": 21
           },
           {
             "path": "addons/site-repair-addon/src/api/observer.js",
@@ -8341,9 +8341,9 @@
           },
           {
             "path": "addons/site-repair-addon/src/app/createSiteRepairApp.js",
-            "bytes": 6780,
-            "physicalLines": 125,
-            "nonblankLines": 122
+            "bytes": 7332,
+            "physicalLines": 130,
+            "nonblankLines": 127
           },
           {
             "path": "addons/site-repair-addon/src/app/lifecycle.js",
@@ -8353,15 +8353,15 @@
           },
           {
             "path": "addons/site-repair-addon/src/app/settings.js",
-            "bytes": 605,
-            "physicalLines": 17,
-            "nonblankLines": 15
+            "bytes": 1466,
+            "physicalLines": 46,
+            "nonblankLines": 43
           },
           {
             "path": "addons/site-repair-addon/src/constants.js",
-            "bytes": 500,
-            "physicalLines": 13,
-            "nonblankLines": 13
+            "bytes": 734,
+            "physicalLines": 21,
+            "nonblankLines": 21
           },
           {
             "path": "addons/site-repair-addon/src/core/adaptor.js",
@@ -8377,9 +8377,9 @@
           },
           {
             "path": "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
-            "bytes": 3112,
-            "physicalLines": 95,
-            "nonblankLines": 90
+            "bytes": 3748,
+            "physicalLines": 109,
+            "nonblankLines": 104
           },
           {
             "path": "addons/site-repair-addon/src/repairs/imageAttachments/scheduler.js",
@@ -8409,8 +8409,8 @@
       },
       "builds": {
         "regular": {
-          "bytes": 36297,
-          "gzipBytes": 8967,
+          "bytes": 38554,
+          "gzipBytes": 9455,
           "headerBytes": 951,
           "contributors": [
             {
@@ -8419,19 +8419,23 @@
             },
             {
               "path": "addons/site-repair-addon/src/app/createSiteRepairApp.js",
-              "bytes": 6393
+              "bytes": 6971
             },
             {
               "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
               "bytes": 4275
             },
             {
+              "path": "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
+              "bytes": 3882
+            },
+            {
               "path": "addons/shared/coreBridge.js",
               "bytes": 3786
             },
             {
-              "path": "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
-              "bytes": 3213
+              "path": "addons/site-repair-addon/src/app/settings.js",
+              "bytes": 1256
             },
             {
               "path": "addons/site-repair-addon/src/app/commands.js",
@@ -8454,16 +8458,12 @@
               "bytes": 825
             },
             {
+              "path": "addons/site-repair-addon/src/constants.js",
+              "bytes": 671
+            },
+            {
               "path": "addons/shared/runtimeKit.js",
               "bytes": 595
-            },
-            {
-              "path": "addons/site-repair-addon/src/constants.js",
-              "bytes": 460
-            },
-            {
-              "path": "addons/site-repair-addon/src/app/settings.js",
-              "bytes": 457
             },
             {
               "path": "addons/site-repair-addon/src/api/observer.js",
@@ -8531,8 +8531,8 @@
           }
         },
         "release": {
-          "bytes": 25887,
-          "gzipBytes": 7663,
+          "bytes": 27466,
+          "gzipBytes": 8060,
           "headerBytes": 951,
           "contributors": [
             {
@@ -8541,19 +8541,23 @@
             },
             {
               "path": "addons/site-repair-addon/src/app/createSiteRepairApp.js",
-              "bytes": 4733
+              "bytes": 5265
             },
             {
               "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
               "bytes": 2994
             },
             {
+              "path": "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
+              "bytes": 2929
+            },
+            {
               "path": "addons/shared/coreBridge.js",
               "bytes": 2651
             },
             {
-              "path": "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
-              "bytes": 2416
+              "path": "addons/site-repair-addon/src/app/settings.js",
+              "bytes": 836
             },
             {
               "path": "addons/site-repair-addon/src/app/commands.js",
@@ -8580,12 +8584,8 @@
               "bytes": 506
             },
             {
-              "path": "addons/site-repair-addon/src/app/settings.js",
-              "bytes": 334
-            },
-            {
               "path": "addons/site-repair-addon/src/constants.js",
-              "bytes": 322
+              "bytes": 354
             },
             {
               "path": "addons/site-repair-addon/src/api/observer.js",
@@ -8679,36 +8679,36 @@
       ],
       "baseline": {
         "authoredBytes": {
-          "current": 21525,
-          "baseline": 21525,
+          "current": 23808,
+          "baseline": 23808,
           "delta": 0
         },
         "regularBytes": {
-          "current": 36297,
-          "baseline": 35986,
+          "current": 38554,
+          "baseline": 38243,
           "delta": 311
         },
         "releaseBytes": {
-          "current": 25887,
-          "baseline": 32816,
-          "delta": -6929
+          "current": 27466,
+          "baseline": 34709,
+          "delta": -7243
         },
         "regularGzipBytes": {
-          "current": 8967,
-          "baseline": 8880,
+          "current": 9455,
+          "baseline": 9368,
           "delta": 87
         },
         "releaseGzipBytes": {
-          "current": 7663,
-          "baseline": 7737,
-          "delta": -74
+          "current": 8060,
+          "baseline": 8163,
+          "delta": -103
         },
         "owningFiles": [
           "addons/site-repair-addon/src/app/createSiteRepairApp.js",
           "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
           "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
-          "addons/site-repair-addon/src/app/commands.js",
-          "addons/site-repair-addon/src/main.js"
+          "addons/site-repair-addon/src/app/settings.js",
+          "addons/site-repair-addon/src/app/commands.js"
         ],
         "behaviorDelta": "No behavior change is made or inferred by this measurement package; accepted behavior is covered by TEST-ADDONS-01."
       }
@@ -12617,6 +12617,10 @@
             "IMAGE_STYLE_ID",
             "MAX_ATTEMPTS",
             "RETRY_DELAY_MS",
+            "MIN_ATTEMPTS",
+            "MAX_CONFIGURED_ATTEMPTS",
+            "MIN_RETRY_DELAY_MS",
+            "MAX_RETRY_DELAY_MS",
             "SETTINGS_KEY",
             "DEFAULT_SETTINGS"
           ]
@@ -12716,6 +12720,8 @@
         "addons/masked-direct-addon/src/ports/routeContextRepository.js#readRouteContext",
         "addons/shared/runtimeLifecycle.js#LIFECYCLE_STATES",
         "addons/site-repair-addon/src/app/settings.js#getDefaultSiteRepairSettings",
+        "addons/site-repair-addon/src/constants.js#MAX_ATTEMPTS",
+        "addons/site-repair-addon/src/constants.js#RETRY_DELAY_MS",
         "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js#stableOriginalUrl",
         "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js#LATEST_AJAX_RECOVERY_MARKER"
       ],

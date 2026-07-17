@@ -459,6 +459,9 @@ node addons/build-addon.js example-addon --release
 
 # Force regeneration
 node addons/build-addon.js example-addon --force
+
+# Rebuild a changed add-on without changing its manifest version
+node addons/build-addon.js example-addon --release --force --no-bump
 ```
 
 Validate and regenerate the trusted catalog from the manifest with:
@@ -492,6 +495,7 @@ The builder:
 - generates userscript metadata from the manifest;
 - bumps only add-ons selected for a changed build;
 - uses a patch bump by default and accepts `--minor` or `--major`;
+- accepts `--no-bump` for an intentional same-version rebuild;
 - tracks regular and release hashes separately in `addons/.build-cache.json`;
 - strips debug logging in release mode and beautifies the release artifact;
 - skips unchanged targets unless `--force` is supplied.

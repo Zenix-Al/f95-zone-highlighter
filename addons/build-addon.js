@@ -362,6 +362,7 @@ async function main() {
   const args = process.argv.slice(2);
   const isRelease = args.includes("--release");
   const forceBuild = args.includes("--force");
+  const noBump = args.includes("--no-bump");
   const bumpType = getBumpType(args);
   const requested = args.find((arg) => arg && !arg.startsWith("--"));
   let addons = readManifest();
@@ -394,15 +395,16 @@ async function main() {
     return;
   }
 
-  // Bump versions for addons that will be built
+  // Bump versions for add-ons that will be built unless this is an explicit
+  // same-version rebuild (useful for fixing an already published version).
   const targetIds = new Set(changedTargets.map((item) => item.addon.id));
   const bumpedAddons = addons.map((addon) =>
     targetIds.has(addon.id)
-      ? { ...addon, version: formatVersion(bumpVersion(addon.version, bumpType)) }
+      ? { ...addon, version: noBump ? addon.version : formatVersion(bumpVersion(addon.version, bumpType)) }
       : addon,
   );
 
-  console.log(`Bumping ${changedTargets.length} add-on(s) (${bumpType}):`);
+  console.log(`${noBump ? "Rebuilding" : "Bumping"} ${changedTargets.length} add-on(s)${noBump ? " without version changes" : ` (${bumpType})`}:`);
   changedTargets.forEach((item) => {
     const oldVersion = item.addon.version;
     const newVersion = bumpedAddons.find((a) => a.id === item.addon.id).version;
