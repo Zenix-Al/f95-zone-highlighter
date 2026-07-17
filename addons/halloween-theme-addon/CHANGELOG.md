@@ -1,9 +1,11 @@
 # Changelog
 
-## Unreleased - Restore page theme application
+## v1.0.0 - Restore page theme application
 
 - Restored the Halloween page background and logo swap after the scoped add-on UI style API rejected the global theme CSS.
 - The page-owned style now has explicit add-on ownership and is removed on disable or teardown.
+
+Note : require core v5.2.0 or above
 
 ## v0.2.2 - bugfix
 

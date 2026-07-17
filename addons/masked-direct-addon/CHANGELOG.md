@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased - Separate core and standalone runtime contexts
+## v1.0.0 - Separate core and standalone runtime contexts
 
 - Classify matched routes as F95 core, external standalone, or unsupported before bootstrap.
 - Keep external download-host automation independent from core registration and core API events.

@@ -1,10 +1,12 @@
-## [Unreleased] - Canonical add-on template
+## [1.0.0] - Canonical add-on template
 
 - keep `main.js` limited to injected runtime construction, core ping, composition, and fatal error reporting
 - isolate app state, command dispatch, serialized lifecycle behavior, and bulk work under `app/`
 - isolate DOM event binding under `ui/bindings.js`
 - make disable, refresh, and terminal teardown abort stale work and acknowledge teardown once
 - preserve every API playground demonstration and existing storage/IDB identifiers
+
+Note : require core v5.2.0 or above
 
 ## [0.2.5] - Throttled bulk import demo
 

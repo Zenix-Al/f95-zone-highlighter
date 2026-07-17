@@ -1,6 +1,6 @@
 # Changelog
 
-## v0.2.6 - Rebrand as F95UE Site Repair
+## v1.0.0 - Rebrand as F95UE Site Repair
 
 - Preserve the Image Repair userscript namespace and GreasyFork listing identity.
 - Canonicalize runtime/state identity to `site-repair-addon` with `image-repair-addon` as a legacy ID.
