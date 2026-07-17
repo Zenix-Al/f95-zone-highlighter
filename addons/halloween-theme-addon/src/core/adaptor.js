@@ -1,5 +1,1 @@
-import { createCoreBridge } from "../../../shared/coreBridge.js";
-
-export function createCoreAdaptor(addonId) {
-  return createCoreBridge(addonId);
-}
+export { createCoreAdaptor } from "../../../shared/runtimeKit.js";

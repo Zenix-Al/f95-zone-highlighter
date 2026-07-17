@@ -262,6 +262,10 @@ export async function executeLibraryImport({
       batch.map((entry) => entry.value),
       shouldCancel,
     );
+    if (shouldCancel()) {
+      cancelled = true;
+      break;
+    }
     if (bulkResult?.reason === "cancelled") {
       cancelled = true;
       break;

@@ -6,13 +6,13 @@ const ALLOWED_TAGS = new Set([
   "td", "textarea", "tfoot", "th", "thead", "tr", "u", "ul",
 ]);
 
-const GLOBAL_ATTRIBUTES = new Set(["class", "id", "role", "title", "tabindex"]);
+const GLOBAL_ATTRIBUTES = new Set(["class", "hidden", "id", "role", "title", "tabindex"]);
 const TAG_ATTRIBUTES = {
   a: new Set(["href", "target", "rel", "download"]),
   button: new Set(["type", "disabled", "name", "value"]),
   form: new Set(["method"]),
   img: new Set(["src", "alt", "width", "height"]),
-  input: new Set(["type", "name", "value", "placeholder", "checked", "disabled", "readonly", "min", "max", "step"]),
+  input: new Set(["type", "name", "value", "placeholder", "accept", "checked", "disabled", "readonly", "min", "max", "step"]),
   label: new Set(["for"]),
   option: new Set(["value", "selected", "disabled"]),
   select: new Set(["name", "multiple", "disabled"]),

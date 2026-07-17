@@ -1,10 +1,14 @@
 const fs = require("fs");
 const path = require("path");
+const crypto = require("crypto");
 
 const ROOT = path.resolve(__dirname, "..");
 const MANIFEST_PATH = path.join(ROOT, "addons", "addons.manifest.json");
-const CATALOG_PATH = path.join(ROOT, "addons", "trusted-catalog.json");
-const HEADER_PATH = path.join(ROOT, "header.txt");
+const GENERATED_DIR = path.join(ROOT, "src", "generated");
+const LEGACY_CATALOG_PATH = path.join(ROOT, "src", "services", "addons", "trusted-catalog.json");
+const CATALOG_META_PATH = path.join(GENERATED_DIR, "trusted-addon-catalog.meta.json");
+const CATALOG_FILE_PREFIX = "trusted-addon-catalog.";
+const HEADER_PATH = path.join(ROOT, "build", "header.txt");
 const SUPPORTED_SCOPES = new Set(["f95zone", "thread", "latest"]);
 const RUNTIME_MODES = new Set(["core-required", "standalone", "hybrid"]);
 const VALID_CAPABILITIES = new Set([
@@ -177,17 +181,27 @@ function validateManifest(addons = readManifest(), { rootDir = ROOT, checkFiles 
   } catch {
     // Temporary validator fixtures may not include an add-ons directory.
   }
-  let catalogIds = new Set();
+  let catalogById = new Map();
   if (checkFiles) {
     try {
-      const existingCatalog = JSON.parse(fs.readFileSync(path.join(root, "addons", "trusted-catalog.json"), "utf8"));
-      catalogIds = new Set((Array.isArray(existingCatalog) ? existingCatalog : []).map((entry) => sanitizeAddonId(entry?.id)).filter(Boolean));
+      const existingCatalog = JSON.parse(fs.readFileSync(
+        path.join(root, "src", "generated", "trusted-addon-catalog.meta.json"),
+        "utf8",
+      ));
+      const catalogFile = String(existingCatalog?.catalogFile || "");
+      const catalogDocument = JSON.parse(fs.readFileSync(path.join(root, "src", "generated", catalogFile), "utf8"));
+      catalogById = new Map((Array.isArray(catalogDocument?.catalog) ? catalogDocument.catalog : [])
+        .map((entry) => [sanitizeAddonId(entry?.id), entry]).filter(([id]) => id));
     } catch {
-      catalogIds = new Set();
+      catalogById = new Map();
     }
   }
   for (const [legacyId, ownerIndex] of legacyIds) {
-    if (allIds.has(legacyId) || folderIds.has(legacyId) || (catalogIds.has(legacyId) && !allIds.has(legacyId))) {
+    const owner = addons[ownerIndex];
+    const previousCatalogEntry = catalogById.get(legacyId);
+    const isSamePublishedScript = previousCatalogEntry &&
+      String(previousCatalogEntry.downloadUrl || "") === String(owner?.downloadUrl || "");
+    if (allIds.has(legacyId) || folderIds.has(legacyId) || (previousCatalogEntry && !isSamePublishedScript)) {
       addPathError(ownerIndex, "legacyIds", `duplicates add-on identity '${legacyId}'`);
     }
   }
@@ -198,8 +212,8 @@ function validateManifest(addons = readManifest(), { rootDir = ROOT, checkFiles 
     }
   }
   const header = fs.readFileSync(HEADER_PATH, "utf8");
-  if (!header.includes("@resource     trustedAddonCatalog https://cdn.jsdelivr.net/gh/Zenix-Al/f95-zone-highlighter@main/addons/trusted-catalog.json")) {
-    errors.push("core header trusted catalog resource path/name changed");
+  if (header.includes("trustedAddonCatalog") || header.includes("GM_getResourceText")) {
+    errors.push("core header must not embed the trusted catalog resource");
   }
   return errors;
 }
@@ -231,6 +245,54 @@ function renderCatalog(addons = readManifest()) {
   return `${JSON.stringify(buildTrustedCatalog(addons), null, 2)}\n`;
 }
 
+function buildCatalogArtifacts(addons = readManifest()) {
+  const catalog = buildTrustedCatalog(addons);
+  const canonical = JSON.stringify(catalog);
+  const identifier = crypto.createHash("sha256").update(canonical).digest("hex");
+  const catalogFile = `${CATALOG_FILE_PREFIX}${identifier.slice(0, 16)}.json`;
+  return {
+    identifier,
+    catalogFile,
+    metadata: `${JSON.stringify({ schemaVersion: 1, identifier, catalogFile }, null, 2)}\n`,
+    catalog: `${JSON.stringify({ schemaVersion: 1, identifier, catalog }, null, 2)}\n`,
+    aliases: `${JSON.stringify(Object.fromEntries(catalog.flatMap((entry) =>
+      (entry.legacyIds || []).map((legacyId) => [legacyId, entry.id]))), null, 2)}\n`,
+  };
+}
+
+function writeCatalogArtifacts(addons = readManifest(), { rootDir = ROOT } = {}) {
+  const generatedDir = path.join(rootDir, "src", "generated");
+  const artifacts = buildCatalogArtifacts(addons);
+  fs.mkdirSync(generatedDir, { recursive: true });
+  for (const name of fs.readdirSync(generatedDir)) {
+    if (name.startsWith(CATALOG_FILE_PREFIX) && name.endsWith(".json") && name !== artifacts.catalogFile) {
+      fs.rmSync(path.join(generatedDir, name));
+    }
+  }
+  fs.writeFileSync(path.join(generatedDir, artifacts.catalogFile), artifacts.catalog);
+  fs.writeFileSync(path.join(generatedDir, "trusted-addon-catalog.meta.json"), artifacts.metadata);
+  fs.writeFileSync(path.join(generatedDir, "trusted-addon-aliases.json"), artifacts.aliases);
+  const legacyPath = path.join(rootDir, path.relative(ROOT, LEGACY_CATALOG_PATH));
+  fs.mkdirSync(path.dirname(legacyPath), { recursive: true });
+  fs.writeFileSync(legacyPath, renderCatalog(addons));
+  return artifacts;
+}
+
+function checkCatalogArtifacts(addons = readManifest(), { rootDir = ROOT } = {}) {
+  const generatedDir = path.join(rootDir, "src", "generated");
+  const expected = buildCatalogArtifacts(addons);
+  const metadataPath = path.join(generatedDir, "trusted-addon-catalog.meta.json");
+  const catalogPath = path.join(generatedDir, expected.catalogFile);
+  if (!fs.existsSync(metadataPath) || fs.readFileSync(metadataPath, "utf8") !== expected.metadata) return false;
+  if (!fs.existsSync(catalogPath) || fs.readFileSync(catalogPath, "utf8") !== expected.catalog) return false;
+  if (fs.readFileSync(path.join(generatedDir, "trusted-addon-aliases.json"), "utf8") !== expected.aliases) return false;
+  const legacyPath = path.join(rootDir, path.relative(ROOT, LEGACY_CATALOG_PATH));
+  if (!fs.existsSync(legacyPath) || fs.readFileSync(legacyPath, "utf8") !== renderCatalog(addons)) return false;
+  return fs.readdirSync(generatedDir)
+    .filter((name) => name.startsWith(CATALOG_FILE_PREFIX) && name.endsWith(".json") && name !== "trusted-addon-catalog.meta.json")
+    .every((name) => name === expected.catalogFile);
+}
+
 function run(args = process.argv.slice(2)) {
   const addons = readManifest();
   const errors = validateManifest(addons);
@@ -239,19 +301,17 @@ function run(args = process.argv.slice(2)) {
     console.log("Add-on manifest validation passed.");
     return;
   }
-  const expected = renderCatalog(addons);
   if (args.includes("--write")) {
-    fs.writeFileSync(CATALOG_PATH, expected);
-    console.log("Generated trusted add-on catalog.");
+    const artifacts = writeCatalogArtifacts(addons);
+    console.log(`Generated trusted add-on catalog ${artifacts.catalogFile}.`);
     return;
   }
   if (args.includes("--check")) {
-    const actual = fs.readFileSync(CATALOG_PATH, "utf8");
-    if (actual !== expected) throw new Error("Trusted catalog differs from addons.manifest.json.");
+    if (!checkCatalogArtifacts(addons)) throw new Error("Generated trusted catalog artifacts differ from addons.manifest.json.");
     console.log("Trusted catalog is in sync with the add-on manifest.");
     return;
   }
-  console.log(expected);
+  console.log(buildCatalogArtifacts(addons).catalog);
 }
 
 if (require.main === module) {
@@ -265,8 +325,11 @@ if (require.main === module) {
 
 module.exports = {
   buildTrustedCatalog,
+  buildCatalogArtifacts,
+  checkCatalogArtifacts,
   readManifest,
   renderCatalog,
+  writeCatalogArtifacts,
   run,
   validateManifest,
 };

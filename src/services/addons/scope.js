@@ -141,3 +141,21 @@ export function validateAddonRuntimeMetadata(addon, { registration = false } = {
     ? { ok: false, reason: "invalid_registration", errors: [...new Set(errors)] }
     : { ok: true, runtimeMode, pageScopes, matches };
 }
+
+const CORE_PAGE_SCOPE_FLAGS = Object.freeze([
+  ["f95zone", "isF95Zone"],
+  ["thread", "isThread"],
+  ["latest", "isLatest"],
+]);
+
+export function getCurrentAddonPageScopes(stateManager) {
+  return CORE_PAGE_SCOPE_FLAGS
+    .filter(([, stateKey]) => stateManager.get(stateKey))
+    .map(([scope]) => scope);
+}
+
+export function getAddonAvailabilityBlockReason(access) {
+  if (access?.availabilityReason === "activation_mismatch") return "addon_activation_mismatch";
+  if (access?.availabilityReason === "out_of_scope") return "addon_out_of_scope";
+  return null;
+}

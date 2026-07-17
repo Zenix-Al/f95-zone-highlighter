@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.0.0 - Separate core and standalone runtime contexts
+
+- Classify matched routes as F95 core, external standalone, or unsupported before bootstrap.
+- Keep external download-host automation independent from core registration and core API events.
+- Move F95 composition, the core adaptor, and route/cross-host repositories into explicit ownership boundaries.
+- Preserve already-open external download flows after an F95-side disable; disabling prevents new F95 handoffs but does not remotely cancel a host tab that already owns a request.
+- Preserve all userscript matches, grants, storage keys, route fields, selectors, and timing constants.
+
 ## v0.3.44 - Improve Workupload and Datanodes download handling
 
 - Treat Workupload `/start/*` pages as a successful download handoff instead of a detector failure.

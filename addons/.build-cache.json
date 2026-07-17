@@ -1,28 +1,32 @@
 {
   "addons": {
     "library-addon": {
-      "regular": "87fa4a776721428bcaaaa9fd8f9eeae40c66e110490f88bf8b17c91c536e6a08",
-      "release": "6101b9afb61bacfbd4d4e9672c9b5596d71aa79d039c80452dd1848dd51f55af"
+      "regular": "55f4c4b4ee494cc65ebceb6ca1b8781b54f379cfd6c14b2e3902471f8dcc7cdc",
+      "release": "145dcbc1036fd418188d894419942d3e0a973e4fdb0dc1a3e6074f8e4e5d9a06"
     },
     "image-repair-addon": {
       "release": "599180b41d1edaf69497c5acbf83bdcee2b3417604595341691dd6eac64a4450",
-      "regular": "645b3abd120b3d6eb65162535d366cda6a74f6397e7d86306191090938bfdd03"
+      "regular": "caacd5214f6f63a95e6bed0cbe8ab2e21cce9758edd76f9a13d8df5f85d82f2b"
     },
     "masked-direct-addon": {
-      "release": "32299aa6a0abded0fb69ff7189fd02e38354adbec3fa97175d6fc0a3edade2c5",
-      "regular": "176570dad1659b53604f47ef750725bc609e34cce31abf9c3e4a350c6f3d7a2f"
+      "release": "6f101bc4195ae16d9492b29808dcb696388b477a786d6c15ea1745b23adcc6f0",
+      "regular": "ac6d8e2a6fa800240c1d947f5d8e974e99880217f1942a8140735f1f6fff39cf"
     },
     "latest-filters-addon": {
-      "release": "ac4e9c2ce15ab0a1300c2a334c97b7f7b1af74b3d372df5ac2aea3f992fc1c06",
-      "regular": "d8afa9ab08f525d6aa2aff5d9b6627e345f45cea1709f659b12c07bc8edcbb71"
+      "release": "f31a246d4ccf265d33dc2719e3eb5641ad72eca9761ba6c0c2ce0fe17fa91d8a",
+      "regular": "0505cd3c2e3a2e207d09a93076ca0caf01b8e2fa460c184e82259fb72080f00d"
     },
     "halloween-theme-addon": {
-      "release": "2a41b90abfe68f2605eacc0eef2abbfac9d45a1b29670f545abab3834bfb90b6",
-      "regular": "92a68fd3696cb3d1399c9733fcbcc15d5685c3826b07b9a84a98f89c6eba8de4"
+      "release": "7f0ea5a0fd93cb562a00e6c2d093ec53ba8972d13cb8f9c2e34cdc434014e3d9",
+      "regular": "1a83d590c6f4a0eda412887b4fd729d89f4743d4651316cb294e88464be0b010"
     },
     "example-addon": {
-      "regular": "05ad0a74f5f8c9a426e445f6a844cb095a63c377b2148e805fa7fe914c0bb214",
-      "release": "0769d7d0e190a9a8369bf7d18bfb4f174b5be8ce60035edf9de2d244d828a410"
+      "regular": "37190aec8889863208cc925aa02634e71ee288a51ceea06b3d7cbb47e4134faf",
+      "release": "c89871d3f26f8115ee9dc5539d245e0977ad672b2725756ea00add5f91b1fb74"
+    },
+    "site-repair-addon": {
+      "regular": "f8c31c81a922ee2bca6061d106a62acc5cb756c31aca09027f1acc430d563f47",
+      "release": "4949b98fb548bab299fdba9bfb4b78252df1063b5ea974ec2d9259195bc339b3"
     }
   }
 }

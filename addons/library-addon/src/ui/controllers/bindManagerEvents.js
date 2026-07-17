@@ -8,6 +8,8 @@ import { handleImportFile } from "../application/importExportWorkflow.js";
 const SEARCH_DEBOUNCE_MS = 220;
 export function bindManagerEvents(root, state, handlers, deps) {
   const { reloadRowsFn, onMutatedFn, library, askConfirmFn } = deps;
+  const controller = new AbortController();
+  const listenerOptions = { signal: controller.signal };
 
   function shouldFlipTooltip(anchorEl, tooltipEl) {
     if (!anchorEl || !tooltipEl) return false;
@@ -61,7 +63,7 @@ export function bindManagerEvents(root, state, handlers, deps) {
     } else if (handlers[action]) {
       await handlers[action](threadId, value, button);
     }
-  });
+  }, listenerOptions);
 
   // Checkbox/input change handler
   root.addEventListener("change", async (event) => {
@@ -88,7 +90,7 @@ export function bindManagerEvents(root, state, handlers, deps) {
     if (handlers[action]) {
       await handlers[action](threadId, selectEl.value, selectEl);
     }
-  });
+  }, listenerOptions);
 
   root.addEventListener("input", async (event) => {
     const noteEl = event.target?.closest?.("textarea[data-action]");
@@ -100,7 +102,7 @@ export function bindManagerEvents(root, state, handlers, deps) {
     if (handlers[action]) {
       await handlers[action](threadId, noteEl.value, noteEl);
     }
-  });
+  }, listenerOptions);
 
   // Close advanced panel when clicking outside
   const advancedPanel = root.querySelector(".f95ue-library-more-actions");
@@ -111,7 +113,7 @@ export function bindManagerEvents(root, state, handlers, deps) {
     ) {
       advancedPanel.removeAttribute("open");
     }
-  });
+  }, listenerOptions);
 
   // Search input with debounce
   const searchInput = root.querySelector('[data-field="search"]');
@@ -126,7 +128,7 @@ export function bindManagerEvents(root, state, handlers, deps) {
         state.page = 1;
         await reloadRowsFn(root);
       }, SEARCH_DEBOUNCE_MS);
-    });
+    }, listenerOptions);
   }
 
   // Status filter
@@ -136,7 +138,7 @@ export function bindManagerEvents(root, state, handlers, deps) {
       state.status = String(statusSelect.value || "all").trim();
       state.page = 1;
       await reloadRowsFn(root);
-    });
+    }, listenerOptions);
   }
 
   // Sort selection
@@ -148,7 +150,7 @@ export function bindManagerEvents(root, state, handlers, deps) {
       state.sortDir = String(pair[1] || "desc").trim();
       state.page = 1;
       await reloadRowsFn(root);
-    });
+    }, listenerOptions);
   }
 
   // Import file input
@@ -164,7 +166,7 @@ export function bindManagerEvents(root, state, handlers, deps) {
         onMutatedFn,
         askConfirmFn,
       );
-    });
+    }, listenerOptions);
   }
 
   // Page size selection
@@ -175,7 +177,7 @@ export function bindManagerEvents(root, state, handlers, deps) {
       state.pageSize = Number.isFinite(nextSize) ? nextSize : state.pageSize || 50;
       state.page = 1;
       await reloadRowsFn(root);
-    });
+    }, listenerOptions);
   }
 
   // Tooltip flip handling (chips + note preview)
@@ -191,7 +193,7 @@ export function bindManagerEvents(root, state, handlers, deps) {
       const tooltip = hoverText.querySelector(".f95ue-hover-tooltip");
       hoverText.classList.toggle("is-flip", shouldFlipTooltip(hoverText, tooltip));
     }
-  }, true);
+  }, { capture: true, signal: controller.signal });
 
   root.addEventListener(
     "scroll",
@@ -199,6 +201,14 @@ export function bindManagerEvents(root, state, handlers, deps) {
       root.querySelectorAll(".f95ue-chip-list.is-flip").forEach((el) => el.classList.remove("is-flip"));
       root.querySelectorAll(".f95ue-hover-text.is-flip").forEach((el) => el.classList.remove("is-flip"));
     },
-    true,
+    { capture: true, signal: controller.signal },
   );
+
+  return () => {
+    controller.abort("manager-closed");
+    if (state.searchDebounceTimer) window.clearTimeout(state.searchDebounceTimer);
+    state.searchDebounceTimer = 0;
+    for (const timer of state.noteSaveTimers?.values?.() || []) window.clearTimeout(timer);
+    state.noteSaveTimers?.clear?.();
+  };
 }

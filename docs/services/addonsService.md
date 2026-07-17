@@ -2,6 +2,37 @@
 
 The `addonsService.js` and its sub-modules (located in `src/services/addons/`) form the runtime environment for third-party or optional userscripts ("add-ons") that extend Latest Highlighter. It manages sandboxing, permission gating, inter-script events, and API rate-limiting.
 
+`src/services/addonsService.js` is the stable public facade. Internal ownership is split as follows:
+
+- `apiPolicy.js` owns payload limits, service-disable policy, and throttle normalization.
+- `scope.js` owns page-scope matching and runtime availability decisions.
+- `invocation.js` owns rejection ordering and action invocation.
+- `actionRuntime.js` provides bounded dependencies per action family; there is no shared mega-container.
+- `state.js` owns aliases, persisted state, installed metadata, and atomic installation-trace removal.
+- `catalog.js` and `knownAddons.js` own trusted-catalog and card/status projection.
+- `bootstrap.js` composes bridge callbacks without mutable dependency configuration.
+- `lifecycle.js` owns the teardown primitive, while `runtimeLifecycle.js` owns service shutdown and owner cleanup.
+
+Consumers should continue importing from `addonsService.js`; these internal modules are ownership
+boundaries rather than a new add-on-facing API.
+
+### Trusted catalog delivery
+
+The current core does not embed a trusted catalog and has no catalog `@resource` fallback.
+`scripts/addon-catalog.cjs` derives a SHA-256 identifier from the canonical manifest projection,
+writes `src/generated/trusted-addon-catalog.meta.json`, and writes the corresponding immutable
+`trusted-addon-catalog.<hash-prefix>.json`. On startup, `catalog.js` first restores the last
+validated envelope from GM key `f95ue:addons:trusted-catalog-cache`. At most once every six hours
+it checks the metadata URL through jsDelivr; unchanged identifiers update only `checkedAt`, while
+changed identifiers fetch and hash-validate the named catalog before atomically replacing the
+cached identifier, catalog, `checkedAt`, and `updatedAt`. Failed checks retain a valid stale cache
+and are throttled by the same check interval.
+
+`src/generated/trusted-addon-aliases.json` is bundled only for synchronous ID canonicalization;
+it is not a trusted-entry fallback. `src/services/addons/trusted-catalog.json` remains generated
+only because legacy released cores still request that public URL. The current core never reads it.
+Delete that legacy publication path later only after those releases no longer need support.
+
 ---
 
 ## Architecture Overview
@@ -65,9 +96,13 @@ entry is trusted only when its normalized ID matches the registered ID and its
 `trusted` field is true; an official-looking name, version, or ID never grants trust.
 
 The resolver exposes `isTrusted`, `trustSource`, `isEnabled`, `isBlocked`,
-`blockReason`, `canEnable`, `matchesCurrentPage`, `scopeApplies`, and
-`supportsCurrentPage`. Disabled is a lifecycle state, not an untrusted-policy
-block. Missing catalog identity is reported as `identityStatus: "unresolved"`;
+`blockReason`, `availabilityReason`, `canEnable`, `matchesCurrentPage`,
+`scopeApplies`, and `supportsCurrentPage`. Disabled is a lifecycle state, not an
+untrusted-policy block. Likewise, an activation or page-scope mismatch is an idle
+runtime availability state, not a security block. Runtime actions still reject
+those mismatches, while management enable/disable persists the desired state
+without dispatching lifecycle commands to a runtime that is absent on the page.
+Missing catalog identity is reported as `identityStatus: "unresolved"`;
 an explicitly mismatched catalog identity is `identityStatus: "mismatch"` with
 `blockReason: "identity_error"`. This prevents a trusted badge and an
 untrusted-policy banner from being produced by different snapshots.
@@ -84,11 +119,16 @@ disabled, unblocked, and keeps the Enable management path available.
 
 When a setting changes, `refreshAddonSecurityPolicies()` reapplies the resolver to
 registered entries and registry subscribers refresh the card projection. Catalog
-resources can be explicitly reloaded with
+metadata can be checked immediately with
 `refreshAddonSecurityPolicies({ reloadCatalog: true })`; registration and each
 execution authorization still revalidate the current decision. The registration
 transport, handshake fields, capabilities, scopes, and public `addon.access`
 response shape remain unchanged.
+
+When `Allow untrusted add-ons` is enabled, an untrusted identity remains visibly
+untrusted but is not blocked. Its requested capabilities are restored by the
+current policy projection, including after the setting changes, so settings and
+other authorized actions do not retain a stale `addon_untrusted` decision.
 
 All current core-connected add-ons share the browser-side bridge contract in
 `addons/shared/coreBridge.js`. Each bootstraps by pinging core, registering,
@@ -137,11 +177,12 @@ To prevent rogue add-ons from stalling the browser, `bridgeServer.js` enforces r
 To add a new capability or action to the add-on system:
 
 ### 1. Register one action descriptor
-Open `src/services/addons/actions/descriptors.js` (or add a cohesive descriptor
-module) and register the action with its public ID, protocol version, required
-capabilities, payload validator, timeout, audit category, and execution handler:
+Add the descriptor to its cohesive family under
+`src/services/addons/actions/families/`. The family co-locates the public ID,
+capabilities, payload validator, timeout, audit category, policy, redaction, and
+execution handler. `actions/composition.js` is the only registration root:
 ```javascript
-registerAction({
+defineAction({
   id: "myFeature.myAction",
   protocolVersion: 1,
   requiredCapabilities: ["myCapability"],
@@ -153,9 +194,9 @@ registerAction({
 ```
 
 ### 2. Implement the Action Handler
-Place the handler beside its descriptor or in the matching cohesive action
-module. The central invocation pipeline validates payloads, applies the timeout,
-and returns only the descriptor's declared response shape.
+Place the handler beside its descriptor in the matching family. The central
+invocation pipeline validates payloads, applies the timeout, reauthorizes at
+execution, and returns only the descriptor's declared response shape.
 ```javascript
 async function myHandler(addonId, payload, deps) {
   // Execute logic using core services/dependencies in `deps`

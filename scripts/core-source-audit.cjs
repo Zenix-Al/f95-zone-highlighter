@@ -16,7 +16,6 @@ const EXCLUDED_SOURCE_HINTS = Object.freeze([
   "src/services/addonsService.js",
   ADDON_UI_PREFIX,
   ADDON_UI_RENDERER,
-  "src/features/latest-ajax-error-recovery/",
 ]);
 const BASELINE_SCHEMA_VERSION = 1;
 
@@ -253,9 +252,9 @@ function sourceReport(rootDir) {
 }
 
 function getPlugins(rootDir, release) {
-  const stripCssComments = require(path.join(rootDir, "stripCssComments.js")).stripCssComments;
+  const stripCssComments = require(path.join(rootDir, "build", "stripCssComments.js")).stripCssComments;
   const plugins = [stripCssComments];
-  if (release) plugins.push(require(path.join(rootDir, "stripDebugLogs.js")).stripDebugLogs);
+  if (release) plugins.push(require(path.join(rootDir, "build", "stripDebugLogs.js")).stripDebugLogs);
   return plugins;
 }
 

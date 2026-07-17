@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.0.0 - Canonical runtime ownership
+
+- Moved registration, lifecycle, dock, manager, and cancellation ownership behind the canonical app/API/adaptor boundaries.
+- Preserved the site-wide F95Zone scope and existing Library database, storage, legacy-record, and import/export contracts.
+- Prevented disabled or superseded imports and manager work from committing late UI updates.
+
+Note : require core v5.2.0 or above
+
 ## v0.3.52 - Improve UI lifecycle
 
 - addon now retry when fail to attach ui.

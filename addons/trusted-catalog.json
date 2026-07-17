@@ -3,7 +3,7 @@
     "id": "example-addon",
     "name": "F95UE Example Add-on",
     "description": "Core API playground demonstrating every current addon-facing action through api modules.",
-    "version": "0.2.11",
+    "version": "0.2.14",
     "pageScopes": [
       "f95zone"
     ],
@@ -38,7 +38,7 @@
     "id": "halloween-theme-addon",
     "name": "F95UE Halloween Theme Add-on",
     "description": "Forces Halloween logo/background theme with simple apply and teardown lifecycle.",
-    "version": "2.0.14",
+    "version": "2.0.15",
     "pageScopes": [
       "f95zone"
     ],
@@ -52,8 +52,7 @@
     "runAt": "document-idle",
     "requiresCore": true,
     "capabilities": [
-      "feature",
-      "ui.style"
+      "feature"
     ],
     "downloadUrl": "https://greasyfork.org/en/scripts/573070-f95ue-halloween-theme-add-on",
     "trusted": true
@@ -62,7 +61,7 @@
     "id": "image-repair-addon",
     "name": "F95UE Image Repair Add-on",
     "description": "Automatically retries broken attachment images on F95Zone threads.",
-    "version": "0.2.5",
+    "version": "0.2.6",
     "pageScopes": [
       "thread"
     ],
@@ -90,7 +89,7 @@
     "id": "latest-filters-addon",
     "name": "F95UE Latest Filters Add-on",
     "description": "Adds one Saved Filters button on Latest Updates with a searchable preset list and active filter tracking.",
-    "version": "0.3.19",
+    "version": "0.3.20",
     "pageScopes": [
       "latest"
     ],
@@ -122,7 +121,7 @@
     "id": "library-addon",
     "name": "F95UE Library Add-on",
     "description": "Quick-add threads to a personal library and manage entries with a dedicated add-on UI.",
-    "version": "0.3.56",
+    "version": "0.3.57",
     "pageScopes": [
       "f95zone"
     ],
@@ -153,7 +152,7 @@
     "id": "masked-direct-addon",
     "name": "F95UE Masked + Direct Download Add-on",
     "description": "Combines masked-link skipper and direct-download flows into one trusted add-on.",
-    "version": "0.3.48",
+    "version": "0.3.49",
     "pageScopes": [
       "f95zone"
     ],

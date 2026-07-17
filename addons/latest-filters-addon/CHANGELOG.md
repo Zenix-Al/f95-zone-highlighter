@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.0.0 - Structure reworked
 
 - Adopt the Example Add-on runtime boundaries with instance-owned lifecycle state,
   cancellable mount/route/dialog work, and a storage adapter that preserves the

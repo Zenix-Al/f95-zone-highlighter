@@ -48,7 +48,7 @@ const disableAddonsServiceSetting = createToggleSetting({
       disableAddonsService();
       return;
     }
-    initAddonsConsoleBridge();
+    return initAddonsConsoleBridge();
   },
   toast: (value) =>
     value
@@ -73,9 +73,7 @@ const allowUntrustedAddonsSetting = createToggleSetting({
       cancelLabel: "Cancel",
     });
   },
-  custom: () => {
-    refreshAddonSecurityPolicies();
-  },
+  custom: () => refreshAddonSecurityPolicies(),
   toast: createEnabledDisabledToast("Untrusted add-ons", {
     enabled: "allowed with limited API",
     disabled: "blocked unless trusted",

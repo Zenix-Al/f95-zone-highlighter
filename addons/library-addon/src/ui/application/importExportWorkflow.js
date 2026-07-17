@@ -106,6 +106,10 @@ export async function handleImportFile(
     plan: preview,
   });
   await finishImportProgress(result.cancelled ? "import-cancelled" : "import-complete");
+  if (result.cancelled) {
+    inputEl.value = "";
+    return;
+  }
   const detail = [
     `added: ${result.added}`,
     `updated: ${result.updated}`,

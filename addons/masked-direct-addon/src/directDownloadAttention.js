@@ -1,4 +1,7 @@
-import { getRouteOriginTabId, getRouteRequestId } from "./routeContext.js";
+import {
+  getRouteOriginTabId,
+  getRouteRequestId,
+} from "./ports/routeContextRepository.js";
 
 const DIRECT_DOWNLOAD_EVENT_KEY =
   "f95ue.addon.maskedDirect.directDownloadEvent";

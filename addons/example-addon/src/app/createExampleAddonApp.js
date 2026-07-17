@@ -60,6 +60,7 @@ import { createExampleUiBindings } from "../ui/bindings.js";
 export function createExampleAddonApp({ core, runtime }) {
   const state = createInitialState();
   let terminal = false;
+  let dockButtonsRequested = false;
   const ownedTimeouts = new Map();
   const ownedObserverNodes = new Set();
   let ownedResourceSequence = 0;
@@ -208,11 +209,15 @@ export function createExampleAddonApp({ core, runtime }) {
     const result = await setDockButtons(core, EXAMPLE_DOCK_BUTTONS);
     if (result?.ok) {
       state.ui.dockButtonsActive = true;
+      dockButtonsRequested = true;
     }
     return result;
   }
 
   async function mountDockLauncher() {
+    debugLog(runtime.addonId, "Mounting dock launcher.", {
+      data: { enabled: state.enabled, mounted: state.ui.dockLauncherMounted },
+    });
     const result = await mountUi(core, {
       mountId: EXAMPLE_DOCK_MOUNT_ID,
       slot: "page.dock",
@@ -223,15 +228,20 @@ export function createExampleAddonApp({ core, runtime }) {
     }
     state.ui.dockLauncherMounted = true;
     uiBindings.bindDockMountEvents();
+    debugLog(runtime.addonId, "Dock launcher mounted and click listener bound.", { data: result });
     return result;
   }
 
   async function unmountDockLauncher() {
+    debugLog(runtime.addonId, "Unbinding and unmounting dock launcher.", {
+      data: { enabled: state.enabled, mounted: state.ui.dockLauncherMounted },
+    });
     uiBindings.unbindDockMountEvents();
     const result = await unmountUi(core, EXAMPLE_DOCK_MOUNT_ID);
     if (result?.ok) {
       state.ui.dockLauncherMounted = false;
     }
+    debugLog(runtime.addonId, "Dock launcher cleanup completed.", { data: { result, ui: state.ui } });
     return result;
   }
 
@@ -275,6 +285,7 @@ export function createExampleAddonApp({ core, runtime }) {
   }
 
   async function disableUi(reason = "disable") {
+    debugLog(runtime.addonId, `UI cleanup started (reason=${reason}).`, { data: { ui: state.ui } });
     if (state.observer.isWatching) {
       await unwatchObserver(core, EXAMPLE_OBSERVER_ID);
       state.observer.isWatching = false;
@@ -289,11 +300,17 @@ export function createExampleAddonApp({ core, runtime }) {
       const styleResult = await unregisterStyle(core, EXAMPLE_STYLE_ID);
       if (styleResult?.ok) state.ui.styleRegistered = false;
     }
+    debugLog(runtime.addonId, `UI cleanup completed (reason=${reason}).`, { data: { ui: state.ui } });
   }
 
   async function enableUi() {
+    debugLog(runtime.addonId, "UI enable/remount started.", {
+      data: { ui: state.ui, dockButtonsRequested },
+    });
     if (!state.ui.styleRegistered) await ensureStyleRegistered();
+    if (dockButtonsRequested && !state.ui.dockButtonsActive) await ensureDockButtons();
     if (!state.ui.dockLauncherMounted) await mountDockLauncher();
+    debugLog(runtime.addonId, "UI enable/remount completed.", { data: { ui: state.ui } });
   }
 
   function createObserverTestNode() {
@@ -406,14 +423,17 @@ export function createExampleAddonApp({ core, runtime }) {
 
   lifecycle = createExampleLifecycle({
     onEnable: async ({ isCurrent }) => {
+      debugLog(runtime.addonId, "Lifecycle enable started.", { data: lifecycle?.getSnapshot?.() });
       state.enabled = true;
       await enableUi();
       if (!isCurrent()) return { ok: false, reason: "enable_superseded" };
       pushStatusUpdate();
       await syncPanel();
+      debugLog(runtime.addonId, "Lifecycle enable completed.", { data: lifecycle?.getSnapshot?.() });
       return { ok: true };
     },
     onDisable: async () => {
+      debugLog(runtime.addonId, "Lifecycle disable started.", { data: lifecycle?.getSnapshot?.() });
       state.enabled = false;
       bulkImport.requestCancellation();
       cancelOwnedTimeouts();
@@ -421,6 +441,9 @@ export function createExampleAddonApp({ core, runtime }) {
       ownedObserverNodes.clear();
       await disableUi("disable");
       pushStatusUpdate();
+      debugLog(runtime.addonId, "Lifecycle disable completed.", {
+        data: { lifecycle: lifecycle?.getSnapshot?.(), ui: state.ui },
+      });
       return { ok: true };
     },
     onRefresh: async ({ isCurrent }) => {
@@ -729,6 +752,7 @@ export function createExampleAddonApp({ core, runtime }) {
         const result = await removeDockButtons(core);
         if (result?.ok) {
           state.ui.dockButtonsActive = false;
+          dockButtonsRequested = false;
         }
         setLastResult(action, result);
         break;
@@ -765,13 +789,13 @@ export function createExampleAddonApp({ core, runtime }) {
     const access = await getAddonAccess(core);
     debugLog(
       runtime.addonId,
-      `Core access response (ok=${Boolean(access?.ok)}, blocked=${Boolean(access?.value?.blocked)}, trusted=${String(access?.value?.trusted)}, reason=${String(access?.reason || access?.value?.blockReason || "")}).`,
+      `Core access response (ok=${Boolean(access?.ok)}, blocked=${Boolean(access?.value?.blocked)}, enabled=${String(access?.value?.enabled)}, trusted=${String(access?.value?.trusted)}, reason=${String(access?.reason || access?.value?.blockReason || "")}).`,
       { data: access },
     );
-    if (!access?.ok || access.value?.blocked) {
+    if (!access?.ok || access.value?.blocked || access.value?.enabled === false) {
       state.enabled = false;
       pushStatusUpdate();
-      debugLog(runtime.addonId, `Application held disabled by core access policy (reason=${String(access?.reason || access?.value?.blockReason || "blocked")}).`, {
+      debugLog(runtime.addonId, `Application held disabled by core state (reason=${String(access?.reason || access?.value?.blockReason || (access?.value?.enabled === false ? "persisted-disabled" : "blocked"))}).`, {
         level: "warn",
         data: { access },
       });

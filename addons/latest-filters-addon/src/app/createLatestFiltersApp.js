@@ -576,7 +576,7 @@ export function createLatestFiltersApp({ core, runtime, gm = globalThis.GM } = {
     commandController.bind();
     registerAddon();
     const access = await getAddonAccess(core);
-    if (!access?.ok || access.value?.blocked) {
+    if (!access?.ok || access.value?.blocked || access.value?.enabled === false) {
       await lifecycle.disable({ reason: access?.value?.blockReason || "access-denied" });
       return;
     }

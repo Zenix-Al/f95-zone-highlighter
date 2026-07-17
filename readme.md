@@ -38,7 +38,7 @@ All-in-one userscript for F95Zone with a lean core and official add-on support.
 
 Specialized features are handled by optional add-ons:
 
-- **Image Repair Add-on** - retries broken attachment images.
+- **Site Repair Add-on** - hosts independently controlled F95Zone repairs, currently including attachment-image retries.
 - **Library Add-on** - saves threads to a personal library with notes, ratings, status tracking, search, pinning, and import/export.
 - **Masked + Direct Download Add-on** - resolves masked links and automates supported download hosts.
 

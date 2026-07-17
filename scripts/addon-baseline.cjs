@@ -9,14 +9,14 @@ const zlib = require("zlib");
 
 const ROOT = process.cwd();
 const MANIFEST_PATH = path.join(ROOT, "addons", "addons.manifest.json");
-const TRUSTED_CATALOG_PATH = path.join(ROOT, "addons", "trusted-catalog.json");
+const TRUSTED_CATALOG_META_PATH = path.join(ROOT, "src", "generated", "trusted-addon-catalog.meta.json");
 const BASELINE_SCHEMA_VERSION = 1;
 const SOURCE_EXTENSIONS = new Set([".js", ".cjs", ".mjs", ".css", ".html"]);
 const SERVICE_SOURCE_EXTENSIONS = new Set([".js", ".json"]);
 
 let terser = null;
 try { terser = require("terser"); } catch { terser = null; }
-const { stripDebugLogs } = require(path.join(ROOT, "stripDebugLogs.js"));
+const { stripDebugLogs } = require(path.join(ROOT, "build", "stripDebugLogs.js"));
 
 function normalizePath(value) {
   return String(value || "").replace(/\\/g, "/").replace(/^\.\//, "");
@@ -75,7 +75,9 @@ function readManifest() {
 }
 
 function readTrustedCatalog() {
-  return readJson(TRUSTED_CATALOG_PATH)
+  const metadata = readJson(TRUSTED_CATALOG_META_PATH);
+  const document = readJson(path.join(ROOT, "src", "generated", String(metadata.catalogFile || "")));
+  return normalizeArray(document.catalog)
     .map((entry) => ({
       id: sanitizeAddonId(entry.id),
       name: String(entry.name || "").trim(),
@@ -188,26 +190,28 @@ function sourceFootprint(files) {
 }
 
 function parseActionDescriptors() {
-  const source = fs.readFileSync(path.join(ROOT, "src/services/addons/actions/descriptors.js"), "utf8");
-  const actionBlock = source.match(/const ACTIONS = Object\.freeze\(\{([\s\S]*?)\n\}\);/)?.[1] || "";
-  const validatorBlock = source.match(/const validators = Object\.freeze\(\{([\s\S]*?)\n\}\);/)?.[1] || "";
-  const required = new Map();
-  for (const match of actionBlock.matchAll(/"([^\"]+)"\s*:\s*\[([^\]]*)\]/g)) {
-    required.set(match[1], match[2].split(",").map((value) => value.replace(/["']/g, "").trim()).filter(Boolean));
-  }
-  const validators = new Map();
-  for (const match of validatorBlock.matchAll(/"([^\"]+)"\s*:\s*([A-Za-z_$][\w$]*)/g)) validators.set(match[1], match[2]);
-  const policySource = fs.readFileSync(path.join(ROOT, "src/services/addons/actions/policy.js"), "utf8");
-  const policies = new Map();
-  for (const match of policySource.matchAll(/"([^\"]+)"\s*:\s*"([^\"]+)"/g)) policies.set(match[1], match[2]);
-  return [...required.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([id, capabilities]) => ({
-    id,
-    protocolVersion: 1,
-    requiredCapabilities: capabilities,
-    timeoutMs: 5000,
-    auditCategory: id.split(".")[0],
-    scopePolicy: policies.get(id) || "runtime",
-    payloadValidator: validators.get(id) || "objectPayload",
+  const built = esbuild.buildSync({
+    entryPoints: [path.join(ROOT, "src/services/addons/coreActions.js")],
+    bundle: true,
+    write: false,
+    format: "cjs",
+    platform: "node",
+    define: { __F95UE_DEBUG__: "false" },
+    logLevel: "silent",
+  });
+  const module = { exports: {} };
+  Function("module", "exports", "require", built.outputFiles[0].text)(module, module.exports, require);
+  const validatorNames = {
+    "page.getContext": "validatePageContextPayload",
+    "storage.get": "keyPayload",
+    "storage.set": "valuePayload",
+    "idb.get": "keyPayload",
+    "idb.put": "valuePayload",
+    "idb.delete": "keyPayload",
+  };
+  return module.exports.getRegisteredAddonActionSnapshot().map((entry) => ({
+    ...entry,
+    payloadValidator: validatorNames[entry.id] || "objectPayload",
   }));
 }
 
@@ -443,7 +447,7 @@ async function createBaseline({ rootDir = ROOT } = {}) {
       },
       manifest: { entries: addons },
       trustedCatalog: {
-        source: "addons/trusted-catalog.json",
+        source: `src/generated/${readJson(TRUSTED_CATALOG_META_PATH).catalogFile}`,
         projection: readTrustedCatalog(),
         runtimeFreshDefault: false,
       },

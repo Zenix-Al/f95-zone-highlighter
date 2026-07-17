@@ -1,5 +1,14 @@
 # Changelog
 
+## [5.2.0 - Framework hardening and core cleanup]
+
+- Finished the planned framework hardening, configuration persistence, transfer, lifecycle, routing, teardown, and core cleanup work recorded in `TODO_DETAILED.md` and `TODO_CORE_CLEANING_DETAILED.md`.
+- Removed obsolete core-only surfaces, kept configuration recovery and validation safe, and completed the final core audit and smoke verification without changing the release version.
+- Moved latest ajax recovery to f95ue site repair (former image repair)
+- Remove footer and my super helpful message to reduce overall size.
+
+Note : This is major update for everything, the framework is now final. All legacy version of addon will not work in this update. Also it might be the last update, because the framework is now final and stable, and i will focus on other things. if you find any bug or issue, please report it to me so i can fix it as soon as possible.
+
 ## [5.1.0 - Framework cleanup and reliability improvements]
 
 - Finished moving Fast Capture into its own service and added safer limits for captured data, memory usage, expired entries, and stale page requests.
