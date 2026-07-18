@@ -1,4 +1,4 @@
-import { sleep } from "../../utils.js";
+import { sleep } from "../../shared/utils.js";
 
 export function normalizeText(value) {
   return String(value || "")

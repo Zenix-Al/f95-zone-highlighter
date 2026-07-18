@@ -241,7 +241,7 @@ const { normalizeLatestAjaxErrorPayload, shouldRetryLatestAjaxError } = loadModu
   "addons/site-repair-addon/src/repairs/latestAjax/policy.js",
 );
 const { __downloadPageControllerTestInternals } = loadModule(
-  "addons/masked-direct-addon/src/downloadPageController.js",
+  "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
 );
 const { classifyMaskedDirectContext } = loadModule(
   "addons/masked-direct-addon/src/app/context.js",

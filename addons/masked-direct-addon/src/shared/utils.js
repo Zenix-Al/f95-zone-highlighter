@@ -1,5 +1,5 @@
-import { AUTOMATION_MARKER_KEY } from "./constants.js";
-import { DIRECT_DOWNLOAD_HOST_MATCHERS } from "./hosts/metadata.js";
+import { AUTOMATION_MARKER_KEY } from "../constants.js";
+import { DIRECT_DOWNLOAD_HOST_MATCHERS } from "../hosts/metadata.js";
 
 export function createDebugLog(addonId) {
   return function debugLog(scope, message, extra = null) {

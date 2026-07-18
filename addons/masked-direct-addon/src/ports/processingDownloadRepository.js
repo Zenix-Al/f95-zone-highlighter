@@ -7,4 +7,4 @@ export {
   readProcessingDownloadTrigger,
   readProcessingDownloadTriggers,
   setProcessingDownloadTrigger,
-} from "../processingDownloadTrigger.js";
+} from "../domain/directDownload/processingTrigger.js";

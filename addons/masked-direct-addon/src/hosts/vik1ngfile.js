@@ -1,5 +1,5 @@
 import { TIMINGS } from "../constants.js";
-import { queryAllBySelectors, sleep } from "../utils.js";
+import { queryAllBySelectors, sleep } from "../shared/utils.js";
 import {
   getElementText,
   isCountdownText,

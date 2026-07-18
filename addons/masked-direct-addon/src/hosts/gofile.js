@@ -1,5 +1,5 @@
 import { TIMINGS, SELECTORS } from "../constants.js";
-import { sleep } from "../utils.js";
+import { sleep } from "../shared/utils.js";
 
 const GOFILE_BRIDGE_REQUEST_EVENT = "f95ue:gofile-download-request";
 const GOFILE_BRIDGE_RESULT_EVENT = "f95ue:gofile-download-result";

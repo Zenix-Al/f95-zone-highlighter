@@ -5,7 +5,7 @@
  * No DOM access, no storage access, no module-level state.
  */
 
-import { normalizeText } from "../../shared/htmlUtils.js";
+import { normalizeText } from "../../../shared/htmlUtils.js";
 
 const LATEST_HOSTNAME = "f95zone.to";
 const LATEST_PATH = "/sam/latest_alpha";

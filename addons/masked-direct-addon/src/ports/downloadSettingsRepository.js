@@ -2,4 +2,4 @@ export {
   clearDownloadPageCloseDelay,
   getDownloadPageCloseDelay,
   storeDownloadPageCloseDelay,
-} from "../gmStorageHelper.js";
+} from "../infrastructure/gmStorageAdapter.js";

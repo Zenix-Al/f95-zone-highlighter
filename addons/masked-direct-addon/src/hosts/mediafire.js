@@ -1,5 +1,5 @@
 import { SELECTORS, TIMINGS } from "../constants.js";
-import { queryFirstBySelectors } from "../utils.js";
+import { queryFirstBySelectors } from "../shared/utils.js";
 import { clickElement, getAnchorHref, waitForCandidate } from "./shared/dom.js";
 
 async function waitForDownloadAnchor(timeoutMs = 12000) {

@@ -1,18 +1,18 @@
 import {
   EXAMPLE_BULK_PROGRESS_DIALOG_ID,
   EXAMPLE_DUMMY_BULK_TOTAL,
-} from "../constants.js";
+} from "../../constants.js";
 import {
   bulkPutRecords,
   countRecords,
-} from "../api/idb.js";
-import { getCoreThrottle } from "../api/meta.js";
-import { closeDialog, openDialog, updateDialog } from "../api/ui/dialog.js";
+} from "../../api/idb.js";
+import { getCoreThrottle } from "../../api/meta.js";
+import { closeDialog, openDialog, updateDialog } from "../../api/ui/dialog.js";
 import {
   createBulkImportProgressMarkup,
   updateBulkImportProgressView,
-} from "../ui/bulkImportProgressDialog.js";
-import { buildIdbPayload } from "./state.js";
+} from "../../ui/bulkImportProgressDialog.js";
+import { buildIdbPayload } from "../playgroundData.js";
 
 const DEFAULT_IDB_PAYLOAD_LIMIT_BYTES = 128 * 1024;
 const DEFAULT_IDB_BULK_ITEMS_LIMIT = 25;

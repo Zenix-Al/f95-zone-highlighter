@@ -1,6 +1,6 @@
 /* global grecaptcha */
-import { F95_CAPTCHA_SITEKEY, TIMINGS, SELECTORS } from "./constants.js";
-import { queryFirstBySelectors } from "./utils.js";
+import { F95_CAPTCHA_SITEKEY, TIMINGS, SELECTORS } from "../../constants.js";
+import { queryFirstBySelectors } from "../../shared/utils.js";
 
 function resolveMaskedLink(url, { token = "" } = {}) {
   return new Promise((resolve, reject) => {

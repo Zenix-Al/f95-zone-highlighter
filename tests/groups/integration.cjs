@@ -1202,11 +1202,25 @@ runTest("ADDON-LIBRARY-02 follows canonical boundaries and preserves persistence
   for (const relativePath of [
     "main.js", "core/adaptor.js", "api/bridge.js", "api/storage.js",
     "app/commands.js", "app/lifecycle.js", "app/createLibraryAddonApp.js",
+    "app/dockController.js", "app/managerController.js", "app/pageContext.js",
+    "app/registration.js", "app/settings.js",
     "library/service.js", "thread/detector.js", "ui/manager/managerApp.js",
   ]) assert.ok(fs.existsSync(path.join(addonRoot, relativePath)), relativePath);
   assert.strictEqual(fs.existsSync(path.join(addonRoot, "coreBridge.js")), false);
   const mainSource = fs.readFileSync(path.join(addonRoot, "main.js"), "utf8");
   assert.ok(mainSource.split(/\r?\n/).length < 40);
+  const compositionSource = fs.readFileSync(
+    path.join(addonRoot, "app/createLibraryAddonApp.js"),
+    "utf8",
+  );
+  assert.ok(
+    compositionSource.split(/\r?\n/).length < 260,
+    "Library composition root must remain below 260 lines",
+  );
+  assert.doesNotMatch(
+    compositionSource,
+    /LIBRARY_DOCK_MOUNT_ID|renderDockMarkup|LIBRARY_SETTINGS_DEFAULT/,
+  );
   const domainFiles = [];
   for (const area of ["library", "thread", "ui"]) {
     const pending = [path.join(addonRoot, area)];

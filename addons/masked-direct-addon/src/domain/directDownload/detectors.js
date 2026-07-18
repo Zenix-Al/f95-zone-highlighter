@@ -10,9 +10,9 @@ import {
   DIRECT_DOWNLOAD_ROUTE_TS_KEY,
   DIRECT_DOWNLOAD_ROUTE_TTL_MS,
   TIMINGS,
-} from "./constants.js";
-import { hasFreshRouteContext } from "./ports/routeContextRepository.js";
-import { sleep } from "./utils.js";
+} from "../../constants.js";
+import { hasFreshRouteContext } from "../../ports/routeContextRepository.js";
+import { sleep } from "../../shared/utils.js";
 
 const DETECTOR_TIMEOUT_MS = 100; // Poll interval
 

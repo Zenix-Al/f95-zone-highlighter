@@ -1,5 +1,5 @@
-import { MASKED_LINK_SELECTOR, RESOLVE_BTN_CLASS } from "./constants.js";
-import { isLikelyDirectDownloadAnchor, normalizeUrl } from "./utils.js";
+import { MASKED_LINK_SELECTOR, RESOLVE_BTN_CLASS } from "../../constants.js";
+import { isLikelyDirectDownloadAnchor, normalizeUrl } from "../../shared/utils.js";
 
 function buttonFor(link) {
   const next = link.nextElementSibling;

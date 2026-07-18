@@ -1,5 +1,5 @@
 import { SELECTORS } from "../constants.js";
-import { queryFirstBySelectors } from "../utils.js";
+import { queryFirstBySelectors } from "../shared/utils.js";
 import { clickElement, getElementAttributeUrl } from "./shared/dom.js";
 
 function toDownloadEndpoint(button) {
