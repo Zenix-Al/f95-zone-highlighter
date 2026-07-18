@@ -1,6 +1,6 @@
 # F95Zone Ultimate Enhancer
 
-All-in-one userscript for F95Zone with a lean core and official add-on support.
+All-in-one userscript for F95Zone with a lean core and official add-on support. 
 
 - Install: https://greasyfork.org/en/scripts/546518-f95zone-ultimate-enhancer
 - Built output: `dist/f95zone-ultimate-enhancer.user.js`
