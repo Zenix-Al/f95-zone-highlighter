@@ -20,7 +20,7 @@ const { stripDebugLogs } = require(path.join(ROOT, "build", "stripDebugLogs.js")
 const {
   normalizeText,
   normalizedTextAssets,
-} = require(path.join(ROOT, "build", "normalizeTextAssets.js"));
+} = require(path.join(ROOT, "scripts", "normalize-text-assets.cjs"));
 
 function normalizePath(value) {
   return String(value || "").replace(/\\/g, "/").replace(/^\.\//, "");
