@@ -6,6 +6,8 @@
   cancellable mount/route/dialog work, and a storage adapter that preserves the
   existing preset keys and record formats.
 
+Note : require core v5.2.0
+
 ## 0.3.16 - small ui change
 
 - Add confirmation before updateing a preset to prevent accidental overwrites.

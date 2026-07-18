@@ -93,7 +93,7 @@
     "id": "library-addon",
     "name": "F95UE Library Add-on",
     "description": "Quick-add threads to a personal library and manage entries with a dedicated add-on UI.",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "pageScopes": [
       "f95zone"
     ],
@@ -171,7 +171,7 @@
     "id": "site-repair-addon",
     "name": "F95UE Site Repair",
     "description": "Provides independently controlled repairs for F95Zone site behavior.",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "pageScopes": [
       "f95zone"
     ],
@@ -182,12 +182,13 @@
     "grants": [
       "none"
     ],
-    "runAt": "document-idle",
+    "runAt": "document-start",
     "requiresCore": true,
     "capabilities": [
       "toast",
       "feature",
       "storage",
+      "page",
       "observer",
       "ui",
       "ui.style"

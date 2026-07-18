@@ -36,6 +36,7 @@ let currentSnapshot = null;
 let currentSaved = false;
 let dockMountClickHandler = null;
 let dockMountToken = 0;
+let managerResourceOwned = false;
 
 function isCurrentOperation(context) {
   return !context || typeof context.isCurrent !== "function" || context.isCurrent();
@@ -142,6 +143,9 @@ function registerAddon() {
 
 function openManager() {
   if (!isEnabled) return;
+  debugLog(runtime.addonId, "Library manager open requested.", {
+    data: { managerResourceOwned },
+  });
   openLibraryManager({
     bridge,
     addonId: runtime.addonId,
@@ -152,11 +156,18 @@ function openManager() {
       void mountQuickAddIfApplicable();
     },
   });
-  lifecycle.registerResource(
-    "library-manager",
-    () => { void closeLibraryManager("resource-release"); },
-    "dialog",
-  );
+  if (!managerResourceOwned) {
+    managerResourceOwned = true;
+    lifecycle.registerResource(
+      "library-manager",
+      () => {
+        managerResourceOwned = false;
+        void closeLibraryManager("resource-release");
+      },
+      "dialog",
+    );
+    debugLog(runtime.addonId, "Library manager lifecycle ownership registered.");
+  }
 }
 
 function pushStatusUpdate() {

@@ -1,6 +1,7 @@
 import { acknowledgeTeardown, registerRuntime, updateRuntimeStatus } from "../api/bridge.js";
 import { getAddonAccess, getPageContext } from "../api/meta.js";
 import { getStoredValue, setStoredValue } from "../api/storage.js";
+import { showCoreToast } from "../api/toast.js";
 import { watchImages, unwatchImages } from "../api/observer.js";
 import { registerStyle, unregisterStyle } from "../api/ui/style.js";
 import { DEFAULT_SETTINGS, IMAGE_HOST, IMAGE_OBSERVER_ID, IMAGE_STYLE_ID, SETTINGS_KEY } from "../constants.js";
@@ -11,7 +12,11 @@ import { createCommandController } from "./commands.js";
 import { createSiteRepairLifecycle } from "./lifecycle.js";
 import { normalizeSiteRepairSettings } from "./settings.js";
 
-export function createSiteRepairApp({ core, runtime }) {
+export function createSiteRepairApp({
+  core,
+  runtime,
+  latestAjax = createLatestAjaxJqueryAdapter(),
+}) {
   let settings = normalizeSiteRepairSettings(DEFAULT_SETTINGS);
   let enabled = true;
   let routeApplicable = false;
@@ -22,10 +27,14 @@ export function createSiteRepairApp({ core, runtime }) {
     imageHost: IMAGE_HOST,
     retryDelayMs: settings.repairs.imageAttachments.retryDelayMs,
     maxAttempts: settings.repairs.imageAttachments.maxAttempts,
-    onProgress: ui.update,
+    onProgress: (count) => ui.update(settings.showRepairActivity ? count : 0),
   });
-  const latestAjax = createLatestAjaxJqueryAdapter();
-
+  latestAjax.configure({
+    onRepair: () => {
+      if (!settings.showRepairActivity) return;
+      void showCoreToast(core, "Latest request failed; Site Repair is retrying it once.", "warning");
+    },
+  });
   function statusMessage() {
     return enabled ? "Site repairs are active." : "Site Repair is disabled.";
   }
@@ -38,6 +47,7 @@ export function createSiteRepairApp({ core, runtime }) {
       panelSettingsStorageKey: SETTINGS_KEY, panelSettingsDefaults: DEFAULT_SETTINGS,
       panelSettings: [
         { id: "enabled", path: "enabled", text: "Enable Site Repair" },
+        { id: "showRepairActivity", path: "showRepairActivity", text: "Show repair activity", tooltip: "Show Ajax retry toasts and the active image-repair status indicator." },
         { id: "imageAttachments", path: "repairs.imageAttachments.enabled", text: "Repair attachment images" },
         { id: "imageMaxAttempts", path: "repairs.imageAttachments.maxAttempts", text: "Image retry limit", type: "number", min: 1, max: 20, step: 1, tooltip: "Maximum retries after the initial attachment request." },
         { id: "imageRetryDelay", path: "repairs.imageAttachments.retryDelayMs", text: "Image retry interval (ms)", type: "number", min: 250, max: 30000, step: 250, tooltip: "Fallback delay between attachment retry checks." },
@@ -55,6 +65,7 @@ export function createSiteRepairApp({ core, runtime }) {
   }
   async function stopModules() {
     for (const stop of startedModules.splice(0).reverse()) await stop();
+    latestAjax.disable();
     ui.destroy();
   }
   async function startApplicableModules(context) {
@@ -76,7 +87,6 @@ export function createSiteRepairApp({ core, runtime }) {
       }
       if (settings.repairs.latestAjax.enabled && latestRouteApplicable) {
         latestAjax.enable();
-        startedModules.push(async () => latestAjax.disable());
       }
     } catch (error) {
       await stopModules();
@@ -95,7 +105,13 @@ export function createSiteRepairApp({ core, runtime }) {
     },
     onDisable: async () => { enabled = false; await stopModules(); await setStoredValue(core, "enabled", false); publishStatus(); return { ok: true }; },
     onRefresh: async (context) => { await stopModules(); await loadSettings(); const page = await getPageContext(core); if (!context.isCurrent()) return { ok: false, reason: "cancelled" }; await startApplicableModules(page?.value || context.routeContext); return { ok: true }; },
-    onTeardown: async () => { enabled = false; await stopModules(); commands.unbind(); return { ok: true }; },
+    onTeardown: async (context) => {
+      enabled = false;
+      await stopModules();
+      latestAjax.destroy(context.reason);
+      commands.unbind();
+      return { ok: true };
+    },
     onTeardownAcknowledged: (reason) => acknowledgeTeardown(core, reason),
   });
   const commands = createCommandController({
@@ -112,7 +128,12 @@ export function createSiteRepairApp({ core, runtime }) {
     commands.bind();
     registerAddon();
     const access = await getAddonAccess(core);
-    if (!access?.ok || access.value?.blocked) { enabled = false; publishStatus(); return; }
+    if (!access?.ok || access.value?.blocked) {
+      enabled = false;
+      latestAjax.disable();
+      publishStatus();
+      return;
+    }
     const storedEnabled = await getStoredValue(core, "enabled", true);
     enabled = access.value?.enabled !== false && storedEnabled?.value !== false;
     await loadSettings();

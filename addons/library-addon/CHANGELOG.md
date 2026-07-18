@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.0.1 - Restore manager reopening
+
+- Fixed the Library dock button failing to reopen the manager after it was closed.
+- Keep one lifecycle owner for the manager instead of replacing it and immediately invoking stale dialog cleanup.
+
 ## v1.0.0 - Canonical runtime ownership
 
 - Moved registration, lifecycle, dock, manager, and cancellation ownership behind the canonical app/API/adaptor boundaries.

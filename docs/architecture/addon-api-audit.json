@@ -36,7 +36,7 @@
           "grants": [
             "none"
           ],
-          "runAt": "document-idle",
+          "runAt": "document-start",
           "runtimeMode": "core-required",
           "pageScopes": [
             "f95zone"
@@ -45,6 +45,7 @@
             "toast",
             "feature",
             "storage",
+            "page",
             "observer",
             "ui",
             "ui.style"
@@ -55,6 +56,7 @@
           "addons/site-repair-addon/src/api/meta.js",
           "addons/site-repair-addon/src/api/observer.js",
           "addons/site-repair-addon/src/api/storage.js",
+          "addons/site-repair-addon/src/api/toast.js",
           "addons/site-repair-addon/src/api/ui/style.js",
           "addons/site-repair-addon/src/app/commands.js",
           "addons/site-repair-addon/src/app/createSiteRepairApp.js",
@@ -62,6 +64,7 @@
           "addons/site-repair-addon/src/app/settings.js",
           "addons/site-repair-addon/src/constants.js",
           "addons/site-repair-addon/src/core/adaptor.js",
+          "addons/site-repair-addon/src/core/waitForCore.js",
           "addons/site-repair-addon/src/main.js",
           "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
           "addons/site-repair-addon/src/repairs/imageAttachments/scheduler.js",
@@ -131,6 +134,16 @@
             ]
           },
           {
+            "id": "toast.show",
+            "callSites": [
+              {
+                "path": "addons/site-repair-addon/src/api/toast.js",
+                "line": 2,
+                "text": "return core.invokeCoreAction(\"toast.show\", {"
+              }
+            ]
+          },
+          {
             "id": "ui.style.register",
             "callSites": [
               {
@@ -151,15 +164,46 @@
             ]
           }
         ],
-        "globalEventListeners": [],
-        "bridgeEvents": [],
+        "globalEventListeners": [
+          {
+            "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+            "line": 281,
+            "text": "window.addEventListener(commandEvent, onCommand);"
+          }
+        ],
+        "bridgeEvents": [
+          {
+            "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+            "line": 4,
+            "text": "export const LATEST_AJAX_COMMAND_EVENT = \"f95ue:site-repair:latest-ajax-command\";",
+            "eventName": "f95ue:site-repair:latest-ajax-command"
+          },
+          {
+            "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+            "line": 4,
+            "text": "export const LATEST_AJAX_COMMAND_EVENT = \"f95ue:site-repair:latest-ajax-command\";",
+            "eventName": "f95ue:site-repair:latest-ajax-command"
+          },
+          {
+            "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+            "line": 5,
+            "text": "export const LATEST_AJAX_STATUS_EVENT = \"f95ue:site-repair:latest-ajax-status\";",
+            "eventName": "f95ue:site-repair:latest-ajax-status"
+          },
+          {
+            "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+            "line": 5,
+            "text": "export const LATEST_AJAX_STATUS_EVENT = \"f95ue:site-repair:latest-ajax-status\";",
+            "eventName": "f95ue:site-repair:latest-ajax-status"
+          }
+        ],
         "storageKeys": [
           {
             "key": "SETTINGS_KEY=settings",
             "callSites": [
               {
                 "path": "addons/site-repair-addon/src/constants.js",
-                "line": 6,
+                "line": 10,
                 "text": "export const SETTINGS_KEY = \"settings\";"
               }
             ]
@@ -167,20 +211,25 @@
         ],
         "pollingAndTimers": [
           {
-            "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-            "line": 62,
-            "text": "const timer = windowLike.setTimeout(() => {"
+            "path": "addons/site-repair-addon/src/core/waitForCore.js",
+            "line": 9,
+            "text": "delay = (milliseconds) => new Promise((resolve) => window.setTimeout(resolve, milliseconds)),"
           },
           {
             "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-            "line": 95,
-            "text": "pollTimer = windowLike.setInterval(() => {"
+            "line": 138,
+            "text": "const timer = window.setTimeout(() => {"
+          },
+          {
+            "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+            "line": 234,
+            "text": "state.pollTimer = window.setInterval(() => {"
           }
         ],
         "urlAndPageParsing": [
           {
             "path": "addons/site-repair-addon/src/app/createSiteRepairApp.js",
-            "line": 58,
+            "line": 73,
             "text": "routeApplicable = isImageAttachmentRepairApplicable(new URL(context?.url || location.href));"
           },
           {
@@ -205,16 +254,31 @@
           },
           {
             "path": "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
-            "line": 61,
+            "line": 67,
             "text": "const url = new URL(record.originalUrl);"
           },
           {
             "path": "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
-            "line": 62,
+            "line": 68,
             "text": "url.searchParams.set(\"site_repair_retry\", String(Date.now()));"
           }
         ],
         "coreDomAssumptions": [
+          {
+            "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+            "line": 151,
+            "text": "const retryButton = document.querySelector(\"#error-box_retry-btn\");"
+          },
+          {
+            "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+            "line": 222,
+            "text": "return patch(window.jQuery) || patch(window.$);"
+          },
+          {
+            "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+            "line": 251,
+            "text": "const candidates = new Set([state.patchedOwner, window.jQuery, window.$].filter(Boolean));"
+          },
           {
             "path": "addons/site-repair-addon/src/ui/imageStatus.js",
             "line": 5,
@@ -240,57 +304,82 @@
         "cancellationAndTeardown": [
           {
             "path": "addons/site-repair-addon/src/app/commands.js",
-            "line": 12,
+            "line": 14,
+            "text": "generation: detail.generation,"
+          },
+          {
+            "path": "addons/site-repair-addon/src/app/commands.js",
+            "line": 21,
             "text": "else if (detail.command === \"disable\") void lifecycle.disable(context);"
           },
           {
             "path": "addons/site-repair-addon/src/app/commands.js",
-            "line": 19,
+            "line": 28,
             "text": "else if (detail.command === \"teardown\") void lifecycle.teardown(context);"
           },
           {
             "path": "addons/site-repair-addon/src/app/createSiteRepairApp.js",
-            "line": 74,
-            "text": "startedModules.push(async () => latestAjax.disable());"
+            "line": 50,
+            "text": "{ id: \"showRepairActivity\", path: \"showRepairActivity\", text: \"Show repair activity\", tooltip: \"Show Ajax retry toasts and the active image-repair status indicator.\" },"
           },
           {
             "path": "addons/site-repair-addon/src/app/createSiteRepairApp.js",
-            "line": 87,
+            "line": 52,
+            "text": "{ id: \"imageMaxAttempts\", path: \"repairs.imageAttachments.maxAttempts\", text: \"Image retry limit\", type: \"number\", min: 1, max: 20, step: 1, tooltip: \"Maximum retries after the initial attachment request.\" },"
+          },
+          {
+            "path": "addons/site-repair-addon/src/app/createSiteRepairApp.js",
+            "line": 53,
+            "text": "{ id: \"imageRetryDelay\", path: \"repairs.imageAttachments.retryDelayMs\", text: \"Image retry interval (ms)\", type: \"number\", min: 250, max: 30000, step: 250, tooltip: \"Fallback delay between attachment retry checks.\" },"
+          },
+          {
+            "path": "addons/site-repair-addon/src/app/createSiteRepairApp.js",
+            "line": 68,
+            "text": "latestAjax.disable();"
+          },
+          {
+            "path": "addons/site-repair-addon/src/app/createSiteRepairApp.js",
+            "line": 102,
             "text": "if (!context.isCurrent()) return { ok: false, reason: \"cancelled\" };"
           },
           {
             "path": "addons/site-repair-addon/src/app/createSiteRepairApp.js",
-            "line": 92,
+            "line": 107,
             "text": "onRefresh: async (context) => { await stopModules(); await loadSettings(); const page = await getPageContext(core); if (!context.isCurrent()) return { ok: false, reason: \"cancelled\" }; await startApplicableModules(page?.value || context.routeContext); return { ok: true }; },"
           },
           {
             "path": "addons/site-repair-addon/src/app/createSiteRepairApp.js",
-            "line": 116,
+            "line": 133,
+            "text": "latestAjax.disable();"
+          },
+          {
+            "path": "addons/site-repair-addon/src/app/createSiteRepairApp.js",
+            "line": 142,
             "text": "window.__F95UE_SITE_REPAIR_ADDON__ = { enable: () => lifecycle.enable(\"console\"), disable: () => lifecycle.disable(\"console\"), snapshot: () => getRuntimeSnapshot() };"
           },
           {
             "path": "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
-            "line": 33,
+            "line": 35,
             "text": "scheduler.cancel(record.timerId);"
           },
           {
             "path": "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
-            "line": 56,
+            "line": 58,
             "text": "retry(record);"
           },
           {
             "path": "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
-            "line": 58,
+            "line": 60,
             "text": "function retry(record) {"
           },
           {
             "path": "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
-            "line": 73,
+            "line": 79,
             "text": "record.onError = () => retry(record);"
           },
           {
             "path": "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
-            "line": 76,
+            "line": 82,
             "text": "if (image.complete && image.naturalWidth === 0) retry(record);"
           },
           {
@@ -345,56 +434,151 @@
           },
           {
             "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-            "line": 19,
-            "text": "let generation = 0;"
+            "line": 26,
+            "text": "generation: 0,"
           },
           {
             "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-            "line": 32,
-            "text": "if (pollTimer) windowLike.clearInterval(pollTimer);"
+            "line": 83,
+            "text": "if (state.pollTimer) window.clearInterval(state.pollTimer);"
           },
           {
             "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-            "line": 34,
-            "text": "for (const timer of retryTimers) windowLike.clearTimeout(timer);"
+            "line": 85,
+            "text": "for (const timer of state.retryTimers) window.clearTimeout(timer);"
           },
           {
             "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-            "line": 61,
-            "text": "const retryGeneration = generation;"
+            "line": 105,
+            "text": "debugLog(\"Claimed site-owned Latest retry request.\", { url: settings.url });"
           },
           {
             "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-            "line": 64,
-            "text": "if (!enabled || generation !== retryGeneration || !originalAjax) return;"
+            "line": 128,
+            "text": "const retryGeneration = state.generation;"
           },
           {
             "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-            "line": 98,
-            "text": "windowLike.clearInterval(pollTimer);"
+            "line": 140,
+            "text": "debugLog(\"Latest retry timer fired; locating the site's Retry control.\", {"
           },
           {
             "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-            "line": 104,
+            "line": 143,
+            "text": "currentGeneration: state.generation,"
+          },
+          {
+            "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+            "line": 146,
+            "text": "if (!state.enabled || state.generation !== retryGeneration || !state.originalAjax) {"
+          },
+          {
+            "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+            "line": 147,
+            "text": "debugLog(\"Cancelled stale Latest Ajax retry.\", { retryGeneration });"
+          },
+          {
+            "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+            "line": 148,
+            "text": "emit(\"retry-cancelled\");"
+          },
+          {
+            "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+            "line": 152,
+            "text": "debugLog(\"Latest Retry control lookup completed.\", {"
+          },
+          {
+            "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+            "line": 161,
+            "text": "debugLog(\"Clicking the site's Latest Retry control.\", {"
+          },
+          {
+            "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+            "line": 169,
+            "text": "debugLog(\"Latest Retry control click returned.\", {"
+          },
+          {
+            "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+            "line": 174,
+            "text": "debugLog(\"Site Retry control did not dispatch a Latest request.\", {});"
+          },
+          {
+            "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+            "line": 175,
+            "text": "emit(\"retry-unavailable\");"
+          },
+          {
+            "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+            "line": 179,
+            "text": "debugLog(\"Site Retry control unavailable; replaying the request as fallback.\", {"
+          },
+          {
+            "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+            "line": 188,
+            "text": "emit(\"retry-dispatched\");"
+          },
+          {
+            "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+            "line": 193,
+            "text": "debugLog(\"Scheduled one site-owned Latest retry.\", {"
+          },
+          {
+            "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+            "line": 199,
+            "text": "emit(\"retry-scheduled\");"
+          },
+          {
+            "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+            "line": 237,
+            "text": "window.clearInterval(state.pollTimer);"
+          },
+          {
+            "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+            "line": 245,
             "text": "function disable() {"
           },
           {
             "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-            "line": 106,
-            "text": "generation += 1;"
+            "line": 249,
+            "text": "state.generation += 1;"
           },
           {
             "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-            "line": 119,
-            "text": "generation,"
+            "line": 260,
+            "text": "debugLog(\"Restored page-world jQuery.ajax.\", { generation: state.generation });"
           },
           {
             "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-            "line": 126,
-            "text": "return { enable, disable, getSnapshot };"
+            "line": 267,
+            "text": "disable();"
+          },
+          {
+            "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+            "line": 274,
+            "text": "if (detail.action === \"disable\") {"
+          },
+          {
+            "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+            "line": 275,
+            "text": "disable();"
+          },
+          {
+            "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+            "line": 386,
+            "text": "function disable() {"
+          },
+          {
+            "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+            "line": 389,
+            "text": "if (installed) dispatch(\"disable\");"
+          },
+          {
+            "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+            "line": 412,
+            "text": "return { enable, disable, destroy, configure, getSnapshot };"
           }
         ],
-        "rawActionCount": 8
+        "rawActionCount": 9
       },
       {
         "id": "masked-direct-addon",
@@ -2268,7 +2452,7 @@
         "globalEventListeners": [
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 214,
+            "line": 231,
             "text": "window.addEventListener(\"click\", dockMountClickHandler, true);"
           }
         ],
@@ -2370,12 +2554,12 @@
         "urlAndPageParsing": [
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 40,
+            "line": 46,
             "text": "const isF95 = location.hostname.includes(\"f95zone.to\");"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 46,
+            "line": 52,
             "text": "url: String(location.href || \"\"),"
           },
           {
@@ -2670,42 +2854,47 @@
         "cancellationAndTeardown": [
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 374,
-            "text": "onEnable: async ({ isCurrent }) => {"
+            "line": 42,
+            "text": "return !context || typeof context.isCurrent !== \"function\" || context.isCurrent();"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 376,
-            "text": "return isCurrent() ? { ok: true } : { ok: false, reason: \"enable_superseded\" };"
+            "line": 250,
+            "text": "// A disable or route change may have superseded this request while the core"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 382,
-            "text": "onRefresh: async ({ isCurrent }) => {"
+            "line": 417,
+            "text": "return context.isCurrent() ? result : { ok: false, reason: \"enable_superseded\" };"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 384,
-            "text": "return isCurrent() ? { ok: true } : { ok: false, reason: \"refresh_superseded\" };"
+            "line": 421,
+            "text": "return context.isCurrent() ? result : { ok: false, reason: \"disable_superseded\" };"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 433,
+            "line": 425,
+            "text": "return context.isCurrent() ? result : { ok: false, reason: \"refresh_superseded\" };"
+          },
+          {
+            "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
+            "line": 474,
             "text": "case \"disable\":"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 434,
+            "line": 475,
             "text": "void lifecycle.disable(detail);"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 458,
+            "line": 499,
             "text": "case \"teardown\":"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 459,
+            "line": 500,
             "text": "void lifecycle.teardown(detail);"
           },
           {
@@ -4495,6 +4684,36 @@
         ]
       },
       {
+        "eventName": "f95ue:site-repair:latest-ajax-command",
+        "callSites": [
+          {
+            "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+            "line": 4,
+            "text": "export const LATEST_AJAX_COMMAND_EVENT = \"f95ue:site-repair:latest-ajax-command\";"
+          },
+          {
+            "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+            "line": 4,
+            "text": "export const LATEST_AJAX_COMMAND_EVENT = \"f95ue:site-repair:latest-ajax-command\";"
+          }
+        ]
+      },
+      {
+        "eventName": "f95ue:site-repair:latest-ajax-status",
+        "callSites": [
+          {
+            "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+            "line": 5,
+            "text": "export const LATEST_AJAX_STATUS_EVENT = \"f95ue:site-repair:latest-ajax-status\";"
+          },
+          {
+            "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+            "line": 5,
+            "text": "export const LATEST_AJAX_STATUS_EVENT = \"f95ue:site-repair:latest-ajax-status\";"
+          }
+        ]
+      },
+      {
         "eventName": "f95ue.addon.directDownload.tabId",
         "callSites": [
           {
@@ -5060,6 +5279,11 @@
       "id": "toast.show",
       "callSites": [
         {
+          "path": "addons/site-repair-addon/src/api/toast.js",
+          "line": 2,
+          "text": "return core.invokeCoreAction(\"toast.show\", {"
+        },
+        {
           "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
           "line": 205,
           "text": ".invokeCoreAction(\"toast.show\", { message, type })"
@@ -5089,9 +5313,10 @@
         "example-addon",
         "latest-filters-addon",
         "library-addon",
-        "masked-direct-addon"
+        "masked-direct-addon",
+        "site-repair-addon"
       ],
-      "consumerCount": 4
+      "consumerCount": 5
     },
     {
       "id": "ui.confirm",
@@ -6057,12 +6282,12 @@
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 40,
+          "line": 46,
           "text": "const isF95 = location.hostname.includes(\"f95zone.to\");"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 46,
+          "line": 52,
           "text": "url: String(location.href || \"\"),"
         },
         {
@@ -6246,49 +6471,54 @@
       ],
       "callSites": [
         {
-          "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-          "line": 23,
-          "text": "let pollTimer = 0;"
+          "path": "addons/site-repair-addon/src/core/waitForCore.js",
+          "line": 9,
+          "text": "delay = (milliseconds) => new Promise((resolve) => window.setTimeout(resolve, milliseconds)),"
         },
         {
           "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-          "line": 32,
-          "text": "if (pollTimer) windowLike.clearInterval(pollTimer);"
+          "line": 30,
+          "text": "pollTimer: 0,"
         },
         {
           "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-          "line": 33,
-          "text": "pollTimer = 0;"
+          "line": 47,
+          "text": "polling: Boolean(state.pollTimer),"
         },
         {
           "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-          "line": 62,
-          "text": "const timer = windowLike.setTimeout(() => {"
+          "line": 83,
+          "text": "if (state.pollTimer) window.clearInterval(state.pollTimer);"
         },
         {
           "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-          "line": 93,
-          "text": "if (tryPatch() || pollTimer) return;"
+          "line": 84,
+          "text": "state.pollTimer = 0;"
         },
         {
           "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-          "line": 95,
-          "text": "pollTimer = windowLike.setInterval(() => {"
+          "line": 138,
+          "text": "const timer = window.setTimeout(() => {"
         },
         {
           "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-          "line": 98,
-          "text": "windowLike.clearInterval(pollTimer);"
+          "line": 229,
+          "text": "if (tryPatch() || state.pollTimer) {"
         },
         {
           "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-          "line": 99,
-          "text": "pollTimer = 0;"
+          "line": 234,
+          "text": "state.pollTimer = window.setInterval(() => {"
         },
         {
           "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-          "line": 121,
-          "text": "polling: Boolean(pollTimer),"
+          "line": 237,
+          "text": "window.clearInterval(state.pollTimer);"
+        },
+        {
+          "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+          "line": 238,
+          "text": "state.pollTimer = 0;"
         },
         {
           "path": "addons/masked-direct-addon/src/downloadDetector.js",
@@ -6684,7 +6914,7 @@
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 214,
+          "line": 231,
           "text": "window.addEventListener(\"click\", dockMountClickHandler, true);"
         }
       ],
@@ -6794,7 +7024,7 @@
         },
         {
           "path": "addons/site-repair-addon/src/app/createSiteRepairApp.js",
-          "line": 109,
+          "line": 130,
           "text": "const access = await getAddonAccess(core);"
         },
         {
@@ -6844,7 +7074,7 @@
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 493,
+          "line": 534,
           "text": "const access = await getAddonAccess(bridge);"
         },
         {
@@ -7035,7 +7265,7 @@
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 447,
+          "line": 488,
           "text": "handleImportProgressDialogClosed(detail);"
         },
         {
@@ -7819,42 +8049,67 @@
       "callSites": [
         {
           "path": "addons/site-repair-addon/src/app/commands.js",
-          "line": 19,
+          "line": 14,
+          "text": "generation: detail.generation,"
+        },
+        {
+          "path": "addons/site-repair-addon/src/app/commands.js",
+          "line": 28,
           "text": "else if (detail.command === \"teardown\") void lifecycle.teardown(context);"
         },
         {
           "path": "addons/site-repair-addon/src/app/createSiteRepairApp.js",
-          "line": 87,
+          "line": 50,
+          "text": "{ id: \"showRepairActivity\", path: \"showRepairActivity\", text: \"Show repair activity\", tooltip: \"Show Ajax retry toasts and the active image-repair status indicator.\" },"
+        },
+        {
+          "path": "addons/site-repair-addon/src/app/createSiteRepairApp.js",
+          "line": 52,
+          "text": "{ id: \"imageMaxAttempts\", path: \"repairs.imageAttachments.maxAttempts\", text: \"Image retry limit\", type: \"number\", min: 1, max: 20, step: 1, tooltip: \"Maximum retries after the initial attachment request.\" },"
+        },
+        {
+          "path": "addons/site-repair-addon/src/app/createSiteRepairApp.js",
+          "line": 53,
+          "text": "{ id: \"imageRetryDelay\", path: \"repairs.imageAttachments.retryDelayMs\", text: \"Image retry interval (ms)\", type: \"number\", min: 250, max: 30000, step: 250, tooltip: \"Fallback delay between attachment retry checks.\" },"
+        },
+        {
+          "path": "addons/site-repair-addon/src/app/createSiteRepairApp.js",
+          "line": 102,
           "text": "if (!context.isCurrent()) return { ok: false, reason: \"cancelled\" };"
         },
         {
           "path": "addons/site-repair-addon/src/app/createSiteRepairApp.js",
-          "line": 92,
+          "line": 107,
           "text": "onRefresh: async (context) => { await stopModules(); await loadSettings(); const page = await getPageContext(core); if (!context.isCurrent()) return { ok: false, reason: \"cancelled\" }; await startApplicableModules(page?.value || context.routeContext); return { ok: true }; },"
         },
         {
+          "path": "addons/site-repair-addon/src/core/waitForCore.js",
+          "line": 9,
+          "text": "delay = (milliseconds) => new Promise((resolve) => window.setTimeout(resolve, milliseconds)),"
+        },
+        {
           "path": "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
-          "line": 33,
+          "line": 35,
           "text": "scheduler.cancel(record.timerId);"
         },
         {
           "path": "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
-          "line": 56,
+          "line": 58,
           "text": "retry(record);"
         },
         {
           "path": "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
-          "line": 58,
+          "line": 60,
           "text": "function retry(record) {"
         },
         {
           "path": "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
-          "line": 73,
+          "line": 79,
           "text": "record.onError = () => retry(record);"
         },
         {
           "path": "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
-          "line": 76,
+          "line": 82,
           "text": "if (image.complete && image.naturalWidth === 0) retry(record);"
         },
         {
@@ -7909,38 +8164,108 @@
         },
         {
           "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-          "line": 19,
-          "text": "let generation = 0;"
+          "line": 26,
+          "text": "generation: 0,"
         },
         {
           "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-          "line": 61,
-          "text": "const retryGeneration = generation;"
+          "line": 105,
+          "text": "debugLog(\"Claimed site-owned Latest retry request.\", { url: settings.url });"
         },
         {
           "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-          "line": 62,
-          "text": "const timer = windowLike.setTimeout(() => {"
+          "line": 128,
+          "text": "const retryGeneration = state.generation;"
         },
         {
           "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-          "line": 64,
-          "text": "if (!enabled || generation !== retryGeneration || !originalAjax) return;"
+          "line": 138,
+          "text": "const timer = window.setTimeout(() => {"
         },
         {
           "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-          "line": 95,
-          "text": "pollTimer = windowLike.setInterval(() => {"
+          "line": 140,
+          "text": "debugLog(\"Latest retry timer fired; locating the site's Retry control.\", {"
         },
         {
           "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-          "line": 106,
-          "text": "generation += 1;"
+          "line": 143,
+          "text": "currentGeneration: state.generation,"
         },
         {
           "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-          "line": 119,
-          "text": "generation,"
+          "line": 146,
+          "text": "if (!state.enabled || state.generation !== retryGeneration || !state.originalAjax) {"
+        },
+        {
+          "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+          "line": 147,
+          "text": "debugLog(\"Cancelled stale Latest Ajax retry.\", { retryGeneration });"
+        },
+        {
+          "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+          "line": 148,
+          "text": "emit(\"retry-cancelled\");"
+        },
+        {
+          "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+          "line": 152,
+          "text": "debugLog(\"Latest Retry control lookup completed.\", {"
+        },
+        {
+          "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+          "line": 161,
+          "text": "debugLog(\"Clicking the site's Latest Retry control.\", {"
+        },
+        {
+          "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+          "line": 169,
+          "text": "debugLog(\"Latest Retry control click returned.\", {"
+        },
+        {
+          "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+          "line": 174,
+          "text": "debugLog(\"Site Retry control did not dispatch a Latest request.\", {});"
+        },
+        {
+          "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+          "line": 175,
+          "text": "emit(\"retry-unavailable\");"
+        },
+        {
+          "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+          "line": 179,
+          "text": "debugLog(\"Site Retry control unavailable; replaying the request as fallback.\", {"
+        },
+        {
+          "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+          "line": 188,
+          "text": "emit(\"retry-dispatched\");"
+        },
+        {
+          "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+          "line": 193,
+          "text": "debugLog(\"Scheduled one site-owned Latest retry.\", {"
+        },
+        {
+          "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+          "line": 199,
+          "text": "emit(\"retry-scheduled\");"
+        },
+        {
+          "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+          "line": 234,
+          "text": "state.pollTimer = window.setInterval(() => {"
+        },
+        {
+          "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+          "line": 249,
+          "text": "state.generation += 1;"
+        },
+        {
+          "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+          "line": 260,
+          "text": "debugLog(\"Restored page-world jQuery.ajax.\", { generation: state.generation });"
         },
         {
           "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
@@ -8049,32 +8374,32 @@
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 374,
-          "text": "onEnable: async ({ isCurrent }) => {"
+          "line": 42,
+          "text": "return !context || typeof context.isCurrent !== \"function\" || context.isCurrent();"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 376,
-          "text": "return isCurrent() ? { ok: true } : { ok: false, reason: \"enable_superseded\" };"
+          "line": 417,
+          "text": "return context.isCurrent() ? result : { ok: false, reason: \"enable_superseded\" };"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 382,
-          "text": "onRefresh: async ({ isCurrent }) => {"
+          "line": 421,
+          "text": "return context.isCurrent() ? result : { ok: false, reason: \"disable_superseded\" };"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 384,
-          "text": "return isCurrent() ? { ok: true } : { ok: false, reason: \"refresh_superseded\" };"
+          "line": 425,
+          "text": "return context.isCurrent() ? result : { ok: false, reason: \"refresh_superseded\" };"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 458,
+          "line": 499,
           "text": "case \"teardown\":"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 459,
+          "line": 500,
           "text": "void lifecycle.teardown(detail);"
         },
         {

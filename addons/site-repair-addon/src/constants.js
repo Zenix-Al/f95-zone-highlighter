@@ -10,6 +10,7 @@ export const MAX_RETRY_DELAY_MS = 30000;
 export const SETTINGS_KEY = "settings";
 export const DEFAULT_SETTINGS = Object.freeze({
   enabled: true,
+  showRepairActivity: true,
   repairs: Object.freeze({
     imageAttachments: Object.freeze({
       enabled: true,
