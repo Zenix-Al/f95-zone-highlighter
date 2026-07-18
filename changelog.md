@@ -398,3 +398,288 @@ Not a feature changes, just adding more freedom in config and stability.
 
 - Resolved layout bugs where input fields in the modal would overflow or get cut off.
 - Improved the settings modal with a persistent, custom-styled scrollbar to prevent layout shifts.
+
+## [v4.3.23]
+
+[GreasyFork release](https://greasyfork.org/en/scripts/546518-f95zone-ultimate-enhancer?version=1734425) — Jan 14
+
+i hate it, but i have no choice but update it because of quite problematic bug.
+
+### Improvements for animated page modification function(partially)
+
+- Added smooth animations to page layout changes
+- Wide Latest page transition
+- Wide Thread view slide-in
+- Web notification dismiss fade-out
+- Dense Latest page compact mode switch feels buttery now
+
+### Bugfixes
+
+- Fixed the stupid saveConfigKeys after i change it how things saved.
+- Fixed effect when overlay thread toggled, now it instantly give changes without refresh
+
+## [v4.3.4 - bugfix]
+
+[GreasyFork release](https://greasyfork.org/en/scripts/546518-f95zone-ultimate-enhancer?version=1734080) — Jan 14
+
+### Fixed
+
+- Fixed config storage leak caused by tag updates
+- Fixed slow/freezing config writes on large stored data
+- Fixed duplicate tag data accumulating in storage
+
+### Improvement
+
+- Optimized config save logic to write only affected keys
+- Improved tag update handling to prevent storage bloat
+- Improved overall config write performance and stability
+
+## [v4.3.1]
+
+[GreasyFork release](https://greasyfork.org/en/scripts/546518-f95zone-ultimate-enhancer?version=1733916) — Jan 14
+
+- forgot to change debug to false
+
+## [v4.3.0]
+
+[GreasyFork release](https://greasyfork.org/en/scripts/546518-f95zone-ultimate-enhancer?version=1733904) — Jan 14
+
+### New Features
+
+- Added direct download support for file hosting sites (works on BUZZHEAVIER and gofile.io for now)
+- Introduced random messages at the bottom of the modal (because why not)
+- Added close button functionality for notifications/alerts in the site because its annoying
+
+### Improvements & Changes
+
+- Header cleanup: moved from page-specific to site-wide execution
+- Minor build pipeline tweaks for cleaner output
+- Required new GM grants (needed to make everything actually work):
+  - `// @grant GM_openInTab`
+  - `// @grant GM_addValueChangeListener`
+  - `// @grant GM_removeValueChangeListener`
+  - `// @grant GM_xmlhttpRequest`
+  - `// @grant unsafeWindow`
+
+## [v4.2.0]
+
+### Improvement
+
+- Improved wide latest page layout
+- Improved wide forum layout
+- Hide sticky headers while scrolling for better reading focus
+- Hide notices/alerts on latest page
+- CSS is now stripped of comments during build to reduce output size
+
+## [v4.1.5 – Bugfix]
+
+## [v4.1.3 – Bugfix]
+
+## [v4.1.0 – Major Refinement]
+
+### Added
+
+- Compact card layout for the Latest page. (enable from config)
+- Collapsible signature support on Thread pages. (enable from config)
+- Full runtime config reactivity — all setting changes now apply instantly without refresh.
+- Overlay system is now fully toggleable for both Thread and Latest pages.
+
+### Improvements
+
+- Toast system rewritten for clearer, accurate feedback — no more partial or misleading messages.
+- Core architecture reinforced: all legacy logic updated, hardened, and cleaned of unused code.
+- Stronger page-scope protections — each feature now activates only on its intended pages.
+- Improved internal safety checks to prevent duplicate execution and edge-case misfires.
+
+### Cleanup
+
+- Removed obsolete and unused legacy code paths.
+- Simplified internal flows while improving resilience.
+
+Note: This update focuses on stability, control, and runtime flexibility.
+
+All existing settings remain fully compatible.
+
+This is likely the final feature-complete release unless bugs are discovered.
+
+## [v4.0.0 – Major] New Name & Identity
+
+Renamed to "F95Zone Ultimate Enhancer" – better reflects the expanded powerhouse features beyond just highlighting.
+
+### Added
+
+- Seamless Masked Link Skipper: On-click hijack for masked links – attempts direct host redirect via XHR for instant skips, falls back gracefully to auto-continue on masked pages. Always opens in new tab for that multi-download flow
+- Wider site compatibility with updated [USER=169298]Match[/USER] rules to fully support the new skipper on masked pages.
+
+### Improvements
+
+- Removed unnecessary prelude-ls import – lighter, cleaner code with no overkill dependencies.
+
+Note: This version represents a significant evolution, combining advanced highlighting/overlays with practical download enhancements. Existing settings remain fully compatible.
+
+## [v3.2.1 – Minor]
+
+### Added
+
+- GreasyFork Update & Download Integration The script now includes proper GreasyFork update and download URLs, enabling reliable automatic updates.
+- Wide Latest Page Layout New option to expand the Latest Updates page layout for better use of screen space and readability.
+- Global Settings Section Introduced a dedicated global settings area for script-wide options and future expansion.
+- Experimental: Cross-Tab Settings Sync Optional experimental feature that synchronizes configuration changes across multiple open tabs automatically.
+
+### Improvements
+
+- Metadata-Driven Settings Renderer Refactored the settings UI to use a unified, metadata-based renderer for improved maintainability and consistency.
+- Settings Architecture Cleanup Configuration structure has been reorganized and standardized, making future features easier to add and maintain.
+- Internal Refactors & Stability Improvements Various internal improvements and cleanup with no breaking changes to existing user settings.
+
+## [v3.1.19 – Minor]
+
+### Added
+
+- Thread Width Settings
+- New thread layout options allowing users to make pages wider for improved readability.
+- Improved Option Labels & Tooltips
+- Settings now feature clearer text, better descriptions, and more helpful tooltips.
+- Dynamic Latest-Page Text Color
+- Latest-page indicators now adjust their text color automatically for better visibility.
+
+### Improvements
+
+- Minor refinements across the script to improve stability and usability.
+- Build system enhancements for smoother development flow.
+- Data migration process updated for better reliability during upgrades.
+
+## [v3.0.16 – Minor]
+
+### Added
+
+- Image Retry(Thread Option)
+- Automatically retries failed-to-load images on thread pages.
+- Designed for users experiencing CDN issues with F95Zone attachments.
+- Notification appear if notification allowed
+- Notification appear when all images have finished retrying
+- Notification appear when failed images exceed a defined threshold, suggesting a page refresh may be needed.
+
+### Metrics
+
+- Introduced metrics for now it used for tracking Image Retry:
+- Succeeded – number of images successfully retried.
+- Failed – number of images that failed to load.
+- AvgCache – average time (ms) to retry images.
+
+### Other
+
+- Build system now supports automatic version bumping (patch, minor, major).
+
+## [v3.0.0]
+
+### New Features
+
+- Auto Refresh setting
+- Toggle to enable/disable automatic refresh of "Latest" section.
+- Web Notifications setting
+- Toggle for enabling browser notifications.
+- Dependency check: requires Auto Refresh enabled.
+- Toast notifications
+- Added lightweight toast messages for user feedback (e.g., config saved, action blocked).
+
+### Code Overhaul
+
+- Instant save
+- Removed explicit "Save" button.
+- All settings now save automatically on change.
+- Refactored rendering logic
+- Migrated to full JS render approach.
+- Data structure reorganization
+- Simplified and standardized config.latestSettings or config.threadSettings for easier state management.
+- Unified rendering flow → reduces UI desync issues.
+- More dev-friendly codebase (cleaner structure, easier to extend/debug).
+
+### Frontend Improvements
+
+- HTML cleanup
+- Removed redundant DOM elements → leaner structure.
+- CSS cleanup
+- Introduced CSS variables for consistent theming.
+- Reduced inline styles, migrated to scoped CSS.
+
+## [v2.4.2]
+
+- Small ui/ux tweak and implement lazy rendering  modal.
+
+## [v2.4.1]
+
+Thanks for [USER=5293065]Mr.Momo[/USER] for the update
+
+- Change details id to a class instead
+- Opt to not use the removal of a freshly created modal and instead reuse it.
+- Improve button active state animation
+- Instead of using inline styles to control button visibility, take advantage of the .hidden class
+- Refactor event listeners
+- Feature: Add a reset button for 'Tag List'
+- Feature: Add a button to restart tag list in 'General' tab
+- Improve spacing of reset/refresh buttons
+- Sort 'Tag List' items by name
+- Increase spacing between tags in 'Tag List' config menu
+- Change cursor to pointer when hovering over
+- Refactor some inline styles to be added to <style> instead
+- Adjust spacing for some modal settings
+- Add border between new refresh/reset button
+- Create uniform button style
+- Update appearance of thread tags and config menu tags
+- Remove commented out old alert feature
+- Mobile improvements
+- Add X Death profile pciture as icon for script...
+
+## [v2.3]
+
+- Improved overall UI/UX.
+- Changed modal handling to destroy the modal element on close instead of just using display: none, improving DOM cleanliness and performance.
+- Add options for config button visibility.
+
+## [v2.2]
+
+Thanks for [USER=5293065]Mr.Momo[/USER] for the update
+
+- Provide an effecient way of checking if tile overlay needs to be applied on Latest Updates Page
+- Saving no longer requires a refresh of the entire page
+- Remove (commented out) save alert message. No more alerts will pop up everytime you save!
+- Update script description
+- New overlay setting: Set info text color of a tile on Latest Updates Page
+- New overlay setting: Set header text color of a tile on Latest Updates Page
+- EDIT: tile info text has been made semi-bold
+
+## [v2.1]
+
+Thanks for [USER=5293065]Mr.Momo[/USER] for the update
+
+- New overlay setting: Remove overlay text labels from tiles on the Latest Updates Page
+- Remove margins from modal background shortcuts text 'Save' and 'Close'. Looks better on mobile devices!
+- Add divider between modal shortcut in background
+- Change modal header 'Add Tag' to 'Prefer Tag'
+- Rename default color button from 'Reset color Default' to 'Reset Colors'
+- Replace dropdown tag selection system with tag button selection system
+- New tag setting: Change neutral tag colors. Both background and text!
+- New tag setting: Change text color of preferred and excluded tags
+
+## [v2.0]
+
+Thanks for [USER=5293065]Mr.Momo[/USER] for the update
+
+- Change from using Web Storage API to using the native userscript. Now only the script itself will be able to access the storage and no other entity.
+- Refactor some code
+- Make some code asynchronous
+- Update tag error messages for clarity on resolution
+- Subtle hover effect to button
+- Update button styles
+- Increase spacing and structure of modal elements
+- Brighten modal a bit away from pure black
+- Fix: When adding a preferred tag it does not update list to remove it as a dropdown option.
+- Add shadow to thread tags
+- Add option to disable thread tag shadows
+- Add quick shortcuts for closing/saving modal
+- Consolidate userscript from 3 different files to 1
+
+## [v1.0]
+
+- initialize

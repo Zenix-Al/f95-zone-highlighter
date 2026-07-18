@@ -68,11 +68,30 @@ function normalizeMetafile(metafile) {
   const normalizePathKey = (key) => {
     const normalized = normalizePath(key);
     if (normalized.startsWith("<")) return normalized;
-    const candidate = path.resolve(ROOT, normalized);
-    const relative = normalizePath(path.relative(ROOT, candidate));
-    return relative && !relative.startsWith("../") && !path.isAbsolute(relative)
-      ? relative
-      : "<external>";
+    const normalizedRoot = normalizePath(ROOT).replace(/\/+$/, "");
+    const isWindowsAbsolute = path.win32.isAbsolute(String(key || ""));
+    const isPosixAbsolute = path.posix.isAbsolute(normalized);
+    if (isWindowsAbsolute) {
+      const windowsRoot = path.win32.isAbsolute(ROOT) ? normalizedRoot : "";
+      if (
+        windowsRoot
+        && (
+          normalized.toLowerCase() === windowsRoot.toLowerCase()
+          || normalized.toLowerCase().startsWith(`${windowsRoot.toLowerCase()}/`)
+        )
+      ) {
+        return normalized.slice(windowsRoot.length).replace(/^\/+/, "") || ".";
+      }
+      return "<external>";
+    }
+    if (isPosixAbsolute) {
+      if (normalized === normalizedRoot || normalized.startsWith(`${normalizedRoot}/`)) {
+        return normalized.slice(normalizedRoot.length).replace(/^\/+/, "") || ".";
+      }
+      return "<external>";
+    }
+    if (normalized === ".." || normalized.startsWith("../")) return "<external>";
+    return normalized || ".";
   };
   const normalizeMap = (map) => Object.fromEntries(
     Object.entries(map || {})
