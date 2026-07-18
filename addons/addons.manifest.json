@@ -7,7 +7,7 @@
       ],
       "name": "F95UE Site Repair",
       "description": "Provides independently controlled repairs for F95Zone site behavior.",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "author": "X Death",
       "namespace": "https://github.com/Zenix-Al/f95-zone-highlighter/addons/image-repair-addon",
       "entry": "addons/site-repair-addon/src/main.js",
@@ -18,7 +18,7 @@
       "grants": [
         "none"
       ],
-      "runAt": "document-idle",
+      "runAt": "document-start",
       "requiresCore": true,
       "runtimeMode": "core-required",
       "pageScopes": [
@@ -29,6 +29,7 @@
         "toast",
         "feature",
         "storage",
+        "page",
         "observer",
         "ui",
         "ui.style"
@@ -87,7 +88,7 @@
       "id": "library-addon",
       "name": "F95UE Library Add-on",
       "description": "Quick-add threads to a personal library and manage entries with a dedicated add-on UI.",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "author": "X Death",
       "entry": "addons/library-addon/src/main.js",
       "outfile": "addons/library-addon/dist/library-addon.user.js",

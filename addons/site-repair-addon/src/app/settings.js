@@ -20,6 +20,7 @@ export function normalizeSiteRepairSettings(value) {
     : {};
   return {
     enabled: source.enabled !== false,
+    showRepairActivity: source.showRepairActivity !== false,
     repairs: {
       imageAttachments: {
         enabled: imageAttachments.enabled !== false,

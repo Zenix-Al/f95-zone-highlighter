@@ -1,8 +1,8 @@
 {
   "addons": {
     "library-addon": {
-      "regular": "55f4c4b4ee494cc65ebceb6ca1b8781b54f379cfd6c14b2e3902471f8dcc7cdc",
-      "release": "450794c8b8ad93e8059142958b5dfc2798a14481961f2cd8c9ddb2d4b70decd1"
+      "regular": "f090b3de0f44f4a39f53b450570b9ef096adc788b5cba283a45be01b32b1e480",
+      "release": "c397c997e41f00eb05f3174d071fa0328e94a9169c6bb558676f04b118c159fe"
     },
     "image-repair-addon": {
       "release": "599180b41d1edaf69497c5acbf83bdcee2b3417604595341691dd6eac64a4450",
@@ -25,8 +25,8 @@
       "release": "c89871d3f26f8115ee9dc5539d245e0977ad672b2725756ea00add5f91b1fb74"
     },
     "site-repair-addon": {
-      "regular": "f8c31c81a922ee2bca6061d106a62acc5cb756c31aca09027f1acc430d563f47",
-      "release": "a092b8c4507acf2df202aea417d0fdcc1d2379194d54e8462eb9c26f3a8956fa"
+      "regular": "c3ca665ebd6d061d2b2880d6494ecc1801bf81399dc832374b10657b57ef8d58",
+      "release": "c1ccd3df3351ac0662176e718127fd8a9efbdab5fe2b2b5ae997d625f80521f6"
     }
   }
 }

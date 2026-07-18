@@ -1264,6 +1264,30 @@ runTest("ADDON-LIBRARY-02 owns reversible lifecycle and exactly-once teardown", 
         mounts.delete(payload.mountId);
         return { ok: true, value: { removed: 1 } };
       }
+      if (action === "ui.style.register" || action === "ui.style.unregister") {
+        return { ok: true, value: {} };
+      }
+      if (action === "ui.dialog.open") {
+        const content = document.createElement("div");
+        content.id = `library-lifecycle-dialog-${actions.filter((entry) => entry.action === "ui.dialog.open").length}`;
+        content.dataset.addonId = "library-addon";
+        content.innerHTML = payload.html;
+        document.body.appendChild(content);
+        return { ok: true, value: { contentId: content.id } };
+      }
+      if (action === "ui.dialog.close") {
+        document.querySelector('[data-addon-id="library-addon"]')?.remove();
+        commandHandler?.({
+          addonId: "library-addon",
+          command: "dialog-closed",
+          dialogId: payload.dialogId,
+          reason: payload.reason,
+        });
+        return { ok: true, value: { removed: 1 } };
+      }
+      if (action === "config.getTagPrefs") {
+        return { ok: true, value: { tags: [], preferredTags: [], excludedTags: [], markedTags: [], color: {} } };
+      }
       if (action === "idb.get") return { ok: true, value: null };
       return { ok: true, value: {} };
     },
@@ -1289,6 +1313,22 @@ runTest("ADDON-LIBRARY-02 owns reversible lifecycle and exactly-once teardown", 
       ?.dispatchEvent(new window.MouseEvent("click", { bubbles: true, composed: true }));
     await new Promise((resolve) => setImmediate(resolve));
     assert.ok(actions.some((entry) => entry.action === "ui.dialog.open"), "re-enabled dock must open the manager");
+    document.querySelector('[data-addon-id="library-addon"] button[data-action="close"]')
+      ?.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
+    await new Promise((resolve) => setImmediate(resolve));
+    document.querySelector('[data-role="libraryDock"] [data-action="open-library"]')
+      ?.dispatchEvent(new window.MouseEvent("click", { bubbles: true, composed: true }));
+    await new Promise((resolve) => setImmediate(resolve));
+    assert.strictEqual(
+      actions.filter((entry) => entry.action === "ui.dialog.open").length,
+      2,
+      "dock must reopen Library after its Close action",
+    );
+    assert.strictEqual(
+      actions.some((entry) => entry.action === "ui.dialog.close" && entry.payload.reason === "resource-release"),
+      false,
+      "reopening must not replace and clean up the existing lifecycle owner",
+    );
     await app.getLifecycle().refresh({ commandId: "refresh-1", reason: "route" });
     assert.strictEqual(app.getResourceSnapshot().filter((entry) => entry.id === "library-dock-listener").length, 1);
     await app.getLifecycle().teardown({ commandId: "teardown-1", reason: "terminal" });
@@ -1472,6 +1512,11 @@ runTest("SITE-REPAIR-01 preserves published namespace while changing canonical i
   assert.deepStrictEqual(siteRepair.matches, ["*://f95zone.to/*"]);
   assert.deepStrictEqual(siteRepair.pageScopes, ["f95zone"]);
   assert.strictEqual(siteRepair.outfile, "addons/site-repair-addon/dist/site-repair-addon.user.js");
+  assert.strictEqual(
+    siteRepair.capabilities.includes("page"),
+    true,
+    "Site Repair must request the page capability used by page.getContext",
+  );
   const oldNamespace = "https://github.com/Zenix-Al/f95-zone-highlighter/addons/image-repair-addon";
   assert.strictEqual(siteRepair.namespace, oldNamespace);
   const header = addonBuilder.headerForAddon(siteRepair, { includeTimestamp: false });
@@ -1593,6 +1638,7 @@ runTest("SITE-REPAIR-01 normalizes image retry settings for the core panel", () 
     "addons/site-repair-addon/src/app/settings.js",
   );
   const settings = normalizeSiteRepairSettings({
+    showRepairActivity: false,
     repairs: {
       imageAttachments: {
         enabled: true,
@@ -1606,6 +1652,8 @@ runTest("SITE-REPAIR-01 normalizes image retry settings for the core panel", () 
     maxAttempts: 20,
     retryDelayMs: 250,
   });
+  assert.strictEqual(settings.showRepairActivity, false);
+  assert.strictEqual(normalizeSiteRepairSettings({}).showRepairActivity, true);
 });
 
 runTest("SITE-REPAIR-01 follows canonical boundaries and keeps route-inapplicable repair idle", async () => {
@@ -1662,6 +1710,68 @@ runTest("SITE-REPAIR-01 follows canonical boundaries and keeps route-inapplicabl
   }
 });
 
+function createLatestAjaxPageBridgeHarness({ jQuery = null, querySelector = () => null } = {}) {
+  const listeners = new Map();
+  class FakeCustomEvent {
+    constructor(type, options = {}) { this.type = type; this.detail = options.detail; }
+  }
+  const windowLike = {
+    jQuery,
+    CustomEvent: FakeCustomEvent,
+    MouseEvent: FakeCustomEvent,
+    addEventListener(type, listener) {
+      if (!listeners.has(type)) listeners.set(type, new Set());
+      listeners.get(type).add(listener);
+    },
+    removeEventListener(type, listener) { listeners.get(type)?.delete(listener); },
+    dispatchEvent(event) {
+      for (const listener of [...(listeners.get(event.type) || [])]) listener(event);
+      return true;
+    },
+  };
+  const root = {
+    dataset: {},
+    appendChild(script) {
+      Function("window", "document", "CustomEvent", script.textContent)(
+        windowLike,
+        documentLike,
+        FakeCustomEvent,
+      );
+      return script;
+    },
+  };
+  const documentLike = {
+    documentElement: root,
+    createElement: () => ({ type: "", textContent: "", remove() {} }),
+    querySelector,
+  };
+  return { windowLike, documentLike };
+}
+
+runTest("SITE-REPAIR-02 keeps the early shield while waiting for delayed core readiness", async () => {
+  const { waitForCorePingUntilReady } = loadModule(
+    "addons/site-repair-addon/src/core/waitForCore.js",
+  );
+  const pings = [false, false, true];
+  const delays = [];
+  const result = await waitForCorePingUntilReady(
+    {
+      waitForCorePing: async () => ({
+        ok: pings.shift(),
+        apiVersion: pings.length === 0 ? "0.1.0" : "",
+      }),
+    },
+    {
+      maxAttempts: 5,
+      pingTimeoutMs: 1,
+      retryDelayMs: 7,
+      delay: async (milliseconds) => { delays.push(milliseconds); },
+    },
+  );
+  assert.deepStrictEqual(result, { ok: true, apiVersion: "0.1.0", attempts: 3 });
+  assert.deepStrictEqual(delays, [7, 7]);
+});
+
 runTest("SITE-REPAIR-02 retries eligible Latest failures exactly once and preserves terminal errors", () => {
   const { createLatestAjaxJqueryAdapter } = loadModule(
     "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
@@ -1669,24 +1779,49 @@ runTest("SITE-REPAIR-02 retries eligible Latest failures exactly once and preser
   const timeouts = new Map();
   let nextTimer = 1;
   const calls = [];
+  let siteRetryClick = null;
   function originalAjax(settingsOrUrl, maybeSettings) {
     const settings = typeof settingsOrUrl === "object" ? settingsOrUrl : { ...maybeSettings, url: settingsOrUrl };
     calls.push(settings);
     return settings;
   }
-  const windowLike = {
+  const { windowLike, documentLike } = createLatestAjaxPageBridgeHarness({
     jQuery: { ajax: originalAjax },
-    setTimeout(callback) { const id = nextTimer++; timeouts.set(id, callback); return id; },
-    clearTimeout(id) { timeouts.delete(id); },
-    setInterval() { throw new Error("unexpected polling"); },
-    clearInterval() {},
-  };
-  const adapter = createLatestAjaxJqueryAdapter({ window: windowLike });
-  adapter.enable();
+    querySelector: (selector) => selector === "#error-box_retry-btn"
+      ? {
+        isConnected: true,
+        outerHTML: '<a href="" id="error-box_retry-btn">Retry</a>',
+        dispatchEvent: () => { siteRetryClick?.(); return true; },
+      }
+      : null,
+  });
+  windowLike.setTimeout = (callback) => { const id = nextTimer++; timeouts.set(id, callback); return id; };
+  windowLike.clearTimeout = (id) => timeouts.delete(id);
+  windowLike.setInterval = () => { throw new Error("unexpected polling"); };
+  windowLike.clearInterval = () => {};
+  const adapter = createLatestAjaxJqueryAdapter({ window: windowLike, document: documentLike });
+  adapter.enable({ allowRetry: false });
   const patched = windowLike.jQuery.ajax;
+  siteRetryClick = () => patched({
+    url: "/sam/latest_data.php",
+    error: () => { terminalCallsForSiteRetry += 1; },
+  });
+  let terminalCallsForSiteRetry = 0;
+  let shieldedTerminalCalls = 0;
+  patched({ url: "/sam/latest_data.php", error: (jqXHR) => {
+    shieldedTerminalCalls += 1;
+    assert.strictEqual(jqXHR.responseJSON.hasOwnProperty("msg"), true);
+  } });
+  calls.at(-1).error({ status: 0, responseJSON: undefined }, "abort", new Error("abort"));
+  assert.strictEqual(shieldedTerminalCalls, 1, "early shield must normalize before retry is authorized");
+  assert.strictEqual(timeouts.size, 0, "early shield must not retry before core authorization");
+
   adapter.enable();
+  assert.strictEqual(adapter.getSnapshot().retryEnabled, true);
   assert.strictEqual(windowLike.jQuery.ajax, patched, "duplicate enable must not double-patch");
 
+  const repairs = [];
+  adapter.configure({ onRepair: (event) => repairs.push(event) });
   for (const fixture of [
     ["parsererror", 200, true], ["timeout", 0, true], ["error", 0, true],
     ["error", 503, true], ["error", 403, false], ["error", 429, false],
@@ -1697,6 +1832,12 @@ runTest("SITE-REPAIR-02 retries eligible Latest failures exactly once and preser
     calls.at(-1).error({ status }, textStatus, new Error(textStatus));
     assert.strictEqual(timeouts.size > 0, retry, `${textStatus}/${status}`);
     if (retry) {
+      assert.strictEqual(terminalCalls, 1, "the site must render its bounded Retry control");
+      assert.deepStrictEqual(repairs.at(-1), {
+        kind: "latest-ajax",
+        status,
+        textStatus,
+      });
       const callback = [...timeouts.values()][0];
       timeouts.clear();
       callback();
@@ -1705,7 +1846,9 @@ runTest("SITE-REPAIR-02 retries eligible Latest failures exactly once and preser
       retried.error({ status }, textStatus, new Error(textStatus));
       assert.strictEqual(timeouts.size, 0, "a retried request must not retry again");
       assert.strictEqual(terminalCalls, 1);
+      assert.strictEqual(terminalCallsForSiteRetry > 0, true);
     } else {
+      assert.strictEqual(repairs.some((event) => event.status === status), false);
       assert.strictEqual(terminalCalls, 1);
     }
   }
@@ -1720,13 +1863,12 @@ runTest("SITE-REPAIR-02 cancels retries and late-jQuery polling by generation", 
   const intervals = new Map();
   const timeouts = new Map();
   let id = 0;
-  const windowLike = {
-    setInterval(callback) { const timer = ++id; intervals.set(timer, callback); return timer; },
-    clearInterval(timer) { intervals.delete(timer); },
-    setTimeout(callback) { const timer = ++id; timeouts.set(timer, callback); return timer; },
-    clearTimeout(timer) { timeouts.delete(timer); },
-  };
-  const adapter = createLatestAjaxJqueryAdapter({ window: windowLike });
+  const { windowLike, documentLike } = createLatestAjaxPageBridgeHarness();
+  windowLike.setInterval = (callback) => { const timer = ++id; intervals.set(timer, callback); return timer; };
+  windowLike.clearInterval = (timer) => intervals.delete(timer);
+  windowLike.setTimeout = (callback) => { const timer = ++id; timeouts.set(timer, callback); return timer; };
+  windowLike.clearTimeout = (timer) => timeouts.delete(timer);
+  const adapter = createLatestAjaxJqueryAdapter({ window: windowLike, document: documentLike });
   adapter.enable();
   assert.strictEqual(intervals.size, 1);
   let requestedSettings = null;

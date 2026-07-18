@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "identifier": "65385ad9acc0293e9d5053d7585aaf309f163e2829d810d79a7d5e360bb2c255",
+  "identifier": "7959e3561e62fc84dd0b0ce5a4656698489d91c7cc4af4c393b20511868a65ae",
   "catalog": [
     {
       "id": "example-addon",
@@ -96,7 +96,7 @@
       "id": "library-addon",
       "name": "F95UE Library Add-on",
       "description": "Quick-add threads to a personal library and manage entries with a dedicated add-on UI.",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "pageScopes": [
         "f95zone"
       ],
@@ -174,7 +174,7 @@
       "id": "site-repair-addon",
       "name": "F95UE Site Repair",
       "description": "Provides independently controlled repairs for F95Zone site behavior.",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "pageScopes": [
         "f95zone"
       ],
@@ -185,12 +185,13 @@
       "grants": [
         "none"
       ],
-      "runAt": "document-idle",
+      "runAt": "document-start",
       "requiresCore": true,
       "capabilities": [
         "toast",
         "feature",
         "storage",
+        "page",
         "observer",
         "ui",
         "ui.style"
