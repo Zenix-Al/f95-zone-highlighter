@@ -2,6 +2,7 @@ const esbuild = require("esbuild");
 const crypto = require("crypto");
 const fs = require("fs");
 const path = require("path");
+const { normalizedTextAssets } = require("../build/normalizeTextAssets");
 const { stripDebugLogs } = require("../build/stripDebugLogs");
 const { validateManifest, writeCatalogArtifacts } = require("../scripts/addon-catalog.cjs");
 let terser = null;
@@ -245,7 +246,7 @@ async function buildAddon(addon, isRelease) {
     // run a controlled terser beautify pass (same philosophy as main build.js).
     minifyIdentifiers: false,
     minifySyntax: Boolean(isRelease),
-    plugins: isRelease ? [stripDebugLogs] : [],
+    plugins: isRelease ? [normalizedTextAssets, stripDebugLogs] : [normalizedTextAssets],
     define: {
       __ADDON_ID__: JSON.stringify(addon.id),
       __ADDON_NAME__: JSON.stringify(addon.name || addon.id || "Add-on"),
@@ -296,7 +297,7 @@ async function buildAddonToPath(
     minifyWhitespace: Boolean(isRelease),
     minifyIdentifiers: false,
     minifySyntax: Boolean(isRelease),
-    plugins: isRelease ? [stripDebugLogs] : [],
+    plugins: isRelease ? [normalizedTextAssets, stripDebugLogs] : [normalizedTextAssets],
     define: {
       __ADDON_ID__: JSON.stringify(addon.id),
       __ADDON_NAME__: JSON.stringify(addon.name || addon.id || "Add-on"),

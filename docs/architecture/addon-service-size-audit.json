@@ -31,10 +31,10 @@
     "addons": {
       "count": 6,
       "authoredBytes": 451857,
-      "regularBytes": 512356,
-      "releaseBytes": 370498,
-      "regularGzipBytes": 113097,
-      "releaseGzipBytes": 94860
+      "regularBytes": 509320,
+      "releaseBytes": 367462,
+      "regularGzipBytes": 112906,
+      "releaseGzipBytes": 94640
     },
     "sharedRuntime": {
       "authoredBytes": 15841,
@@ -51,8 +51,8 @@
     "coreService": {
       "authoredBytes": {
         "current": 220012,
-        "baseline": 220012,
-        "delta": 0
+        "baseline": 216928,
+        "delta": 3084
       },
       "owningFiles": [
         "src/services/addons/uiHost.js",
@@ -73,28 +73,28 @@
         "addonId": "example-addon",
         "authoredBytes": {
           "current": 69746,
-          "baseline": 69746,
-          "delta": 0
+          "baseline": 68650,
+          "delta": 1096
         },
         "regularBytes": {
-          "current": 84955,
-          "baseline": 84645,
+          "current": 84505,
+          "baseline": 84195,
           "delta": 310
         },
         "releaseBytes": {
-          "current": 57825,
-          "baseline": 73898,
+          "current": 57375,
+          "baseline": 73448,
           "delta": -16073
         },
         "regularGzipBytes": {
-          "current": 18613,
-          "baseline": 18518,
-          "delta": 95
+          "current": 18564,
+          "baseline": 18471,
+          "delta": 93
         },
         "releaseGzipBytes": {
-          "current": 14815,
-          "baseline": 15346,
-          "delta": -531
+          "current": 14763,
+          "baseline": 15322,
+          "delta": -559
         },
         "owningFiles": [
           "addons/example-addon/src/app/createExampleAddonApp.js",
@@ -145,28 +145,28 @@
         "addonId": "latest-filters-addon",
         "authoredBytes": {
           "current": 60250,
-          "baseline": 60250,
-          "delta": 0
+          "baseline": 59539,
+          "delta": 711
         },
         "regularBytes": {
-          "current": 72810,
-          "baseline": 72484,
+          "current": 72190,
+          "baseline": 71864,
           "delta": 326
         },
         "releaseBytes": {
-          "current": 55332,
-          "baseline": 65685,
+          "current": 54712,
+          "baseline": 65065,
           "delta": -10353
         },
         "regularGzipBytes": {
-          "current": 16367,
-          "baseline": 16277,
-          "delta": 90
+          "current": 16338,
+          "baseline": 16249,
+          "delta": 89
         },
         "releaseGzipBytes": {
-          "current": 14383,
-          "baseline": 14515,
-          "delta": -132
+          "current": 14352,
+          "baseline": 14472,
+          "delta": -120
         },
         "owningFiles": [
           "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
@@ -181,28 +181,28 @@
         "addonId": "library-addon",
         "authoredBytes": {
           "current": 152107,
-          "baseline": 152107,
-          "delta": 0
+          "baseline": 148282,
+          "delta": 3825
         },
         "regularBytes": {
-          "current": 160013,
-          "baseline": 159703,
+          "current": 158047,
+          "baseline": 157737,
           "delta": 310
         },
         "releaseBytes": {
-          "current": 118719,
-          "baseline": 139372,
+          "current": 116753,
+          "baseline": 137406,
           "delta": -20653
         },
         "regularGzipBytes": {
-          "current": 33969,
-          "baseline": 33887,
-          "delta": 82
+          "current": 33856,
+          "baseline": 33773,
+          "delta": 83
         },
         "releaseGzipBytes": {
-          "current": 28855,
-          "baseline": 29375,
-          "delta": -520
+          "current": 28718,
+          "baseline": 29250,
+          "delta": -532
         },
         "owningFiles": [
           "addons/library-addon/src/ui/assets/manager.css",
@@ -217,8 +217,8 @@
         "addonId": "masked-direct-addon",
         "authoredBytes": {
           "current": 123655,
-          "baseline": 123655,
-          "delta": 0
+          "baseline": 122200,
+          "delta": 1455
         },
         "regularBytes": {
           "current": 119030,
@@ -4990,8 +4990,8 @@
       },
       "builds": {
         "regular": {
-          "bytes": 84955,
-          "gzipBytes": 18613,
+          "bytes": 84505,
+          "gzipBytes": 18564,
           "headerBytes": 969,
           "contributors": [
             {
@@ -5012,7 +5012,7 @@
             },
             {
               "path": "addons/example-addon/src/ui/example.css",
-              "bytes": 4732
+              "bytes": 4292
             },
             {
               "path": "addons/shared/coreBridge.js",
@@ -5101,7 +5101,7 @@
             ]
           },
           "uiCss": {
-            "bytes": 18426,
+            "bytes": 17976,
             "contributors": [
               {
                 "path": "addons/example-addon/src/ui/panel.js",
@@ -5109,7 +5109,7 @@
               },
               {
                 "path": "addons/example-addon/src/ui/example.css",
-                "bytes": 4732
+                "bytes": 4292
               },
               {
                 "path": "addons/example-addon/src/ui/bulkImportProgressDialog.js",
@@ -5129,7 +5129,7 @@
               },
               {
                 "path": "addons/example-addon/src/ui/dock.html",
-                "bytes": 225
+                "bytes": 215
               },
               {
                 "path": "addons/example-addon/src/ui/dockRenderer.js",
@@ -5164,8 +5164,8 @@
           }
         },
         "release": {
-          "bytes": 57825,
-          "gzipBytes": 14815,
+          "bytes": 57375,
+          "gzipBytes": 14763,
           "headerBytes": 969,
           "contributors": [
             {
@@ -5186,7 +5186,7 @@
             },
             {
               "path": "addons/example-addon/src/ui/example.css",
-              "bytes": 4507
+              "bytes": 4067
             },
             {
               "path": "addons/example-addon/src/ui/bulkImportProgressDialog.js",
@@ -5271,7 +5271,7 @@
             ]
           },
           "uiCss": {
-            "bytes": 15437,
+            "bytes": 14987,
             "contributors": [
               {
                 "path": "addons/example-addon/src/ui/panel.js",
@@ -5279,7 +5279,7 @@
               },
               {
                 "path": "addons/example-addon/src/ui/example.css",
-                "bytes": 4507
+                "bytes": 4067
               },
               {
                 "path": "addons/example-addon/src/ui/bulkImportProgressDialog.js",
@@ -5299,7 +5299,7 @@
               },
               {
                 "path": "addons/example-addon/src/ui/dock.html",
-                "bytes": 215
+                "bytes": 205
               },
               {
                 "path": "addons/example-addon/src/ui/dockRenderer.js",
@@ -5358,28 +5358,28 @@
       "baseline": {
         "authoredBytes": {
           "current": 69746,
-          "baseline": 69746,
-          "delta": 0
+          "baseline": 68650,
+          "delta": 1096
         },
         "regularBytes": {
-          "current": 84955,
-          "baseline": 84645,
+          "current": 84505,
+          "baseline": 84195,
           "delta": 310
         },
         "releaseBytes": {
-          "current": 57825,
-          "baseline": 73898,
+          "current": 57375,
+          "baseline": 73448,
           "delta": -16073
         },
         "regularGzipBytes": {
-          "current": 18613,
-          "baseline": 18518,
-          "delta": 95
+          "current": 18564,
+          "baseline": 18471,
+          "delta": 93
         },
         "releaseGzipBytes": {
-          "current": 14815,
-          "baseline": 15346,
-          "delta": -531
+          "current": 14763,
+          "baseline": 15322,
+          "delta": -559
         },
         "owningFiles": [
           "addons/example-addon/src/app/createExampleAddonApp.js",
@@ -6066,8 +6066,8 @@
       },
       "builds": {
         "regular": {
-          "bytes": 72810,
-          "gzipBytes": 16367,
+          "bytes": 72190,
+          "gzipBytes": 16338,
           "headerBytes": 1053,
           "contributors": [
             {
@@ -6080,7 +6080,7 @@
             },
             {
               "path": "addons/latest-filters-addon/src/ui/panel.css",
-              "bytes": 7033
+              "bytes": 6467
             },
             {
               "path": "addons/latest-filters-addon/src/renderer.js",
@@ -6116,7 +6116,7 @@
             },
             {
               "path": "addons/latest-filters-addon/src/ui/dialog.html",
-              "bytes": 912
+              "bytes": 874
             },
             {
               "path": "addons/latest-filters-addon/src/app/state.js",
@@ -6135,12 +6135,12 @@
               "bytes": 346
             },
             {
-              "path": "addons/latest-filters-addon/src/ui/panel.html",
-              "bytes": 320
-            },
-            {
               "path": "addons/shared/apiFallback.js",
               "bytes": 317
+            },
+            {
+              "path": "addons/latest-filters-addon/src/ui/panel.html",
+              "bytes": 304
             },
             {
               "path": "addons/latest-filters-addon/src/api/observer.js",
@@ -6181,11 +6181,11 @@
             ]
           },
           "uiCss": {
-            "bytes": 10861,
+            "bytes": 10241,
             "contributors": [
               {
                 "path": "addons/latest-filters-addon/src/ui/panel.css",
-                "bytes": 7033
+                "bytes": 6467
               },
               {
                 "path": "addons/latest-filters-addon/src/ui/bindings.js",
@@ -6193,11 +6193,11 @@
               },
               {
                 "path": "addons/latest-filters-addon/src/ui/dialog.html",
-                "bytes": 912
+                "bytes": 874
               },
               {
                 "path": "addons/latest-filters-addon/src/ui/panel.html",
-                "bytes": 320
+                "bytes": 304
               },
               {
                 "path": "addons/latest-filters-addon/src/ui/renderer.js",
@@ -6224,8 +6224,8 @@
           }
         },
         "release": {
-          "bytes": 55332,
-          "gzipBytes": 14383,
+          "bytes": 54712,
+          "gzipBytes": 14352,
           "headerBytes": 1053,
           "contributors": [
             {
@@ -6233,12 +6233,12 @@
               "bytes": 18596
             },
             {
-              "path": "addons/latest-filters-addon/src/ui/panel.css",
-              "bytes": 6745
-            },
-            {
               "path": "addons/shared/runtimeLifecycle.js",
               "bytes": 6436
+            },
+            {
+              "path": "addons/latest-filters-addon/src/ui/panel.css",
+              "bytes": 6179
             },
             {
               "path": "addons/latest-filters-addon/src/renderer.js",
@@ -6270,7 +6270,7 @@
             },
             {
               "path": "addons/latest-filters-addon/src/ui/dialog.html",
-              "bytes": 888
+              "bytes": 850
             },
             {
               "path": "addons/latest-filters-addon/src/main.js",
@@ -6285,16 +6285,16 @@
               "bytes": 412
             },
             {
-              "path": "addons/latest-filters-addon/src/ui/panel.html",
-              "bytes": 307
-            },
-            {
               "path": "addons/latest-filters-addon/src/api/ui/dialog.js",
               "bytes": 295
             },
             {
               "path": "addons/latest-filters-addon/src/constants.js",
               "bytes": 295
+            },
+            {
+              "path": "addons/latest-filters-addon/src/ui/panel.html",
+              "bytes": 291
             },
             {
               "path": "addons/shared/apiFallback.js",
@@ -6339,11 +6339,11 @@
             ]
           },
           "uiCss": {
-            "bytes": 9784,
+            "bytes": 9164,
             "contributors": [
               {
                 "path": "addons/latest-filters-addon/src/ui/panel.css",
-                "bytes": 6745
+                "bytes": 6179
               },
               {
                 "path": "addons/latest-filters-addon/src/ui/bindings.js",
@@ -6351,11 +6351,11 @@
               },
               {
                 "path": "addons/latest-filters-addon/src/ui/dialog.html",
-                "bytes": 888
+                "bytes": 850
               },
               {
                 "path": "addons/latest-filters-addon/src/ui/panel.html",
-                "bytes": 307
+                "bytes": 291
               },
               {
                 "path": "addons/latest-filters-addon/src/ui/renderer.js",
@@ -6407,28 +6407,28 @@
       "baseline": {
         "authoredBytes": {
           "current": 60250,
-          "baseline": 60250,
-          "delta": 0
+          "baseline": 59539,
+          "delta": 711
         },
         "regularBytes": {
-          "current": 72810,
-          "baseline": 72484,
+          "current": 72190,
+          "baseline": 71864,
           "delta": 326
         },
         "releaseBytes": {
-          "current": 55332,
-          "baseline": 65685,
+          "current": 54712,
+          "baseline": 65065,
           "delta": -10353
         },
         "regularGzipBytes": {
-          "current": 16367,
-          "baseline": 16277,
-          "delta": 90
+          "current": 16338,
+          "baseline": 16249,
+          "delta": 89
         },
         "releaseGzipBytes": {
-          "current": 14383,
-          "baseline": 14515,
-          "delta": -132
+          "current": 14352,
+          "baseline": 14472,
+          "delta": -120
         },
         "owningFiles": [
           "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
@@ -6920,13 +6920,13 @@
       },
       "builds": {
         "regular": {
-          "bytes": 160013,
-          "gzipBytes": 33969,
+          "bytes": 158047,
+          "gzipBytes": 33856,
           "headerBytes": 967,
           "contributors": [
             {
               "path": "addons/library-addon/src/ui/assets/manager.css",
-              "bytes": 20528
+              "bytes": 18822
             },
             {
               "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
@@ -6953,16 +6953,16 @@
               "bytes": 7116
             },
             {
-              "path": "addons/library-addon/src/ui/assets/manager.html",
-              "bytes": 5150
-            },
-            {
               "path": "addons/library-addon/src/ui/manager/managerApp.js",
               "bytes": 5134
             },
             {
               "path": "addons/library-addon/src/ui/application/importExportWorkflow.js",
               "bytes": 4910
+            },
+            {
+              "path": "addons/library-addon/src/ui/assets/manager.html",
+              "bytes": 4904
             },
             {
               "path": "addons/library-addon/src/ui/application/importProgressController.js",
@@ -7035,11 +7035,11 @@
             ]
           },
           "uiCss": {
-            "bytes": 86804,
+            "bytes": 84838,
             "contributors": [
               {
                 "path": "addons/library-addon/src/ui/assets/manager.css",
-                "bytes": 20528
+                "bytes": 18822
               },
               {
                 "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
@@ -7050,16 +7050,16 @@
                 "bytes": 7116
               },
               {
-                "path": "addons/library-addon/src/ui/assets/manager.html",
-                "bytes": 5150
-              },
-              {
                 "path": "addons/library-addon/src/ui/manager/managerApp.js",
                 "bytes": 5134
               },
               {
                 "path": "addons/library-addon/src/ui/application/importExportWorkflow.js",
                 "bytes": 4910
+              },
+              {
+                "path": "addons/library-addon/src/ui/assets/manager.html",
+                "bytes": 4904
               },
               {
                 "path": "addons/library-addon/src/ui/application/importProgressController.js",
@@ -7120,11 +7120,11 @@
             ]
           },
           "storageIdbDomain": {
-            "bytes": 140947,
+            "bytes": 138981,
             "contributors": [
               {
                 "path": "addons/library-addon/src/ui/assets/manager.css",
-                "bytes": 20528
+                "bytes": 18822
               },
               {
                 "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
@@ -7147,16 +7147,16 @@
                 "bytes": 7116
               },
               {
-                "path": "addons/library-addon/src/ui/assets/manager.html",
-                "bytes": 5150
-              },
-              {
                 "path": "addons/library-addon/src/ui/manager/managerApp.js",
                 "bytes": 5134
               },
               {
                 "path": "addons/library-addon/src/ui/application/importExportWorkflow.js",
                 "bytes": 4910
+              },
+              {
+                "path": "addons/library-addon/src/ui/assets/manager.html",
+                "bytes": 4904
               },
               {
                 "path": "addons/library-addon/src/ui/application/importProgressController.js",
@@ -7206,13 +7206,13 @@
           }
         },
         "release": {
-          "bytes": 118719,
-          "gzipBytes": 28855,
+          "bytes": 116753,
+          "gzipBytes": 28718,
           "headerBytes": 967,
           "contributors": [
             {
               "path": "addons/library-addon/src/ui/assets/manager.css",
-              "bytes": 19662
+              "bytes": 17956
             },
             {
               "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
@@ -7240,7 +7240,7 @@
             },
             {
               "path": "addons/library-addon/src/ui/assets/manager.html",
-              "bytes": 5022
+              "bytes": 4776
             },
             {
               "path": "addons/library-addon/src/ui/manager/managerApp.js",
@@ -7317,11 +7317,11 @@
             ]
           },
           "uiCss": {
-            "bytes": 70620,
+            "bytes": 68654,
             "contributors": [
               {
                 "path": "addons/library-addon/src/ui/assets/manager.css",
-                "bytes": 19662
+                "bytes": 17956
               },
               {
                 "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
@@ -7333,7 +7333,7 @@
               },
               {
                 "path": "addons/library-addon/src/ui/assets/manager.html",
-                "bytes": 5022
+                "bytes": 4776
               },
               {
                 "path": "addons/library-addon/src/ui/manager/managerApp.js",
@@ -7402,11 +7402,11 @@
             ]
           },
           "storageIdbDomain": {
-            "bytes": 107773,
+            "bytes": 105807,
             "contributors": [
               {
                 "path": "addons/library-addon/src/ui/assets/manager.css",
-                "bytes": 19662
+                "bytes": 17956
               },
               {
                 "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
@@ -7430,7 +7430,7 @@
               },
               {
                 "path": "addons/library-addon/src/ui/assets/manager.html",
-                "bytes": 5022
+                "bytes": 4776
               },
               {
                 "path": "addons/library-addon/src/ui/manager/managerApp.js",
@@ -7512,28 +7512,28 @@
       "baseline": {
         "authoredBytes": {
           "current": 152107,
-          "baseline": 152107,
-          "delta": 0
+          "baseline": 148282,
+          "delta": 3825
         },
         "regularBytes": {
-          "current": 160013,
-          "baseline": 159703,
+          "current": 158047,
+          "baseline": 157737,
           "delta": 310
         },
         "releaseBytes": {
-          "current": 118719,
-          "baseline": 139372,
+          "current": 116753,
+          "baseline": 137406,
           "delta": -20653
         },
         "regularGzipBytes": {
-          "current": 33969,
-          "baseline": 33887,
-          "delta": 82
+          "current": 33856,
+          "baseline": 33773,
+          "delta": 83
         },
         "releaseGzipBytes": {
-          "current": 28855,
-          "baseline": 29375,
-          "delta": -520
+          "current": 28718,
+          "baseline": 29250,
+          "delta": -532
         },
         "owningFiles": [
           "addons/library-addon/src/ui/assets/manager.css",
@@ -8161,8 +8161,8 @@
       "baseline": {
         "authoredBytes": {
           "current": 123655,
-          "baseline": 123655,
-          "delta": 0
+          "baseline": 122200,
+          "delta": 1455
         },
         "regularBytes": {
           "current": 119030,

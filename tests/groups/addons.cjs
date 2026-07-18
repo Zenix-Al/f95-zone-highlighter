@@ -137,6 +137,17 @@ runTest("ADDON-BUILD-TOOLS-01 normalizes Windows and POSIX metafile paths", () =
   const serialized = JSON.stringify(normalized);
   assert.doesNotMatch(serialized, /\\/);
   assert.doesNotMatch(serialized, /[A-Za-z]:[\\/]/);
+  assert.deepStrictEqual(Object.keys(normalized.outputs), ["<external>"]);
+});
+
+runTest("ADDON-BASELINE-01 normalizes CRLF and LF source bytes identically", () => {
+  const crlf = "first\r\nsecond\r\n";
+  const lf = "first\nsecond\n";
+  assert.strictEqual(addonBaseline.normalizeText(crlf), lf);
+  assert.strictEqual(
+    Buffer.byteLength(addonBaseline.normalizeText(crlf)),
+    Buffer.byteLength(addonBaseline.normalizeText(lf)),
+  );
 });
 
 runTest("ADDON-GOLDEN-01 keeps Example Add-on composition and API boundaries", () => {

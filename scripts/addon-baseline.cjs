@@ -17,6 +17,10 @@ const SERVICE_SOURCE_EXTENSIONS = new Set([".js", ".json"]);
 let terser = null;
 try { terser = require("terser"); } catch { terser = null; }
 const { stripDebugLogs } = require(path.join(ROOT, "build", "stripDebugLogs.js"));
+const {
+  normalizeText,
+  normalizedTextAssets,
+} = require(path.join(ROOT, "build", "normalizeTextAssets.js"));
 
 function normalizePath(value) {
   return String(value || "").replace(/\\/g, "/").replace(/^\.\//, "");
@@ -155,7 +159,7 @@ function countLines(source) {
 
 function sourceRecords(files) {
   return files.map((filePath) => {
-    const source = fs.readFileSync(filePath, "utf8");
+    const source = normalizeText(fs.readFileSync(filePath, "utf8"));
     const lines = countLines(source);
     return {
       path: relativePath(filePath),
@@ -312,7 +316,7 @@ async function buildAddon(addon, mode, tempDir) {
     minifyWhitespace: release,
     minifyIdentifiers: false,
     minifySyntax: release,
-    plugins: release ? [stripDebugLogs] : [],
+    plugins: release ? [normalizedTextAssets, stripDebugLogs] : [normalizedTextAssets],
     metafile: true,
     outfile: outputPath,
     define: {
@@ -547,6 +551,7 @@ if (require.main === module) main().catch((error) => { console.error(`Add-on bas
 
 module.exports = {
   createBaseline,
+  normalizeText,
   parseActionDescriptors,
   readManifest,
   readTrustedCatalog,
