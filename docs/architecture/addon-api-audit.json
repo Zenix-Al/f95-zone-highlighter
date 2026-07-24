@@ -254,12 +254,12 @@
           },
           {
             "path": "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
-            "line": 67,
+            "line": 93,
             "text": "const url = new URL(record.originalUrl);"
           },
           {
             "path": "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
-            "line": 68,
+            "line": 94,
             "text": "url.searchParams.set(\"site_repair_retry\", String(Date.now()));"
           }
         ],
@@ -330,7 +330,7 @@
           {
             "path": "addons/site-repair-addon/src/app/createSiteRepairApp.js",
             "line": 53,
-            "text": "{ id: \"imageRetryDelay\", path: \"repairs.imageAttachments.retryDelayMs\", text: \"Image retry interval (ms)\", type: \"number\", min: 250, max: 30000, step: 250, tooltip: \"Fallback delay between attachment retry checks.\" },"
+            "text": "{ id: \"imageRetryDelay\", path: \"repairs.imageAttachments.retryDelayMs\", text: \"Image retry interval (ms)\", type: \"number\", min: 250, max: 30000, step: 250, tooltip: \"Minimum delay before each attachment retry attempt.\" },"
           },
           {
             "path": "addons/site-repair-addon/src/app/createSiteRepairApp.js",
@@ -359,28 +359,18 @@
           },
           {
             "path": "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
-            "line": 35,
+            "line": 43,
             "text": "scheduler.cancel(record.timerId);"
           },
           {
             "path": "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
-            "line": 58,
-            "text": "retry(record);"
+            "line": 81,
+            "text": "() => retry(record),"
           },
           {
             "path": "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
-            "line": 60,
+            "line": 86,
             "text": "function retry(record) {"
-          },
-          {
-            "path": "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
-            "line": 79,
-            "text": "record.onError = () => retry(record);"
-          },
-          {
-            "path": "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
-            "line": 82,
-            "text": "if (image.complete && image.naturalWidth === 0) retry(record);"
           },
           {
             "path": "addons/site-repair-addon/src/repairs/imageAttachments/scheduler.js",
@@ -3938,13 +3928,14 @@
           "addons/latest-filters-addon/src/app/commands.js",
           "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
           "addons/latest-filters-addon/src/app/lifecycle.js",
+          "addons/latest-filters-addon/src/app/operationTracker.js",
+          "addons/latest-filters-addon/src/app/registration.js",
           "addons/latest-filters-addon/src/app/repository.js",
           "addons/latest-filters-addon/src/app/state.js",
           "addons/latest-filters-addon/src/constants.js",
           "addons/latest-filters-addon/src/core/adaptor.js",
+          "addons/latest-filters-addon/src/domain/presets.js",
           "addons/latest-filters-addon/src/main.js",
-          "addons/latest-filters-addon/src/presets.js",
-          "addons/latest-filters-addon/src/renderer.js",
           "addons/latest-filters-addon/src/ui/bindings.js",
           "addons/latest-filters-addon/src/ui/dialog.html",
           "addons/latest-filters-addon/src/ui/panel.css",
@@ -4096,12 +4087,12 @@
         "globalEventListeners": [
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 175,
+            "line": 118,
             "text": "window.addEventListener(\"hashchange\", onRoute);"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 176,
+            "line": 119,
             "text": "window.addEventListener(\"popstate\", onRoute);"
           }
         ],
@@ -4131,7 +4122,7 @@
         "pollingAndTimers": [
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 308,
+            "line": 251,
             "text": "state.mountTimer = window.setTimeout(tryMount, MOUNT_RETRY_DELAY_MS);"
           },
           {
@@ -4143,121 +4134,121 @@
         "urlAndPageParsing": [
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 119,
+            "line": 62,
             "text": "const currentUrl = normalizeLatestUrl(location.href);"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 130,
+            "line": 73,
             "text": "currentSummary: currentPreset ? currentPreset.summary : summarizeUrl(location.href),"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 131,
+            "line": 74,
             "text": "currentSummaryParts: currentPreset ? currentPreset.summaryParts : summarizeUrlParts(location.href),"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 151,
+            "line": 94,
             "text": "url: String(location.href || \"\"),"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 172,
+            "line": 115,
             "text": "lifecycle.invalidate(\"route-change\", { url: String(location.href || \"\") });"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 173,
+            "line": 116,
             "text": "void lifecycle.refresh({ reason: \"route-change\", routeContext: { url: String(location.href || \"\") } }).catch((error) => onCommandError(\"route-refresh\", error));"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 397,
+            "line": 340,
             "text": "const currentUrl = String(location.href || \"\");"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 417,
+            "line": 360,
             "text": "const currentUrl = String(location.href || \"\");"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 448,
+            "line": 391,
             "text": "if (!targetUrl || preset.normalizedUrl === normalizeLatestUrl(location.href)) return;"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 449,
+            "line": 392,
             "text": "const currentUrl = new URL(location.href, location.origin);"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 450,
+            "line": 393,
             "text": "const nextUrl = new URL(targetUrl, location.origin);"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 451,
+            "line": 394,
             "text": "if (currentUrl.origin === nextUrl.origin && currentUrl.pathname === nextUrl.pathname && currentUrl.search === nextUrl.search) {"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 452,
+            "line": 395,
             "text": "location.hash = nextUrl.hash;"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 456,
+            "line": 399,
             "text": "location.assign(nextUrl.href);"
           },
           {
-            "path": "addons/latest-filters-addon/src/presets.js",
+            "path": "addons/latest-filters-addon/src/domain/presets.js",
             "line": 16,
             "text": "return location.hostname.includes(LATEST_HOSTNAME) && location.pathname.startsWith(LATEST_PATH);"
           },
           {
-            "path": "addons/latest-filters-addon/src/presets.js",
+            "path": "addons/latest-filters-addon/src/domain/presets.js",
             "line": 71,
             "text": "const url = new URL(rawUrl, location.origin);"
           },
           {
-            "path": "addons/latest-filters-addon/src/presets.js",
+            "path": "addons/latest-filters-addon/src/domain/presets.js",
             "line": 72,
             "text": "if (!url.hostname.includes(LATEST_HOSTNAME) || !url.pathname.startsWith(LATEST_PATH)) {"
           },
           {
-            "path": "addons/latest-filters-addon/src/presets.js",
+            "path": "addons/latest-filters-addon/src/domain/presets.js",
             "line": 77,
             "text": "url.searchParams.delete(\"page\");"
           },
           {
-            "path": "addons/latest-filters-addon/src/presets.js",
+            "path": "addons/latest-filters-addon/src/domain/presets.js",
             "line": 79,
             "text": "const entries = [...url.searchParams.entries()].sort((left, right) => {"
           },
           {
-            "path": "addons/latest-filters-addon/src/presets.js",
+            "path": "addons/latest-filters-addon/src/domain/presets.js",
             "line": 85,
             "text": "const sorted = new URLSearchParams();"
           },
           {
-            "path": "addons/latest-filters-addon/src/presets.js",
+            "path": "addons/latest-filters-addon/src/domain/presets.js",
             "line": 90,
             "text": "rawUrl instanceof URL ? rawUrl.hash : new URL(rawUrl, location.origin).hash,"
           },
           {
-            "path": "addons/latest-filters-addon/src/presets.js",
+            "path": "addons/latest-filters-addon/src/domain/presets.js",
             "line": 92,
             "text": "return `${url.origin}${url.pathname}${search ? `?${search}` : \"\"}${normalizedHash}`;"
           },
           {
-            "path": "addons/latest-filters-addon/src/presets.js",
+            "path": "addons/latest-filters-addon/src/domain/presets.js",
             "line": 101,
             "text": "const url = new URL(rawUrl, location.origin);"
           },
           {
-            "path": "addons/latest-filters-addon/src/presets.js",
+            "path": "addons/latest-filters-addon/src/domain/presets.js",
             "line": 104,
             "text": "url.searchParams.forEach((value, key) => {"
           }
@@ -4265,71 +4256,71 @@
         "coreDomAssumptions": [
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 143,
+            "line": 86,
             "text": "return document.querySelector(\".content-block_filter-title\");"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 220,
+            "line": 163,
             "text": "document.getElementById(ROOT_ID)?.remove?.();"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 269,
+            "line": 212,
             "text": "state.rootEl = document.getElementById(ROOT_ID);"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 333,
+            "line": 276,
             "text": "dialogEl.querySelector(\"[data-role='search']\")?.focus?.();"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 353,
+            "line": 296,
             "text": "const dialogEl = contentId ? document.getElementById(contentId) : null;"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 395,
+            "line": 338,
             "text": "const nameInput = state.dialogEl?.querySelector(\"[data-role='save-name']\");"
           },
           {
-            "path": "addons/latest-filters-addon/src/renderer.js",
+            "path": "addons/latest-filters-addon/src/ui/renderer.js",
             "line": 88,
             "text": "const existing = document.getElementById(styleId);"
           },
           {
-            "path": "addons/latest-filters-addon/src/renderer.js",
+            "path": "addons/latest-filters-addon/src/ui/renderer.js",
             "line": 97,
             "text": "const style = document.getElementById(styleId);"
           },
           {
-            "path": "addons/latest-filters-addon/src/renderer.js",
+            "path": "addons/latest-filters-addon/src/ui/renderer.js",
             "line": 111,
             "text": "section.innerHTML = panelHtmlTemplate;"
           },
           {
-            "path": "addons/latest-filters-addon/src/renderer.js",
+            "path": "addons/latest-filters-addon/src/ui/renderer.js",
             "line": 195,
             "text": "const currentEl = rootEl.querySelector(\"[data-role='current']\");"
           },
           {
-            "path": "addons/latest-filters-addon/src/renderer.js",
+            "path": "addons/latest-filters-addon/src/ui/renderer.js",
             "line": 196,
             "text": "const resultsEl = rootEl.querySelector(\"[data-role='results']\");"
           },
           {
-            "path": "addons/latest-filters-addon/src/renderer.js",
+            "path": "addons/latest-filters-addon/src/ui/renderer.js",
             "line": 199,
             "text": "currentEl.innerHTML = `${currentLabel}<br><span class=\"${NS}-summary\">${renderSummary(currentSummaryParts, currentSummary, tagPrefs)}</span>`;"
           },
           {
-            "path": "addons/latest-filters-addon/src/renderer.js",
+            "path": "addons/latest-filters-addon/src/ui/renderer.js",
             "line": 202,
             "text": "resultsEl.innerHTML = buildPresetRowsMarkup(presets, searchQuery, currentPresetId, tagPrefs);"
           },
           {
-            "path": "addons/latest-filters-addon/src/renderer.js",
+            "path": "addons/latest-filters-addon/src/ui/renderer.js",
             "line": 212,
             "text": "const trigger = rootEl.querySelector(\"[data-action='toggle-panel']\");"
           }
@@ -4348,238 +4339,218 @@
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 55,
+            "line": 52,
             "text": "function isCurrent(context = currentContext()) {"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 56,
+            "line": 53,
             "text": "return Boolean(context?.isCurrent?.()) && !state.terminal;"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 61,
-            "text": "const cancel = () => { cancelled = true; };"
-          },
-          {
-            "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 62,
-            "text": "state.pendingCancellers.add(cancel);"
-          },
-          {
-            "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 64,
-            "text": "? context.trackPendingOperation(id, promise, { kind, cancel })"
-          },
-          {
-            "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 68,
-            "text": "promise: Promise.resolve(tracked).finally(() => state.pendingCancellers.delete(cancel)),"
-          },
-          {
-            "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 73,
-            "text": "for (const cancel of state.pendingCancellers) cancel();"
-          },
-          {
-            "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 161,
+            "line": 104,
             "text": "window.clearTimeout(state.mountTimer);"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 164,
+            "line": 107,
             "text": "lifecycle?.releaseResource?.(\"latest-mount-retry\");"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 234,
+            "line": 177,
             "text": "if (!isCurrent(context) || !state.enabled || !hasLatestScope(localPageContext())) return false;"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 238,
+            "line": 181,
             "text": "if (pageOp.cancelled() || !isCurrent(context) || !hasLatestScope(pageContext)) return false;"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 242,
+            "line": 185,
             "text": "if (styleOp.cancelled() || !isCurrent(context)) return false;"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 257,
+            "line": 200,
             "text": "if (mountOp.cancelled() || !isCurrent(context)) {"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 288,
+            "line": 231,
             "text": "lifecycle.releaseResource(\"latest-mount-retry\");"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 289,
+            "line": 232,
             "text": "if (!isCurrent(context) || !state.enabled || (!state.showPageButton && !forcePanelOnly) || !hasLatestScope(localPageContext())) return;"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 290,
+            "line": 233,
             "text": "const pageOp = beginPending(context, `retry-page:${++operationSequence}`, getPageContext(core, localPageContext), \"page\");"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 292,
+            "line": 235,
             "text": "if (pageOp.cancelled() || !isCurrent(context) || !hasLatestScope(pageContext)) return;"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 301,
+            "line": 244,
             "text": "if (waitOp.cancelled() || !isCurrent(context) || !hasLatestScope(localPageContext())) return;"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 309,
+            "line": 252,
             "text": "lifecycle.registerResource(\"latest-mount-retry\", () => {"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 310,
+            "line": 253,
             "text": "window.clearTimeout(state.mountTimer);"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 337,
+            "line": 280,
             "text": "if (!state.rootEl || state.panelOpen || !isCurrent(context)) return;"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 346,
+            "line": 289,
             "text": "if (op.cancelled() || !isCurrent(context)) return;"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 370,
+            "line": 313,
             "text": "if (!isCurrent(context)) return null;"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 374,
+            "line": 317,
             "text": "if (op.cancelled() || !isCurrent(context) || !saved) return null;"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 385,
+            "line": 328,
             "text": "if (context && !isCurrent(context)) return null;"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 394,
+            "line": 337,
             "text": "if (!isCurrent(context)) return;"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 408,
+            "line": 351,
             "text": "if (isCurrent(context)) {"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 416,
+            "line": 359,
             "text": "if (!preset || !isCurrent(context)) return;"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 423,
+            "line": 366,
             "text": "cancelLabel: \"Cancel\","
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 425,
+            "line": 368,
             "text": "if (!confirmation?.ok || !confirmation.value?.confirmed || !isCurrent(context)) return;"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 427,
+            "line": 370,
             "text": "if (isCurrent(context)) await showToast(core, `Updated ${preset.name}.`).catch(() => {});"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 432,
+            "line": 375,
             "text": "if (!preset || !isCurrent(context)) return;"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 437,
+            "line": 380,
             "text": "cancelLabel: \"Cancel\","
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 439,
+            "line": 382,
             "text": "if (!confirmation?.ok || !confirmation.value?.confirmed || !isCurrent(context)) return;"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 441,
+            "line": 384,
             "text": "if (isCurrent(context)) await showToast(core, `Deleted ${preset.name}.`).catch(() => {});"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 446,
+            "line": 389,
             "text": "if (!preset || !isCurrent()) return;"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 464,
+            "line": 407,
             "text": "if (settingsOp.cancelled() || presetsOp.cancelled() || tagsOp.cancelled() || !isCurrent(context)) return false;"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 484,
+            "line": 427,
             "text": "if (!loaded || !isCurrent(context)) return { ok: false, reason: \"refresh_superseded\" };"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 496,
+            "line": 439,
             "text": "if (!loaded || !isCurrent(context)) return { ok: false, reason: \"enable_superseded\" };"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 513,
+            "line": 456,
             "text": "await removePageUi(context, \"disable\");"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 514,
+            "line": 457,
             "text": "if (context.command === \"disable\") await saveSettingsFlag(context, false);"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 568,
+            "line": 511,
             "text": "await removePageUi(context, context.reason || \"teardown\");"
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "line": 580,
+            "line": 524,
             "text": "await lifecycle.disable({ reason: access?.value?.blockReason || \"access-denied\" });"
           },
           {
-            "path": "addons/latest-filters-addon/src/renderer.js",
+            "path": "addons/latest-filters-addon/src/app/operationTracker.js",
             "line": 4,
-            "text": "* Single responsibility: all HTML generation, CSS injection, and DOM mutations"
+            "text": "const cancel = () => {"
           },
           {
-            "path": "addons/latest-filters-addon/src/renderer.js",
-            "line": 147,
-            "text": "const isCurrent = currentPresetId != null && preset.id === currentPresetId;"
+            "path": "addons/latest-filters-addon/src/app/operationTracker.js",
+            "line": 7,
+            "text": "state.pendingCancellers.add(cancel);"
           },
           {
-            "path": "addons/latest-filters-addon/src/renderer.js",
-            "line": 150,
-            "text": "<div class=\"${NS}-row${isCurrent ? \" is-current\" : \"\"}\" data-preset-id=\"${id}\">"
+            "path": "addons/latest-filters-addon/src/app/operationTracker.js",
+            "line": 9,
+            "text": "? context.trackPendingOperation(id, promise, { kind, cancel })"
           },
           {
-            "path": "addons/latest-filters-addon/src/renderer.js",
-            "line": 153,
-            "text": "${isCurrent ? `<span class=\"${NS}-pill\">Current</span>` : \"\"}"
+            "path": "addons/latest-filters-addon/src/app/operationTracker.js",
+            "line": 14,
+            "text": "state.pendingCancellers.delete(cancel),"
+          },
+          {
+            "path": "addons/latest-filters-addon/src/app/operationTracker.js",
+            "line": 22,
+            "text": "for (const cancel of state.pendingCancellers) cancel();"
           },
           {
             "path": "addons/latest-filters-addon/src/ui/bindings.js",
@@ -4595,6 +4566,26 @@
             "path": "addons/latest-filters-addon/src/ui/bindings.js",
             "line": 62,
             "text": "if (searchTimer) window.clearTimeout(searchTimer);"
+          },
+          {
+            "path": "addons/latest-filters-addon/src/ui/renderer.js",
+            "line": 4,
+            "text": "* Single responsibility: all HTML generation, CSS injection, and DOM mutations"
+          },
+          {
+            "path": "addons/latest-filters-addon/src/ui/renderer.js",
+            "line": 147,
+            "text": "const isCurrent = currentPresetId != null && preset.id === currentPresetId;"
+          },
+          {
+            "path": "addons/latest-filters-addon/src/ui/renderer.js",
+            "line": 150,
+            "text": "<div class=\"${NS}-row${isCurrent ? \" is-current\" : \"\"}\" data-preset-id=\"${id}\">"
+          },
+          {
+            "path": "addons/latest-filters-addon/src/ui/renderer.js",
+            "line": 153,
+            "text": "${isCurrent ? `<span class=\"${NS}-pill\">Current</span>` : \"\"}"
           }
         ],
         "rawActionCount": 14
@@ -6464,121 +6455,121 @@
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 119,
+          "line": 62,
           "text": "const currentUrl = normalizeLatestUrl(location.href);"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 130,
+          "line": 73,
           "text": "currentSummary: currentPreset ? currentPreset.summary : summarizeUrl(location.href),"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 131,
+          "line": 74,
           "text": "currentSummaryParts: currentPreset ? currentPreset.summaryParts : summarizeUrlParts(location.href),"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 151,
+          "line": 94,
           "text": "url: String(location.href || \"\"),"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 172,
+          "line": 115,
           "text": "lifecycle.invalidate(\"route-change\", { url: String(location.href || \"\") });"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 173,
+          "line": 116,
           "text": "void lifecycle.refresh({ reason: \"route-change\", routeContext: { url: String(location.href || \"\") } }).catch((error) => onCommandError(\"route-refresh\", error));"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 397,
+          "line": 340,
           "text": "const currentUrl = String(location.href || \"\");"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 417,
+          "line": 360,
           "text": "const currentUrl = String(location.href || \"\");"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 448,
+          "line": 391,
           "text": "if (!targetUrl || preset.normalizedUrl === normalizeLatestUrl(location.href)) return;"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 449,
+          "line": 392,
           "text": "const currentUrl = new URL(location.href, location.origin);"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 450,
+          "line": 393,
           "text": "const nextUrl = new URL(targetUrl, location.origin);"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 451,
+          "line": 394,
           "text": "if (currentUrl.origin === nextUrl.origin && currentUrl.pathname === nextUrl.pathname && currentUrl.search === nextUrl.search) {"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 452,
+          "line": 395,
           "text": "location.hash = nextUrl.hash;"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 456,
+          "line": 399,
           "text": "location.assign(nextUrl.href);"
         },
         {
-          "path": "addons/latest-filters-addon/src/presets.js",
+          "path": "addons/latest-filters-addon/src/domain/presets.js",
           "line": 16,
           "text": "return location.hostname.includes(LATEST_HOSTNAME) && location.pathname.startsWith(LATEST_PATH);"
         },
         {
-          "path": "addons/latest-filters-addon/src/presets.js",
+          "path": "addons/latest-filters-addon/src/domain/presets.js",
           "line": 71,
           "text": "const url = new URL(rawUrl, location.origin);"
         },
         {
-          "path": "addons/latest-filters-addon/src/presets.js",
+          "path": "addons/latest-filters-addon/src/domain/presets.js",
           "line": 72,
           "text": "if (!url.hostname.includes(LATEST_HOSTNAME) || !url.pathname.startsWith(LATEST_PATH)) {"
         },
         {
-          "path": "addons/latest-filters-addon/src/presets.js",
+          "path": "addons/latest-filters-addon/src/domain/presets.js",
           "line": 77,
           "text": "url.searchParams.delete(\"page\");"
         },
         {
-          "path": "addons/latest-filters-addon/src/presets.js",
+          "path": "addons/latest-filters-addon/src/domain/presets.js",
           "line": 79,
           "text": "const entries = [...url.searchParams.entries()].sort((left, right) => {"
         },
         {
-          "path": "addons/latest-filters-addon/src/presets.js",
+          "path": "addons/latest-filters-addon/src/domain/presets.js",
           "line": 85,
           "text": "const sorted = new URLSearchParams();"
         },
         {
-          "path": "addons/latest-filters-addon/src/presets.js",
+          "path": "addons/latest-filters-addon/src/domain/presets.js",
           "line": 90,
           "text": "rawUrl instanceof URL ? rawUrl.hash : new URL(rawUrl, location.origin).hash,"
         },
         {
-          "path": "addons/latest-filters-addon/src/presets.js",
+          "path": "addons/latest-filters-addon/src/domain/presets.js",
           "line": 92,
           "text": "return `${url.origin}${url.pathname}${search ? `?${search}` : \"\"}${normalizedHash}`;"
         },
         {
-          "path": "addons/latest-filters-addon/src/presets.js",
+          "path": "addons/latest-filters-addon/src/domain/presets.js",
           "line": 101,
           "text": "const url = new URL(rawUrl, location.origin);"
         },
         {
-          "path": "addons/latest-filters-addon/src/presets.js",
+          "path": "addons/latest-filters-addon/src/domain/presets.js",
           "line": 104,
           "text": "url.searchParams.forEach((value, key) => {"
         }
@@ -6774,57 +6765,57 @@
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 160,
+          "line": 103,
           "text": "if (state.mountTimer) {"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 161,
+          "line": 104,
           "text": "window.clearTimeout(state.mountTimer);"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 162,
+          "line": 105,
           "text": "state.mountTimer = 0;"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 283,
+          "line": 226,
           "text": "function scheduleMount(context, forcePanelOnly = false) {"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 287,
+          "line": 230,
           "text": "state.mountTimer = 0;"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 308,
+          "line": 251,
           "text": "state.mountTimer = window.setTimeout(tryMount, MOUNT_RETRY_DELAY_MS);"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 310,
+          "line": 253,
           "text": "window.clearTimeout(state.mountTimer);"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 311,
+          "line": 254,
           "text": "state.mountTimer = 0;"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 487,
+          "line": 430,
           "text": "if (state.showPageButton && isLatestPage()) scheduleMount(context);"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 502,
+          "line": 445,
           "text": "if (state.showPageButton && isLatestPage()) scheduleMount(context);"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 542,
+          "line": 485,
           "text": "if (!mounted) { scheduleMount(context, !state.showPageButton); await showToast(core, \"Saved Filters is still mounting on the page.\").catch(() => {}); return; }"
         },
         {
@@ -6984,41 +6975,41 @@
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 37,
+          "line": 32,
           "text": "renderPanelContent,"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 138,
+          "line": 81,
           "text": "renderPanelContent(state.dialogEl, renderArgs());"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 352,
+          "line": 295,
           "text": "const contentId = String(result?.value?.contentId || \"\").trim();"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 353,
+          "line": 296,
           "text": "const dialogEl = contentId ? document.getElementById(contentId) : null;"
         },
         {
-          "path": "addons/latest-filters-addon/src/renderer.js",
+          "path": "addons/latest-filters-addon/src/ui/renderer.js",
           "line": 111,
           "text": "section.innerHTML = panelHtmlTemplate;"
         },
         {
-          "path": "addons/latest-filters-addon/src/renderer.js",
+          "path": "addons/latest-filters-addon/src/ui/renderer.js",
           "line": 179,
           "text": "export function renderPanelContent("
         },
         {
-          "path": "addons/latest-filters-addon/src/renderer.js",
+          "path": "addons/latest-filters-addon/src/ui/renderer.js",
           "line": 199,
           "text": "currentEl.innerHTML = `${currentLabel}<br><span class=\"${NS}-summary\">${renderSummary(currentSummaryParts, currentSummary, tagPrefs)}</span>`;"
         },
         {
-          "path": "addons/latest-filters-addon/src/renderer.js",
+          "path": "addons/latest-filters-addon/src/ui/renderer.js",
           "line": 202,
           "text": "resultsEl.innerHTML = buildPresetRowsMarkup(presets, searchQuery, currentPresetId, tagPrefs);"
         }
@@ -7311,12 +7302,12 @@
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 6,
+          "line": 1,
           "text": "import { getAddonAccess } from \"../api/meta.js\";"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 578,
+          "line": 522,
           "text": "const access = await getAddonAccess(core);"
         },
         {
@@ -8227,7 +8218,7 @@
         {
           "path": "addons/site-repair-addon/src/app/createSiteRepairApp.js",
           "line": 53,
-          "text": "{ id: \"imageRetryDelay\", path: \"repairs.imageAttachments.retryDelayMs\", text: \"Image retry interval (ms)\", type: \"number\", min: 250, max: 30000, step: 250, tooltip: \"Fallback delay between attachment retry checks.\" },"
+          "text": "{ id: \"imageRetryDelay\", path: \"repairs.imageAttachments.retryDelayMs\", text: \"Image retry interval (ms)\", type: \"number\", min: 250, max: 30000, step: 250, tooltip: \"Minimum delay before each attachment retry attempt.\" },"
         },
         {
           "path": "addons/site-repair-addon/src/app/createSiteRepairApp.js",
@@ -8246,28 +8237,18 @@
         },
         {
           "path": "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
-          "line": 35,
+          "line": 43,
           "text": "scheduler.cancel(record.timerId);"
         },
         {
           "path": "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
-          "line": 58,
-          "text": "retry(record);"
+          "line": 81,
+          "text": "() => retry(record),"
         },
         {
           "path": "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
-          "line": 60,
+          "line": 86,
           "text": "function retry(record) {"
-        },
-        {
-          "path": "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
-          "line": 79,
-          "text": "record.onError = () => retry(record);"
-        },
-        {
-          "path": "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
-          "line": 82,
-          "text": "if (image.complete && image.naturalWidth === 0) retry(record);"
         },
         {
           "path": "addons/site-repair-addon/src/repairs/imageAttachments/scheduler.js",
@@ -8766,223 +8747,223 @@
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 55,
+          "line": 52,
           "text": "function isCurrent(context = currentContext()) {"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 56,
+          "line": 53,
           "text": "return Boolean(context?.isCurrent?.()) && !state.terminal;"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 61,
-          "text": "const cancel = () => { cancelled = true; };"
-        },
-        {
-          "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 62,
-          "text": "state.pendingCancellers.add(cancel);"
-        },
-        {
-          "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 64,
-          "text": "? context.trackPendingOperation(id, promise, { kind, cancel })"
-        },
-        {
-          "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 68,
-          "text": "promise: Promise.resolve(tracked).finally(() => state.pendingCancellers.delete(cancel)),"
-        },
-        {
-          "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 73,
-          "text": "for (const cancel of state.pendingCancellers) cancel();"
-        },
-        {
-          "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 164,
+          "line": 107,
           "text": "lifecycle?.releaseResource?.(\"latest-mount-retry\");"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 234,
+          "line": 177,
           "text": "if (!isCurrent(context) || !state.enabled || !hasLatestScope(localPageContext())) return false;"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 238,
+          "line": 181,
           "text": "if (pageOp.cancelled() || !isCurrent(context) || !hasLatestScope(pageContext)) return false;"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 242,
+          "line": 185,
           "text": "if (styleOp.cancelled() || !isCurrent(context)) return false;"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 257,
+          "line": 200,
           "text": "if (mountOp.cancelled() || !isCurrent(context)) {"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 288,
+          "line": 231,
           "text": "lifecycle.releaseResource(\"latest-mount-retry\");"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 289,
+          "line": 232,
           "text": "if (!isCurrent(context) || !state.enabled || (!state.showPageButton && !forcePanelOnly) || !hasLatestScope(localPageContext())) return;"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 290,
+          "line": 233,
           "text": "const pageOp = beginPending(context, `retry-page:${++operationSequence}`, getPageContext(core, localPageContext), \"page\");"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 292,
+          "line": 235,
           "text": "if (pageOp.cancelled() || !isCurrent(context) || !hasLatestScope(pageContext)) return;"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 301,
+          "line": 244,
           "text": "if (waitOp.cancelled() || !isCurrent(context) || !hasLatestScope(localPageContext())) return;"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 308,
+          "line": 251,
           "text": "state.mountTimer = window.setTimeout(tryMount, MOUNT_RETRY_DELAY_MS);"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 309,
+          "line": 252,
           "text": "lifecycle.registerResource(\"latest-mount-retry\", () => {"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 337,
+          "line": 280,
           "text": "if (!state.rootEl || state.panelOpen || !isCurrent(context)) return;"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 346,
+          "line": 289,
           "text": "if (op.cancelled() || !isCurrent(context)) return;"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 370,
+          "line": 313,
           "text": "if (!isCurrent(context)) return null;"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 374,
+          "line": 317,
           "text": "if (op.cancelled() || !isCurrent(context) || !saved) return null;"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 385,
+          "line": 328,
           "text": "if (context && !isCurrent(context)) return null;"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 394,
+          "line": 337,
           "text": "if (!isCurrent(context)) return;"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 408,
+          "line": 351,
           "text": "if (isCurrent(context)) {"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 416,
+          "line": 359,
           "text": "if (!preset || !isCurrent(context)) return;"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 423,
+          "line": 366,
           "text": "cancelLabel: \"Cancel\","
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 425,
+          "line": 368,
           "text": "if (!confirmation?.ok || !confirmation.value?.confirmed || !isCurrent(context)) return;"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 427,
+          "line": 370,
           "text": "if (isCurrent(context)) await showToast(core, `Updated ${preset.name}.`).catch(() => {});"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 432,
+          "line": 375,
           "text": "if (!preset || !isCurrent(context)) return;"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 437,
+          "line": 380,
           "text": "cancelLabel: \"Cancel\","
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 439,
+          "line": 382,
           "text": "if (!confirmation?.ok || !confirmation.value?.confirmed || !isCurrent(context)) return;"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 441,
+          "line": 384,
           "text": "if (isCurrent(context)) await showToast(core, `Deleted ${preset.name}.`).catch(() => {});"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 446,
+          "line": 389,
           "text": "if (!preset || !isCurrent()) return;"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 464,
+          "line": 407,
           "text": "if (settingsOp.cancelled() || presetsOp.cancelled() || tagsOp.cancelled() || !isCurrent(context)) return false;"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 484,
+          "line": 427,
           "text": "if (!loaded || !isCurrent(context)) return { ok: false, reason: \"refresh_superseded\" };"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 496,
+          "line": 439,
           "text": "if (!loaded || !isCurrent(context)) return { ok: false, reason: \"enable_superseded\" };"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-          "line": 568,
+          "line": 511,
           "text": "await removePageUi(context, context.reason || \"teardown\");"
         },
         {
-          "path": "addons/latest-filters-addon/src/renderer.js",
+          "path": "addons/latest-filters-addon/src/app/operationTracker.js",
           "line": 4,
-          "text": "* Single responsibility: all HTML generation, CSS injection, and DOM mutations"
+          "text": "const cancel = () => {"
         },
         {
-          "path": "addons/latest-filters-addon/src/renderer.js",
-          "line": 147,
-          "text": "const isCurrent = currentPresetId != null && preset.id === currentPresetId;"
+          "path": "addons/latest-filters-addon/src/app/operationTracker.js",
+          "line": 7,
+          "text": "state.pendingCancellers.add(cancel);"
         },
         {
-          "path": "addons/latest-filters-addon/src/renderer.js",
-          "line": 150,
-          "text": "<div class=\"${NS}-row${isCurrent ? \" is-current\" : \"\"}\" data-preset-id=\"${id}\">"
+          "path": "addons/latest-filters-addon/src/app/operationTracker.js",
+          "line": 9,
+          "text": "? context.trackPendingOperation(id, promise, { kind, cancel })"
         },
         {
-          "path": "addons/latest-filters-addon/src/renderer.js",
-          "line": 153,
-          "text": "${isCurrent ? `<span class=\"${NS}-pill\">Current</span>` : \"\"}"
+          "path": "addons/latest-filters-addon/src/app/operationTracker.js",
+          "line": 14,
+          "text": "state.pendingCancellers.delete(cancel),"
+        },
+        {
+          "path": "addons/latest-filters-addon/src/app/operationTracker.js",
+          "line": 22,
+          "text": "for (const cancel of state.pendingCancellers) cancel();"
         },
         {
           "path": "addons/latest-filters-addon/src/ui/bindings.js",
           "line": 38,
           "text": "searchTimer = window.setTimeout(() => {"
+        },
+        {
+          "path": "addons/latest-filters-addon/src/ui/renderer.js",
+          "line": 4,
+          "text": "* Single responsibility: all HTML generation, CSS injection, and DOM mutations"
+        },
+        {
+          "path": "addons/latest-filters-addon/src/ui/renderer.js",
+          "line": 147,
+          "text": "const isCurrent = currentPresetId != null && preset.id === currentPresetId;"
+        },
+        {
+          "path": "addons/latest-filters-addon/src/ui/renderer.js",
+          "line": 150,
+          "text": "<div class=\"${NS}-row${isCurrent ? \" is-current\" : \"\"}\" data-preset-id=\"${id}\">"
+        },
+        {
+          "path": "addons/latest-filters-addon/src/ui/renderer.js",
+          "line": 153,
+          "text": "${isCurrent ? `<span class=\"${NS}-pill\">Current</span>` : \"\"}"
         }
       ],
       "consumerCount": 4,

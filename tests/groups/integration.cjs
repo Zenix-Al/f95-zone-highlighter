@@ -1572,15 +1572,27 @@ runTest("SITE-REPAIR-01 image scheduler covers success exhaustion cancellation r
       "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
     );
     const callbacks = new Map();
+    const delays = new Map();
     const scheduler = {
       generation: 0,
-      schedule(id, callback) { callbacks.set(id, callback); },
-      cancel(id) { return callbacks.delete(id); },
-      invalidate() { this.generation += 1; callbacks.clear(); },
+      schedule(id, callback, delay) {
+        callbacks.set(id, callback);
+        delays.set(id, delay);
+      },
+      cancel(id) {
+        delays.delete(id);
+        return callbacks.delete(id);
+      },
+      invalidate() {
+        this.generation += 1;
+        callbacks.clear();
+        delays.clear();
+      },
       getSnapshot() { return [...callbacks.keys()]; },
     };
     const successes = [];
     const exhausted = [];
+    const progress = [];
     const repair = createImageAttachmentRepair({
       imageHost: "https://attachments.f95zone.to/",
       retryDelayMs: 1,
@@ -1588,6 +1600,7 @@ runTest("SITE-REPAIR-01 image scheduler covers success exhaustion cancellation r
       scheduler,
       onSuccess: (_image, attempts) => successes.push(attempts),
       onExhausted: (_image, attempts) => exhausted.push(attempts),
+      onProgress: (pending) => progress.push(pending),
     });
     repair.configure({ maxAttempts: 2, retryDelayMs: 1 });
     const makeBroken = (id) => {
@@ -1600,8 +1613,10 @@ runTest("SITE-REPAIR-01 image scheduler covers success exhaustion cancellation r
     };
     const successImage = makeBroken("success");
     repair.start();
-    const successCallback = [...callbacks.values()][0];
+    const firstRetryCallback = [...callbacks.values()][0];
+    firstRetryCallback();
     successImage.naturalWidth = 100;
+    const successCallback = [...callbacks.values()][0];
     successCallback();
     assert.deepStrictEqual(successes, [1]);
     assert.strictEqual(
@@ -1611,10 +1626,11 @@ runTest("SITE-REPAIR-01 image scheduler covers success exhaustion cancellation r
 
     const exhaustedImage = makeBroken("exhausted");
     repair.attach(exhaustedImage);
-    let callback = [...callbacks.values()][0];
-    callback();
-    callback = [...callbacks.values()][0];
-    callback();
+    let callback;
+    for (let index = 0; index < 4; index += 1) {
+      callback = [...callbacks.values()][0];
+      callback();
+    }
     assert.deepStrictEqual(exhausted, [2]);
 
     const rapidImage = document.createElement("img");
@@ -1623,11 +1639,32 @@ runTest("SITE-REPAIR-01 image scheduler covers success exhaustion cancellation r
     Object.defineProperty(rapidImage, "naturalWidth", { configurable: true, writable: true, value: 0 });
     document.body.appendChild(rapidImage);
     repair.attach(rapidImage);
+    const originalRapidUrl = rapidImage.src;
     rapidImage.dispatchEvent(new window.Event("error"));
     rapidImage.dispatchEvent(new window.Event("error"));
     rapidImage.dispatchEvent(new window.Event("error"));
+    assert.strictEqual(rapidImage.src, originalRapidUrl);
+    assert.strictEqual(repair.getSnapshot().pending, 1);
+    assert.deepStrictEqual([...delays.values()], [1]);
+    for (let index = 0; index < 4; index += 1) {
+      const pendingCallback = [...callbacks.values()][0];
+      pendingCallback();
+    }
     assert.deepStrictEqual(exhausted, [2, 2]);
     assert.strictEqual(repair.getSnapshot().pending, 0);
+
+    const loadedImage = document.createElement("img");
+    loadedImage.src = "https://attachments.f95zone.to/loaded.jpg";
+    Object.defineProperty(loadedImage, "complete", {
+      configurable: true,
+      value: false,
+    });
+    document.body.appendChild(loadedImage);
+    repair.attach(loadedImage);
+    loadedImage.dispatchEvent(new window.Event("load"));
+    assert.strictEqual(repair.getSnapshot().pending, 0);
+    assert.strictEqual(repair.getSnapshot().observed, 0);
+    assert.strictEqual(progress.at(-1), 0);
 
     const removedImage = makeBroken("removed");
     repair.attach(removedImage);

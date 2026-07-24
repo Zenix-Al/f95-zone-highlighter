@@ -50,7 +50,7 @@ export function createSiteRepairApp({
         { id: "showRepairActivity", path: "showRepairActivity", text: "Show repair activity", tooltip: "Show Ajax retry toasts and the active image-repair status indicator." },
         { id: "imageAttachments", path: "repairs.imageAttachments.enabled", text: "Repair attachment images" },
         { id: "imageMaxAttempts", path: "repairs.imageAttachments.maxAttempts", text: "Image retry limit", type: "number", min: 1, max: 20, step: 1, tooltip: "Maximum retries after the initial attachment request." },
-        { id: "imageRetryDelay", path: "repairs.imageAttachments.retryDelayMs", text: "Image retry interval (ms)", type: "number", min: 250, max: 30000, step: 250, tooltip: "Fallback delay between attachment retry checks." },
+        { id: "imageRetryDelay", path: "repairs.imageAttachments.retryDelayMs", text: "Image retry interval (ms)", type: "number", min: 250, max: 30000, step: 250, tooltip: "Minimum delay before each attachment retry attempt." },
         { id: "latestAjax", path: "repairs.latestAjax.enabled", text: "Repair Latest Ajax errors" },
       ],
       capabilities: runtime.capabilities, requiresCore: runtime.requiresCore,
