@@ -1,6 +1,14 @@
+import { createActivityCommandId } from "../../../library/activityCommandId.js";
 import { showToast } from "../../utils/showToast.js";
 
-const ALLOWED_STATUSES = new Set(["saved", "playing", "completed", "dropped"]);
+const ALLOWED_STATUSES = new Set([
+  "saved",
+  "backlog",
+  "playing",
+  "paused",
+  "completed",
+  "dropped",
+]);
 
 export function createStatusHandlers(context) {
   const { api, notifyMutated, reloadRows, state } = context;
@@ -13,7 +21,11 @@ export function createStatusHandlers(context) {
         .toLowerCase();
       if (!threadIdClean || !ALLOWED_STATUSES.has(nextStatus)) return;
 
-      const result = await api.patchEntry(threadIdClean, { userStatus: nextStatus });
+      const result = await api.applyPersonalActivity(
+        threadIdClean,
+        { status: nextStatus },
+        { commandId: createActivityCommandId("status") },
+      );
       if (!result?.ok) {
         await showToast(`Failed to update status: ${result?.reason || "unknown"}`, "error");
         return;

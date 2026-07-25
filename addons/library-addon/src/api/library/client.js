@@ -29,8 +29,10 @@ export function createLibraryApiClient(bridge) {
   }
 
   return {
-    createEntriesPayload(entries = []) {
+    createEntriesPayload(entries = [], storeName = "records") {
       return createLibraryStorePayload({
+        storeName,
+        keyPath: storeName === "records" ? "threadId" : "id",
         entries: (Array.isArray(entries) ? entries : []).map((value) => ({ value })),
       });
     },
@@ -86,11 +88,170 @@ export function createLibraryApiClient(bridge) {
       );
     },
 
+    queryEntriesPage({ index, direction, limit, cursor } = {}) {
+      return bridge.invokeCoreAction(
+        "idb.query",
+        createLibraryStorePayload({
+          index,
+          direction,
+          limit,
+          cursor,
+          pagination: "keyset",
+          includeCursor: true,
+        }),
+      );
+    },
+
+    countEntries(index) {
+      return bridge.invokeCoreAction(
+        "idb.count",
+        createLibraryStorePayload({ index }),
+      );
+    },
+
+    async getUpdateEvent(id) {
+      const result = await bridge.invokeCoreAction(
+        "idb.get",
+        createLibraryStorePayload({ storeName: "updates", keyPath: "id", key: id }),
+      );
+      return result?.ok ? result.value || null : null;
+    },
+
+    putUpdateEvent(value) {
+      return bridge.invokeCoreAction(
+        "idb.put",
+        createLibraryStorePayload({ storeName: "updates", keyPath: "id", value }),
+      );
+    },
+
+    deleteUpdateEvent(id) {
+      return bridge.invokeCoreAction(
+        "idb.delete",
+        createLibraryStorePayload({ storeName: "updates", keyPath: "id", key: id }),
+      );
+    },
+
+    queryUpdateEvents(threadId, limit = 50) {
+      return bridge.invokeCoreAction(
+        "idb.query",
+        createLibraryStorePayload({
+          storeName: "updates",
+          keyPath: "id",
+          index: "threadObservedAt",
+          query: {
+            kind: "bound",
+            lower: [String(threadId || "").trim(), 0],
+            upper: [String(threadId || "").trim(), Number.MAX_SAFE_INTEGER],
+          },
+          direction: "prev",
+          limit: Math.min(200, Math.max(1, Number(limit) || 50)),
+        }),
+      );
+    },
+
+    queryAllUpdateEvents(limit = 10000) {
+      return bridge.invokeCoreAction(
+        "idb.query",
+        createLibraryStorePayload({
+          storeName: "updates",
+          keyPath: "id",
+          direction: "next",
+          limit,
+        }),
+      );
+    },
+
+    async getActivityEvent(id) {
+      const result = await bridge.invokeCoreAction(
+        "idb.get",
+        createLibraryStorePayload({ storeName: "activity", keyPath: "id", key: id }),
+      );
+      return result?.ok ? result.value || null : null;
+    },
+
+    putActivityEvent(value) {
+      return bridge.invokeCoreAction(
+        "idb.put",
+        createLibraryStorePayload({ storeName: "activity", keyPath: "id", value }),
+      );
+    },
+
+    deleteActivityEvent(id) {
+      return bridge.invokeCoreAction(
+        "idb.delete",
+        createLibraryStorePayload({ storeName: "activity", keyPath: "id", key: id }),
+      );
+    },
+
+    queryActivityEvents(threadId, limit = 50) {
+      return bridge.invokeCoreAction(
+        "idb.query",
+        createLibraryStorePayload({
+          storeName: "activity",
+          keyPath: "id",
+          index: "threadOccurredAt",
+          query: {
+            kind: "bound",
+            lower: [String(threadId || "").trim(), 0],
+            upper: [String(threadId || "").trim(), Number.MAX_SAFE_INTEGER],
+          },
+          direction: "prev",
+          limit: Math.min(200, Math.max(1, Number(limit) || 50)),
+        }),
+      );
+    },
+
+    queryAllActivityEvents(limit = 10000) {
+      return bridge.invokeCoreAction(
+        "idb.query",
+        createLibraryStorePayload({
+          storeName: "activity",
+          keyPath: "id",
+          direction: "next",
+          limit,
+        }),
+      );
+    },
+
+    async getMeta(key) {
+      const result = await bridge.invokeCoreAction(
+        "idb.get",
+        createLibraryStorePayload({ storeName: "meta", keyPath: "key", key }),
+      );
+      return result?.ok ? result.value || null : null;
+    },
+
+    putMeta(value) {
+      return bridge.invokeCoreAction(
+        "idb.put",
+        createLibraryStorePayload({ storeName: "meta", keyPath: "key", value }),
+      );
+    },
+
+    deleteMeta(key) {
+      return bridge.invokeCoreAction(
+        "idb.delete",
+        createLibraryStorePayload({ storeName: "meta", keyPath: "key", key }),
+      );
+    },
+
     bulkPutEntries(entries, shouldCancel) {
       const payload = createLibraryStorePayload({
         entries: (Array.isArray(entries) ? entries : []).map((value) => ({ value })),
       });
       return invokeImportAction("idb.bulkPut", payload, shouldCancel);
+    },
+
+    bulkPutStore(storeName, entries, shouldCancel) {
+      return invokeImportAction(
+        "idb.bulkPut",
+        createLibraryStorePayload({
+          storeName,
+          keyPath: storeName === "records" ? "threadId" : "id",
+          entries: (Array.isArray(entries) ? entries : []).map((value) => ({ value })),
+        }),
+        shouldCancel,
+      );
     },
   };
 }

@@ -1537,10 +1537,10 @@
   "bundle": {
     "readable": {
       "mode": "regular",
-      "bytes": 633434,
-      "gzipBytes": 133901,
+      "bytes": 638453,
+      "gzipBytes": 135088,
       "coreBytes": 410071,
-      "excludedBytes": 216599,
+      "excludedBytes": 221618,
       "contributors": [
         {
           "path": "src/ui/assets/css.css",
@@ -1569,6 +1569,10 @@
         {
           "path": "src/ui/components/addons/settingsController.js",
           "bytes": 13686
+        },
+        {
+          "path": "src/services/addons/idbStore.js",
+          "bytes": 13519
         },
         {
           "path": "src/ui/components/tag-search/tagDrag.js",
@@ -1609,10 +1613,6 @@
         {
           "path": "src/core/featureFactory.js",
           "bytes": 8557
-        },
-        {
-          "path": "src/services/addons/idbStore.js",
-          "bytes": 8500
         },
         {
           "path": "src/ui/components/dialog.js",
@@ -1715,6 +1715,10 @@
           "bytes": 13686
         },
         {
+          "path": "src/services/addons/idbStore.js",
+          "bytes": 13519
+        },
+        {
           "path": "src/services/addons/bridgeServer.js",
           "bytes": 11613
         },
@@ -1729,10 +1733,6 @@
         {
           "path": "src/services/addons/state.js",
           "bytes": 10019
-        },
-        {
-          "path": "src/services/addons/idbStore.js",
-          "bytes": 8500
         },
         {
           "path": "src/services/addons/observer.js",
@@ -1790,10 +1790,10 @@
     },
     "uglified": {
       "mode": "release",
-      "bytes": 320496,
-      "gzipBytes": 94259,
+      "bytes": 322842,
+      "gzipBytes": 95092,
       "coreBytes": 214911,
-      "excludedBytes": 105573,
+      "excludedBytes": 107919,
       "contributors": [
         {
           "path": "src/ui/assets/css.css",
@@ -1818,6 +1818,10 @@
         {
           "path": "src/services/addons/uiHost.js",
           "bytes": 6408
+        },
+        {
+          "path": "src/services/addons/idbStore.js",
+          "bytes": 6282
         },
         {
           "path": "src/ui/components/tag-search/tagDrag.js",
@@ -1866,10 +1870,6 @@
         {
           "path": "src/features/latest-overlay/scoreCalculator.js",
           "bytes": 3981
-        },
-        {
-          "path": "src/services/addons/idbStore.js",
-          "bytes": 3936
         },
         {
           "path": "src/core/bootstrap.js",
@@ -1968,6 +1968,10 @@
           "bytes": 6408
         },
         {
+          "path": "src/services/addons/idbStore.js",
+          "bytes": 6282
+        },
+        {
           "path": "src/services/addons/bridgeServer.js",
           "bytes": 6020
         },
@@ -1986,10 +1990,6 @@
         {
           "path": "src/services/addons/uiSanitizer.js",
           "bytes": 4152
-        },
-        {
-          "path": "src/services/addons/idbStore.js",
-          "bytes": 3936
         },
         {
           "path": "src/services/addons/actions/families/ui.js",

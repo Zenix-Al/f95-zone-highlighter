@@ -9,7 +9,7 @@ export function createWorkflowHandlers(context) {
       await handleExport(getRoot(), state, library, false);
     },
     "export-selected": async () => {
-      await handleExportSelected(getRoot(), state);
+      await handleExportSelected(getRoot(), state, library);
     },
     import: () => {
       const importInput = getRoot()?.querySelector('[data-field="importFile"]');

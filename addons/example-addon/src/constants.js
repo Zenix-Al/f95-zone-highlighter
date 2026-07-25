@@ -6,6 +6,7 @@ export const EXAMPLE_STYLE_ID = "example-addon-style";
 export const EXAMPLE_DIALOG_ID = "example-addon-dialog";
 export const EXAMPLE_OBSERVER_ID = "example-addon-observer";
 export const EXAMPLE_STORAGE_KEY = "playground";
+export const EXAMPLE_SETTINGS_KEY = "settings";
 export const EXAMPLE_IDB_DB_NAME = "example-playground";
 export const EXAMPLE_IDB_STORE_NAME = "records";
 export const EXAMPLE_IDB_PRIMARY_KEY = "hello-world";

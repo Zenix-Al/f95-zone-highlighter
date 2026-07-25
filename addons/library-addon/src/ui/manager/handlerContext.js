@@ -9,7 +9,8 @@ export function createHandlerContext(state, api, deps) {
   }
 
   async function reloadRows() {
-    return reloadRowsFn(getRoot());
+    const root = getRoot();
+    return root ? reloadRowsFn(root) : undefined;
   }
 
   function notifyMutated() {
@@ -23,12 +24,11 @@ export function createHandlerContext(state, api, deps) {
   }
 
   function getMaxPage() {
-    return Math.max(1, Math.ceil(state.rows.length / getPageSize()));
+    return state.hasNextPage ? state.page + 1 : state.page;
   }
 
   function getPageRows() {
-    const from = (state.page - 1) * getPageSize();
-    return state.rows.slice(from, from + getPageSize());
+    return state.rows;
   }
 
   function findEntryById(threadId) {

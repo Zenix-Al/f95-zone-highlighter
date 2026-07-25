@@ -30,8 +30,16 @@ export function createImageAttachmentRepair({
   let configuredRetryDelayMs = Math.max(0, Number(retryDelayMs) || 0);
   let configuredMaxAttempts = Math.max(1, Math.floor(Number(maxAttempts) || 1));
 
+  function pendingCount() {
+    let count = 0;
+    for (const record of records.values()) {
+      if (record.active) count += 1;
+    }
+    return count;
+  }
   function detach(record) {
     record.image.removeEventListener("error", record.onError);
+    record.image.removeEventListener("load", record.onLoad);
     scheduler.cancel(record.timerId);
     records.delete(record.image);
   }
@@ -39,12 +47,12 @@ export function createImageAttachmentRepair({
     detach(record);
     if (result === "success") onSuccess(record.image, record.attempt);
     else onExhausted(record.image, record.attempt);
-    onProgress(records.size);
+    onProgress(pendingCount());
   }
   function inspect(record) {
     if (!enabled || !record.image.isConnected) {
       detach(record);
-      onProgress(records.size);
+      onProgress(pendingCount());
       return;
     }
     if (record.image.complete && record.image.naturalWidth > 0) {
@@ -55,7 +63,25 @@ export function createImageAttachmentRepair({
       finish(record, "exhausted");
       return;
     }
-    retry(record);
+    scheduleRetry(record);
+  }
+  function scheduleRetry(record) {
+    if (!enabled || !record.image.isConnected) {
+      detach(record);
+      onProgress(pendingCount());
+      return;
+    }
+    if (record.attempt >= configuredMaxAttempts) {
+      finish(record, "exhausted");
+      return;
+    }
+    record.active = true;
+    scheduler.schedule(
+      record.timerId,
+      () => retry(record),
+      configuredRetryDelayMs,
+    );
+    onProgress(pendingCount());
   }
   function retry(record) {
     if (!enabled || !record.image.isConnected) return detach(record);
@@ -68,18 +94,35 @@ export function createImageAttachmentRepair({
     url.searchParams.set("site_repair_retry", String(Date.now()));
     record.image.src = url.href;
     scheduler.schedule(record.timerId, () => inspect(record), configuredRetryDelayMs);
-    onProgress(records.size);
+    onProgress(pendingCount());
   }
   function attach(image) {
     if (!enabled || !image || records.has(image)) return false;
     const originalUrl = stableOriginalUrl(image.dataset.siteRepairOriginalSrc || image.currentSrc || image.src);
     if (!originalUrl.startsWith(imageHost)) return false;
     image.dataset.siteRepairOriginalSrc = originalUrl;
-    const record = { image, originalUrl, attempt: 0, timerId: `image:${++sequence}`, onError: null };
-    record.onError = () => retry(record);
+    const record = {
+      image,
+      originalUrl,
+      attempt: 0,
+      active: false,
+      timerId: `image:${++sequence}`,
+      onError: null,
+      onLoad: null,
+    };
+    record.onError = () => scheduleRetry(record);
+    record.onLoad = () => {
+      if (record.active) finish(record, "success");
+      else detach(record);
+    };
     records.set(image, record);
     image.addEventListener("error", record.onError);
-    if (image.complete && image.naturalWidth === 0) retry(record);
+    image.addEventListener("load", record.onLoad);
+    if (image.complete && image.naturalWidth > 0) {
+      detach(record);
+    } else if (image.complete && image.naturalWidth === 0) {
+      scheduleRetry(record);
+    }
     return true;
   }
   function start(root = document) {
@@ -102,7 +145,15 @@ export function createImageAttachmentRepair({
   }
   return {
     start, stop, attach, configure,
-    getSnapshot: () => ({ enabled, pending: records.size, timers: scheduler.getSnapshot(), originals: [...records.values()].map((r) => r.originalUrl) }),
+    getSnapshot: () => ({
+      enabled,
+      pending: pendingCount(),
+      observed: records.size,
+      timers: scheduler.getSnapshot(),
+      originals: [...records.values()]
+        .filter((record) => record.active)
+        .map((record) => record.originalUrl),
+    }),
   };
 }
 

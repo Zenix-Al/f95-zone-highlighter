@@ -44,6 +44,13 @@ export function createRowHandlers(context) {
   const { askConfirmFn, getLiveThreadSnapshotFn } = deps;
 
   return {
+    "full-edit": async (threadId) => {
+      state.openRowMenuId = "";
+      const result = await deps.openEntryEditorFn(threadId);
+      if (!result?.ok && result?.reason !== "cancelled") {
+        await showToast(`Failed to open editor: ${result?.reason || "unknown"}`, "error");
+      }
+    },
     remove: async (threadId) => {
       const id = String(threadId || "").trim();
       if (!id) return;

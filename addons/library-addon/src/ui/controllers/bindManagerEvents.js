@@ -4,6 +4,7 @@
  */
 
 import { handleImportFile } from "../application/importExportWorkflow.js";
+import { resetPagination } from "../manager/state.js";
 
 const SEARCH_DEBOUNCE_MS = 220;
 export function bindManagerEvents(root, state, handlers, deps) {
@@ -93,6 +94,13 @@ export function bindManagerEvents(root, state, handlers, deps) {
   }, listenerOptions);
 
   root.addEventListener("input", async (event) => {
+    const ratingEl = event.target?.closest?.('input[data-action="rating-input"]');
+    if (ratingEl) {
+      const threadId = String(ratingEl.dataset.threadId || "").trim();
+      const normalized = await handlers["rating-input"]?.(threadId, ratingEl.value, ratingEl);
+      ratingEl.value = normalized ?? "";
+      return;
+    }
     const noteEl = event.target?.closest?.("textarea[data-action]");
     if (!noteEl) return;
     const action = String(noteEl.dataset.action || "").trim();
@@ -104,15 +112,30 @@ export function bindManagerEvents(root, state, handlers, deps) {
     }
   }, listenerOptions);
 
-  // Close advanced panel when clicking outside
-  const advancedPanel = root.querySelector(".f95ue-library-more-actions");
-  root.addEventListener("click", (event) => {
-    if (
-      advancedPanel?.hasAttribute("open") &&
-      !event.target?.closest?.(".f95ue-library-more-actions")
-    ) {
-      advancedPanel.removeAttribute("open");
+  root.addEventListener("focusout", async (event) => {
+    const ratingEl = event.target?.closest?.('input[data-action="rating-input"]');
+    if (ratingEl) await handlers["rating-commit"]?.(ratingEl.dataset.threadId);
+  }, listenerOptions);
+
+  root.addEventListener("keydown", async (event) => {
+    const ratingEl = event.target?.closest?.('input[data-action="rating-input"]');
+    if (!ratingEl) return;
+    if (event.key === "Enter") {
+      event.preventDefault();
+      await handlers["rating-commit"]?.(ratingEl.dataset.threadId);
+      ratingEl.blur();
+    } else if (event.key === "Escape") {
+      event.preventDefault();
+      await handlers["rating-cancel"]?.(ratingEl.dataset.threadId);
     }
+  }, listenerOptions);
+
+  // Close advanced panel when clicking outside
+  root.addEventListener("click", (event) => {
+    const activePanel = event.target?.closest?.(".f95ue-library-more-actions");
+    root.querySelectorAll(".f95ue-library-more-actions[open]").forEach((panel) => {
+      if (panel !== activePanel) panel.removeAttribute("open");
+    });
   }, listenerOptions);
 
   // Search input with debounce
@@ -125,7 +148,7 @@ export function bindManagerEvents(root, state, handlers, deps) {
       }
       state.searchDebounceTimer = window.setTimeout(async () => {
         state.search = nextSearch;
-        state.page = 1;
+        resetPagination(state);
         await reloadRowsFn(root);
       }, SEARCH_DEBOUNCE_MS);
     }, listenerOptions);
@@ -136,7 +159,7 @@ export function bindManagerEvents(root, state, handlers, deps) {
   if (statusSelect) {
     statusSelect.addEventListener("change", async () => {
       state.status = String(statusSelect.value || "all").trim();
-      state.page = 1;
+      resetPagination(state);
       await reloadRowsFn(root);
     }, listenerOptions);
   }
@@ -148,7 +171,7 @@ export function bindManagerEvents(root, state, handlers, deps) {
       const pair = String(sortSelect.value || "updatedAt:desc").split(":");
       state.sortBy = String(pair[0] || "updatedAt").trim();
       state.sortDir = String(pair[1] || "desc").trim();
-      state.page = 1;
+      resetPagination(state);
       await reloadRowsFn(root);
     }, listenerOptions);
   }
@@ -175,7 +198,7 @@ export function bindManagerEvents(root, state, handlers, deps) {
     pageSizeSelect.addEventListener("change", async () => {
       const nextSize = Math.max(1, Number(pageSizeSelect.value || 50));
       state.pageSize = Number.isFinite(nextSize) ? nextSize : state.pageSize || 50;
-      state.page = 1;
+      resetPagination(state);
       await reloadRowsFn(root);
     }, listenerOptions);
   }
@@ -210,5 +233,9 @@ export function bindManagerEvents(root, state, handlers, deps) {
     state.searchDebounceTimer = 0;
     for (const timer of state.noteSaveTimers?.values?.() || []) window.clearTimeout(timer);
     state.noteSaveTimers?.clear?.();
+    state.ratingGeneration += 1;
+    for (const timer of state.ratingSaveTimers?.values?.() || []) window.clearTimeout(timer);
+    state.ratingSaveTimers?.clear?.();
+    state.ratingCommitChains?.clear?.();
   };
 }

@@ -4,6 +4,12 @@ export function fmtDate(ts) {
   return new Date(value).toLocaleString();
 }
 
+export function fmtDateOnly(ts) {
+  const value = Number(ts || 0);
+  if (!Number.isFinite(value) || value <= 0) return "-";
+  return new Date(value).toLocaleDateString();
+}
+
 export function safeText(value) {
   return String(value || "").trim();
 }

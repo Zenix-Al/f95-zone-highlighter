@@ -39,7 +39,20 @@ addons/<addon-id>/
 |   |       |-- mount.js
 |   |       `-- style.js
 |   |-- app/
-|   |   `-- create<AddonName>App.js
+|   |   |-- create<AddonName>App.js  Instance composition and bootstrap
+|   |   |-- lifecycle.js             Lifecycle construction
+|   |   |-- commands.js              Incoming command routing
+|   |   |-- registration.js          Registration and status descriptor
+|   |   |-- settings.js              Settings defaults and normalization
+|   |   |-- uiController.js          Core-hosted UI resource ownership
+|   |   `-- actions/                 Application action families
+|   |       |-- index.js             Family composition and result handling
+|   |       `-- <family>.js           Focused storage, IDB, UI, etc. handlers
+|   |-- domain/
+|   |   |-- state.js                 Add-on-owned runtime state
+|   |   |-- <domain>.js              Pure records and domain transformations
+|   |   `-- <workflow>/
+|   |       `-- controller.js         Optional substantial domain workflow
 |   `-- ui/
 |       |-- *.html
 |       |-- *.css
@@ -52,7 +65,10 @@ Small add-ons may combine modules, but keep these boundaries clear:
 
 - `core/` knows how messages move.
 - `api/` contains thin, action-specific wrappers.
-- `app/` owns state and behavior.
+- `app/` composes lifecycle, commands, registration, settings, actions, and resource
+  owners for one running add-on instance.
+- `domain/` owns add-on-specific state, records, transformations, and substantial
+  workflows without raw bridge action names.
 - `ui/` renders markup and styles.
 - `main.js` composes the runtime and starts it.
 
@@ -287,8 +303,43 @@ core.registerAddon({
   runtimeMode: runtime.runtimeMode,
   matches: runtime.matches,
   panelActions: [{ id: "open-panel", label: "Open", variant: "primary" }],
+  panelSettingsTitle: "Example Settings",
+  panelSettingsDescription: "Settings rendered and persisted by core.",
+  panelSettingsStorageKey: "settings",
+  panelSettingsDefaults: {
+    enabled: true,
+    retryLimit: 3,
+  },
+  panelSettings: [
+    {
+      path: "enabled",
+      text: "Enable example behavior",
+      type: "toggle",
+    },
+    {
+      path: "retryLimit",
+      text: "Retry limit",
+      type: "number",
+      min: 0,
+      max: 10,
+      step: 1,
+    },
+  ],
 });
 ```
+
+`panelSettings` is the add-on settings UI contract. The add-on declares it during
+registration; there is no separate render-settings action. Core reads the namespaced
+value at `panelSettingsStorageKey` through `storage.get`, renders the controls in the
+add-on card, persists changes through `storage.set`, and asks the running add-on to
+refresh. The add-on owns defaults, normalization, and applying refreshed values. The
+currently supported control types are `toggle` and bounded `number`.
+
+Because this metadata comes from runtime registration, controls are available only
+while the add-on is registered and active on a supported page. Catalog metadata does
+not replace the runtime settings descriptor. See
+`example-addon/src/app/settings.js` and `app/registration.js` for the copyable
+declaration and application pattern.
 
 ## Storage and IndexedDB
 
@@ -489,6 +540,13 @@ capabilities, and the action's `management` or `runtime` scope policy are checke
 separately. A `standalone` add-on does not register with core; a `hybrid` add-on uses
 core only on its F95Zone activation routes.
 
+Masked Direct is the canonical hybrid ownership example. Its F95 and external-page
+controllers live under `app/contexts/`, direct-download detection and routing live
+under `domain/directDownload/`, host behavior remains under `hosts/`, direct GM
+compatibility lives under `infrastructure/`, and repositories remain under `ports/`.
+Only `main.js` and `constants.js` live directly under its `src/` root. External-host
+execution must not emit core bridge traffic.
+
 The builder:
 
 - bundles JavaScript, imported HTML, and imported CSS with esbuild;
@@ -518,10 +576,22 @@ bootstrap, and reports fatal bootstrap failures. Within `src/`:
 
 - `core/` owns bridge adaptation;
 - `api/` owns thin action-specific wrappers and raw action IDs;
-- `app/state.js` owns runtime state and stable storage/IDB payload definitions;
+- `domain/state.js` owns runtime state;
+- `domain/playgroundData.js` owns stable storage/IDB records and transformations;
+- `domain/bulkImport/controller.js` owns the bounded bulk-import workflow;
 - `app/lifecycle.js` serializes enable, disable, refresh, and terminal teardown;
 - `app/commands.js` owns core command dispatch and teardown routing;
-- `app/createExampleAddonApp.js` composes app behavior and delegates rendering/UI to `ui/`;
+- `app/createExampleAddonApp.js` composes app behavior and delegates registration,
+  settings, action execution, and rendering to their owners;
+- `app/registration.js` owns registration/status descriptors, including core-rendered
+  settings metadata;
+- `app/settings.js` owns settings defaults, normalization, loading, and UI descriptors;
+- `app/actions/index.js` composes the API-playground action families and common
+  post-action behavior;
+- `app/actions/<family>.js` owns one focused metadata, storage, IDB, observer, or UI
+  action family;
+- `app/uiController.js` owns core-hosted styles, mounts, dock controls, dialogs, and
+  reversible UI cleanup;
 - `ui/` owns markup, CSS, dialog views, render helpers, and DOM event bindings;
 - optional domain modules such as bulk-work controllers belong under `app/` or a named domain folder.
 

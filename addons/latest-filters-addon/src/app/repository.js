@@ -1,5 +1,5 @@
 import { FILTER_SETTINGS_DEFAULT } from "../constants.js";
-import { normalizePreset, normalizePresets } from "../presets.js";
+import { normalizePreset, normalizePresets } from "../domain/presets.js";
 
 function normalizeSettings(value) {
   const source = value && typeof value === "object" ? value : {};

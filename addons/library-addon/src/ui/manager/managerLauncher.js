@@ -9,7 +9,7 @@ function getManagerApp(options) {
   return managerApp;
 }
 
-export function openLibraryManager({ bridge, addonId, library, onMutated, getCurrentThreadSnapshot }) {
+export function openLibraryManager({ bridge, addonId, library, onMutated, getCurrentThreadSnapshot, autoUpdateScheduler }) {
   if (!library || typeof library !== "object") return;
   void getManagerApp({
     bridge,
@@ -17,6 +17,7 @@ export function openLibraryManager({ bridge, addonId, library, onMutated, getCur
     library,
     onMutated,
     getCurrentThreadSnapshot,
+    autoUpdateScheduler,
   }).open();
 }
 

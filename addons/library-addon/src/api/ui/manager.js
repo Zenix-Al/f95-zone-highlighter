@@ -61,6 +61,14 @@ export function createManagerApi(bridge, library) {
       return Array.isArray(rows) ? rows : [];
     },
 
+    queryEntriesPage: async (params) => {
+      return await library.queryEntriesPage(params);
+    },
+
+    getEntry: async (threadId) => {
+      return await library.getEntry(threadId);
+    },
+
     getAllEntries: async (sortBy, sortDir) => {
       const rows = await library.getAllEntries(sortBy, sortDir);
       return Array.isArray(rows) ? rows : [];
@@ -74,8 +82,36 @@ export function createManagerApi(bridge, library) {
       return await library.patchEntry(threadId, patch);
     },
 
-    bulkUpdateStatus: async (ids, status) => {
-      return await library.bulkUpdateStatus(ids, status);
+    acknowledgeCurrentUpdate: async (threadId) => {
+      return await library.acknowledgeCurrentUpdate(threadId);
+    },
+
+    previewManualUpdateCheck: async (ids, options) => {
+      return await library.previewManualUpdateCheck(ids, options);
+    },
+
+    commitManualUpdateCheck: async (preview, options) => {
+      return await library.commitManualUpdateCheck(preview, options);
+    },
+    getAutoUpdateConfig: () =>
+      library.autoUpdate?.getConfig?.() || Promise.resolve({
+        intervalMs: 86400000,
+        spacingMs: 10000,
+        timeoutMs: 30000,
+        retryLimit: 2,
+        sessionCap: 25,
+        dailyCap: 100,
+      }),
+    putAutoUpdateConfig: (config) => library.autoUpdate.putConfig(config),
+    getAutoUpdateSummary: () => library.autoUpdate?.getSummary?.() || Promise.resolve(null),
+    setAutoUpdateEnabled: (ids, enabled) => library.setAutoUpdateEnabled(ids, enabled),
+
+    applyPersonalActivity: async (threadId, patch, options) => {
+      return await library.applyPersonalActivity(threadId, patch, options);
+    },
+
+    bulkUpdateStatus: async (ids, status, options) => {
+      return await library.bulkUpdateStatus(ids, status, options);
     },
 
     bulkRemoveEntries: async (ids) => {
@@ -91,4 +127,3 @@ export function createManagerApi(bridge, library) {
     },
   };
 }
-

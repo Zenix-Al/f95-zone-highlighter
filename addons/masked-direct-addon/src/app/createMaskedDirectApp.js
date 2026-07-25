@@ -1,134 +1,43 @@
-/* global __ADDON_ID__, __ADDON_NAME__, __ADDON_VERSION__, __ADDON_DESCRIPTION__, __ADDON_CAPABILITIES__, __ADDON_REQUIRES_CORE__, __ADDON_PAGE_SCOPES__, __ADDON_RUNTIME_MODE__, __ADDON_MATCHES__, GM_openInTab, GM, GM_addValueChangeListener, GM_removeValueChangeListener */
+/* global GM_openInTab, GM, GM_addValueChangeListener, GM_removeValueChangeListener */
 import { createMaskedDirectCoreAdaptor } from "../core/adaptor.js";
-import { getPageContext } from "../api/page.js";
-import { waitForElement } from "../api/observer.js";
-import { ADDON_COMMAND_EVENT, RESOLVE_BTN_CLASS } from "../constants.js";
+import { RESOLVE_BTN_CLASS } from "../constants.js";
 import { classifyMaskedDirectContext } from "./context.js";
 import {
   createDebugLog,
   normalizeUrl,
   sleep,
   withAutomationMarker,
-} from "../utils.js";
-import { createAddonUi } from "../ui.js";
+} from "../shared/utils.js";
+import { createAddonUi } from "../ui/controller.js";
 import { createDirectDownloadHostHandlers } from "../hosts/handlers.js";
 import {
-  coerceDirectDownloadPackages,
-  createDirectDownloadPackageDefaults,
-  createDirectDownloadPanelSettings,
   isDirectDownloadHostEnabled,
   normalizeDirectDownloadHost,
 } from "../hosts/metadata.js";
-import { createMaskedPageController } from "../maskedPageController.js";
-import { createThreadPageController } from "../threadPageController.js";
-import { createDirectDownloadAttentionController } from "../directDownloadAttention.js";
-import { createDownloadPageController } from "../downloadPageController.js";
-import { createDirectDownloadFlowController } from "../directDownloadFlowController.js";
-import { getDownloadPageCloseDelay } from "../ports/downloadSettingsRepository.js";
+import { createMaskedPageController } from "./contexts/maskedPageController.js";
+import { createThreadPageController } from "./contexts/threadPageController.js";
+import { createDirectDownloadAttentionController } from "../domain/directDownload/attention.js";
+import { createDownloadPageController } from "./contexts/downloadPageController.js";
+import { createDirectDownloadFlowController } from "../domain/directDownload/flowController.js";
+import { createManagedDownloadTabs } from "./managedTabs.js";
+import { createMaskedDirectRegistration } from "./registration.js";
+import { createMaskedDirectRuntime } from "./runtime.js";
+import {
+  ADDON_SETTINGS_DEFAULT,
+  createMaskedDirectSettings,
+} from "./settings.js";
+import { createMaskedDirectStyleController } from "./styleController.js";
+import { createMaskedDirectPageBehavior } from "./pageBehavior.js";
+import { createMaskedDirectLifecycle } from "./lifecycle.js";
 
-const runtime = {
-  addonId:
-    typeof __ADDON_ID__ === "string" ? __ADDON_ID__ : "masked-direct-addon",
-  addonName:
-    typeof __ADDON_NAME__ === "string"
-      ? __ADDON_NAME__
-      : "Masked + Direct Download Add-on",
-  addonVersion:
-    typeof __ADDON_VERSION__ === "string" ? __ADDON_VERSION__ : "0.1.0",
-  addonDescription:
-    typeof __ADDON_DESCRIPTION__ === "string"
-      ? __ADDON_DESCRIPTION__
-      : "Combines masked-link skipper with direct-download routing and host handlers.",
-  capabilities: Array.isArray(__ADDON_CAPABILITIES__)
-    ? __ADDON_CAPABILITIES__
-    : [],
-  requiresCore: Boolean(__ADDON_REQUIRES_CORE__),
-  pageScopes: Array.isArray(__ADDON_PAGE_SCOPES__) ? __ADDON_PAGE_SCOPES__ : ["f95zone"],
-  runtimeMode: typeof __ADDON_RUNTIME_MODE__ === "string" ? __ADDON_RUNTIME_MODE__ : "hybrid",
-  matches: Array.isArray(__ADDON_MATCHES__)
-    ? __ADDON_MATCHES__
-    : ["*://f95zone.to/threads/*", "*://f95zone.to/masked/*"],
-};
-
+const runtime = createMaskedDirectRuntime();
 const bridge = createMaskedDirectCoreAdaptor(runtime.addonId);
 const debugLog = createDebugLog(runtime.addonId);
+const settings = createMaskedDirectSettings({ bridge, GMApi: GM });
+const managedDownloadTabs = createManagedDownloadTabs();
 
-let isEnabled = true;
-let isBlockedByCore = false;
+const state = { enabled: true, blockedByCore: false };
 let teardownFns = [];
-let settingsCache = null;
-let settingsCacheTs = 0;
-let addonCommandHandlerBound = false;
-let addonCommandHandler = null;
-const ADDON_SETTINGS_KEY = "settings";
-const ADDON_SETTINGS_DEFAULT = Object.freeze({
-  skipMaskedLink: true,
-  directDownloadLinks: true,
-  downloadPageCloseDelayMs: 3500,
-  directDownloadPackages: createDirectDownloadPackageDefaults(),
-});
-const ADDON_PANEL_SETTINGS = Object.freeze([
-  {
-    id: "skipMaskedLink",
-    path: "skipMaskedLink",
-    text: "Resolve button on masked links",
-    tooltip:
-      "Show a Resolve button next to masked links. Native clicks stay unchanged; Resolve performs masked-link resolution and direct-download routing.",
-  },
-  {
-    id: "directDownloadLinks",
-    path: "directDownloadLinks",
-    text: "Direct Download Links",
-    tooltip:
-      "Enable direct download links for supported file hosts. Works independently outside of masked links.",
-  },
-  {
-    id: "downloadPageCloseDelayMs",
-    path: "downloadPageCloseDelayMs",
-    text: "Download page close delay (ms)",
-    tooltip:
-      "Adjust the delay before closing download-host tabs. Increase if the download dialog doesn't appear before the tab closes (slow connection). Decrease on fast connections. Range: 500-10000ms.",
-    type: "number",
-    min: 500,
-    max: 10000,
-  },
-  ...createDirectDownloadPanelSettings(),
-]);
-
-const managedDownloadTabs = new Map();
-
-function registerManagedDownloadTab(requestId, tab) {
-  const id = String(requestId || "").trim();
-  if (!id || !tab || typeof tab.close !== "function") return;
-  managedDownloadTabs.set(id, tab);
-  try {
-    const previousOnClose = tab.onclose;
-    tab.onclose = (...args) => {
-      managedDownloadTabs.delete(id);
-      if (typeof previousOnClose === "function") {
-        previousOnClose.apply(tab, args);
-      }
-    };
-  } catch {
-    // some userscript managers expose a read-only tab handle
-  }
-}
-
-function closeManagedDownloadTab(requestId) {
-  const id = String(requestId || "").trim();
-  if (!id) return false;
-  const tab = managedDownloadTabs.get(id);
-  if (!tab || typeof tab.close !== "function") return false;
-  try {
-    tab.close();
-    managedDownloadTabs.delete(id);
-    console.info("[DirectDownload] Closed managed tab:", id);
-    return true;
-  } catch (err) {
-    console.warn("[DirectDownload] Failed to close managed tab:", err);
-    return false;
-  }
-}
 
 function addTeardown(fn) {
   if (typeof fn === "function") teardownFns.push(fn);
@@ -141,7 +50,7 @@ const ui = createAddonUi({
 });
 const maskedPageController = createMaskedPageController({
   addTeardown,
-  readThreadFlags,
+  readThreadFlags: settings.read,
   normalizeUrl,
 });
 const directDownloadAttentionController =
@@ -157,7 +66,7 @@ const directDownloadAttentionController =
       typeof GM_removeValueChangeListener === "function"
         ? GM_removeValueChangeListener
         : null,
-    closeManagedTab: closeManagedDownloadTab,
+    closeManagedTab: managedDownloadTabs.close,
   });
 let downloadPageController = null;
 const directDownloadFlowController = createDirectDownloadFlowController({
@@ -172,17 +81,17 @@ const directDownloadFlowController = createDirectDownloadFlowController({
     directDownloadAttentionController.publishDirectDownloadAttention,
   publishDirectDownloadEvent:
     directDownloadAttentionController.publishDirectDownloadEvent,
-  registerManagedTab: registerManagedDownloadTab,
+  registerManagedTab: managedDownloadTabs.register,
   ownerTabId: directDownloadAttentionController.localAttentionTabId,
   originTabQueryKey: directDownloadAttentionController.originTabQueryKey,
   getDownloadHost: () => downloadPageController?.getDownloadHost?.() || "",
   getDownloadPageCloseDelayMs: () =>
-    settingsCache?.downloadPageCloseDelayMs ??
+    settings.getSnapshot()?.downloadPageCloseDelayMs ??
     ADDON_SETTINGS_DEFAULT.downloadPageCloseDelayMs,
 });
 const threadPageController = createThreadPageController({
   addTeardown,
-  readThreadFlags,
+  readThreadFlags: settings.read,
   routeToDirectDownload: directDownloadFlowController.routeToDirectDownload,
   showToast,
   openLinkNormally: directDownloadFlowController.openLinkNormally,
@@ -215,15 +124,15 @@ downloadPageController = createDownloadPageController({
   addonId: runtime.addonId,
   debugLog,
   GMApi: GM,
-  getIsBlockedByCore: () => isBlockedByCore,
-  getIsEnabled: () => isEnabled,
+  getIsBlockedByCore: () => state.blockedByCore,
+  getIsEnabled: () => state.enabled,
   handlers: createDirectDownloadHostHandlers({
     debugLog,
     showToast,
     notifyMainFailure: directDownloadFlowController.notifyMainFailure,
     reportAddonHealthy,
-    getSettings: () => settingsCache || {},
-    getDownloadCloseDelay: getDownloadCloseDelayForHandler,
+    getSettings: () => settings.getSnapshot() || {},
+    getDownloadCloseDelay: settings.getDownloadCloseDelay,
   }),
   originTabQueryKey: directDownloadAttentionController.originTabQueryKey,
 });
@@ -257,62 +166,20 @@ function isHostAllowedInSettings(hostname, flags) {
 }
 
 function statusMessage() {
-  return isEnabled
+  return state.enabled
     ? "Masked-link skipper and direct-download routing are active."
     : "Masked/direct add-on is currently disabled.";
 }
 
 function reportAddonHealthy(options = {}) {
   directDownloadFlowController.reportAddonHealthy({
-    isEnabled,
+    isEnabled: state.enabled,
     statusMessage: statusMessage(),
     downloadPageCloseDelayMs:
-      settingsCache?.downloadPageCloseDelayMs ??
+      settings.getSnapshot()?.downloadPageCloseDelayMs ??
       ADDON_SETTINGS_DEFAULT.downloadPageCloseDelayMs,
     ...options,
   });
-}
-
-/**
- * Helper for handlers to get the download page close delay.
- * On download host pages (different domains), use GM storage instead of settingsCache.
- * @returns {Promise<number>} The close delay in milliseconds
- */
-async function getDownloadCloseDelayForHandler() {
-  // Try to get from settings cache first (origin tab)
-  if (settingsCache?.downloadPageCloseDelayMs) {
-    return settingsCache.downloadPageCloseDelayMs;
-  }
-
-  // Fallback: Try to get from GM storage (for download host pages on different domains)
-  const gmDelay = await getDownloadPageCloseDelay(
-    GM,
-    ADDON_SETTINGS_DEFAULT.downloadPageCloseDelayMs,
-  );
-  return gmDelay;
-}
-
-async function readThreadFlags(force = false) {
-  const now = Date.now();
-  if (!force && settingsCache && now - settingsCacheTs < 1500) {
-    return settingsCache;
-  }
-
-  const result = await storageGet(ADDON_SETTINGS_KEY, ADDON_SETTINGS_DEFAULT);
-  const parsed =
-    result && typeof result === "object" ? result : ADDON_SETTINGS_DEFAULT;
-  settingsCache = {
-    skipMaskedLink: parsed.skipMaskedLink !== false,
-    directDownloadLinks: parsed.directDownloadLinks !== false,
-    downloadPageCloseDelayMs: Number.isFinite(parsed.downloadPageCloseDelayMs)
-      ? Math.max(500, Math.min(10000, parsed.downloadPageCloseDelayMs))
-      : ADDON_SETTINGS_DEFAULT.downloadPageCloseDelayMs,
-    directDownloadPackages: coerceDirectDownloadPackages(
-      parsed.directDownloadPackages,
-    ),
-  };
-  settingsCacheTs = now;
-  return settingsCache;
 }
 
 function getLocalPageContext() {
@@ -326,276 +193,39 @@ function getLocalPageContext() {
   };
 }
 
-async function applyCurrentPageBehavior() {
-  clearTeardowns();
-  if (!isEnabled || isBlockedByCore) return;
+const registration = createMaskedDirectRegistration({
+  bridge,
+  runtime,
+  getIsEnabled: () => state.enabled,
+  getStatusMessage: statusMessage,
+});
+const styles = createMaskedDirectStyleController({ bridge, runtime, ui });
+const pageBehavior = createMaskedDirectPageBehavior({
+  bridge,
+  runtime,
+  clearOwnedResources: clearTeardowns,
+  getIsEnabled: () => state.enabled,
+  getIsBlocked: () => state.blockedByCore,
+  getLocalPageContext,
+  isF95AddonPage,
+  directDownloadAttentionController,
+  threadPageController,
+  maskedPageController,
+  downloadPageController,
+  directDownloadFlowController,
+});
 
-  const pageContext = await getPageContext(bridge, getLocalPageContext);
-  const threadPage = pageContext?.pageScopes?.includes("thread") || false;
-  if (threadPage) {
-    await waitForElement(
-      bridge,
-      "masked-direct-page-ready",
-      "body",
-      2500,
-      () => ({ ok: false, reason: "unsupported_action" }),
-    );
-  }
-
-  try {
-    if (isF95AddonPage()) {
-      directDownloadAttentionController.enableDirectDownloadAttentionListener({
-        shouldListen: isF95AddonPage,
-      });
-    }
-
-    if (threadPage) {
-      threadPageController.enableThreadHooks({
-        isEnabled,
-        isBlockedByCore,
-      });
-    }
-    if (maskedPageController.isMaskedPage()) {
-      maskedPageController.enableMaskedPageHooks({
-        isEnabled,
-        isBlockedByCore,
-      });
-    }
-    if (maskedPageController.isRecaptchaFrame()) {
-      maskedPageController.handleRecaptcha();
-    }
-  } catch (err) {
-    const message = err?.message
-      ? String(err.message)
-      : String(err ?? "Unknown error");
-    console.error(`[${runtime.addonId}] Page behavior setup error:`, err);
-    bridge.dispatchCoreCommand("update-status", {
-      addonId: runtime.addonId,
-      status: "error",
-      statusMessage: `Page behavior setup failed: ${message}`,
-    });
-    return;
-  }
-
-  void downloadPageController.runDownloadPageHooks().catch((error) => {
-    void directDownloadFlowController.notifyMainFailure(
-      downloadPageController.getDownloadHost() || "unknown",
-      error?.message || String(error),
-    );
-  });
-}
-
-function registerAddon() {
-  bridge.dispatchCoreCommand("register", {
-    addon: {
-      id: runtime.addonId,
-      name: runtime.addonName,
-      version: runtime.addonVersion,
-      description: runtime.addonDescription,
-      status: isEnabled ? "installed" : "disabled",
-      statusMessage: statusMessage(),
-      panelTitle: runtime.addonName,
-      panelBody:
-        "This add-on provides masked-link Resolve buttons and direct-download page handling for supported hosts.",
-      panelSettingsTitle: "Direct Download Settings",
-      panelSettingsDescription:
-        "Configure direct download toggle and supported host packages. Some toggles control grouped domains needed for one flow.",
-      panelSettingsStorageKey: ADDON_SETTINGS_KEY,
-      panelSettingsDefaults: ADDON_SETTINGS_DEFAULT,
-      panelSettings: ADDON_PANEL_SETTINGS,
-      capabilities: runtime.capabilities,
-      requiresCore: runtime.requiresCore,
-      pageScopes: runtime.pageScopes,
-      runtimeMode: runtime.runtimeMode,
-      matches: runtime.matches,
-    },
-  });
-}
-
-function pushStatusUpdate() {
-  bridge.dispatchCoreCommand("update-status", {
-    addonId: runtime.addonId,
-    status: isEnabled ? "installed" : "disabled",
-    statusMessage: statusMessage(),
-  });
-}
-
-async function storageGet(key, defaultValue) {
-  const result = await bridge.invokeCoreAction("storage.get", {
-    key,
-    defaultValue,
-  });
-  if (!result?.ok) return defaultValue;
-  return typeof result.value === "undefined" ? defaultValue : result.value;
-}
-
-function storageSet(key, value) {
-  return bridge.invokeCoreAction("storage.set", { key, value });
-}
-
-async function registerUiStyle() {
-  try {
-    const result = await bridge.invokeCoreAction("ui.style.register", {
-      styleId: ui.styleId,
-      cssText: ui.cssText,
-    });
-    if (!result?.ok) {
-      console.warn(`[${runtime.addonId}] Failed to register UI style:`, result);
-    }
-  } catch (err) {
-    console.warn(`[${runtime.addonId}] Error registering UI style:`, err);
-  }
-}
-
-async function unregisterUiStyle() {
-  try {
-    const result = await bridge.invokeCoreAction("ui.style.unregister", {
-      styleId: ui.styleId,
-    });
-    if (!result?.ok) {
-      console.warn(
-        `[${runtime.addonId}] Failed to unregister UI style:`,
-        result,
-      );
-    }
-  } catch (err) {
-    console.warn(`[${runtime.addonId}] Error unregistering UI style:`, err);
-  }
-}
-
-async function setEnabled(nextEnabled) {
-  if (isBlockedByCore) {
-    isEnabled = false;
-    clearTeardowns();
-    await unregisterUiStyle();
-    pushStatusUpdate();
-    return;
-  }
-
-  const shouldEnable = Boolean(nextEnabled);
-  if (shouldEnable && !isEnabled) {
-    // Enabling: register style first
-    await registerUiStyle();
-    isEnabled = true;
-  } else if (!shouldEnable && isEnabled) {
-    // Disabling: unregister style and clear hooks
-    isEnabled = false;
-    clearTeardowns();
-    await unregisterUiStyle();
-  } else {
-    isEnabled = Boolean(nextEnabled);
-  }
-
-  await storageSet("enabled", isEnabled);
-  pushStatusUpdate();
-  applyCurrentPageBehavior();
-}
-
-function bindAddonCommands() {
-  if (addonCommandHandlerBound) return;
-
-  addonCommandHandler = (event) => {
-    const detail = event?.detail || {};
-    if (String(detail.addonId || "") !== runtime.addonId) return;
-
-    const command = String(detail.command || "").trim();
-    if (command === "enable") {
-      void setEnabled(true);
-    } else if (command === "disable") {
-      void setEnabled(false);
-    } else if (command === "refresh") {
-      settingsCache = null;
-      settingsCacheTs = 0;
-      applyCurrentPageBehavior();
-    } else if (command === "teardown") {
-      void teardownAddon(String(detail.reason || "requested by core"));
-    }
-  };
-
-  window.addEventListener(ADDON_COMMAND_EVENT, addonCommandHandler);
-  addonCommandHandlerBound = true;
-}
-
-function unbindAddonCommands() {
-  if (!addonCommandHandlerBound || !addonCommandHandler) return;
-  window.removeEventListener(ADDON_COMMAND_EVENT, addonCommandHandler);
-  addonCommandHandler = null;
-  addonCommandHandlerBound = false;
-}
-
-async function teardownAddon(reason) {
-  console.info(`[${runtime.addonId}] Teardown requested: ${reason}`);
-  isEnabled = false;
-  clearTeardowns();
-  await unregisterUiStyle();
-  unbindAddonCommands();
-  pushStatusUpdate();
-
-  // Send teardown-complete to core
-  try {
-    bridge.dispatchCoreCommand("teardown-complete", {
-      addonId: runtime.addonId,
-      reason,
-    });
-  } catch {
-    // best effort
-  }
-}
-
-function installConsoleHelper() {
-  window.__F95UE_MASKED_DIRECT_ADDON__ = {
-    enable() {
-      void setEnabled(true);
-    },
-    disable() {
-      void setEnabled(false);
-    },
-    refresh() {
-      settingsCache = null;
-      applyCurrentPageBehavior();
-    },
-  };
-}
-
-async function refreshAccessState() {
-  const access = await bridge.getAddonAccess();
-  if (!access?.ok || !access.value) {
-    isBlockedByCore = true;
-    isEnabled = false;
-    pushStatusUpdate();
-    return false;
-  }
-
-  isBlockedByCore = Boolean(access.value.blocked);
-  if (isBlockedByCore) {
-    isEnabled = false;
-    pushStatusUpdate();
-    clearTeardowns();
-    showToast("Add-on blocked by main settings.", 4200);
-    return false;
-  }
-
-  if (access.value.enabled === false) {
-    isEnabled = false;
-    pushStatusUpdate();
-    clearTeardowns();
-    return false;
-  }
-
-  return true;
-}
-
-function reportAddonBroken(err) {
-  const message = err?.message
-    ? String(err.message)
-    : String(err ?? "Unknown initialization error");
-  console.error(`[${runtime.addonId}] Fatal initialization error:`, err);
-  bridge.dispatchCoreCommand("update-status", {
-    addonId: runtime.addonId,
-    status: "broken",
-    statusMessage: `Failed to initialize: ${message}`,
-  });
-}
+const lifecycle = createMaskedDirectLifecycle({
+  bridge,
+  runtime,
+  state,
+  settings,
+  styles,
+  registration,
+  pageBehavior,
+  clearOwnedResources: clearTeardowns,
+  showToast,
+});
 
 export async function bootstrapMaskedDirectAddon() {
   const context = classifyMaskedDirectContext(location, {
@@ -649,27 +279,15 @@ export async function bootstrapMaskedDirectAddon() {
     return;
   }
 
-  registerAddon();
-  bindAddonCommands();
+  registration.register();
+  lifecycle.bindCommands();
 
   try {
-    const hasAccess = await refreshAccessState();
+    const hasAccess = await lifecycle.refreshAccess();
     if (!hasAccess) return;
-
-    const storedEnabled = await storageGet("enabled", true);
-    isEnabled = storedEnabled !== false && storedEnabled !== "false";
-
-    installConsoleHelper();
-
-    // If addon was previously enabled, register style before applying behavior
-    if (isEnabled) {
-      await registerUiStyle();
-    }
-
-    applyCurrentPageBehavior();
-    pushStatusUpdate();
+    await lifecycle.initializeEnabledState();
   } catch (err) {
-    reportAddonBroken(err);
+    registration.publishBroken(err);
   }
 }
 

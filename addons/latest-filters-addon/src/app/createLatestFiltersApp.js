@@ -1,8 +1,3 @@
-import {
-  notifyTeardownComplete,
-  registerAddonRuntime,
-  updateAddonRuntimeStatus,
-} from "../api/bridge.js";
 import { getAddonAccess } from "../api/meta.js";
 import { createStorageAdapter } from "../api/storage.js";
 import { showToast } from "../api/toast.js";
@@ -13,19 +8,19 @@ import { mountUi, unmountUi } from "../api/ui/mount.js";
 import { registerStyle, unregisterStyle } from "../api/ui/style.js";
 import {
   DIALOG_ID,
-  FILTER_SETTINGS_DEFAULT,
-  FILTER_SETTINGS_STORAGE_KEY,
   MAX_MOUNT_ATTEMPTS,
   MOUNT_ID,
   MOUNT_RETRY_DELAY_MS,
   ROOT_ID,
   STYLE_ID,
 } from "../constants.js";
-import { normalizePreset, normalizePresets, normalizeLatestUrl, isLatestPage, makePresetId, summarizeUrl, summarizeUrlParts } from "../presets.js";
+import { normalizePreset, normalizePresets, normalizeLatestUrl, isLatestPage, makePresetId, summarizeUrl, summarizeUrlParts } from "../domain/presets.js";
 import { createLatestFiltersCommandController } from "./commands.js";
 import { createLatestFiltersLifecycle } from "./lifecycle.js";
 import { createLatestFiltersRepository } from "./repository.js";
 import { createLatestFiltersState } from "./state.js";
+import { createLatestFiltersRegistration } from "./registration.js";
+import { createOperationTracker } from "./operationTracker.js";
 import { createLatestFiltersBindings } from "../ui/bindings.js";
 import {
   createDialogMarkup,
@@ -42,6 +37,8 @@ export function createLatestFiltersApp({ core, runtime, gm = globalThis.GM } = {
   const state = createLatestFiltersState();
   const storage = createStorageAdapter({ core, addonId: runtime.addonId, gm });
   const repository = createLatestFiltersRepository(storage);
+  const operations = createOperationTracker(state);
+  const registration = createLatestFiltersRegistration({ core, runtime, state });
   let lifecycle = null;
   let commandController = null;
   let presetWriteQueue = Promise.resolve();
@@ -56,64 +53,10 @@ export function createLatestFiltersApp({ core, runtime, gm = globalThis.GM } = {
     return Boolean(context?.isCurrent?.()) && !state.terminal;
   }
 
-  function beginPending(context, id, promise, kind) {
-    let cancelled = false;
-    const cancel = () => { cancelled = true; };
-    state.pendingCancellers.add(cancel);
-    const tracked = context?.trackPendingOperation
-      ? context.trackPendingOperation(id, promise, { kind, cancel })
-      : Promise.resolve(promise);
-    return {
-      cancelled: () => cancelled,
-      promise: Promise.resolve(tracked).finally(() => state.pendingCancellers.delete(cancel)),
-    };
-  }
-
-  function cancelPendingWork() {
-    for (const cancel of state.pendingCancellers) cancel();
-    state.pendingCancellers.clear();
-  }
-
-  function statusMessage() {
-    if (!state.enabled) return "Latest Filters add-on is installed but disabled.";
-    if (!state.showPageButton) return "Saved filters are available from the add-on panel; the latest-page button is hidden.";
-    return "One saved-filters button is available on Latest Updates pages.";
-  }
-
-  function panelBody() {
-    return state.showPageButton
-      ? "Use the Saved Filters button on Latest Updates to open a searchable list of saved presets, see the active preset, and save/apply/update/delete entries."
-      : "The page button is hidden. Use the action below while on Latest Updates to open the saved-filters panel.";
-  }
-
-  function registerAddon() {
-    registerAddonRuntime(core, {
-      id: runtime.addonId,
-      name: runtime.addonName,
-      version: runtime.addonVersion,
-      description: runtime.addonDescription,
-      status: state.enabled ? "installed" : "disabled",
-      statusMessage: statusMessage(),
-      panelTitle: runtime.addonName,
-      panelBody: panelBody(),
-      panelSettingsTitle: "Latest Filters Settings",
-      panelSettingsDescription: "Keep a single Saved Filters button on Latest Updates pages, or hide the page button and use the panel action instead.",
-      panelSettingsStorageKey: FILTER_SETTINGS_STORAGE_KEY,
-      panelSettingsDefaults: FILTER_SETTINGS_DEFAULT,
-      panelSettings: [{ path: "state.showPageButton", text: "Show page button" }],
-      panelActions: [{ id: "open-filters", label: "Open Saved Filters", requiresActivePage: false }],
-      capabilities: runtime.capabilities,
-      requiresCore: runtime.requiresCore,
-      pageScopes: runtime.pageScopes,
-      runtimeMode: runtime.runtimeMode,
-      matches: runtime.matches,
-    });
-  }
-
-  function pushStatusUpdate() {
-    updateAddonRuntimeStatus(core, state.enabled ? "installed" : "disabled", statusMessage());
-    registerAddon();
-  }
+  const beginPending = operations.begin;
+  const cancelPendingWork = operations.cancelAll;
+  const registerAddon = registration.register;
+  const pushStatusUpdate = registration.publishStatus;
 
   function getCurrentPreset() {
     const currentUrl = normalizeLatestUrl(location.href);
@@ -545,7 +488,7 @@ export function createLatestFiltersApp({ core, runtime, gm = globalThis.GM } = {
   }
 
   function onCommandError(action, error) {
-    updateAddonRuntimeStatus(core, "broken", `${action}: ${error?.message || "failed"}`);
+    registration.publishBroken(`${action}: ${error?.message || "failed"}`);
   }
 
   commandController = createLatestFiltersCommandController({
@@ -569,7 +512,8 @@ export function createLatestFiltersApp({ core, runtime, gm = globalThis.GM } = {
       commandController.unbind();
       return { ok: true };
     },
-    onTeardownAcknowledged: async (reason) => notifyTeardownComplete(core, reason),
+    onTeardownAcknowledged: async (reason) =>
+      registration.acknowledgeTeardown(reason),
   });
 
   async function bootstrap() {

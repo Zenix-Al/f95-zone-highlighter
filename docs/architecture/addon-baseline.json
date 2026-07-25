@@ -23,7 +23,7 @@
         "id": "site-repair-addon",
         "name": "F95UE Site Repair",
         "description": "Provides independently controlled repairs for F95Zone site behavior.",
-        "version": "1.0.1",
+        "version": "1.0.3",
         "author": "X Death",
         "entry": "addons/site-repair-addon/src/main.js",
         "outfile": "addons/site-repair-addon/dist/site-repair-addon.user.js",
@@ -54,7 +54,7 @@
         "id": "masked-direct-addon",
         "name": "F95UE Masked + Direct Download Add-on",
         "description": "Combines masked-link skipper and direct-download flows into one trusted add-on.",
-        "version": "1.0.0",
+        "version": "1.0.2",
         "author": "X Death",
         "entry": "addons/masked-direct-addon/src/main.js",
         "outfile": "addons/masked-direct-addon/dist/masked-direct-addon.user.js",
@@ -103,7 +103,7 @@
         "id": "library-addon",
         "name": "F95UE Library Add-on",
         "description": "Quick-add threads to a personal library and manage entries with a dedicated add-on UI.",
-        "version": "1.0.1",
+        "version": "1.1.0",
         "author": "X Death",
         "entry": "addons/library-addon/src/main.js",
         "outfile": "addons/library-addon/dist/library-addon.user.js",
@@ -136,7 +136,7 @@
         "id": "example-addon",
         "name": "F95UE Example Add-on",
         "description": "Core API playground demonstrating every current addon-facing action through api modules.",
-        "version": "1.0.0",
+        "version": "1.0.2",
         "author": "X Death",
         "entry": "addons/example-addon/src/main.js",
         "outfile": "addons/example-addon/dist/example-addon.user.js",
@@ -170,7 +170,7 @@
         "id": "latest-filters-addon",
         "name": "F95UE Latest Filters Add-on",
         "description": "Adds one Saved Filters button on Latest Updates with a searchable preset list and active filter tracking.",
-        "version": "1.0.0",
+        "version": "1.0.2",
         "author": "X Death",
         "entry": "addons/latest-filters-addon/src/main.js",
         "outfile": "addons/latest-filters-addon/dist/latest-filters-addon.user.js",
@@ -204,7 +204,7 @@
         "id": "halloween-theme-addon",
         "name": "F95UE Halloween Theme Add-on",
         "description": "Forces Halloween logo/background theme with simple apply and teardown lifecycle.",
-        "version": "1.0.0",
+        "version": "1.0.1",
         "author": "X Death",
         "entry": "addons/halloween-theme-addon/src/main.js",
         "outfile": "addons/halloween-theme-addon/dist/halloween-theme-addon.user.js",
@@ -228,13 +228,13 @@
     ]
   },
   "trustedCatalog": {
-    "source": "src/generated/trusted-addon-catalog.7959e3561e62fc84.json",
+    "source": "src/generated/trusted-addon-catalog.006a9b9d942596bc.json",
     "projection": [
       {
         "id": "example-addon",
         "name": "F95UE Example Add-on",
         "description": "Core API playground demonstrating every current addon-facing action through api modules.",
-        "version": "1.0.0",
+        "version": "1.0.2",
         "pageScopes": [
           "f95zone"
         ],
@@ -249,7 +249,7 @@
         "id": "halloween-theme-addon",
         "name": "F95UE Halloween Theme Add-on",
         "description": "Forces Halloween logo/background theme with simple apply and teardown lifecycle.",
-        "version": "1.0.0",
+        "version": "1.0.1",
         "pageScopes": [
           "f95zone"
         ],
@@ -264,7 +264,7 @@
         "id": "latest-filters-addon",
         "name": "F95UE Latest Filters Add-on",
         "description": "Adds one Saved Filters button on Latest Updates with a searchable preset list and active filter tracking.",
-        "version": "1.0.0",
+        "version": "1.0.2",
         "pageScopes": [
           "latest"
         ],
@@ -279,7 +279,7 @@
         "id": "library-addon",
         "name": "F95UE Library Add-on",
         "description": "Quick-add threads to a personal library and manage entries with a dedicated add-on UI.",
-        "version": "1.0.1",
+        "version": "1.1.0",
         "pageScopes": [
           "f95zone"
         ],
@@ -294,7 +294,7 @@
         "id": "masked-direct-addon",
         "name": "F95UE Masked + Direct Download Add-on",
         "description": "Combines masked-link skipper and direct-download flows into one trusted add-on.",
-        "version": "1.0.0",
+        "version": "1.0.2",
         "pageScopes": [
           "f95zone"
         ],
@@ -323,7 +323,7 @@
         "id": "site-repair-addon",
         "name": "F95UE Site Repair",
         "description": "Provides independently controlled repairs for F95Zone site behavior.",
-        "version": "1.0.1",
+        "version": "1.0.3",
         "pageScopes": [
           "f95zone"
         ],
@@ -805,6 +805,11 @@
       },
       {
         "path": "addons/example-addon/src/constants.js",
+        "name": "EXAMPLE_SETTINGS_KEY",
+        "value": "settings"
+      },
+      {
+        "path": "addons/example-addon/src/constants.js",
         "name": "EXAMPLE_STORAGE_KEY",
         "value": "playground"
       },
@@ -849,12 +854,12 @@
         "value": "f95ue-latest-filters-addon-style"
       },
       {
-        "path": "addons/latest-filters-addon/src/presets.js",
+        "path": "addons/latest-filters-addon/src/domain/presets.js",
         "name": "LATEST_HOSTNAME",
         "value": "f95zone.to"
       },
       {
-        "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
+        "path": "addons/library-addon/src/app/dockController.js",
         "name": "LIBRARY_DOCK_MOUNT_ID",
         "value": "library-dock-widget"
       },
@@ -885,6 +890,16 @@
       },
       {
         "path": "addons/library-addon/src/constants.js",
+        "name": "LIBRARY_PIN_BACKFILL_MARKER_KEY",
+        "value": "pin-sort-v3-complete"
+      },
+      {
+        "path": "addons/library-addon/src/constants.js",
+        "name": "LIBRARY_SCHEMA_MARKER_KEY",
+        "value": "schema-v3-complete"
+      },
+      {
+        "path": "addons/library-addon/src/constants.js",
         "name": "LIBRARY_STORAGE_KEY",
         "value": "settings"
       },
@@ -892,6 +907,21 @@
         "path": "addons/library-addon/src/constants.js",
         "name": "LIBRARY_STORE_NAME",
         "value": "records"
+      },
+      {
+        "path": "addons/library-addon/src/library/autoUpdateRepository.js",
+        "name": "CONFIG_KEY",
+        "value": "auto-update:config"
+      },
+      {
+        "path": "addons/library-addon/src/library/autoUpdateRepository.js",
+        "name": "LEASE_KEY",
+        "value": "auto-update:lease"
+      },
+      {
+        "path": "addons/library-addon/src/library/autoUpdateRepository.js",
+        "name": "SUMMARY_KEY",
+        "value": "auto-update:last-run"
       },
       {
         "path": "addons/library-addon/src/thread/quickActions.js",
@@ -929,7 +959,7 @@
         "value": "f95ue-library-rows-status"
       },
       {
-        "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+        "path": "addons/masked-direct-addon/src/app/settings.js",
         "name": "ADDON_SETTINGS_KEY",
         "value": "settings"
       },
@@ -964,29 +994,29 @@
         "value": "6LcwQ5kUAAAAAAI-_CXQtlnhdMjmFDt-MruZ2gov"
       },
       {
-        "path": "addons/masked-direct-addon/src/directDownloadAttention.js",
+        "path": "addons/masked-direct-addon/src/domain/directDownload/attention.js",
         "name": "DIRECT_DOWNLOAD_EVENT_KEY",
         "value": "f95ue.addon.maskedDirect.directDownloadEvent"
       },
       {
-        "path": "addons/masked-direct-addon/src/directDownloadAttention.js",
+        "path": "addons/masked-direct-addon/src/domain/directDownload/attention.js",
         "name": "DIRECT_DOWNLOAD_ROUTE_REQUEST_ID_KEY",
         "value": "f95ue_dd_req"
       },
       {
-        "path": "addons/masked-direct-addon/src/directDownloadAttention.js",
+        "path": "addons/masked-direct-addon/src/domain/directDownload/attention.js",
         "name": "DIRECT_DOWNLOAD_TAB_ID_KEY",
         "value": "f95ue.addon.directDownload.tabId"
       },
       {
-        "path": "addons/masked-direct-addon/src/directDownloadAttention.js",
+        "path": "addons/masked-direct-addon/src/domain/directDownload/attention.js",
         "name": "ORIGIN_TAB_QUERY_KEY",
         "value": "f95ue_tab"
       },
       {
-        "path": "addons/masked-direct-addon/src/gmStorageHelper.js",
-        "name": "GM_STORAGE_DELAY_KEY",
-        "value": "downloadPageCloseDelayMs"
+        "path": "addons/masked-direct-addon/src/domain/directDownload/processingTrigger.js",
+        "name": "DIRECT_DOWNLOAD_TRIGGER_KEY",
+        "value": "f95ue.addon.maskedDirect.processingDownload"
       },
       {
         "path": "addons/masked-direct-addon/src/hosts/gofile.js",
@@ -1004,9 +1034,9 @@
         "value": "f95ue:gofile-download-result"
       },
       {
-        "path": "addons/masked-direct-addon/src/processingDownloadTrigger.js",
-        "name": "DIRECT_DOWNLOAD_TRIGGER_KEY",
-        "value": "f95ue.addon.maskedDirect.processingDownload"
+        "path": "addons/masked-direct-addon/src/infrastructure/gmStorageAdapter.js",
+        "name": "GM_STORAGE_DELAY_KEY",
+        "value": "downloadPageCloseDelayMs"
       },
       {
         "path": "addons/site-repair-addon/src/constants.js",
@@ -1135,10 +1165,10 @@
     {
       "id": "example-addon",
       "source": {
-        "fileCount": 28,
-        "authoredBytes": 68650,
-        "physicalLines": 2102,
-        "nonblankLines": 1940,
+        "fileCount": 38,
+        "authoredBytes": 73405,
+        "physicalLines": 2274,
+        "nonblankLines": 2095,
         "files": [
           {
             "path": "addons/example-addon/src/api/bridge.js",
@@ -1213,10 +1243,40 @@
             "nonblankLines": 11
           },
           {
-            "path": "addons/example-addon/src/app/bulkImport.js",
-            "bytes": 8555,
-            "physicalLines": 212,
-            "nonblankLines": 197
+            "path": "addons/example-addon/src/app/actions/idb.js",
+            "bytes": 2757,
+            "physicalLines": 91,
+            "nonblankLines": 90
+          },
+          {
+            "path": "addons/example-addon/src/app/actions/index.js",
+            "bytes": 934,
+            "physicalLines": 34,
+            "nonblankLines": 30
+          },
+          {
+            "path": "addons/example-addon/src/app/actions/metadata.js",
+            "bytes": 1213,
+            "physicalLines": 33,
+            "nonblankLines": 32
+          },
+          {
+            "path": "addons/example-addon/src/app/actions/observer.js",
+            "bytes": 881,
+            "physicalLines": 27,
+            "nonblankLines": 26
+          },
+          {
+            "path": "addons/example-addon/src/app/actions/storage.js",
+            "bytes": 1339,
+            "physicalLines": 43,
+            "nonblankLines": 42
+          },
+          {
+            "path": "addons/example-addon/src/app/actions/ui.js",
+            "bytes": 3109,
+            "physicalLines": 94,
+            "nonblankLines": 93
           },
           {
             "path": "addons/example-addon/src/app/commands.js",
@@ -1226,9 +1286,9 @@
           },
           {
             "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-            "bytes": 27473,
-            "physicalLines": 817,
-            "nonblankLines": 777
+            "bytes": 10944,
+            "physicalLines": 320,
+            "nonblankLines": 297
           },
           {
             "path": "addons/example-addon/src/app/lifecycle.js",
@@ -1237,22 +1297,52 @@
             "nonblankLines": 7
           },
           {
-            "path": "addons/example-addon/src/app/state.js",
-            "bytes": 2952,
-            "physicalLines": 100,
-            "nonblankLines": 92
+            "path": "addons/example-addon/src/app/registration.js",
+            "bytes": 2517,
+            "physicalLines": 75,
+            "nonblankLines": 70
+          },
+          {
+            "path": "addons/example-addon/src/app/settings.js",
+            "bytes": 1373,
+            "physicalLines": 44,
+            "nonblankLines": 40
+          },
+          {
+            "path": "addons/example-addon/src/app/uiController.js",
+            "bytes": 6960,
+            "physicalLines": 216,
+            "nonblankLines": 199
           },
           {
             "path": "addons/example-addon/src/constants.js",
-            "bytes": 1160,
-            "physicalLines": 33,
-            "nonblankLines": 32
+            "bytes": 1208,
+            "physicalLines": 34,
+            "nonblankLines": 33
           },
           {
             "path": "addons/example-addon/src/core/adaptor.js",
             "bytes": 67,
             "physicalLines": 1,
             "nonblankLines": 1
+          },
+          {
+            "path": "addons/example-addon/src/domain/bulkImport/controller.js",
+            "bytes": 8580,
+            "physicalLines": 212,
+            "nonblankLines": 197
+          },
+          {
+            "path": "addons/example-addon/src/domain/playgroundData.js",
+            "bytes": 1667,
+            "physicalLines": 55,
+            "nonblankLines": 50
+          },
+          {
+            "path": "addons/example-addon/src/domain/state.js",
+            "bytes": 1413,
+            "physicalLines": 56,
+            "nonblankLines": 54
           },
           {
             "path": "addons/example-addon/src/main.js",
@@ -1313,20 +1403,24 @@
       "builds": {
         "regular": {
           "mode": "regular",
-          "bytes": 84195,
-          "gzipBytes": 18471,
+          "bytes": 87876,
+          "gzipBytes": 19578,
           "contributors": [
             {
               "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-              "bytes": 26793
+              "bytes": 10779
             },
             {
               "path": "addons/shared/runtimeLifecycle.js",
               "bytes": 9221
             },
             {
-              "path": "addons/example-addon/src/app/bulkImport.js",
+              "path": "addons/example-addon/src/domain/bulkImport/controller.js",
               "bytes": 8449
+            },
+            {
+              "path": "addons/example-addon/src/app/uiController.js",
+              "bytes": 6581
             },
             {
               "path": "addons/example-addon/src/ui/panel.js",
@@ -1338,86 +1432,86 @@
             },
             {
               "path": "addons/shared/coreBridge.js",
-              "bytes": 3786
+              "bytes": 3803
             },
             {
               "path": "addons/example-addon/src/ui/bulkImportProgressDialog.js",
               "bytes": 3284
             },
             {
-              "path": "addons/example-addon/src/app/state.js",
-              "bytes": 2946
+              "path": "addons/example-addon/src/app/actions/ui.js",
+              "bytes": 2751
             },
             {
               "path": "addons/example-addon/src/ui/bindings.js",
               "bytes": 2707
             },
             {
+              "path": "addons/example-addon/src/app/actions/idb.js",
+              "bytes": 2482
+            },
+            {
               "path": "addons/example-addon/src/app/commands.js",
               "bytes": 2350
             },
             {
+              "path": "addons/example-addon/src/app/registration.js",
+              "bytes": 2343
+            },
+            {
               "path": "addons/example-addon/src/api/bridge.js",
-              "bytes": 1965
+              "bytes": 1983
             },
             {
               "path": "addons/example-addon/src/main.js",
               "bytes": 1771
             },
             {
+              "path": "addons/example-addon/src/domain/playgroundData.js",
+              "bytes": 1558
+            },
+            {
+              "path": "addons/example-addon/src/domain/state.js",
+              "bytes": 1495
+            },
+            {
+              "path": "addons/example-addon/src/app/settings.js",
+              "bytes": 1285
+            },
+            {
               "path": "addons/example-addon/src/constants.js",
-              "bytes": 1102
+              "bytes": 1143
             },
             {
-              "path": "addons/shared/debugLog.js",
-              "bytes": 948
-            },
-            {
-              "path": "addons/example-addon/src/api/idb.js",
-              "bytes": 768
-            },
-            {
-              "path": "addons/example-addon/src/ui/dialog.js",
-              "bytes": 657
-            },
-            {
-              "path": "addons/example-addon/src/api/observer.js",
-              "bytes": 543
-            },
-            {
-              "path": "addons/example-addon/src/api/storage.js",
-              "bytes": 521
-            },
-            {
-              "path": "addons/example-addon/src/api/ui/dialog.js",
-              "bytes": 515
-            },
-            {
-              "path": "addons/example-addon/src/api/ui/mount.js",
-              "bytes": 313
+              "path": "addons/example-addon/src/app/actions/storage.js",
+              "bytes": 1130
             }
           ]
         },
         "release": {
           "mode": "release",
-          "bytes": 73448,
-          "gzipBytes": 15322,
+          "bytes": 73817,
+          "gzipBytes": 16123,
           "contributors": [
             {
               "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-              "bytes": 16468
+              "bytes": 6850
             },
             {
               "path": "addons/shared/runtimeLifecycle.js",
               "bytes": 6436
             },
             {
-              "path": "addons/example-addon/src/app/bulkImport.js",
+              "path": "addons/example-addon/src/domain/bulkImport/controller.js",
               "bytes": 6236
             },
             {
               "path": "addons/example-addon/src/ui/panel.js",
               "bytes": 5434
+            },
+            {
+              "path": "addons/example-addon/src/app/uiController.js",
+              "bytes": 4079
             },
             {
               "path": "addons/example-addon/src/ui/example.css",
@@ -1429,11 +1523,15 @@
             },
             {
               "path": "addons/shared/coreBridge.js",
-              "bytes": 2651
+              "bytes": 2667
             },
             {
-              "path": "addons/example-addon/src/app/state.js",
-              "bytes": 2128
+              "path": "addons/example-addon/src/app/actions/ui.js",
+              "bytes": 1938
+            },
+            {
+              "path": "addons/example-addon/src/app/actions/idb.js",
+              "bytes": 1685
             },
             {
               "path": "addons/example-addon/src/ui/bindings.js",
@@ -1444,44 +1542,36 @@
               "bytes": 1559
             },
             {
+              "path": "addons/example-addon/src/app/registration.js",
+              "bytes": 1322
+            },
+            {
+              "path": "addons/example-addon/src/domain/playgroundData.js",
+              "bytes": 1204
+            },
+            {
+              "path": "addons/example-addon/src/app/settings.js",
+              "bytes": 1017
+            },
+            {
+              "path": "addons/example-addon/src/domain/state.js",
+              "bytes": 972
+            },
+            {
               "path": "addons/example-addon/src/constants.js",
-              "bytes": 836
+              "bytes": 868
+            },
+            {
+              "path": "addons/example-addon/src/app/actions/storage.js",
+              "bytes": 798
             },
             {
               "path": "addons/example-addon/src/main.js",
               "bytes": 740
             },
             {
-              "path": "addons/example-addon/src/api/idb.js",
-              "bytes": 649
-            },
-            {
-              "path": "addons/example-addon/src/ui/dialog.js",
-              "bytes": 643
-            },
-            {
-              "path": "addons/example-addon/src/api/bridge.js",
-              "bytes": 486
-            },
-            {
-              "path": "addons/example-addon/src/api/observer.js",
-              "bytes": 429
-            },
-            {
-              "path": "addons/example-addon/src/api/ui/dialog.js",
-              "bytes": 425
-            },
-            {
-              "path": "addons/example-addon/src/api/storage.js",
-              "bytes": 415
-            },
-            {
-              "path": "addons/example-addon/src/api/ui/mount.js",
-              "bytes": 262
-            },
-            {
-              "path": "addons/example-addon/src/api/feature.js",
-              "bytes": 247
+              "path": "addons/example-addon/src/app/actions/metadata.js",
+              "bytes": 708
             }
           ]
         }
@@ -1675,10 +1765,10 @@
     {
       "id": "latest-filters-addon",
       "source": {
-        "fileCount": 24,
-        "authoredBytes": 59539,
-        "physicalLines": 1676,
-        "nonblankLines": 1440,
+        "fileCount": 25,
+        "authoredBytes": 60398,
+        "physicalLines": 1714,
+        "nonblankLines": 1480,
         "files": [
           {
             "path": "addons/latest-filters-addon/src/api/bridge.js",
@@ -1742,9 +1832,9 @@
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "bytes": 24731,
-            "physicalLines": 594,
-            "nonblankLines": 546
+            "bytes": 22522,
+            "physicalLines": 538,
+            "nonblankLines": 495
           },
           {
             "path": "addons/latest-filters-addon/src/app/lifecycle.js",
@@ -1753,8 +1843,20 @@
             "nonblankLines": 4
           },
           {
+            "path": "addons/latest-filters-addon/src/app/operationTracker.js",
+            "bytes": 700,
+            "physicalLines": 26,
+            "nonblankLines": 25
+          },
+          {
+            "path": "addons/latest-filters-addon/src/app/registration.js",
+            "bytes": 2456,
+            "physicalLines": 70,
+            "nonblankLines": 67
+          },
+          {
             "path": "addons/latest-filters-addon/src/app/repository.js",
-            "bytes": 1969,
+            "bytes": 1976,
             "physicalLines": 55,
             "nonblankLines": 52
           },
@@ -1777,22 +1879,16 @@
             "nonblankLines": 1
           },
           {
-            "path": "addons/latest-filters-addon/src/main.js",
-            "bytes": 1175,
-            "physicalLines": 31,
-            "nonblankLines": 26
-          },
-          {
-            "path": "addons/latest-filters-addon/src/presets.js",
-            "bytes": 6560,
+            "path": "addons/latest-filters-addon/src/domain/presets.js",
+            "bytes": 6563,
             "physicalLines": 194,
             "nonblankLines": 144
           },
           {
-            "path": "addons/latest-filters-addon/src/renderer.js",
-            "bytes": 8499,
-            "physicalLines": 215,
-            "nonblankLines": 145
+            "path": "addons/latest-filters-addon/src/main.js",
+            "bytes": 1175,
+            "physicalLines": 31,
+            "nonblankLines": 26
           },
           {
             "path": "addons/latest-filters-addon/src/ui/bindings.js",
@@ -1820,21 +1916,21 @@
           },
           {
             "path": "addons/latest-filters-addon/src/ui/renderer.js",
-            "bytes": 95,
-            "physicalLines": 2,
-            "nonblankLines": 1
+            "bytes": 8496,
+            "physicalLines": 215,
+            "nonblankLines": 145
           }
         ]
       },
       "builds": {
         "regular": {
           "mode": "regular",
-          "bytes": 71864,
-          "gzipBytes": 16249,
+          "bytes": 72819,
+          "gzipBytes": 16479,
           "contributors": [
             {
               "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-              "bytes": 24593
+              "bytes": 22344
             },
             {
               "path": "addons/shared/runtimeLifecycle.js",
@@ -1845,11 +1941,11 @@
               "bytes": 6467
             },
             {
-              "path": "addons/latest-filters-addon/src/renderer.js",
+              "path": "addons/latest-filters-addon/src/ui/renderer.js",
               "bytes": 5984
             },
             {
-              "path": "addons/latest-filters-addon/src/presets.js",
+              "path": "addons/latest-filters-addon/src/domain/presets.js",
               "bytes": 5161
             },
             {
@@ -1859,6 +1955,10 @@
             {
               "path": "addons/latest-filters-addon/src/ui/bindings.js",
               "bytes": 2596
+            },
+            {
+              "path": "addons/latest-filters-addon/src/app/registration.js",
+              "bytes": 2350
             },
             {
               "path": "addons/latest-filters-addon/src/app/repository.js",
@@ -1879,6 +1979,10 @@
             {
               "path": "addons/latest-filters-addon/src/ui/dialog.html",
               "bytes": 874
+            },
+            {
+              "path": "addons/latest-filters-addon/src/app/operationTracker.js",
+              "bytes": 724
             },
             {
               "path": "addons/latest-filters-addon/src/app/state.js",
@@ -1903,25 +2007,17 @@
             {
               "path": "addons/latest-filters-addon/src/ui/panel.html",
               "bytes": 304
-            },
-            {
-              "path": "addons/latest-filters-addon/src/api/observer.js",
-              "bytes": 285
-            },
-            {
-              "path": "addons/shared/htmlUtils.js",
-              "bytes": 268
             }
           ]
         },
         "release": {
           "mode": "release",
-          "bytes": 65065,
-          "gzipBytes": 14472,
+          "bytes": 65342,
+          "gzipBytes": 14632,
           "contributors": [
             {
               "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-              "bytes": 18596
+              "bytes": 16781
             },
             {
               "path": "addons/shared/runtimeLifecycle.js",
@@ -1932,11 +2028,11 @@
               "bytes": 6179
             },
             {
-              "path": "addons/latest-filters-addon/src/renderer.js",
+              "path": "addons/latest-filters-addon/src/ui/renderer.js",
               "bytes": 4892
             },
             {
-              "path": "addons/latest-filters-addon/src/presets.js",
+              "path": "addons/latest-filters-addon/src/domain/presets.js",
               "bytes": 3875
             },
             {
@@ -1946,6 +2042,10 @@
             {
               "path": "addons/latest-filters-addon/src/ui/bindings.js",
               "bytes": 1844
+            },
+            {
+              "path": "addons/latest-filters-addon/src/app/registration.js",
+              "bytes": 1793
             },
             {
               "path": "addons/latest-filters-addon/src/app/repository.js",
@@ -1966,6 +2066,10 @@
             {
               "path": "addons/latest-filters-addon/src/main.js",
               "bytes": 723
+            },
+            {
+              "path": "addons/latest-filters-addon/src/app/operationTracker.js",
+              "bytes": 509
             },
             {
               "path": "addons/shared/runtimeKit.js",
@@ -1990,14 +2094,6 @@
             {
               "path": "addons/shared/apiFallback.js",
               "bytes": 251
-            },
-            {
-              "path": "addons/shared/htmlUtils.js",
-              "bytes": 233
-            },
-            {
-              "path": "addons/latest-filters-addon/src/api/observer.js",
-              "bytes": 220
             }
           ]
         }
@@ -2006,10 +2102,10 @@
     {
       "id": "library-addon",
       "source": {
-        "fileCount": 56,
-        "authoredBytes": 148282,
-        "physicalLines": 4953,
-        "nonblankLines": 4268,
+        "fileCount": 85,
+        "authoredBytes": 276341,
+        "physicalLines": 8777,
+        "nonblankLines": 7892,
         "files": [
           {
             "path": "addons/library-addon/src/api/bridge.js",
@@ -2019,21 +2115,27 @@
           },
           {
             "path": "addons/library-addon/src/api/library/client.js",
-            "bytes": 2817,
-            "physicalLines": 96,
-            "nonblankLines": 86
+            "bytes": 7285,
+            "physicalLines": 257,
+            "nonblankLines": 231
           },
           {
             "path": "addons/library-addon/src/api/library/index.js",
-            "bytes": 176,
-            "physicalLines": 3,
-            "nonblankLines": 3
+            "bytes": 227,
+            "physicalLines": 4,
+            "nonblankLines": 4
+          },
+          {
+            "path": "addons/library-addon/src/api/library/schema.js",
+            "bytes": 1974,
+            "physicalLines": 74,
+            "nonblankLines": 67
           },
           {
             "path": "addons/library-addon/src/api/library/storePayload.js",
-            "bytes": 299,
-            "physicalLines": 11,
-            "nonblankLines": 10
+            "bytes": 413,
+            "physicalLines": 19,
+            "nonblankLines": 18
           },
           {
             "path": "addons/library-addon/src/api/library/throttle.js",
@@ -2066,6 +2168,12 @@
             "nonblankLines": 7
           },
           {
+            "path": "addons/library-addon/src/api/threadHtml.js",
+            "bytes": 4245,
+            "physicalLines": 112,
+            "nonblankLines": 110
+          },
+          {
             "path": "addons/library-addon/src/api/toast.js",
             "bytes": 144,
             "physicalLines": 2,
@@ -2079,9 +2187,9 @@
           },
           {
             "path": "addons/library-addon/src/api/ui/manager.js",
-            "bytes": 2442,
-            "physicalLines": 94,
-            "nonblankLines": 75
+            "bytes": 3703,
+            "physicalLines": 129,
+            "nonblankLines": 105
           },
           {
             "path": "addons/library-addon/src/api/ui/mount.js",
@@ -2103,9 +2211,15 @@
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "bytes": 18140,
-            "physicalLines": 563,
-            "nonblankLines": 489
+            "bytes": 8316,
+            "physicalLines": 247,
+            "nonblankLines": 235
+          },
+          {
+            "path": "addons/library-addon/src/app/dockController.js",
+            "bytes": 8546,
+            "physicalLines": 264,
+            "nonblankLines": 248
           },
           {
             "path": "addons/library-addon/src/app/lifecycle.js",
@@ -2114,10 +2228,40 @@
             "nonblankLines": 4
           },
           {
+            "path": "addons/library-addon/src/app/managerController.js",
+            "bytes": 1201,
+            "physicalLines": 51,
+            "nonblankLines": 47
+          },
+          {
+            "path": "addons/library-addon/src/app/opportunisticObserver.js",
+            "bytes": 1014,
+            "physicalLines": 35,
+            "nonblankLines": 30
+          },
+          {
+            "path": "addons/library-addon/src/app/pageContext.js",
+            "bytes": 425,
+            "physicalLines": 12,
+            "nonblankLines": 11
+          },
+          {
+            "path": "addons/library-addon/src/app/registration.js",
+            "bytes": 2577,
+            "physicalLines": 81,
+            "nonblankLines": 75
+          },
+          {
+            "path": "addons/library-addon/src/app/settings.js",
+            "bytes": 1008,
+            "physicalLines": 38,
+            "nonblankLines": 34
+          },
+          {
             "path": "addons/library-addon/src/constants.js",
-            "bytes": 967,
-            "physicalLines": 26,
-            "nonblankLines": 23
+            "bytes": 2668,
+            "physicalLines": 79,
+            "nonblankLines": 75
           },
           {
             "path": "addons/library-addon/src/core/adaptor.js",
@@ -2126,28 +2270,94 @@
             "nonblankLines": 1
           },
           {
+            "path": "addons/library-addon/src/library/activityCommandId.js",
+            "bytes": 167,
+            "physicalLines": 6,
+            "nonblankLines": 5
+          },
+          {
+            "path": "addons/library-addon/src/library/activityEventModel.js",
+            "bytes": 930,
+            "physicalLines": 41,
+            "nonblankLines": 38
+          },
+          {
+            "path": "addons/library-addon/src/library/activityRepository.js",
+            "bytes": 791,
+            "physicalLines": 23,
+            "nonblankLines": 23
+          },
+          {
+            "path": "addons/library-addon/src/library/autoUpdatePolicy.js",
+            "bytes": 1050,
+            "physicalLines": 29,
+            "nonblankLines": 27
+          },
+          {
+            "path": "addons/library-addon/src/library/autoUpdateRepository.js",
+            "bytes": 2252,
+            "physicalLines": 66,
+            "nonblankLines": 62
+          },
+          {
+            "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
+            "bytes": 8190,
+            "physicalLines": 239,
+            "nonblankLines": 229
+          },
+          {
             "path": "addons/library-addon/src/library/importWorkflow.js",
-            "bytes": 8547,
-            "physicalLines": 335,
-            "nonblankLines": 297
+            "bytes": 8663,
+            "physicalLines": 341,
+            "nonblankLines": 303
+          },
+          {
+            "path": "addons/library-addon/src/library/libraryDocument.js",
+            "bytes": 3702,
+            "physicalLines": 106,
+            "nonblankLines": 96
+          },
+          {
+            "path": "addons/library-addon/src/library/manualUpdateChecker.js",
+            "bytes": 4174,
+            "physicalLines": 112,
+            "nonblankLines": 108
           },
           {
             "path": "addons/library-addon/src/library/querying.js",
-            "bytes": 1652,
-            "physicalLines": 64,
-            "nonblankLines": 55
-          },
-          {
-            "path": "addons/library-addon/src/library/recordModel.js",
-            "bytes": 2949,
-            "physicalLines": 93,
+            "bytes": 2992,
+            "physicalLines": 96,
             "nonblankLines": 85
           },
           {
+            "path": "addons/library-addon/src/library/recordModel.js",
+            "bytes": 9968,
+            "physicalLines": 274,
+            "nonblankLines": 259
+          },
+          {
             "path": "addons/library-addon/src/library/service.js",
-            "bytes": 7401,
-            "physicalLines": 248,
-            "nonblankLines": 213
+            "bytes": 29527,
+            "physicalLines": 871,
+            "nonblankLines": 814
+          },
+          {
+            "path": "addons/library-addon/src/library/threadUpdateParser.js",
+            "bytes": 4476,
+            "physicalLines": 142,
+            "nonblankLines": 132
+          },
+          {
+            "path": "addons/library-addon/src/library/updateEventModel.js",
+            "bytes": 2645,
+            "physicalLines": 95,
+            "nonblankLines": 86
+          },
+          {
+            "path": "addons/library-addon/src/library/updateRepository.js",
+            "bytes": 775,
+            "physicalLines": 23,
+            "nonblankLines": 23
           },
           {
             "path": "addons/library-addon/src/main.js",
@@ -2169,9 +2379,9 @@
           },
           {
             "path": "addons/library-addon/src/ui/application/importExportWorkflow.js",
-            "bytes": 5125,
-            "physicalLines": 168,
-            "nonblankLines": 150
+            "bytes": 6484,
+            "physicalLines": 194,
+            "nonblankLines": 176
           },
           {
             "path": "addons/library-addon/src/ui/application/importProgressController.js",
@@ -2193,15 +2403,33 @@
           },
           {
             "path": "addons/library-addon/src/ui/assets/manager.css",
-            "bytes": 17933,
-            "physicalLines": 861,
-            "nonblankLines": 748
+            "bytes": 19962,
+            "physicalLines": 961,
+            "nonblankLines": 834
           },
           {
             "path": "addons/library-addon/src/ui/assets/manager.html",
-            "bytes": 4752,
-            "physicalLines": 123,
-            "nonblankLines": 118
+            "bytes": 5689,
+            "physicalLines": 141,
+            "nonblankLines": 137
+          },
+          {
+            "path": "addons/library-addon/src/ui/autoUpdate/autoUpdate.css",
+            "bytes": 1332,
+            "physicalLines": 76,
+            "nonblankLines": 67
+          },
+          {
+            "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
+            "bytes": 4488,
+            "physicalLines": 124,
+            "nonblankLines": 116
+          },
+          {
+            "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
+            "bytes": 2750,
+            "physicalLines": 57,
+            "nonblankLines": 52
           },
           {
             "path": "addons/library-addon/src/ui/components/dock/dockRenderer.js",
@@ -2223,39 +2451,69 @@
           },
           {
             "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
-            "bytes": 11034,
-            "physicalLines": 258,
-            "nonblankLines": 227
+            "bytes": 12900,
+            "physicalLines": 285,
+            "nonblankLines": 252
           },
           {
             "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
-            "bytes": 7410,
-            "physicalLines": 214,
-            "nonblankLines": 175
+            "bytes": 8749,
+            "physicalLines": 241,
+            "nonblankLines": 200
+          },
+          {
+            "path": "addons/library-addon/src/ui/entryEditor/editor.css",
+            "bytes": 3947,
+            "physicalLines": 203,
+            "nonblankLines": 178
+          },
+          {
+            "path": "addons/library-addon/src/ui/entryEditor/editorBindings.js",
+            "bytes": 1578,
+            "physicalLines": 64,
+            "nonblankLines": 58
+          },
+          {
+            "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+            "bytes": 7989,
+            "physicalLines": 251,
+            "nonblankLines": 234
+          },
+          {
+            "path": "addons/library-addon/src/ui/entryEditor/editorRenderer.js",
+            "bytes": 5454,
+            "physicalLines": 110,
+            "nonblankLines": 105
+          },
+          {
+            "path": "addons/library-addon/src/ui/entryEditor/editorValidation.js",
+            "bytes": 3021,
+            "physicalLines": 93,
+            "nonblankLines": 84
           },
           {
             "path": "addons/library-addon/src/ui/manager/createHandlers.js",
-            "bytes": 951,
-            "physicalLines": 22,
-            "nonblankLines": 20
+            "bytes": 1180,
+            "physicalLines": 26,
+            "nonblankLines": 24
           },
           {
             "path": "addons/library-addon/src/ui/manager/handlerContext.js",
-            "bytes": 1733,
+            "bytes": 1680,
             "physicalLines": 71,
             "nonblankLines": 58
           },
           {
             "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
-            "bytes": 2392,
-            "physicalLines": 78,
-            "nonblankLines": 67
+            "bytes": 4765,
+            "physicalLines": 148,
+            "nonblankLines": 135
           },
           {
             "path": "addons/library-addon/src/ui/manager/handlers/navigationHandlers.js",
-            "bytes": 375,
-            "physicalLines": 18,
-            "nonblankLines": 17
+            "bytes": 534,
+            "physicalLines": 21,
+            "nonblankLines": 20
           },
           {
             "path": "addons/library-addon/src/ui/manager/handlers/noteHandlers.js",
@@ -2264,10 +2522,16 @@
             "nonblankLines": 50
           },
           {
+            "path": "addons/library-addon/src/ui/manager/handlers/ratingHandlers.js",
+            "bytes": 3357,
+            "physicalLines": 86,
+            "nonblankLines": 80
+          },
+          {
             "path": "addons/library-addon/src/ui/manager/handlers/rowHandlers.js",
-            "bytes": 3693,
-            "physicalLines": 113,
-            "nonblankLines": 100
+            "bytes": 3990,
+            "physicalLines": 120,
+            "nonblankLines": 107
           },
           {
             "path": "addons/library-addon/src/ui/manager/handlers/selectionHandlers.js",
@@ -2277,39 +2541,45 @@
           },
           {
             "path": "addons/library-addon/src/ui/manager/handlers/statusHandlers.js",
-            "bytes": 1274,
-            "physicalLines": 38,
-            "nonblankLines": 33
+            "bytes": 1481,
+            "physicalLines": 50,
+            "nonblankLines": 45
+          },
+          {
+            "path": "addons/library-addon/src/ui/manager/handlers/updateCheckHandlers.js",
+            "bytes": 2251,
+            "physicalLines": 56,
+            "nonblankLines": 53
           },
           {
             "path": "addons/library-addon/src/ui/manager/handlers/workflowHandlers.js",
-            "bytes": 652,
+            "bytes": 661,
             "physicalLines": 22,
             "nonblankLines": 20
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "bytes": 6350,
-            "physicalLines": 200,
-            "nonblankLines": 148
+            "bytes": 8081,
+            "physicalLines": 249,
+            "nonblankLines": 196
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerLauncher.js",
-            "bytes": 822,
-            "physicalLines": 31,
-            "nonblankLines": 26
+            "bytes": 868,
+            "physicalLines": 32,
+            "nonblankLines": 27
           },
           {
             "path": "addons/library-addon/src/ui/manager/reloadRows.js",
-            "bytes": 2652,
-            "physicalLines": 77,
-            "nonblankLines": 57
+            "bytes": 2821,
+            "physicalLines": 78,
+            "nonblankLines": 63
           },
           {
             "path": "addons/library-addon/src/ui/manager/state.js",
-            "bytes": 657,
-            "physicalLines": 36,
-            "nonblankLines": 28
+            "bytes": 1150,
+            "physicalLines": 56,
+            "nonblankLines": 46
           },
           {
             "path": "addons/library-addon/src/ui/utils/download.js",
@@ -2319,13 +2589,13 @@
           },
           {
             "path": "addons/library-addon/src/ui/utils/formatters.js",
-            "bytes": 239,
-            "physicalLines": 9,
-            "nonblankLines": 8
+            "bytes": 413,
+            "physicalLines": 15,
+            "nonblankLines": 13
           },
           {
             "path": "addons/library-addon/src/ui/utils/searchTokens.js",
-            "bytes": 3334,
+            "bytes": 3382,
             "physicalLines": 115,
             "nonblankLines": 99
           },
@@ -2343,7 +2613,7 @@
           },
           {
             "path": "addons/library-addon/src/ui/utils/threadDiff.js",
-            "bytes": 1613,
+            "bytes": 1579,
             "physicalLines": 43,
             "nonblankLines": 37
           }
@@ -2352,20 +2622,24 @@
       "builds": {
         "regular": {
           "mode": "regular",
-          "bytes": 157737,
-          "gzipBytes": 33773,
+          "bytes": 286470,
+          "gzipBytes": 60215,
           "contributors": [
             {
-              "path": "addons/library-addon/src/ui/assets/manager.css",
-              "bytes": 18822
+              "path": "addons/library-addon/src/library/service.js",
+              "bytes": 29189
             },
             {
-              "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-              "bytes": 18427
+              "path": "addons/library-addon/src/ui/assets/manager.css",
+              "bytes": 20951
             },
             {
               "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
-              "bytes": 10631
+              "bytes": 12520
+            },
+            {
+              "path": "addons/library-addon/src/library/recordModel.js",
+              "bytes": 10345
             },
             {
               "path": "addons/shared/runtimeLifecycle.js",
@@ -2373,154 +2647,150 @@
             },
             {
               "path": "addons/library-addon/src/library/importWorkflow.js",
-              "bytes": 9055
-            },
-            {
-              "path": "addons/library-addon/src/library/service.js",
-              "bytes": 7247
+              "bytes": 9181
             },
             {
               "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
-              "bytes": 7116
+              "bytes": 8472
             },
             {
-              "path": "addons/library-addon/src/ui/manager/managerApp.js",
-              "bytes": 5134
+              "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
+              "bytes": 8421
             },
             {
-              "path": "addons/library-addon/src/ui/application/importExportWorkflow.js",
-              "bytes": 4910
+              "path": "addons/library-addon/src/app/dockController.js",
+              "bytes": 8258
             },
             {
-              "path": "addons/library-addon/src/ui/assets/manager.html",
-              "bytes": 4904
+              "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+              "bytes": 7828
             },
             {
-              "path": "addons/library-addon/src/ui/application/importProgressController.js",
-              "bytes": 4276
-            },
-            {
-              "path": "addons/library-addon/src/thread/detector.js",
-              "bytes": 4006
-            },
-            {
-              "path": "addons/library-addon/src/ui/manager/handlers/rowHandlers.js",
-              "bytes": 3803
-            },
-            {
-              "path": "addons/shared/coreBridge.js",
-              "bytes": 3786
-            },
-            {
-              "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
-              "bytes": 3633
-            },
-            {
-              "path": "addons/library-addon/src/ui/utils/searchTokens.js",
-              "bytes": 3441
-            },
-            {
-              "path": "addons/library-addon/src/library/recordModel.js",
-              "bytes": 3031
+              "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
+              "bytes": 7579
             },
             {
               "path": "addons/library-addon/src/api/library/client.js",
-              "bytes": 2742
+              "bytes": 7456
+            },
+            {
+              "path": "addons/library-addon/src/ui/manager/managerApp.js",
+              "bytes": 6794
+            },
+            {
+              "path": "addons/library-addon/src/ui/application/importExportWorkflow.js",
+              "bytes": 6254
+            },
+            {
+              "path": "addons/library-addon/src/ui/assets/manager.html",
+              "bytes": 5859
+            },
+            {
+              "path": "addons/library-addon/src/ui/entryEditor/editorRenderer.js",
+              "bytes": 4958
             },
             {
               "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
-              "bytes": 2459
+              "bytes": 4898
             },
             {
-              "path": "addons/library-addon/src/api/ui/manager.js",
-              "bytes": 2443
+              "path": "addons/library-addon/src/library/threadUpdateParser.js",
+              "bytes": 4417
+            },
+            {
+              "path": "addons/library-addon/src/api/threadHtml.js",
+              "bytes": 4371
+            },
+            {
+              "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
+              "bytes": 4363
             }
           ]
         },
         "release": {
           "mode": "release",
-          "bytes": 137406,
-          "gzipBytes": 29250,
+          "bytes": 249005,
+          "gzipBytes": 51810,
           "contributors": [
             {
-              "path": "addons/library-addon/src/ui/assets/manager.css",
-              "bytes": 17956
+              "path": "addons/library-addon/src/library/service.js",
+              "bytes": 20092
             },
             {
-              "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-              "bytes": 12328
+              "path": "addons/library-addon/src/ui/assets/manager.css",
+              "bytes": 19985
             },
             {
               "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
-              "bytes": 8860
+              "bytes": 10638
+            },
+            {
+              "path": "addons/library-addon/src/library/recordModel.js",
+              "bytes": 7939
             },
             {
               "path": "addons/shared/runtimeLifecycle.js",
               "bytes": 6436
             },
             {
-              "path": "addons/library-addon/src/library/importWorkflow.js",
-              "bytes": 6157
-            },
-            {
               "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
-              "bytes": 5336
+              "bytes": 6406
             },
             {
-              "path": "addons/library-addon/src/library/service.js",
-              "bytes": 5072
+              "path": "addons/library-addon/src/library/importWorkflow.js",
+              "bytes": 6216
             },
             {
               "path": "addons/library-addon/src/ui/assets/manager.html",
-              "bytes": 4776
+              "bytes": 5713
+            },
+            {
+              "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+              "bytes": 5431
+            },
+            {
+              "path": "addons/library-addon/src/app/dockController.js",
+              "bytes": 5361
+            },
+            {
+              "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
+              "bytes": 5318
             },
             {
               "path": "addons/library-addon/src/ui/manager/managerApp.js",
-              "bytes": 3760
+              "bytes": 4980
+            },
+            {
+              "path": "addons/library-addon/src/api/library/client.js",
+              "bytes": 4832
             },
             {
               "path": "addons/library-addon/src/ui/application/importExportWorkflow.js",
-              "bytes": 3723
+              "bytes": 4828
+            },
+            {
+              "path": "addons/library-addon/src/ui/entryEditor/editorRenderer.js",
+              "bytes": 4625
+            },
+            {
+              "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
+              "bytes": 4413
+            },
+            {
+              "path": "addons/library-addon/src/ui/entryEditor/editor.css",
+              "bytes": 3969
+            },
+            {
+              "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
+              "bytes": 3252
             },
             {
               "path": "addons/library-addon/src/ui/application/importProgressController.js",
               "bytes": 3220
             },
             {
-              "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
-              "bytes": 3096
-            },
-            {
-              "path": "addons/library-addon/src/thread/detector.js",
-              "bytes": 3058
-            },
-            {
-              "path": "addons/library-addon/src/ui/manager/handlers/rowHandlers.js",
-              "bytes": 2740
-            },
-            {
-              "path": "addons/shared/coreBridge.js",
-              "bytes": 2651
-            },
-            {
-              "path": "addons/library-addon/src/ui/utils/searchTokens.js",
-              "bytes": 2276
-            },
-            {
-              "path": "addons/library-addon/src/library/recordModel.js",
-              "bytes": 2255
-            },
-            {
-              "path": "addons/library-addon/src/api/library/client.js",
-              "bytes": 1830
-            },
-            {
-              "path": "addons/library-addon/src/ui/utils/tagViewModel.js",
-              "bytes": 1666
-            },
-            {
-              "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
-              "bytes": 1608
+              "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
+              "bytes": 3175
             }
           ]
         }
@@ -2529,10 +2799,10 @@
     {
       "id": "masked-direct-addon",
       "source": {
-        "fileCount": 30,
-        "authoredBytes": 122200,
-        "physicalLines": 4206,
-        "nonblankLines": 3647,
+        "fileCount": 37,
+        "authoredBytes": 125195,
+        "physicalLines": 4294,
+        "nonblankLines": 3746,
         "files": [
           {
             "path": "addons/masked-direct-addon/src/api/observer.js",
@@ -2553,10 +2823,70 @@
             "nonblankLines": 28
           },
           {
+            "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
+            "bytes": 10981,
+            "physicalLines": 391,
+            "nonblankLines": 349
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
+            "bytes": 4408,
+            "physicalLines": 136,
+            "nonblankLines": 116
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/contexts/threadPageController.js",
+            "bytes": 6174,
+            "physicalLines": 203,
+            "nonblankLines": 172
+          },
+          {
             "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
-            "bytes": 21132,
-            "physicalLines": 678,
-            "nonblankLines": 597
+            "bytes": 9722,
+            "physicalLines": 296,
+            "nonblankLines": 265
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/lifecycle.js",
+            "bytes": 3562,
+            "physicalLines": 133,
+            "nonblankLines": 119
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/managedTabs.js",
+            "bytes": 1057,
+            "physicalLines": 38,
+            "nonblankLines": 34
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/pageBehavior.js",
+            "bytes": 2252,
+            "physicalLines": 77,
+            "nonblankLines": 72
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/registration.js",
+            "bytes": 2190,
+            "physicalLines": 68,
+            "nonblankLines": 63
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/runtime.js",
+            "bytes": 1293,
+            "physicalLines": 32,
+            "nonblankLines": 30
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/settings.js",
+            "bytes": 3249,
+            "physicalLines": 102,
+            "nonblankLines": 94
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/styleController.js",
+            "bytes": 631,
+            "physicalLines": 20,
+            "nonblankLines": 19
           },
           {
             "path": "addons/masked-direct-addon/src/constants.js",
@@ -2571,38 +2901,32 @@
             "nonblankLines": 13
           },
           {
-            "path": "addons/masked-direct-addon/src/directDownloadAttention.js",
-            "bytes": 5540,
+            "path": "addons/masked-direct-addon/src/domain/directDownload/attention.js",
+            "bytes": 5544,
             "physicalLines": 189,
             "nonblankLines": 166
           },
           {
-            "path": "addons/masked-direct-addon/src/directDownloadFlowController.js",
-            "bytes": 7767,
-            "physicalLines": 273,
-            "nonblankLines": 247
-          },
-          {
-            "path": "addons/masked-direct-addon/src/downloadDetector.js",
-            "bytes": 10512,
+            "path": "addons/masked-direct-addon/src/domain/directDownload/detectors.js",
+            "bytes": 10531,
             "physicalLines": 375,
             "nonblankLines": 280
           },
           {
-            "path": "addons/masked-direct-addon/src/downloadPageController.js",
-            "bytes": 10950,
-            "physicalLines": 391,
-            "nonblankLines": 349
+            "path": "addons/masked-direct-addon/src/domain/directDownload/flowController.js",
+            "bytes": 7780,
+            "physicalLines": 273,
+            "nonblankLines": 247
           },
           {
-            "path": "addons/masked-direct-addon/src/gmStorageHelper.js",
-            "bytes": 2793,
-            "physicalLines": 85,
-            "nonblankLines": 53
+            "path": "addons/masked-direct-addon/src/domain/directDownload/processingTrigger.js",
+            "bytes": 5019,
+            "physicalLines": 182,
+            "nonblankLines": 163
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/buzzheavier.js",
-            "bytes": 1805,
+            "bytes": 1812,
             "physicalLines": 64,
             "nonblankLines": 58
           },
@@ -2614,7 +2938,7 @@
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-            "bytes": 6102,
+            "bytes": 6109,
             "physicalLines": 190,
             "nonblankLines": 164
           },
@@ -2626,7 +2950,7 @@
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/mediafire.js",
-            "bytes": 1748,
+            "bytes": 1755,
             "physicalLines": 63,
             "nonblankLines": 57
           },
@@ -2644,21 +2968,27 @@
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/shared/dom.js",
-            "bytes": 2230,
+            "bytes": 2237,
             "physicalLines": 91,
             "nonblankLines": 80
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/vik1ngfile.js",
-            "bytes": 2122,
+            "bytes": 2129,
             "physicalLines": 68,
             "nonblankLines": 58
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/workupload.js",
-            "bytes": 3339,
+            "bytes": 3346,
             "physicalLines": 129,
             "nonblankLines": 116
+          },
+          {
+            "path": "addons/masked-direct-addon/src/infrastructure/gmStorageAdapter.js",
+            "bytes": 2793,
+            "physicalLines": 85,
+            "nonblankLines": 53
           },
           {
             "path": "addons/masked-direct-addon/src/main.js",
@@ -2667,20 +2997,14 @@
             "nonblankLines": 6
           },
           {
-            "path": "addons/masked-direct-addon/src/maskedPageController.js",
-            "bytes": 4393,
-            "physicalLines": 136,
-            "nonblankLines": 116
-          },
-          {
             "path": "addons/masked-direct-addon/src/ports/downloadSettingsRepository.js",
-            "bytes": 132,
+            "bytes": 148,
             "physicalLines": 5,
             "nonblankLines": 5
           },
           {
             "path": "addons/masked-direct-addon/src/ports/processingDownloadRepository.js",
-            "bytes": 341,
+            "bytes": 355,
             "physicalLines": 10,
             "nonblankLines": 10
           },
@@ -2691,84 +3015,76 @@
             "nonblankLines": 138
           },
           {
-            "path": "addons/masked-direct-addon/src/processingDownloadTrigger.js",
-            "bytes": 5019,
-            "physicalLines": 182,
-            "nonblankLines": 163
+            "path": "addons/masked-direct-addon/src/shared/utils.js",
+            "bytes": 2662,
+            "physicalLines": 91,
+            "nonblankLines": 82
           },
           {
-            "path": "addons/masked-direct-addon/src/threadPageController.js",
-            "bytes": 6159,
-            "physicalLines": 203,
-            "nonblankLines": 172
-          },
-          {
-            "path": "addons/masked-direct-addon/src/ui.js",
+            "path": "addons/masked-direct-addon/src/ui/controller.js",
             "bytes": 2345,
             "physicalLines": 87,
             "nonblankLines": 80
-          },
-          {
-            "path": "addons/masked-direct-addon/src/utils.js",
-            "bytes": 2660,
-            "physicalLines": 91,
-            "nonblankLines": 82
           }
         ]
       },
       "builds": {
         "regular": {
           "mode": "regular",
-          "bytes": 118371,
-          "gzipBytes": 25683,
+          "bytes": 121703,
+          "gzipBytes": 26318,
           "contributors": [
             {
-              "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
-              "bytes": 19089
-            },
-            {
-              "path": "addons/masked-direct-addon/src/downloadPageController.js",
+              "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
               "bytes": 10655
             },
             {
-              "path": "addons/masked-direct-addon/src/directDownloadFlowController.js",
-              "bytes": 7511
+              "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+              "bytes": 7873
+            },
+            {
+              "path": "addons/masked-direct-addon/src/domain/directDownload/flowController.js",
+              "bytes": 7498
             },
             {
               "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-              "bytes": 7184
+              "bytes": 7199
             },
             {
-              "path": "addons/masked-direct-addon/src/threadPageController.js",
-              "bytes": 6447
-            },
-            {
-              "path": "addons/masked-direct-addon/src/downloadDetector.js",
+              "path": "addons/masked-direct-addon/src/domain/directDownload/detectors.js",
               "bytes": 6407
+            },
+            {
+              "path": "addons/masked-direct-addon/src/app/contexts/threadPageController.js",
+              "bytes": 6336
             },
             {
               "path": "addons/masked-direct-addon/src/hosts/gofile.js",
               "bytes": 6194
             },
             {
-              "path": "addons/masked-direct-addon/src/directDownloadAttention.js",
+              "path": "addons/masked-direct-addon/src/domain/directDownload/attention.js",
               "bytes": 5682
             },
             {
-              "path": "addons/masked-direct-addon/src/processingDownloadTrigger.js",
+              "path": "addons/masked-direct-addon/src/domain/directDownload/processingTrigger.js",
               "bytes": 5013
             },
             {
-              "path": "addons/masked-direct-addon/src/maskedPageController.js",
-              "bytes": 4497
+              "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
+              "bytes": 4446
             },
             {
               "path": "addons/masked-direct-addon/src/ports/routeContextRepository.js",
               "bytes": 3926
             },
             {
+              "path": "addons/masked-direct-addon/src/app/lifecycle.js",
+              "bytes": 3791
+            },
+            {
               "path": "addons/shared/coreBridge.js",
-              "bytes": 3822
+              "bytes": 3784
             },
             {
               "path": "addons/masked-direct-addon/src/hosts/pixeldrain.js",
@@ -2783,71 +3099,67 @@
               "bytes": 3140
             },
             {
+              "path": "addons/masked-direct-addon/src/app/settings.js",
+              "bytes": 3096
+            },
+            {
               "path": "addons/masked-direct-addon/src/hosts/metadata.js",
               "bytes": 2816
             },
             {
-              "path": "addons/masked-direct-addon/src/utils.js",
+              "path": "addons/masked-direct-addon/src/shared/utils.js",
               "bytes": 2626
             },
             {
-              "path": "addons/masked-direct-addon/src/ui.js",
-              "bytes": 2427
-            },
-            {
-              "path": "addons/masked-direct-addon/src/hosts/shared/dom.js",
-              "bytes": 2092
-            },
-            {
-              "path": "addons/masked-direct-addon/src/gmStorageHelper.js",
-              "bytes": 1720
+              "path": "addons/masked-direct-addon/src/app/pageBehavior.js",
+              "bytes": 2464
             }
           ]
         },
         "release": {
           "mode": "release",
-          "bytes": 98062,
-          "gzipBytes": 21676,
+          "bytes": 101534,
+          "gzipBytes": 22353,
           "contributors": [
             {
-              "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
-              "bytes": 14439
-            },
-            {
-              "path": "addons/masked-direct-addon/src/downloadPageController.js",
+              "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
               "bytes": 7057
             },
             {
-              "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-              "bytes": 4938
+              "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+              "bytes": 6293
             },
             {
-              "path": "addons/masked-direct-addon/src/directDownloadFlowController.js",
-              "bytes": 4936
+              "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
+              "bytes": 4952
             },
             {
               "path": "addons/masked-direct-addon/src/hosts/gofile.js",
               "bytes": 4935
             },
             {
-              "path": "addons/masked-direct-addon/src/threadPageController.js",
-              "bytes": 4768
+              "path": "addons/masked-direct-addon/src/domain/directDownload/flowController.js",
+              "bytes": 4924
             },
             {
-              "path": "addons/masked-direct-addon/src/downloadDetector.js",
+              "path": "addons/masked-direct-addon/src/app/contexts/threadPageController.js",
+              "bytes": 4664
+            },
+            {
+              "path": "addons/masked-direct-addon/src/domain/directDownload/detectors.js",
               "bytes": 4189
             },
             {
-              "path": "addons/masked-direct-addon/src/directDownloadAttention.js",
+              "path": "addons/masked-direct-addon/src/domain/directDownload/attention.js",
               "bytes": 4142
             },
             {
-              "path": "addons/masked-direct-addon/src/processingDownloadTrigger.js",
+              "path": "addons/masked-direct-addon/src/domain/directDownload/processingTrigger.js",
               "bytes": 3586
             },
             {
-              "path": "addons/masked-direct-addon/src/maskedPageController.js",
-              "bytes": 3226
+              "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
+              "bytes": 3178
             },
             {
               "path": "addons/masked-direct-addon/src/ports/routeContextRepository.js",
@@ -2859,7 +3171,11 @@
             },
             {
               "path": "addons/shared/coreBridge.js",
-              "bytes": 2685
+              "bytes": 2649
+            },
+            {
+              "path": "addons/masked-direct-addon/src/app/lifecycle.js",
+              "bytes": 2611
             },
             {
               "path": "addons/masked-direct-addon/src/hosts/workupload.js",
@@ -2870,24 +3186,20 @@
               "bytes": 2401
             },
             {
+              "path": "addons/masked-direct-addon/src/app/settings.js",
+              "bytes": 2380
+            },
+            {
               "path": "addons/masked-direct-addon/src/hosts/metadata.js",
               "bytes": 2175
             },
             {
-              "path": "addons/masked-direct-addon/src/ui.js",
+              "path": "addons/masked-direct-addon/src/ui/controller.js",
               "bytes": 2077
             },
             {
-              "path": "addons/masked-direct-addon/src/utils.js",
+              "path": "addons/masked-direct-addon/src/shared/utils.js",
               "bytes": 1858
-            },
-            {
-              "path": "addons/masked-direct-addon/src/hosts/shared/dom.js",
-              "bytes": 1524
-            },
-            {
-              "path": "addons/masked-direct-addon/src/gmStorageHelper.js",
-              "bytes": 1278
             }
           ]
         }
@@ -2897,9 +3209,9 @@
       "id": "site-repair-addon",
       "source": {
         "fileCount": 19,
-        "authoredBytes": 35743,
-        "physicalLines": 933,
-        "nonblankLines": 882,
+        "authoredBytes": 36892,
+        "physicalLines": 984,
+        "nonblankLines": 933,
         "files": [
           {
             "path": "addons/site-repair-addon/src/api/bridge.js",
@@ -2945,7 +3257,7 @@
           },
           {
             "path": "addons/site-repair-addon/src/app/createSiteRepairApp.js",
-            "bytes": 7908,
+            "bytes": 7912,
             "physicalLines": 151,
             "nonblankLines": 149
           },
@@ -2987,9 +3299,9 @@
           },
           {
             "path": "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
-            "bytes": 3748,
-            "physicalLines": 109,
-            "nonblankLines": 104
+            "bytes": 4893,
+            "physicalLines": 160,
+            "nonblankLines": 155
           },
           {
             "path": "addons/site-repair-addon/src/repairs/imageAttachments/scheduler.js",
@@ -3020,8 +3332,8 @@
       "builds": {
         "regular": {
           "mode": "regular",
-          "bytes": 50172,
-          "gzipBytes": 12131,
+          "bytes": 51398,
+          "gzipBytes": 12346,
           "contributors": [
             {
               "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
@@ -3033,11 +3345,11 @@
             },
             {
               "path": "addons/site-repair-addon/src/app/createSiteRepairApp.js",
-              "bytes": 7504
+              "bytes": 7508
             },
             {
               "path": "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
-              "bytes": 3882
+              "bytes": 5104
             },
             {
               "path": "addons/shared/coreBridge.js",
@@ -3107,8 +3419,8 @@
         },
         "release": {
           "mode": "release",
-          "bytes": 43521,
-          "gzipBytes": 10133,
+          "bytes": 44473,
+          "gzipBytes": 10294,
           "contributors": [
             {
               "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
@@ -3120,11 +3432,11 @@
             },
             {
               "path": "addons/site-repair-addon/src/app/createSiteRepairApp.js",
-              "bytes": 5685
+              "bytes": 5689
             },
             {
               "path": "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
-              "bytes": 2929
+              "bytes": 3697
             },
             {
               "path": "addons/shared/coreBridge.js",
@@ -3212,9 +3524,9 @@
     },
     "servicesAddons": {
       "fileCount": 34,
-      "authoredBytes": 176603,
-      "physicalLines": 4833,
-      "nonblankLines": 4204,
+      "authoredBytes": 181687,
+      "physicalLines": 4974,
+      "nonblankLines": 4337,
       "files": [
         {
           "path": "src/services/addons/access.js",
@@ -3332,9 +3644,9 @@
         },
         {
           "path": "src/services/addons/idbStore.js",
-          "bytes": 8297,
-          "physicalLines": 267,
-          "nonblankLines": 225
+          "bytes": 13381,
+          "physicalLines": 408,
+          "nonblankLines": 358
         },
         {
           "path": "src/services/addons/invocation.js",

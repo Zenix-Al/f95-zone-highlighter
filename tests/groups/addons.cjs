@@ -155,7 +155,12 @@ runTest("ADDON-GOLDEN-01 keeps Example Add-on composition and API boundaries", (
   const mainSource = fs.readFileSync(path.join(addonRoot, "main.js"), "utf8");
   const bridgeSource = fs.readFileSync(path.join(addonRoot, "api", "bridge.js"), "utf8");
   const appSource = fs.readFileSync(path.join(addonRoot, "app", "createExampleAddonApp.js"), "utf8");
+  const actionsSource = fs.readFileSync(path.join(addonRoot, "app", "actions", "index.js"), "utf8");
+  const registrationSource = fs.readFileSync(path.join(addonRoot, "app", "registration.js"), "utf8");
   const appSources = collectJavaScriptFiles(path.join(addonRoot, "app"))
+    .map((filePath) => fs.readFileSync(filePath, "utf8"))
+    .join("\n");
+  const domainSources = collectJavaScriptFiles(path.join(addonRoot, "domain"))
     .map((filePath) => fs.readFileSync(filePath, "utf8"))
     .join("\n");
   const uiSources = collectJavaScriptFiles(path.join(addonRoot, "ui"))
@@ -177,15 +182,68 @@ runTest("ADDON-GOLDEN-01 keeps Example Add-on composition and API boundaries", (
   assert.doesNotMatch(mainSource, /invokeCoreAction|registerAddonRuntime|openDialog/);
   assert.match(appSource, /createExampleLifecycle/);
   assert.match(appSource, /createBulkImportController/);
+  assert.match(appSource, /createExampleActions/);
+  assert.match(appSource, /createExampleRegistration/);
+  assert.ok(appSource.split(/\r?\n/).length < 400, "golden app composition must stay below 400 lines");
+  assert.match(actionsSource, /createExampleActions/);
+  assert.match(registrationSource, /panelSettingsStorageKey/);
+  assert.match(registrationSource, /panelSettingsDefaults/);
+  assert.match(registrationSource, /panelSettings:/);
   assert.doesNotMatch(appSources, /\.invokeCoreAction\(/);
+  assert.doesNotMatch(domainSources, /\.invokeCoreAction\(|"(?:storage|idb|ui|feature|observer)\.[a-zA-Z]/);
   assert.doesNotMatch(uiSources, /\.invokeCoreAction\(/);
   assert.ok(fs.existsSync(path.join(addonRoot, "core", "adaptor.js")));
   assert.ok(fs.existsSync(path.join(addonRoot, "api", "bridge.js")));
-  assert.ok(fs.existsSync(path.join(addonRoot, "app", "state.js")));
+  assert.ok(fs.existsSync(path.join(addonRoot, "domain", "state.js")));
+  assert.ok(fs.existsSync(path.join(addonRoot, "domain", "playgroundData.js")));
+  assert.ok(fs.existsSync(path.join(addonRoot, "domain", "bulkImport", "controller.js")));
+  for (const family of ["metadata", "storage", "idb", "observer", "ui"]) {
+    assert.ok(fs.existsSync(path.join(addonRoot, "app", "actions", `${family}.js`)));
+  }
   assert.ok(fs.existsSync(path.join(addonRoot, "app", "lifecycle.js")));
   assert.ok(fs.existsSync(path.join(addonRoot, "app", "commands.js")));
+  assert.ok(fs.existsSync(path.join(addonRoot, "app", "uiController.js")));
   assert.ok(fs.existsSync(path.join(addonRoot, "ui", "panel.js")));
   assert.ok(fs.existsSync(path.join(addonRoot, "ui", "bindings.js")));
+});
+
+runTest("ADDON-MASKED-DIRECT-01 keeps hybrid modules out of the source root", () => {
+  const addonRoot = path.join(ROOT, "addons", "masked-direct-addon", "src");
+  const rootFiles = fs.readdirSync(addonRoot, { withFileTypes: true })
+    .filter((entry) => entry.isFile())
+    .map((entry) => entry.name)
+    .sort();
+  assert.deepStrictEqual(rootFiles, ["constants.js", "main.js"]);
+  for (const relativePath of [
+    "app/contexts/threadPageController.js",
+    "app/contexts/maskedPageController.js",
+    "app/contexts/downloadPageController.js",
+    "app/lifecycle.js",
+    "app/managedTabs.js",
+    "app/pageBehavior.js",
+    "app/registration.js",
+    "app/runtime.js",
+    "app/settings.js",
+    "app/styleController.js",
+    "domain/directDownload/attention.js",
+    "domain/directDownload/detectors.js",
+    "domain/directDownload/flowController.js",
+    "domain/directDownload/processingTrigger.js",
+    "infrastructure/gmStorageAdapter.js",
+    "shared/utils.js",
+    "ui/controller.js",
+  ]) {
+    assert.ok(fs.existsSync(path.join(addonRoot, relativePath)), relativePath);
+  }
+  const compositionSource = fs.readFileSync(
+    path.join(addonRoot, "app", "createMaskedDirectApp.js"),
+    "utf8",
+  );
+  assert.ok(
+    compositionSource.split(/\r?\n/).length < 350,
+    "Masked Direct composition root must remain below 350 lines",
+  );
+  assert.doesNotMatch(compositionSource, /ADDON_PANEL_SETTINGS|ADDON_COMMAND_EVENT/);
 });
 
 runTest("ADDON-RUNTIME-KIT-01 characterizes equivalent normalized runtime wrappers", () => {
@@ -279,11 +337,53 @@ runTest("ADDON-API config.getTagPrefs reads canonical live config", async () => 
 });
 
 runTest("ADDON-GOLDEN-01 bounds large API results before panel rendering", () => {
-  const { compactResultForPanel } = loadModule("addons/example-addon/src/app/state.js");
+  const { compactResultForPanel } = loadModule("addons/example-addon/src/domain/state.js");
   const result = compactResultForPanel({ ok: true, value: [{ body: "X".repeat(20000) }] });
   assert.strictEqual(result.ok, true);
   assert.match(result.value, /large result omitted from panel/);
   assert.ok(JSON.stringify(result).length < 1000);
+});
+
+runTest("ADDON-GOLDEN-01 normalizes core-rendered settings deterministically", async () => {
+  const {
+    EXAMPLE_PANEL_SETTINGS,
+    EXAMPLE_SETTINGS_DEFAULTS,
+    loadExampleSettings,
+    normalizeExampleSettings,
+  } = loadModule("addons/example-addon/src/app/settings.js");
+
+  assert.deepStrictEqual(normalizeExampleSettings(null), EXAMPLE_SETTINGS_DEFAULTS);
+  assert.deepStrictEqual(
+    normalizeExampleSettings({ showDockLauncher: false, panelLogLimit: 999 }),
+    { showDockLauncher: false, panelLogLimit: 50 },
+  );
+  assert.deepStrictEqual(
+    normalizeExampleSettings({ showDockLauncher: true, panelLogLimit: -4 }),
+    { showDockLauncher: true, panelLogLimit: 1 },
+  );
+  assert.deepStrictEqual(
+    EXAMPLE_PANEL_SETTINGS.map((entry) => [entry.path, entry.type]),
+    [["showDockLauncher", "toggle"], ["panelLogLimit", "number"]],
+  );
+
+  const calls = [];
+  const loaded = await loadExampleSettings({
+    invokeCoreAction: async (action, payload) => {
+      calls.push({ action, payload });
+      return {
+        ok: true,
+        value: { showDockLauncher: false, panelLogLimit: 7.6 },
+      };
+    },
+  });
+  assert.deepStrictEqual(calls, [{
+    action: "storage.get",
+    payload: { key: "settings", defaultValue: EXAMPLE_SETTINGS_DEFAULTS },
+  }]);
+  assert.deepStrictEqual(loaded.settings, {
+    showDockLauncher: false,
+    panelLogLimit: 8,
+  });
 });
 
 runTest("ADDON-HALLOWEEN-01 follows the Example boundaries and confines bridge actions", () => {
@@ -446,14 +546,22 @@ runTest("ADDON-LATEST-FILTERS-01 keeps Latest scope and canonical module boundar
     "api/ui/dialog.js",
     "app/state.js",
     "app/repository.js",
+    "app/operationTracker.js",
+    "app/registration.js",
     "app/lifecycle.js",
     "app/commands.js",
     "app/createLatestFiltersApp.js",
     "ui/bindings.js",
     "ui/renderer.js",
+    "domain/presets.js",
   ]) {
     assert.ok(fs.existsSync(path.join(addonRoot, relativePath)), relativePath);
   }
+  const rootFiles = fs.readdirSync(addonRoot, { withFileTypes: true })
+    .filter((entry) => entry.isFile())
+    .map((entry) => entry.name)
+    .sort();
+  assert.deepStrictEqual(rootFiles, ["constants.js", "main.js"]);
   assert.strictEqual(fs.existsSync(path.join(addonRoot, "coreBridge.js")), false);
 });
 
@@ -693,6 +801,9 @@ runTest("ADDON-GOLDEN-01 boots normally on the declared F95Zone scope", async ()
     assert.strictEqual(registrations.length, 2);
     assert.strictEqual(registrations[0].requiresCore, true);
     assert.deepStrictEqual(registrations[0].pageScopes, ["f95zone"]);
+    assert.strictEqual(registrations[0].panelSettingsStorageKey, "settings");
+    assert.ok(registrations[0].panelSettings.some((entry) => entry.path === "showDockLauncher"));
+    assert.ok(registrations[0].panelSettings.some((entry) => entry.path === "panelLogLimit"));
     assert.strictEqual(actions.some((entry) => entry.action === "scope.error"), false);
     assert.ok(actions.some((entry) => entry.action === "ui.style.register"));
     assert.ok(actions.some((entry) => entry.action === "ui.mount"));
@@ -795,15 +906,16 @@ runTest("ADDON-GOLDEN-01 serializes lifecycle, suppresses stale commits, and ack
 
 runTest("ADDON-GOLDEN-01 keeps owned cancellation and late-commit guards in the app", () => {
   const appSource = fs.readFileSync(path.join(ROOT, "addons/example-addon/src/app/createExampleAddonApp.js"), "utf8");
-  const bulkSource = fs.readFileSync(path.join(ROOT, "addons/example-addon/src/app/bulkImport.js"), "utf8");
+  const bulkSource = fs.readFileSync(path.join(ROOT, "addons/example-addon/src/domain/bulkImport/controller.js"), "utf8");
+  const uiSource = fs.readFileSync(path.join(ROOT, "addons/example-addon/src/app/uiController.js"), "utf8");
   assert.match(appSource, /ownedTimeouts/);
   assert.match(appSource, /ownedObserverNodes/);
   assert.match(appSource, /cancelOwnedTimeouts/);
   assert.match(appSource, /bulkImport\.requestCancellation\(\)/);
-  assert.match(appSource, /unregisterStyle/);
+  assert.match(uiSource, /unregisterStyle/);
   assert.match(appSource, /commandController\.unbind\(\)/);
   assert.match(appSource, /notifyTeardownComplete/);
-  assert.match(appSource, /if \(!state\.enabled \|\| terminal\)/);
+  assert.match(uiSource, /if \(!state\.enabled \|\| isTerminal\(\)\)/);
   assert.match(bulkSource, /handleDialogClosed/);
   assert.match(bulkSource, /active\.closing = true/);
   assert.match(bulkSource, /finally \{\s*active = null;/s);

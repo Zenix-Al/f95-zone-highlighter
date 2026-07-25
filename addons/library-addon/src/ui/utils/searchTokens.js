@@ -76,18 +76,18 @@ export function parseSearchQuery(rawValue) {
 export function matchesSearchTokens(entry, tokens = []) {
   if (!Array.isArray(tokens) || tokens.length === 0) return true;
 
-  const tags = Array.isArray(entry?.tags)
-    ? entry.tags.map((tag) => safeText(tag).toLowerCase())
+  const tags = Array.isArray(entry?.thread?.tags)
+    ? entry.thread.tags.map((tag) => safeText(tag).toLowerCase())
     : [];
-  const status = safeText(entry?.userStatus).toLowerCase();
+  const status = safeText(entry?.personal?.status).toLowerCase();
   const threadId = safeText(entry?.threadId).toLowerCase();
-  const note = safeText(entry?.note);
-  const score = Number(entry?.userScore);
+  const note = safeText(entry?.personal?.note);
+  const score = Number(entry?.personal?.rating);
 
   for (const token of tokens) {
     switch (token.type) {
       case "pinned":
-        if (Boolean(entry?.pinned) !== Boolean(token.value)) return false;
+        if (Boolean(entry?.personal?.pinned) !== Boolean(token.value)) return false;
         break;
       case "hasNote": {
         const hasNote = note.length > 0;

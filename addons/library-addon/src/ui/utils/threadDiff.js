@@ -6,11 +6,11 @@ export function getThreadDiffSummary(entry, snapshot) {
   }
 
   const fields = [];
-  if (safeText(entry.title) !== safeText(snapshot.title)) fields.push("title");
-  if (safeText(entry.prefix) !== safeText(snapshot.prefix)) fields.push("prefix");
+  const thread = entry.thread || {};
+  if (safeText(thread.title) !== safeText(snapshot.title)) fields.push("title");
 
-  const leftPrefixes = Array.isArray(entry.prefixes)
-    ? entry.prefixes
+  const leftPrefixes = Array.isArray(thread.prefixes)
+    ? thread.prefixes
         .map((prefix) => safeText(prefix?.label).toLowerCase())
         .filter(Boolean)
         .join("|")
@@ -23,13 +23,13 @@ export function getThreadDiffSummary(entry, snapshot) {
     : "";
   if (leftPrefixes !== rightPrefixes) fields.push("prefixes");
 
-  if (safeText(entry.gameVersion) !== safeText(snapshot.gameVersion)) fields.push("version");
-  if (safeText(entry.developer) !== safeText(snapshot.developer)) fields.push("developer");
-  if (Number(entry.threadRating ?? null) !== Number(snapshot.threadRating ?? null)) fields.push("rating");
-  if (safeText(entry.url) !== safeText(snapshot.url)) fields.push("url");
+  if (safeText(thread.currentVersion) !== safeText(snapshot.gameVersion)) fields.push("version");
+  if (safeText(thread.developer) !== safeText(snapshot.developer)) fields.push("developer");
+  if (Number(thread.threadRating ?? null) !== Number(snapshot.threadRating ?? null)) fields.push("rating");
+  if (safeText(thread.url) !== safeText(snapshot.url)) fields.push("url");
 
-  const leftTags = Array.isArray(entry.tags)
-    ? entry.tags.map((tag) => safeText(tag)).filter(Boolean)
+  const leftTags = Array.isArray(thread.tags)
+    ? thread.tags.map((tag) => safeText(tag)).filter(Boolean)
     : [];
   const rightTags = Array.isArray(snapshot.tags)
     ? snapshot.tags.map((tag) => safeText(tag).toLowerCase()).filter(Boolean)
