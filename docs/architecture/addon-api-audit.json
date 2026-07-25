@@ -2175,12 +2175,14 @@
           "addons/library-addon/src/api/bridge.js",
           "addons/library-addon/src/api/library/client.js",
           "addons/library-addon/src/api/library/index.js",
+          "addons/library-addon/src/api/library/schema.js",
           "addons/library-addon/src/api/library/storePayload.js",
           "addons/library-addon/src/api/library/throttle.js",
           "addons/library-addon/src/api/meta.js",
           "addons/library-addon/src/api/observer.js",
           "addons/library-addon/src/api/page.js",
           "addons/library-addon/src/api/storage.js",
+          "addons/library-addon/src/api/threadHtml.js",
           "addons/library-addon/src/api/toast.js",
           "addons/library-addon/src/api/ui/dialog.js",
           "addons/library-addon/src/api/ui/manager.js",
@@ -2191,15 +2193,27 @@
           "addons/library-addon/src/app/dockController.js",
           "addons/library-addon/src/app/lifecycle.js",
           "addons/library-addon/src/app/managerController.js",
+          "addons/library-addon/src/app/opportunisticObserver.js",
           "addons/library-addon/src/app/pageContext.js",
           "addons/library-addon/src/app/registration.js",
           "addons/library-addon/src/app/settings.js",
           "addons/library-addon/src/constants.js",
           "addons/library-addon/src/core/adaptor.js",
+          "addons/library-addon/src/library/activityCommandId.js",
+          "addons/library-addon/src/library/activityEventModel.js",
+          "addons/library-addon/src/library/activityRepository.js",
+          "addons/library-addon/src/library/autoUpdatePolicy.js",
+          "addons/library-addon/src/library/autoUpdateRepository.js",
+          "addons/library-addon/src/library/autoUpdateScheduler.js",
           "addons/library-addon/src/library/importWorkflow.js",
+          "addons/library-addon/src/library/libraryDocument.js",
+          "addons/library-addon/src/library/manualUpdateChecker.js",
           "addons/library-addon/src/library/querying.js",
           "addons/library-addon/src/library/recordModel.js",
           "addons/library-addon/src/library/service.js",
+          "addons/library-addon/src/library/threadUpdateParser.js",
+          "addons/library-addon/src/library/updateEventModel.js",
+          "addons/library-addon/src/library/updateRepository.js",
           "addons/library-addon/src/main.js",
           "addons/library-addon/src/thread/detector.js",
           "addons/library-addon/src/thread/quickActions.js",
@@ -2209,19 +2223,29 @@
           "addons/library-addon/src/ui/assets/dock.html",
           "addons/library-addon/src/ui/assets/manager.css",
           "addons/library-addon/src/ui/assets/manager.html",
+          "addons/library-addon/src/ui/autoUpdate/autoUpdate.css",
+          "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
+          "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
           "addons/library-addon/src/ui/components/dock/dockRenderer.js",
           "addons/library-addon/src/ui/components/manager/dialogShell.js",
           "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
           "addons/library-addon/src/ui/components/manager/tableRenderer.js",
           "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
+          "addons/library-addon/src/ui/entryEditor/editor.css",
+          "addons/library-addon/src/ui/entryEditor/editorBindings.js",
+          "addons/library-addon/src/ui/entryEditor/editorController.js",
+          "addons/library-addon/src/ui/entryEditor/editorRenderer.js",
+          "addons/library-addon/src/ui/entryEditor/editorValidation.js",
           "addons/library-addon/src/ui/manager/createHandlers.js",
           "addons/library-addon/src/ui/manager/handlerContext.js",
           "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
           "addons/library-addon/src/ui/manager/handlers/navigationHandlers.js",
           "addons/library-addon/src/ui/manager/handlers/noteHandlers.js",
+          "addons/library-addon/src/ui/manager/handlers/ratingHandlers.js",
           "addons/library-addon/src/ui/manager/handlers/rowHandlers.js",
           "addons/library-addon/src/ui/manager/handlers/selectionHandlers.js",
           "addons/library-addon/src/ui/manager/handlers/statusHandlers.js",
+          "addons/library-addon/src/ui/manager/handlers/updateCheckHandlers.js",
           "addons/library-addon/src/ui/manager/handlers/workflowHandlers.js",
           "addons/library-addon/src/ui/manager/managerApp.js",
           "addons/library-addon/src/ui/manager/managerLauncher.js",
@@ -2250,7 +2274,7 @@
             "callSites": [
               {
                 "path": "addons/library-addon/src/api/library/client.js",
-                "line": 43,
+                "line": 45,
                 "text": ": await bridge.invokeCoreAction(\"addon.throttle\", {});"
               }
             ]
@@ -2275,8 +2299,28 @@
             "callSites": [
               {
                 "path": "addons/library-addon/src/api/library/client.js",
-                "line": 93,
+                "line": 242,
                 "text": "return invokeImportAction(\"idb.bulkPut\", payload, shouldCancel);"
+              },
+              {
+                "path": "addons/library-addon/src/api/library/client.js",
+                "line": 247,
+                "text": "\"idb.bulkPut\","
+              }
+            ]
+          },
+          {
+            "id": "idb.count",
+            "callSites": [
+              {
+                "path": "addons/library-addon/src/api/library/client.js",
+                "line": 107,
+                "text": "\"idb.count\","
+              },
+              {
+                "path": "addons/library-addon/src/api/library/schema.js",
+                "line": 19,
+                "text": "\"idb.count\","
               }
             ]
           },
@@ -2285,7 +2329,22 @@
             "callSites": [
               {
                 "path": "addons/library-addon/src/api/library/client.js",
-                "line": 70,
+                "line": 72,
+                "text": "\"idb.delete\","
+              },
+              {
+                "path": "addons/library-addon/src/api/library/client.js",
+                "line": 129,
+                "text": "\"idb.delete\","
+              },
+              {
+                "path": "addons/library-addon/src/api/library/client.js",
+                "line": 181,
+                "text": "\"idb.delete\","
+              },
+              {
+                "path": "addons/library-addon/src/api/library/client.js",
+                "line": 233,
                 "text": "\"idb.delete\","
               }
             ]
@@ -2295,8 +2354,28 @@
             "callSites": [
               {
                 "path": "addons/library-addon/src/api/library/client.js",
-                "line": 52,
+                "line": 54,
                 "text": "\"idb.get\","
+              },
+              {
+                "path": "addons/library-addon/src/api/library/client.js",
+                "line": 114,
+                "text": "\"idb.get\","
+              },
+              {
+                "path": "addons/library-addon/src/api/library/client.js",
+                "line": 166,
+                "text": "\"idb.get\","
+              },
+              {
+                "path": "addons/library-addon/src/api/library/client.js",
+                "line": 218,
+                "text": "\"idb.get\","
+              },
+              {
+                "path": "addons/library-addon/src/api/library/schema.js",
+                "line": 46,
+                "text": "await bridge.invokeCoreAction(\"idb.get\", markerPayload),"
               }
             ]
           },
@@ -2305,13 +2384,33 @@
             "callSites": [
               {
                 "path": "addons/library-addon/src/api/library/client.js",
-                "line": 64,
+                "line": 66,
                 "text": "? invokeImportAction(\"idb.put\", payload, options.shouldCancel)"
               },
               {
                 "path": "addons/library-addon/src/api/library/client.js",
-                "line": 65,
+                "line": 67,
                 "text": ": bridge.invokeCoreAction(\"idb.put\", payload);"
+              },
+              {
+                "path": "addons/library-addon/src/api/library/client.js",
+                "line": 122,
+                "text": "\"idb.put\","
+              },
+              {
+                "path": "addons/library-addon/src/api/library/client.js",
+                "line": 174,
+                "text": "\"idb.put\","
+              },
+              {
+                "path": "addons/library-addon/src/api/library/client.js",
+                "line": 226,
+                "text": "\"idb.put\","
+              },
+              {
+                "path": "addons/library-addon/src/api/library/schema.js",
+                "line": 57,
+                "text": "await bridge.invokeCoreAction(\"idb.put\", { ...markerPayload, value: marker }),"
               }
             ]
           },
@@ -2320,7 +2419,37 @@
             "callSites": [
               {
                 "path": "addons/library-addon/src/api/library/client.js",
-                "line": 79,
+                "line": 81,
+                "text": "\"idb.query\","
+              },
+              {
+                "path": "addons/library-addon/src/api/library/client.js",
+                "line": 93,
+                "text": "\"idb.query\","
+              },
+              {
+                "path": "addons/library-addon/src/api/library/client.js",
+                "line": 136,
+                "text": "\"idb.query\","
+              },
+              {
+                "path": "addons/library-addon/src/api/library/client.js",
+                "line": 154,
+                "text": "\"idb.query\","
+              },
+              {
+                "path": "addons/library-addon/src/api/library/client.js",
+                "line": 188,
+                "text": "\"idb.query\","
+              },
+              {
+                "path": "addons/library-addon/src/api/library/client.js",
+                "line": 206,
+                "text": "\"idb.query\","
+              },
+              {
+                "path": "addons/library-addon/src/api/library/schema.js",
+                "line": 27,
                 "text": "\"idb.query\","
               }
             ]
@@ -2478,8 +2607,13 @@
         ],
         "globalEventListeners": [
           {
+            "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
+            "line": 201,
+            "text": "window.addEventListener(\"pagehide\", onPageHide);"
+          },
+          {
             "path": "addons/library-addon/src/app/dockController.js",
-            "line": 72,
+            "line": 77,
             "text": "window.addEventListener(\"click\", clickHandler, true);"
           }
         ],
@@ -2511,11 +2645,31 @@
         ],
         "storageKeys": [
           {
+            "key": "CONFIG_KEY=auto-update:config",
+            "callSites": [
+              {
+                "path": "addons/library-addon/src/library/autoUpdateRepository.js",
+                "line": 3,
+                "text": "const CONFIG_KEY = \"auto-update:config\";"
+              }
+            ]
+          },
+          {
+            "key": "LEASE_KEY=auto-update:lease",
+            "callSites": [
+              {
+                "path": "addons/library-addon/src/library/autoUpdateRepository.js",
+                "line": 5,
+                "text": "const LEASE_KEY = \"auto-update:lease\";"
+              }
+            ]
+          },
+          {
             "key": "LIBRARY_LEGACY_KEY=libraryRecords",
             "callSites": [
               {
                 "path": "addons/library-addon/src/constants.js",
-                "line": 10,
+                "line": 13,
                 "text": "export const LIBRARY_LEGACY_KEY = \"libraryRecords\";"
               }
             ]
@@ -2525,8 +2679,28 @@
             "callSites": [
               {
                 "path": "addons/library-addon/src/constants.js",
-                "line": 11,
+                "line": 14,
                 "text": "export const LIBRARY_MIGRATION_MARKER_KEY = \"libraryMigrationV1Done\";"
+              }
+            ]
+          },
+          {
+            "key": "LIBRARY_PIN_BACKFILL_MARKER_KEY=pin-sort-v3-complete",
+            "callSites": [
+              {
+                "path": "addons/library-addon/src/constants.js",
+                "line": 11,
+                "text": "export const LIBRARY_PIN_BACKFILL_MARKER_KEY = \"pin-sort-v3-complete\";"
+              }
+            ]
+          },
+          {
+            "key": "LIBRARY_SCHEMA_MARKER_KEY=schema-v3-complete",
+            "callSites": [
+              {
+                "path": "addons/library-addon/src/constants.js",
+                "line": 10,
+                "text": "export const LIBRARY_SCHEMA_MARKER_KEY = \"schema-v3-complete\";"
               }
             ]
           },
@@ -2535,8 +2709,18 @@
             "callSites": [
               {
                 "path": "addons/library-addon/src/constants.js",
-                "line": 9,
+                "line": 12,
                 "text": "export const LIBRARY_STORAGE_KEY = \"settings\";"
+              }
+            ]
+          },
+          {
+            "key": "SUMMARY_KEY=auto-update:last-run",
+            "callSites": [
+              {
+                "path": "addons/library-addon/src/library/autoUpdateRepository.js",
+                "line": 4,
+                "text": "const SUMMARY_KEY = \"auto-update:last-run\";"
               }
             ]
           }
@@ -2548,13 +2732,33 @@
             "text": "return new Promise((resolve) => setTimeout(resolve, Math.max(0, Number(ms) || 0)));"
           },
           {
+            "path": "addons/library-addon/src/api/threadHtml.js",
+            "line": 23,
+            "text": "const timer = setTimeout(() => controller.abort(\"timeout\"), timeoutMs);"
+          },
+          {
+            "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
+            "line": 8,
+            "text": "const timer = setTimeout(resolve, Math.max(0, ms));"
+          },
+          {
+            "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
+            "line": 212,
+            "text": "timer = setTimeout(async () => {"
+          },
+          {
             "path": "addons/library-addon/src/library/importWorkflow.js",
             "line": 4,
             "text": "return new Promise((resolve) => setTimeout(resolve, Math.max(0, Number(ms) || 0)));"
           },
           {
+            "path": "addons/library-addon/src/library/manualUpdateChecker.js",
+            "line": 9,
+            "text": "const timer = setTimeout(resolve, Math.max(0, ms));"
+          },
+          {
             "path": "addons/library-addon/src/ui/application/importExportWorkflow.js",
-            "line": 16,
+            "line": 17,
             "text": "return new Promise((resolve) => setTimeout(resolve, Math.max(0, Number(ms) || 0)));"
           },
           {
@@ -2563,8 +2767,13 @@
             "text": "return new Promise((resolve) => setTimeout(resolve, Math.max(0, Number(ms) || 0)));"
           },
           {
+            "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
+            "line": 80,
+            "text": "summaryTimer = setInterval(() => void refreshSummary(), 500);"
+          },
+          {
             "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
-            "line": 126,
+            "line": 149,
             "text": "state.searchDebounceTimer = window.setTimeout(async () => {"
           },
           {
@@ -2576,9 +2785,74 @@
             "path": "addons/library-addon/src/ui/manager/handlers/noteHandlers.js",
             "line": 37,
             "text": "const timer = window.setTimeout(async () => {"
+          },
+          {
+            "path": "addons/library-addon/src/ui/manager/handlers/ratingHandlers.js",
+            "line": 73,
+            "text": "window.setTimeout(() => void commit(id), RATING_SAVE_DEBOUNCE_MS),"
           }
         ],
         "urlAndPageParsing": [
+          {
+            "path": "addons/library-addon/src/api/threadHtml.js",
+            "line": 11,
+            "text": "target = new URL(url, globalThis.location?.origin || \"https://f95zone.to\");"
+          },
+          {
+            "path": "addons/library-addon/src/api/threadHtml.js",
+            "line": 15,
+            "text": "if (!/(^|\\.)f95zone\\.to$/i.test(target.hostname)) {"
+          },
+          {
+            "path": "addons/library-addon/src/api/threadHtml.js",
+            "line": 27,
+            "text": "path: `${target.pathname}${target.search}`,"
+          },
+          {
+            "path": "addons/library-addon/src/api/threadHtml.js",
+            "line": 42,
+            "text": "path: target.pathname,"
+          },
+          {
+            "path": "addons/library-addon/src/api/threadHtml.js",
+            "line": 48,
+            "text": "return new URL(response.url || target.href).pathname;"
+          },
+          {
+            "path": "addons/library-addon/src/api/threadHtml.js",
+            "line": 60,
+            "text": "data: { path: target.pathname, reason: \"response_too_large\", contentLength },"
+          },
+          {
+            "path": "addons/library-addon/src/api/threadHtml.js",
+            "line": 67,
+            "text": "data: { path: target.pathname, reason: `http_${response.status}` },"
+          },
+          {
+            "path": "addons/library-addon/src/api/threadHtml.js",
+            "line": 76,
+            "text": "data: { path: target.pathname, reason: \"response_too_large\", responseBytes },"
+          },
+          {
+            "path": "addons/library-addon/src/api/threadHtml.js",
+            "line": 81,
+            "text": "data: { path: target.pathname, responseBytes },"
+          },
+          {
+            "path": "addons/library-addon/src/api/threadHtml.js",
+            "line": 87,
+            "text": "data: { path: target.pathname },"
+          },
+          {
+            "path": "addons/library-addon/src/api/threadHtml.js",
+            "line": 94,
+            "text": "data: { path: target.pathname, timeoutMs },"
+          },
+          {
+            "path": "addons/library-addon/src/api/threadHtml.js",
+            "line": 101,
+            "text": "path: target.pathname,"
+          },
           {
             "path": "addons/library-addon/src/app/pageContext.js",
             "line": 4,
@@ -2668,12 +2942,12 @@
           },
           {
             "path": "addons/library-addon/src/ui/application/importExportWorkflow.js",
-            "line": 62,
+            "line": 63,
             "text": "const policyEl = root.querySelector('[data-field=\"conflictPolicy\"]');"
           },
           {
             "path": "addons/library-addon/src/ui/application/importExportWorkflow.js",
-            "line": 140,
+            "line": 153,
             "text": "const scopeEl = root.querySelector('[data-field=\"exportScope\"]');"
           },
           {
@@ -2697,6 +2971,31 @@
             "text": "const root = activeImport?.contentId ? document.getElementById(activeImport.contentId) : null;"
           },
           {
+            "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
+            "line": 29,
+            "text": "Number(root?.querySelector(`[name=\"${name}\"]`)?.value || fallback);"
+          },
+          {
+            "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
+            "line": 31,
+            "text": "enabled: Boolean(root?.querySelector('[name=\"enabled\"]')?.checked),"
+          },
+          {
+            "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
+            "line": 69,
+            "text": "root = document.getElementById(String(result.value?.contentId || \"\"));"
+          },
+          {
+            "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
+            "line": 77,
+            "text": "const summaryElement = root.querySelector('[data-role=\"autoUpdateSummary\"]');"
+          },
+          {
+            "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
+            "line": 102,
+            "text": "const summaryElement = root?.querySelector('[data-role=\"autoUpdateSummary\"]');"
+          },
+          {
             "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
             "line": 47,
             "text": "const bar = root.querySelector('[data-role=\"import-progress-bar\"]');"
@@ -2713,93 +3012,118 @@
           },
           {
             "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
-            "line": 162,
+            "line": 170,
             "text": "tbody.innerHTML = rows"
           },
           {
             "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
-            "line": 220,
+            "line": 240,
             "text": "const pageInfo = root.querySelector('[data-role=\"pageInfo\"]');"
           },
           {
             "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
-            "line": 221,
+            "line": 241,
             "text": "const selectedInfo = root.querySelector('[data-role=\"selectedInfo\"]');"
           },
           {
             "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
-            "line": 222,
+            "line": 242,
             "text": "const toggleAll = root.querySelector('[data-action=\"toggle-all\"]');"
           },
           {
             "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
-            "line": 245,
+            "line": 264,
+            "text": "const prev = root.querySelector('[data-action=\"prev\"]');"
+          },
+          {
+            "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
+            "line": 265,
+            "text": "const next = root.querySelector('[data-action=\"next\"]');"
+          },
+          {
+            "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
+            "line": 271,
             "text": "const statusLine = root.querySelector(`#${ROWS_STATUS_ID}`);"
           },
           {
             "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
-            "line": 16,
+            "line": 17,
             "text": "const wrap = root.querySelector(\".f95ue-library-table-wrap\") || root;"
           },
           {
             "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
-            "line": 108,
-            "text": "const advancedPanel = root.querySelector(\".f95ue-library-more-actions\");"
+            "line": 136,
+            "text": "root.querySelectorAll(\".f95ue-library-more-actions[open]\").forEach((panel) => {"
           },
           {
             "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
-            "line": 119,
+            "line": 142,
             "text": "const searchInput = root.querySelector('[data-field=\"search\"]');"
           },
           {
             "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
-            "line": 135,
+            "line": 158,
             "text": "const statusSelect = root.querySelector('[data-field=\"status\"]');"
           },
           {
             "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
-            "line": 145,
+            "line": 168,
             "text": "const sortSelect = root.querySelector('[data-field=\"sort\"]');"
           },
           {
             "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
-            "line": 157,
+            "line": 180,
             "text": "const importInput = root.querySelector('[data-field=\"importFile\"]');"
           },
           {
             "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
-            "line": 173,
+            "line": 196,
             "text": "const pageSizeSelect = root.querySelector('[data-field=\"pageSize\"]');"
           },
           {
             "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
-            "line": 187,
+            "line": 210,
             "text": "const tooltip = chipList.querySelector(\".f95ue-chip-tooltip\");"
           },
           {
             "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
-            "line": 193,
+            "line": 216,
             "text": "const tooltip = hoverText.querySelector(\".f95ue-hover-tooltip\");"
           },
           {
             "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
-            "line": 201,
+            "line": 224,
             "text": "root.querySelectorAll(\".f95ue-chip-list.is-flip\").forEach((el) => el.classList.remove(\"is-flip\"));"
           },
           {
             "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
-            "line": 202,
+            "line": 225,
             "text": "root.querySelectorAll(\".f95ue-hover-text.is-flip\").forEach((el) => el.classList.remove(\"is-flip\"));"
           },
           {
+            "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+            "line": 29,
+            "text": "return contentId ? document.getElementById(contentId) : null;"
+          },
+          {
             "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
-            "line": 16,
+            "line": 17,
             "text": "const bulkStatusEl = root?.querySelector('[data-field=\"bulkStatus\"]');"
           },
           {
             "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
-            "line": 35,
+            "line": 38,
             "text": "const bulkPinEl = root?.querySelector('[data-field=\"bulkPin\"]');"
+          },
+          {
+            "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
+            "line": 85,
+            "text": "root?.querySelector('[data-field=\"bulkAction\"]')?.value || \"\","
+          },
+          {
+            "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
+            "line": 97,
+            "text": "const temporary = root?.querySelector('[data-field=\"bulkStatus\"]');"
           },
           {
             "path": "addons/library-addon/src/ui/manager/handlers/noteHandlers.js",
@@ -2827,38 +3151,58 @@
             "text": "const toggleAllCheckbox = root?.querySelector('[data-action=\"toggle-all\"]');"
           },
           {
+            "path": "addons/library-addon/src/ui/manager/handlers/updateCheckHandlers.js",
+            "line": 13,
+            "text": "const status = getRoot()?.querySelector(\"#f95ue-library-rows-status\");"
+          },
+          {
+            "path": "addons/library-addon/src/ui/manager/handlers/updateCheckHandlers.js",
+            "line": 14,
+            "text": "const cancelButton = getRoot()?.querySelector('[data-role=\"cancelManualCheck\"]');"
+          },
+          {
+            "path": "addons/library-addon/src/ui/manager/handlers/updateCheckHandlers.js",
+            "line": 49,
+            "text": "const button = getRoot()?.querySelector('[data-role=\"cancelManualCheck\"]');"
+          },
+          {
+            "path": "addons/library-addon/src/ui/manager/handlers/updateCheckHandlers.js",
+            "line": 51,
+            "text": "const status = getRoot()?.querySelector(\"#f95ue-library-rows-status\");"
+          },
+          {
             "path": "addons/library-addon/src/ui/manager/handlers/workflowHandlers.js",
             "line": 15,
             "text": "const importInput = getRoot()?.querySelector('[data-field=\"importFile\"]');"
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 77,
+            "line": 113,
             "text": "const existing = document.getElementById(styleId);"
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 138,
+            "line": 182,
             "text": "appContext.dialogRoot = contentId ? document.getElementById(contentId) : null;"
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 145,
+            "line": 189,
             "text": "const importInput = appContext.dialogRoot.querySelector("
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 170,
+            "line": 213,
             "text": "appContext.dialogRoot.querySelector(\".f95ue-library-manager-window\")?.focus();"
           },
           {
             "path": "addons/library-addon/src/ui/manager/reloadRows.js",
-            "line": 12,
+            "line": 15,
             "text": "const tbody = root.querySelector('[data-role=\"rows\"]');"
           },
           {
             "path": "addons/library-addon/src/ui/manager/reloadRows.js",
-            "line": 13,
+            "line": 16,
             "text": "const statusLine = root.querySelector(`#${ROWS_STATUS_ID}`);"
           },
           {
@@ -2880,114 +3224,264 @@
         "directGmAccess": [],
         "cancellationAndTeardown": [
           {
+            "path": "addons/library-addon/src/api/threadHtml.js",
+            "line": 20,
+            "text": "const controller = new AbortController();"
+          },
+          {
+            "path": "addons/library-addon/src/api/threadHtml.js",
+            "line": 108,
+            "text": "clearTimeout(timer);"
+          },
+          {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 43,
+            "line": 57,
             "text": "function isCurrent(context) {"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 46,
+            "line": 60,
             "text": "typeof context.isCurrent !== \"function\" ||"
-          },
-          {
-            "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 47,
-            "text": "context.isCurrent()"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
             "line": 61,
+            "text": "context.isCurrent()"
+          },
+          {
+            "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
+            "line": 77,
             "text": "if (!isCurrent(context)) {"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 70,
+            "line": 86,
             "text": "if (!isCurrent(context)) {"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 76,
+            "line": 92,
             "text": "if (!isCurrent(context)) {"
-          },
-          {
-            "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 80,
-            "text": "if (!isCurrent(context)) {"
-          },
-          {
-            "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 91,
-            "text": "return context.isCurrent()"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
             "line": 97,
+            "text": "if (!isCurrent(context)) {"
+          },
+          {
+            "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
+            "line": 108,
             "text": "return context.isCurrent()"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 103,
+            "line": 114,
             "text": "return context.isCurrent()"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 146,
+            "line": 120,
+            "text": "return context.isCurrent()"
+          },
+          {
+            "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
+            "line": 169,
             "text": "else if (command === \"disable\") void lifecycle.disable(detail);"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 164,
+            "line": 188,
             "text": "} else if (command === \"teardown\") {"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 165,
+            "line": 189,
             "text": "void lifecycle.teardown(detail);"
           },
           {
             "path": "addons/library-addon/src/app/dockController.js",
-            "line": 24,
+            "line": 29,
             "text": "function isCurrent(context) {"
           },
           {
             "path": "addons/library-addon/src/app/dockController.js",
-            "line": 27,
+            "line": 32,
             "text": "typeof context.isCurrent !== \"function\" ||"
           },
           {
             "path": "addons/library-addon/src/app/dockController.js",
-            "line": 28,
+            "line": 33,
             "text": "context.isCurrent()"
           },
           {
             "path": "addons/library-addon/src/app/dockController.js",
-            "line": 87,
+            "line": 92,
             "text": "if (!state.enabled || !isCurrent(context)) {"
           },
           {
             "path": "addons/library-addon/src/app/dockController.js",
-            "line": 100,
+            "line": 105,
             "text": "if (!state.enabled || !isCurrent(context) || token !== mountToken) {"
           },
           {
             "path": "addons/library-addon/src/app/dockController.js",
-            "line": 112,
+            "line": 117,
             "text": "if (!isCurrent(context)) return { ok: false, reason: \"stale_mount\" };"
           },
           {
             "path": "addons/library-addon/src/app/dockController.js",
-            "line": 122,
+            "line": 127,
             "text": "if (!state.enabled || !isCurrent(context)) {"
           },
           {
             "path": "addons/library-addon/src/app/dockController.js",
-            "line": 134,
+            "line": 139,
             "text": "if (!state.enabled || !isCurrent(context)) {"
           },
           {
             "path": "addons/library-addon/src/app/dockController.js",
-            "line": 152,
-            "text": "if (!state.enabled || !isCurrent(context)) {"
+            "line": 157,
+            "text": "if (!state.enabled || !isCurrent(context) || observation?.reason === \"cancelled\") {"
+          },
+          {
+            "path": "addons/library-addon/src/app/opportunisticObserver.js",
+            "line": 2,
+            "text": "let generation = 0;"
+          },
+          {
+            "path": "addons/library-addon/src/app/opportunisticObserver.js",
+            "line": 5,
+            "text": "generation += 1;"
+          },
+          {
+            "path": "addons/library-addon/src/app/opportunisticObserver.js",
+            "line": 9,
+            "text": "const token = ++generation;"
+          },
+          {
+            "path": "addons/library-addon/src/app/opportunisticObserver.js",
+            "line": 10,
+            "text": "const isCurrent = () =>"
+          },
+          {
+            "path": "addons/library-addon/src/app/opportunisticObserver.js",
+            "line": 11,
+            "text": "token === generation &&"
+          },
+          {
+            "path": "addons/library-addon/src/app/opportunisticObserver.js",
+            "line": 13,
+            "text": "(!context || typeof context.isCurrent !== \"function\" || context.isCurrent());"
+          },
+          {
+            "path": "addons/library-addon/src/app/opportunisticObserver.js",
+            "line": 14,
+            "text": "if (!snapshot?.threadId || !isCurrent()) {"
+          },
+          {
+            "path": "addons/library-addon/src/app/opportunisticObserver.js",
+            "line": 19,
+            "text": "if (!isCurrent()) return { ok: false, reason: \"cancelled\" };"
+          },
+          {
+            "path": "addons/library-addon/src/app/opportunisticObserver.js",
+            "line": 23,
+            "text": "shouldCancel: () => !isCurrent(),"
+          },
+          {
+            "path": "addons/library-addon/src/app/opportunisticObserver.js",
+            "line": 25,
+            "text": "return isCurrent()"
+          },
+          {
+            "path": "addons/library-addon/src/app/opportunisticObserver.js",
+            "line": 33,
+            "text": "getSnapshot: () => ({ generation }),"
+          },
+          {
+            "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
+            "line": 10,
+            "text": "clearTimeout(timer);"
+          },
+          {
+            "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
+            "line": 16,
+            "text": "function owned(value, owner, generation, now) {"
+          },
+          {
+            "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
+            "line": 17,
+            "text": "return value?.owner === owner && value?.generation === generation && Number(value.expiresAt) > now;"
+          },
+          {
+            "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
+            "line": 31,
+            "text": "let generation = 0;"
+          },
+          {
+            "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
+            "line": 48,
+            "text": "generation,"
+          },
+          {
+            "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
+            "line": 55,
+            "text": "const accepted = owned(verified, owner, generation, now());"
+          },
+          {
+            "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
+            "line": 57,
+            "text": "data: { kind, id, owner, generation, accepted, expiresAt: verified?.expiresAt || 0 },"
+          },
+          {
+            "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
+            "line": 64,
+            "text": "if (!owned(lease, owner, generation, now())) return false;"
+          },
+          {
+            "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
+            "line": 66,
+            "text": "return owned(await repository.getClaim(threadId), owner, generation, now());"
+          },
+          {
+            "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
+            "line": 76,
+            "text": "controller = new AbortController();"
+          },
+          {
+            "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
+            "line": 78,
+            "text": "generation += 1;"
+          },
+          {
+            "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
+            "line": 83,
+            "text": "generation,"
+          },
+          {
+            "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
+            "line": 194,
+            "text": "generation,"
+          },
+          {
+            "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
+            "line": 211,
+            "text": "clearTimeout(timer);"
+          },
+          {
+            "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
+            "line": 227,
+            "text": "clearTimeout(timer);"
+          },
+          {
+            "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
+            "line": 234,
+            "text": "data: { owner, generation },"
+          },
+          {
+            "path": "addons/library-addon/src/library/manualUpdateChecker.js",
+            "line": 11,
+            "text": "clearTimeout(timer);"
           },
           {
             "path": "addons/library-addon/src/ui/application/importProgressController.js",
@@ -3000,34 +3494,249 @@
             "text": "void closeProgressDialog(\"cancel-import\", true);"
           },
           {
+            "path": "addons/library-addon/src/ui/assets/manager.html",
+            "line": 66,
+            "text": "<option value=\"auto-disable\">Disable auto update</option>"
+          },
+          {
+            "path": "addons/library-addon/src/ui/assets/manager.html",
+            "line": 81,
+            "text": "<button type=\"button\" data-action=\"cancel-manual-check\" data-role=\"cancelManualCheck\" hidden>"
+          },
+          {
+            "path": "addons/library-addon/src/ui/assets/manager.html",
+            "line": 82,
+            "text": "Cancel check"
+          },
+          {
+            "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
+            "line": 13,
+            "text": "let generation = 0;"
+          },
+          {
+            "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
+            "line": 19,
+            "text": "generation += 1;"
+          },
+          {
+            "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
+            "line": 20,
+            "text": "clearInterval(summaryTimer);"
+          },
+          {
+            "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
+            "line": 52,
+            "text": "const openGeneration = ++generation;"
+          },
+          {
+            "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
+            "line": 57,
+            "text": "if (openGeneration !== generation) return { ok: false, reason: \"cancelled\" };"
+          },
+          {
+            "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
+            "line": 68,
+            "text": "if (!result?.ok || openGeneration !== generation) return result;"
+          },
+          {
+            "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
+            "line": 72,
+            "text": "const controller = new AbortController();"
+          },
+          {
+            "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
+            "line": 74,
+            "text": "const refreshGeneration = generation;"
+          },
+          {
+            "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
+            "line": 76,
+            "text": "if (refreshGeneration !== generation || !root) return;"
+          },
+          {
+            "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
+            "line": 84,
+            "text": "clearInterval(summaryTimer);"
+          },
+          {
+            "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
+            "line": 100,
+            "text": "if (action === \"cancel\") await close(\"cancel\");"
+          },
+          {
+            "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
+            "line": 101,
+            "text": "if (action === \"retry\") {"
+          },
+          {
+            "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
+            "line": 51,
+            "text": "<button type=\"button\" data-auto-action=\"retry\">Retry failed now</button>"
+          },
+          {
+            "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
+            "line": 52,
+            "text": "<button type=\"button\" data-auto-action=\"cancel\">Cancel</button>"
+          },
+          {
             "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
             "line": 30,
             "text": "<button type=\"button\" data-action=\"cancel-import\" style=\"margin-top:14px;padding:7px 12px;cursor:pointer;\">Cancel Import</button>"
           },
           {
             "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
-            "line": 11,
+            "line": 12,
             "text": "const controller = new AbortController();"
           },
           {
             "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
-            "line": 124,
+            "line": 129,
+            "text": "await handlers[\"rating-cancel\"]?.(ratingEl.dataset.threadId);"
+          },
+          {
+            "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
+            "line": 147,
             "text": "window.clearTimeout(state.searchDebounceTimer);"
           },
           {
             "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
-            "line": 209,
+            "line": 232,
             "text": "if (state.searchDebounceTimer) window.clearTimeout(state.searchDebounceTimer);"
           },
           {
             "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
-            "line": 211,
+            "line": 234,
             "text": "for (const timer of state.noteSaveTimers?.values?.() || []) window.clearTimeout(timer);"
           },
           {
+            "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
+            "line": 237,
+            "text": "for (const timer of state.ratingSaveTimers?.values?.() || []) window.clearTimeout(timer);"
+          },
+          {
+            "path": "addons/library-addon/src/ui/entryEditor/editorBindings.js",
+            "line": 22,
+            "text": "const controller = new AbortController();"
+          },
+          {
+            "path": "addons/library-addon/src/ui/entryEditor/editorBindings.js",
+            "line": 48,
+            "text": "if (!event.target?.closest?.('[data-editor-action=\"cancel\"]')) return;"
+          },
+          {
+            "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+            "line": 17,
+            "text": "let generation = 0;"
+          },
+          {
+            "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+            "line": 22,
+            "text": "generation += 1;"
+          },
+          {
+            "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+            "line": 52,
+            "text": "onCancel: () => close(\"cancel\"),"
+          },
+          {
+            "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+            "line": 61,
+            "text": "const actionGeneration = generation;"
+          },
+          {
+            "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+            "line": 68,
+            "text": "shouldCancel: () => actionGeneration !== generation,"
+          },
+          {
+            "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+            "line": 71,
+            "text": "if (actionGeneration !== generation || !active) {"
+          },
+          {
+            "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+            "line": 81,
+            "text": "if (actionGeneration !== generation || !active) {"
+          },
+          {
+            "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+            "line": 104,
+            "text": "const saveGeneration = generation;"
+          },
+          {
+            "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+            "line": 114,
+            "text": "if (saveGeneration !== generation || !active) {"
+          },
+          {
+            "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+            "line": 128,
+            "text": "shouldCancel: () => saveGeneration !== generation,"
+          },
+          {
+            "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+            "line": 131,
+            "text": "if (saveGeneration !== generation || !active) {"
+          },
+          {
+            "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+            "line": 146,
+            "text": "if (!autoResult?.ok || saveGeneration !== generation) {"
+          },
+          {
+            "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+            "line": 157,
+            "text": "const openGeneration = ++generation;"
+          },
+          {
+            "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+            "line": 163,
+            "text": "if (openGeneration !== generation) return { ok: false, reason: \"cancelled\" };"
+          },
+          {
+            "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+            "line": 170,
+            "text": "if (openGeneration !== generation) return { ok: false, reason: \"cancelled\" };"
+          },
+          {
+            "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+            "line": 175,
+            "text": "if (openGeneration !== generation) return { ok: false, reason: \"cancelled\" };"
+          },
+          {
+            "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+            "line": 179,
+            "text": "if (openGeneration !== generation) {"
+          },
+          {
+            "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+            "line": 192,
+            "text": "if (!result?.ok || openGeneration !== generation) {"
+          },
+          {
+            "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+            "line": 215,
+            "text": "onCancel: () => close(\"cancel\"),"
+          },
+          {
+            "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+            "line": 248,
+            "text": "generation,"
+          },
+          {
+            "path": "addons/library-addon/src/ui/entryEditor/editorRenderer.js",
+            "line": 105,
+            "text": "<button type=\"button\" data-editor-action=\"cancel\">Cancel</button>"
+          },
+          {
             "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
-            "line": 64,
+            "line": 67,
             "text": "cancelText: \"Cancel\","
+          },
+          {
+            "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
+            "line": 130,
+            "text": "if (action === \"auto-enable\" || action === \"auto-disable\") {"
           },
           {
             "path": "addons/library-addon/src/ui/manager/handlers/noteHandlers.js",
@@ -3040,67 +3749,117 @@
             "text": "window.clearTimeout(prevTimer);"
           },
           {
+            "path": "addons/library-addon/src/ui/manager/handlers/ratingHandlers.js",
+            "line": 9,
+            "text": "if (timer) window.clearTimeout(timer);"
+          },
+          {
+            "path": "addons/library-addon/src/ui/manager/handlers/ratingHandlers.js",
+            "line": 15,
+            "text": "for (const timer of state.ratingSaveTimers.values()) window.clearTimeout(timer);"
+          },
+          {
+            "path": "addons/library-addon/src/ui/manager/handlers/ratingHandlers.js",
+            "line": 27,
+            "text": "const generation = state.ratingGeneration;"
+          },
+          {
+            "path": "addons/library-addon/src/ui/manager/handlers/ratingHandlers.js",
+            "line": 32,
+            "text": "if (generation !== state.ratingGeneration) return { ok: false, reason: \"cancelled\" };"
+          },
+          {
+            "path": "addons/library-addon/src/ui/manager/handlers/ratingHandlers.js",
+            "line": 35,
+            "text": "if (generation !== state.ratingGeneration) return { ok: false, reason: \"cancelled\" };"
+          },
+          {
+            "path": "addons/library-addon/src/ui/manager/handlers/ratingHandlers.js",
+            "line": 44,
+            "text": "if (generation !== state.ratingGeneration) return { ok: false, reason: \"cancelled\" };"
+          },
+          {
+            "path": "addons/library-addon/src/ui/manager/handlers/ratingHandlers.js",
+            "line": 78,
+            "text": "\"rating-cancel\": async (threadId) => {"
+          },
+          {
             "path": "addons/library-addon/src/ui/manager/handlers/rowHandlers.js",
-            "line": 55,
+            "line": 62,
             "text": "cancelText: \"Cancel\","
           },
           {
+            "path": "addons/library-addon/src/ui/manager/handlers/updateCheckHandlers.js",
+            "line": 47,
+            "text": "\"cancel-manual-check\": async () => {"
+          },
+          {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 34,
+            "line": 37,
             "text": "let generation = 0;"
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 52,
+            "line": 47,
+            "text": "manualCheckController = new AbortController();"
+          },
+          {
+            "path": "addons/library-addon/src/ui/manager/managerApp.js",
+            "line": 88,
             "text": "cancelText = \"Cancel\","
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 84,
+            "line": 120,
             "text": "generation += 1;"
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 121,
+            "line": 165,
             "text": "const openGeneration = ++generation;"
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 132,
+            "line": 176,
             "text": "if (openGeneration !== generation) {"
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 155,
+            "line": 199,
             "text": "if (openGeneration !== generation) return;"
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 169,
+            "line": 212,
             "text": "if (openGeneration !== generation) return;"
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 180,
+            "line": 225,
             "text": "const closeGeneration = ++generation;"
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 188,
+            "line": 233,
             "text": "// that belongs to that newer generation."
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 189,
+            "line": 234,
             "text": "if (generation !== closeGeneration && getActiveRoot()) {"
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 198,
-            "text": "getSnapshot: () => ({ dialogOpen: appContext.dialogOpen, generation }),"
+            "line": 245,
+            "text": "generation,"
+          },
+          {
+            "path": "addons/library-addon/src/ui/manager/reloadRows.js",
+            "line": 12,
+            "text": "for (const timer of state.ratingSaveTimers?.values?.() || []) window.clearTimeout(timer);"
           }
         ],
-        "rawActionCount": 27
+        "rawActionCount": 47
       },
       {
         "id": "example-addon",
@@ -4902,7 +5661,7 @@
       "callSites": [
         {
           "path": "addons/library-addon/src/api/library/client.js",
-          "line": 43,
+          "line": 45,
           "text": ": await bridge.invokeCoreAction(\"addon.throttle\", {});"
         },
         {
@@ -5034,8 +5793,13 @@
       "callSites": [
         {
           "path": "addons/library-addon/src/api/library/client.js",
-          "line": 93,
+          "line": 242,
           "text": "return invokeImportAction(\"idb.bulkPut\", payload, shouldCancel);"
+        },
+        {
+          "path": "addons/library-addon/src/api/library/client.js",
+          "line": 247,
+          "text": "\"idb.bulkPut\","
         },
         {
           "path": "addons/example-addon/src/api/idb.js",
@@ -5053,6 +5817,16 @@
       "id": "idb.count",
       "callSites": [
         {
+          "path": "addons/library-addon/src/api/library/client.js",
+          "line": 107,
+          "text": "\"idb.count\","
+        },
+        {
+          "path": "addons/library-addon/src/api/library/schema.js",
+          "line": 19,
+          "text": "\"idb.count\","
+        },
+        {
           "path": "addons/example-addon/src/api/idb.js",
           "line": 26,
           "text": "return core.invokeCoreAction(\"idb.count\", payload || {});"
@@ -5064,16 +5838,32 @@
         }
       ],
       "consumers": [
-        "example-addon"
+        "example-addon",
+        "library-addon"
       ],
-      "consumerCount": 1
+      "consumerCount": 2
     },
     {
       "id": "idb.delete",
       "callSites": [
         {
           "path": "addons/library-addon/src/api/library/client.js",
-          "line": 70,
+          "line": 72,
+          "text": "\"idb.delete\","
+        },
+        {
+          "path": "addons/library-addon/src/api/library/client.js",
+          "line": 129,
+          "text": "\"idb.delete\","
+        },
+        {
+          "path": "addons/library-addon/src/api/library/client.js",
+          "line": 181,
+          "text": "\"idb.delete\","
+        },
+        {
+          "path": "addons/library-addon/src/api/library/client.js",
+          "line": 233,
           "text": "\"idb.delete\","
         },
         {
@@ -5098,8 +5888,28 @@
       "callSites": [
         {
           "path": "addons/library-addon/src/api/library/client.js",
-          "line": 52,
+          "line": 54,
           "text": "\"idb.get\","
+        },
+        {
+          "path": "addons/library-addon/src/api/library/client.js",
+          "line": 114,
+          "text": "\"idb.get\","
+        },
+        {
+          "path": "addons/library-addon/src/api/library/client.js",
+          "line": 166,
+          "text": "\"idb.get\","
+        },
+        {
+          "path": "addons/library-addon/src/api/library/client.js",
+          "line": 218,
+          "text": "\"idb.get\","
+        },
+        {
+          "path": "addons/library-addon/src/api/library/schema.js",
+          "line": 46,
+          "text": "await bridge.invokeCoreAction(\"idb.get\", markerPayload),"
         },
         {
           "path": "addons/example-addon/src/api/idb.js",
@@ -5123,13 +5933,33 @@
       "callSites": [
         {
           "path": "addons/library-addon/src/api/library/client.js",
-          "line": 64,
+          "line": 66,
           "text": "? invokeImportAction(\"idb.put\", payload, options.shouldCancel)"
         },
         {
           "path": "addons/library-addon/src/api/library/client.js",
-          "line": 65,
+          "line": 67,
           "text": ": bridge.invokeCoreAction(\"idb.put\", payload);"
+        },
+        {
+          "path": "addons/library-addon/src/api/library/client.js",
+          "line": 122,
+          "text": "\"idb.put\","
+        },
+        {
+          "path": "addons/library-addon/src/api/library/client.js",
+          "line": 174,
+          "text": "\"idb.put\","
+        },
+        {
+          "path": "addons/library-addon/src/api/library/client.js",
+          "line": 226,
+          "text": "\"idb.put\","
+        },
+        {
+          "path": "addons/library-addon/src/api/library/schema.js",
+          "line": 57,
+          "text": "await bridge.invokeCoreAction(\"idb.put\", { ...markerPayload, value: marker }),"
         },
         {
           "path": "addons/example-addon/src/api/idb.js",
@@ -5153,7 +5983,37 @@
       "callSites": [
         {
           "path": "addons/library-addon/src/api/library/client.js",
-          "line": 79,
+          "line": 81,
+          "text": "\"idb.query\","
+        },
+        {
+          "path": "addons/library-addon/src/api/library/client.js",
+          "line": 93,
+          "text": "\"idb.query\","
+        },
+        {
+          "path": "addons/library-addon/src/api/library/client.js",
+          "line": 136,
+          "text": "\"idb.query\","
+        },
+        {
+          "path": "addons/library-addon/src/api/library/client.js",
+          "line": 154,
+          "text": "\"idb.query\","
+        },
+        {
+          "path": "addons/library-addon/src/api/library/client.js",
+          "line": 188,
+          "text": "\"idb.query\","
+        },
+        {
+          "path": "addons/library-addon/src/api/library/client.js",
+          "line": 206,
+          "text": "\"idb.query\","
+        },
+        {
+          "path": "addons/library-addon/src/api/library/schema.js",
+          "line": 27,
           "text": "\"idb.query\","
         },
         {
@@ -6414,6 +7274,66 @@
           "text": "const host = new URL(normalized).hostname.toLowerCase();"
         },
         {
+          "path": "addons/library-addon/src/api/threadHtml.js",
+          "line": 11,
+          "text": "target = new URL(url, globalThis.location?.origin || \"https://f95zone.to\");"
+        },
+        {
+          "path": "addons/library-addon/src/api/threadHtml.js",
+          "line": 15,
+          "text": "if (!/(^|\\.)f95zone\\.to$/i.test(target.hostname)) {"
+        },
+        {
+          "path": "addons/library-addon/src/api/threadHtml.js",
+          "line": 27,
+          "text": "path: `${target.pathname}${target.search}`,"
+        },
+        {
+          "path": "addons/library-addon/src/api/threadHtml.js",
+          "line": 42,
+          "text": "path: target.pathname,"
+        },
+        {
+          "path": "addons/library-addon/src/api/threadHtml.js",
+          "line": 48,
+          "text": "return new URL(response.url || target.href).pathname;"
+        },
+        {
+          "path": "addons/library-addon/src/api/threadHtml.js",
+          "line": 60,
+          "text": "data: { path: target.pathname, reason: \"response_too_large\", contentLength },"
+        },
+        {
+          "path": "addons/library-addon/src/api/threadHtml.js",
+          "line": 67,
+          "text": "data: { path: target.pathname, reason: `http_${response.status}` },"
+        },
+        {
+          "path": "addons/library-addon/src/api/threadHtml.js",
+          "line": 76,
+          "text": "data: { path: target.pathname, reason: \"response_too_large\", responseBytes },"
+        },
+        {
+          "path": "addons/library-addon/src/api/threadHtml.js",
+          "line": 81,
+          "text": "data: { path: target.pathname, responseBytes },"
+        },
+        {
+          "path": "addons/library-addon/src/api/threadHtml.js",
+          "line": 87,
+          "text": "data: { path: target.pathname },"
+        },
+        {
+          "path": "addons/library-addon/src/api/threadHtml.js",
+          "line": 94,
+          "text": "data: { path: target.pathname, timeoutMs },"
+        },
+        {
+          "path": "addons/library-addon/src/api/threadHtml.js",
+          "line": 101,
+          "text": "path: target.pathname,"
+        },
+        {
           "path": "addons/library-addon/src/app/pageContext.js",
           "line": 4,
           "text": "const isF95 = location.hostname.includes(\"f95zone.to\");"
@@ -6734,13 +7654,33 @@
           "text": "return new Promise((resolve) => setTimeout(resolve, Math.max(0, Number(ms) || 0)));"
         },
         {
+          "path": "addons/library-addon/src/api/threadHtml.js",
+          "line": 23,
+          "text": "const timer = setTimeout(() => controller.abort(\"timeout\"), timeoutMs);"
+        },
+        {
+          "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
+          "line": 8,
+          "text": "const timer = setTimeout(resolve, Math.max(0, ms));"
+        },
+        {
+          "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
+          "line": 212,
+          "text": "timer = setTimeout(async () => {"
+        },
+        {
           "path": "addons/library-addon/src/library/importWorkflow.js",
           "line": 4,
           "text": "return new Promise((resolve) => setTimeout(resolve, Math.max(0, Number(ms) || 0)));"
         },
         {
+          "path": "addons/library-addon/src/library/manualUpdateChecker.js",
+          "line": 9,
+          "text": "const timer = setTimeout(resolve, Math.max(0, ms));"
+        },
+        {
           "path": "addons/library-addon/src/ui/application/importExportWorkflow.js",
-          "line": 16,
+          "line": 17,
           "text": "return new Promise((resolve) => setTimeout(resolve, Math.max(0, Number(ms) || 0)));"
         },
         {
@@ -6749,8 +7689,13 @@
           "text": "return new Promise((resolve) => setTimeout(resolve, Math.max(0, Number(ms) || 0)));"
         },
         {
+          "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
+          "line": 80,
+          "text": "summaryTimer = setInterval(() => void refreshSummary(), 500);"
+        },
+        {
           "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
-          "line": 126,
+          "line": 149,
           "text": "state.searchDebounceTimer = window.setTimeout(async () => {"
         },
         {
@@ -6762,6 +7707,11 @@
           "path": "addons/library-addon/src/ui/manager/handlers/noteHandlers.js",
           "line": 37,
           "text": "const timer = window.setTimeout(async () => {"
+        },
+        {
+          "path": "addons/library-addon/src/ui/manager/handlers/ratingHandlers.js",
+          "line": 73,
+          "text": "window.setTimeout(() => void commit(id), RATING_SAVE_DEBOUNCE_MS),"
         },
         {
           "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
@@ -6919,18 +7869,58 @@
           "text": "updateProgressContent({ total: activeImport.total, cancelled: true });"
         },
         {
+          "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
+          "line": 69,
+          "text": "root = document.getElementById(String(result.value?.contentId || \"\"));"
+        },
+        {
           "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
-          "line": 162,
+          "line": 170,
           "text": "tbody.innerHTML = rows"
         },
         {
+          "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+          "line": 28,
+          "text": "function getRoot(contentId) {"
+        },
+        {
+          "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+          "line": 29,
+          "text": "return contentId ? document.getElementById(contentId) : null;"
+        },
+        {
+          "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+          "line": 46,
+          "text": "const root = getRoot(result.value?.contentId || active.contentId);"
+        },
+        {
+          "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+          "line": 48,
+          "text": "active.contentId = result.value?.contentId || active.contentId;"
+        },
+        {
+          "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+          "line": 197,
+          "text": "const contentId = String(result.value?.contentId || \"\");"
+        },
+        {
+          "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+          "line": 198,
+          "text": "const root = getRoot(contentId);"
+        },
+        {
+          "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+          "line": 210,
+          "text": "contentId,"
+        },
+        {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 137,
+          "line": 181,
           "text": "const contentId = String(result?.value?.contentId || \"\").trim();"
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 138,
+          "line": 182,
           "text": "appContext.dialogRoot = contentId ? document.getElementById(contentId) : null;"
         },
         {
@@ -7047,7 +8037,7 @@
         },
         {
           "path": "addons/library-addon/src/app/dockController.js",
-          "line": 72,
+          "line": 77,
           "text": "window.addEventListener(\"click\", clickHandler, true);"
         }
       ],
@@ -7177,22 +8167,22 @@
         },
         {
           "path": "addons/library-addon/src/api/library/client.js",
-          "line": 38,
+          "line": 40,
           "text": "async getCoreThrottleInfo() {"
         },
         {
           "path": "addons/library-addon/src/api/library/client.js",
-          "line": 41,
+          "line": 43,
           "text": "typeof bridge.getCoreThrottle === \"function\""
         },
         {
           "path": "addons/library-addon/src/api/library/client.js",
-          "line": 42,
+          "line": 44,
           "text": "? await bridge.getCoreThrottle()"
         },
         {
           "path": "addons/library-addon/src/api/library/client.js",
-          "line": 43,
+          "line": 45,
           "text": ": await bridge.invokeCoreAction(\"addon.throttle\", {});"
         },
         {
@@ -7207,12 +8197,12 @@
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 178,
+          "line": 206,
           "text": "const access = await getAddonAccess(core);"
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 11,
+          "line": 47,
           "text": "return resolveImportThrottleInfo(await api.getCoreThrottleInfo());"
         },
         {
@@ -7383,68 +8373,88 @@
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 7,
+          "line": 8,
           "text": "configureImportProgress,"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 8,
+          "line": 9,
           "text": "handleImportProgressDialogClosed,"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 9,
+          "line": 10,
           "text": "} from \"../ui/application/importProgressController.js\";"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 22,
+          "line": 24,
           "text": "configureImportProgress(core);"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 157,
+          "line": 181,
           "text": "handleImportProgressDialogClosed(detail);"
         },
         {
+          "path": "addons/library-addon/src/library/activityEventModel.js",
+          "line": 5,
+          "text": "\"progress-note\","
+        },
+        {
           "path": "addons/library-addon/src/library/importWorkflow.js",
-          "line": 203,
+          "line": 209,
           "text": "onProgress,"
         },
         {
           "path": "addons/library-addon/src/library/importWorkflow.js",
-          "line": 232,
+          "line": 238,
           "text": "function reportProgress(status = \"running\") {"
         },
         {
           "path": "addons/library-addon/src/library/importWorkflow.js",
-          "line": 233,
+          "line": 239,
           "text": "onProgress({"
         },
         {
           "path": "addons/library-addon/src/library/importWorkflow.js",
-          "line": 251,
+          "line": 257,
           "text": "reportProgress();"
         },
         {
           "path": "addons/library-addon/src/library/importWorkflow.js",
-          "line": 305,
+          "line": 311,
           "text": "reportProgress();"
         },
         {
           "path": "addons/library-addon/src/library/importWorkflow.js",
-          "line": 314,
+          "line": 320,
           "text": "reportProgress(cancelled ? \"cancelled\" : \"completed\");"
         },
         {
+          "path": "addons/library-addon/src/library/manualUpdateChecker.js",
+          "line": 97,
+          "text": "options.onProgress?.({ completed: results.length, total: list.length, result: results.at(-1) });"
+        },
+        {
+          "path": "addons/library-addon/src/library/recordModel.js",
+          "line": 122,
+          "text": "progressNote: text(source.progressNote ?? record?.progressNote),"
+        },
+        {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 146,
+          "line": 246,
           "text": "const onProgress = typeof options.onProgress === \"function\" ? options.onProgress : () => {};"
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 152,
+          "line": 264,
           "text": "onProgress,"
+        },
+        {
+          "path": "addons/library-addon/src/library/service.js",
+          "line": 343,
+          "text": "\"progressNote\","
         },
         {
           "path": "addons/library-addon/src/ui/application/importExportWorkflow.js",
@@ -7468,17 +8478,17 @@
         },
         {
           "path": "addons/library-addon/src/ui/application/importExportWorkflow.js",
-          "line": 97,
+          "line": 109,
           "text": "await openImportProgress({"
         },
         {
           "path": "addons/library-addon/src/ui/application/importExportWorkflow.js",
-          "line": 105,
+          "line": 117,
           "text": "onProgress: updateImportProgress,"
         },
         {
           "path": "addons/library-addon/src/ui/application/importExportWorkflow.js",
-          "line": 108,
+          "line": 120,
           "text": "await finishImportProgress(result.cancelled ? \"import-cancelled\" : \"import-complete\");"
         },
         {
@@ -7607,6 +8617,21 @@
           "text": "updateProgressContent({ total: activeImport.total, cancelled: true });"
         },
         {
+          "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
+          "line": 21,
+          "text": "const progress ="
+        },
+        {
+          "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
+          "line": 23,
+          "text": "? `; progress ${Math.min(Number(summary.checked || 0) + Number(summary.skipped || 0), Number(summary.total || 0))} / ${Number(summary.total || 0)}${summary.activeThreadId ? `; checking thread ${summary.activeThreadId}` : \"\"}`"
+        },
+        {
+          "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
+          "line": 25,
+          "text": "return `Status: ${summary.status || \"idle\"}${progress}; next ${nextRun}; checked ${summary.checked || 0}, current ${summary.current || 0}, changed ${summary.changed || 0}, failed ${summary.failed || 0}, skipped ${summary.skipped || 0}, retries ${summary.retries || 0}`;"
+        },
+        {
           "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
           "line": 1,
           "text": "export function createImportProgressMarkup({"
@@ -7725,6 +8750,31 @@
           "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
           "line": 73,
           "text": "`failed ${progress?.failed || 0}`;"
+        },
+        {
+          "path": "addons/library-addon/src/ui/entryEditor/editorBindings.js",
+          "line": 8,
+          "text": "\"progressNote\","
+        },
+        {
+          "path": "addons/library-addon/src/ui/entryEditor/editorRenderer.js",
+          "line": 99,
+          "text": "${field(\"Progress note\", `<textarea name=\"progressNote\" maxlength=\"10000\" rows=\"4\">${escapeHtml(draft.progressNote)}</textarea>`, true)}"
+        },
+        {
+          "path": "addons/library-addon/src/ui/entryEditor/editorValidation.js",
+          "line": 45,
+          "text": "progressNote: String(personal.progressNote || \"\"),"
+        },
+        {
+          "path": "addons/library-addon/src/ui/entryEditor/editorValidation.js",
+          "line": 78,
+          "text": "progressNote: normalizeText(draft.progressNote, 10000),"
+        },
+        {
+          "path": "addons/library-addon/src/ui/manager/handlers/updateCheckHandlers.js",
+          "line": 23,
+          "text": "onProgress: ({ completed, total }) => {"
         },
         {
           "path": "addons/example-addon/src/api/ui/dialog.js",
@@ -8521,109 +9571,249 @@
           "text": "return new Promise((resolve) => setTimeout(resolve, Math.max(0, Number(ms) || 0)));"
         },
         {
+          "path": "addons/library-addon/src/api/threadHtml.js",
+          "line": 20,
+          "text": "const controller = new AbortController();"
+        },
+        {
+          "path": "addons/library-addon/src/api/threadHtml.js",
+          "line": 23,
+          "text": "const timer = setTimeout(() => controller.abort(\"timeout\"), timeoutMs);"
+        },
+        {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 43,
+          "line": 57,
           "text": "function isCurrent(context) {"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 46,
+          "line": 60,
           "text": "typeof context.isCurrent !== \"function\" ||"
-        },
-        {
-          "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 47,
-          "text": "context.isCurrent()"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
           "line": 61,
+          "text": "context.isCurrent()"
+        },
+        {
+          "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
+          "line": 77,
           "text": "if (!isCurrent(context)) {"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 70,
+          "line": 86,
           "text": "if (!isCurrent(context)) {"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 76,
+          "line": 92,
           "text": "if (!isCurrent(context)) {"
-        },
-        {
-          "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 80,
-          "text": "if (!isCurrent(context)) {"
-        },
-        {
-          "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 91,
-          "text": "return context.isCurrent()"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
           "line": 97,
+          "text": "if (!isCurrent(context)) {"
+        },
+        {
+          "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
+          "line": 108,
           "text": "return context.isCurrent()"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 103,
+          "line": 114,
           "text": "return context.isCurrent()"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 164,
+          "line": 120,
+          "text": "return context.isCurrent()"
+        },
+        {
+          "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
+          "line": 188,
           "text": "} else if (command === \"teardown\") {"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 165,
+          "line": 189,
           "text": "void lifecycle.teardown(detail);"
         },
         {
           "path": "addons/library-addon/src/app/dockController.js",
-          "line": 24,
+          "line": 29,
           "text": "function isCurrent(context) {"
         },
         {
           "path": "addons/library-addon/src/app/dockController.js",
-          "line": 27,
+          "line": 32,
           "text": "typeof context.isCurrent !== \"function\" ||"
         },
         {
           "path": "addons/library-addon/src/app/dockController.js",
-          "line": 28,
+          "line": 33,
           "text": "context.isCurrent()"
         },
         {
           "path": "addons/library-addon/src/app/dockController.js",
-          "line": 87,
+          "line": 92,
           "text": "if (!state.enabled || !isCurrent(context)) {"
         },
         {
           "path": "addons/library-addon/src/app/dockController.js",
-          "line": 100,
+          "line": 105,
           "text": "if (!state.enabled || !isCurrent(context) || token !== mountToken) {"
         },
         {
           "path": "addons/library-addon/src/app/dockController.js",
-          "line": 112,
+          "line": 117,
           "text": "if (!isCurrent(context)) return { ok: false, reason: \"stale_mount\" };"
         },
         {
           "path": "addons/library-addon/src/app/dockController.js",
-          "line": 122,
+          "line": 127,
           "text": "if (!state.enabled || !isCurrent(context)) {"
         },
         {
           "path": "addons/library-addon/src/app/dockController.js",
-          "line": 134,
+          "line": 139,
           "text": "if (!state.enabled || !isCurrent(context)) {"
         },
         {
           "path": "addons/library-addon/src/app/dockController.js",
-          "line": 152,
-          "text": "if (!state.enabled || !isCurrent(context)) {"
+          "line": 157,
+          "text": "if (!state.enabled || !isCurrent(context) || observation?.reason === \"cancelled\") {"
+        },
+        {
+          "path": "addons/library-addon/src/app/opportunisticObserver.js",
+          "line": 2,
+          "text": "let generation = 0;"
+        },
+        {
+          "path": "addons/library-addon/src/app/opportunisticObserver.js",
+          "line": 5,
+          "text": "generation += 1;"
+        },
+        {
+          "path": "addons/library-addon/src/app/opportunisticObserver.js",
+          "line": 9,
+          "text": "const token = ++generation;"
+        },
+        {
+          "path": "addons/library-addon/src/app/opportunisticObserver.js",
+          "line": 10,
+          "text": "const isCurrent = () =>"
+        },
+        {
+          "path": "addons/library-addon/src/app/opportunisticObserver.js",
+          "line": 11,
+          "text": "token === generation &&"
+        },
+        {
+          "path": "addons/library-addon/src/app/opportunisticObserver.js",
+          "line": 13,
+          "text": "(!context || typeof context.isCurrent !== \"function\" || context.isCurrent());"
+        },
+        {
+          "path": "addons/library-addon/src/app/opportunisticObserver.js",
+          "line": 14,
+          "text": "if (!snapshot?.threadId || !isCurrent()) {"
+        },
+        {
+          "path": "addons/library-addon/src/app/opportunisticObserver.js",
+          "line": 19,
+          "text": "if (!isCurrent()) return { ok: false, reason: \"cancelled\" };"
+        },
+        {
+          "path": "addons/library-addon/src/app/opportunisticObserver.js",
+          "line": 23,
+          "text": "shouldCancel: () => !isCurrent(),"
+        },
+        {
+          "path": "addons/library-addon/src/app/opportunisticObserver.js",
+          "line": 25,
+          "text": "return isCurrent()"
+        },
+        {
+          "path": "addons/library-addon/src/app/opportunisticObserver.js",
+          "line": 33,
+          "text": "getSnapshot: () => ({ generation }),"
+        },
+        {
+          "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
+          "line": 8,
+          "text": "const timer = setTimeout(resolve, Math.max(0, ms));"
+        },
+        {
+          "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
+          "line": 16,
+          "text": "function owned(value, owner, generation, now) {"
+        },
+        {
+          "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
+          "line": 17,
+          "text": "return value?.owner === owner && value?.generation === generation && Number(value.expiresAt) > now;"
+        },
+        {
+          "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
+          "line": 31,
+          "text": "let generation = 0;"
+        },
+        {
+          "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
+          "line": 48,
+          "text": "generation,"
+        },
+        {
+          "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
+          "line": 55,
+          "text": "const accepted = owned(verified, owner, generation, now());"
+        },
+        {
+          "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
+          "line": 57,
+          "text": "data: { kind, id, owner, generation, accepted, expiresAt: verified?.expiresAt || 0 },"
+        },
+        {
+          "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
+          "line": 64,
+          "text": "if (!owned(lease, owner, generation, now())) return false;"
+        },
+        {
+          "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
+          "line": 66,
+          "text": "return owned(await repository.getClaim(threadId), owner, generation, now());"
+        },
+        {
+          "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
+          "line": 76,
+          "text": "controller = new AbortController();"
+        },
+        {
+          "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
+          "line": 78,
+          "text": "generation += 1;"
+        },
+        {
+          "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
+          "line": 83,
+          "text": "generation,"
+        },
+        {
+          "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
+          "line": 194,
+          "text": "generation,"
+        },
+        {
+          "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
+          "line": 212,
+          "text": "timer = setTimeout(async () => {"
+        },
+        {
+          "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
+          "line": 234,
+          "text": "data: { owner, generation },"
         },
         {
           "path": "addons/library-addon/src/library/importWorkflow.js",
@@ -8631,8 +9821,13 @@
           "text": "return new Promise((resolve) => setTimeout(resolve, Math.max(0, Number(ms) || 0)));"
         },
         {
+          "path": "addons/library-addon/src/library/manualUpdateChecker.js",
+          "line": 9,
+          "text": "const timer = setTimeout(resolve, Math.max(0, ms));"
+        },
+        {
           "path": "addons/library-addon/src/ui/application/importExportWorkflow.js",
-          "line": 16,
+          "line": 17,
           "text": "return new Promise((resolve) => setTimeout(resolve, Math.max(0, Number(ms) || 0)));"
         },
         {
@@ -8651,23 +9846,218 @@
           "text": "void closeProgressDialog(\"cancel-import\", true);"
         },
         {
+          "path": "addons/library-addon/src/ui/assets/manager.html",
+          "line": 81,
+          "text": "<button type=\"button\" data-action=\"cancel-manual-check\" data-role=\"cancelManualCheck\" hidden>"
+        },
+        {
+          "path": "addons/library-addon/src/ui/assets/manager.html",
+          "line": 82,
+          "text": "Cancel check"
+        },
+        {
+          "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
+          "line": 13,
+          "text": "let generation = 0;"
+        },
+        {
+          "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
+          "line": 19,
+          "text": "generation += 1;"
+        },
+        {
+          "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
+          "line": 52,
+          "text": "const openGeneration = ++generation;"
+        },
+        {
+          "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
+          "line": 57,
+          "text": "if (openGeneration !== generation) return { ok: false, reason: \"cancelled\" };"
+        },
+        {
+          "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
+          "line": 68,
+          "text": "if (!result?.ok || openGeneration !== generation) return result;"
+        },
+        {
+          "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
+          "line": 72,
+          "text": "const controller = new AbortController();"
+        },
+        {
+          "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
+          "line": 74,
+          "text": "const refreshGeneration = generation;"
+        },
+        {
+          "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
+          "line": 76,
+          "text": "if (refreshGeneration !== generation || !root) return;"
+        },
+        {
+          "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
+          "line": 80,
+          "text": "summaryTimer = setInterval(() => void refreshSummary(), 500);"
+        },
+        {
+          "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
+          "line": 100,
+          "text": "if (action === \"cancel\") await close(\"cancel\");"
+        },
+        {
+          "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
+          "line": 101,
+          "text": "if (action === \"retry\") {"
+        },
+        {
+          "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
+          "line": 51,
+          "text": "<button type=\"button\" data-auto-action=\"retry\">Retry failed now</button>"
+        },
+        {
+          "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
+          "line": 52,
+          "text": "<button type=\"button\" data-auto-action=\"cancel\">Cancel</button>"
+        },
+        {
           "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
           "line": 30,
           "text": "<button type=\"button\" data-action=\"cancel-import\" style=\"margin-top:14px;padding:7px 12px;cursor:pointer;\">Cancel Import</button>"
         },
         {
           "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
-          "line": 11,
+          "line": 12,
           "text": "const controller = new AbortController();"
         },
         {
           "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
-          "line": 126,
+          "line": 129,
+          "text": "await handlers[\"rating-cancel\"]?.(ratingEl.dataset.threadId);"
+        },
+        {
+          "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
+          "line": 149,
           "text": "state.searchDebounceTimer = window.setTimeout(async () => {"
         },
         {
+          "path": "addons/library-addon/src/ui/entryEditor/editorBindings.js",
+          "line": 22,
+          "text": "const controller = new AbortController();"
+        },
+        {
+          "path": "addons/library-addon/src/ui/entryEditor/editorBindings.js",
+          "line": 48,
+          "text": "if (!event.target?.closest?.('[data-editor-action=\"cancel\"]')) return;"
+        },
+        {
+          "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+          "line": 17,
+          "text": "let generation = 0;"
+        },
+        {
+          "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+          "line": 22,
+          "text": "generation += 1;"
+        },
+        {
+          "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+          "line": 52,
+          "text": "onCancel: () => close(\"cancel\"),"
+        },
+        {
+          "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+          "line": 61,
+          "text": "const actionGeneration = generation;"
+        },
+        {
+          "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+          "line": 68,
+          "text": "shouldCancel: () => actionGeneration !== generation,"
+        },
+        {
+          "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+          "line": 71,
+          "text": "if (actionGeneration !== generation || !active) {"
+        },
+        {
+          "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+          "line": 81,
+          "text": "if (actionGeneration !== generation || !active) {"
+        },
+        {
+          "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+          "line": 104,
+          "text": "const saveGeneration = generation;"
+        },
+        {
+          "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+          "line": 114,
+          "text": "if (saveGeneration !== generation || !active) {"
+        },
+        {
+          "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+          "line": 128,
+          "text": "shouldCancel: () => saveGeneration !== generation,"
+        },
+        {
+          "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+          "line": 131,
+          "text": "if (saveGeneration !== generation || !active) {"
+        },
+        {
+          "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+          "line": 146,
+          "text": "if (!autoResult?.ok || saveGeneration !== generation) {"
+        },
+        {
+          "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+          "line": 157,
+          "text": "const openGeneration = ++generation;"
+        },
+        {
+          "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+          "line": 163,
+          "text": "if (openGeneration !== generation) return { ok: false, reason: \"cancelled\" };"
+        },
+        {
+          "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+          "line": 170,
+          "text": "if (openGeneration !== generation) return { ok: false, reason: \"cancelled\" };"
+        },
+        {
+          "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+          "line": 175,
+          "text": "if (openGeneration !== generation) return { ok: false, reason: \"cancelled\" };"
+        },
+        {
+          "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+          "line": 179,
+          "text": "if (openGeneration !== generation) {"
+        },
+        {
+          "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+          "line": 192,
+          "text": "if (!result?.ok || openGeneration !== generation) {"
+        },
+        {
+          "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+          "line": 215,
+          "text": "onCancel: () => close(\"cancel\"),"
+        },
+        {
+          "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+          "line": 248,
+          "text": "generation,"
+        },
+        {
+          "path": "addons/library-addon/src/ui/entryEditor/editorRenderer.js",
+          "line": 105,
+          "text": "<button type=\"button\" data-editor-action=\"cancel\">Cancel</button>"
+        },
+        {
           "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
-          "line": 64,
+          "line": 67,
           "text": "cancelText: \"Cancel\","
         },
         {
@@ -8681,64 +10071,104 @@
           "text": "const timer = window.setTimeout(async () => {"
         },
         {
+          "path": "addons/library-addon/src/ui/manager/handlers/ratingHandlers.js",
+          "line": 27,
+          "text": "const generation = state.ratingGeneration;"
+        },
+        {
+          "path": "addons/library-addon/src/ui/manager/handlers/ratingHandlers.js",
+          "line": 32,
+          "text": "if (generation !== state.ratingGeneration) return { ok: false, reason: \"cancelled\" };"
+        },
+        {
+          "path": "addons/library-addon/src/ui/manager/handlers/ratingHandlers.js",
+          "line": 35,
+          "text": "if (generation !== state.ratingGeneration) return { ok: false, reason: \"cancelled\" };"
+        },
+        {
+          "path": "addons/library-addon/src/ui/manager/handlers/ratingHandlers.js",
+          "line": 44,
+          "text": "if (generation !== state.ratingGeneration) return { ok: false, reason: \"cancelled\" };"
+        },
+        {
+          "path": "addons/library-addon/src/ui/manager/handlers/ratingHandlers.js",
+          "line": 73,
+          "text": "window.setTimeout(() => void commit(id), RATING_SAVE_DEBOUNCE_MS),"
+        },
+        {
+          "path": "addons/library-addon/src/ui/manager/handlers/ratingHandlers.js",
+          "line": 78,
+          "text": "\"rating-cancel\": async (threadId) => {"
+        },
+        {
           "path": "addons/library-addon/src/ui/manager/handlers/rowHandlers.js",
-          "line": 55,
+          "line": 62,
           "text": "cancelText: \"Cancel\","
         },
         {
+          "path": "addons/library-addon/src/ui/manager/handlers/updateCheckHandlers.js",
+          "line": 47,
+          "text": "\"cancel-manual-check\": async () => {"
+        },
+        {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 34,
+          "line": 37,
           "text": "let generation = 0;"
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 52,
+          "line": 47,
+          "text": "manualCheckController = new AbortController();"
+        },
+        {
+          "path": "addons/library-addon/src/ui/manager/managerApp.js",
+          "line": 88,
           "text": "cancelText = \"Cancel\","
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 84,
+          "line": 120,
           "text": "generation += 1;"
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 121,
+          "line": 165,
           "text": "const openGeneration = ++generation;"
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 132,
+          "line": 176,
           "text": "if (openGeneration !== generation) {"
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 155,
+          "line": 199,
           "text": "if (openGeneration !== generation) return;"
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 169,
+          "line": 212,
           "text": "if (openGeneration !== generation) return;"
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 180,
+          "line": 225,
           "text": "const closeGeneration = ++generation;"
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 188,
+          "line": 233,
           "text": "// that belongs to that newer generation."
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 189,
+          "line": 234,
           "text": "if (generation !== closeGeneration && getActiveRoot()) {"
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 198,
-          "text": "getSnapshot: () => ({ dialogOpen: appContext.dialogOpen, generation }),"
+          "line": 245,
+          "text": "generation,"
         },
         {
           "path": "addons/latest-filters-addon/src/app/commands.js",

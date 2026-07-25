@@ -4,8 +4,7 @@
  */
 
 import { escapeHtml } from "../../../../../shared/htmlUtils.js";
-import { fmtDate, safeText } from "../../utils/formatters.js";
-import { LIBRARY_MANAGER_PAGE_SIZE } from "../../../constants.js";
+import { fmtDate, fmtDateOnly, safeText } from "../../utils/formatters.js";
 
 const NOTE_MAX_LEN = 20000;
 
@@ -83,7 +82,7 @@ function renderHoverText(value, { limit = 42 } = {}) {
 }
 
 function renderInlineStatusCell(entry, state) {
-  const statusValueRaw = safeText(entry.userStatus) || "saved";
+  const statusValueRaw = safeText(entry.personal?.status) || "saved";
   const statusValue = String(statusValueRaw).trim() || "saved";
   const statusKey = statusValue.toLowerCase();
   const threadId = escapeHtml(entry.threadId);
@@ -107,7 +106,7 @@ function renderInlineStatusCell(entry, state) {
 }
 
 function renderDeveloperCell(entry) {
-  const developer = safeText(entry.developer) || "-";
+  const developer = safeText(entry.thread?.developer) || "-";
   if (!developer || developer === "-") return "-";
   const chip = renderChipList([developer], { limit: 1, kind: "developer" });
   return `
@@ -126,8 +125,8 @@ function renderInlineNoteCell(entry, state) {
   if (isEditing) {
     const draft =
       state?.noteDraftById && typeof state.noteDraftById.get === "function"
-        ? String(state.noteDraftById.get(threadId) ?? entry.note ?? "")
-        : String(entry.note ?? "");
+        ? String(state.noteDraftById.get(threadId) ?? entry.personal?.note ?? "")
+        : String(entry.personal?.note ?? "");
 
     return `
       <div class="f95ue-note-edit">
@@ -143,13 +142,22 @@ function renderInlineNoteCell(entry, state) {
     `.trim();
   }
 
-  const notePreview = renderHoverText(entry.note, { limit: 46 });
+  const notePreview = renderHoverText(entry.personal?.note, { limit: 46 });
   return `
     <div class="f95ue-note-view">
       ${notePreview}
       <button type="button" class="ghost f95ue-note-edit-btn" data-action="edit-note" data-thread-id="${escapeHtml(threadId)}" title="Edit note">✎</button>
     </div>
   `.trim();
+}
+
+function renderRatingCell(entry, state) {
+  const id = safeText(entry.threadId);
+  const committed = entry.personal?.rating ?? null;
+  if (!state.ratingCommittedById.has(id)) state.ratingCommittedById.set(id, committed);
+  if (!state.ratingDraftById.has(id)) state.ratingDraftById.set(id, committed ?? "");
+  const draft = state.ratingDraftById.get(id);
+  return `<input class="f95ue-rating-input" type="number" min="0" max="5" step="0.5" inputmode="decimal" data-action="rating-input" data-thread-id="${escapeHtml(id)}" value="${escapeHtml(draft ?? "")}" aria-label="My rating for ${escapeHtml(entry.thread?.title || id)}">`;
 }
 
 export function renderRows(
@@ -162,14 +170,19 @@ export function renderRows(
   tbody.innerHTML = rows
     .map((entry) => {
       const tagItems =
-        typeof tagItemsForEntry === "function" ? tagItemsForEntry(entry) : entry.tags;
+        typeof tagItemsForEntry === "function"
+          ? tagItemsForEntry(entry)
+          : entry.thread?.tags;
       const tagsHtml = renderChipList(tagItems, { limit: 6, kind: "tag", tooltip: true });
       const statusCell = renderInlineStatusCell(entry, state);
 
-      const title = safeText(entry.title) || "Untitled";
-      const titleHtml = `<a class="f95ue-table-link" href="${safeText(entry.url) || "#"}" target="_blank" rel="noopener noreferrer">${escapeHtml(title)}</a>`;
-      const gameVersion = safeText(entry.gameVersion) || "-";
-      const prefixesHtml = renderChipList(entry.prefixes, {
+      const title = safeText(entry.thread?.title) || "Untitled";
+      const pin = entry.personal?.pinned
+        ? '<span class="f95ue-library-pin" title="Pinned" aria-label="Pinned">★</span> '
+        : "";
+      const titleHtml = `${pin}<a class="f95ue-table-link" href="${safeText(entry.thread?.url) || "#"}" target="_blank" rel="noopener noreferrer">${escapeHtml(title)}</a>`;
+      const gameVersion = safeText(entry.thread?.currentVersion) || "-";
+      const prefixesHtml = renderChipList(entry.thread?.prefixes, {
         limit: 5,
         kind: "prefix",
         emptyText: "-",
@@ -179,10 +192,15 @@ export function renderRows(
           ? renderChipList([gameVersion], { limit: 1, kind: "version" })
           : "-";
       const developerHtml = renderDeveloperCell(entry);
-      const threadRating = Number.isFinite(Number(entry.threadRating))
-        ? Number(entry.threadRating).toFixed(1)
-        : "-";
+      const ratingHtml = renderRatingCell(entry, state);
       const noteHtml = renderInlineNoteCell(entry, state);
+      const checkState = safeText(
+        entry.updateCheck?.enabled === false
+          ? "disabled"
+          : entry.updateCheck?.status === "changed"
+          ? "current"
+          : entry.updateCheck?.status || "pending",
+      ).toLowerCase();
       const checked = selectedIds.has(entry.threadId) ? "checked" : "";
       const rowMenuOpen =
         state?.openRowMenuId && String(state.openRowMenuId) === String(entry.threadId);
@@ -194,8 +212,8 @@ export function renderRows(
           </td>
           <td>${titleHtml}</td>
           <td>${statusCell}</td>
-          <td>${threadRating}</td>
-          <td>${fmtDate(entry.updatedAt)}</td>
+          <td>${ratingHtml}</td>
+          <td class="f95ue-library-updated" data-update-state="${escapeHtml(checkState)}" aria-label="${escapeHtml(`Automatic update check: ${checkState}`)}" title="${escapeHtml(`Update state: ${entry.updateState || "unchecked"}. Automatic update check: ${checkState}. Last record update: ${fmtDate(entry.recordModifiedAt)}`)}">${escapeHtml(fmtDateOnly(entry.recordModifiedAt))}</td>
           <td>${prefixesHtml}</td>
           <td>${versionHtml}</td>
           <td>${developerHtml}</td>
@@ -205,6 +223,8 @@ export function renderRows(
             <div class="f95ue-row-menu ${rowMenuOpen ? "is-open" : ""}">
               <button type="button" class="ghost f95ue-row-menu-trigger" data-action="row-menu-toggle" data-thread-id="${entry.threadId}" title="Actions" aria-label="Actions">⋮</button>
               <div class="f95ue-row-menu-panel" role="menu" aria-label="Row actions">
+                <button type="button" class="f95ue-row-menu-item" data-action="full-edit" data-thread-id="${entry.threadId}">Full edit</button>
+                <button type="button" class="f95ue-row-menu-item" data-action="check-row-update" data-thread-id="${entry.threadId}">Check for updates</button>
                 <button type="button" class="f95ue-row-menu-item" data-action="row-update-thread" data-thread-id="${entry.threadId}" ${canUpdate ? "" : "disabled"}>Update</button>
                 <button type="button" class="f95ue-row-menu-item danger" data-action="remove" data-thread-id="${entry.threadId}">Remove</button>
               </div>
@@ -222,9 +242,13 @@ export function updatePageInfo(root, state) {
   const toggleAll = root.querySelector('[data-action="toggle-all"]');
 
   if (pageInfo) {
-    const pageSize = Math.max(1, Number(state.pageSize || LIBRARY_MANAGER_PAGE_SIZE));
-    const maxPage = Math.max(1, Math.ceil(state.rows.length / pageSize));
-    pageInfo.textContent = `Page ${state.page} / ${maxPage} (${state.rows.length} rows)`;
+    const suffix = state.rows.length === 1 ? "row" : "rows";
+    const totalPages =
+      Number.isFinite(state.totalRows) && state.totalRows >= 0
+        ? Math.max(1, Math.ceil(state.totalRows / state.pageSize))
+        : null;
+    const pageLabel = totalPages ? `Page ${state.page} of ${totalPages}` : `Page ${state.page}`;
+    pageInfo.textContent = `${pageLabel} (${state.rows.length} ${suffix})`;
   }
 
   if (selectedInfo) {
@@ -232,18 +256,21 @@ export function updatePageInfo(root, state) {
   }
 
   if (toggleAll) {
-    const pageSize = Math.max(1, Number(state.pageSize || LIBRARY_MANAGER_PAGE_SIZE));
-    const from = (state.page - 1) * pageSize;
-    const pageRows = state.rows.slice(from, from + pageSize);
-    const pageIds = pageRows.map((row) => row.threadId);
+    const pageIds = state.rows.map((row) => row.threadId);
     const allSelected = pageIds.length > 0 && pageIds.every((id) => state.selectedIds.has(id));
     toggleAll.checked = allSelected;
   }
+
+  const prev = root.querySelector('[data-action="prev"]');
+  const next = root.querySelector('[data-action="next"]');
+  if (prev) prev.disabled = state.page <= 1;
+  if (next) next.disabled = !state.hasNextPage;
 }
 
 export function updateStatusLine(root, state, ROWS_STATUS_ID) {
   const statusLine = root.querySelector(`#${ROWS_STATUS_ID}`);
   if (statusLine) {
+    statusLine.classList.remove("is-loading");
     if (state.errorMessage) {
       statusLine.classList.add("error");
       statusLine.textContent = state.errorMessage;

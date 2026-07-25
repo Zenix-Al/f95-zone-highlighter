@@ -3,12 +3,15 @@
  * Handles library queries and state synchronization
  */
 
-import { LIBRARY_MANAGER_PAGE_SIZE } from "../../constants.js";
 import { renderRows, updatePageInfo, updateStatusLine } from "../components/manager/tableRenderer.js";
 import { parseSearchQuery, matchesSearchTokens } from "../utils/searchTokens.js";
 import { buildTagChipItems } from "../utils/tagViewModel.js";
 
 export async function reloadRows(root, state, api, library, ROWS_STATUS_ID) {
+  state.ratingGeneration += 1;
+  for (const timer of state.ratingSaveTimers?.values?.() || []) window.clearTimeout(timer);
+  state.ratingSaveTimers?.clear?.();
+  state.ratingCommitChains?.clear?.();
   const tbody = root.querySelector('[data-role="rows"]');
   const statusLine = root.querySelector(`#${ROWS_STATUS_ID}`);
 
@@ -20,48 +23,45 @@ export async function reloadRows(root, state, api, library, ROWS_STATUS_ID) {
   state.errorMessage = "";
 
   statusLine.classList.remove("error");
+  statusLine.classList.add("is-loading");
   statusLine.textContent = "Loading library...";
 
   try {
-    const rows = await api.queryEntries({
+    const pageResult = await api.queryEntriesPage({
       search: parsedSearch.text,
       status: state.status,
       sortBy: state.sortBy,
       sortDir: state.sortDir,
-      limit: 5000,
-      offset: 0,
+      limit: state.pageSize,
+      page: state.page,
+      cursor: state.pageCursors[state.page - 1] || null,
+      matchesRecord:
+        parsedSearch.tokens.length > 0
+          ? (entry) => matchesSearchTokens(entry, parsedSearch.tokens)
+          : undefined,
     });
 
-    const incomingRows = Array.isArray(rows) ? rows : [];
-    state.rows = parsedSearch.tokens.length
-      ? incomingRows.filter((entry) => matchesSearchTokens(entry, parsedSearch.tokens))
-      : incomingRows;
+    state.rows = Array.isArray(pageResult?.rows) ? pageResult.rows : [];
+    state.nextCursor = pageResult?.nextCursor || null;
+    state.hasNextPage = Boolean(pageResult?.hasNext);
+    state.totalRows = Number.isFinite(pageResult?.totalRows)
+      ? Number(pageResult.totalRows)
+      : null;
+    state.paginationMode = String(pageResult?.mode || "keyset");
   } catch (error) {
     loadSucceeded = false;
     state.errorMessage = String(error?.message || "Failed to load library.");
   }
 
   state.isLoading = false;
+  statusLine.classList.remove("is-loading");
 
-  // Clean up selections
-  const availableIds = new Set(state.rows.map((entry) => entry.threadId));
-  state.selectedIds = new Set([...state.selectedIds].filter((id) => availableIds.has(id)));
-  if (state.editingNoteId && !availableIds.has(state.editingNoteId)) state.editingNoteId = "";
+  const visibleIds = new Set(state.rows.map((entry) => entry.threadId));
+  if (state.editingNoteId && !visibleIds.has(state.editingNoteId)) state.editingNoteId = "";
 
-  // Handle pagination
-  const pageSize = Math.max(1, Number(state.pageSize || LIBRARY_MANAGER_PAGE_SIZE));
-  const maxPage = Math.max(1, Math.ceil(state.rows.length / pageSize));
-  if (state.page > maxPage) {
-    state.page = maxPage;
-  }
-
-  // Render current page
-  const from = (state.page - 1) * pageSize;
-  const pageRows = state.rows.slice(from, from + pageSize);
-
-  renderRows(tbody, pageRows, state.selectedIds, state, {
+  renderRows(tbody, state.rows, state.selectedIds, state, {
     tagConfig: state.tagConfig,
-    tagItemsForEntry: (entry) => buildTagChipItems(entry?.tags, state.tagConfig),
+    tagItemsForEntry: (entry) => buildTagChipItems(entry?.thread?.tags, state.tagConfig),
   });
   updatePageInfo(root, state);
   updateStatusLine(root, state, ROWS_STATUS_ID);
@@ -72,6 +72,7 @@ export function setupLoadingUI(root, state, ROWS_STATUS_ID) {
   const statusLine = root.querySelector(`#${ROWS_STATUS_ID}`);
   if (statusLine) {
     statusLine.classList.remove("error");
+    statusLine.classList.add("is-loading");
     statusLine.textContent = "Loading library...";
   }
 }

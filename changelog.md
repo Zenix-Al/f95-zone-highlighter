@@ -1,5 +1,10 @@
 # Changelog
 
+## [5.2.1 - Add-on IndexedDB extended]
+
+- Added an opt-in keyset response mode to the add-on IndexedDB query action while preserving the existing array response for all legacy callers.
+- Fixed declarative IndexedDB upgrades to use the active upgrade transaction and fixed writes to inline-key stores so Library schema initialization remains valid.
+
 ## [5.2.0 - Framework hardening and core cleanup]
 
 - Finished the planned framework hardening, configuration persistence, transfer, lifecycle, routing, teardown, and core cleanup work recorded in `TODO_DETAILED.md` and `TODO_CORE_CLEANING_DETAILED.md`.

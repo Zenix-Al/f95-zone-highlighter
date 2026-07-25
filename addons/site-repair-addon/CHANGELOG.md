@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.0.3 - Fix image repair
+
+- Fix attachment error events bypassing the configured retry interval and triggering retries immediately.
+- Coalesce repeated image errors into one bounded scheduled retry instead of starting overlapping attempts.
+- Stop tracking repaired or normally loaded images and report repair activity only while retries are active.
+- Clarify that the image retry interval is the minimum delay before each retry attempt.
+
 ## v1.0.1 - Background Latest recovery
 
 - Start the Latest error-payload shield at document start so background-tab aborts cannot crash the site's error handler before core registration completes.

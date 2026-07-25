@@ -1303,6 +1303,7 @@ runTest("ADDON-LIBRARY-02 owns reversible lifecycle and exactly-once teardown", 
         return { ok: true, value: { tags: [], preferredTags: [], excludedTags: [], markedTags: [], color: {} } };
       }
       if (action === "idb.get") return { ok: true, value: null };
+      if (action === "idb.query") return { ok: true, value: [] };
       return { ok: true, value: {} };
     },
   };
@@ -1375,6 +1376,7 @@ runTest("ADDON-LIBRARY-02 keeps site-wide management and thread-only controls ac
         if (action === "storage.set") { stored[payload.key] = payload.value; return { ok: true }; }
         if (action === "page.getContext") return { ok: true, value: { pageScopes, pageType: pageScopes.at(-1), routeGeneration: 1, url } };
         if (action === "idb.get") return { ok: true, value: null };
+        if (action === "idb.query") return { ok: true, value: [] };
         return { ok: true, value: {} };
       },
     };

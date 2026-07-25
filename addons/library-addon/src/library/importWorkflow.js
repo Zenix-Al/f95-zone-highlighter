@@ -103,8 +103,8 @@ export function previewLibraryImport({
     }
 
     if (conflictPolicy === "newer") {
-      const existingUpdatedAt = Number(existing.updatedAt || 0);
-      const incomingUpdatedAt = Number(next.updatedAt || 0);
+      const existingUpdatedAt = Number(existing.recordModifiedAt || 0);
+      const incomingUpdatedAt = Number(next.recordModifiedAt || 0);
       if (incomingUpdatedAt <= existingUpdatedAt) {
         skipped += 1;
         skippedNotNewer += 1;
@@ -114,7 +114,13 @@ export function previewLibraryImport({
 
     operations.push({
       mode: "update",
-      value: { ...existing, ...next, createdAt: existing.createdAt },
+      value: {
+        ...next,
+        personal: {
+          ...next.personal,
+          addedAt: existing.personal?.addedAt ?? next.personal.addedAt,
+        },
+      },
     });
     updated += 1;
   }

@@ -5,6 +5,7 @@ import { mountUi, unmountUi } from "../api/ui/mount.js";
 import { getThreadSnapshot } from "../thread/detector.js";
 import { renderDockMarkup } from "../ui/components/dock/dockRenderer.js";
 import { showToast } from "../ui/utils/showToast.js";
+import { createOpportunisticObserver } from "./opportunisticObserver.js";
 
 const LIBRARY_DOCK_MOUNT_ID = "library-dock-widget";
 
@@ -20,6 +21,10 @@ export function createLibraryDockController({
   let currentSaved = false;
   let clickHandler = null;
   let mountToken = 0;
+  const opportunisticObserver = createOpportunisticObserver({
+    library,
+    isEnabled: () => state.enabled,
+  });
 
   function isCurrent(context) {
     return (
@@ -148,17 +153,24 @@ export function createLibraryDockController({
       return mount({ showPrimaryButton: false, isSaved: false, context });
     }
 
-    const saved = await library.isSaved(snapshot.threadId);
-    if (!state.enabled || !isCurrent(context)) {
+    const observation = await opportunisticObserver.observe(snapshot, context);
+    if (!state.enabled || !isCurrent(context) || observation?.reason === "cancelled") {
       return { ok: false, reason: "stale_mount" };
     }
+    if (!observation?.ok) {
+      debugLog(runtime.addonId, "Opportunistic thread observation failed.", {
+        level: "warn",
+        data: observation,
+      });
+    }
     currentSnapshot = snapshot;
-    currentSaved = Boolean(saved);
+    currentSaved = Boolean(observation?.saved);
     return mount({ showPrimaryButton: true, isSaved: currentSaved, context });
   }
 
   async function unmount() {
     mountToken += 1;
+    opportunisticObserver.invalidate();
     currentSnapshot = null;
     currentSaved = false;
     unbindEvents();

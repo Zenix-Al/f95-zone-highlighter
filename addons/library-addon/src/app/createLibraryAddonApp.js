@@ -1,6 +1,7 @@
 import { debugLog } from "../../../shared/debugLog.js";
 import { getAddonAccess } from "../api/meta.js";
 import { createLibraryService } from "../library/service.js";
+import { ensureLibrarySchema } from "../api/library/index.js";
 import { getThreadSnapshot } from "../thread/detector.js";
 import {
   cancelActiveImport,
@@ -16,6 +17,7 @@ import { createLibraryManagerController } from "./managerController.js";
 import { getLocalLibraryPageContext } from "./pageContext.js";
 import { createLibraryRegistration } from "./registration.js";
 import { createLibrarySettings } from "./settings.js";
+import { createAutoUpdateScheduler } from "../library/autoUpdateScheduler.js";
 
 export function createLibraryAddonApp({ core, runtime }) {
   configureToast(core);
@@ -29,6 +31,14 @@ export function createLibraryAddonApp({ core, runtime }) {
   };
   const settings = createLibrarySettings(core);
   const library = createLibraryService(core, settings.storage);
+  const autoUpdateScheduler = createAutoUpdateScheduler({
+    repository: library.autoUpdate,
+    getDueRecords: (options) => library.getDueAutoUpdateRecords(options),
+    checkRecords: (ids, options) => library.previewManualUpdateCheck(ids, options),
+    commitResults: (preview, options) => library.commitManualUpdateCheck(preview, options),
+    isRecordEligible: async (threadId) =>
+      (await library.getEntry(threadId))?.updateCheck?.enabled !== false,
+  });
   const registration = createLibraryRegistration({
     core,
     runtime,
@@ -39,6 +49,10 @@ export function createLibraryAddonApp({ core, runtime }) {
   let dock;
   let manager;
   let commandHandler = null;
+  let pagehideBound = false;
+  const onPageHide = () => {
+    void autoUpdateScheduler.stop();
+  };
 
   function isCurrent(context) {
     return (
@@ -53,7 +67,9 @@ export function createLibraryAddonApp({ core, runtime }) {
     await settings.save({ enabled: state.enabled });
     if (state.enabled) {
       await dock.refresh(context);
+      await autoUpdateScheduler.start();
     } else {
+      await autoUpdateScheduler.stop();
       await cancelActiveImport("disabled");
       await manager.close("disabled");
       await dock.unmount();
@@ -77,6 +93,7 @@ export function createLibraryAddonApp({ core, runtime }) {
       return { ok: false, reason: "refresh_superseded" };
     }
     if (state.enabled) await dock.refresh(context);
+    if (state.enabled) await autoUpdateScheduler.start();
     if (!isCurrent(context)) {
       return { ok: false, reason: "refresh_superseded" };
     }
@@ -106,8 +123,13 @@ export function createLibraryAddonApp({ core, runtime }) {
     },
     onTeardown: async ({ reason }) => {
       state.enabled = false;
+      await autoUpdateScheduler.stop();
       await dock.unmount();
       await manager.close(reason);
+      if (pagehideBound) {
+        window.removeEventListener("pagehide", onPageHide);
+        pagehideBound = false;
+      }
       commandBinding.unbind();
       commandHandler = null;
       return { ok: true };
@@ -127,6 +149,7 @@ export function createLibraryAddonApp({ core, runtime }) {
     onMutated: () => {
       if (state.enabled) void dock.refresh();
     },
+    autoUpdateScheduler,
   });
   dock = createLibraryDockController({
     core,
@@ -146,6 +169,7 @@ export function createLibraryAddonApp({ core, runtime }) {
     else if (command === "disable") void lifecycle.disable(detail);
     else if (command === "refresh") void lifecycle.refresh(detail);
     else if (command === "before-page-change") {
+      void autoUpdateScheduler.stop();
       lifecycle.invalidate(
         String(detail.reason || "page-change"),
         detail.routeContext || null,
@@ -173,6 +197,10 @@ export function createLibraryAddonApp({ core, runtime }) {
   async function bootstrap() {
     commandHandler = handleCommand;
     commandBinding.bind();
+    if (!pagehideBound) {
+      window.addEventListener("pagehide", onPageHide);
+      pagehideBound = true;
+    }
     registration.register();
     try {
       const access = await getAddonAccess(core);
@@ -184,6 +212,11 @@ export function createLibraryAddonApp({ core, runtime }) {
         state.enabled = false;
         registration.publishStatus();
         return;
+      }
+      await ensureLibrarySchema(core);
+      const pinnedMigration = await library.runPinnedIndexMigration();
+      if (!pinnedMigration?.ok) {
+        throw new Error(pinnedMigration?.reason || "pin_index_migration_failed");
       }
       await library.runLegacyMigration();
       const loaded = await settings.load();
@@ -209,5 +242,6 @@ export function createLibraryAddonApp({ core, runtime }) {
     getResourceSnapshot: () => lifecycle.getResourceSnapshot(),
     getPendingOperationSnapshot: () => lifecycle.getPendingOperationSnapshot(),
     getLifecycle: () => lifecycle,
+    getAutoUpdateSnapshot: () => autoUpdateScheduler.snapshot(),
   };
 }

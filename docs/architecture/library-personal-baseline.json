@@ -1,0 +1,403 @@
+{
+  "reportSchemaVersion": 1,
+  "tool": "library-personal-baseline",
+  "scope": "LIBRARY-PERSONAL-BASELINE-01",
+  "productionMutation": false,
+  "source": {
+    "database": {
+      "logicalName": "library",
+      "physicalName": "f95ue-addon:library-addon:library",
+      "version": 1,
+      "stores": [
+        {
+          "name": "records",
+          "keyPath": "threadId",
+          "indexes": [
+            {
+              "name": "updatedAt",
+              "keyPath": "updatedAt"
+            },
+            {
+              "name": "userStatus",
+              "keyPath": "userStatus"
+            },
+            {
+              "name": "titleNormalized",
+              "keyPath": "titleNormalized"
+            },
+            {
+              "name": "prefix",
+              "keyPath": "prefix"
+            },
+            {
+              "name": "tags",
+              "keyPath": "tags",
+              "multiEntry": true
+            }
+          ]
+        }
+      ],
+      "evidence": {
+        "dbName": true,
+        "storeName": true
+      }
+    },
+    "recordShape": [
+      "threadId",
+      "url",
+      "title",
+      "canonicalTitle",
+      "titleNormalized",
+      "prefix",
+      "prefixes",
+      "gameVersion",
+      "developer",
+      "threadRating",
+      "tags",
+      "userStatus",
+      "note",
+      "userScore",
+      "pinned",
+      "schemaVersion",
+      "sourcePage",
+      "createdAt",
+      "updatedAt"
+    ],
+    "behavior": {
+      "tableHeadings": [
+        "",
+        "Title",
+        "Status",
+        "My Rating",
+        "Updated",
+        "Prefixes",
+        "Version",
+        "Developer",
+        "Tags",
+        "Note",
+        "Action"
+      ],
+      "rowActions": [
+        "bulk-apply",
+        "cancel-manual-check",
+        "check-row-update",
+        "check-selected-updates",
+        "close",
+        "copy-developer",
+        "edit-note",
+        "export",
+        "full-edit",
+        "import",
+        "next",
+        "note-done",
+        "note-input",
+        "open-auto-update",
+        "prev",
+        "rating-input",
+        "remove",
+        "row-menu-toggle",
+        "row-update-thread",
+        "set-status",
+        "status-menu-toggle",
+        "toggle-all",
+        "toggle-select"
+      ],
+      "displayedRating": "personal.rating",
+      "personalRatingField": "personal.rating",
+      "personalRatingRendered": true,
+      "noteEditing": {
+        "inline": true,
+        "doneAction": true
+      },
+      "managerReopen": {
+        "stableDialogId": true,
+        "generationGuard": true,
+        "closeResetsRoot": true
+      },
+      "importExport": {
+        "acceptsArray": true,
+        "acceptsRecordsDocument": true,
+        "exportsRecords": true
+      },
+      "threadUpdateFields": [
+        "url",
+        "title",
+        "canonicalTitle",
+        "titleNormalized",
+        "prefix",
+        "gameVersion",
+        "prefixes",
+        "developer",
+        "threadRating",
+        "tags",
+        "sourcePage"
+      ],
+      "sortIndexes": [
+        "rating",
+        "status",
+        "title",
+        "updatedAt"
+      ],
+      "filtersByStatus": true
+    }
+  },
+  "fixtures": {
+    "empty": {
+      "fields": [],
+      "serializedBytes": 2
+    },
+    "legacy": {
+      "fields": [
+        "createdAt",
+        "note",
+        "prefix",
+        "tags",
+        "threadId",
+        "title",
+        "updatedAt",
+        "userScore",
+        "userStatus"
+      ],
+      "serializedBytes": 205
+    },
+    "version3": {
+      "fields": [
+        "canonicalTitle",
+        "createdAt",
+        "developer",
+        "gameVersion",
+        "note",
+        "pinned",
+        "prefix",
+        "prefixes",
+        "schemaVersion",
+        "sourcePage",
+        "tags",
+        "threadId",
+        "threadRating",
+        "title",
+        "titleNormalized",
+        "updatedAt",
+        "url",
+        "userScore",
+        "userStatus"
+      ],
+      "serializedBytes": 536
+    },
+    "malformed": {
+      "fields": [
+        "createdAt",
+        "prefixes",
+        "schemaVersion",
+        "tags",
+        "threadId",
+        "threadRating",
+        "title",
+        "updatedAt",
+        "userScore"
+      ],
+      "serializedBytes": 241
+    }
+  },
+  "scaleMeasurements": [
+    {
+      "count": 10,
+      "serializedBytes": 5264,
+      "averageRecordBytes": 526
+    },
+    {
+      "count": 1000,
+      "serializedBytes": 542084,
+      "averageRecordBytes": 542
+    },
+    {
+      "count": 10000,
+      "serializedBytes": 5490627,
+      "averageRecordBytes": 549
+    }
+  ],
+  "build": {
+    "authoredBytes": 276341,
+    "fileCount": 85,
+    "regular": {
+      "mode": "regular",
+      "bytes": 286470,
+      "gzipBytes": 60215,
+      "contributors": [
+        {
+          "path": "addons/library-addon/src/library/service.js",
+          "bytes": 29189
+        },
+        {
+          "path": "addons/library-addon/src/ui/assets/manager.css",
+          "bytes": 20951
+        },
+        {
+          "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
+          "bytes": 12520
+        },
+        {
+          "path": "addons/library-addon/src/library/recordModel.js",
+          "bytes": 10345
+        },
+        {
+          "path": "addons/shared/runtimeLifecycle.js",
+          "bytes": 9221
+        },
+        {
+          "path": "addons/library-addon/src/library/importWorkflow.js",
+          "bytes": 9181
+        },
+        {
+          "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
+          "bytes": 8472
+        },
+        {
+          "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
+          "bytes": 8421
+        },
+        {
+          "path": "addons/library-addon/src/app/dockController.js",
+          "bytes": 8258
+        },
+        {
+          "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+          "bytes": 7828
+        },
+        {
+          "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
+          "bytes": 7579
+        },
+        {
+          "path": "addons/library-addon/src/api/library/client.js",
+          "bytes": 7456
+        },
+        {
+          "path": "addons/library-addon/src/ui/manager/managerApp.js",
+          "bytes": 6794
+        },
+        {
+          "path": "addons/library-addon/src/ui/application/importExportWorkflow.js",
+          "bytes": 6254
+        },
+        {
+          "path": "addons/library-addon/src/ui/assets/manager.html",
+          "bytes": 5859
+        },
+        {
+          "path": "addons/library-addon/src/ui/entryEditor/editorRenderer.js",
+          "bytes": 4958
+        },
+        {
+          "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
+          "bytes": 4898
+        },
+        {
+          "path": "addons/library-addon/src/library/threadUpdateParser.js",
+          "bytes": 4417
+        },
+        {
+          "path": "addons/library-addon/src/api/threadHtml.js",
+          "bytes": 4371
+        },
+        {
+          "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
+          "bytes": 4363
+        }
+      ]
+    },
+    "release": {
+      "mode": "release",
+      "bytes": 249005,
+      "gzipBytes": 51810,
+      "contributors": [
+        {
+          "path": "addons/library-addon/src/library/service.js",
+          "bytes": 20092
+        },
+        {
+          "path": "addons/library-addon/src/ui/assets/manager.css",
+          "bytes": 19985
+        },
+        {
+          "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
+          "bytes": 10638
+        },
+        {
+          "path": "addons/library-addon/src/library/recordModel.js",
+          "bytes": 7939
+        },
+        {
+          "path": "addons/shared/runtimeLifecycle.js",
+          "bytes": 6436
+        },
+        {
+          "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
+          "bytes": 6406
+        },
+        {
+          "path": "addons/library-addon/src/library/importWorkflow.js",
+          "bytes": 6216
+        },
+        {
+          "path": "addons/library-addon/src/ui/assets/manager.html",
+          "bytes": 5713
+        },
+        {
+          "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+          "bytes": 5431
+        },
+        {
+          "path": "addons/library-addon/src/app/dockController.js",
+          "bytes": 5361
+        },
+        {
+          "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
+          "bytes": 5318
+        },
+        {
+          "path": "addons/library-addon/src/ui/manager/managerApp.js",
+          "bytes": 4980
+        },
+        {
+          "path": "addons/library-addon/src/api/library/client.js",
+          "bytes": 4832
+        },
+        {
+          "path": "addons/library-addon/src/ui/application/importExportWorkflow.js",
+          "bytes": 4828
+        },
+        {
+          "path": "addons/library-addon/src/ui/entryEditor/editorRenderer.js",
+          "bytes": 4625
+        },
+        {
+          "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
+          "bytes": 4413
+        },
+        {
+          "path": "addons/library-addon/src/ui/entryEditor/editor.css",
+          "bytes": 3969
+        },
+        {
+          "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
+          "bytes": 3252
+        },
+        {
+          "path": "addons/library-addon/src/ui/application/importProgressController.js",
+          "bytes": 3220
+        },
+        {
+          "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
+          "bytes": 3175
+        }
+      ]
+    }
+  },
+  "deterministic": {
+    "timestamps": false,
+    "absolutePaths": false,
+    "network": false,
+    "indexedDbOpened": false
+  }
+}

@@ -29,7 +29,9 @@
       <select data-field="sort">
         <option value="updatedAt:desc">Updated (Newest)</option>
         <option value="updatedAt:asc">Updated (Oldest)</option>
-        <option value="title:asc">Title (A-Z)</option>
+          <option value="title:asc">Title (A-Z)</option>
+          <option value="rating:desc">My Rating (Highest)</option>
+          <option value="rating:asc">My Rating (Lowest)</option>
         <option value="title:desc">Title (Z-A)</option>
       </select>
       <select data-field="pageSize" title="Rows per page">
@@ -41,19 +43,56 @@
     </div>
 
     <div class="f95ue-library-actions">
-      <button type="button" data-action="export">Export</button>
-      <button type="button" data-action="import">Import JSON</button>
-      <details class="f95ue-library-more-actions">
-        <summary>Advanced</summary>
+      <label class="bulk-select-all"
+        ><input type="checkbox" data-action="toggle-all" /> All</label
+      >
+      <span data-role="selectedInfo">0 selected</span>
+      <button type="button" data-action="check-selected-updates">Check for updates</button>
+      <details class="f95ue-library-more-actions f95ue-library-bulk-actions">
+        <summary>Bulk actions</summary>
         <div class="f95ue-library-more-grid">
           <label>
-            <span>Export scope</span>
-            <select data-field="exportScope">
-              <option value="all">All Records</option>
-              <option value="filtered">Filtered Rows</option>
+            <span>Apply to selected records</span>
+            <select data-field="bulkAction">
+              <option value="status:saved">Status: saved</option>
+              <option value="status:backlog">Status: backlog</option>
+              <option value="status:playing">Status: playing</option>
+              <option value="status:paused">Status: paused</option>
+              <option value="status:completed">Status: completed</option>
+              <option value="status:dropped">Status: dropped</option>
+              <option value="pin">Pin selected</option>
+              <option value="unpin">Unpin selected</option>
+              <option value="auto-enable">Enable auto update</option>
+              <option value="auto-disable">Disable auto update</option>
+              <option value="remove">Remove selected</option>
+              <option value="clear">Clear selection</option>
             </select>
           </label>
-          <button type="button" data-action="export-selected">Export Selected</button>
+          <button type="button" data-action="bulk-apply">Apply</button>
+        </div>
+      </details>
+      <button type="button" data-action="open-auto-update">Auto update</button>
+      <div
+        id="f95ue-library-rows-status"
+        class="f95ue-library-status-line f95ue-library-toolbar-status"
+        role="status"
+        aria-live="polite"
+      ></div>
+      <button type="button" data-action="cancel-manual-check" data-role="cancelManualCheck" hidden>
+        Cancel check
+      </button>
+      <details class="f95ue-library-more-actions f95ue-library-export-actions">
+        <summary>Export</summary>
+        <div class="f95ue-library-more-grid">
+          <label>
+            <span>Records to export</span>
+            <select data-field="exportScope">
+              <option value="all">All records</option>
+              <option value="filtered">Filtered records</option>
+              <option value="selected">Selected records</option>
+            </select>
+          </label>
+          <button type="button" data-action="export">Export JSON</button>
           <label>
             <span>Import policy</span>
             <select data-field="conflictPolicy">
@@ -62,6 +101,7 @@
               <option value="skip">Skip Existing</option>
             </select>
           </label>
+          <button type="button" class="ghost" data-action="import">Import JSON</button>
         </div>
       </details>
       <input type="file" data-field="importFile" accept="application/json,.json" hidden />
@@ -69,36 +109,14 @@
 
     <div class="f95ue-library-layout">
       <div class="f95ue-library-list-panel">
-        <div class="f95ue-library-bulkbar">
-          <label class="bulk-select-all"
-            ><input type="checkbox" data-action="toggle-all" /> All</label
-          >
-          <span data-role="selectedInfo">0 selected</span>
-          <select data-field="bulkStatus">
-            <option value="saved">saved</option>
-            <option value="playing">playing</option>
-            <option value="completed">completed</option>
-            <option value="dropped">dropped</option>
-          </select>
-          <button type="button" data-action="bulk-set-status">Apply Status</button>
-          <select data-field="bulkPin">
-            <option value="pin">Pin</option>
-            <option value="unpin">Unpin</option>
-          </select>
-          <button type="button" class="ghost" data-action="bulk-set-pin">Apply Pin</button>
-          <button type="button" class="danger" data-action="bulk-remove">Remove Selected</button>
-          <button type="button" class="ghost" data-action="clear-selection">Clear</button>
-        </div>
-
         <div class="f95ue-library-table-wrap">
-          <div id="f95ue-library-rows-status" class="f95ue-library-status-line"></div>
           <table>
             <thead>
               <tr>
                 <th class="col-check"></th>
                 <th>Title</th>
                 <th>Status</th>
-                <th>Rating</th>
+                  <th>My Rating</th>
                 <th>Updated</th>
                 <th>Prefixes</th>
                 <th>Version</th>

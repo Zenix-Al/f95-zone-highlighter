@@ -12,6 +12,8 @@ import { bindManagerEvents } from "../controllers/bindManagerEvents.js";
 import { buildTagConfig } from "../utils/tagViewModel.js";
 import { showToast } from "../utils/showToast.js";
 import { createManagerHandlers } from "./createHandlers.js";
+import { createEntryEditorController } from "../entryEditor/editorController.js";
+import { createAutoUpdateController } from "../autoUpdate/autoUpdateController.js";
 import { reloadRows } from "./reloadRows.js";
 import { createInitialState, createAppContext } from "./state.js";
 
@@ -23,6 +25,7 @@ export function createLibraryManagerApp({
   library,
   onMutated,
   getCurrentThreadSnapshot,
+  autoUpdateScheduler,
 }) {
   const dialogId = `${String(addonId || "library-addon")}-manager`;
   const styleId = `f95ue-${String(addonId || "library-addon")}-manager-style`;
@@ -32,9 +35,42 @@ export function createLibraryManagerApp({
   const appContext = createAppContext();
   let unbindEvents = () => {};
   let generation = 0;
+  let manualCheckController = null;
+
+  function cancelManualCheck() {
+    manualCheckController?.abort();
+    manualCheckController = null;
+  }
+
+  function createManualCheckController() {
+    cancelManualCheck();
+    manualCheckController = new AbortController();
+    return manualCheckController;
+  }
 
   // Create API layer
   const api = createManagerApi(bridge, library);
+  const entryEditor = createEntryEditorController({
+    core: bridge,
+    addonId,
+    library,
+    onSaved: async () => {
+      const root = getActiveRoot();
+      if (root) await reloadRows(root, state, api, library, ROWS_STATUS_ID);
+      if (typeof onMutated === "function") onMutated();
+    },
+  });
+  const autoUpdate = createAutoUpdateController({
+    core: bridge,
+    addonId,
+    library,
+    scheduler: autoUpdateScheduler,
+    onSaved: async () => {
+      const root = getActiveRoot();
+      if (root) await reloadRows(root, state, api, library, ROWS_STATUS_ID);
+      if (typeof onMutated === "function") onMutated();
+    },
+  });
 
   function getLiveThreadSnapshot() {
     if (typeof getCurrentThreadSnapshot !== "function") return null;
@@ -82,6 +118,9 @@ export function createLibraryManagerApp({
   // Create bound version of close for handlers
   async function close(reason = "addon-close") {
     generation += 1;
+    if (reason !== "addon-close") cancelManualCheck();
+    await entryEditor.close(reason);
+    await autoUpdate.close(reason);
     unbindEvents();
     unbindEvents = () => {};
     if (!appContext.dialogOpen && !appContext.dialogRoot) {
@@ -110,6 +149,11 @@ export function createLibraryManagerApp({
     library,
     getRootFn: () => appContext.dialogRoot,
     askConfirmFn: askConfirm,
+    openEntryEditorFn: (threadId) => entryEditor.open(threadId),
+    openAutoUpdateFn: () => autoUpdate.open(),
+    cancelManualCheckFn: cancelManualCheck,
+    createManualCheckControllerFn: createManualCheckController,
+    runAutoUpdateFn: (options) => autoUpdateScheduler.run(options),
   };
 
   const handlers = createManagerHandlers(state, api, deps);
@@ -155,7 +199,6 @@ export function createLibraryManagerApp({
     if (openGeneration !== generation) return;
     const tagPrefs = tagPrefsResult?.ok ? tagPrefsResult.value : null;
     state.tagConfig = buildTagConfig(tagPrefs || {});
-
     // Update deps with actual root
     deps.root = appContext.dialogRoot;
 
@@ -171,6 +214,8 @@ export function createLibraryManagerApp({
   }
 
   async function handleDialogClosed(detail = {}) {
+    if (await entryEditor.handleDialogClosed(detail)) return;
+    if (await autoUpdate.handleDialogClosed(detail)) return;
     if (String(detail.dialogId || "") !== dialogId) return;
 
     // A delayed close notification for the previous surface must not tear
@@ -195,6 +240,10 @@ export function createLibraryManagerApp({
     open,
     close,
     handleDialogClosed,
-    getSnapshot: () => ({ dialogOpen: appContext.dialogOpen, generation }),
+    getSnapshot: () => ({
+      dialogOpen: appContext.dialogOpen,
+      generation,
+      editor: entryEditor.getSnapshot(),
+    }),
   };
 }

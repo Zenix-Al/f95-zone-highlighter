@@ -12,6 +12,7 @@ export function createLibraryManagerController({
   getEnabled,
   getCurrentThreadSnapshot,
   onMutated,
+  autoUpdateScheduler,
 }) {
   let resourceOwned = false;
 
@@ -26,6 +27,7 @@ export function createLibraryManagerController({
       library,
       getCurrentThreadSnapshot,
       onMutated,
+      autoUpdateScheduler,
     });
     if (resourceOwned) return;
     resourceOwned = true;
