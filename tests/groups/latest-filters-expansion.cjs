@@ -168,6 +168,8 @@ module.exports = function registerLatestFiltersExpansionGroup(context) {
               color: {
                 preferred: "#123456",
                 preferredText: "#ffffff",
+                marked: "#123456",
+                markedText: "#ffffff",
               },
             },
           };
@@ -267,8 +269,22 @@ module.exports = function registerLatestFiltersExpansionGroup(context) {
       );
 
       document.querySelector("[data-action='surprise']").click();
-      assert.match(location.hash, /tags=[^/]*1/);
-      assert.doesNotMatch(location.hash, /notags=1(?:,|\/|$)/);
+      const surpriseParts = Object.fromEntries(
+        location.hash
+          .replace(/^#\/?/, "")
+          .split("/")
+          .map((segment) => segment.split("=")),
+      );
+      const selectedTags = String(surpriseParts.tags || "")
+        .split(",")
+        .filter(Boolean);
+      const excludedTags = new Set(
+        String(surpriseParts.notags || "")
+          .split(",")
+          .filter(Boolean),
+      );
+      assert.ok(selectedTags.length >= 1 && selectedTags.length <= 3);
+      assert.ok(selectedTags.every((tagId) => !excludedTags.has(tagId)));
       await settle();
       await settle();
       await clock.tick(0);
@@ -287,7 +303,7 @@ module.exports = function registerLatestFiltersExpansionGroup(context) {
         dialogContent.querySelector("[data-role='current']").innerHTML,
         /Current applied filter/,
       );
-      assert.match(dialogContent.innerHTML, /data-state="preferred"/);
+      assert.match(dialogContent.innerHTML, /data-state="(?:preferred|marked)"/);
       assert.match(dialogContent.innerHTML, /background:#123456/);
 
       location.hash = "#/cat=mods/tags=2";

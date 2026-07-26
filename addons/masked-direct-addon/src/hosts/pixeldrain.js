@@ -1,8 +1,8 @@
 import { clickElement } from "./shared/dom.js";
 
 export async function processPixeldrainDownload({
+  challengeGate,
   debugLog,
-  showToast,
   notifyMainFailure,
   reportAddonHealthy,
 }) {
@@ -12,16 +12,17 @@ export async function processPixeldrainDownload({
   const fileId = fileIdMatch?.[1] || "";
 
   if (fileId) {
+    if (challengeGate && !(await challengeGate.waitUntilClear())) return;
     const directUrl = `${window.location.origin}/api/file/${encodeURIComponent(fileId)}?download`;
     debugLog("PixeldrainDownloader", "Attempting direct URL download.", {
       fileId,
-      directUrl,
     });
 
     console.info("[Pixeldrain] Checking if file is available via API...");
 
     // Probe the URL with a HEAD request to check if it's a valid download
     try {
+      if (challengeGate && !(await challengeGate.waitUntilClear())) return;
       const headResponse = await fetch(directUrl, { method: "HEAD" });
       const contentType = headResponse.headers?.get?.("content-type") || "";
       const disposition =
@@ -42,12 +43,14 @@ export async function processPixeldrainDownload({
 
         // Try to get full response with error message
         try {
+          if (challengeGate && !(await challengeGate.waitUntilClear())) return;
           const fullResponse = await fetch(directUrl);
           const jsonData = await fullResponse.json();
           const errorMsg =
             jsonData?.message || jsonData?.error || "Unknown error";
-          console.error("[Pixeldrain] Server error message:", errorMsg);
-          showToast("Pixeldrain: " + String(errorMsg), 5000);
+          console.error(
+            "[Pixeldrain] Host returned a file-unavailable response.",
+          );
           await notifyMainFailure(
             "pixeldrain.com",
             "File unavailable: " + String(errorMsg),
@@ -57,7 +60,6 @@ export async function processPixeldrainDownload({
             "[Pixeldrain] Could not parse error response:",
             parseErr,
           );
-          showToast("Pixeldrain: Server returned an error", 5000);
           await notifyMainFailure(
             "pixeldrain.com",
             "Server returned error instead of file",
@@ -92,8 +94,8 @@ export async function processPixeldrainDownload({
     // Proceed with direct download via location.href
     debugLog("PixeldrainDownloader", "Triggering direct URL download.", {
       fileId,
-      directUrl,
     });
+    if (challengeGate && !(await challengeGate.waitUntilClear())) return;
     location.href = directUrl;
     reportAddonHealthy();
     return;
@@ -110,6 +112,7 @@ export async function processPixeldrainDownload({
   }
 
   console.info("[Pixeldrain] Clicking fallback download button");
+  if (challengeGate && !(await challengeGate.waitUntilClear())) return;
   if (!clickElement(fallbackButton)) {
     await notifyMainFailure(
       "pixeldrain.com",
@@ -117,6 +120,5 @@ export async function processPixeldrainDownload({
     );
     return;
   }
-  showToast("Pixeldrain download triggered.");
   reportAddonHealthy();
 }

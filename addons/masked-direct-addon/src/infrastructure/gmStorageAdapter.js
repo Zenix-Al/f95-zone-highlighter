@@ -1,3 +1,8 @@
+import {
+  DEFAULT_DOWNLOAD_CLOSE_DELAY_MS,
+  normalizeDownloadCloseDelay,
+} from "../shared/downloadCloseDelay.js";
+
 /**
  * GM Storage Helper
  * Provides cross-domain access to settings via GM (GreaseMonkey) storage.
@@ -9,7 +14,8 @@ const GM_STORAGE_DELAY_KEY = "downloadPageCloseDelayMs";
 const GM_STORAGE_TIMEOUT_MS = 2000; // Cache duration
 
 /**
- * Store the download page close delay in GM storage
+ * Store the post-trigger managed-tab close delay in GM storage.
+ * The legacy key name is intentionally retained for settings compatibility.
  * @param {GMApi} GMApi - GreaseMonkey API object (GM)
  * @param {number} delayMs - Delay in milliseconds
  */
@@ -19,23 +25,26 @@ export async function storeDownloadPageCloseDelay(GMApi, delayMs) {
   try {
     const key = GM_STORAGE_PREFIX + GM_STORAGE_DELAY_KEY;
     const value = {
-      delayMs: Number.isFinite(delayMs) ? delayMs : 3500,
+      delayMs: normalizeDownloadCloseDelay(delayMs),
       timestamp: Date.now(),
     };
     await GMApi.setValue(key, JSON.stringify(value));
-    console.info("[Download Delay] Stored delay:", delayMs, "ms");
+    console.info("[DirectDownload] Stored managed-tab close delay:", delayMs, "ms");
   } catch (err) {
     console.warn("[Download Delay] Failed to store delay:", err);
   }
 }
 
 /**
- * Retrieve the download page close delay from GM storage
+ * Retrieve the post-trigger managed-tab close delay from GM storage.
  * @param {GMApi} GMApi - GreaseMonkey API object (GM)
  * @param {number} defaultValue - Default delay if not found
  * @returns {Promise<number>} - Delay in milliseconds
  */
-export async function getDownloadPageCloseDelay(GMApi, defaultValue = 3500) {
+export async function getDownloadPageCloseDelay(
+  GMApi,
+  defaultValue = DEFAULT_DOWNLOAD_CLOSE_DELAY_MS,
+) {
   if (!GMApi?.getValue) return defaultValue;
 
   try {
@@ -43,13 +52,18 @@ export async function getDownloadPageCloseDelay(GMApi, defaultValue = 3500) {
     const stored = await GMApi.getValue(key);
 
     if (!stored) {
-      console.info("[Download Delay] No stored delay found, using default:", defaultValue);
+      console.info(
+        "[DirectDownload] No stored close delay found, using default:",
+        defaultValue,
+      );
       return defaultValue;
     }
 
     const parsed = JSON.parse(stored);
     if (!parsed || typeof parsed.delayMs !== "number") {
-      console.warn("[Download Delay] Invalid stored delay format, using default");
+      console.warn(
+        "[DirectDownload] Invalid stored close delay, using default",
+      );
       return defaultValue;
     }
 
@@ -61,7 +75,7 @@ export async function getDownloadPageCloseDelay(GMApi, defaultValue = 3500) {
     }
 
     console.info("[Download Delay] Retrieved delay:", parsed.delayMs, "ms (age:", age, "ms)");
-    return parsed.delayMs;
+    return normalizeDownloadCloseDelay(parsed.delayMs, defaultValue);
   } catch (err) {
     console.warn("[Download Delay] Failed to retrieve delay:", err);
     return defaultValue;

@@ -15,11 +15,25 @@ export const DIRECT_DOWNLOAD_HOSTS = Object.freeze([
     tooltip: "Enable direct download automation for gofile.io",
   },
   {
+    id: "googleDrive",
+    canonicalHost: "drive.google.com",
+    hostIncludes: ["drive.google.com", "drive.usercontent.google.com"],
+    text: "Google Drive",
+    tooltip: "Enable direct download automation for Google Drive",
+  },
+  {
     id: "pixeldrain",
     canonicalHost: "pixeldrain.com",
     hostIncludes: ["pixeldrain.com"],
     text: "Pixeldrain",
     tooltip: "Enable direct download automation for pixeldrain.com",
+  },
+  {
+    id: "krakenfiles",
+    canonicalHost: "krakenfiles.com",
+    hostIncludes: ["krakenfiles.com"],
+    text: "KrakenFiles",
+    tooltip: "Enable direct download automation for krakenfiles.com",
   },
   {
     id: "datanodes",
@@ -29,11 +43,54 @@ export const DIRECT_DOWNLOAD_HOSTS = Object.freeze([
     tooltip: "Enable direct download automation for datanodes.to",
   },
   {
+    id: "delafil",
+    canonicalHost: "delafil.se",
+    hostIncludes: ["delafil.se"],
+    text: "DelaFil",
+    tooltip: "Enable direct download automation for delafil.se",
+  },
+  {
+    id: "downloadgg",
+    canonicalHost: "download.gg",
+    hostIncludes: ["download.gg"],
+    text: "download.gg",
+    tooltip: "Enable direct download automation for download.gg",
+  },
+  {
+    id: "vik1ngfile",
+    canonicalHost: "vik1ngfile.site",
+    hostIncludes: ["vik1ngfile.site", "vikingfile.com"],
+    text: "Vik1ngFile",
+    tooltip:
+      "Enable direct download automation for vik1ngfile.site and vikingfile.com",
+  },
+  {
     id: "mediafire",
     canonicalHost: "mediafire.com",
     hostIncludes: ["mediafire.com"],
     text: "MediaFire",
     tooltip: "Enable direct download automation for mediafire.com",
+  },
+  {
+    id: "mixdrop",
+    canonicalHost: "miiiixdrop.net",
+    hostIncludes: ["mixdrop.ag", "miiixdrop.net", "miiiixdrop.net"],
+    text: "MixDrop",
+    tooltip: "Enable two-stage direct download automation for MixDrop",
+  },
+  {
+    id: "uploadhaven",
+    canonicalHost: "uploadhaven.com",
+    hostIncludes: ["uploadhaven.com"],
+    text: "UploadHaven",
+    tooltip: "Enable direct download automation for uploadhaven.com",
+  },
+  {
+    id: "uploadnow",
+    canonicalHost: "uploadnow.io",
+    hostIncludes: ["uploadnow.io"],
+    text: "UploadNow",
+    tooltip: "Enable single-file direct download automation for uploadnow.io",
   },
   {
     id: "workupload",
@@ -44,8 +101,10 @@ export const DIRECT_DOWNLOAD_HOSTS = Object.freeze([
   },
 ]);
 
-export const DIRECT_DOWNLOAD_HOST_MATCHERS = Object.freeze(
-  DIRECT_DOWNLOAD_HOSTS.flatMap((host) => host.hostIncludes),
+const DIRECT_DOWNLOAD_HOST_INDEX = new Map(
+  DIRECT_DOWNLOAD_HOSTS.flatMap((host) =>
+    host.hostIncludes.map((hostname) => [hostname, host]),
+  ),
 );
 
 function normalizeHostname(hostname) {
@@ -53,13 +112,16 @@ function normalizeHostname(hostname) {
 }
 
 export function findDirectDownloadHost(hostname) {
-  const normalized = normalizeHostname(hostname);
+  let normalized = normalizeHostname(hostname);
   if (!normalized) return null;
-  return (
-    DIRECT_DOWNLOAD_HOSTS.find((host) =>
-      host.hostIncludes.some((entry) => normalized.includes(entry)),
-    ) || null
-  );
+  while (normalized) {
+    const host = DIRECT_DOWNLOAD_HOST_INDEX.get(normalized);
+    if (host) return host;
+    const dot = normalized.indexOf(".");
+    if (dot < 0) break;
+    normalized = normalized.slice(dot + 1);
+  }
+  return null;
 }
 
 export function normalizeDirectDownloadHost(hostname) {

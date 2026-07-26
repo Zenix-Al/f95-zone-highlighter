@@ -1,0 +1,208 @@
+{
+  "packageId": "MASKED-DIRECT-PARALLEL-BASELINE-01",
+  "productionChanges": false,
+  "toastInventory": [
+    {
+      "owner": "app/createMaskedDirectApp.js",
+      "category": "bridge-and-local-fallback",
+      "calls": 1
+    },
+    {
+      "owner": "app/contexts/threadPageController.js",
+      "category": "f95-thread-masked-progress-and-failure",
+      "calls": 7
+    },
+    {
+      "owner": "app/lifecycle.js",
+      "category": "core-access-lifecycle",
+      "calls": 1
+    },
+    {
+      "owner": "hosts/buzzheavier.js",
+      "category": "external-host-success",
+      "calls": 1
+    },
+    {
+      "owner": "hosts/gofile.js",
+      "category": "external-host-success",
+      "calls": 1
+    },
+    {
+      "owner": "hosts/datanodes/index.js",
+      "category": "external-host-success",
+      "calls": 1
+    },
+    {
+      "owner": "hosts/mediafire.js",
+      "category": "external-host-success",
+      "calls": 2
+    },
+    {
+      "owner": "hosts/pixeldrain.js",
+      "category": "external-host-success-and-failure",
+      "calls": 3
+    },
+    {
+      "owner": "hosts/workupload.js",
+      "category": "external-host-success-and-progress",
+      "calls": 2
+    },
+    {
+      "owner": "hosts/vik1ngfile.js",
+      "category": "external-host-success",
+      "calls": 1
+    },
+    {
+      "owner": "domain/directDownload/detectors.js",
+      "category": "external-host-confirmation-and-timeout",
+      "calls": 2
+    },
+    {
+      "owner": "domain/directDownload/flowController.js",
+      "category": "external-host-failure",
+      "calls": 1
+    },
+    {
+      "owner": "domain/directDownload/attention.js",
+      "category": "cross-tab-result-presentation",
+      "calls": 2
+    },
+    {
+      "owner": "ui/controller.js",
+      "category": "local-toast-dom-implementation",
+      "calls": 1
+    },
+    {
+      "owner": "ui/controller.js#cssText",
+      "category": "local-toast-css",
+      "calls": 1
+    },
+    {
+      "owner": "ui/controller.js#showToast",
+      "category": "local-toast-timer",
+      "calls": 1
+    },
+    {
+      "owner": "manifest.capabilities",
+      "category": "toast-capability",
+      "calls": 1
+    },
+    {
+      "owner": "core/adaptor.js",
+      "category": "toast-action-transport",
+      "calls": 1
+    }
+  ],
+  "toastOwnership": {
+    "element": "#f95ue-addon-toast",
+    "styleOwner": "ui/controller.js#ensureLocalButtonStyle",
+    "timerOwner": "ui/controller.js#showToast",
+    "cleanupOwner": "createMaskedDirectApp.js#teardownFns",
+    "coreAction": "toast.show",
+    "fallback": "failed F95 core toast calls fall back to the local toast; external hosts always use the local toast"
+  },
+  "identityFlow": [
+    "thread click creates requestId and ownerTabId",
+    "route URL carries f95ue_dd, f95ue_dd_ts, f95ue_dd_req, and f95ue_tab",
+    "processing trigger stores requestId and ownerTabId in the shared trigger array",
+    "GM_openInTab handle is registered in the originating tab by requestId",
+    "download page writes URL identity into session route context",
+    "host handler reports success or failure through the flow controller",
+    "directDownloadEvent carries targetTabId and requestId",
+    "originating listener filters by targetTabId and remote",
+    "close-tab event closes only the managed handle registered for requestId"
+  ],
+  "sharedSurfaces": [
+    {
+      "key": "f95ue.addon.maskedDirect.processingDownload",
+      "owner": "domain/directDownload/processingTrigger.js",
+      "operations": [
+        "complete-value read",
+        "complete-value read-modify-write on create",
+        "complete-value read-modify-write on exact clear",
+        "complete-value overwrite on broad clear"
+      ],
+      "race": "lost update"
+    },
+    {
+      "key": "f95ue.addon.maskedDirect.directDownloadEvent",
+      "owner": "domain/directDownload/attention.js",
+      "operations": [
+        "complete-value event write",
+        "remote value-change listener read"
+      ],
+      "race": "global timestamp dedupe can discard an out-of-order sibling result"
+    },
+    {
+      "key": "f95ue_dd_downloadPageCloseDelayMs",
+      "owner": "infrastructure/gmStorageAdapter.js",
+      "operations": [
+        "complete-value overwrite",
+        "complete-value read",
+        "delete"
+      ],
+      "race": "last writer wins across requests"
+    },
+    {
+      "key": "f95ue.addon.maskedDirect.routeContext",
+      "owner": "ports/routeContextRepository.js",
+      "operations": [
+        "sessionStorage overwrite",
+        "sessionStorage read",
+        "sessionStorage delete"
+      ],
+      "race": "tab-local; one context per managed external tab"
+    },
+    {
+      "key": "f95ue.addon.directDownload.tabId",
+      "owner": "domain/directDownload/attention.js",
+      "operations": [
+        "sessionStorage create-once",
+        "sessionStorage read"
+      ],
+      "race": "tab-local owner identity"
+    }
+  ],
+  "broadCleanupCallers": [
+    {
+      "owner": "domain/directDownload/flowController.js#reportAddonHealthy",
+      "condition": "no download host",
+      "effect": "clearProcessingDownloadTrigger without requestId clears the complete shared ledger"
+    },
+    {
+      "owner": "domain/directDownload/processingTrigger.js#clearProcessingDownloadTrigger",
+      "condition": "empty requestId",
+      "effect": "writes an empty items array"
+    }
+  ],
+  "characterizedOutcomes": [
+    {
+      "id": "two-tab-create",
+      "currentOutcome": "request-a-lost"
+    },
+    {
+      "id": "cleanup-versus-create",
+      "currentOutcome": "request-b-lost"
+    },
+    {
+      "id": "healthy-tab-broad-clear",
+      "currentOutcome": "all-live-requests-lost"
+    },
+    {
+      "id": "shared-close-delay",
+      "currentOutcome": "last-writer-wins"
+    },
+    {
+      "id": "out-of-order-result",
+      "currentOutcome": "older-sibling-discarded"
+    },
+    {
+      "id": "different-target-tabs",
+      "currentOutcome": "non-target-event-ignored"
+    },
+    {
+      "id": "same-tab-sequential",
+      "currentOutcome": "both-requests-retained"
+    }
+  ]
+}

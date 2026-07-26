@@ -1,5 +1,5 @@
 import { AUTOMATION_MARKER_KEY } from "../constants.js";
-import { DIRECT_DOWNLOAD_HOST_MATCHERS } from "../hosts/metadata.js";
+import { isSupportedDirectDownloadHost } from "../hosts/metadata.js";
 
 export function createDebugLog(addonId) {
   return function debugLog(scope, message, extra = null) {
@@ -54,7 +54,7 @@ export function isLikelyDirectDownloadAnchor(link) {
 
   try {
     const host = new URL(normalized).hostname.toLowerCase();
-    return DIRECT_DOWNLOAD_HOST_MATCHERS.some((entry) => host.includes(entry));
+    return isSupportedDirectDownloadHost(host);
   } catch {
     return false;
   }

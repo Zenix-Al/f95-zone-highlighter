@@ -20,6 +20,17 @@ export function classifyMaskedDirectContext(
     };
   }
 
+  if (
+    (hostname === "www.google.com" || hostname === "www.recaptcha.net") &&
+    pathname.startsWith("/recaptcha/")
+  ) {
+    return {
+      kind: "external-standalone",
+      route: "recaptcha-frame",
+      usesCore: false,
+    };
+  }
+
   if (isSupportedExternalHost(hostname)) {
     return {
       kind: "external-standalone",

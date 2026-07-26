@@ -22,6 +22,10 @@ for (const group of [
   "latest-filters-reset",
   "latest-filters-surprise",
   "latest-filters-expansion",
+  "masked-direct-parallel-baseline",
+  "masked-direct-toast-remove",
+  "masked-direct-parallel-requests",
+  "masked-direct-reliability",
   "integration",
 ]) {
   require(`./groups/${group}.cjs`)(harness);

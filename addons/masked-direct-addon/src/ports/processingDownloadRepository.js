@@ -5,6 +5,8 @@ export {
   normalizeProcessingDownloadTrigger,
   normalizeProcessingDownloadTriggers,
   readProcessingDownloadTrigger,
+  readProcessingDownloadTriggerBySource,
   readProcessingDownloadTriggers,
   setProcessingDownloadTrigger,
+  updateProcessingDownloadTrigger,
 } from "../domain/directDownload/processingTrigger.js";

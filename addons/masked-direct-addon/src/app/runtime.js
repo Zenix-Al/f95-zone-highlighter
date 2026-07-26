@@ -27,6 +27,11 @@ export function createMaskedDirectRuntime() {
         : "hybrid",
     matches: Array.isArray(__ADDON_MATCHES__)
       ? __ADDON_MATCHES__
-      : ["*://f95zone.to/threads/*", "*://f95zone.to/masked/*"],
+      : [
+          "*://f95zone.to/threads/*",
+          "*://f95zone.to/masked/*",
+          "https://www.google.com/recaptcha/*",
+          "https://www.recaptcha.net/recaptcha/*",
+        ],
   });
 }

@@ -42,7 +42,9 @@ function ensureGofilePageBridge() {
       })();
     `;
 
-    (document.head || document.documentElement || document.body).appendChild(script);
+    (document.head || document.documentElement || document.body).appendChild(
+      script,
+    );
     script.remove();
     return true;
   } catch {
@@ -52,7 +54,11 @@ function ensureGofilePageBridge() {
 
 function invokeGofileDownloadContent(contentId, timeoutMs = 1500) {
   if (!contentId) {
-    return Promise.resolve({ ok: false, source: "input", reason: "missing_content_id" });
+    return Promise.resolve({
+      ok: false,
+      source: "input",
+      reason: "missing_content_id",
+    });
   }
 
   try {
@@ -64,12 +70,18 @@ function invokeGofileDownloadContent(contentId, timeoutMs = 1500) {
     return Promise.resolve({
       ok: false,
       source: "window",
-      reason: error?.message ? String(error.message) : "window_downloadContent_throw",
+      reason: error?.message
+        ? String(error.message)
+        : "window_downloadContent_throw",
     });
   }
 
   if (!ensureGofilePageBridge()) {
-    return Promise.resolve({ ok: false, source: "pageBridge", reason: "bridge_inject_failed" });
+    return Promise.resolve({
+      ok: false,
+      source: "pageBridge",
+      reason: "bridge_inject_failed",
+    });
   }
 
   return new Promise((resolve) => {
@@ -93,11 +105,14 @@ function invokeGofileDownloadContent(contentId, timeoutMs = 1500) {
     };
 
     const timer = setTimeout(
-      () => finish({ ok: false, source: "pageBridge", reason: "bridge_timeout" }),
+      () =>
+        finish({ ok: false, source: "pageBridge", reason: "bridge_timeout" }),
       timeoutMs,
     );
 
-    window.addEventListener(GOFILE_BRIDGE_RESULT_EVENT, onReply, { once: true });
+    window.addEventListener(GOFILE_BRIDGE_RESULT_EVENT, onReply, {
+      once: true,
+    });
     window.dispatchEvent(
       new CustomEvent(GOFILE_BRIDGE_REQUEST_EVENT, {
         detail: { contentId },
@@ -106,12 +121,20 @@ function invokeGofileDownloadContent(contentId, timeoutMs = 1500) {
   });
 }
 
-export async function processGofileDownload({ showToast, notifyMainFailure, reportAddonHealthy }) {
+export async function processGofileDownload({
+  challengeGate,
+  notifyMainFailure,
+  reportAddonHealthy,
+}) {
   const waitForContentReady = (timeout = 20000) =>
     new Promise((resolve, reject) => {
       const start = Date.now();
 
       const check = () => {
+        if (challengeGate?.isBlocked?.()) {
+          void challengeGate.waitUntilClear().then(check);
+          return;
+        }
         const loading = document.querySelector(SELECTORS.GOFILE.LOADING);
         const itemsList = document.querySelector(SELECTORS.GOFILE.ITEMS_LIST);
         const isReady =
@@ -145,6 +168,7 @@ export async function processGofileDownload({ showToast, notifyMainFailure, repo
   }
 
   await sleep(TIMINGS.GOFILE_POST_READY_WAIT);
+  if (challengeGate && !(await challengeGate.waitUntilClear())) return;
 
   const alertEl = document.querySelector(SELECTORS.GOFILE.ALERT);
   if (alertEl && getComputedStyle(alertEl).display !== "none") {
@@ -162,8 +186,14 @@ export async function processGofileDownload({ showToast, notifyMainFailure, repo
 
   const itemElements = itemsList.querySelectorAll("[data-item-id]");
   if (itemElements.length !== 1) {
-    console.warn("[Gofile] Expected exactly 1 file, found:", itemElements.length);
-    await notifyMainFailure("gofile.io", "Automation requires exactly one file.");
+    console.warn(
+      "[Gofile] Expected exactly 1 file, found:",
+      itemElements.length,
+    );
+    await notifyMainFailure(
+      "gofile.io",
+      "Automation requires exactly one file.",
+    );
     return;
   }
 
@@ -174,12 +204,15 @@ export async function processGofileDownload({ showToast, notifyMainFailure, repo
     return;
   }
 
-  console.info("[Gofile] Attempting to trigger download for content id:", contentId);
+  console.info(
+    "[Gofile] Attempting to trigger download for content id:",
+    contentId,
+  );
+  if (challengeGate && !(await challengeGate.waitUntilClear())) return;
   const bridgeResult = await invokeGofileDownloadContent(contentId);
 
   if (bridgeResult.ok) {
     console.info("[Gofile] Download triggered successfully");
-    showToast("Gofile download triggered.");
     reportAddonHealthy();
     return;
   }

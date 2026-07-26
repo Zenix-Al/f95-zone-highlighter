@@ -54,7 +54,7 @@
         "id": "masked-direct-addon",
         "name": "F95UE Masked + Direct Download Add-on",
         "description": "Combines masked-link skipper and direct-download flows into one trusted add-on.",
-        "version": "1.0.2",
+        "version": "1.1.0",
         "author": "X Death",
         "entry": "addons/masked-direct-addon/src/main.js",
         "outfile": "addons/masked-direct-addon/dist/masked-direct-addon.user.js",
@@ -66,8 +66,29 @@
           "*://bzzhr.to/*",
           "*://*.bzzhr.to/*",
           "*://gofile.io/*",
+          "https://drive.google.com/file/d/*",
+          "https://drive.google.com/open*",
+          "https://drive.google.com/uc*",
+          "https://drive.usercontent.google.com/download*",
+          "https://krakenfiles.com/view/*/file.html*",
+          "https://www.krakenfiles.com/view/*/file.html*",
+          "https://mixdrop.ag/f/*",
+          "https://miiixdrop.net/f/*",
+          "https://miiiixdrop.net/f/*",
+          "https://uploadhaven.com/download/*",
+          "https://www.uploadhaven.com/download/*",
+          "https://uploadnow.io/*/share*",
+          "https://www.uploadnow.io/*/share*",
           "*://pixeldrain.com/*",
           "*://datanodes.to/*",
+          "*://delafil.se/*",
+          "*://*.delafil.se/*",
+          "*://download.gg/*",
+          "*://www.download.gg/*",
+          "*://vik1ngfile.site/f/*",
+          "*://*.vik1ngfile.site/f/*",
+          "*://vikingfile.com/f/*",
+          "*://*.vikingfile.com/f/*",
           "*://www.mediafire.com/file/*",
           "*://mediafire.com/file/*",
           "*://workupload.com/file/*",
@@ -170,7 +191,7 @@
         "id": "latest-filters-addon",
         "name": "F95UE Latest Filters Add-on",
         "description": "Adds one Saved Filters button on Latest Updates with a searchable preset list and active filter tracking.",
-        "version": "1.0.2",
+        "version": "1.1.0",
         "author": "X Death",
         "entry": "addons/latest-filters-addon/src/main.js",
         "outfile": "addons/latest-filters-addon/dist/latest-filters-addon.user.js",
@@ -228,7 +249,7 @@
     ]
   },
   "trustedCatalog": {
-    "source": "src/generated/trusted-addon-catalog.006a9b9d942596bc.json",
+    "source": "src/generated/trusted-addon-catalog.8166a8258583b2a8.json",
     "projection": [
       {
         "id": "example-addon",
@@ -264,7 +285,7 @@
         "id": "latest-filters-addon",
         "name": "F95UE Latest Filters Add-on",
         "description": "Adds one Saved Filters button on Latest Updates with a searchable preset list and active filter tracking.",
-        "version": "1.0.2",
+        "version": "1.1.0",
         "pageScopes": [
           "latest"
         ],
@@ -294,7 +315,7 @@
         "id": "masked-direct-addon",
         "name": "F95UE Masked + Direct Download Add-on",
         "description": "Combines masked-link skipper and direct-download flows into one trusted add-on.",
-        "version": "1.0.2",
+        "version": "1.1.0",
         "pageScopes": [
           "f95zone"
         ],
@@ -307,8 +328,29 @@
           "*://bzzhr.to/*",
           "*://*.bzzhr.to/*",
           "*://gofile.io/*",
+          "https://drive.google.com/file/d/*",
+          "https://drive.google.com/open*",
+          "https://drive.google.com/uc*",
+          "https://drive.usercontent.google.com/download*",
+          "https://krakenfiles.com/view/*/file.html*",
+          "https://www.krakenfiles.com/view/*/file.html*",
+          "https://mixdrop.ag/f/*",
+          "https://miiixdrop.net/f/*",
+          "https://miiiixdrop.net/f/*",
+          "https://uploadhaven.com/download/*",
+          "https://www.uploadhaven.com/download/*",
+          "https://uploadnow.io/*/share*",
+          "https://www.uploadnow.io/*/share*",
           "*://pixeldrain.com/*",
           "*://datanodes.to/*",
+          "*://delafil.se/*",
+          "*://*.delafil.se/*",
+          "*://download.gg/*",
+          "*://www.download.gg/*",
+          "*://vik1ngfile.site/f/*",
+          "*://*.vik1ngfile.site/f/*",
+          "*://vikingfile.com/f/*",
+          "*://*.vikingfile.com/f/*",
           "*://www.mediafire.com/file/*",
           "*://mediafire.com/file/*",
           "*://workupload.com/file/*",
@@ -964,6 +1006,11 @@
         "value": "f95ue-library-rows-status"
       },
       {
+        "path": "addons/masked-direct-addon/src/app/contexts/threadPageController.js",
+        "name": "THREAD_LINK_OBSERVER_ID",
+        "value": "masked-direct-thread-links"
+      },
+      {
         "path": "addons/masked-direct-addon/src/app/settings.js",
         "name": "ADDON_SETTINGS_KEY",
         "value": "settings"
@@ -1020,8 +1067,18 @@
       },
       {
         "path": "addons/masked-direct-addon/src/domain/directDownload/processingTrigger.js",
-        "name": "DIRECT_DOWNLOAD_TRIGGER_KEY",
+        "name": "LEGACY_TRIGGER_KEY",
         "value": "f95ue.addon.maskedDirect.processingDownload"
+      },
+      {
+        "path": "addons/masked-direct-addon/src/domain/directDownload/processingTrigger.js",
+        "name": "REQUEST_KEY_PREFIX",
+        "value": "f95ue.addon.maskedDirect.request."
+      },
+      {
+        "path": "addons/masked-direct-addon/src/domain/directDownload/processingTrigger.js",
+        "name": "SOURCE_KEY_PREFIX",
+        "value": "f95ue.addon.maskedDirect.source."
       },
       {
         "path": "addons/masked-direct-addon/src/hosts/gofile.js",
@@ -1961,7 +2018,7 @@
         "regular": {
           "mode": "regular",
           "bytes": 87869,
-          "gzipBytes": 19892,
+          "gzipBytes": 19890,
           "contributors": [
             {
               "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
@@ -2048,7 +2105,7 @@
         "release": {
           "mode": "release",
           "bytes": 77993,
-          "gzipBytes": 17403,
+          "gzipBytes": 17401,
           "contributors": [
             {
               "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
@@ -2846,22 +2903,28 @@
     {
       "id": "masked-direct-addon",
       "source": {
-        "fileCount": 37,
-        "authoredBytes": 125195,
-        "physicalLines": 4294,
-        "nonblankLines": 3746,
+        "fileCount": 50,
+        "authoredBytes": 160018,
+        "physicalLines": 5465,
+        "nonblankLines": 4924,
         "files": [
           {
             "path": "addons/masked-direct-addon/src/api/observer.js",
-            "bytes": 350,
-            "physicalLines": 11,
-            "nonblankLines": 10
+            "bytes": 592,
+            "physicalLines": 19,
+            "nonblankLines": 16
           },
           {
             "path": "addons/masked-direct-addon/src/api/page.js",
             "bytes": 320,
             "physicalLines": 9,
             "nonblankLines": 8
+          },
+          {
+            "path": "addons/masked-direct-addon/src/api/toast.js",
+            "bytes": 163,
+            "physicalLines": 6,
+            "nonblankLines": 6
           },
           {
             "path": "addons/masked-direct-addon/src/app/context.js",
@@ -2871,9 +2934,9 @@
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "bytes": 10981,
-            "physicalLines": 391,
-            "nonblankLines": 349
+            "bytes": 10601,
+            "physicalLines": 364,
+            "nonblankLines": 336
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
@@ -2883,21 +2946,21 @@
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/threadPageController.js",
-            "bytes": 6174,
-            "physicalLines": 203,
-            "nonblankLines": 172
+            "bytes": 6838,
+            "physicalLines": 224,
+            "nonblankLines": 191
           },
           {
             "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
-            "bytes": 9722,
-            "physicalLines": 296,
-            "nonblankLines": 265
+            "bytes": 9622,
+            "physicalLines": 288,
+            "nonblankLines": 261
           },
           {
             "path": "addons/masked-direct-addon/src/app/lifecycle.js",
-            "bytes": 3562,
-            "physicalLines": 133,
-            "nonblankLines": 119
+            "bytes": 3819,
+            "physicalLines": 141,
+            "nonblankLines": 127
           },
           {
             "path": "addons/masked-direct-addon/src/app/managedTabs.js",
@@ -2907,9 +2970,9 @@
           },
           {
             "path": "addons/masked-direct-addon/src/app/pageBehavior.js",
-            "bytes": 2252,
-            "physicalLines": 77,
-            "nonblankLines": 72
+            "bytes": 2395,
+            "physicalLines": 81,
+            "nonblankLines": 75
           },
           {
             "path": "addons/masked-direct-addon/src/app/registration.js",
@@ -2925,9 +2988,9 @@
           },
           {
             "path": "addons/masked-direct-addon/src/app/settings.js",
-            "bytes": 3249,
-            "physicalLines": 102,
-            "nonblankLines": 94
+            "bytes": 3349,
+            "physicalLines": 107,
+            "nonblankLines": 99
           },
           {
             "path": "addons/masked-direct-addon/src/app/styleController.js",
@@ -2937,9 +3000,9 @@
           },
           {
             "path": "addons/masked-direct-addon/src/constants.js",
-            "bytes": 3500,
-            "physicalLines": 108,
-            "nonblankLines": 106
+            "bytes": 3455,
+            "physicalLines": 107,
+            "nonblankLines": 105
           },
           {
             "path": "addons/masked-direct-addon/src/core/adaptor.js",
@@ -2949,69 +3012,105 @@
           },
           {
             "path": "addons/masked-direct-addon/src/domain/directDownload/attention.js",
-            "bytes": 5544,
-            "physicalLines": 189,
-            "nonblankLines": 166
-          },
-          {
-            "path": "addons/masked-direct-addon/src/domain/directDownload/detectors.js",
-            "bytes": 10531,
-            "physicalLines": 375,
-            "nonblankLines": 280
+            "bytes": 9266,
+            "physicalLines": 314,
+            "nonblankLines": 290
           },
           {
             "path": "addons/masked-direct-addon/src/domain/directDownload/flowController.js",
-            "bytes": 7780,
-            "physicalLines": 273,
-            "nonblankLines": 247
+            "bytes": 8272,
+            "physicalLines": 283,
+            "nonblankLines": 262
+          },
+          {
+            "path": "addons/masked-direct-addon/src/domain/directDownload/managedClose.js",
+            "bytes": 1973,
+            "physicalLines": 65,
+            "nonblankLines": 59
           },
           {
             "path": "addons/masked-direct-addon/src/domain/directDownload/processingTrigger.js",
-            "bytes": 5019,
-            "physicalLines": 182,
-            "nonblankLines": 163
+            "bytes": 12665,
+            "physicalLines": 438,
+            "nonblankLines": 405
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/buzzheavier.js",
-            "bytes": 1812,
+            "bytes": 1986,
+            "physicalLines": 66,
+            "nonblankLines": 60
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
+            "bytes": 7343,
+            "physicalLines": 305,
+            "nonblankLines": 262
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/delafil.js",
+            "bytes": 2666,
+            "physicalLines": 95,
+            "nonblankLines": 87
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/downloadgg.js",
+            "bytes": 2170,
+            "physicalLines": 75,
+            "nonblankLines": 68
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/gofile.js",
+            "bytes": 6495,
+            "physicalLines": 223,
+            "nonblankLines": 197
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
+            "bytes": 4413,
+            "physicalLines": 147,
+            "nonblankLines": 137
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/handlers.js",
+            "bytes": 2313,
+            "physicalLines": 57,
+            "nonblankLines": 55
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/krakenfiles.js",
+            "bytes": 2126,
+            "physicalLines": 71,
+            "nonblankLines": 62
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/mediafire.js",
+            "bytes": 1883,
             "physicalLines": 64,
             "nonblankLines": 58
           },
           {
-            "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-            "bytes": 7097,
-            "physicalLines": 296,
-            "nonblankLines": 253
-          },
-          {
-            "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-            "bytes": 6109,
-            "physicalLines": 190,
-            "nonblankLines": 164
-          },
-          {
-            "path": "addons/masked-direct-addon/src/hosts/handlers.js",
-            "bytes": 1173,
-            "physicalLines": 39,
-            "nonblankLines": 37
-          },
-          {
-            "path": "addons/masked-direct-addon/src/hosts/mediafire.js",
-            "bytes": 1755,
-            "physicalLines": 63,
-            "nonblankLines": 57
-          },
-          {
             "path": "addons/masked-direct-addon/src/hosts/metadata.js",
-            "bytes": 2858,
-            "physicalLines": 100,
-            "nonblankLines": 91
+            "bytes": 4674,
+            "physicalLines": 162,
+            "nonblankLines": 153
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/mixdrop.js",
+            "bytes": 2986,
+            "physicalLines": 109,
+            "nonblankLines": 99
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/pixeldrain.js",
-            "bytes": 3878,
-            "physicalLines": 122,
-            "nonblankLines": 104
+            "bytes": 4084,
+            "physicalLines": 124,
+            "nonblankLines": 106
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/shared/cloudflareChallenge.js",
+            "bytes": 5016,
+            "physicalLines": 186,
+            "nonblankLines": 171
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/shared/dom.js",
@@ -3020,22 +3119,46 @@
             "nonblankLines": 80
           },
           {
+            "path": "addons/masked-direct-addon/src/hosts/shared/filePage.js",
+            "bytes": 464,
+            "physicalLines": 21,
+            "nonblankLines": 21
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/shared/managedNavigation.js",
+            "bytes": 747,
+            "physicalLines": 28,
+            "nonblankLines": 26
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/uploadhaven.js",
+            "bytes": 2795,
+            "physicalLines": 102,
+            "nonblankLines": 88
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/uploadnow.js",
+            "bytes": 2944,
+            "physicalLines": 108,
+            "nonblankLines": 99
+          },
+          {
             "path": "addons/masked-direct-addon/src/hosts/vik1ngfile.js",
-            "bytes": 2129,
-            "physicalLines": 68,
-            "nonblankLines": 58
+            "bytes": 2064,
+            "physicalLines": 80,
+            "nonblankLines": 72
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/workupload.js",
-            "bytes": 3346,
-            "physicalLines": 129,
-            "nonblankLines": 116
+            "bytes": 2905,
+            "physicalLines": 104,
+            "nonblankLines": 92
           },
           {
             "path": "addons/masked-direct-addon/src/infrastructure/gmStorageAdapter.js",
-            "bytes": 2793,
-            "physicalLines": 85,
-            "nonblankLines": 53
+            "bytes": 3149,
+            "physicalLines": 99,
+            "nonblankLines": 65
           },
           {
             "path": "addons/masked-direct-addon/src/main.js",
@@ -3051,9 +3174,9 @@
           },
           {
             "path": "addons/masked-direct-addon/src/ports/processingDownloadRepository.js",
-            "bytes": 355,
-            "physicalLines": 10,
-            "nonblankLines": 10
+            "bytes": 431,
+            "physicalLines": 12,
+            "nonblankLines": 12
           },
           {
             "path": "addons/masked-direct-addon/src/ports/routeContextRepository.js",
@@ -3062,147 +3185,163 @@
             "nonblankLines": 138
           },
           {
+            "path": "addons/masked-direct-addon/src/shared/diagnostics.js",
+            "bytes": 786,
+            "physicalLines": 24,
+            "nonblankLines": 21
+          },
+          {
+            "path": "addons/masked-direct-addon/src/shared/downloadCloseDelay.js",
+            "bytes": 354,
+            "physicalLines": 12,
+            "nonblankLines": 11
+          },
+          {
             "path": "addons/masked-direct-addon/src/shared/utils.js",
-            "bytes": 2662,
+            "bytes": 2630,
             "physicalLines": 91,
             "nonblankLines": 82
           },
           {
             "path": "addons/masked-direct-addon/src/ui/controller.js",
-            "bytes": 2345,
-            "physicalLines": 87,
-            "nonblankLines": 80
+            "bytes": 1365,
+            "physicalLines": 53,
+            "nonblankLines": 48
           }
         ]
       },
       "builds": {
         "regular": {
           "mode": "regular",
-          "bytes": 121703,
-          "gzipBytes": 26318,
+          "bytes": 159773,
+          "gzipBytes": 33067,
           "contributors": [
             {
+              "path": "addons/masked-direct-addon/src/domain/directDownload/processingTrigger.js",
+              "bytes": 12216
+            },
+            {
               "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-              "bytes": 10655
-            },
-            {
-              "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
-              "bytes": 7873
-            },
-            {
-              "path": "addons/masked-direct-addon/src/domain/directDownload/flowController.js",
-              "bytes": 7498
-            },
-            {
-              "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-              "bytes": 7199
-            },
-            {
-              "path": "addons/masked-direct-addon/src/domain/directDownload/detectors.js",
-              "bytes": 6407
-            },
-            {
-              "path": "addons/masked-direct-addon/src/app/contexts/threadPageController.js",
-              "bytes": 6336
-            },
-            {
-              "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-              "bytes": 6194
+              "bytes": 9921
             },
             {
               "path": "addons/masked-direct-addon/src/domain/directDownload/attention.js",
-              "bytes": 5682
+              "bytes": 9585
             },
             {
-              "path": "addons/masked-direct-addon/src/domain/directDownload/processingTrigger.js",
-              "bytes": 5013
+              "path": "addons/masked-direct-addon/src/domain/directDownload/flowController.js",
+              "bytes": 7939
+            },
+            {
+              "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+              "bytes": 7860
+            },
+            {
+              "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
+              "bytes": 7448
+            },
+            {
+              "path": "addons/masked-direct-addon/src/app/contexts/threadPageController.js",
+              "bytes": 7115
+            },
+            {
+              "path": "addons/masked-direct-addon/src/hosts/gofile.js",
+              "bytes": 6583
+            },
+            {
+              "path": "addons/masked-direct-addon/src/hosts/metadata.js",
+              "bytes": 4876
             },
             {
               "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
               "bytes": 4446
             },
             {
+              "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
+              "bytes": 4227
+            },
+            {
+              "path": "addons/masked-direct-addon/src/hosts/shared/cloudflareChallenge.js",
+              "bytes": 4080
+            },
+            {
+              "path": "addons/masked-direct-addon/src/app/lifecycle.js",
+              "bytes": 4059
+            },
+            {
               "path": "addons/masked-direct-addon/src/ports/routeContextRepository.js",
               "bytes": 3926
             },
             {
-              "path": "addons/masked-direct-addon/src/app/lifecycle.js",
-              "bytes": 3791
+              "path": "addons/masked-direct-addon/src/hosts/pixeldrain.js",
+              "bytes": 3813
             },
             {
               "path": "addons/shared/coreBridge.js",
               "bytes": 3784
             },
             {
-              "path": "addons/masked-direct-addon/src/hosts/pixeldrain.js",
-              "bytes": 3627
-            },
-            {
               "path": "addons/masked-direct-addon/src/constants.js",
-              "bytes": 3569
-            },
-            {
-              "path": "addons/masked-direct-addon/src/hosts/workupload.js",
-              "bytes": 3140
+              "bytes": 3523
             },
             {
               "path": "addons/masked-direct-addon/src/app/settings.js",
-              "bytes": 3096
+              "bytes": 3071
             },
             {
-              "path": "addons/masked-direct-addon/src/hosts/metadata.js",
-              "bytes": 2816
+              "path": "addons/masked-direct-addon/src/hosts/uploadnow.js",
+              "bytes": 2848
             },
             {
-              "path": "addons/masked-direct-addon/src/shared/utils.js",
-              "bytes": 2626
-            },
-            {
-              "path": "addons/masked-direct-addon/src/app/pageBehavior.js",
-              "bytes": 2464
+              "path": "addons/masked-direct-addon/src/hosts/mixdrop.js",
+              "bytes": 2746
             }
           ]
         },
         "release": {
           "mode": "release",
-          "bytes": 101534,
-          "gzipBytes": 22353,
+          "bytes": 134995,
+          "gzipBytes": 28134,
           "contributors": [
             {
+              "path": "addons/masked-direct-addon/src/domain/directDownload/processingTrigger.js",
+              "bytes": 9184
+            },
+            {
               "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-              "bytes": 7057
-            },
-            {
-              "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
-              "bytes": 6293
-            },
-            {
-              "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-              "bytes": 4952
-            },
-            {
-              "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-              "bytes": 4935
-            },
-            {
-              "path": "addons/masked-direct-addon/src/domain/directDownload/flowController.js",
-              "bytes": 4924
-            },
-            {
-              "path": "addons/masked-direct-addon/src/app/contexts/threadPageController.js",
-              "bytes": 4664
-            },
-            {
-              "path": "addons/masked-direct-addon/src/domain/directDownload/detectors.js",
-              "bytes": 4189
+              "bytes": 7040
             },
             {
               "path": "addons/masked-direct-addon/src/domain/directDownload/attention.js",
-              "bytes": 4142
+              "bytes": 6850
             },
             {
-              "path": "addons/masked-direct-addon/src/domain/directDownload/processingTrigger.js",
-              "bytes": 3586
+              "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+              "bytes": 6320
+            },
+            {
+              "path": "addons/masked-direct-addon/src/domain/directDownload/flowController.js",
+              "bytes": 5381
+            },
+            {
+              "path": "addons/masked-direct-addon/src/app/contexts/threadPageController.js",
+              "bytes": 5183
+            },
+            {
+              "path": "addons/masked-direct-addon/src/hosts/gofile.js",
+              "bytes": 5096
+            },
+            {
+              "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
+              "bytes": 5092
+            },
+            {
+              "path": "addons/masked-direct-addon/src/hosts/metadata.js",
+              "bytes": 3766
+            },
+            {
+              "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
+              "bytes": 3258
             },
             {
               "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
@@ -3213,40 +3352,36 @@
               "bytes": 2783
             },
             {
+              "path": "addons/masked-direct-addon/src/app/lifecycle.js",
+              "bytes": 2777
+            },
+            {
               "path": "addons/masked-direct-addon/src/constants.js",
-              "bytes": 2762
+              "bytes": 2722
+            },
+            {
+              "path": "addons/masked-direct-addon/src/hosts/shared/cloudflareChallenge.js",
+              "bytes": 2686
             },
             {
               "path": "addons/shared/coreBridge.js",
               "bytes": 2649
             },
             {
-              "path": "addons/masked-direct-addon/src/app/lifecycle.js",
-              "bytes": 2611
-            },
-            {
-              "path": "addons/masked-direct-addon/src/hosts/workupload.js",
-              "bytes": 2437
-            },
-            {
               "path": "addons/masked-direct-addon/src/hosts/pixeldrain.js",
-              "bytes": 2401
+              "bytes": 2571
             },
             {
               "path": "addons/masked-direct-addon/src/app/settings.js",
-              "bytes": 2380
+              "bytes": 2287
             },
             {
-              "path": "addons/masked-direct-addon/src/hosts/metadata.js",
-              "bytes": 2175
+              "path": "addons/masked-direct-addon/src/hosts/uploadnow.js",
+              "bytes": 2207
             },
             {
-              "path": "addons/masked-direct-addon/src/ui/controller.js",
-              "bytes": 2077
-            },
-            {
-              "path": "addons/masked-direct-addon/src/shared/utils.js",
-              "bytes": 1858
+              "path": "addons/masked-direct-addon/src/hosts/mixdrop.js",
+              "bytes": 2170
             }
           ]
         }
@@ -3571,9 +3706,9 @@
     },
     "servicesAddons": {
       "fileCount": 34,
-      "authoredBytes": 181687,
-      "physicalLines": 4974,
-      "nonblankLines": 4337,
+      "authoredBytes": 182493,
+      "physicalLines": 4995,
+      "nonblankLines": 4358,
       "files": [
         {
           "path": "src/services/addons/access.js",
@@ -3763,9 +3898,9 @@
         },
         {
           "path": "src/services/addons/trusted-catalog.json",
-          "bytes": 4845,
-          "physicalLines": 202,
-          "nonblankLines": 202
+          "bytes": 5651,
+          "physicalLines": 223,
+          "nonblankLines": 223
         },
         {
           "path": "src/services/addons/uiHost.js",

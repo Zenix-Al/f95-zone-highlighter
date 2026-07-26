@@ -4,6 +4,12 @@ F95UE add-ons are separate userscripts that register with the core userscript an
 
 Use [`example-addon`](example-addon/) as the canonical implementation. It deliberately exercises every current add-on-facing action and is the best starting point for a new add-on.
 
+For hybrid cross-host download automation, use the
+[`masked-direct-addon` maintainer guide](masked-direct-addon/README.md). It
+defines the request-correlation, detector ordering, challenge, notification,
+closing, and host-addition contracts that a standalone host adapter must
+preserve.
+
 ## Design Rules
 
 - Keep optional or specialized features outside the core script.
@@ -546,6 +552,10 @@ under `domain/directDownload/`, host behavior remains under `hosts/`, direct GM
 compatibility lives under `infrastructure/`, and repositories remain under `ports/`.
 Only `main.js` and `constants.js` live directly under its `src/` root. External-host
 execution must not emit core bridge traffic.
+
+Its request correlation, retained compatibility keys, listener ownership, and
+diagnostic constraints are documented in
+`docs/architecture/masked-direct-reliability.md`.
 
 The builder:
 

@@ -27,10 +27,11 @@ async function waitForDownloadAnchor(timeoutMs = 12000) {
 }
 
 export async function processMediafireDownload({
-  showToast,
+  challengeGate,
   notifyMainFailure,
   reportAddonHealthy,
 }) {
+  if (challengeGate && !(await challengeGate.waitUntilClear())) return;
   const { button, href } = await waitForDownloadAnchor();
   if (!button) {
     await notifyMainFailure("mediafire.com", "Download button not found.");
@@ -38,13 +39,14 @@ export async function processMediafireDownload({
   }
 
   if (href) {
+    if (challengeGate && !(await challengeGate.waitUntilClear())) return;
     window.location.assign(href);
-    showToast("MediaFire download triggered.");
     reportAddonHealthy();
     return;
   }
 
   try {
+    if (challengeGate && !(await challengeGate.waitUntilClear())) return;
     if (!clickElement(button)) {
       await notifyMainFailure(
         "mediafire.com",
@@ -52,7 +54,6 @@ export async function processMediafireDownload({
       );
       return;
     }
-    showToast("MediaFire download triggered.");
     reportAddonHealthy();
   } catch {
     await notifyMainFailure(

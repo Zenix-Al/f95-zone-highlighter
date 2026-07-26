@@ -1,10 +1,4 @@
-import {
-  AUTOMATION_MARKER_KEY,
-  DIRECT_DOWNLOAD_ROUTE_REQUEST_ID_KEY,
-  DIRECT_DOWNLOAD_ROUTE_TS_KEY,
-  TIMINGS,
-  SELECTORS,
-} from "../constants.js";
+import { TIMINGS, SELECTORS } from "../constants.js";
 import { queryAllBySelectors, sleep } from "../shared/utils.js";
 import {
   getElementText,
@@ -13,6 +7,7 @@ import {
   isElementVisible,
   waitForCandidate,
 } from "./shared/dom.js";
+import { preserveManagedRouteMarkers } from "./shared/managedNavigation.js";
 
 const HOST_LABEL = "workupload.com";
 
@@ -72,29 +67,8 @@ async function waitForWorkuploadDownloadAnchor(
   });
 }
 
-function preserveAutomationMarkers(startHref) {
-  try {
-    const current = new URL(location.href);
-    const target = new URL(startHref, location.href);
-    for (const key of [
-      AUTOMATION_MARKER_KEY,
-      DIRECT_DOWNLOAD_ROUTE_TS_KEY,
-      DIRECT_DOWNLOAD_ROUTE_REQUEST_ID_KEY,
-      "f95ue_tab",
-    ]) {
-      const value = current.searchParams.get(key);
-      if (value && !target.searchParams.get(key)) {
-        target.searchParams.set(key, value);
-      }
-    }
-    return target.href;
-  } catch {
-    return startHref;
-  }
-}
-
 export async function processWorkuploadDownload({
-  showToast,
+  challengeGate,
   notifyMainFailure,
   reportAddonHealthy,
 }) {
@@ -102,7 +76,7 @@ export async function processWorkuploadDownload({
     if (TIMINGS.WORKUPLOAD_DOWNLOAD_START_SETTLE_DELAY > 0) {
       await sleep(TIMINGS.WORKUPLOAD_DOWNLOAD_START_SETTLE_DELAY);
     }
-    showToast("Workupload download triggered.");
+    if (challengeGate && !(await challengeGate.waitUntilClear())) return;
     reportAddonHealthy();
     return;
   }
@@ -112,6 +86,7 @@ export async function processWorkuploadDownload({
     return;
   }
 
+  if (challengeGate && !(await challengeGate.waitUntilClear())) return;
   const anchor = await waitForWorkuploadDownloadAnchor();
   if (!anchor) {
     await notifyMainFailure(HOST_LABEL, "Download button not found.");
@@ -124,6 +99,6 @@ export async function processWorkuploadDownload({
     return;
   }
 
-  showToast("Workupload download page opened.");
-  location.assign(preserveAutomationMarkers(startHref));
+  if (challengeGate && !(await challengeGate.waitUntilClear())) return;
+  location.assign(preserveManagedRouteMarkers(startHref));
 }

@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased - Filter tools
+## v1.1.0 - Filter tools
 
 - Added individual reset controls for included tags, excluded tags, and each visible prefix group.
 - Preserve unrelated Latest filters and return changed results to page 1 without reloading the complete document.
