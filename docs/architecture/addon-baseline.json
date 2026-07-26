@@ -824,6 +824,11 @@
         "value": "f95ue-halloween-theme-style"
       },
       {
+        "path": "addons/latest-filters-addon/src/app/filterResetController.js",
+        "name": "RESOURCE_ID",
+        "value": "latest-filter-reset-reconcile"
+      },
+      {
         "path": "addons/latest-filters-addon/src/constants.js",
         "name": "DIALOG_ID",
         "value": "latest-filters-manager"
@@ -1765,10 +1770,10 @@
     {
       "id": "latest-filters-addon",
       "source": {
-        "fileCount": 25,
-        "authoredBytes": 60398,
-        "physicalLines": 1714,
-        "nonblankLines": 1480,
+        "fileCount": 30,
+        "authoredBytes": 75348,
+        "physicalLines": 2247,
+        "nonblankLines": 1981,
         "files": [
           {
             "path": "addons/latest-filters-addon/src/api/bridge.js",
@@ -1832,9 +1837,15 @@
           },
           {
             "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-            "bytes": 22522,
-            "physicalLines": 538,
-            "nonblankLines": 495
+            "bytes": 23674,
+            "physicalLines": 571,
+            "nonblankLines": 528
+          },
+          {
+            "path": "addons/latest-filters-addon/src/app/filterResetController.js",
+            "bytes": 2488,
+            "physicalLines": 94,
+            "nonblankLines": 86
           },
           {
             "path": "addons/latest-filters-addon/src/app/lifecycle.js",
@@ -1862,15 +1873,21 @@
           },
           {
             "path": "addons/latest-filters-addon/src/app/state.js",
-            "bytes": 581,
-            "physicalLines": 25,
-            "nonblankLines": 25
+            "bytes": 608,
+            "physicalLines": 26,
+            "nonblankLines": 26
+          },
+          {
+            "path": "addons/latest-filters-addon/src/app/surpriseController.js",
+            "bytes": 835,
+            "physicalLines": 32,
+            "nonblankLines": 30
           },
           {
             "path": "addons/latest-filters-addon/src/constants.js",
-            "bytes": 543,
-            "physicalLines": 17,
-            "nonblankLines": 15
+            "bytes": 631,
+            "physicalLines": 19,
+            "nonblankLines": 17
           },
           {
             "path": "addons/latest-filters-addon/src/core/adaptor.js",
@@ -1879,10 +1896,22 @@
             "nonblankLines": 1
           },
           {
+            "path": "addons/latest-filters-addon/src/domain/filterRoute.js",
+            "bytes": 4698,
+            "physicalLines": 163,
+            "nonblankLines": 157
+          },
+          {
             "path": "addons/latest-filters-addon/src/domain/presets.js",
             "bytes": 6563,
             "physicalLines": 194,
             "nonblankLines": 144
+          },
+          {
+            "path": "addons/latest-filters-addon/src/domain/surpriseTags.js",
+            "bytes": 2522,
+            "physicalLines": 88,
+            "nonblankLines": 83
           },
           {
             "path": "addons/latest-filters-addon/src/main.js",
@@ -1892,9 +1921,9 @@
           },
           {
             "path": "addons/latest-filters-addon/src/ui/bindings.js",
-            "bytes": 2448,
-            "physicalLines": 69,
-            "nonblankLines": 65
+            "bytes": 2581,
+            "physicalLines": 74,
+            "nonblankLines": 70
           },
           {
             "path": "addons/latest-filters-addon/src/ui/dialog.html",
@@ -1903,34 +1932,40 @@
             "nonblankLines": 19
           },
           {
+            "path": "addons/latest-filters-addon/src/ui/filterResetControls.js",
+            "bytes": 2485,
+            "physicalLines": 89,
+            "nonblankLines": 79
+          },
+          {
             "path": "addons/latest-filters-addon/src/ui/panel.css",
-            "bytes": 6158,
-            "physicalLines": 283,
-            "nonblankLines": 248
+            "bytes": 6202,
+            "physicalLines": 286,
+            "nonblankLines": 251
           },
           {
             "path": "addons/latest-filters-addon/src/ui/panel.html",
-            "bytes": 269,
-            "physicalLines": 8,
-            "nonblankLines": 8
+            "bytes": 376,
+            "physicalLines": 11,
+            "nonblankLines": 11
           },
           {
             "path": "addons/latest-filters-addon/src/ui/renderer.js",
-            "bytes": 8496,
-            "physicalLines": 215,
-            "nonblankLines": 145
+            "bytes": 8867,
+            "physicalLines": 235,
+            "nonblankLines": 164
           }
         ]
       },
       "builds": {
         "regular": {
           "mode": "regular",
-          "bytes": 72819,
-          "gzipBytes": 16479,
+          "bytes": 87869,
+          "gzipBytes": 19892,
           "contributors": [
             {
               "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-              "bytes": 22344
+              "bytes": 23350
             },
             {
               "path": "addons/shared/runtimeLifecycle.js",
@@ -1938,15 +1973,19 @@
             },
             {
               "path": "addons/latest-filters-addon/src/ui/panel.css",
-              "bytes": 6467
+              "bytes": 6514
             },
             {
               "path": "addons/latest-filters-addon/src/ui/renderer.js",
-              "bytes": 5984
+              "bytes": 6349
             },
             {
               "path": "addons/latest-filters-addon/src/domain/presets.js",
               "bytes": 5161
+            },
+            {
+              "path": "addons/latest-filters-addon/src/domain/filterRoute.js",
+              "bytes": 4771
             },
             {
               "path": "addons/shared/coreBridge.js",
@@ -1954,11 +1993,23 @@
             },
             {
               "path": "addons/latest-filters-addon/src/ui/bindings.js",
-              "bytes": 2596
+              "bytes": 2739
+            },
+            {
+              "path": "addons/latest-filters-addon/src/domain/surpriseTags.js",
+              "bytes": 2633
+            },
+            {
+              "path": "addons/latest-filters-addon/src/ui/filterResetControls.js",
+              "bytes": 2537
             },
             {
               "path": "addons/latest-filters-addon/src/app/registration.js",
               "bytes": 2350
+            },
+            {
+              "path": "addons/latest-filters-addon/src/app/filterResetController.js",
+              "bytes": 2265
             },
             {
               "path": "addons/latest-filters-addon/src/app/repository.js",
@@ -1981,43 +2032,27 @@
               "bytes": 874
             },
             {
+              "path": "addons/latest-filters-addon/src/app/surpriseController.js",
+              "bytes": 754
+            },
+            {
               "path": "addons/latest-filters-addon/src/app/operationTracker.js",
               "bytes": 724
             },
             {
               "path": "addons/latest-filters-addon/src/app/state.js",
-              "bytes": 639
-            },
-            {
-              "path": "addons/shared/runtimeKit.js",
-              "bytes": 595
-            },
-            {
-              "path": "addons/latest-filters-addon/src/constants.js",
-              "bytes": 479
-            },
-            {
-              "path": "addons/latest-filters-addon/src/api/ui/dialog.js",
-              "bytes": 346
-            },
-            {
-              "path": "addons/shared/apiFallback.js",
-              "bytes": 317
-            },
-            {
-              "path": "addons/latest-filters-addon/src/ui/panel.html",
-              "bytes": 304
+              "bytes": 668
             }
           ]
         },
         "release": {
           "mode": "release",
-          "bytes": 65342,
-          "gzipBytes": 14632,
+          "bytes": 77993,
+          "gzipBytes": 17403,
           "contributors": [
             {
               "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
-              "bytes": 16781
+              "bytes": 17531
             },
             {
               "path": "addons/shared/runtimeLifecycle.js",
@@ -2025,15 +2060,19 @@
             },
             {
               "path": "addons/latest-filters-addon/src/ui/panel.css",
-              "bytes": 6179
+              "bytes": 6223
             },
             {
               "path": "addons/latest-filters-addon/src/ui/renderer.js",
-              "bytes": 4892
+              "bytes": 5154
             },
             {
               "path": "addons/latest-filters-addon/src/domain/presets.js",
               "bytes": 3875
+            },
+            {
+              "path": "addons/latest-filters-addon/src/domain/filterRoute.js",
+              "bytes": 3178
             },
             {
               "path": "addons/shared/coreBridge.js",
@@ -2041,11 +2080,23 @@
             },
             {
               "path": "addons/latest-filters-addon/src/ui/bindings.js",
-              "bytes": 1844
+              "bytes": 1929
+            },
+            {
+              "path": "addons/latest-filters-addon/src/ui/filterResetControls.js",
+              "bytes": 1912
             },
             {
               "path": "addons/latest-filters-addon/src/app/registration.js",
               "bytes": 1793
+            },
+            {
+              "path": "addons/latest-filters-addon/src/domain/surpriseTags.js",
+              "bytes": 1715
+            },
+            {
+              "path": "addons/latest-filters-addon/src/app/filterResetController.js",
+              "bytes": 1530
             },
             {
               "path": "addons/latest-filters-addon/src/app/repository.js",
@@ -2068,32 +2119,16 @@
               "bytes": 723
             },
             {
+              "path": "addons/latest-filters-addon/src/app/surpriseController.js",
+              "bytes": 524
+            },
+            {
               "path": "addons/latest-filters-addon/src/app/operationTracker.js",
               "bytes": 509
             },
             {
               "path": "addons/shared/runtimeKit.js",
               "bytes": 506
-            },
-            {
-              "path": "addons/latest-filters-addon/src/app/state.js",
-              "bytes": 412
-            },
-            {
-              "path": "addons/latest-filters-addon/src/api/ui/dialog.js",
-              "bytes": 295
-            },
-            {
-              "path": "addons/latest-filters-addon/src/constants.js",
-              "bytes": 295
-            },
-            {
-              "path": "addons/latest-filters-addon/src/ui/panel.html",
-              "bytes": 291
-            },
-            {
-              "path": "addons/shared/apiFallback.js",
-              "bytes": 251
             }
           ]
         }
@@ -2102,10 +2137,10 @@
     {
       "id": "library-addon",
       "source": {
-        "fileCount": 85,
-        "authoredBytes": 276341,
-        "physicalLines": 8777,
-        "nonblankLines": 7892,
+        "fileCount": 87,
+        "authoredBytes": 282061,
+        "physicalLines": 8974,
+        "nonblankLines": 8071,
         "files": [
           {
             "path": "addons/library-addon/src/api/bridge.js",
@@ -2217,9 +2252,9 @@
           },
           {
             "path": "addons/library-addon/src/app/dockController.js",
-            "bytes": 8546,
-            "physicalLines": 264,
-            "nonblankLines": 248
+            "bytes": 9228,
+            "physicalLines": 284,
+            "nonblankLines": 267
           },
           {
             "path": "addons/library-addon/src/app/lifecycle.js",
@@ -2337,9 +2372,9 @@
           },
           {
             "path": "addons/library-addon/src/library/service.js",
-            "bytes": 29527,
-            "physicalLines": 871,
-            "nonblankLines": 814
+            "bytes": 31531,
+            "physicalLines": 942,
+            "nonblankLines": 879
           },
           {
             "path": "addons/library-addon/src/library/threadUpdateParser.js",
@@ -2582,6 +2617,18 @@
             "nonblankLines": 46
           },
           {
+            "path": "addons/library-addon/src/ui/threadTitle/threadTitleController.js",
+            "bytes": 689,
+            "physicalLines": 30,
+            "nonblankLines": 26
+          },
+          {
+            "path": "addons/library-addon/src/ui/threadTitle/titleChips.js",
+            "bytes": 2345,
+            "physicalLines": 76,
+            "nonblankLines": 69
+          },
+          {
             "path": "addons/library-addon/src/ui/utils/download.js",
             "bytes": 386,
             "physicalLines": 11,
@@ -2622,12 +2669,12 @@
       "builds": {
         "regular": {
           "mode": "regular",
-          "bytes": 286470,
-          "gzipBytes": 60215,
+          "bytes": 292240,
+          "gzipBytes": 61453,
           "contributors": [
             {
               "path": "addons/library-addon/src/library/service.js",
-              "bytes": 29189
+              "bytes": 31327
             },
             {
               "path": "addons/library-addon/src/ui/assets/manager.css",
@@ -2650,16 +2697,16 @@
               "bytes": 9181
             },
             {
+              "path": "addons/library-addon/src/app/dockController.js",
+              "bytes": 8847
+            },
+            {
               "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
               "bytes": 8472
             },
             {
               "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
               "bytes": 8421
-            },
-            {
-              "path": "addons/library-addon/src/app/dockController.js",
-              "bytes": 8258
             },
             {
               "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
@@ -2709,12 +2756,12 @@
         },
         "release": {
           "mode": "release",
-          "bytes": 249005,
-          "gzipBytes": 51810,
+          "bytes": 253748,
+          "gzipBytes": 52869,
           "contributors": [
             {
               "path": "addons/library-addon/src/library/service.js",
-              "bytes": 20092
+              "bytes": 21596
             },
             {
               "path": "addons/library-addon/src/ui/assets/manager.css",
@@ -2741,16 +2788,16 @@
               "bytes": 6216
             },
             {
+              "path": "addons/library-addon/src/app/dockController.js",
+              "bytes": 5805
+            },
+            {
               "path": "addons/library-addon/src/ui/assets/manager.html",
               "bytes": 5713
             },
             {
               "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
               "bytes": 5431
-            },
-            {
-              "path": "addons/library-addon/src/app/dockController.js",
-              "bytes": 5361
             },
             {
               "path": "addons/library-addon/src/app/createLibraryAddonApp.js",

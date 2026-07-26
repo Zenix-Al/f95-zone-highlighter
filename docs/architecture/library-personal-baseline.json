@@ -217,16 +217,16 @@
     }
   ],
   "build": {
-    "authoredBytes": 276341,
-    "fileCount": 85,
+    "authoredBytes": 282061,
+    "fileCount": 87,
     "regular": {
       "mode": "regular",
-      "bytes": 286470,
-      "gzipBytes": 60215,
+      "bytes": 292240,
+      "gzipBytes": 61453,
       "contributors": [
         {
           "path": "addons/library-addon/src/library/service.js",
-          "bytes": 29189
+          "bytes": 31327
         },
         {
           "path": "addons/library-addon/src/ui/assets/manager.css",
@@ -249,16 +249,16 @@
           "bytes": 9181
         },
         {
+          "path": "addons/library-addon/src/app/dockController.js",
+          "bytes": 8847
+        },
+        {
           "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
           "bytes": 8472
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
           "bytes": 8421
-        },
-        {
-          "path": "addons/library-addon/src/app/dockController.js",
-          "bytes": 8258
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
@@ -308,12 +308,12 @@
     },
     "release": {
       "mode": "release",
-      "bytes": 249005,
-      "gzipBytes": 51810,
+      "bytes": 253748,
+      "gzipBytes": 52869,
       "contributors": [
         {
           "path": "addons/library-addon/src/library/service.js",
-          "bytes": 20092
+          "bytes": 21596
         },
         {
           "path": "addons/library-addon/src/ui/assets/manager.css",
@@ -340,16 +340,16 @@
           "bytes": 6216
         },
         {
+          "path": "addons/library-addon/src/app/dockController.js",
+          "bytes": 5805
+        },
+        {
           "path": "addons/library-addon/src/ui/assets/manager.html",
           "bytes": 5713
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
           "bytes": 5431
-        },
-        {
-          "path": "addons/library-addon/src/app/dockController.js",
-          "bytes": 5361
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",

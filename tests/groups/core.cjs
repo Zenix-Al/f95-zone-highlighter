@@ -391,6 +391,38 @@ runTest("CORE-LEAN-BASE-01 smoke builds report sizes without mutating tracked st
   assert.deepStrictEqual(fs.readFileSync(path.join(ROOT, "version.json")), beforeVersion);
 });
 
+runTest("core build --no-bump retains the current version without becoming a smoke build", () => {
+  const { resolveBuildVersion } = require("../../build.js");
+  const current = { major: 5, minor: 2, patch: 1 };
+  assert.deepStrictEqual(resolveBuildVersion(current, ["--release", "--no-bump"]), {
+    bumpType: "patch",
+    isSmoke: false,
+    noBump: true,
+    version: current,
+  });
+  assert.deepStrictEqual(resolveBuildVersion(current, ["--release"]), {
+    bumpType: "patch",
+    isSmoke: false,
+    noBump: false,
+    version: { major: 5, minor: 2, patch: 2 },
+  });
+  assert.deepStrictEqual(resolveBuildVersion(current, ["--smoke"]), {
+    bumpType: "patch",
+    isSmoke: true,
+    noBump: true,
+    version: current,
+  });
+
+  const scripts = JSON.parse(
+    fs.readFileSync(path.join(ROOT, "package.json"), "utf8"),
+  ).scripts;
+  assert.strictEqual(scripts["build:no-bump"], "node build.js --no-bump");
+  assert.strictEqual(
+    scripts["build:release:no-bump"],
+    "node build.js --release --no-bump",
+  );
+});
+
 runTest("MANIFEST-01 validation rejects repeated symbols and generated import paths", () => {
   const entries = [
     { filePath: "/repo/src/features/alpha/index.js", relativePath: "src/features/alpha/index.js", exports: ["alphaFeature", "alphaFeature"] },
@@ -671,4 +703,3 @@ runTest("BOOT-01 reset followed by startup does not reuse stale bootstrap state"
 });
 
 };
-

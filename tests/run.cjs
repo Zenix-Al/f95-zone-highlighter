@@ -19,6 +19,9 @@ for (const group of [
   "library-import-export",
   "library-manual-update",
   "library-auto-update",
+  "latest-filters-reset",
+  "latest-filters-surprise",
+  "latest-filters-expansion",
   "integration",
 ]) {
   require(`./groups/${group}.cjs`)(harness);

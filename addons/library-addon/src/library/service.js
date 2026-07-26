@@ -39,6 +39,15 @@ export function createLibraryService(bridge, storage, dependencies = {}) {
   const updates = createUpdateRepository(api);
   const activity = createActivityRepository(api);
   const keysetCoverage = new Map();
+  const entryCache = new Map();
+  const entryCacheTtlMs = Math.max(
+    1000,
+    Number(dependencies.entryCacheTtlMs) || 15000,
+  );
+  const entryCacheLimit = Math.max(
+    10,
+    Number(dependencies.entryCacheLimit) || 500,
+  );
   const requestThreadHtml =
     dependencies.requestThreadHtml || createThreadHtmlRequest(dependencies.fetch);
   const autoUpdate = createAutoUpdateRepository(api);
@@ -47,9 +56,61 @@ export function createLibraryService(bridge, storage, dependencies = {}) {
     return resolveImportThrottleInfo(await api.getCoreThrottleInfo());
   }
 
+  function rememberEntry(record, now = Date.now()) {
+    const normalized = record ? normalizeRecord(record, { now }) : null;
+    const threadId = String(normalized?.threadId || "").trim();
+    if (!threadId) return normalized;
+    entryCache.delete(threadId);
+    entryCache.set(threadId, {
+      expiresAt: now + entryCacheTtlMs,
+      value: normalized,
+    });
+    while (entryCache.size > entryCacheLimit) {
+      entryCache.delete(entryCache.keys().next().value);
+    }
+    return normalized;
+  }
+
+  function invalidateEntry(threadId) {
+    entryCache.delete(String(threadId || "").trim());
+  }
+
+  function clearEntryCache() {
+    entryCache.clear();
+  }
+
   async function getEntry(threadId) {
-    const entry = await api.getEntry(threadId);
-    return entry ? normalizeRecord(entry) : null;
+    const id = String(threadId || "").trim();
+    if (!id) return null;
+    const cached = entryCache.get(id);
+    if (cached && cached.expiresAt > Date.now()) {
+      entryCache.delete(id);
+      entryCache.set(id, cached);
+      return cached.value;
+    }
+    if (cached) entryCache.delete(id);
+    const entry = await api.getEntry(id);
+    return entry ? rememberEntry(entry) : null;
+  }
+
+  async function putEntry(record, options = {}) {
+    const result = await api.putEntry(record, options);
+    if (result?.ok) rememberEntry(result.value || record);
+    return result;
+  }
+
+  async function deleteEntry(threadId) {
+    const result = await api.deleteEntry(threadId);
+    if (result?.ok) invalidateEntry(threadId);
+    return result;
+  }
+
+  async function bulkPutEntries(entries, shouldCancel) {
+    const result = await api.bulkPutEntries(entries, shouldCancel);
+    if (result?.ok) {
+      for (const entry of entries) rememberEntry(entry);
+    }
+    return result;
   }
 
   async function saveEntry(record, options = {}) {
@@ -72,14 +133,14 @@ export function createLibraryService(bridge, storage, dependencies = {}) {
     const issues = validateRecord(normalized);
     if (issues.length) return { ok: false, reason: "invalid_record", issues };
 
-    return api.putEntry(normalized, {
+    return putEntry(normalized, {
       importAction: options.importAction,
       shouldCancel: options.shouldCancel,
     });
   }
 
   function removeEntry(threadId) {
-    return api.deleteEntry(threadId);
+    return deleteEntry(threadId);
   }
 
   async function isSaved(threadId) {
@@ -105,7 +166,7 @@ export function createLibraryService(bridge, storage, dependencies = {}) {
     if (!Array.isArray(result.value)) return [];
 
     const normalized = result.value
-      .map(normalizeRecord)
+      .map((entry) => rememberEntry(entry))
       .filter((entry) => matchesLibraryFilters(entry, options));
     return sortLibraryRecords(normalized, options.sortBy, options.sortDir).slice(
       offset,
@@ -262,7 +323,11 @@ export function createLibraryService(bridge, storage, dependencies = {}) {
       plan: plan.sections.records,
       shouldCancel,
       onProgress,
-      bulkPutEntries: (entries, cancelCheck) => api.bulkPutEntries(entries, cancelCheck),
+      bulkPutEntries: async (entries, cancelCheck) => {
+        const result = await bulkPutEntries(entries, cancelCheck);
+        if (result?.ok) clearEntryCache();
+        return result;
+      },
       saveOperation: saveImportOperation,
     });
     const committedSections = recordResult.imported > 0 ? ["records"] : [];
@@ -349,7 +414,7 @@ export function createLibraryService(bridge, storage, dependencies = {}) {
       "lastActivityAt",
     ]);
     const isPersonal = Object.keys(patch).some((key) => personalKeys.has(key));
-    if (isPersonal) return api.putEntry(mergePersonalState(existing, patch));
+    if (isPersonal) return putEntry(mergePersonalState(existing, patch));
     return observeThreadFacts(existing, patch);
   }
 
@@ -386,7 +451,7 @@ export function createLibraryService(bridge, storage, dependencies = {}) {
       if (event && !priorEvent) await updates.remove(event.id);
       return { ok: false, reason: "cancelled" };
     }
-    const recordResult = await api.putEntry(next);
+    const recordResult = await putEntry(next);
     if (!recordResult?.ok && event && !priorEvent) await updates.remove(event.id);
     return recordResult?.ok
       ? { ...recordResult, value: next, event: priorEvent || event }
@@ -410,7 +475,7 @@ export function createLibraryService(bridge, storage, dependencies = {}) {
       updateState: "acknowledged",
       recordModifiedAt: Date.now(),
     };
-    return api.putEntry(next);
+    return putEntry(next);
   }
 
   async function previewManualUpdateCheck(threadIds, options = {}) {
@@ -459,7 +524,7 @@ export function createLibraryService(bridge, storage, dependencies = {}) {
           summary.cancelled = true;
           break;
         }
-        await api.putEntry(failed);
+        await putEntry(failed);
         summary.failed += 1;
         summary.checked += 1;
         continue;
@@ -502,7 +567,7 @@ export function createLibraryService(bridge, storage, dependencies = {}) {
         summary.cancelled = true;
         break;
       }
-      await api.putEntry(checked);
+      await putEntry(checked);
       summary[item.changed ? "changed" : "current"] += 1;
       summary.checked += 1;
     }
@@ -519,7 +584,7 @@ export function createLibraryService(bridge, storage, dependencies = {}) {
         skipped += 1;
         continue;
       }
-      const result = await api.putEntry({
+      const result = await putEntry({
         ...existing,
         updateCheck: {
           ...existing.updateCheck,
@@ -605,7 +670,7 @@ export function createLibraryService(bridge, storage, dependencies = {}) {
       if (JSON.stringify(next.personal) === JSON.stringify(existing.personal)) {
         return { ok: true, value: existing, unchanged: true, events: [] };
       }
-      const result = await api.putEntry(next);
+      const result = await putEntry(next);
       return result?.ok ? { ...result, value: next, events: [] } : result;
     }
 
@@ -641,7 +706,7 @@ export function createLibraryService(bridge, storage, dependencies = {}) {
       return { ok: false, reason: "cancelled" };
     }
 
-    const result = await api.putEntry(next);
+    const result = await putEntry(next);
     if (!result?.ok) await Promise.all(inserted.map((event) => activity.remove(event.id)));
     return result?.ok
       ? { ...result, value: next, events: existingEvents.map((event, index) => event || events[index]) }
@@ -825,7 +890,7 @@ export function createLibraryService(bridge, storage, dependencies = {}) {
     }
     const records = result.value.map((record) => normalizeRecord(record));
     for (let offset = 0; offset < records.length; offset += 20) {
-      const written = await api.bulkPutEntries(records.slice(offset, offset + 20));
+      const written = await bulkPutEntries(records.slice(offset, offset + 20));
       if (!written?.ok) {
         return { ok: false, reason: written?.reason || "pin_backfill_write_failed" };
       }
@@ -867,5 +932,11 @@ export function createLibraryService(bridge, storage, dependencies = {}) {
     bulkRemoveEntries,
     runPinnedIndexMigration,
     runLegacyMigration,
+    clearEntryCache,
+    getEntryCacheSnapshot: () => ({
+      limit: entryCacheLimit,
+      size: entryCache.size,
+      ttlMs: entryCacheTtlMs,
+    }),
   };
 }

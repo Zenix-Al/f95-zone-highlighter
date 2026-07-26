@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased - Filter tools
+
+- Added individual reset controls for included tags, excluded tags, and each visible prefix group.
+- Preserve unrelated Latest filters and return changed results to page 1 without reloading the complete document.
+- Derive prefix groups from the current page instead of relying on fixed prefix IDs.
+- Added Surprise Me to select one to three unique tags, favoring preferred tags while keeping excluded tags possible at lower odds.
+- Surprise Me resolves included/excluded conflicts and preserves category, prefix, search, creator, sorting, date, and tag-type filters.
+- Reuse one indexed tag lookup across panel repaints instead of rebuilding the complete tag catalog for every preset row.
+- Kept reset and Surprise routes compatible with existing Saved Filter records and lifecycle cleanup.
+- Adapted from the Reset Filters userscript behavior by Edexal:
+  https://sleazyfork.org/en/scripts/588436-reset-filters
+
 ## 1.0.0 - Structure reworked
 
 - Adopt the Example Add-on runtime boundaries with instance-owned lifecycle state,

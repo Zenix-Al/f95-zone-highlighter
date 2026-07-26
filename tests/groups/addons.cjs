@@ -635,7 +635,15 @@ runTest("ADDON-LATEST-FILTERS-01 owns repeated lifecycle and suppresses canceled
   sandbox.window.setTimeout = clock.setTimeout;
   sandbox.window.clearTimeout = clock.clearTimeout;
   try {
-    document.body.innerHTML = "";
+    document.body.innerHTML = `
+      <div id="filter-block_tags"></div>
+      <div id="filter-block_tags_exclude"></div>
+      <div id="filter-block_prefixes">
+        <div class="filter-block_prefix-group">
+          <div class="filter-block_content"><input data-prefix="1"></div>
+        </div>
+      </div>
+    `;
     const { createLatestFiltersApp } = loadModule("addons/latest-filters-addon/src/app/createLatestFiltersApp.js", {
       loader: { ".css": "text", ".html": "text" },
     });
@@ -662,6 +670,21 @@ runTest("ADDON-LATEST-FILTERS-01 owns repeated lifecycle and suppresses canceled
     assert.strictEqual(app.getState().enabled, true);
     assert.strictEqual(app.getState().routeListenersBound, true);
     assert.strictEqual(clock.pending() > 0, true);
+    assert.strictEqual(
+      document.querySelectorAll("[data-f95ue-lf-reset]").length,
+      3,
+    );
+
+    document.querySelector("#filter-block_prefixes").innerHTML = `
+      <div class="filter-block_prefix-group">
+        <div class="filter-block_content"><input data-prefix="47"></div>
+      </div>
+    `;
+    await clock.tick(250);
+    assert.strictEqual(
+      document.querySelectorAll("[data-f95ue-lf-reset]").length,
+      3,
+    );
 
     commandHandler({ command: "before-page-change", commandId: "route-1", reason: "rapid-route-1", routeContext: { url: location.href } });
     commandHandler({ command: "before-page-change", commandId: "route-2", reason: "rapid-route-2", routeContext: { url: location.href } });
@@ -671,10 +694,18 @@ runTest("ADDON-LATEST-FILTERS-01 owns repeated lifecycle and suppresses canceled
     await app.getLifecycle().disable({ commandId: "disable-1", reason: "test-disable" });
     await clock.tick(5000);
     assert.strictEqual(document.getElementById("f95ue-latest-filters-addon"), null);
+    assert.strictEqual(
+      document.querySelectorAll("[data-f95ue-lf-reset]").length,
+      0,
+    );
     assert.deepStrictEqual(app.getResourceSnapshot(), []);
     assert.deepStrictEqual(app.getPendingOperationSnapshot(), []);
 
     await app.getLifecycle().enable({ commandId: "enable-1", reason: "test-enable" });
+    assert.strictEqual(
+      document.querySelectorAll("[data-f95ue-lf-reset]").length,
+      3,
+    );
     await app.getLifecycle().disable({ commandId: "disable-2", reason: "test-disable-again" });
     await app.getLifecycle().teardown({ commandId: "teardown-1", reason: "test-teardown" });
     await app.getLifecycle().teardown({ commandId: "teardown-2", reason: "duplicate" });

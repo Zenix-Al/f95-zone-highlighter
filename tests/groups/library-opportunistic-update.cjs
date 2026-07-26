@@ -1,7 +1,15 @@
 "use strict";
 
 module.exports = function registerLibraryOpportunisticUpdateGroup(context) {
-  const { assert, fs, loadModule, path, ROOT, runTest } = context;
+  const {
+    assert,
+    createDomSandbox,
+    fs,
+    loadModule,
+    path,
+    ROOT,
+    runTest,
+  } = context;
 
   runTest("LIBRARY-OPPORTUNISTIC-UPDATE-01 ignores unsaved thread visits", async () => {
     const { createOpportunisticObserver } = loadModule(
@@ -176,5 +184,121 @@ module.exports = function registerLibraryOpportunisticUpdateGroup(context) {
       .map((relativePath) => fs.readFileSync(path.join(ROOT, relativePath), "utf8"))
       .join("\n");
     assert.doesNotMatch(sources, /\bfetch\s*\(|GM_xmlhttpRequest|XMLHttpRequest/);
+  });
+
+  runTest("Library thread-title chips reuse personal and update state idempotently", () => {
+    const sandbox = createDomSandbox();
+    const {
+      clearThreadTitleChips,
+      getThreadTitleChips,
+      renderThreadTitleChips,
+    } = loadModule(
+      "addons/library-addon/src/ui/threadTitle/titleChips.js",
+    );
+    try {
+      sandbox.document.body.innerHTML =
+        '<div class="p-title"><h1 class="p-title-value"><span class="label">Others</span>Example [v2]</h1></div>';
+      const record = {
+        threadId: "1",
+        thread: { currentVersion: "v2" },
+        personal: { status: "playing", lastPlayedVersion: "v1" },
+        updateCheck: { enabled: false },
+      };
+      assert.deepStrictEqual(
+        getThreadTitleChips(record).map(({ kind }) => kind),
+        ["playing", "new-version", "updates-off"],
+      );
+      assert.strictEqual(renderThreadTitleChips(record), true);
+      assert.strictEqual(renderThreadTitleChips(record), true);
+      assert.strictEqual(
+        sandbox.document.querySelectorAll(".f95ue-library-title-chips").length,
+        1,
+      );
+      assert.strictEqual(
+        sandbox.document.querySelectorAll(".f95ue-library-title-chip").length,
+        3,
+      );
+      assert.ok(
+        sandbox.document
+          .querySelector('[data-kind="playing"]')
+          .classList.contains("label--royalBlue"),
+      );
+      assert.ok(
+        sandbox.document
+          .querySelector('[data-kind="new-version"]')
+          .classList.contains("label--orange"),
+      );
+      assert.ok(
+        sandbox.document
+          .querySelector('[data-kind="updates-off"]')
+          .classList.contains("label--subtle"),
+      );
+      assert.match(
+        sandbox.document.querySelector("h1").textContent,
+        /Example \[v2\]/,
+      );
+      clearThreadTitleChips();
+      assert.strictEqual(
+        sandbox.document.querySelectorAll(".f95ue-library-title-chips").length,
+        0,
+      );
+    } finally {
+      sandbox.restore();
+    }
+  });
+
+  runTest("Library record cache is bounded and invalidated by writes and deletes", async () => {
+    const { createLibraryService } = loadModule(
+      "addons/library-addon/src/library/service.js",
+    );
+    const records = new Map([
+      [
+        "1",
+        {
+          threadId: "1",
+          thread: { title: "Cached", currentVersion: "1" },
+          personal: { status: "saved" },
+        },
+      ],
+    ]);
+    let reads = 0;
+    const bridge = {
+      async invokeCoreAction(action, payload) {
+        if (action === "idb.get") {
+          reads += 1;
+          return { ok: true, value: records.get(String(payload.key)) || null };
+        }
+        if (action === "idb.put") {
+          records.set(String(payload.value.threadId), payload.value);
+          return { ok: true, value: payload.value };
+        }
+        if (action === "idb.delete") {
+          records.delete(String(payload.key));
+          return { ok: true };
+        }
+        return { ok: true, value: null };
+      },
+    };
+    const library = createLibraryService(bridge, {}, {
+      entryCacheLimit: 10,
+      entryCacheTtlMs: 1000,
+    });
+    assert.strictEqual((await library.getEntry("1")).thread.title, "Cached");
+    assert.strictEqual((await library.getEntry("1")).thread.title, "Cached");
+    assert.strictEqual(reads, 1);
+
+    const patched = await library.patchEntry("1", { status: "playing" });
+    assert.strictEqual(patched.ok, true);
+    assert.strictEqual((await library.getEntry("1")).personal.status, "playing");
+    assert.strictEqual(reads, 1);
+
+    await library.removeEntry("1");
+    assert.strictEqual(await library.getEntry("1"), null);
+    assert.strictEqual(reads, 2);
+    assert.deepStrictEqual(library.getEntryCacheSnapshot(), {
+      limit: 10,
+      size: 0,
+      ttlMs: 1000,
+    });
   });
 };

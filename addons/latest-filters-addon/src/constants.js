@@ -8,6 +8,8 @@ export const DIALOG_ID = "latest-filters-manager";
 export const MAX_MOUNT_ATTEMPTS = 20;
 export const MOUNT_RETRY_DELAY_MS = 500;
 export const SEARCH_DEBOUNCE_MS = 180;
+export const RESET_RECONCILE_ATTEMPTS = 6;
+export const RESET_RECONCILE_DELAY_MS = 250;
 
 export const FILTER_SETTINGS_DEFAULT = {
   enabled: true,
