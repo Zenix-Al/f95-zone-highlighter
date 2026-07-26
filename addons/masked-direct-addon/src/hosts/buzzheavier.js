@@ -12,10 +12,11 @@ function toDownloadEndpoint(button) {
 }
 
 export async function processBuzzheavierDownload({
-  showToast,
+  challengeGate,
   notifyMainFailure,
   reportAddonHealthy,
 }) {
+  if (challengeGate && !(await challengeGate.waitUntilClear())) return;
   const hostLabel = location.hostname.includes("bzzhr.to")
     ? "bzzhr.to"
     : "buzzheavier.com";
@@ -35,6 +36,7 @@ export async function processBuzzheavierDownload({
 
   // Quick host-side sanity check before click so we can warn on known failures.
   try {
+    if (challengeGate && !(await challengeGate.waitUntilClear())) return;
     const response = await fetch(endpoint, {
       headers: {
         "HX-Request": "true",
@@ -55,10 +57,10 @@ export async function processBuzzheavierDownload({
     return;
   }
 
+  if (challengeGate && !(await challengeGate.waitUntilClear())) return;
   if (!clickElement(button)) {
     await notifyMainFailure(hostLabel, "Unable to trigger download button.");
     return;
   }
-  showToast("Buzzheavier download triggered.");
   reportAddonHealthy();
 }

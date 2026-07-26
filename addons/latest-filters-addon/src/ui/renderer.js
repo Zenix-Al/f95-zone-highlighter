@@ -15,7 +15,7 @@ import { createEl } from "../../../shared/createEl.js";
 // Shared CSS namespace prefix — must match the class names in createRootElement.
 const NS = "f95ue-lf";
 
-function buildTagRenderConfig(tagPrefs) {
+export function createTagRenderConfig(tagPrefs) {
   const source = tagPrefs && typeof tagPrefs === "object" ? tagPrefs : {};
   const byId = new Map();
   (Array.isArray(source.tags) ? source.tags : []).forEach((tag) => {
@@ -32,6 +32,12 @@ function buildTagRenderConfig(tagPrefs) {
     marked: toIdSet(source.markedTags),
     color: source.color && typeof source.color === "object" ? source.color : {},
   };
+}
+
+function resolveTagRenderConfig(tagPrefs, tagRenderConfig) {
+  return tagRenderConfig?.byId instanceof Map
+    ? tagRenderConfig
+    : createTagRenderConfig(tagPrefs);
 }
 
 function renderTagChip(rawId, config) {
@@ -52,9 +58,8 @@ function renderTagChip(rawId, config) {
   return `<span class="${NS}-tag-chip"${state ? ` data-state="${state}"` : ""}${style}>${escapeHtml(label)}</span>`;
 }
 
-function renderSummary(parts, fallbackSummary, tagPrefs) {
+function renderSummary(parts, fallbackSummary, tagConfig) {
   if (!Array.isArray(parts) || parts.length === 0) return escapeHtml(fallbackSummary);
-  const tagConfig = buildTagRenderConfig(tagPrefs);
   return parts
     .map((part) => {
       const key = String(part?.key || "").toLowerCase();
@@ -132,11 +137,18 @@ export function createDialogMarkup() {
  * @param {string|null}  currentPresetId - id of the currently-applied preset, or null
  * @returns {string} HTML string
  */
-export function buildPresetRowsMarkup(presets, searchQuery, currentPresetId, tagPrefs) {
+export function buildPresetRowsMarkup(
+  presets,
+  searchQuery,
+  currentPresetId,
+  tagPrefs,
+  tagRenderConfig,
+) {
   const query = String(searchQuery || "")
     .toLowerCase()
     .trim();
   const filtered = query ? presets.filter((p) => p.searchText.includes(query)) : presets;
+  const tagConfig = resolveTagRenderConfig(tagPrefs, tagRenderConfig);
 
   if (filtered.length === 0) {
     return `<div class="${NS}-empty">No saved filters match the current search.</div>`;
@@ -152,7 +164,7 @@ export function buildPresetRowsMarkup(presets, searchQuery, currentPresetId, tag
             <div class="${NS}-row-title">${escapeHtml(preset.name)}</div>
             ${isCurrent ? `<span class="${NS}-pill">Current</span>` : ""}
           </div>
-          <div class="${NS}-summary">${renderSummary(preset.summaryParts, preset.summary, tagPrefs)}</div>
+          <div class="${NS}-summary">${renderSummary(preset.summaryParts, preset.summary, tagConfig)}</div>
           <div class="${NS}-row-actions">
             <button type="button" data-action="apply" data-preset-id="${id}">Apply</button>
             <button type="button" data-action="update" data-preset-id="${id}">Update</button>
@@ -186,6 +198,7 @@ export function renderPanelContent(
     searchQuery,
     currentPresetId,
     tagPrefs,
+    tagRenderConfig,
   },
 ) {
   const currentLabel = currentPresetName
@@ -194,12 +207,19 @@ export function renderPanelContent(
 
   const currentEl = rootEl.querySelector("[data-role='current']");
   const resultsEl = rootEl.querySelector("[data-role='results']");
+  const tagConfig = resolveTagRenderConfig(tagPrefs, tagRenderConfig);
 
   if (currentEl) {
-    currentEl.innerHTML = `${currentLabel}<br><span class="${NS}-summary">${renderSummary(currentSummaryParts, currentSummary, tagPrefs)}</span>`;
+    currentEl.innerHTML = `${currentLabel}<br><span class="${NS}-summary">${renderSummary(currentSummaryParts, currentSummary, tagConfig)}</span>`;
   }
   if (resultsEl) {
-    resultsEl.innerHTML = buildPresetRowsMarkup(presets, searchQuery, currentPresetId, tagPrefs);
+    resultsEl.innerHTML = buildPresetRowsMarkup(
+      presets,
+      searchQuery,
+      currentPresetId,
+      tagPrefs,
+      tagConfig,
+    );
   }
 }
 

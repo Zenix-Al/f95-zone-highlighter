@@ -28,10 +28,13 @@ import {
   createRootMarkup,
   ensureStyle,
   getStyleText,
+  createTagRenderConfig,
   removeStyle,
   renderPanelContent,
   syncPanelVisibility,
 } from "../ui/renderer.js";
+import { createLatestFilterResetController } from "./filterResetController.js";
+import { createSurpriseController } from "./surpriseController.js";
 
 export function createLatestFiltersApp({ core, runtime, gm = globalThis.GM } = {}) {
   const state = createLatestFiltersState();
@@ -57,6 +60,29 @@ export function createLatestFiltersApp({ core, runtime, gm = globalThis.GM } = {
   const cancelPendingWork = operations.cancelAll;
   const registerAddon = registration.register;
   const pushStatusUpdate = registration.publishStatus;
+  const filterReset = createLatestFilterResetController({
+    getLifecycle: () => lifecycle,
+    isEnabled: () => state.enabled,
+    isTerminal: () => state.terminal,
+    isCurrent,
+    onRouteApplied: repaintPanel,
+  });
+  const surprise = createSurpriseController({
+    getTagPrefs: () => state.tagPrefs,
+    isAvailable: () =>
+      state.enabled &&
+      !state.terminal &&
+      isCurrent() &&
+      isLatestPage() &&
+      state.tagPrefsLoaded,
+    applyMutation: filterReset.applyMutation,
+    onUnavailable: () => {
+      void showToast(
+        core,
+        "Surprise Me needs the Latest tag catalog. Try again after it loads.",
+      ).catch(() => {});
+    },
+  });
 
   function getCurrentPreset() {
     const currentUrl = normalizeLatestUrl(location.href);
@@ -73,6 +99,7 @@ export function createLatestFiltersApp({ core, runtime, gm = globalThis.GM } = {
       currentSummary: currentPreset ? currentPreset.summary : summarizeUrl(location.href),
       currentSummaryParts: currentPreset ? currentPreset.summaryParts : summarizeUrlParts(location.href),
       tagPrefs: state.tagPrefs,
+      tagRenderConfig: state.tagRenderConfig,
     };
   }
 
@@ -151,6 +178,7 @@ export function createLatestFiltersApp({ core, runtime, gm = globalThis.GM } = {
 
   async function removePageUi(context, reason = "remove-root") {
     cancelMountRetry();
+    filterReset.stop();
     unbindBindings();
     const hadUi = Boolean(state.rootEl || state.dialogEl || state.panelOpen || state.styleRegistered || state.fallbackStyleOwned);
     if (hadUi) {
@@ -216,6 +244,7 @@ export function createLatestFiltersApp({ core, runtime, gm = globalThis.GM } = {
     state.rootBindingsCleanup = createLatestFiltersBindings({
       rootEl: state.rootEl,
       onToggle: () => togglePanel(),
+      onSurprise: () => surprise.run(),
       registerResource: (id, cleanup, kind) => lifecycle.registerResource(`latest-${id}`, cleanup, kind),
     });
     lifecycle.registerResource("latest-root-bindings", state.rootBindingsCleanup, "listener");
@@ -410,10 +439,12 @@ export function createLatestFiltersApp({ core, runtime, gm = globalThis.GM } = {
     state.presets = normalizePresets(presets);
     if (tagPrefs?.error) {
       state.tagPrefs = null;
+      state.tagRenderConfig = createTagRenderConfig(null);
       state.tagPrefsLoaded = false;
       state.tagPrefsError = tagPrefs.error;
     } else {
       state.tagPrefs = tagPrefs;
+      state.tagRenderConfig = createTagRenderConfig(tagPrefs);
       state.tagPrefsLoaded = true;
       state.tagPrefsError = "";
     }
@@ -427,6 +458,7 @@ export function createLatestFiltersApp({ core, runtime, gm = globalThis.GM } = {
     if (!loaded || !isCurrent(context)) return { ok: false, reason: "refresh_superseded" };
     await removePageUi(context, "refresh");
     bindRouteListeners();
+    filterReset.schedule(context);
     if (state.showPageButton && isLatestPage()) scheduleMount(context);
     pushStatusUpdate();
     return { ok: true };
@@ -442,6 +474,7 @@ export function createLatestFiltersApp({ core, runtime, gm = globalThis.GM } = {
       await saveSettingsFlag(context, true);
     }
     bindRouteListeners();
+    filterReset.schedule(context);
     if (state.showPageButton && isLatestPage()) scheduleMount(context);
     pushStatusUpdate();
     return { ok: true };

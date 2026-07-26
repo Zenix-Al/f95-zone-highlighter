@@ -29,10 +29,14 @@ import {
 import { createMaskedDirectStyleController } from "./styleController.js";
 import { createMaskedDirectPageBehavior } from "./pageBehavior.js";
 import { createMaskedDirectLifecycle } from "./lifecycle.js";
+import { createMaskedDirectDiagnostics } from "../shared/diagnostics.js";
+import { showCoreToast } from "../api/toast.js";
+import { watchElements, unwatchElements } from "../api/observer.js";
 
 const runtime = createMaskedDirectRuntime();
 const bridge = createMaskedDirectCoreAdaptor(runtime.addonId);
 const debugLog = createDebugLog(runtime.addonId);
+const diagnostics = createMaskedDirectDiagnostics(runtime.addonId);
 const settings = createMaskedDirectSettings({ bridge, GMApi: GM });
 const managedDownloadTabs = createManagedDownloadTabs();
 
@@ -56,7 +60,8 @@ const maskedPageController = createMaskedPageController({
 const directDownloadAttentionController =
   createDirectDownloadAttentionController({
     addTeardown,
-    showToast,
+    diagnostics,
+    showCoreToast: (message, type) => showCoreToast(bridge, message, type),
     GMApi: GM,
     addValueChangeListener:
       typeof GM_addValueChangeListener === "function"
@@ -67,6 +72,7 @@ const directDownloadAttentionController =
         ? GM_removeValueChangeListener
         : null,
     closeManagedTab: managedDownloadTabs.close,
+    debugLog,
   });
 let downloadPageController = null;
 const directDownloadFlowController = createDirectDownloadFlowController({
@@ -76,7 +82,7 @@ const directDownloadFlowController = createDirectDownloadFlowController({
   openInTab: GM_openInTab,
   normalizeUrl,
   withAutomationMarker,
-  showToast,
+  diagnostics,
   publishDirectDownloadAttention:
     directDownloadAttentionController.publishDirectDownloadAttention,
   publishDirectDownloadEvent:
@@ -93,7 +99,7 @@ const threadPageController = createThreadPageController({
   addTeardown,
   readThreadFlags: settings.read,
   routeToDirectDownload: directDownloadFlowController.routeToDirectDownload,
-  showToast,
+  diagnostics,
   openLinkNormally: directDownloadFlowController.openLinkNormally,
   resolveMaskedLink: maskedPageController.resolveMaskedLink,
   isHostAllowedInSettings,
@@ -102,33 +108,21 @@ const threadPageController = createThreadPageController({
     directDownloadAttentionController.enableDirectDownloadAttentionListener({
       shouldListen: isF95AddonPage,
     }),
+  watchElements: (observerId) => watchElements(bridge, observerId),
+  unwatchElements: (observerId) => unwatchElements(bridge, observerId),
 });
 
-function showToast(message, duration = 2600, type = "info") {
-  // On f95zone pages the core is present — route through it so the toast uses
-  // the same container and styling as the rest of the UI.
-  // On download-host pages (gofile, pixeldrain, datanodes) the core is not
-  // loaded, so fall back to the local addon toast.
-  if (location.hostname.includes("f95zone.to")) {
-    void bridge
-      .invokeCoreAction("toast.show", { message, type })
-      .then((result) => {
-        if (!result?.ok) ui.showToast(message, duration);
-      })
-      .catch(() => ui.showToast(message, duration));
-    return;
-  }
-  ui.showToast(message, duration);
-}
 downloadPageController = createDownloadPageController({
   addonId: runtime.addonId,
   debugLog,
   GMApi: GM,
   getIsBlockedByCore: () => state.blockedByCore,
   getIsEnabled: () => state.enabled,
+  notifyChallenge: directDownloadFlowController.notifyMainChallenge,
+  onManagedRequestResolved:
+    directDownloadFlowController.setActiveManagedRequest,
   handlers: createDirectDownloadHostHandlers({
     debugLog,
-    showToast,
     notifyMainFailure: directDownloadFlowController.notifyMainFailure,
     reportAddonHealthy,
     getSettings: () => settings.getSnapshot() || {},
@@ -224,7 +218,7 @@ const lifecycle = createMaskedDirectLifecycle({
   registration,
   pageBehavior,
   clearOwnedResources: clearTeardowns,
-  showToast,
+  diagnostics,
 });
 
 export async function bootstrapMaskedDirectAddon() {
@@ -233,6 +227,14 @@ export async function bootstrapMaskedDirectAddon() {
       Boolean(normalizeDirectDownloadHostForContext(hostname)),
   });
   if (context.kind === "unsupported") return;
+
+  if (context.route === "recaptcha-frame") {
+    console.info(
+      `[${runtime.addonId}] Running masked-link reCAPTCHA frame fallback.`,
+    );
+    maskedPageController.handleRecaptcha();
+    return;
+  }
 
   // Download-host pages (gofile, pixeldrain, datanodes) run outside the main
   // site context, so they should not require core ping.

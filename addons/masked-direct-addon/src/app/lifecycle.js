@@ -9,11 +9,13 @@ export function createMaskedDirectLifecycle({
   registration,
   pageBehavior,
   clearOwnedResources,
-  showToast,
+  diagnostics,
 }) {
   let commandHandler = null;
+  let terminal = false;
 
   async function setEnabled(nextEnabled) {
+    if (terminal) return;
     if (state.blockedByCore) {
       state.enabled = false;
       clearOwnedResources();
@@ -40,6 +42,8 @@ export function createMaskedDirectLifecycle({
   }
 
   async function teardown(reason) {
+    if (terminal) return;
+    terminal = true;
     console.info(`[${runtime.addonId}] Teardown requested: ${reason}`);
     state.enabled = false;
     clearOwnedResources();
@@ -54,12 +58,13 @@ export function createMaskedDirectLifecycle({
   }
 
   function refresh() {
+    if (terminal) return;
     settings.invalidate();
     void pageBehavior.apply();
   }
 
   function bindCommands() {
-    if (commandHandler) return;
+    if (terminal || commandHandler) return;
     commandHandler = (event) => {
       const detail = event?.detail || {};
       if (String(detail.addonId || "") !== runtime.addonId) return;
@@ -67,6 +72,9 @@ export function createMaskedDirectLifecycle({
       if (command === "enable") void setEnabled(true);
       else if (command === "disable") void setEnabled(false);
       else if (command === "refresh") refresh();
+      else if (command === "observer.nodes") {
+        pageBehavior.handleObservedNodes(detail.observerId, detail.nodes || []);
+      }
       else if (command === "teardown") {
         void teardown(String(detail.reason || "requested by core"));
       }
@@ -102,7 +110,7 @@ export function createMaskedDirectLifecycle({
       state.enabled = false;
       registration.publishStatus();
       clearOwnedResources();
-      showToast("Add-on blocked by main settings.", 4200);
+      diagnostics.warn("blocked_by_core");
       return false;
     }
     if (access.value.enabled === false) {

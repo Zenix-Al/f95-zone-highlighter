@@ -1,5 +1,4 @@
 export function createAddonUi({ addonId, buttonClass, addTeardown }) {
-  let toastEl = null;
   let styleInjected = false;
 
   const styleId = `f95ue-addon-style-${addonId}`;
@@ -29,22 +28,6 @@ export function createAddonUi({ addonId, buttonClass, addTeardown }) {
         opacity: 0.55;
         cursor: wait;
       }
-      #f95ue-addon-toast {
-        position: fixed;
-        bottom: 14px;
-        right: 14px;
-        z-index: 999999;
-        background: rgba(16, 18, 21, 0.92);
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        border-radius: 8px;
-        color: #f3f3f3;
-        font-size: 12px;
-        line-height: 1.4;
-        padding: 8px 10px;
-        max-width: 320px;
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.35);
-        display: none;
-      }
     `;
 
   function ensureLocalButtonStyle() {
@@ -62,26 +45,9 @@ export function createAddonUi({ addonId, buttonClass, addTeardown }) {
     });
   }
 
-  function showToast(message, duration = 2600) {
-    if (!toastEl) {
-      toastEl = document.createElement("div");
-      toastEl.id = "f95ue-addon-toast";
-      toastEl.dataset.addonId = addonId;
-      document.body.appendChild(toastEl);
-    }
-    toastEl.textContent = String(message || "");
-    toastEl.style.display = "block";
-
-    const timer = setTimeout(() => {
-      if (toastEl) toastEl.style.display = "none";
-    }, duration);
-    addTeardown(() => clearTimeout(timer));
-  }
-
   return {
     styleId,
     cssText,
     ensureLocalButtonStyle,
-    showToast,
   };
 }

@@ -73,5 +73,9 @@ export function createMaskedDirectPageBehavior({
     });
   }
 
-  return { apply };
+  function handleObservedNodes(observerId, nodes) {
+    threadPageController.handleObservedNodes(observerId, nodes);
+  }
+
+  return { apply, handleObservedNodes };
 }

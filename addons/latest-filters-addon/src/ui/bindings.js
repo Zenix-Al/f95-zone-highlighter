@@ -4,6 +4,7 @@ export function createLatestFiltersBindings({
   rootEl,
   dialogEl,
   onToggle,
+  onSurprise,
   onClose,
   onSave,
   onApply,
@@ -17,9 +18,13 @@ export function createLatestFiltersBindings({
 
   const onRootClick = (event) => {
     const actionEl = event.target?.closest?.("[data-action]");
-    if (String(actionEl?.dataset?.action || "") === "toggle-panel") {
+    const action = String(actionEl?.dataset?.action || "");
+    if (action === "toggle-panel") {
       event.preventDefault();
       onToggle?.();
+    } else if (action === "surprise") {
+      event.preventDefault();
+      onSurprise?.();
     }
   };
   const onDialogClick = (event) => {

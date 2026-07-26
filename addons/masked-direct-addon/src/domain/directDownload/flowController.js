@@ -7,8 +7,7 @@ import {
   DIRECT_DOWNLOAD_ROUTE_REQUEST_ID_KEY,
   DIRECT_DOWNLOAD_ROUTE_TS_KEY,
 } from "../../constants.js";
-import { storeDownloadPageCloseDelay } from "../../ports/downloadSettingsRepository.js";
-import { smartCloseWhenReady } from "./detectors.js";
+import { closeManagedDownloadTabAfterDelay } from "./managedClose.js";
 import { normalizeDirectDownloadHost } from "../../hosts/metadata.js";
 import {
   clearRouteContext,
@@ -22,7 +21,7 @@ export function createDirectDownloadFlowController({
   openInTab,
   normalizeUrl,
   withAutomationMarker,
-  showToast,
+  diagnostics,
   publishDirectDownloadAttention,
   publishDirectDownloadEvent,
   registerManagedTab,
@@ -31,6 +30,22 @@ export function createDirectDownloadFlowController({
   getDownloadHost,
   getDownloadPageCloseDelayMs,
 }) {
+  let activeManagedRequest = null;
+
+  function setActiveManagedRequest(request) {
+    if (!request || typeof request !== "object") {
+      activeManagedRequest = null;
+      return;
+    }
+    const requestId = String(request.requestId || "").trim();
+    if (!requestId) return;
+    activeManagedRequest = {
+      requestId,
+      ownerTabId: String(request.ownerTabId || "").trim(),
+      closeDelayMs: Number(request.closeDelayMs),
+    };
+  }
+
   async function routeToDirectDownload(url) {
     const normalized = normalizeUrl(url, "");
     if (!normalized) return;
@@ -45,27 +60,36 @@ export function createDirectDownloadFlowController({
     }
 
     const supported = Boolean(automationHost);
-    let safeUrl = supported ? withAutomationMarker(normalized) : normalized;
+    const useRouteMarkers =
+      supported &&
+      !["download.gg", "drive.google.com"].includes(automationHost);
+    let safeUrl = useRouteMarkers ? withAutomationMarker(normalized) : normalized;
     let requestId = "";
     if (supported && safeUrl) {
       try {
         const parsed = new URL(safeUrl);
-        if (!parsed.searchParams.get(originTabQueryKey)) {
+        if (useRouteMarkers && !parsed.searchParams.get(originTabQueryKey)) {
           parsed.searchParams.set(originTabQueryKey, ownerTabId);
         }
-        if (!parsed.searchParams.get(DIRECT_DOWNLOAD_ROUTE_TS_KEY)) {
+        if (
+          useRouteMarkers &&
+          !parsed.searchParams.get(DIRECT_DOWNLOAD_ROUTE_TS_KEY)
+        ) {
           parsed.searchParams.set(
             DIRECT_DOWNLOAD_ROUTE_TS_KEY,
             String(Date.now()),
           );
         }
-        const existingRequestId = String(
-          parsed.searchParams.get(DIRECT_DOWNLOAD_ROUTE_REQUEST_ID_KEY) || "",
-        ).trim();
+        const existingRequestId = useRouteMarkers
+          ? String(
+              parsed.searchParams.get(DIRECT_DOWNLOAD_ROUTE_REQUEST_ID_KEY) ||
+                "",
+            ).trim()
+          : "";
         requestId =
           existingRequestId ||
           `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-        if (!existingRequestId) {
+        if (useRouteMarkers && !existingRequestId) {
           parsed.searchParams.set(
             DIRECT_DOWNLOAD_ROUTE_REQUEST_ID_KEY,
             requestId,
@@ -79,21 +103,17 @@ export function createDirectDownloadFlowController({
     if (!safeUrl) return;
 
     if (supported) {
-      // Get the configured delay and store it in GM storage for the download page to access
       const delay =
         typeof getDownloadPageCloseDelayMs === "function"
           ? getDownloadPageCloseDelayMs()
           : 3500;
-      await storeDownloadPageCloseDelay(GMApi, delay);
-      console.info(
-        "[DirectDownload] Stored close delay in GM storage: " + delay + "ms",
-      );
 
       await setProcessingDownloadTrigger(GMApi, {
         host: automationHost,
         sourceUrl: safeUrl,
         ownerTabId,
         requestId,
+        closeDelayMs: delay,
       });
     }
 
@@ -129,19 +149,24 @@ export function createDirectDownloadFlowController({
 
   async function notifyMainFailure(hostLabel, message, errorCode = "") {
     const text = `Direct download (${hostLabel}) failed: ${String(message || "unknown error")}`;
-    showToast(text, 4200);
     const routeRequestId = getCurrentRouteRequestId();
     const trigger = await readProcessingDownloadTrigger(GMApi, {
       requestId: routeRequestId,
     });
-    const requestId = routeRequestId || trigger.requestId;
-    await clearProcessingDownloadTrigger(GMApi, { requestId });
-    await publishDirectDownloadAttention(
-      hostLabel,
+    const requestId = routeRequestId && trigger.active ? routeRequestId : "";
+    diagnostics.error(errorCode || "direct_download_failed", {
+      host: hostLabel,
+      requestId,
+    });
+    await publishDirectDownloadEvent?.({
+      type: "failure",
+      host: hostLabel,
       message,
       errorCode,
       requestId,
-    );
+      targetTabId: trigger.active ? trigger.ownerTabId : "",
+    });
+    if (requestId) await clearProcessingDownloadTrigger(GMApi, { requestId });
     clearRouteContext();
 
     if (!getDownloadHost()) {
@@ -153,17 +178,29 @@ export function createDirectDownloadFlowController({
     }
   }
 
+  async function notifyMainChallenge(hostLabel, message) {
+    const routeRequestId = getCurrentRouteRequestId();
+    const trigger = await readProcessingDownloadTrigger(GMApi, {
+      requestId: routeRequestId,
+    });
+    await publishDirectDownloadEvent?.({
+      type: "challenge",
+      host: hostLabel,
+      message,
+      errorCode: "cloudflare_challenge",
+      requestId:
+        routeRequestId && trigger.active ? routeRequestId : "",
+      targetTabId: trigger.active ? trigger.ownerTabId : "",
+    });
+  }
+
   function reportAddonHealthy({
     isEnabled,
     statusMessage,
     downloadPageCloseDelayMs,
-    closeOnTimeout = true,
-    timeoutMessage = "Download was not confirmed before timeout.",
-    requireDownloadConfirmation = false,
   }) {
     const downloadHost = getDownloadHost();
     if (!downloadHost) {
-      void clearProcessingDownloadTrigger(GMApi);
       bridge.dispatchCoreCommand("update-status", {
         addonId,
         status: isEnabled ? "installed" : "disabled",
@@ -172,99 +209,94 @@ export function createDirectDownloadFlowController({
     }
 
     if (downloadHost) {
-      const delay =
-        downloadPageCloseDelayMs ??
-        (typeof getDownloadPageCloseDelayMs === "function"
-          ? getDownloadPageCloseDelayMs()
-          : 3500);
-
       const publishSuccess = async () => {
-        const routeRequestId = await resolveCurrentRequestId();
-        const requestId = routeRequestId;
-        await clearProcessingDownloadTrigger(GMApi, { requestId });
+        const request = await resolveCurrentRequest();
+        const requestId = request.requestId;
         if (typeof publishDirectDownloadEvent === "function") {
           await publishDirectDownloadEvent({
             type: "success",
             host: downloadHost,
             message: "Download triggered.",
             requestId,
+            targetTabId: request.ownerTabId,
+            closeDelayMs: request.closeDelayMs,
           });
         }
+        if (requestId) await clearProcessingDownloadTrigger(GMApi, { requestId });
+        activeManagedRequest = null;
         clearRouteContext();
       };
 
-      const resolveCurrentRequestId = async () => {
-        if (resolvedRequestId) return resolvedRequestId;
+      const resolveCurrentRequest = async () => {
+        if (resolvedRequest) return resolvedRequest;
+        if (activeManagedRequest?.requestId) {
+          resolvedRequest = { ...activeManagedRequest };
+          return resolvedRequest;
+        }
         const routeRequestId = getCurrentRouteRequestId();
         const trigger = await readProcessingDownloadTrigger(GMApi, {
           requestId: routeRequestId,
         });
-        resolvedRequestId = routeRequestId || trigger.requestId;
-        return resolvedRequestId;
+        resolvedRequest =
+          routeRequestId && trigger.active
+            ? {
+                requestId: routeRequestId,
+                ownerTabId: trigger.ownerTabId,
+                closeDelayMs: trigger.closeDelayMs,
+              }
+            : { requestId: "", ownerTabId: "", closeDelayMs: 0 };
+        return resolvedRequest;
       };
 
-      let resolvedRequestId = "";
+      let resolvedRequest = null;
       const requestManagedTabClose = async () => {
-        const requestId = await resolveCurrentRequestId();
+        const request = await resolveCurrentRequest();
         if (typeof publishDirectDownloadEvent === "function") {
           await publishDirectDownloadEvent({
             type: "close-tab",
             host: downloadHost,
             message: "",
-            requestId,
+            requestId: request.requestId,
+            targetTabId: request.ownerTabId,
           });
         }
       };
 
-      console.info(
-        "[DirectDownload] Using smart close with delay: " + delay + "ms",
-      );
-
-      const closeTask = smartCloseWhenReady(
-        delay,
-        showToast,
-        originTabQueryKey,
-        {
-          closeOnTimeout,
-          timeoutMessage,
-          requestManagedTabClose,
-        },
-      );
-
-      if (!requireDownloadConfirmation) {
-        void publishSuccess();
-        return;
-      }
-
       void (async () => {
-        const confirmed = await closeTask;
-        if (confirmed) {
-          await publishSuccess();
-          return;
-        }
-
-        const routeRequestId = getCurrentRouteRequestId();
-        const trigger = await readProcessingDownloadTrigger(GMApi, {
-          requestId: routeRequestId,
-        });
-        const requestId = routeRequestId || trigger.requestId;
-        await clearProcessingDownloadTrigger(GMApi, { requestId });
-        await publishDirectDownloadAttention(
-          downloadHost,
-          timeoutMessage,
-          "download_not_confirmed",
-          requestId,
+        const request = await resolveCurrentRequest();
+        const requestId = request.requestId;
+        const delay =
+          requestId && Number.isFinite(request.closeDelayMs)
+            ? request.closeDelayMs
+            : downloadPageCloseDelayMs ??
+              (typeof getDownloadPageCloseDelayMs === "function"
+                ? getDownloadPageCloseDelayMs()
+                : 3500);
+        console.info(
+          "[DirectDownload] Using request managed-tab close delay: " +
+            delay +
+            "ms",
         );
-        clearRouteContext();
+        void closeManagedDownloadTabAfterDelay(
+          delay,
+          originTabQueryKey,
+          {
+            requestManagedTabClose,
+            managedRequestId: requestId,
+          },
+        );
+        await publishSuccess();
       })();
     }
   }
 
   return {
+    notifyMainChallenge,
     notifyMainFailure,
     openLinkNormally,
     reportAddonHealthy,
     routeToDirectDownload,
+    setActiveManagedRequest,
   };
 }
 

@@ -44,6 +44,20 @@ function bumpVersion(currentVersion, bumpType) {
   return { ...currentVersion, patch: currentVersion.patch + 1 };
 }
 
+function resolveBuildVersion(currentVersion, args = []) {
+  const isSmoke = args.includes("--smoke");
+  const noBump = isSmoke || args.includes("--no-bump");
+  const bumpType = getBumpType(args);
+  return {
+    bumpType,
+    isSmoke,
+    noBump,
+    version: noBump
+      ? { ...currentVersion }
+      : bumpVersion(currentVersion, bumpType),
+  };
+}
+
 function getPlugins(isRelease) {
   return isRelease ? [stripCssComments, stripDebugLogs] : [stripCssComments];
 }
@@ -142,15 +156,20 @@ async function buildTarget(target, baseOptions, headerTemplate, version, banner,
 async function main() {
   const args = process.argv.slice(2);
   const isRelease = args.includes("--release");
-  const isSmoke = args.includes("--smoke");
-  const bumpType = getBumpType(args);
 
   const currentVersion = readVersion();
-  const nextVersion = isSmoke ? currentVersion : bumpVersion(currentVersion, bumpType);
+  const {
+    bumpType,
+    isSmoke,
+    noBump,
+    version: nextVersion,
+  } = resolveBuildVersion(currentVersion, args);
   const versionString = `${nextVersion.major}.${nextVersion.minor}.${nextVersion.patch}`;
 
   if (isSmoke) {
     console.log(`Smoke build: using existing version ${versionString} without modifying version.json.`);
+  } else if (noBump) {
+    console.log(`No-bump build: keeping existing version ${versionString}.`);
   } else {
     console.log(
       `Bumping version: ${currentVersion.major}.${currentVersion.minor}.${currentVersion.patch} → ${versionString} (${bumpType})`,
@@ -161,7 +180,7 @@ async function main() {
       "Release mode enabled — debug logs stripped + GreasyFork-friendly readable artifact",
     );
 
-  if (!isSmoke) fs.writeFileSync(VERSION_FILE, JSON.stringify(nextVersion, null, 2));
+  if (!noBump) fs.writeFileSync(VERSION_FILE, JSON.stringify(nextVersion, null, 2));
 
   const now = new Date().toISOString().replace("T", " ").substring(0, 19) + " UTC";
   const banner = `// Built on ${now} -- AUTO-GENERATED, edit from /src and rebuild`;
@@ -254,7 +273,15 @@ async function main() {
   }
 }
 
-main().catch((err) => {
-  console.error("Build failed:", err);
-  process.exit(1);
-});
+if (require.main === module) {
+  main().catch((err) => {
+    console.error("Build failed:", err);
+    process.exit(1);
+  });
+}
+
+module.exports = {
+  bumpVersion,
+  getBumpType,
+  resolveBuildVersion,
+};

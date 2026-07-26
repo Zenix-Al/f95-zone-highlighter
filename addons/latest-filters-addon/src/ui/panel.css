@@ -14,6 +14,8 @@ __ROOT__ .f95ue-lf-content {
 }
 
 __ROOT__ .f95ue-lf-button-wrap {
+  display: flex;
+  gap: 8px;
   width: 100%;
   min-width: 0;
 }
@@ -22,7 +24,8 @@ __ROOT__ .f95ue-lf-trigger {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
+  flex: 1 1 0;
+  width: auto;
   min-height: 40px;
   padding: 0 14px;
   border: 1px solid #893839;

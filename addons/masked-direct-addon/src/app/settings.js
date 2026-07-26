@@ -4,12 +4,17 @@ import {
   createDirectDownloadPanelSettings,
 } from "../hosts/metadata.js";
 import { getDownloadPageCloseDelay } from "../ports/downloadSettingsRepository.js";
+import {
+  DEFAULT_DOWNLOAD_CLOSE_DELAY_MS,
+  MIN_DOWNLOAD_CLOSE_DELAY_MS,
+  normalizeDownloadCloseDelay,
+} from "../shared/downloadCloseDelay.js";
 
 export const ADDON_SETTINGS_KEY = "settings";
 export const ADDON_SETTINGS_DEFAULT = Object.freeze({
   skipMaskedLink: true,
   directDownloadLinks: true,
-  downloadPageCloseDelayMs: 3500,
+  downloadPageCloseDelayMs: DEFAULT_DOWNLOAD_CLOSE_DELAY_MS,
   directDownloadPackages: createDirectDownloadPackageDefaults(),
 });
 export const ADDON_PANEL_SETTINGS = Object.freeze([
@@ -30,12 +35,11 @@ export const ADDON_PANEL_SETTINGS = Object.freeze([
   {
     id: "downloadPageCloseDelayMs",
     path: "downloadPageCloseDelayMs",
-    text: "Download page close delay (ms)",
+    text: "Managed download tab close delay (ms)",
     tooltip:
-      "Adjust the delay before closing download-host tabs. Increase if the download dialog doesn't appear before the tab closes (slow connection). Decrease on fast connections. Range: 500-10000ms.",
+      "Wait this long after a host triggers its final download action, then close the managed tab. This does not limit host automation. Minimum: 3000ms.",
     type: "number",
-    min: 500,
-    max: 10000,
+    min: MIN_DOWNLOAD_CLOSE_DELAY_MS,
   },
   ...createDirectDownloadPanelSettings(),
 ]);
@@ -67,9 +71,10 @@ export function createMaskedDirectSettings({ bridge, GMApi }) {
     cache = {
       skipMaskedLink: parsed.skipMaskedLink !== false,
       directDownloadLinks: parsed.directDownloadLinks !== false,
-      downloadPageCloseDelayMs: Number.isFinite(parsed.downloadPageCloseDelayMs)
-        ? Math.max(500, Math.min(10000, parsed.downloadPageCloseDelayMs))
-        : ADDON_SETTINGS_DEFAULT.downloadPageCloseDelayMs,
+      downloadPageCloseDelayMs: normalizeDownloadCloseDelay(
+        parsed.downloadPageCloseDelayMs,
+        ADDON_SETTINGS_DEFAULT.downloadPageCloseDelayMs,
+      ),
       directDownloadPackages: coerceDirectDownloadPackages(
         parsed.directDownloadPackages,
       ),

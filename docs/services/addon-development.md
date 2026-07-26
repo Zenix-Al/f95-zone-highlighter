@@ -79,6 +79,14 @@ For a hybrid add-on, use Masked Direct as the complementary reference:
 adapters, `ports/` owns repository contracts, and `infrastructure/` owns direct GM
 compatibility. Hybrid standalone execution must remain independent from the
 core-required bootstrap and emit no bridge traffic on external hosts.
+Masked Direct's exact-request correlation and compatibility-key lifecycle are
+specified in `docs/architecture/masked-direct-reliability.md`.
+In particular, do not remove either Datanodes recovery stage. Its source lookup
+is written before the external tab opens because Datanodes may redirect to
+`/download` before userscript code executes. When the first page does execute,
+the validated request is also copied to same-tab route context. Markerless
+recovery must validate one unambiguous source lookup against its isolated live
+request and must never scan for or guess the newest global request.
 
 ---
 ## Composition and Bootstrap (`main.js`)

@@ -18,6 +18,7 @@ export function createLatestFiltersState() {
     routeCleanup: null,
     currentContext: null,
     tagPrefs: null,
+    tagRenderConfig: null,
     tagPrefsLoaded: false,
     tagPrefsError: "",
     pendingCancellers: new Set(),

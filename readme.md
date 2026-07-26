@@ -135,7 +135,9 @@ npm install
 
 ```bash
 npm run build
+npm run build:no-bump
 npm run build:release
+npm run build:release:no-bump
 npm run build:addons
 npm run build:addons:release
 npm run lint
@@ -149,8 +151,10 @@ npm run audit:css
 npm run check:css
 ```
 
-The core audit and smoke commands are non-version-bumping checks. The regular release build
-regenerates distributions and updates `version.json`; use it only when a release artifact is
+The core audit and smoke commands are non-version-bumping checks. A no-bump build retains
+the current `version.json` value but still regenerates the feature manifest and writes tracked
+`dist/` artifacts. The regular release build regenerates distributions and updates `version.json`;
+use it only when a release artifact is
 requested.
 
 ### Build behavior
@@ -160,7 +164,7 @@ requested.
 - Generates:
   - `dist/f95zone-ultimate-enhancer.user.js`
   - `dist/f95zone-ultimate-enhancer.uglified.user.js`
-- Auto-bumps version from `version.json`.
+- Auto-bumps the version from `version.json` unless `--no-bump` is supplied.
   - Default bump: patch
   - Optional: `npm run build -- --minor` or `npm run build -- --major`
 

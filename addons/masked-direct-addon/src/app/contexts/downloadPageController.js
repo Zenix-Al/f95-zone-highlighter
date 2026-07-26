@@ -6,15 +6,21 @@ import {
 } from "../../constants.js";
 import {
   isProcessingDownloadTriggerActive,
-  readProcessingDownloadTriggers,
+  readProcessingDownloadTrigger,
+  readProcessingDownloadTriggerBySource,
+  updateProcessingDownloadTrigger,
 } from "../../ports/processingDownloadRepository.js";
 import { normalizeDirectDownloadHost } from "../../hosts/metadata.js";
-import { writeRouteContext } from "../../ports/routeContextRepository.js";
+import {
+  getRouteRequestId,
+  readRouteContext,
+  writeRouteContext,
+} from "../../ports/routeContextRepository.js";
 import { sleep } from "../../shared/utils.js";
+import { createCloudflareChallengeMonitor } from "../../hosts/shared/cloudflareChallenge.js";
 
-const STRIPPED_MARKER_RECOVERY_TTL_MS = 45 * 1000;
-const STRIPPED_MARKER_IDENTIFIER_WAIT_TIMEOUT_MS = 15 * 1000;
-const STRIPPED_MARKER_IDENTIFIER_POLL_MS = 250;
+const DATANODES_IDENTIFIER_WAIT_MS = 15 * 1000;
+const DATANODES_IDENTIFIER_POLL_MS = 250;
 
 export function createDownloadPageController({
   addonId,
@@ -23,7 +29,9 @@ export function createDownloadPageController({
   getIsBlockedByCore,
   getIsEnabled,
   handlers,
+  notifyChallenge,
   originTabQueryKey,
+  onManagedRequestResolved,
 }) {
   function getDownloadHost() {
     return normalizeDirectDownloadHost(location.hostname);
@@ -56,63 +64,64 @@ export function createDownloadPageController({
       routeTs = 0;
     }
 
-    const triggers = await readProcessingDownloadTriggers(GMApi);
-    const trigger = requestId
-      ? triggers.find((entry) => entry.requestId === requestId)
+    const sessionContext = readRouteContext(originTabQueryKey, {
+      expectedHost: host,
+    });
+    let exactRequestId = requestId || sessionContext?.requestId || "";
+    let recoveredBySource = false;
+    if (!exactRequestId && isRecoverableMarkerlessDownload(host)) {
+      const recovered =
+        host === "datanodes.to"
+          ? await recoverMarkerlessDatanodesRequest(GMApi)
+          : host === "download.gg"
+            ? await recoverMarkerlessDownloadGgRequest(GMApi)
+            : await recoverMarkerlessGoogleDriveRequest(GMApi);
+      if (recovered.active) {
+        restoreRouteMarkersFromTrigger(recovered, originTabQueryKey);
+        exactRequestId = recovered.requestId;
+        recoveredBySource = true;
+        debugLog(
+          "DownloadHooks",
+          "Recovered exact markerless request from source identity.",
+          {
+            host,
+            requestId: recovered.requestId,
+          },
+        );
+      }
+    }
+    const trigger = exactRequestId
+      ? await readProcessingDownloadTrigger(GMApi, {
+          requestId: exactRequestId,
+        })
       : null;
     if (trigger && isProcessingDownloadTriggerActive(trigger)) {
       const hostMatches = !trigger.host || trigger.host === host;
+      const expectedOwnerTabId =
+        originTabId || sessionContext?.originTabId || "";
       const tabMatches =
-        !trigger.ownerTabId || trigger.ownerTabId === originTabId;
-      if (hostMatches && tabMatches) return true;
+        !trigger.ownerTabId ||
+        recoveredBySource ||
+        (expectedOwnerTabId && trigger.ownerTabId === expectedOwnerTabId);
+      const urlMarkersFresh =
+        marker === "1" &&
+        Boolean(requestId) &&
+        Number.isFinite(routeTs) &&
+        routeTs > 0 &&
+        Date.now() - routeTs <= DIRECT_DOWNLOAD_ROUTE_TTL_MS;
+      const sessionMatches =
+        sessionContext?.requestId === trigger.requestId &&
+        (!sessionContext.host || sessionContext.host === host);
+      if (
+        hostMatches &&
+        tabMatches &&
+        (urlMarkersFresh || sessionMatches || recoveredBySource)
+      ) {
+        restoreRouteMarkersFromTrigger(trigger, originTabQueryKey);
+        onManagedRequestResolved?.(trigger);
+        return true;
+      }
     }
-
-    const strippedMarkerTrigger = findSingleStrippedMarkerTrigger(
-      host,
-      triggers,
-      {
-        pageIdentifier: getCurrentPageFileIdentifier(host),
-      },
-    );
-    if (strippedMarkerTrigger) {
-      restoreRouteMarkersFromTrigger(strippedMarkerTrigger, originTabQueryKey);
-      debugLog("DownloadHooks", "Recovered marker-stripped host redirect.", {
-        host,
-        href: location.href,
-        sourceUrl: strippedMarkerTrigger.sourceUrl,
-        requestId: strippedMarkerTrigger.requestId,
-      });
-      return true;
-    }
-
-    const delayedStrippedMarkerTrigger =
-      await waitForStrippedMarkerIdentifierTrigger(host, triggers);
-    if (delayedStrippedMarkerTrigger) {
-      restoreRouteMarkersFromTrigger(
-        delayedStrippedMarkerTrigger,
-        originTabQueryKey,
-      );
-      debugLog(
-        "DownloadHooks",
-        "Recovered marker-stripped host redirect after identifier wait.",
-        {
-          host,
-          href: location.href,
-          sourceUrl: delayedStrippedMarkerTrigger.sourceUrl,
-          requestId: delayedStrippedMarkerTrigger.requestId,
-        },
-      );
-      return true;
-    }
-
-    const hasFreshRouteMarkerFallback =
-      marker === "1" &&
-      Boolean(originTabId) &&
-      Boolean(requestId) &&
-      Number.isFinite(routeTs) &&
-      routeTs > 0 &&
-      Date.now() - routeTs <= DIRECT_DOWNLOAD_ROUTE_TTL_MS;
-    if (hasFreshRouteMarkerFallback) return true;
 
     return false;
   }
@@ -146,9 +155,25 @@ export function createDownloadPageController({
 
     console.info(`[${addonId}] Download hooks running for host=${host}.`);
 
-    const exec = async () => {
-      await handler();
-    };
+    const challengeMonitor = createCloudflareChallengeMonitor({
+      debugLog,
+      host,
+      notifyChallenge,
+      preserveRequest: async () => {
+        const requestId = getRouteRequestId();
+        if (!requestId) return;
+        await updateProcessingDownloadTrigger(GMApi, requestId, {
+          expiresAt: Date.now() + DIRECT_DOWNLOAD_ROUTE_TTL_MS,
+        });
+      },
+    });
+    challengeMonitor.start();
+    window.addEventListener("pagehide", challengeMonitor.dispose, {
+      once: true,
+    });
+    if (!(await challengeMonitor.waitUntilClear())) return;
+
+    const exec = () => handler(challengeMonitor);
 
     if (document.readyState === "loading") {
       document.addEventListener(
@@ -167,106 +192,70 @@ export function createDownloadPageController({
   return {
     getDownloadHost,
     runDownloadPageHooks,
+    shouldRunHostAutomation,
   };
 }
 
-function findSingleStrippedMarkerTrigger(
-  host,
-  triggers,
-  { pageIdentifier = "" } = {},
-) {
-  const sourceGroups = getRecoverableStrippedMarkerSourceGroups(host, triggers);
+function isMarkerlessDatanodesDownload(host) {
+  return host === "datanodes.to" && location.pathname.startsWith("/download");
+}
 
-  if (sourceGroups.size === 1) return [...sourceGroups.values()][0];
+function isRecoverableMarkerlessDownload(host) {
+  return (
+    isMarkerlessDatanodesDownload(host) ||
+    (host === "download.gg" &&
+      /^\/(?:[a-z]{2}(?:-[a-z]{2})?\/)?file-/i.test(location.pathname)) ||
+    (host === "drive.google.com" &&
+      ((location.hostname === "drive.usercontent.google.com" &&
+        location.pathname.startsWith("/download")) ||
+        (location.hostname === "drive.google.com" &&
+          (location.pathname.startsWith("/file/d/") ||
+            location.pathname === "/open" ||
+            location.pathname === "/uc"))))
+  );
+}
 
-  const normalizedPageIdentifier = normalizeFileIdentifier(pageIdentifier);
-  if (!normalizedPageIdentifier) return null;
-
-  const matches = [...sourceGroups.values()].filter((trigger) => {
-    const sourceIdentifier = getSourceFileIdentifier(trigger.sourceUrl);
-    return (
-      sourceIdentifier &&
-      normalizeFileIdentifier(sourceIdentifier) === normalizedPageIdentifier
-    );
+async function recoverMarkerlessDownloadGgRequest(GMApi) {
+  return readProcessingDownloadTriggerBySource(GMApi, {
+    host: "download.gg",
+    sourceIdentifier: location.pathname.replace(/\/+$/, ""),
   });
-
-  return matches.length === 1 ? matches[0] : null;
 }
 
-async function waitForStrippedMarkerIdentifierTrigger(host, triggers) {
-  if (host !== "datanodes.to") return null;
-  const sourceGroups = getRecoverableStrippedMarkerSourceGroups(host, triggers);
-  if (sourceGroups.size < 2) return null;
-
-  const startedAt = Date.now();
-  while (Date.now() - startedAt < STRIPPED_MARKER_IDENTIFIER_WAIT_TIMEOUT_MS) {
-    const pageIdentifier = getCurrentPageFileIdentifier(host);
-    const trigger = findSingleStrippedMarkerTrigger(host, triggers, {
-      pageIdentifier,
-    });
-    if (trigger) return trigger;
-    await sleep(STRIPPED_MARKER_IDENTIFIER_POLL_MS);
-  }
-
-  return null;
+async function recoverMarkerlessGoogleDriveRequest(GMApi) {
+  const sourceIdentifier = getGoogleDrivePageFileIdentifier();
+  if (!sourceIdentifier) return { active: false };
+  return readProcessingDownloadTriggerBySource(GMApi, {
+    host: "drive.google.com",
+    sourceIdentifier,
+  });
 }
 
-function getRecoverableStrippedMarkerSourceGroups(host, triggers) {
-  const now = Date.now();
-  const sourceGroups = new Map();
-
-  for (const trigger of triggers) {
-    if (!isProcessingDownloadTriggerActive(trigger)) continue;
-    if (trigger.host !== host) continue;
-    if (!trigger.requestId) continue;
-    if (
-      !Number.isFinite(trigger.createdAt) ||
-      now - trigger.createdAt > STRIPPED_MARKER_RECOVERY_TTL_MS
-    ) {
-      continue;
-    }
-    if (normalizeDirectDownloadHostFromUrl(trigger.sourceUrl) !== host)
-      continue;
-
-    const key = getSourceKey(trigger.sourceUrl);
-    const current = sourceGroups.get(key);
-    if (!current || trigger.createdAt > current.createdAt) {
-      sourceGroups.set(key, trigger);
-    }
-  }
-
-  return sourceGroups;
-}
-
-function normalizeDirectDownloadHostFromUrl(url) {
+function getGoogleDrivePageFileIdentifier() {
   try {
-    return normalizeDirectDownloadHost(new URL(url).hostname);
+    const parsed = new URL(location.href);
+    const pathMatch = parsed.pathname.match(/^\/file\/d\/([^/]+)/);
+    return String(
+      pathMatch?.[1] || parsed.searchParams.get("id") || "",
+    ).trim();
   } catch {
     return "";
   }
 }
 
-function getSourceKey(sourceUrl) {
-  try {
-    const parsed = new URL(sourceUrl);
-    parsed.hash = "";
-    for (const key of [
-      AUTOMATION_MARKER_KEY,
-      "f95ue_tab",
-      DIRECT_DOWNLOAD_ROUTE_TS_KEY,
-      DIRECT_DOWNLOAD_ROUTE_REQUEST_ID_KEY,
-    ]) {
-      parsed.searchParams.delete(key);
+async function recoverMarkerlessDatanodesRequest(GMApi) {
+  const startedAt = Date.now();
+  while (Date.now() - startedAt < DATANODES_IDENTIFIER_WAIT_MS) {
+    const sourceIdentifier = getDatanodesPageFileIdentifier();
+    if (sourceIdentifier) {
+      return readProcessingDownloadTriggerBySource(GMApi, {
+        host: "datanodes.to",
+        sourceIdentifier,
+      });
     }
-    return parsed.href;
-  } catch {
-    return String(sourceUrl || "").trim();
+    await sleep(DATANODES_IDENTIFIER_POLL_MS);
   }
-}
-
-function getCurrentPageFileIdentifier(host) {
-  if (host !== "datanodes.to") return "";
-  return getDatanodesPageFileIdentifier();
+  return { active: false };
 }
 
 function getDatanodesPageFileIdentifier() {
@@ -275,11 +264,11 @@ function getDatanodesPageFileIdentifier() {
     for (const heading of headings) {
       if (normalizeFileIdentifier(heading.textContent) !== "downloading")
         continue;
-      const container = heading.parentElement?.parentElement;
-      const title = findDatanodesTitleCandidate(container);
+      const title = findDatanodesTitleCandidate(
+        heading.parentElement?.parentElement,
+      );
       if (title) return title;
     }
-
     return findDatanodesTitleCandidate(document);
   } catch {
     return "";
@@ -288,25 +277,19 @@ function getDatanodesPageFileIdentifier() {
 
 function findDatanodesTitleCandidate(root) {
   if (!root?.querySelectorAll) return "";
-  const candidates = Array.from(root.querySelectorAll("div,span,h1,h2,h3"));
-  for (const element of candidates) {
-    const className = String(element.className || "");
-    if (!className.includes("font-bold")) continue;
+  for (const element of root.querySelectorAll("div,span,h1,h2,h3")) {
+    if (!String(element.className || "").includes("font-bold")) continue;
     const text = normalizeFileIdentifier(element.textContent);
-    if (isLikelyFileIdentifier(text)) return text;
+    if (
+      text &&
+      text !== "downloading" &&
+      !/^\d+(?:\.\d+)?\s*(?:b|kb|mb|gb|tb)$/i.test(text) &&
+      (/[._-]/.test(text) || /\.[a-z0-9]{2,6}$/i.test(text))
+    ) {
+      return text;
+    }
   }
   return "";
-}
-
-function getSourceFileIdentifier(sourceUrl) {
-  try {
-    const parsed = new URL(sourceUrl);
-    const segments = parsed.pathname.split("/").filter(Boolean);
-    const lastSegment = segments[segments.length - 1] || "";
-    return decodeURIComponent(lastSegment.replace(/\+/g, " "));
-  } catch {
-    return "";
-  }
 }
 
 function normalizeFileIdentifier(value) {
@@ -316,25 +299,20 @@ function normalizeFileIdentifier(value) {
     .toLowerCase();
 }
 
-function isLikelyFileIdentifier(value) {
-  if (!value || value === "downloading") return false;
-  if (/^\d+(?:\.\d+)?\s*(?:b|kb|mb|gb|tb)$/i.test(value)) return false;
-  return /[._-]/.test(value) || /\.[a-z0-9]{2,6}$/i.test(value);
-}
-
 function restoreRouteMarkersFromTrigger(trigger, originTabQueryKey) {
   try {
+    writeRouteContext(
+      {
+        ownerTabId: trigger.ownerTabId,
+        requestId: trigger.requestId,
+        createdAt: trigger.createdAt,
+        host: trigger.host,
+        sourceUrl: trigger.sourceUrl,
+      },
+      originTabQueryKey,
+    );
+
     if (shouldKeepRouteMarkersInSession()) {
-      writeRouteContext(
-        {
-          ownerTabId: trigger.ownerTabId,
-          requestId: trigger.requestId,
-          createdAt: trigger.createdAt,
-          host: trigger.host,
-          sourceUrl: trigger.sourceUrl,
-        },
-        originTabQueryKey,
-      );
       return;
     }
 
@@ -375,17 +353,14 @@ function restoreRouteMarkersFromTrigger(trigger, originTabQueryKey) {
 
 function shouldKeepRouteMarkersInSession() {
   try {
+    const host = normalizeDirectDownloadHost(location.hostname);
     return (
-      normalizeDirectDownloadHost(location.hostname) === "datanodes.to" &&
-      location.pathname.startsWith("/download")
+      (host === "datanodes.to" && location.pathname.startsWith("/download")) ||
+      (host === "download.gg" &&
+        /^\/(?:[a-z]{2}(?:-[a-z]{2})?\/)?file-/i.test(location.pathname)) ||
+      host === "drive.google.com"
     );
   } catch {
     return false;
   }
 }
-
-export const __downloadPageControllerTestInternals = {
-  findSingleStrippedMarkerTrigger,
-  getSourceFileIdentifier,
-  normalizeFileIdentifier,
-};

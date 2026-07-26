@@ -6,6 +6,7 @@ import { getThreadSnapshot } from "../thread/detector.js";
 import { renderDockMarkup } from "../ui/components/dock/dockRenderer.js";
 import { showToast } from "../ui/utils/showToast.js";
 import { createOpportunisticObserver } from "./opportunisticObserver.js";
+import { createThreadTitleController } from "../ui/threadTitle/threadTitleController.js";
 
 const LIBRARY_DOCK_MOUNT_ID = "library-dock-widget";
 
@@ -25,6 +26,7 @@ export function createLibraryDockController({
     library,
     isEnabled: () => state.enabled,
   });
+  const threadTitle = createThreadTitleController();
 
   function isCurrent(context) {
     return (
@@ -121,7 +123,7 @@ export function createLibraryDockController({
         showPageButtons: state.showPageButtons,
       },
     });
-    if (!state.enabled || !state.showPageButtons) return unmount();
+    if (!state.enabled) return unmount();
 
     const pageContext = await getPageContext(core, getLocalPageContext);
     if (!state.enabled || !isCurrent(context)) {
@@ -146,11 +148,14 @@ export function createLibraryDockController({
     if (!snapshot?.threadId) {
       currentSnapshot = null;
       currentSaved = false;
+      await threadTitle.clear();
       debugLog(
         runtime.addonId,
         "Mounting site-wide manager dock without thread controls.",
       );
-      return mount({ showPrimaryButton: false, isSaved: false, context });
+      return state.showPageButtons
+        ? mount({ showPrimaryButton: false, isSaved: false, context })
+        : unmountDock();
     }
 
     const observation = await opportunisticObserver.observe(snapshot, context);
@@ -165,16 +170,31 @@ export function createLibraryDockController({
     }
     currentSnapshot = snapshot;
     currentSaved = Boolean(observation?.saved);
-    return mount({ showPrimaryButton: true, isSaved: currentSaved, context });
+    if (currentSaved) {
+      const record = observation?.value || (await library.getEntry(snapshot.threadId));
+      if (!state.enabled || !isCurrent(context)) {
+        return { ok: false, reason: "stale_mount" };
+      }
+      await threadTitle.render(record, context);
+    } else {
+      await threadTitle.clear();
+    }
+    return state.showPageButtons
+      ? mount({ showPrimaryButton: true, isSaved: currentSaved, context })
+      : unmountDock();
+  }
+
+  async function unmountDock() {
+    mountToken += 1;
+    unbindEvents();
+    await unmountUi(core, LIBRARY_DOCK_MOUNT_ID);
   }
 
   async function unmount() {
-    mountToken += 1;
     opportunisticObserver.invalidate();
     currentSnapshot = null;
     currentSaved = false;
-    unbindEvents();
-    await unmountUi(core, LIBRARY_DOCK_MOUNT_ID);
+    await Promise.all([unmountDock(), threadTitle.clear()]);
   }
 
   async function toggleCurrentThread() {

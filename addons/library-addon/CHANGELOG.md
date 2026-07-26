@@ -2,31 +2,15 @@
 
 ## v1.1.0 - Personal Library and automatic updates
 
-- Added default-on, bounded automatic update checks with per-record and bulk controls, configurable pacing/budgets, silent manager summaries, semantic row states, and retry-failed-now.
-- Coordinate automatic checks across tabs through verified IndexedDB TTL leases and per-thread claims, with session/day caps, exponential failure backoff, and cancellation before stale requests can commit.
-- Added bounded manual update checks for selected entries and individual rows, with authenticated same-origin HTML requests, deterministic version parsing, background commits, cancellation, retry classification, and persisted check results.
-- Keep update checks sequential by default, cap response and batch sizes, preserve personal activity, and never retry authentication/challenge responses or HTTP 403/429.
-- Fixed large selections stopping at the core concurrency limit, explicit failed retries respecting stale backoff/session limits, and update progress not refreshing while requests were active.
-- Preserve tags, prefixes, and other existing thread metadata when update responses provide only title, version, status, and URL.
-- Added a Library-themed Auto Update dialog through the core dialog API, live per-record progress, and background manual checks that continue when the manager is closed.
-- Detect F95Zone's confirmed logged-out response messages without rejecting authenticated pages that contain ordinary login links or modal markup.
-- Versioned Library exports as document version 2 with canonical records, update history, and personal activity while retaining array and version-1 import compatibility.
-- Validate every imported section before writing, preserve existing immutable history on ID collisions, reject record summaries older than their imported history, and report cancellation or partial multi-store commits explicitly.
-- Added cancellable opportunistic observation for already-saved thread visits, with unchanged visits remaining write-free and stale routes unable to commit.
-- Surface changed/current update state in the manager and Full Edit without fetching any background page.
-- Added explicit played-version, status, rating, and progress-note activity events with bounded personal timelines in Full Edit.
-- Derive personal activity dates only from user actions, deduplicate repeated command IDs, and cancel or roll back stale event/summary commits.
-- Added deterministic per-thread update history, real version-change detection, update acknowledgement, and recent history in Full Edit.
-- Preserve personal status and last-played version during thread observations, ignore empty/equivalent versions, and roll back new history events if the record commit fails.
-- Added bounded keyset pagination for the default Updated sort so the manager no longer reads the complete Library for each page.
-- Detect incomplete indexes from legacy records and retain working compatibility pagination without rewriting stored data.
-- Restored exact page totals where available, compacted table rows, showed date-only update values with full timestamps on hover, and corrected the Bulk actions menu direction.
-- Preserved deterministic Previous navigation and reset pagination when search, filters, sorting, or page size changes.
-- Consolidated bulk actions and import/export controls into one compact toolbar and moved loading feedback there with a stable spinner.
-- Added the themed Full Edit dialog, editable personal ratings, and the version-5 personal-library record model.
-- Made pinned records visibly identifiable and consistently ordered above unpinned records, with a safe one-time database/index backfill for released and development data.
-- Fixed empty editor dates rendering as 1970 and fixed Library database schema-marker writes against inline-key stores.
-- Kept Title and My Rating sorting on the compatibility path until a future database version can index every record without omitting unrated entries.
+- Added automatic and manual update checks with configurable pacing, retry controls, live progress, and clear current/changed/failed states.
+- Added personal ratings, played versions, progress notes, activity history, and per-thread version history to the themed Full Edit dialog.
+- Added background thread observation while preserving personal fields, tags, prefixes, and other existing metadata.
+- Improved the manager with keyset pagination, compact rows and controls, accurate page totals, and pinned entries ordered first.
+- Added personal-status and new-version chips beside saved thread titles, backed by a bounded short-lived record cache.
+- Upgraded Library exports with update and activity history while retaining compatibility with older imports.
+- Coordinate background checks safely across tabs and prevent stale, duplicate, or interrupted work from committing.
+- Fixed large update selections, failed-check retries, logged-out response detection, empty editor dates, and database marker writes.
+- Safely upgrade released and development Library data to the new personal-library and pin-ordering schema.
 
 ## v1.0.1 - Restore manager reopening
 

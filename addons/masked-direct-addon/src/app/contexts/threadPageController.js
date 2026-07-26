@@ -1,6 +1,8 @@
 import { MASKED_LINK_SELECTOR, RESOLVE_BTN_CLASS } from "../../constants.js";
 import { isLikelyDirectDownloadAnchor, normalizeUrl } from "../../shared/utils.js";
 
+const THREAD_LINK_OBSERVER_ID = "masked-direct-thread-links";
+
 function buttonFor(link) {
   const next = link.nextElementSibling;
   if (!(next instanceof HTMLButtonElement)) return null;
@@ -39,17 +41,21 @@ export function createThreadPageController({
   addTeardown,
   readThreadFlags,
   routeToDirectDownload,
-  showToast,
+  diagnostics,
   openLinkNormally,
   resolveMaskedLink,
   isHostAllowedInSettings,
   ensureButtonStyle,
   enableAttentionListener,
+  watchElements,
+  unwatchElements,
 }) {
-  async function syncThreadLinkButton(link) {
+  let pendingRoots = new Set();
+  let syncPending = false;
+
+  async function syncThreadLinkButton(link, flags) {
     if (!(link instanceof HTMLAnchorElement)) return;
 
-    const flags = await readThreadFlags(false);
     const wantsMasked = flags.skipMaskedLink !== false && link.matches(MASKED_LINK_SELECTOR);
     const wantsDirect =
       flags.directDownloadLinks !== false &&
@@ -87,15 +93,40 @@ export function createThreadPageController({
   }
 
   async function syncThreadButtons(root = document) {
+    const flags = await readThreadFlags(false);
     if (root instanceof HTMLAnchorElement) {
-      await syncThreadLinkButton(root);
+      await syncThreadLinkButton(root, flags);
       return;
     }
 
     const links = root.querySelectorAll ? root.querySelectorAll("a[href]") : [];
     for (const link of links) {
-      await syncThreadLinkButton(link);
+      await syncThreadLinkButton(link, flags);
     }
+  }
+
+  function queueThreadButtonSync(nodes) {
+    for (const node of nodes || []) {
+      if (node instanceof Element) pendingRoots.add(node);
+    }
+    if (syncPending || pendingRoots.size === 0) return;
+    syncPending = true;
+    queueMicrotask(async () => {
+      const roots = pendingRoots;
+      pendingRoots = new Set();
+      try {
+        const flags = await readThreadFlags(false);
+        const links = new Set();
+        for (const root of roots) {
+          if (root instanceof HTMLAnchorElement) links.add(root);
+          for (const link of root.querySelectorAll?.("a[href]") || []) links.add(link);
+        }
+        for (const link of links) await syncThreadLinkButton(link, flags);
+      } finally {
+        syncPending = false;
+        if (pendingRoots.size > 0) queueThreadButtonSync([]);
+      }
+    });
   }
 
   async function handleThreadResolveClick(event, { isEnabled, isBlockedByCore }) {
@@ -120,7 +151,6 @@ export function createThreadPageController({
       const url = normalizeUrl(btn.dataset.directHref || "", "");
       if (!url) return;
       btn.disabled = true;
-      showToast("Opening direct download...");
       await routeToDirectDownload(url);
       btn.disabled = false;
       return;
@@ -131,7 +161,6 @@ export function createThreadPageController({
 
     btn.disabled = true;
     btn.textContent = "...";
-    showToast("Resolving masked link...");
 
     let resolved = null;
     try {
@@ -141,8 +170,7 @@ export function createThreadPageController({
     }
 
     if (!resolved || resolved.status !== "ok" || !resolved.msg) {
-      showToast("Could not resolve masked link.");
-      showToast("Opening original link...");
+      diagnostics.warn("masked_link_resolution_failed");
       openLinkNormally(maskedHref, link);
       btn.disabled = false;
       btn.textContent = "Resolve";
@@ -151,15 +179,13 @@ export function createThreadPageController({
 
     const destination = normalizeUrl(resolved.msg, "");
     if (!destination) {
-      showToast("Resolved URL is invalid.");
-      showToast("Opening original link...");
+      diagnostics.warn("masked_link_invalid_destination");
       openLinkNormally(maskedHref, link);
       btn.disabled = false;
       btn.textContent = "Resolve";
       return;
     }
 
-    showToast("Masked link resolved.");
     btn.dataset.resolvedHref = destination;
     btn.dataset.resolved = "true";
     await routeToDirectDownload(destination);
@@ -179,18 +205,10 @@ export function createThreadPageController({
     document.addEventListener("click", onClick, true);
     addTeardown(() => document.removeEventListener("click", onClick, true));
 
-    const observer = new MutationObserver((mutations) => {
-      for (const mutation of mutations) {
-        for (const node of mutation.addedNodes || []) {
-          if (!(node instanceof Element)) continue;
-          void syncThreadButtons(node);
-        }
-      }
-    });
-
-    observer.observe(document.documentElement || document.body, { childList: true, subtree: true });
-    addTeardown(() => observer.disconnect());
+    void watchElements(THREAD_LINK_OBSERVER_ID);
+    addTeardown(() => void unwatchElements(THREAD_LINK_OBSERVER_ID));
     addTeardown(() => {
+      pendingRoots.clear();
       document.querySelectorAll(`.${RESOLVE_BTN_CLASS}`).forEach((btn) => btn.remove());
     });
 
@@ -199,5 +217,8 @@ export function createThreadPageController({
 
   return {
     enableThreadHooks,
+    handleObservedNodes(observerId, nodes) {
+      if (observerId === THREAD_LINK_OBSERVER_ID) queueThreadButtonSync(nodes);
+    },
   };
 }

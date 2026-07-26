@@ -51,79 +51,6 @@ runTest("latest ajax error recovery retries transient failures only", () => {
   assert.strictEqual(shouldRetryLatestAjaxError("error", { status: 429 }), false);
 });
 
-runTest(
-  "Datanodes stripped-marker recovery stays blocked for ambiguous files",
-  () => {
-    const now = Date.now();
-    const { findSingleStrippedMarkerTrigger } =
-      __downloadPageControllerTestInternals;
-    const triggers = [
-      {
-        active: true,
-        requestId: "req-1",
-        ownerTabId: "tab-1",
-        host: "datanodes.to",
-        createdAt: now - 1000,
-        expiresAt: now + 60000,
-        sourceUrl:
-          "https://datanodes.to/abc/Dawn_of_Corruption_exe_1.0.0.7z?f95ue_dd=1&f95ue_dd_req=req-1",
-      },
-      {
-        active: true,
-        requestId: "req-2",
-        ownerTabId: "tab-1",
-        host: "datanodes.to",
-        createdAt: now - 900,
-        expiresAt: now + 60000,
-        sourceUrl:
-          "https://datanodes.to/def/Other_Game_2.0.zip?f95ue_dd=1&f95ue_dd_req=req-2",
-      },
-    ];
-
-    assert.strictEqual(
-      findSingleStrippedMarkerTrigger("datanodes.to", triggers),
-      null,
-    );
-  },
-);
-
-runTest(
-  "Datanodes stripped-marker recovery uses visible filename identifier",
-  () => {
-    const now = Date.now();
-    const { findSingleStrippedMarkerTrigger } =
-      __downloadPageControllerTestInternals;
-    const triggers = [
-      {
-        active: true,
-        requestId: "req-1",
-        ownerTabId: "tab-1",
-        host: "datanodes.to",
-        createdAt: now - 1000,
-        expiresAt: now + 60000,
-        sourceUrl:
-          "https://datanodes.to/abc/Dawn_of_Corruption_exe_1.0.0.7z?f95ue_dd=1&f95ue_dd_req=req-1",
-      },
-      {
-        active: true,
-        requestId: "req-2",
-        ownerTabId: "tab-1",
-        host: "datanodes.to",
-        createdAt: now - 900,
-        expiresAt: now + 60000,
-        sourceUrl:
-          "https://datanodes.to/def/Other_Game_2.0.zip?f95ue_dd=1&f95ue_dd_req=req-2",
-      },
-    ];
-
-    const match = findSingleStrippedMarkerTrigger("datanodes.to", triggers, {
-      pageIdentifier: " Dawn_of_Corruption_exe_1.0.0.7z ",
-    });
-
-    assert.strictEqual(match.requestId, "req-1");
-  },
-);
-
 runTest("generated feature manifest contains current feature exports", () => {
   const result = generateFeatureManifest({ rootDir: ROOT });
   const generated = fs.readFileSync(result.outputFile, "utf8");
@@ -389,6 +316,38 @@ runTest("CORE-LEAN-BASE-01 smoke builds report sizes without mutating tracked st
   assert.ok(result.uglified.contributors.length > 0);
   assert.strictEqual(childProcess.execFileSync("git", ["status", "--short"], { cwd: ROOT, encoding: "utf8" }), beforeStatus);
   assert.deepStrictEqual(fs.readFileSync(path.join(ROOT, "version.json")), beforeVersion);
+});
+
+runTest("core build --no-bump retains the current version without becoming a smoke build", () => {
+  const { resolveBuildVersion } = require("../../build.js");
+  const current = { major: 5, minor: 2, patch: 1 };
+  assert.deepStrictEqual(resolveBuildVersion(current, ["--release", "--no-bump"]), {
+    bumpType: "patch",
+    isSmoke: false,
+    noBump: true,
+    version: current,
+  });
+  assert.deepStrictEqual(resolveBuildVersion(current, ["--release"]), {
+    bumpType: "patch",
+    isSmoke: false,
+    noBump: false,
+    version: { major: 5, minor: 2, patch: 2 },
+  });
+  assert.deepStrictEqual(resolveBuildVersion(current, ["--smoke"]), {
+    bumpType: "patch",
+    isSmoke: true,
+    noBump: true,
+    version: current,
+  });
+
+  const scripts = JSON.parse(
+    fs.readFileSync(path.join(ROOT, "package.json"), "utf8"),
+  ).scripts;
+  assert.strictEqual(scripts["build:no-bump"], "node build.js --no-bump");
+  assert.strictEqual(
+    scripts["build:release:no-bump"],
+    "node build.js --release --no-bump",
+  );
 });
 
 runTest("MANIFEST-01 validation rejects repeated symbols and generated import paths", () => {
@@ -671,4 +630,3 @@ runTest("BOOT-01 reset followed by startup does not reuse stale bootstrap state"
 });
 
 };
-

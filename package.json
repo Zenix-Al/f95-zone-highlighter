@@ -4,7 +4,9 @@
   "main": "latest-highlighter.user.js",
   "scripts": {
     "build": "node build.js",
+    "build:no-bump": "node build.js --no-bump",
     "build:release": "node build.js --release",
+    "build:release:no-bump": "node build.js --release --no-bump",
     "build:framework": "node framework/build.js",
     "build:framework:release": "node framework/build.js --release",
     "build:quick": "npm run build:release && npm run build:addons:release",

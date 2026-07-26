@@ -1,5 +1,21 @@
 # Changelog
 
+## v1.1.0 - Expand and stabilize direct-download support
+
+- Add DelaFil, download.gg, Google Drive, KrakenFiles, MixDrop, UploadHaven,
+  UploadNow, and Vik1ngFile/VikingFile support.
+- Restore the masked-page reCAPTCHA fallback.
+- Isolate simultaneous downloads by request and preserve exact ownership
+  through host redirects that remove add-on markers.
+- Pause and resume supported host automation around Cloudflare verification.
+- Report success, failure, challenges, and manual-action requirements to the
+  originating F95 tab through core-owned notifications.
+- Replace ineffective download detection with configurable post-trigger
+  managed-tab closing and host-specific settling delays.
+- Keep Google Drive and download.gg URLs clean while retaining request identity.
+- Improve Datanodes redirect recovery and refuse ambiguous multi-request
+  matches safely.
+
 ## v1.0.0 - Separate core and standalone runtime contexts
 
 - Classify matched routes as F95 core, external standalone, or unsupported before bootstrap.

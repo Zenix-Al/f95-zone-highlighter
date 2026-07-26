@@ -180,7 +180,7 @@ async function findBestDatanodesAction({ frameBudgetMs, isDone }) {
 }
 
 export async function processDatanodesDownload({
-  showToast,
+  challengeGate,
   notifyMainFailure,
   reportAddonHealthy,
   settings = {},
@@ -227,7 +227,6 @@ export async function processDatanodesDownload({
     }
 
     cleanup();
-    showToast("Datanodes download triggered.");
     reportAddonHealthy();
   }
 
@@ -242,6 +241,10 @@ export async function processDatanodesDownload({
     try {
       do {
         queued = false;
+        if (challengeGate && !(await challengeGate.waitUntilClear())) {
+          cleanup();
+          return;
+        }
         const action = await findBestDatanodesAction({
           frameBudgetMs: timing.scanFrameBudgetMs,
           isDone,
@@ -263,6 +266,12 @@ export async function processDatanodesDownload({
 
   function scheduleScan() {
     if (done) return;
+    if (challengeGate?.isBlocked?.()) {
+      void challengeGate.waitUntilClear().then((cleared) => {
+        if (cleared) scheduleScan();
+      });
+      return;
+    }
     void runScan();
   }
 

@@ -15,7 +15,7 @@ module.exports = function registerAddonSizeTests(context) {
     const after = childProcess.execFileSync("git", ["status", "--short"], { cwd: ROOT, encoding: "utf8" });
     assert.strictEqual(first, second);
     assert.strictEqual(before, after);
-    assert.doesNotMatch(first, /[A-Za-z]:[\\/]/);
+    assert.doesNotMatch(first, /(?:^|["'\s])[A-Za-z]:[\\/]/m);
     assert.doesNotMatch(first, /(?:^|[" ])\/(?:Users|home|tmp)\//);
     fs.rmSync(firstPath, { force: true });
     fs.rmSync(secondPath, { force: true });
