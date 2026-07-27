@@ -561,7 +561,6 @@ module.exports = function registerMaskedDirectParallelRequests(context) {
           return parsed.href;
         },
         diagnostics: { error() {} },
-        publishDirectDownloadAttention() {},
         publishDirectDownloadEvent() {},
         registerManagedTab() {},
         ownerTabId: "tab-clean",

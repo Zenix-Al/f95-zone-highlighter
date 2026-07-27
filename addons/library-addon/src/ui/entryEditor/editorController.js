@@ -56,44 +56,79 @@ export function createEntryEditorController({
     return result;
   }
 
-  async function playedVersion() {
+  async function playedVersion(editorDraft = null) {
     if (!active) return { ok: false, reason: "editor_closed" };
+    if (active.playingVersion) return { ok: false, reason: "already_in_progress" };
+    active.playingVersion = true;
     const actionGeneration = generation;
-    const result = await library.applyPersonalActivity(
-      active.threadId,
-      {},
-      {
-        commandId: createActivityCommandId("played-version"),
-        playedCurrentVersion: true,
-        shouldCancel: () => actionGeneration !== generation,
-      },
-    );
-    if (actionGeneration !== generation || !active) {
-      return { ok: false, reason: "cancelled" };
-    }
-    if (!result?.ok) {
-      await showToast(`Failed to record activity: ${result?.reason || "unknown"}`, "error");
+    const threadId = active.threadId;
+    const capturedDraft = editorDraft ? { ...editorDraft } : { ...active.draft };
+    try {
+      const result = await library.applyPersonalActivity(
+        threadId,
+        {},
+        {
+          commandId: createActivityCommandId("played-version"),
+          playedCurrentVersion: true,
+          shouldCancel: () => actionGeneration !== generation,
+        },
+      );
+      if (actionGeneration !== generation || !active || active.threadId !== threadId) {
+        return { ok: false, reason: "cancelled" };
+      }
+      if (!result?.ok) {
+        await showToast(`Failed to record activity: ${result?.reason || "unknown"}`, "error");
+        return result;
+      }
+      const refreshed = await library.getEntry(threadId);
+      if (actionGeneration !== generation || !active || active.threadId !== threadId) {
+        return { ok: false, reason: "cancelled" };
+      }
+      if (!refreshed) {
+        await showToast("Library entry no longer exists.", "error");
+        return { ok: false, reason: "entry_not_found" };
+      }
+      active.record = refreshed;
+      const canonicalDraft = createEditorDraft(active.record);
+      active.draft = {
+        ...canonicalDraft,
+        ...capturedDraft,
+        lastPlayedVersion: canonicalDraft.lastPlayedVersion,
+        lastPlayedAt: canonicalDraft.lastPlayedAt,
+      };
+      active.activityEvents = await library.listActivityEvents(active.threadId, 20);
+      if (actionGeneration !== generation || !active) {
+        return { ok: false, reason: "cancelled" };
+      }
+      await renderActive();
+      await onSaved(result);
       return result;
+    } finally {
+      if (active && active.threadId === threadId) active.playingVersion = false;
     }
-    active.record = result.value;
-    active.draft = createEditorDraft(active.record);
-    active.activityEvents = await library.listActivityEvents(active.threadId, 20);
-    if (actionGeneration !== generation || !active) {
-      return { ok: false, reason: "cancelled" };
-    }
-    await renderActive();
-    await onSaved(result);
-    return result;
   }
 
-  async function acknowledge() {
+  async function acknowledge(editorDraft = null) {
     if (!active) return { ok: false, reason: "editor_closed" };
-    const result = await library.acknowledgeCurrentUpdate(active.threadId);
+    const actionGeneration = generation;
+    const threadId = active.threadId;
+    if (editorDraft) active.draft = { ...editorDraft };
+    const result = await library.acknowledgeCurrentUpdate(threadId);
+    if (actionGeneration !== generation || !active || active.threadId !== threadId) {
+      return { ok: false, reason: "cancelled" };
+    }
     if (!result?.ok) {
       await showToast(`Failed to acknowledge update: ${result?.reason || "unknown"}`, "error");
       return result;
     }
-    active.record = result.value || (await library.getEntry(active.threadId));
+    active.record = await library.getEntry(threadId);
+    if (actionGeneration !== generation || !active || active.threadId !== threadId) {
+      return { ok: false, reason: "cancelled" };
+    }
+    if (!active.record) {
+      await showToast("Library entry no longer exists.", "error");
+      return { ok: false, reason: "entry_not_found" };
+    }
     await renderActive();
     await onSaved(result);
     return result;

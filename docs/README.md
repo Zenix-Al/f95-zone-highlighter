@@ -10,6 +10,7 @@ Welcome to the documentation for the Latest Highlighter userscript. This directo
 ## Table of Contents
 
 - [Core Architecture](architecture.md) - High-level overview of how the app boots and runs.
+- [Library Update Inbox](architecture/library-update-inbox.md) - Durable update acknowledgement, bounded inbox queries, and page-session notification behavior.
 - [AI Guidelines](agent.md) - Strict rules for AI agents modifying this codebase.
 - **Modules**
   - [Core](core/index.md) - The mini-framework (feature factory, observer, task queue).

@@ -9,7 +9,7 @@ import {
   handleImportProgressDialogClosed,
 } from "../ui/application/importProgressController.js";
 import { handleLibraryManagerDialogClosed } from "../ui/manager/managerLauncher.js";
-import { configureToast } from "../ui/utils/showToast.js";
+import { configureToast, showToast } from "../ui/utils/showToast.js";
 import { createLibraryCommandBinding } from "./commands.js";
 import { createLibraryDockController } from "./dockController.js";
 import { createLibraryLifecycle } from "./lifecycle.js";
@@ -18,6 +18,7 @@ import { getLocalLibraryPageContext } from "./pageContext.js";
 import { createLibraryRegistration } from "./registration.js";
 import { createLibrarySettings } from "./settings.js";
 import { createAutoUpdateScheduler } from "../library/autoUpdateScheduler.js";
+import { createUpdateNotificationCoordinator } from "../library/updateNotificationCoordinator.js";
 
 export function createLibraryAddonApp({ core, runtime }) {
   configureToast(core);
@@ -30,7 +31,13 @@ export function createLibraryAddonApp({ core, runtime }) {
     refreshRuntime: async () => ({ ok: false, reason: "not_ready" }),
   };
   const settings = createLibrarySettings(core);
-  const library = createLibraryService(core, settings.storage);
+  const updateNotifications = createUpdateNotificationCoordinator({
+    notify: showToast,
+    isActive: () => state.enabled,
+  });
+  const library = createLibraryService(core, settings.storage, {
+    notifyFirstChanged: updateNotifications.notifyFirstChanged,
+  });
   const autoUpdateScheduler = createAutoUpdateScheduler({
     repository: library.autoUpdate,
     getDueRecords: (options) => library.getDueAutoUpdateRecords(options),

@@ -27,19 +27,22 @@ export async function reloadRows(root, state, api, library, ROWS_STATUS_ID) {
   statusLine.textContent = "Loading library...";
 
   try {
-    const pageResult = await api.queryEntriesPage({
-      search: parsedSearch.text,
-      status: state.status,
-      sortBy: state.sortBy,
-      sortDir: state.sortDir,
-      limit: state.pageSize,
-      page: state.page,
-      cursor: state.pageCursors[state.page - 1] || null,
-      matchesRecord:
-        parsedSearch.tokens.length > 0
-          ? (entry) => matchesSearchTokens(entry, parsedSearch.tokens)
-          : undefined,
-    });
+    const [pageResult, changedCount] = await Promise.all([
+      api.queryEntriesPage({
+        search: parsedSearch.text,
+        status: state.status,
+        sortBy: state.sortBy,
+        sortDir: state.sortDir,
+        limit: state.pageSize,
+        page: state.page,
+        cursor: state.pageCursors[state.page - 1] || null,
+        matchesRecord:
+          parsedSearch.tokens.length > 0
+            ? (entry) => matchesSearchTokens(entry, parsedSearch.tokens)
+            : undefined,
+      }),
+      api.countChangedEntries(),
+    ]);
 
     state.rows = Array.isArray(pageResult?.rows) ? pageResult.rows : [];
     state.nextCursor = pageResult?.nextCursor || null;
@@ -48,6 +51,14 @@ export async function reloadRows(root, state, api, library, ROWS_STATUS_ID) {
       ? Number(pageResult.totalRows)
       : null;
     state.paginationMode = String(pageResult?.mode || "keyset");
+    const countElement = root.querySelector('[data-role="updatesCount"]');
+    if (countElement) {
+      countElement.textContent = changedCount?.ok
+        ? Number(changedCount.count) > 99
+          ? "99+"
+          : String(Number(changedCount.count || 0))
+        : "?";
+    }
   } catch (error) {
     loadSucceeded = false;
     state.errorMessage = String(error?.message || "Failed to load library.");

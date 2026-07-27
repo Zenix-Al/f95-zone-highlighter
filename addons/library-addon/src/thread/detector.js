@@ -8,11 +8,6 @@ function parseThreadIdFromPath(pathname) {
   return "";
 }
 
-function getText(selector) {
-  const node = document.querySelector(selector);
-  return String(node?.textContent || "").trim();
-}
-
 function getPlainTitleTextFromTitleNode(titleNode) {
   if (!titleNode) return "";
 

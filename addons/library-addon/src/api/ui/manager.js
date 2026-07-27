@@ -62,7 +62,20 @@ export function createManagerApi(bridge, library) {
     },
 
     queryEntriesPage: async (params) => {
-      return await library.queryEntriesPage(params);
+      if (typeof library.queryEntriesPage === "function") {
+        return await library.queryEntriesPage(params);
+      }
+      const rows =
+        typeof library.queryEntries === "function"
+          ? await library.queryEntries(params)
+          : [];
+      return {
+        rows: Array.isArray(rows) ? rows : [],
+        nextCursor: null,
+        hasNext: false,
+        totalRows: Array.isArray(rows) ? rows.length : 0,
+        mode: "compatibility",
+      };
     },
 
     getEntry: async (threadId) => {
@@ -85,6 +98,29 @@ export function createManagerApi(bridge, library) {
     acknowledgeCurrentUpdate: async (threadId) => {
       return await library.acknowledgeCurrentUpdate(threadId);
     },
+    countChangedEntries: () =>
+      typeof library.countChangedEntries === "function"
+        ? library.countChangedEntries()
+        : Promise.resolve({ ok: true, count: 0 }),
+    queryChangedEntriesPage: (options) =>
+      typeof library.queryChangedEntriesPage === "function"
+        ? library.queryChangedEntriesPage(options)
+        : Promise.resolve({
+            ok: true,
+            rows: [],
+            nextCursor: null,
+            hasNext: false,
+          }),
+    acknowledgeChangedEntries: (ids, options) =>
+      typeof library.acknowledgeChangedEntries === "function"
+        ? library.acknowledgeChangedEntries(ids, options)
+        : Promise.resolve({
+            ok: false,
+            reason: "unsupported_action",
+            updated: 0,
+            skipped: 0,
+            failed: 0,
+          }),
 
     previewManualUpdateCheck: async (ids, options) => {
       return await library.previewManualUpdateCheck(ids, options);

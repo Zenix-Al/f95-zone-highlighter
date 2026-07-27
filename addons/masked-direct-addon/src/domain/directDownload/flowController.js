@@ -22,7 +22,6 @@ export function createDirectDownloadFlowController({
   normalizeUrl,
   withAutomationMarker,
   diagnostics,
-  publishDirectDownloadAttention,
   publishDirectDownloadEvent,
   registerManagedTab,
   ownerTabId,

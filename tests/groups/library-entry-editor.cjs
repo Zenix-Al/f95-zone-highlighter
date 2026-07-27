@@ -177,6 +177,125 @@ module.exports = function registerLibraryEntryEditorGroup(context) {
     assert.doesNotMatch(markup, /v2[^<]*v2/);
   });
 
+  runTest("LIBRARY-ENTRY-EDITOR-01 derives played-version visibility from canonical normalized state", () => {
+    const { createEditorDraft } = loadModule(
+      "addons/library-addon/src/ui/entryEditor/editorValidation.js",
+    );
+    const { renderEntryEditor } = loadModule(
+      "addons/library-addon/src/ui/entryEditor/editorRenderer.js",
+      { loader: { ".css": "text" } },
+    );
+    const played = createRecord({
+      thread: { currentVersion: "v0.8.0.7" },
+      personal: { lastPlayedVersion: "0.8.0.7" },
+    });
+    const staleDraft = {
+      ...createEditorDraft(played),
+      lastPlayedVersion: "v0.8.0.3",
+    };
+    assert.doesNotMatch(
+      renderEntryEditor(played, staleDraft),
+      /data-editor-action="played-version"/,
+    );
+
+    const unplayed = createRecord({
+      thread: { currentVersion: "v0.8.0.7" },
+      personal: { lastPlayedVersion: "v0.8.0.3" },
+    });
+    assert.match(
+      renderEntryEditor(unplayed, createEditorDraft(unplayed)),
+      /data-editor-action="played-version"/,
+    );
+  });
+
+  runTest("LIBRARY-ENTRY-EDITOR-01 played action rereads canonical state and hides its button", async () =>
+    withEditorDom(async (window) => {
+      const { createEntryEditorController } = loadModule(
+        "addons/library-addon/src/ui/entryEditor/editorController.js",
+        { loader: { ".css": "text" } },
+      );
+      const bridge = createBridge(window);
+      let record = createRecord({
+        thread: { currentVersion: "v0.8.0.7" },
+        personal: { lastPlayedVersion: "v0.8.0.3" },
+      });
+      let writes = 0;
+      const editor = createEntryEditorController({
+        core: bridge,
+        addonId: "library-addon",
+        library: {
+          getEntry: async () => record,
+          applyPersonalActivity: async () => {
+            writes += 1;
+            record = createRecord({
+              thread: { currentVersion: "v0.8.0.7" },
+              personal: { lastPlayedVersion: "v0.8.0.7" },
+            });
+            return { ok: true, value: record };
+          },
+          listActivityEvents: async () => [],
+        },
+      });
+      await editor.open("42");
+      const root = window.document.getElementById("library-addon-entry-editor-content");
+      root.querySelector('[name="note"]').value = "unsaved draft";
+      const button = root.querySelector('[data-editor-action="played-version"]');
+      button.click();
+      button.click();
+      await new Promise((resolve) => window.setTimeout(resolve, 0));
+      assert.strictEqual(writes, 1);
+      assert.strictEqual(
+        root.querySelector('[data-editor-action="played-version"]'),
+        null,
+      );
+      assert.strictEqual(root.querySelector('[name="note"]').value, "unsaved draft");
+      assert.strictEqual(editor.getSnapshot().threadId, "42");
+    }));
+
+  runTest("LIBRARY-ENTRY-EDITOR-01 acknowledgement preserves live draft and editor identity", async () =>
+    withEditorDom(async (window) => {
+      const { createEntryEditorController } = loadModule(
+        "addons/library-addon/src/ui/entryEditor/editorController.js",
+        { loader: { ".css": "text" } },
+      );
+      const bridge = createBridge(window);
+      const updateEvents = [{ type: "version", version: "v2", observedAt: 10 }];
+      const activityEvents = [{ type: "status-change", occurredAt: 5 }];
+      let current = createRecord();
+      const editor = createEntryEditorController({
+        core: bridge,
+        addonId: "library-addon",
+        library: {
+          getEntry: async () => current,
+          listUpdateEvents: async () => updateEvents,
+          listActivityEvents: async () => activityEvents,
+          acknowledgeCurrentUpdate: async () => {
+            current = { ...current, updateState: "acknowledged" };
+            return { ok: true, value: current };
+          },
+        },
+      });
+      await editor.open("42");
+      const root = window.document.getElementById(
+        "library-addon-entry-editor-content",
+      );
+      root.querySelector('[name="note"]').value = "typed but unsaved";
+      root
+        .querySelector('[data-editor-action="acknowledge-update"]')
+        .click();
+      await new Promise((resolve) => window.setTimeout(resolve, 0));
+
+      assert.strictEqual(editor.getSnapshot().threadId, "42");
+      assert.match(root.textContent, /Editor fixture/);
+      assert.strictEqual(root.querySelector('[name="note"]').value, "typed but unsaved");
+      assert.strictEqual(
+        root.querySelector('[data-editor-action="acknowledge-update"]'),
+        null,
+      );
+      assert.match(root.textContent, /Recent updates/);
+      assert.match(root.textContent, /Recent activity/);
+    }));
+
   runTest("LIBRARY-ENTRY-EDITOR-01 open close reopen cancel and external close are write-free", async () =>
     withEditorDom(async (window) => {
       const { createEntryEditorController } = loadModule(
@@ -284,5 +403,44 @@ module.exports = function registerLibraryEntryEditorGroup(context) {
       resolvers[2](createRecord({ threadId: "43" }));
       assert.strictEqual((await pendingSave).reason, "cancelled");
       assert.strictEqual(writes, 0);
+    }));
+
+  runTest("LIBRARY-ENTRY-EDITOR-01 closing during acknowledge or played action suppresses stale UI", async () =>
+    withEditorDom(async (window) => {
+      const { createEntryEditorController } = loadModule(
+        "addons/library-addon/src/ui/entryEditor/editorController.js",
+        { loader: { ".css": "text" } },
+      );
+      for (const action of ["acknowledge-update", "played-version"]) {
+        const bridge = createBridge(window);
+        let resolveCommit;
+        const commit = new Promise((resolve) => {
+          resolveCommit = resolve;
+        });
+        const editor = createEntryEditorController({
+          core: bridge,
+          addonId: `library-addon-${action}`,
+          library: {
+            getEntry: async () => createRecord(),
+            listUpdateEvents: async () => [],
+            listActivityEvents: async () => [],
+            acknowledgeCurrentUpdate: () => commit,
+            applyPersonalActivity: () => commit,
+          },
+        });
+        await editor.open("42");
+        window.document
+          .querySelector(`[data-editor-action="${action}"]`)
+          .click();
+        await editor.close("test-close");
+        resolveCommit({ ok: true, value: createRecord() });
+        await new Promise((resolve) => window.setTimeout(resolve, 0));
+        assert.strictEqual(editor.getSnapshot().active, false);
+        assert.strictEqual(
+          bridge.calls.filter(({ action: coreAction }) =>
+            coreAction === "ui.dialog.update").length,
+          0,
+        );
+      }
     }));
 };

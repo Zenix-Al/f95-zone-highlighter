@@ -21,6 +21,7 @@ export function createManagerHandlers(state, api, deps) {
     ...createSelectionHandlers(context),
     ...createBulkHandlers(context),
     ...createUpdateCheckHandlers(context),
+    "open-updates": async () => deps.openUpdatesFn(),
     ...createWorkflowHandlers(context),
   };
 }

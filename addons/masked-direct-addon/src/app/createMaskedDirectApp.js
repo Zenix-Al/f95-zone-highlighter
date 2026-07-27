@@ -83,8 +83,6 @@ const directDownloadFlowController = createDirectDownloadFlowController({
   normalizeUrl,
   withAutomationMarker,
   diagnostics,
-  publishDirectDownloadAttention:
-    directDownloadAttentionController.publishDirectDownloadAttention,
   publishDirectDownloadEvent:
     directDownloadAttentionController.publishDirectDownloadEvent,
   registerManagedTab: managedDownloadTabs.register,
