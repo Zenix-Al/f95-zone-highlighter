@@ -15,6 +15,7 @@ for (const group of [
   "library-keyset-pagination",
   "library-version-history",
   "library-activity",
+  "library-update-inbox",
   "library-opportunistic-update",
   "library-import-export",
   "library-manual-update",

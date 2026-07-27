@@ -42,7 +42,7 @@ module.exports = function registerLibraryActivityGroup(context) {
     };
   }
 
-  function createMemoryBridge() {
+  function createMemoryBridge({ putReturnsKey = false } = {}) {
     let record = createRecord();
     const activity = new Map();
     const updates = new Map();
@@ -58,7 +58,14 @@ module.exports = function registerLibraryActivityGroup(context) {
           if (action === "idb.put") {
             if (store === "records") record = payload.value;
             else map.set(payload.value.id, payload.value);
-            return { ok: true, value: payload.value };
+            return {
+              ok: true,
+              value: putReturnsKey
+                ? store === "records"
+                  ? payload.value.threadId
+                  : payload.value.id
+                : payload.value,
+            };
           }
           if (action === "idb.delete") {
             map.delete(payload.key);
@@ -138,6 +145,28 @@ module.exports = function registerLibraryActivityGroup(context) {
     assert.strictEqual(second.value.threadId, "42");
     assert.strictEqual(second.value.thread.currentVersion, "0.7");
     assert.strictEqual(second.value.personal.lastPlayedAt, 200);
+    assert.strictEqual(memory.snapshot().activity.length, 1);
+  });
+
+  runTest("LIBRARY-ACTIVITY-01 caches the written record when IndexedDB put returns its key", async () => {
+    const { createLibraryService } = loadModule("addons/library-addon/src/library/service.js");
+    const memory = createMemoryBridge({ putReturnsKey: true });
+    const library = createLibraryService(memory.bridge, {});
+    const first = await library.applyPersonalActivity("42", {}, {
+      commandId: "played-first",
+      occurredAt: 100,
+      playedCurrentVersion: true,
+    });
+    const reread = await library.getEntry("42");
+    const second = await library.applyPersonalActivity("42", {}, {
+      commandId: "played-second",
+      occurredAt: 200,
+      playedCurrentVersion: true,
+    });
+
+    assert.strictEqual(first.value.personal.lastPlayedVersion, "0.7");
+    assert.strictEqual(reread.personal.lastPlayedVersion, "0.7");
+    assert.strictEqual(second.value.personal.lastPlayedVersion, "0.7");
     assert.strictEqual(memory.snapshot().activity.length, 1);
   });
 

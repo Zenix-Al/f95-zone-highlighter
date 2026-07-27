@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.2.0 - Update inbox and bugfix
+
+- Added a durable Updates inbox with an exact manager count, bounded newest-first pages, per-entry Edit and Acknowledge actions, and bounded Acknowledge all.
+- Added one immediate in-memory update-detected toast per page session across manual, automatic, and opportunistic checks.
+- Repaired Full Edit acknowledgement and played-version actions so canonical records, drafts, dialog identity, and stale-completion guards remain consistent.
+
 ## v1.1.0 - Personal Library and automatic updates
 
 - Added automatic and manual update checks with configurable pacing, retry controls, live progress, and clear current/changed/failed states.

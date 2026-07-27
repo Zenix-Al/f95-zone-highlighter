@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "identifier": "c8a49518858cb2e5c4a00306738c50cf185f30399cebbcb58fba8da9c67aab94",
+  "identifier": "1d622d03c72f3fadafcad7ae25ce8de8a5ccc6f87c6c587cc817a259ade9ce7c",
   "catalog": [
     {
       "id": "example-addon",
@@ -96,7 +96,7 @@
       "id": "library-addon",
       "name": "F95UE Library Add-on",
       "description": "Quick-add threads to a personal library and manage entries with a dedicated add-on UI.",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "pageScopes": [
         "f95zone"
       ],
@@ -127,7 +127,7 @@
       "id": "masked-direct-addon",
       "name": "F95UE Masked + Direct Download Add-on",
       "description": "Combines masked-link skipper and direct-download flows into one trusted add-on.",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "pageScopes": [
         "f95zone"
       ],

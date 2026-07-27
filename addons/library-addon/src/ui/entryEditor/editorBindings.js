@@ -35,9 +35,13 @@ export function bindEntryEditor(root, { onSave, onCancel, onAcknowledge, onPlaye
 
   root.addEventListener(
     "click",
-    (event) => {
-      if (!event.target?.closest?.('[data-editor-action="played-version"]')) return;
-      void onPlayedVersion?.();
+    async (event) => {
+      const button = event.target?.closest?.('[data-editor-action="played-version"]');
+      if (!button || button.disabled) return;
+      button.disabled = true;
+      const form = button.closest('[data-role="entry-editor"]');
+      const result = await onPlayedVersion?.(form ? readEditorDraft(form) : null);
+      if (!result?.ok && button.isConnected) button.disabled = false;
     },
     options,
   );
@@ -54,8 +58,12 @@ export function bindEntryEditor(root, { onSave, onCancel, onAcknowledge, onPlaye
   root.addEventListener(
     "click",
     (event) => {
-      if (!event.target?.closest?.('[data-editor-action="acknowledge-update"]')) return;
-      void onAcknowledge?.();
+      const button = event.target?.closest?.(
+        '[data-editor-action="acknowledge-update"]',
+      );
+      if (!button) return;
+      const form = button.closest('[data-role="entry-editor"]');
+      void onAcknowledge?.(form ? readEditorDraft(form) : null);
     },
     options,
   );

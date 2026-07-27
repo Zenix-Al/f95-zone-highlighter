@@ -1,5 +1,6 @@
 import editorCssTemplate from "./editor.css";
 import { EDITOR_STATUSES } from "./editorValidation.js";
+import { normalizeVersionIdentity } from "../../library/updateEventModel.js";
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -40,6 +41,8 @@ export function renderEntryEditor(
   const issuePaths = new Set(issues.map((issue) => issue.path));
   const invalid = (path) => (issuePaths.has(path) ? ' aria-invalid="true"' : "");
   const thread = record?.thread || {};
+  const playedVersion = normalizeVersionIdentity(record?.personal?.lastPlayedVersion);
+  const currentVersion = normalizeVersionIdentity(thread.currentVersion);
   const statusOptions = EDITOR_STATUSES.map(
     (value) =>
       `<option value="${value}"${value === draft.status ? " selected" : ""}>${value}</option>`,
@@ -72,7 +75,7 @@ export function renderEntryEditor(
               : "<span>No observed updates.</span>"
           }
         </div>
-        <button type="button" data-editor-action="played-version">Played this version</button>
+        ${playedVersion !== currentVersion ? '<button type="button" data-editor-action="played-version">Played this version</button>' : ""}
         <div class="f95ue-library-editor-history">
           <small>Recent activity</small>
           ${

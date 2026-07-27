@@ -102,10 +102,10 @@ export function createLibraryApiClient(bridge) {
       );
     },
 
-    countEntries(index) {
+    countEntries(index, query) {
       return bridge.invokeCoreAction(
         "idb.count",
-        createLibraryStorePayload({ index }),
+        createLibraryStorePayload({ index, query }),
       );
     },
 

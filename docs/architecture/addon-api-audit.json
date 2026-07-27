@@ -577,6 +577,8 @@
           "matches": [
             "*://f95zone.to/threads/*",
             "*://f95zone.to/masked/*",
+            "https://www.google.com/recaptcha/*",
+            "https://www.recaptcha.net/recaptcha/*",
             "*://buzzheavier.com/*",
             "*://*.buzzheavier.com/*",
             "*://bzzhr.to/*",
@@ -781,12 +783,12 @@
         "globalEventListeners": [
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 169,
+            "line": 171,
             "text": "window.addEventListener(\"pagehide\", challengeMonitor.dispose, {"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 177,
+            "line": 179,
             "text": "document.addEventListener("
           },
           {
@@ -1097,167 +1099,177 @@
           },
           {
             "path": "addons/masked-direct-addon/src/app/context.js",
-            "line": 23,
+            "line": 24,
+            "text": "(hostname === \"www.google.com\" || hostname === \"www.recaptcha.net\") &&"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/context.js",
+            "line": 25,
+            "text": "pathname.startsWith(\"/recaptcha/\")"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/context.js",
+            "line": 34,
             "text": "if (isSupportedExternalHost(hostname)) {"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 36,
+            "line": 37,
             "text": "return normalizeDirectDownloadHost(location.hostname);"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 46,
+            "line": 47,
             "text": "const parsed = new URL(location.href);"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 48,
+            "line": 49,
             "text": "parsed.searchParams.get(AUTOMATION_MARKER_KEY) || \"\","
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 51,
+            "line": 52,
             "text": "parsed.searchParams.get(originTabQueryKey) || \"\","
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 54,
+            "line": 55,
             "text": "parsed.searchParams.get(DIRECT_DOWNLOAD_ROUTE_REQUEST_ID_KEY) || \"\","
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 57,
+            "line": 58,
             "text": "parsed.searchParams.get(DIRECT_DOWNLOAD_ROUTE_TS_KEY) || 0,"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 136,
+            "line": 138,
             "text": "`[${addonId}] Download hooks blocked by automation gate. host=${host} href=${location.href}`,"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 140,
+            "line": 142,
             "text": "href: location.href,"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 198,
+            "line": 200,
             "text": "return host === \"datanodes.to\" && location.pathname.startsWith(\"/download\");"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 205,
+            "line": 207,
             "text": "/^\\/(?:[a-z]{2}(?:-[a-z]{2})?\\/)?file-/i.test(location.pathname)) ||"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 207,
+            "line": 209,
             "text": "((location.hostname === \"drive.usercontent.google.com\" &&"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 208,
+            "line": 210,
             "text": "location.pathname.startsWith(\"/download\")) ||"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 209,
+            "line": 211,
             "text": "(location.hostname === \"drive.google.com\" &&"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 210,
+            "line": 212,
             "text": "(location.pathname.startsWith(\"/file/d/\") ||"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 211,
+            "line": 213,
             "text": "location.pathname === \"/open\" ||"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 212,
+            "line": 214,
             "text": "location.pathname === \"/uc\"))))"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 219,
+            "line": 221,
             "text": "sourceIdentifier: location.pathname.replace(/\\/+$/, \"\"),"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 234,
+            "line": 236,
             "text": "const parsed = new URL(location.href);"
-          },
-          {
-            "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 235,
-            "text": "const pathMatch = parsed.pathname.match(/^\\/file\\/d\\/([^/]+)/);"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
             "line": 237,
+            "text": "const pathMatch = parsed.pathname.match(/^\\/file\\/d\\/([^/]+)/);"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
+            "line": 239,
             "text": "pathMatch?.[1] || parsed.searchParams.get(\"id\") || \"\","
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 317,
+            "line": 319,
             "text": "const parsed = new URL(location.href);"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 318,
+            "line": 320,
             "text": "if (!parsed.searchParams.get(AUTOMATION_MARKER_KEY)) {"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 319,
+            "line": 321,
             "text": "parsed.searchParams.set(AUTOMATION_MARKER_KEY, \"1\");"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 321,
+            "line": 323,
             "text": "if (trigger.ownerTabId && !parsed.searchParams.get(originTabQueryKey)) {"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 322,
+            "line": 324,
             "text": "parsed.searchParams.set(originTabQueryKey, trigger.ownerTabId);"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 326,
+            "line": 328,
             "text": "!parsed.searchParams.get(DIRECT_DOWNLOAD_ROUTE_REQUEST_ID_KEY)"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 328,
+            "line": 330,
             "text": "parsed.searchParams.set("
-          },
-          {
-            "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 335,
-            "text": "!parsed.searchParams.get(DIRECT_DOWNLOAD_ROUTE_TS_KEY)"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
             "line": 337,
+            "text": "!parsed.searchParams.get(DIRECT_DOWNLOAD_ROUTE_TS_KEY)"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
+            "line": 339,
             "text": "parsed.searchParams.set("
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 354,
+            "line": 356,
             "text": "const host = normalizeDirectDownloadHost(location.hostname);"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 356,
+            "line": 358,
             "text": "(host === \"datanodes.to\" && location.pathname.startsWith(\"/download\")) ||"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 358,
+            "line": 360,
             "text": "/^\\/(?:[a-z]{2}(?:-[a-z]{2})?\\/)?file-/i.test(location.pathname)) ||"
           },
           {
@@ -1352,17 +1364,17 @@
           },
           {
             "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
-            "line": 234,
+            "line": 242,
             "text": "`[${runtime.addonId}] Detected relevant page. Context: ${pageContext}. href=${location.href}`,"
           },
           {
             "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
-            "line": 286,
+            "line": 294,
             "text": "function normalizeDirectDownloadHostForContext(hostname) {"
           },
           {
             "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
-            "line": 287,
+            "line": 295,
             "text": "return normalizeDirectDownloadHost(hostname);"
           },
           {
@@ -1377,38 +1389,28 @@
           },
           {
             "path": "addons/masked-direct-addon/src/domain/directDownload/flowController.js",
-            "line": 40,
+            "line": 55,
             "text": "new URL(normalized).hostname,"
           },
           {
             "path": "addons/masked-direct-addon/src/domain/directDownload/flowController.js",
-            "line": 54,
+            "line": 69,
             "text": "const parsed = new URL(safeUrl);"
           },
           {
             "path": "addons/masked-direct-addon/src/domain/directDownload/flowController.js",
-            "line": 55,
+            "line": 70,
             "text": "if (useRouteMarkers && !parsed.searchParams.get(originTabQueryKey)) {"
           },
           {
             "path": "addons/masked-direct-addon/src/domain/directDownload/flowController.js",
-            "line": 56,
+            "line": 71,
             "text": "parsed.searchParams.set(originTabQueryKey, ownerTabId);"
           },
           {
             "path": "addons/masked-direct-addon/src/domain/directDownload/flowController.js",
-            "line": 60,
+            "line": 75,
             "text": "!parsed.searchParams.get(DIRECT_DOWNLOAD_ROUTE_TS_KEY)"
-          },
-          {
-            "path": "addons/masked-direct-addon/src/domain/directDownload/flowController.js",
-            "line": 62,
-            "text": "parsed.searchParams.set("
-          },
-          {
-            "path": "addons/masked-direct-addon/src/domain/directDownload/flowController.js",
-            "line": 69,
-            "text": "parsed.searchParams.get(DIRECT_DOWNLOAD_ROUTE_REQUEST_ID_KEY) ||"
           },
           {
             "path": "addons/masked-direct-addon/src/domain/directDownload/flowController.js",
@@ -1417,7 +1419,17 @@
           },
           {
             "path": "addons/masked-direct-addon/src/domain/directDownload/flowController.js",
-            "line": 131,
+            "line": 84,
+            "text": "parsed.searchParams.get(DIRECT_DOWNLOAD_ROUTE_REQUEST_ID_KEY) ||"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/domain/directDownload/flowController.js",
+            "line": 92,
+            "text": "parsed.searchParams.set("
+          },
+          {
+            "path": "addons/masked-direct-addon/src/domain/directDownload/flowController.js",
+            "line": 146,
             "text": "window.location.assign(safeUrl);"
           },
           {
@@ -1532,7 +1544,7 @@
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/downloadgg.js",
-            "line": 22,
+            "line": 23,
             "text": "export function isDownloadGgFilePage(url = location.href) {"
           },
           {
@@ -1707,12 +1719,12 @@
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/mixdrop.js",
-            "line": 20,
+            "line": 21,
             "text": "export function isMixdropFilePage(url = location.href) {"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/mixdrop.js",
-            "line": 39,
+            "line": 40,
             "text": "const protocol = new URL(href).protocol;"
           },
           {
@@ -1807,12 +1819,12 @@
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/uploadhaven.js",
-            "line": 15,
+            "line": 16,
             "text": "export function isUploadHavenDownloadPage(url = location.href) {"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/uploadhaven.js",
-            "line": 29,
+            "line": 30,
             "text": "return `f95ue-uploadhaven-download:${location.pathname}`;"
           },
           {
@@ -1919,12 +1931,12 @@
         "coreDomAssumptions": [
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 261,
+            "line": 263,
             "text": "const headings = Array.from(document.querySelectorAll(\"h4\"));"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 278,
+            "line": 280,
             "text": "for (const element of root.querySelectorAll(\"div,span,h1,h2,h3\")) {"
           },
           {
@@ -2004,7 +2016,7 @@
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/downloadgg.js",
-            "line": 35,
+            "line": 36,
             "text": "Boolean(button.querySelector(\".fa-download, .fas.fa-download\"))"
           },
           {
@@ -2059,7 +2071,7 @@
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/uploadhaven.js",
-            "line": 22,
+            "line": 23,
             "text": "const button = document.querySelector(\"button#submitFree.uh-dl-btn-free.ready\");"
           },
           {
@@ -2106,57 +2118,57 @@
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 74,
+            "line": 75,
             "text": "? await recoverMarkerlessDatanodesRequest(GMApi)"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 76,
+            "line": 77,
             "text": "? await recoverMarkerlessDownloadGgRequest(GMApi)"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 77,
+            "line": 78,
             "text": ": await recoverMarkerlessGoogleDriveRequest(GMApi);"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 93,
+            "line": 94,
             "text": "? await readProcessingDownloadTrigger(GMApi, {"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 163,
+            "line": 165,
             "text": "await updateProcessingDownloadTrigger(GMApi, requestId, {"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 216,
+            "line": 218,
             "text": "async function recoverMarkerlessDownloadGgRequest(GMApi) {"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 217,
+            "line": 219,
             "text": "return readProcessingDownloadTriggerBySource(GMApi, {"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 223,
+            "line": 225,
             "text": "async function recoverMarkerlessGoogleDriveRequest(GMApi) {"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 226,
+            "line": 228,
             "text": "return readProcessingDownloadTriggerBySource(GMApi, {"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 244,
+            "line": 246,
             "text": "async function recoverMarkerlessDatanodesRequest(GMApi) {"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 249,
+            "line": 251,
             "text": "return readProcessingDownloadTriggerBySource(GMApi, {"
           },
           {
@@ -2206,7 +2218,7 @@
           },
           {
             "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
-            "line": 118,
+            "line": 116,
             "text": "GMApi: GM,"
           },
           {
@@ -2241,32 +2253,32 @@
           },
           {
             "path": "addons/masked-direct-addon/src/domain/directDownload/flowController.js",
-            "line": 95,
+            "line": 110,
             "text": "await setProcessingDownloadTrigger(GMApi, {"
           },
           {
             "path": "addons/masked-direct-addon/src/domain/directDownload/flowController.js",
-            "line": 137,
+            "line": 152,
             "text": "const trigger = await readProcessingDownloadTrigger(GMApi, {"
           },
           {
             "path": "addons/masked-direct-addon/src/domain/directDownload/flowController.js",
-            "line": 153,
+            "line": 168,
             "text": "if (requestId) await clearProcessingDownloadTrigger(GMApi, { requestId });"
           },
           {
             "path": "addons/masked-direct-addon/src/domain/directDownload/flowController.js",
-            "line": 167,
+            "line": 182,
             "text": "const trigger = await readProcessingDownloadTrigger(GMApi, {"
           },
           {
             "path": "addons/masked-direct-addon/src/domain/directDownload/flowController.js",
-            "line": 209,
+            "line": 224,
             "text": "if (requestId) await clearProcessingDownloadTrigger(GMApi, { requestId });"
           },
           {
             "path": "addons/masked-direct-addon/src/domain/directDownload/flowController.js",
-            "line": 216,
+            "line": 236,
             "text": "const trigger = await readProcessingDownloadTrigger(GMApi, {"
           },
           {
@@ -2773,6 +2785,7 @@
           "addons/library-addon/src/library/service.js",
           "addons/library-addon/src/library/threadUpdateParser.js",
           "addons/library-addon/src/library/updateEventModel.js",
+          "addons/library-addon/src/library/updateNotificationCoordinator.js",
           "addons/library-addon/src/library/updateRepository.js",
           "addons/library-addon/src/main.js",
           "addons/library-addon/src/thread/detector.js",
@@ -2813,6 +2826,10 @@
           "addons/library-addon/src/ui/manager/state.js",
           "addons/library-addon/src/ui/threadTitle/threadTitleController.js",
           "addons/library-addon/src/ui/threadTitle/titleChips.js",
+          "addons/library-addon/src/ui/updateInbox/updateInbox.css",
+          "addons/library-addon/src/ui/updateInbox/updateInboxBindings.js",
+          "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+          "addons/library-addon/src/ui/updateInbox/updateInboxRenderer.js",
           "addons/library-addon/src/ui/utils/download.js",
           "addons/library-addon/src/ui/utils/formatters.js",
           "addons/library-addon/src/ui/utils/searchTokens.js",
@@ -3170,7 +3187,7 @@
         "globalEventListeners": [
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 201,
+            "line": 208,
             "text": "window.addEventListener(\"pagehide\", onPageHide);"
           },
           {
@@ -3442,44 +3459,39 @@
           },
           {
             "path": "addons/library-addon/src/thread/detector.js",
-            "line": 94,
+            "line": 89,
             "text": "return location.hostname.includes(\"f95zone.to\") && location.pathname.startsWith(\"/threads/\");"
           },
           {
             "path": "addons/library-addon/src/thread/detector.js",
-            "line": 100,
+            "line": 95,
             "text": "const threadId = parseThreadIdFromPath(location.pathname);"
           },
           {
             "path": "addons/library-addon/src/thread/detector.js",
-            "line": 120,
+            "line": 115,
             "text": "url: `${location.origin}${location.pathname}`,"
           }
         ],
         "coreDomAssumptions": [
           {
             "path": "addons/library-addon/src/thread/detector.js",
-            "line": 12,
-            "text": "const node = document.querySelector(selector);"
-          },
-          {
-            "path": "addons/library-addon/src/thread/detector.js",
-            "line": 50,
+            "line": 45,
             "text": "titleNode.querySelectorAll(\"a.labelLink span\").forEach((node) => {"
           },
           {
             "path": "addons/library-addon/src/thread/detector.js",
-            "line": 75,
+            "line": 70,
             "text": "document.querySelectorAll(selector).forEach((node) => {"
           },
           {
             "path": "addons/library-addon/src/thread/detector.js",
-            "line": 86,
+            "line": 81,
             "text": "const node = document.querySelector('select[name=\"rating\"][data-initial-rating]');"
           },
           {
             "path": "addons/library-addon/src/thread/detector.js",
-            "line": 103,
+            "line": 98,
             "text": "const titleNode = document.querySelector(\"h1.p-title-value\");"
           },
           {
@@ -3739,22 +3751,22 @@
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 113,
+            "line": 125,
             "text": "const existing = document.getElementById(styleId);"
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 182,
+            "line": 196,
             "text": "appContext.dialogRoot = contentId ? document.getElementById(contentId) : null;"
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 189,
+            "line": 203,
             "text": "const importInput = appContext.dialogRoot.querySelector("
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 213,
+            "line": 227,
             "text": "appContext.dialogRoot.querySelector(\".f95ue-library-manager-window\")?.focus();"
           },
           {
@@ -3769,7 +3781,12 @@
           },
           {
             "path": "addons/library-addon/src/ui/manager/reloadRows.js",
-            "line": 72,
+            "line": 54,
+            "text": "const countElement = root.querySelector('[data-role=\"updatesCount\"]');"
+          },
+          {
+            "path": "addons/library-addon/src/ui/manager/reloadRows.js",
+            "line": 83,
             "text": "const statusLine = root.querySelector(`#${ROWS_STATUS_ID}`);"
           },
           {
@@ -3786,6 +3803,16 @@
             "path": "addons/library-addon/src/ui/threadTitle/titleChips.js",
             "line": 66,
             "text": "const element = document.createElement(\"span\");"
+          },
+          {
+            "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+            "line": 48,
+            "text": "const root = document.getElementById(contentId);"
+          },
+          {
+            "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+            "line": 250,
+            "text": "const root = document.getElementById(active.contentId);"
           },
           {
             "path": "addons/library-addon/src/ui/utils/download.js",
@@ -3812,67 +3839,67 @@
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 57,
+            "line": 64,
             "text": "function isCurrent(context) {"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 60,
+            "line": 67,
             "text": "typeof context.isCurrent !== \"function\" ||"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 61,
+            "line": 68,
             "text": "context.isCurrent()"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 77,
+            "line": 84,
             "text": "if (!isCurrent(context)) {"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 86,
+            "line": 93,
             "text": "if (!isCurrent(context)) {"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 92,
+            "line": 99,
             "text": "if (!isCurrent(context)) {"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 97,
+            "line": 104,
             "text": "if (!isCurrent(context)) {"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 108,
+            "line": 115,
             "text": "return context.isCurrent()"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 114,
+            "line": 121,
             "text": "return context.isCurrent()"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 120,
+            "line": 127,
             "text": "return context.isCurrent()"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 169,
+            "line": 176,
             "text": "else if (command === \"disable\") void lifecycle.disable(detail);"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 188,
+            "line": 195,
             "text": "} else if (command === \"teardown\") {"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 189,
+            "line": 196,
             "text": "void lifecycle.teardown(detail);"
           },
           {
@@ -4082,12 +4109,12 @@
           },
           {
             "path": "addons/library-addon/src/ui/assets/manager.html",
-            "line": 81,
+            "line": 84,
             "text": "<button type=\"button\" data-action=\"cancel-manual-check\" data-role=\"cancelManualCheck\" hidden>"
           },
           {
             "path": "addons/library-addon/src/ui/assets/manager.html",
-            "line": 82,
+            "line": 85,
             "text": "Cancel check"
           },
           {
@@ -4202,7 +4229,7 @@
           },
           {
             "path": "addons/library-addon/src/ui/entryEditor/editorBindings.js",
-            "line": 48,
+            "line": 52,
             "text": "if (!event.target?.closest?.('[data-editor-action=\"cancel\"]')) return;"
           },
           {
@@ -4222,92 +4249,112 @@
           },
           {
             "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-            "line": 61,
+            "line": 63,
             "text": "const actionGeneration = generation;"
           },
           {
             "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-            "line": 68,
+            "line": 73,
             "text": "shouldCancel: () => actionGeneration !== generation,"
           },
           {
             "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-            "line": 71,
+            "line": 76,
+            "text": "if (actionGeneration !== generation || !active || active.threadId !== threadId) {"
+          },
+          {
+            "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+            "line": 84,
+            "text": "if (actionGeneration !== generation || !active || active.threadId !== threadId) {"
+          },
+          {
+            "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+            "line": 100,
             "text": "if (actionGeneration !== generation || !active) {"
           },
           {
             "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-            "line": 81,
-            "text": "if (actionGeneration !== generation || !active) {"
+            "line": 113,
+            "text": "const actionGeneration = generation;"
           },
           {
             "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-            "line": 104,
+            "line": 117,
+            "text": "if (actionGeneration !== generation || !active || active.threadId !== threadId) {"
+          },
+          {
+            "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+            "line": 125,
+            "text": "if (actionGeneration !== generation || !active || active.threadId !== threadId) {"
+          },
+          {
+            "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+            "line": 139,
             "text": "const saveGeneration = generation;"
           },
           {
             "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-            "line": 114,
+            "line": 149,
             "text": "if (saveGeneration !== generation || !active) {"
-          },
-          {
-            "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-            "line": 128,
-            "text": "shouldCancel: () => saveGeneration !== generation,"
-          },
-          {
-            "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-            "line": 131,
-            "text": "if (saveGeneration !== generation || !active) {"
-          },
-          {
-            "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-            "line": 146,
-            "text": "if (!autoResult?.ok || saveGeneration !== generation) {"
-          },
-          {
-            "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-            "line": 157,
-            "text": "const openGeneration = ++generation;"
           },
           {
             "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
             "line": 163,
-            "text": "if (openGeneration !== generation) return { ok: false, reason: \"cancelled\" };"
+            "text": "shouldCancel: () => saveGeneration !== generation,"
           },
           {
             "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-            "line": 170,
-            "text": "if (openGeneration !== generation) return { ok: false, reason: \"cancelled\" };"
+            "line": 166,
+            "text": "if (saveGeneration !== generation || !active) {"
           },
           {
             "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-            "line": 175,
-            "text": "if (openGeneration !== generation) return { ok: false, reason: \"cancelled\" };"
-          },
-          {
-            "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-            "line": 179,
-            "text": "if (openGeneration !== generation) {"
+            "line": 181,
+            "text": "if (!autoResult?.ok || saveGeneration !== generation) {"
           },
           {
             "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
             "line": 192,
+            "text": "const openGeneration = ++generation;"
+          },
+          {
+            "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+            "line": 198,
+            "text": "if (openGeneration !== generation) return { ok: false, reason: \"cancelled\" };"
+          },
+          {
+            "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+            "line": 205,
+            "text": "if (openGeneration !== generation) return { ok: false, reason: \"cancelled\" };"
+          },
+          {
+            "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+            "line": 210,
+            "text": "if (openGeneration !== generation) return { ok: false, reason: \"cancelled\" };"
+          },
+          {
+            "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+            "line": 214,
+            "text": "if (openGeneration !== generation) {"
+          },
+          {
+            "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+            "line": 227,
             "text": "if (!result?.ok || openGeneration !== generation) {"
           },
           {
             "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-            "line": 215,
+            "line": 250,
             "text": "onCancel: () => close(\"cancel\"),"
           },
           {
             "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-            "line": 248,
+            "line": 283,
             "text": "generation,"
           },
           {
             "path": "addons/library-addon/src/ui/entryEditor/editorRenderer.js",
-            "line": 105,
+            "line": 108,
             "text": "<button type=\"button\" data-editor-action=\"cancel\">Cancel</button>"
           },
           {
@@ -4377,62 +4424,62 @@
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 37,
+            "line": 38,
             "text": "let generation = 0;"
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 47,
+            "line": 48,
             "text": "manualCheckController = new AbortController();"
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 88,
+            "line": 100,
             "text": "cancelText = \"Cancel\","
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 120,
+            "line": 132,
             "text": "generation += 1;"
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 165,
+            "line": 179,
             "text": "const openGeneration = ++generation;"
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 176,
+            "line": 190,
             "text": "if (openGeneration !== generation) {"
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 199,
+            "line": 213,
             "text": "if (openGeneration !== generation) return;"
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 212,
+            "line": 226,
             "text": "if (openGeneration !== generation) return;"
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 225,
+            "line": 240,
             "text": "const closeGeneration = ++generation;"
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 233,
+            "line": 248,
             "text": "// that belongs to that newer generation."
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 234,
+            "line": 249,
             "text": "if (generation !== closeGeneration && getActiveRoot()) {"
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 245,
+            "line": 260,
             "text": "generation,"
           },
           {
@@ -4479,6 +4526,131 @@
             "path": "addons/library-addon/src/ui/threadTitle/threadTitleController.js",
             "line": 24,
             "text": "generation += 1;"
+          },
+          {
+            "path": "addons/library-addon/src/ui/updateInbox/updateInboxBindings.js",
+            "line": 2,
+            "text": "const controller = new AbortController();"
+          },
+          {
+            "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+            "line": 22,
+            "text": "let generation = 0;"
+          },
+          {
+            "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+            "line": 26,
+            "text": "function isCurrent(token) {"
+          },
+          {
+            "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+            "line": 27,
+            "text": "return token === generation && Boolean(active);"
+          },
+          {
+            "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+            "line": 31,
+            "text": "generation += 1;"
+          },
+          {
+            "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+            "line": 37,
+            "text": "async function render(token = generation) {"
+          },
+          {
+            "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+            "line": 38,
+            "text": "if (!isCurrent(token)) return { ok: false, reason: \"cancelled\" };"
+          },
+          {
+            "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+            "line": 44,
+            "text": "if (!result?.ok || !isCurrent(token)) {"
+          },
+          {
+            "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+            "line": 75,
+            "text": "return isCurrent(token) ? entries : [];"
+          },
+          {
+            "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+            "line": 80,
+            "text": "const token = generation;"
+          },
+          {
+            "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+            "line": 96,
+            "text": "if (!isCurrent(token)) return { ok: false, reason: \"cancelled\" };"
+          },
+          {
+            "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+            "line": 104,
+            "text": "if (!isCurrent(token)) return { ok: false, reason: \"cancelled\" };"
+          },
+          {
+            "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+            "line": 119,
+            "text": "const token = generation;"
+          },
+          {
+            "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+            "line": 125,
+            "text": "shouldCancel: () => !isCurrent(token),"
+          },
+          {
+            "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+            "line": 127,
+            "text": "if (!isCurrent(token)) return { ok: false, reason: \"cancelled\" };"
+          },
+          {
+            "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+            "line": 146,
+            "text": "while (hasNext && ids.length < ACKNOWLEDGE_ALL_LIMIT && isCurrent(token)) {"
+          },
+          {
+            "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+            "line": 161,
+            "text": "const token = generation;"
+          },
+          {
+            "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+            "line": 166,
+            "text": "if (!isCurrent(token)) return { ok: false, reason: \"cancelled\" };"
+          },
+          {
+            "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+            "line": 175,
+            "text": "shouldCancel: () => !isCurrent(token),"
+          },
+          {
+            "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+            "line": 177,
+            "text": "if (!isCurrent(token)) return { ok: false, reason: \"cancelled\" };"
+          },
+          {
+            "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+            "line": 193,
+            "text": "const token = generation;"
+          },
+          {
+            "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+            "line": 218,
+            "text": "const token = ++generation;"
+          },
+          {
+            "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+            "line": 233,
+            "text": "if (!isCurrent(token)) {"
+          },
+          {
+            "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+            "line": 245,
+            "text": "if (!result?.ok || !isCurrent(token)) {"
+          },
+          {
+            "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+            "line": 290,
+            "text": "generation,"
           }
         ],
         "rawActionCount": 47
@@ -7499,167 +7671,177 @@
         },
         {
           "path": "addons/masked-direct-addon/src/app/context.js",
-          "line": 23,
+          "line": 24,
+          "text": "(hostname === \"www.google.com\" || hostname === \"www.recaptcha.net\") &&"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/app/context.js",
+          "line": 25,
+          "text": "pathname.startsWith(\"/recaptcha/\")"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/app/context.js",
+          "line": 34,
           "text": "if (isSupportedExternalHost(hostname)) {"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 36,
+          "line": 37,
           "text": "return normalizeDirectDownloadHost(location.hostname);"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 46,
+          "line": 47,
           "text": "const parsed = new URL(location.href);"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 48,
+          "line": 49,
           "text": "parsed.searchParams.get(AUTOMATION_MARKER_KEY) || \"\","
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 51,
+          "line": 52,
           "text": "parsed.searchParams.get(originTabQueryKey) || \"\","
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 54,
+          "line": 55,
           "text": "parsed.searchParams.get(DIRECT_DOWNLOAD_ROUTE_REQUEST_ID_KEY) || \"\","
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 57,
+          "line": 58,
           "text": "parsed.searchParams.get(DIRECT_DOWNLOAD_ROUTE_TS_KEY) || 0,"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 136,
+          "line": 138,
           "text": "`[${addonId}] Download hooks blocked by automation gate. host=${host} href=${location.href}`,"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 140,
+          "line": 142,
           "text": "href: location.href,"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 198,
+          "line": 200,
           "text": "return host === \"datanodes.to\" && location.pathname.startsWith(\"/download\");"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 205,
+          "line": 207,
           "text": "/^\\/(?:[a-z]{2}(?:-[a-z]{2})?\\/)?file-/i.test(location.pathname)) ||"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 207,
+          "line": 209,
           "text": "((location.hostname === \"drive.usercontent.google.com\" &&"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 208,
+          "line": 210,
           "text": "location.pathname.startsWith(\"/download\")) ||"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 209,
+          "line": 211,
           "text": "(location.hostname === \"drive.google.com\" &&"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 210,
+          "line": 212,
           "text": "(location.pathname.startsWith(\"/file/d/\") ||"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 211,
+          "line": 213,
           "text": "location.pathname === \"/open\" ||"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 212,
+          "line": 214,
           "text": "location.pathname === \"/uc\"))))"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 219,
+          "line": 221,
           "text": "sourceIdentifier: location.pathname.replace(/\\/+$/, \"\"),"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 234,
+          "line": 236,
           "text": "const parsed = new URL(location.href);"
-        },
-        {
-          "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 235,
-          "text": "const pathMatch = parsed.pathname.match(/^\\/file\\/d\\/([^/]+)/);"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
           "line": 237,
+          "text": "const pathMatch = parsed.pathname.match(/^\\/file\\/d\\/([^/]+)/);"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
+          "line": 239,
           "text": "pathMatch?.[1] || parsed.searchParams.get(\"id\") || \"\","
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 317,
+          "line": 319,
           "text": "const parsed = new URL(location.href);"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 318,
+          "line": 320,
           "text": "if (!parsed.searchParams.get(AUTOMATION_MARKER_KEY)) {"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 319,
+          "line": 321,
           "text": "parsed.searchParams.set(AUTOMATION_MARKER_KEY, \"1\");"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 321,
+          "line": 323,
           "text": "if (trigger.ownerTabId && !parsed.searchParams.get(originTabQueryKey)) {"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 322,
+          "line": 324,
           "text": "parsed.searchParams.set(originTabQueryKey, trigger.ownerTabId);"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 326,
+          "line": 328,
           "text": "!parsed.searchParams.get(DIRECT_DOWNLOAD_ROUTE_REQUEST_ID_KEY)"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 328,
+          "line": 330,
           "text": "parsed.searchParams.set("
-        },
-        {
-          "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 335,
-          "text": "!parsed.searchParams.get(DIRECT_DOWNLOAD_ROUTE_TS_KEY)"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
           "line": 337,
+          "text": "!parsed.searchParams.get(DIRECT_DOWNLOAD_ROUTE_TS_KEY)"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
+          "line": 339,
           "text": "parsed.searchParams.set("
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 354,
+          "line": 356,
           "text": "const host = normalizeDirectDownloadHost(location.hostname);"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 356,
+          "line": 358,
           "text": "(host === \"datanodes.to\" && location.pathname.startsWith(\"/download\")) ||"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 358,
+          "line": 360,
           "text": "/^\\/(?:[a-z]{2}(?:-[a-z]{2})?\\/)?file-/i.test(location.pathname)) ||"
         },
         {
@@ -7754,17 +7936,17 @@
         },
         {
           "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
-          "line": 234,
+          "line": 242,
           "text": "`[${runtime.addonId}] Detected relevant page. Context: ${pageContext}. href=${location.href}`,"
         },
         {
           "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
-          "line": 286,
+          "line": 294,
           "text": "function normalizeDirectDownloadHostForContext(hostname) {"
         },
         {
           "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
-          "line": 287,
+          "line": 295,
           "text": "return normalizeDirectDownloadHost(hostname);"
         },
         {
@@ -7779,38 +7961,28 @@
         },
         {
           "path": "addons/masked-direct-addon/src/domain/directDownload/flowController.js",
-          "line": 40,
+          "line": 55,
           "text": "new URL(normalized).hostname,"
         },
         {
           "path": "addons/masked-direct-addon/src/domain/directDownload/flowController.js",
-          "line": 54,
+          "line": 69,
           "text": "const parsed = new URL(safeUrl);"
         },
         {
           "path": "addons/masked-direct-addon/src/domain/directDownload/flowController.js",
-          "line": 55,
+          "line": 70,
           "text": "if (useRouteMarkers && !parsed.searchParams.get(originTabQueryKey)) {"
         },
         {
           "path": "addons/masked-direct-addon/src/domain/directDownload/flowController.js",
-          "line": 56,
+          "line": 71,
           "text": "parsed.searchParams.set(originTabQueryKey, ownerTabId);"
         },
         {
           "path": "addons/masked-direct-addon/src/domain/directDownload/flowController.js",
-          "line": 60,
+          "line": 75,
           "text": "!parsed.searchParams.get(DIRECT_DOWNLOAD_ROUTE_TS_KEY)"
-        },
-        {
-          "path": "addons/masked-direct-addon/src/domain/directDownload/flowController.js",
-          "line": 62,
-          "text": "parsed.searchParams.set("
-        },
-        {
-          "path": "addons/masked-direct-addon/src/domain/directDownload/flowController.js",
-          "line": 69,
-          "text": "parsed.searchParams.get(DIRECT_DOWNLOAD_ROUTE_REQUEST_ID_KEY) ||"
         },
         {
           "path": "addons/masked-direct-addon/src/domain/directDownload/flowController.js",
@@ -7819,7 +7991,17 @@
         },
         {
           "path": "addons/masked-direct-addon/src/domain/directDownload/flowController.js",
-          "line": 131,
+          "line": 84,
+          "text": "parsed.searchParams.get(DIRECT_DOWNLOAD_ROUTE_REQUEST_ID_KEY) ||"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/domain/directDownload/flowController.js",
+          "line": 92,
+          "text": "parsed.searchParams.set("
+        },
+        {
+          "path": "addons/masked-direct-addon/src/domain/directDownload/flowController.js",
+          "line": 146,
           "text": "window.location.assign(safeUrl);"
         },
         {
@@ -7934,7 +8116,7 @@
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/downloadgg.js",
-          "line": 22,
+          "line": 23,
           "text": "export function isDownloadGgFilePage(url = location.href) {"
         },
         {
@@ -8109,12 +8291,12 @@
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/mixdrop.js",
-          "line": 20,
+          "line": 21,
           "text": "export function isMixdropFilePage(url = location.href) {"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/mixdrop.js",
-          "line": 39,
+          "line": 40,
           "text": "const protocol = new URL(href).protocol;"
         },
         {
@@ -8209,12 +8391,12 @@
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/uploadhaven.js",
-          "line": 15,
+          "line": 16,
           "text": "export function isUploadHavenDownloadPage(url = location.href) {"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/uploadhaven.js",
-          "line": 29,
+          "line": 30,
           "text": "return `f95ue-uploadhaven-download:${location.pathname}`;"
         },
         {
@@ -8404,17 +8586,17 @@
         },
         {
           "path": "addons/library-addon/src/thread/detector.js",
-          "line": 94,
+          "line": 89,
           "text": "return location.hostname.includes(\"f95zone.to\") && location.pathname.startsWith(\"/threads/\");"
         },
         {
           "path": "addons/library-addon/src/thread/detector.js",
-          "line": 100,
+          "line": 95,
           "text": "const threadId = parseThreadIdFromPath(location.pathname);"
         },
         {
           "path": "addons/library-addon/src/thread/detector.js",
-          "line": 120,
+          "line": 115,
           "text": "url: `${location.origin}${location.pathname}`,"
         },
         {
@@ -9044,28 +9226,58 @@
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-          "line": 197,
+          "line": 232,
           "text": "const contentId = String(result.value?.contentId || \"\");"
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-          "line": 198,
+          "line": 233,
           "text": "const root = getRoot(contentId);"
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-          "line": 210,
+          "line": 245,
           "text": "contentId,"
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 181,
+          "line": 195,
           "text": "const contentId = String(result?.value?.contentId || \"\").trim();"
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 182,
+          "line": 196,
           "text": "appContext.dialogRoot = contentId ? document.getElementById(contentId) : null;"
+        },
+        {
+          "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+          "line": 47,
+          "text": "const contentId = String(result.value?.contentId || active.contentId || \"\");"
+        },
+        {
+          "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+          "line": 48,
+          "text": "const root = document.getElementById(contentId);"
+        },
+        {
+          "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+          "line": 50,
+          "text": "active.contentId = contentId;"
+        },
+        {
+          "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+          "line": 229,
+          "text": "contentId: \"\","
+        },
+        {
+          "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+          "line": 249,
+          "text": "active.contentId = String(result.value?.contentId || \"\");"
+        },
+        {
+          "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+          "line": 250,
+          "text": "const root = document.getElementById(active.contentId);"
         },
         {
           "path": "addons/example-addon/src/api/ui/dialog.js",
@@ -9296,7 +9508,7 @@
         },
         {
           "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
-          "line": 260,
+          "line": 268,
           "text": "const accessProbe = await bridge.getAddonAccess();"
         },
         {
@@ -9341,12 +9553,12 @@
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 206,
+          "line": 213,
           "text": "const access = await getAddonAccess(core);"
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 56,
+          "line": 61,
           "text": "return resolveImportThrottleInfo(await api.getCoreThrottleInfo());"
         },
         {
@@ -9532,12 +9744,12 @@
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 24,
+          "line": 25,
           "text": "configureImportProgress(core);"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 181,
+          "line": 188,
           "text": "handleImportProgressDialogClosed(detail);"
         },
         {
@@ -9587,17 +9799,17 @@
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 307,
+          "line": 326,
           "text": "const onProgress = typeof options.onProgress === \"function\" ? options.onProgress : () => {};"
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 325,
+          "line": 344,
           "text": "onProgress,"
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 408,
+          "line": 427,
           "text": "\"progressNote\","
         },
         {
@@ -9901,8 +10113,13 @@
           "text": "\"progressNote\","
         },
         {
+          "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+          "line": 61,
+          "text": "if (active.playingVersion) return { ok: false, reason: \"already_in_progress\" };"
+        },
+        {
           "path": "addons/library-addon/src/ui/entryEditor/editorRenderer.js",
-          "line": 99,
+          "line": 102,
           "text": "${field(\"Progress note\", `<textarea name=\"progressNote\" maxlength=\"10000\" rows=\"4\">${escapeHtml(draft.progressNote)}</textarea>`, true)}"
         },
         {
@@ -10741,62 +10958,62 @@
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 57,
+          "line": 64,
           "text": "function isCurrent(context) {"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 60,
+          "line": 67,
           "text": "typeof context.isCurrent !== \"function\" ||"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 61,
+          "line": 68,
           "text": "context.isCurrent()"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 77,
+          "line": 84,
           "text": "if (!isCurrent(context)) {"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 86,
+          "line": 93,
           "text": "if (!isCurrent(context)) {"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 92,
+          "line": 99,
           "text": "if (!isCurrent(context)) {"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 97,
+          "line": 104,
           "text": "if (!isCurrent(context)) {"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 108,
+          "line": 115,
           "text": "return context.isCurrent()"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 114,
+          "line": 121,
           "text": "return context.isCurrent()"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 120,
+          "line": 127,
           "text": "return context.isCurrent()"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 188,
+          "line": 195,
           "text": "} else if (command === \"teardown\") {"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 189,
+          "line": 196,
           "text": "void lifecycle.teardown(detail);"
         },
         {
@@ -11011,12 +11228,12 @@
         },
         {
           "path": "addons/library-addon/src/ui/assets/manager.html",
-          "line": 81,
+          "line": 84,
           "text": "<button type=\"button\" data-action=\"cancel-manual-check\" data-role=\"cancelManualCheck\" hidden>"
         },
         {
           "path": "addons/library-addon/src/ui/assets/manager.html",
-          "line": 82,
+          "line": 85,
           "text": "Cancel check"
         },
         {
@@ -11111,7 +11328,7 @@
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorBindings.js",
-          "line": 48,
+          "line": 52,
           "text": "if (!event.target?.closest?.('[data-editor-action=\"cancel\"]')) return;"
         },
         {
@@ -11131,92 +11348,112 @@
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-          "line": 61,
+          "line": 63,
           "text": "const actionGeneration = generation;"
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-          "line": 68,
+          "line": 73,
           "text": "shouldCancel: () => actionGeneration !== generation,"
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-          "line": 71,
+          "line": 76,
+          "text": "if (actionGeneration !== generation || !active || active.threadId !== threadId) {"
+        },
+        {
+          "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+          "line": 84,
+          "text": "if (actionGeneration !== generation || !active || active.threadId !== threadId) {"
+        },
+        {
+          "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+          "line": 100,
           "text": "if (actionGeneration !== generation || !active) {"
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-          "line": 81,
-          "text": "if (actionGeneration !== generation || !active) {"
+          "line": 113,
+          "text": "const actionGeneration = generation;"
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-          "line": 104,
+          "line": 117,
+          "text": "if (actionGeneration !== generation || !active || active.threadId !== threadId) {"
+        },
+        {
+          "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+          "line": 125,
+          "text": "if (actionGeneration !== generation || !active || active.threadId !== threadId) {"
+        },
+        {
+          "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+          "line": 139,
           "text": "const saveGeneration = generation;"
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-          "line": 114,
+          "line": 149,
           "text": "if (saveGeneration !== generation || !active) {"
-        },
-        {
-          "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-          "line": 128,
-          "text": "shouldCancel: () => saveGeneration !== generation,"
-        },
-        {
-          "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-          "line": 131,
-          "text": "if (saveGeneration !== generation || !active) {"
-        },
-        {
-          "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-          "line": 146,
-          "text": "if (!autoResult?.ok || saveGeneration !== generation) {"
-        },
-        {
-          "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-          "line": 157,
-          "text": "const openGeneration = ++generation;"
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
           "line": 163,
-          "text": "if (openGeneration !== generation) return { ok: false, reason: \"cancelled\" };"
+          "text": "shouldCancel: () => saveGeneration !== generation,"
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-          "line": 170,
-          "text": "if (openGeneration !== generation) return { ok: false, reason: \"cancelled\" };"
+          "line": 166,
+          "text": "if (saveGeneration !== generation || !active) {"
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-          "line": 175,
-          "text": "if (openGeneration !== generation) return { ok: false, reason: \"cancelled\" };"
-        },
-        {
-          "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-          "line": 179,
-          "text": "if (openGeneration !== generation) {"
+          "line": 181,
+          "text": "if (!autoResult?.ok || saveGeneration !== generation) {"
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
           "line": 192,
+          "text": "const openGeneration = ++generation;"
+        },
+        {
+          "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+          "line": 198,
+          "text": "if (openGeneration !== generation) return { ok: false, reason: \"cancelled\" };"
+        },
+        {
+          "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+          "line": 205,
+          "text": "if (openGeneration !== generation) return { ok: false, reason: \"cancelled\" };"
+        },
+        {
+          "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+          "line": 210,
+          "text": "if (openGeneration !== generation) return { ok: false, reason: \"cancelled\" };"
+        },
+        {
+          "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+          "line": 214,
+          "text": "if (openGeneration !== generation) {"
+        },
+        {
+          "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+          "line": 227,
           "text": "if (!result?.ok || openGeneration !== generation) {"
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-          "line": 215,
+          "line": 250,
           "text": "onCancel: () => close(\"cancel\"),"
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-          "line": 248,
+          "line": 283,
           "text": "generation,"
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorRenderer.js",
-          "line": 105,
+          "line": 108,
           "text": "<button type=\"button\" data-editor-action=\"cancel\">Cancel</button>"
         },
         {
@@ -11276,62 +11513,62 @@
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 37,
+          "line": 38,
           "text": "let generation = 0;"
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 47,
+          "line": 48,
           "text": "manualCheckController = new AbortController();"
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 88,
+          "line": 100,
           "text": "cancelText = \"Cancel\","
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 120,
+          "line": 132,
           "text": "generation += 1;"
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 165,
+          "line": 179,
           "text": "const openGeneration = ++generation;"
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 176,
+          "line": 190,
           "text": "if (openGeneration !== generation) {"
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 199,
+          "line": 213,
           "text": "if (openGeneration !== generation) return;"
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 212,
+          "line": 226,
           "text": "if (openGeneration !== generation) return;"
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 225,
+          "line": 240,
           "text": "const closeGeneration = ++generation;"
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 233,
+          "line": 248,
           "text": "// that belongs to that newer generation."
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 234,
+          "line": 249,
           "text": "if (generation !== closeGeneration && getActiveRoot()) {"
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 245,
+          "line": 260,
           "text": "generation,"
         },
         {
@@ -11373,6 +11610,131 @@
           "path": "addons/library-addon/src/ui/threadTitle/threadTitleController.js",
           "line": 24,
           "text": "generation += 1;"
+        },
+        {
+          "path": "addons/library-addon/src/ui/updateInbox/updateInboxBindings.js",
+          "line": 2,
+          "text": "const controller = new AbortController();"
+        },
+        {
+          "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+          "line": 22,
+          "text": "let generation = 0;"
+        },
+        {
+          "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+          "line": 26,
+          "text": "function isCurrent(token) {"
+        },
+        {
+          "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+          "line": 27,
+          "text": "return token === generation && Boolean(active);"
+        },
+        {
+          "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+          "line": 31,
+          "text": "generation += 1;"
+        },
+        {
+          "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+          "line": 37,
+          "text": "async function render(token = generation) {"
+        },
+        {
+          "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+          "line": 38,
+          "text": "if (!isCurrent(token)) return { ok: false, reason: \"cancelled\" };"
+        },
+        {
+          "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+          "line": 44,
+          "text": "if (!result?.ok || !isCurrent(token)) {"
+        },
+        {
+          "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+          "line": 75,
+          "text": "return isCurrent(token) ? entries : [];"
+        },
+        {
+          "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+          "line": 80,
+          "text": "const token = generation;"
+        },
+        {
+          "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+          "line": 96,
+          "text": "if (!isCurrent(token)) return { ok: false, reason: \"cancelled\" };"
+        },
+        {
+          "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+          "line": 104,
+          "text": "if (!isCurrent(token)) return { ok: false, reason: \"cancelled\" };"
+        },
+        {
+          "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+          "line": 119,
+          "text": "const token = generation;"
+        },
+        {
+          "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+          "line": 125,
+          "text": "shouldCancel: () => !isCurrent(token),"
+        },
+        {
+          "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+          "line": 127,
+          "text": "if (!isCurrent(token)) return { ok: false, reason: \"cancelled\" };"
+        },
+        {
+          "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+          "line": 146,
+          "text": "while (hasNext && ids.length < ACKNOWLEDGE_ALL_LIMIT && isCurrent(token)) {"
+        },
+        {
+          "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+          "line": 161,
+          "text": "const token = generation;"
+        },
+        {
+          "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+          "line": 166,
+          "text": "if (!isCurrent(token)) return { ok: false, reason: \"cancelled\" };"
+        },
+        {
+          "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+          "line": 175,
+          "text": "shouldCancel: () => !isCurrent(token),"
+        },
+        {
+          "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+          "line": 177,
+          "text": "if (!isCurrent(token)) return { ok: false, reason: \"cancelled\" };"
+        },
+        {
+          "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+          "line": 193,
+          "text": "const token = generation;"
+        },
+        {
+          "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+          "line": 218,
+          "text": "const token = ++generation;"
+        },
+        {
+          "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+          "line": 233,
+          "text": "if (!isCurrent(token)) {"
+        },
+        {
+          "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+          "line": 245,
+          "text": "if (!result?.ok || !isCurrent(token)) {"
+        },
+        {
+          "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+          "line": 290,
+          "text": "generation,"
         },
         {
           "path": "addons/latest-filters-addon/src/app/commands.js",

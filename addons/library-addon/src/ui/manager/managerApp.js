@@ -14,6 +14,7 @@ import { showToast } from "../utils/showToast.js";
 import { createManagerHandlers } from "./createHandlers.js";
 import { createEntryEditorController } from "../entryEditor/editorController.js";
 import { createAutoUpdateController } from "../autoUpdate/autoUpdateController.js";
+import { createUpdateInboxController } from "../updateInbox/updateInboxController.js";
 import { reloadRows } from "./reloadRows.js";
 import { createInitialState, createAppContext } from "./state.js";
 
@@ -71,6 +72,17 @@ export function createLibraryManagerApp({
       if (typeof onMutated === "function") onMutated();
     },
   });
+  const updateInbox = createUpdateInboxController({
+    core: bridge,
+    addonId,
+    library,
+    openEntryEditor: (threadId) => entryEditor.open(threadId),
+    onMutated: async () => {
+      const root = getActiveRoot();
+      if (root) await reloadRows(root, state, api, library, ROWS_STATUS_ID);
+      if (typeof onMutated === "function") onMutated();
+    },
+  });
 
   function getLiveThreadSnapshot() {
     if (typeof getCurrentThreadSnapshot !== "function") return null;
@@ -121,6 +133,7 @@ export function createLibraryManagerApp({
     if (reason !== "addon-close") cancelManualCheck();
     await entryEditor.close(reason);
     await autoUpdate.close(reason);
+    await updateInbox.close(reason);
     unbindEvents();
     unbindEvents = () => {};
     if (!appContext.dialogOpen && !appContext.dialogRoot) {
@@ -151,6 +164,7 @@ export function createLibraryManagerApp({
     askConfirmFn: askConfirm,
     openEntryEditorFn: (threadId) => entryEditor.open(threadId),
     openAutoUpdateFn: () => autoUpdate.open(),
+    openUpdatesFn: () => updateInbox.open(),
     cancelManualCheckFn: cancelManualCheck,
     createManualCheckControllerFn: createManualCheckController,
     runAutoUpdateFn: (options) => autoUpdateScheduler.run(options),
@@ -216,6 +230,7 @@ export function createLibraryManagerApp({
   async function handleDialogClosed(detail = {}) {
     if (await entryEditor.handleDialogClosed(detail)) return;
     if (await autoUpdate.handleDialogClosed(detail)) return;
+    if (await updateInbox.handleDialogClosed(detail)) return;
     if (String(detail.dialogId || "") !== dialogId) return;
 
     // A delayed close notification for the previous surface must not tear
@@ -244,6 +259,7 @@ export function createLibraryManagerApp({
       dialogOpen: appContext.dialogOpen,
       generation,
       editor: entryEditor.getSnapshot(),
+      updateInbox: updateInbox.getSnapshot(),
     }),
   };
 }

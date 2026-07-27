@@ -40,6 +40,7 @@ export function createLibraryService(bridge, storage, dependencies = {}) {
   const activity = createActivityRepository(api);
   const keysetCoverage = new Map();
   const entryCache = new Map();
+  const acknowledgementChains = new Map();
   const entryCacheTtlMs = Math.max(
     1000,
     Number(dependencies.entryCacheTtlMs) || 15000,
@@ -51,6 +52,10 @@ export function createLibraryService(bridge, storage, dependencies = {}) {
   const requestThreadHtml =
     dependencies.requestThreadHtml || createThreadHtmlRequest(dependencies.fetch);
   const autoUpdate = createAutoUpdateRepository(api);
+  const notifyFirstChanged =
+    typeof dependencies.notifyFirstChanged === "function"
+      ? dependencies.notifyFirstChanged
+      : () => {};
 
   async function getImportThrottleInfo() {
     return resolveImportThrottleInfo(await api.getCoreThrottleInfo());
@@ -93,9 +98,23 @@ export function createLibraryService(bridge, storage, dependencies = {}) {
     return entry ? rememberEntry(entry) : null;
   }
 
+  async function getEntryFresh(threadId) {
+    const id = String(threadId || "").trim();
+    if (!id) return null;
+    const entry = await api.getEntry(id);
+    if (!entry) {
+      invalidateEntry(id);
+      return null;
+    }
+    return rememberEntry(entry);
+  }
+
   async function putEntry(record, options = {}) {
     const result = await api.putEntry(record, options);
-    if (result?.ok) rememberEntry(result.value || record);
+    // IndexedDB put resolves to the primary key, not the stored object.
+    // Cache the canonical value we submitted so an immediate read cannot
+    // return the pre-commit record.
+    if (result?.ok) rememberEntry(record);
     return result;
   }
 
@@ -453,6 +472,14 @@ export function createLibraryService(bridge, storage, dependencies = {}) {
     }
     const recordResult = await putEntry(next);
     if (!recordResult?.ok && event && !priorEvent) await updates.remove(event.id);
+    if (
+      recordResult?.ok &&
+      diff.versionChanged &&
+      existing.updateState !== "changed" &&
+      !shouldCancel()
+    ) {
+      notifyFirstChanged();
+    }
     return recordResult?.ok
       ? { ...recordResult, value: next, event: priorEvent || event }
       : recordResult;
@@ -462,20 +489,123 @@ export function createLibraryService(bridge, storage, dependencies = {}) {
     return updates.listByThread(String(threadId || "").trim(), limit);
   }
 
-  async function acknowledgeCurrentUpdate(threadId) {
+  async function acknowledgeCurrentUpdate(threadId, options = {}) {
     const id = String(threadId || "").trim();
     if (!id) return { ok: false, reason: "thread_id_required" };
-    const existing = await getEntry(id);
-    if (!existing) return { ok: false, reason: "entry_not_found" };
-    if (existing.updateState !== "changed") {
-      return { ok: true, value: existing, unchanged: true };
+    const shouldCancel =
+      typeof options.shouldCancel === "function" ? options.shouldCancel : () => false;
+    const previous = acknowledgementChains.get(id) || Promise.resolve();
+    const operation = previous.catch(() => undefined).then(async () => {
+      if (shouldCancel()) return { ok: false, reason: "cancelled" };
+      const existing = await getEntryFresh(id);
+      if (shouldCancel()) return { ok: false, reason: "cancelled" };
+      if (!existing) return { ok: false, reason: "entry_not_found" };
+      if (existing.updateState !== "changed") {
+        return { ok: true, value: existing, unchanged: true };
+      }
+      const next = {
+        ...existing,
+        updateState: "acknowledged",
+        recordModifiedAt: Number(options.now || Date.now()),
+      };
+      if (shouldCancel()) return { ok: false, reason: "cancelled" };
+      const result = await putEntry(next);
+      return result?.ok ? { ...result, value: next, updated: true } : result;
+    });
+    acknowledgementChains.set(id, operation);
+    try {
+      return await operation;
+    } finally {
+      if (acknowledgementChains.get(id) === operation) {
+        acknowledgementChains.delete(id);
+      }
     }
-    const next = {
-      ...existing,
-      updateState: "acknowledged",
-      recordModifiedAt: Date.now(),
+  }
+
+  async function countChangedEntries() {
+    const result = await api.countEntries("updateState", {
+      kind: "only",
+      value: "changed",
+    });
+    return result?.ok
+      ? { ok: true, count: Math.max(0, Number(result.value || 0)) }
+      : { ok: false, reason: result?.reason || "count_failed" };
+  }
+
+  async function queryChangedEntriesPage(options = {}) {
+    const pageSize = Math.min(100, Math.max(1, Number(options.limit || 25)));
+    const scanLimit = Math.min(
+      5000,
+      Math.max(pageSize, Number(options.scanLimit || pageSize * 20)),
+    );
+    const batchSize = Math.min(250, Math.max(50, pageSize * 3));
+    const matches = [];
+    let cursor = options.cursor || null;
+    let lastCursor = cursor;
+    let scanned = 0;
+    let exhausted = false;
+
+    while (matches.length <= pageSize && scanned < scanLimit && !exhausted) {
+      const result = await api.queryEntriesPage({
+        index: "recordModifiedAt",
+        direction: "prev",
+        limit: Math.min(batchSize, scanLimit - scanned),
+        cursor,
+      });
+      if (!result?.ok) {
+        return { ok: false, reason: result?.reason || "query_failed" };
+      }
+      const page = result.value || {};
+      const items = Array.isArray(page.items) ? page.items : [];
+      for (const item of items) {
+        scanned += 1;
+        lastCursor = item?.cursor || lastCursor;
+        const record = normalizeRecord(item?.value);
+        if (record.updateState === "changed") {
+          matches.push({ record, cursor: item?.cursor || lastCursor });
+          if (matches.length > pageSize) break;
+        }
+      }
+      exhausted = !page.hasMore || items.length === 0;
+      cursor = page.nextCursor || lastCursor;
+    }
+
+    const hasExtraMatch = matches.length > pageSize;
+    const scanTruncated = !hasExtraMatch && !exhausted && scanned >= scanLimit;
+    return {
+      ok: true,
+      rows: matches.slice(0, pageSize).map(({ record }) => record),
+      nextCursor: hasExtraMatch
+        ? matches[pageSize - 1]?.cursor || null
+        : scanTruncated
+          ? lastCursor || null
+          : null,
+      hasNext: hasExtraMatch || scanTruncated,
+      scanned,
+      truncated: scanTruncated,
     };
-    return putEntry(next);
+  }
+
+  async function acknowledgeChangedEntries(threadIds = [], options = {}) {
+    const ids = [...new Set((Array.isArray(threadIds) ? threadIds : [])
+      .map((id) => String(id || "").trim())
+      .filter(Boolean))]
+      .slice(0, Math.min(500, Math.max(1, Number(options.limit || 200))));
+    const summary = { ok: true, updated: 0, skipped: 0, failed: 0, cancelled: false };
+    for (const id of ids) {
+      if (options.shouldCancel?.()) {
+        summary.cancelled = true;
+        break;
+      }
+      const result = await acknowledgeCurrentUpdate(id, options);
+      if (result?.updated) summary.updated += 1;
+      else if (result?.ok || result?.reason === "entry_not_found") summary.skipped += 1;
+      else if (result?.reason === "cancelled") {
+        summary.cancelled = true;
+        break;
+      } else summary.failed += 1;
+    }
+    return { ...summary, ok: !summary.cancelled && summary.failed === 0 };
   }
 
   async function previewManualUpdateCheck(threadIds, options = {}) {
@@ -907,6 +1037,7 @@ export function createLibraryService(bridge, storage, dependencies = {}) {
 
   return {
     getEntry,
+    getEntryFresh,
     saveEntry,
     removeEntry,
     isSaved,
@@ -921,6 +1052,9 @@ export function createLibraryService(bridge, storage, dependencies = {}) {
     observeThreadFacts,
     listUpdateEvents,
     acknowledgeCurrentUpdate,
+    countChangedEntries,
+    queryChangedEntriesPage,
+    acknowledgeChangedEntries,
     previewManualUpdateCheck,
     commitManualUpdateCheck,
     setAutoUpdateEnabled,
