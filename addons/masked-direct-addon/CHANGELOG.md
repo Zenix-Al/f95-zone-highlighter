@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.1.1 - vik1ngfile bugfix
+
+- Fixed vik1ngfile direct-download flow.
+
 ## v1.1.0 - Expand and stabilize direct-download support
 
 - Add DelaFil, download.gg, Google Drive, KrakenFiles, MixDrop, UploadHaven,

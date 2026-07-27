@@ -124,7 +124,7 @@
     "id": "masked-direct-addon",
     "name": "F95UE Masked + Direct Download Add-on",
     "description": "Combines masked-link skipper and direct-download flows into one trusted add-on.",
-    "version": "1.2.0",
+    "version": "1.1.1",
     "pageScopes": [
       "f95zone"
     ],

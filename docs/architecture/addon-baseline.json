@@ -126,7 +126,7 @@
         "id": "library-addon",
         "name": "F95UE Library Add-on",
         "description": "Quick-add threads to a personal library and manage entries with a dedicated add-on UI.",
-        "version": "1.1.0",
+        "version": "1.2.0",
         "author": "X Death",
         "entry": "addons/library-addon/src/main.js",
         "outfile": "addons/library-addon/dist/library-addon.user.js",
@@ -251,7 +251,7 @@
     ]
   },
   "trustedCatalog": {
-    "source": "src/generated/trusted-addon-catalog.c8a49518858cb2e5.json",
+    "source": "src/generated/trusted-addon-catalog.1b6d3cde6259bc46.json",
     "projection": [
       {
         "id": "example-addon",
@@ -302,7 +302,7 @@
         "id": "library-addon",
         "name": "F95UE Library Add-on",
         "description": "Quick-add threads to a personal library and manage entries with a dedicated add-on UI.",
-        "version": "1.1.0",
+        "version": "1.2.0",
         "pageScopes": [
           "f95zone"
         ],
@@ -2199,8 +2199,8 @@
       "id": "library-addon",
       "source": {
         "fileCount": 92,
-        "authoredBytes": 308478,
-        "physicalLines": 9781,
+        "authoredBytes": 308477,
+        "physicalLines": 9780,
         "nonblankLines": 8828,
         "files": [
           {
@@ -2511,8 +2511,8 @@
           },
           {
             "path": "addons/library-addon/src/ui/assets/manager.html",
-            "bytes": 5817,
-            "physicalLines": 144,
+            "bytes": 5816,
+            "physicalLines": 143,
             "nonblankLines": 140
           },
           {
@@ -2760,8 +2760,8 @@
       "builds": {
         "regular": {
           "mode": "regular",
-          "bytes": 319005,
-          "gzipBytes": 65901,
+          "bytes": 319003,
+          "gzipBytes": 65904,
           "contributors": [
             {
               "path": "addons/library-addon/src/library/service.js",
@@ -2825,7 +2825,7 @@
             },
             {
               "path": "addons/library-addon/src/ui/assets/manager.html",
-              "bytes": 5990
+              "bytes": 5988
             },
             {
               "path": "addons/library-addon/src/ui/entryEditor/editorRenderer.js",
@@ -2847,7 +2847,7 @@
         },
         "release": {
           "mode": "release",
-          "bytes": 278932,
+          "bytes": 278930,
           "gzipBytes": 57080,
           "contributors": [
             {
@@ -2888,7 +2888,7 @@
             },
             {
               "path": "addons/library-addon/src/ui/assets/manager.html",
-              "bytes": 5841
+              "bytes": 5840
             },
             {
               "path": "addons/library-addon/src/app/dockController.js",
@@ -2938,9 +2938,9 @@
       "id": "masked-direct-addon",
       "source": {
         "fileCount": 50,
-        "authoredBytes": 161597,
-        "physicalLines": 5517,
-        "nonblankLines": 4972,
+        "authoredBytes": 162345,
+        "physicalLines": 5547,
+        "nonblankLines": 5001,
         "files": [
           {
             "path": "addons/masked-direct-addon/src/api/observer.js",
@@ -2968,9 +2968,9 @@
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "bytes": 10674,
-            "physicalLines": 366,
-            "nonblankLines": 338
+            "bytes": 11237,
+            "physicalLines": 379,
+            "nonblankLines": 350
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
@@ -2986,7 +2986,7 @@
           },
           {
             "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
-            "bytes": 9811,
+            "bytes": 9810,
             "physicalLines": 296,
             "nonblankLines": 268
           },
@@ -3052,9 +3052,9 @@
           },
           {
             "path": "addons/masked-direct-addon/src/domain/directDownload/flowController.js",
-            "bytes": 8897,
-            "physicalLines": 304,
-            "nonblankLines": 281
+            "bytes": 8933,
+            "physicalLines": 306,
+            "nonblankLines": 283
           },
           {
             "path": "addons/masked-direct-addon/src/domain/directDownload/managedClose.js",
@@ -3064,9 +3064,9 @@
           },
           {
             "path": "addons/masked-direct-addon/src/domain/directDownload/processingTrigger.js",
-            "bytes": 12665,
-            "physicalLines": 438,
-            "nonblankLines": 405
+            "bytes": 12815,
+            "physicalLines": 453,
+            "nonblankLines": 420
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/buzzheavier.js",
@@ -3247,16 +3247,16 @@
       "builds": {
         "regular": {
           "mode": "regular",
-          "bytes": 161479,
-          "gzipBytes": 33419,
+          "bytes": 162198,
+          "gzipBytes": 33499,
           "contributors": [
             {
               "path": "addons/masked-direct-addon/src/domain/directDownload/processingTrigger.js",
-              "bytes": 12216
+              "bytes": 12363
             },
             {
               "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-              "bytes": 9998
+              "bytes": 10535
             },
             {
               "path": "addons/masked-direct-addon/src/domain/directDownload/attention.js",
@@ -3264,7 +3264,7 @@
             },
             {
               "path": "addons/masked-direct-addon/src/domain/directDownload/flowController.js",
-              "bytes": 8599
+              "bytes": 8634
             },
             {
               "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
@@ -3334,16 +3334,16 @@
         },
         "release": {
           "mode": "release",
-          "bytes": 136290,
-          "gzipBytes": 28395,
+          "bytes": 136884,
+          "gzipBytes": 28455,
           "contributors": [
             {
               "path": "addons/masked-direct-addon/src/domain/directDownload/processingTrigger.js",
-              "bytes": 9184
+              "bytes": 9238
             },
             {
               "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-              "bytes": 7101
+              "bytes": 7553
             },
             {
               "path": "addons/masked-direct-addon/src/domain/directDownload/attention.js",
@@ -3355,7 +3355,7 @@
             },
             {
               "path": "addons/masked-direct-addon/src/domain/directDownload/flowController.js",
-              "bytes": 5832
+              "bytes": 5850
             },
             {
               "path": "addons/masked-direct-addon/src/app/contexts/threadPageController.js",

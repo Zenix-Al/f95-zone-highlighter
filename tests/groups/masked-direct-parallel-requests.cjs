@@ -592,6 +592,73 @@ module.exports = function registerMaskedDirectParallelRequests(context) {
     }
   });
 
+  runTest("Vik1ngFile survives its cross-origin marker-stripping redirect by exact source", async () => {
+    const sourceUrl = "https://vikingfile.com/f/misUxOX3He";
+    const sandbox = createDomSandbox(
+      "https://vik1ngfile.site/f/misUxOX3He",
+    );
+    const previousSessionStorage = global.sessionStorage;
+    try {
+      global.sessionStorage = sandbox.window.sessionStorage;
+      const { createDirectDownloadFlowController } = loadModule(
+        "addons/masked-direct-addon/src/domain/directDownload/flowController.js",
+      );
+      const { createDownloadPageController } = loadModule(
+        "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
+      );
+      const gm = createGM();
+      let openedUrl = "";
+      const flow = createDirectDownloadFlowController({
+        addonId: "masked-direct-addon",
+        bridge: { dispatchCoreCommand() {} },
+        GMApi: gm,
+        openInTab(url) {
+          openedUrl = url;
+          return { close() {} };
+        },
+        normalizeUrl: (url) => new URL(url).href,
+        withAutomationMarker(url) {
+          const parsed = new URL(url);
+          parsed.searchParams.set("f95ue_dd", "1");
+          return parsed.href;
+        },
+        diagnostics: { error() {} },
+        publishDirectDownloadEvent() {},
+        registerManagedTab() {},
+        ownerTabId: "tab-vik1ng",
+        originTabQueryKey: "f95ue_tab",
+        getDownloadHost: () => "",
+        getDownloadPageCloseDelayMs: () => 3500,
+      });
+      await flow.routeToDirectDownload(sourceUrl);
+      assert.strictEqual(openedUrl, sourceUrl);
+
+      let resolvedRequest = null;
+      const controller = createDownloadPageController({
+        addonId: "masked-direct-addon",
+        debugLog() {},
+        GMApi: gm,
+        getIsBlockedByCore: () => false,
+        getIsEnabled: () => true,
+        handlers: {},
+        originTabQueryKey: "f95ue_tab",
+        onManagedRequestResolved(request) {
+          resolvedRequest = request;
+        },
+      });
+      assert.strictEqual(
+        await controller.shouldRunHostAutomation("vik1ngfile.site"),
+        true,
+      );
+      assert.ok(resolvedRequest?.requestId);
+      assert.strictEqual(resolvedRequest.ownerTabId, "tab-vik1ng");
+      assert.strictEqual(sandbox.window.location.search, "");
+    } finally {
+      global.sessionStorage = previousSessionStorage;
+      sandbox.restore();
+    }
+  });
+
   runTest("Google Drive refuses ambiguous same-file markerless recovery", async () => {
     const {
       readProcessingDownloadTriggerBySource,

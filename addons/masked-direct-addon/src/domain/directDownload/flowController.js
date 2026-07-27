@@ -61,7 +61,9 @@ export function createDirectDownloadFlowController({
     const supported = Boolean(automationHost);
     const useRouteMarkers =
       supported &&
-      !["download.gg", "drive.google.com"].includes(automationHost);
+      !["download.gg", "drive.google.com", "vik1ngfile.site"].includes(
+        automationHost,
+      );
     let safeUrl = useRouteMarkers ? withAutomationMarker(normalized) : normalized;
     let requestId = "";
     if (supported && safeUrl) {
