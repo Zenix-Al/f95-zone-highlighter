@@ -27,6 +27,9 @@
     "site-repair-addon": {
       "regular": "504794a9fa8d7cb0a2a80049c787d736b7300a5340c735aa4f56920e1c70bc45",
       "release": "ca5c15ff4b103d81abec821bff5f01f0865cd4e987dbec568eb7fd93477a7534"
+    },
+    "thread-utility-addon": {
+      "release": "2b85e6b4e46840483de567b5c9b336480cc8e96c340a95940e4f7be88d96d253"
     }
   }
 }

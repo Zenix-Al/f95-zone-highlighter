@@ -11,6 +11,8 @@ Welcome to the documentation for the Latest Highlighter userscript. This directo
 
 - [Core Architecture](architecture.md) - High-level overview of how the app boots and runs.
 - [Library Update Inbox](architecture/library-update-inbox.md) - Durable update acknowledgement, bounded inbox queries, and page-session notification behavior.
+- [Thread Utility Baseline](architecture/thread-utility-baseline.md) - Reference quick-search behavior and the canonical opening-post fixture contract.
+- [Thread Utility Golden Contract](architecture/thread-utility-golden-contract.md) - Bounded Example Add-on bootstrap, API, lifecycle, UI ownership, and teardown requirements.
 - [AI Guidelines](agent.md) - Strict rules for AI agents modifying this codebase.
 - **Modules**
   - [Core](core/index.md) - The mini-framework (feature factory, observer, task queue).

@@ -235,6 +235,35 @@
       "capabilities": [
         "feature"
       ]
+    },
+    {
+      "id": "thread-utility-addon",
+      "name": "F95UE Thread Utility Add-on",
+      "description": "Provides a compact thread dashboard and extensible thread utilities.",
+      "version": "0.1.1",
+      "author": "X Death",
+      "entry": "addons/thread-utility-addon/src/main.js",
+      "outfile": "addons/thread-utility-addon/dist/thread-utility-addon.user.js",
+      "matches": [
+        "*://f95zone.to/threads/*"
+      ],
+      "grants": [
+        "none"
+      ],
+      "runAt": "document-idle",
+      "requiresCore": true,
+      "runtimeMode": "core-required",
+      "pageScopes": [
+        "thread"
+      ],
+      "capabilities": [
+        "page",
+        "storage",
+        "toast",
+        "ui.style",
+        "ui.mount",
+        "ui.dialog"
+      ]
     }
   ]
 }

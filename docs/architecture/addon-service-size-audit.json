@@ -12,7 +12,7 @@
     ],
     "generatedMetadata": [
       "src/generated/trusted-addon-aliases.json",
-      "src/generated/trusted-addon-catalog.1b6d3cde6259bc46.json",
+      "src/generated/trusted-addon-catalog.cffd6990b52353a6.json",
       "src/generated/trusted-addon-catalog.meta.json",
       "src/services/addons/trusted-catalog.json"
     ],
@@ -29,19 +29,19 @@
       "uglifiedGzipBytes": 95092
     },
     "addons": {
-      "count": 6,
-      "authoredBytes": 672450,
-      "regularBytes": 736084,
-      "releaseBytes": 530864,
-      "regularGzipBytes": 157914,
-      "releaseGzipBytes": 132216
+      "count": 7,
+      "authoredBytes": 765121,
+      "regularBytes": 844135,
+      "releaseBytes": 612171,
+      "regularGzipBytes": 181878,
+      "releaseGzipBytes": 153248
     },
     "sharedRuntime": {
       "authoredBytes": 15841,
       "helperCount": 7
     },
     "generatedMetadata": {
-      "authoredBytes": 12319,
+      "authoredBytes": 13575,
       "fileCount": 4
     },
     "testsExcludedFromProductionTotals": true,
@@ -216,29 +216,29 @@
       {
         "addonId": "masked-direct-addon",
         "authoredBytes": {
-          "current": 163277,
-          "baseline": 161596,
-          "delta": 1681
+          "current": 163276,
+          "baseline": 162344,
+          "delta": 932
         },
         "regularBytes": {
           "current": 163616,
-          "baseline": 161479,
-          "delta": 2137
+          "baseline": 162198,
+          "delta": 1418
         },
         "releaseBytes": {
           "current": 119133,
-          "baseline": 136290,
-          "delta": -17157
+          "baseline": 136884,
+          "delta": -17751
         },
         "regularGzipBytes": {
-          "current": 33724,
-          "baseline": 33421,
-          "delta": 303
+          "current": 33728,
+          "baseline": 33502,
+          "delta": 226
         },
         "releaseGzipBytes": {
-          "current": 28540,
-          "baseline": 28396,
-          "delta": 144
+          "current": 28542,
+          "baseline": 28456,
+          "delta": 86
         },
         "owningFiles": [
           "addons/masked-direct-addon/src/domain/directDownload/processingTrigger.js",
@@ -282,6 +282,42 @@
           "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
           "addons/site-repair-addon/src/app/settings.js",
           "addons/site-repair-addon/src/app/commands.js"
+        ],
+        "behaviorDelta": "No behavior change is made or inferred by this measurement package; accepted behavior is covered by TEST-ADDONS-01."
+      },
+      {
+        "addonId": "thread-utility-addon",
+        "authoredBytes": {
+          "current": 92672,
+          "baseline": 92672,
+          "delta": 0
+        },
+        "regularBytes": {
+          "current": 108051,
+          "baseline": 107734,
+          "delta": 317
+        },
+        "releaseBytes": {
+          "current": 81307,
+          "baseline": 97188,
+          "delta": -15881
+        },
+        "regularGzipBytes": {
+          "current": 23960,
+          "baseline": 23870,
+          "delta": 90
+        },
+        "releaseGzipBytes": {
+          "current": 21030,
+          "baseline": 21364,
+          "delta": -334
+        },
+        "owningFiles": [
+          "addons/thread-utility-addon/src/app/createThreadUtilityApp.js",
+          "addons/thread-utility-addon/src/ui/palette.js",
+          "addons/thread-utility-addon/src/ui/threadUtility.css",
+          "addons/thread-utility-addon/src/app/uiController.js",
+          "addons/thread-utility-addon/src/domain/content/parser.js"
         ],
         "behaviorDelta": "No behavior change is made or inferred by this measurement package; accepted behavior is covered by TEST-ADDONS-01."
       }
@@ -3624,6 +3660,16 @@
             "addonId": "site-repair-addon",
             "mode": "release",
             "bytes": 2651
+          },
+          {
+            "addonId": "thread-utility-addon",
+            "mode": "regular",
+            "bytes": 3803
+          },
+          {
+            "addonId": "thread-utility-addon",
+            "mode": "release",
+            "bytes": 2667
           }
         ],
         "treeShaking": "bundle contribution is reported per add-on/mode; source bytes are not assumed to be fully emitted"
@@ -3757,13 +3803,14 @@
       {
         "helper": "addons/shared/runtimeKit.js",
         "sourceBytes": 770,
-        "consumerCount": 5,
+        "consumerCount": 6,
         "consumers": [
           "example-addon",
           "halloween-theme-addon",
           "latest-filters-addon",
           "library-addon",
-          "site-repair-addon"
+          "site-repair-addon",
+          "thread-utility-addon"
         ],
         "importers": [
           "addons/example-addon/src/core/adaptor.js",
@@ -3774,7 +3821,8 @@
           "addons/library-addon/src/api/bridge.js",
           "addons/library-addon/src/core/adaptor.js",
           "addons/site-repair-addon/src/api/bridge.js",
-          "addons/site-repair-addon/src/core/adaptor.js"
+          "addons/site-repair-addon/src/core/adaptor.js",
+          "addons/thread-utility-addon/src/core/adaptor.js"
         ],
         "oneConsumer": false,
         "bundledBytes": [
@@ -3827,6 +3875,16 @@
             "addonId": "site-repair-addon",
             "mode": "release",
             "bytes": 424
+          },
+          {
+            "addonId": "thread-utility-addon",
+            "mode": "regular",
+            "bytes": 82
+          },
+          {
+            "addonId": "thread-utility-addon",
+            "mode": "release",
+            "bytes": 69
           }
         ],
         "treeShaking": "bundle contribution is reported per add-on/mode; source bytes are not assumed to be fully emitted"
@@ -3834,20 +3892,22 @@
       {
         "helper": "addons/shared/runtimeLifecycle.js",
         "sourceBytes": 9195,
-        "consumerCount": 5,
+        "consumerCount": 6,
         "consumers": [
           "example-addon",
           "halloween-theme-addon",
           "latest-filters-addon",
           "library-addon",
-          "site-repair-addon"
+          "site-repair-addon",
+          "thread-utility-addon"
         ],
         "importers": [
           "addons/example-addon/src/app/lifecycle.js",
           "addons/halloween-theme-addon/src/app/lifecycle.js",
           "addons/latest-filters-addon/src/app/lifecycle.js",
           "addons/library-addon/src/app/lifecycle.js",
-          "addons/site-repair-addon/src/app/lifecycle.js"
+          "addons/site-repair-addon/src/app/lifecycle.js",
+          "addons/thread-utility-addon/src/app/lifecycle.js"
         ],
         "oneConsumer": false,
         "bundledBytes": [
@@ -3898,6 +3958,16 @@
           },
           {
             "addonId": "site-repair-addon",
+            "mode": "release",
+            "bytes": 6436
+          },
+          {
+            "addonId": "thread-utility-addon",
+            "mode": "regular",
+            "bytes": 9221
+          },
+          {
+            "addonId": "thread-utility-addon",
             "mode": "release",
             "bytes": 6436
           }
@@ -4022,6 +4092,10 @@
             },
             {
               "path": "addons/library-addon/src/api/ui/manager.js",
+              "occurrences": 1
+            },
+            {
+              "path": "addons/thread-utility-addon/src/api/storage.js",
               "occurrences": 1
             }
           ]
@@ -4305,6 +4379,10 @@
             {
               "path": "addons/site-repair-addon/src/api/meta.js",
               "occurrences": 1
+            },
+            {
+              "path": "addons/thread-utility-addon/src/api/page.js",
+              "occurrences": 1
             }
           ]
         },
@@ -4341,6 +4419,10 @@
             },
             {
               "path": "addons/site-repair-addon/src/api/storage.js",
+              "occurrences": 1
+            },
+            {
+              "path": "addons/thread-utility-addon/src/api/storage.js",
               "occurrences": 1
             }
           ]
@@ -4396,6 +4478,10 @@
             {
               "path": "addons/site-repair-addon/src/api/storage.js",
               "occurrences": 1
+            },
+            {
+              "path": "addons/thread-utility-addon/src/api/storage.js",
+              "occurrences": 1
             }
           ]
         },
@@ -4424,6 +4510,10 @@
             },
             {
               "path": "addons/site-repair-addon/src/api/toast.js",
+              "occurrences": 1
+            },
+            {
+              "path": "addons/thread-utility-addon/src/api/toast.js",
               "occurrences": 1
             }
           ]
@@ -4475,6 +4565,10 @@
             {
               "path": "addons/library-addon/src/api/ui/manager.js",
               "occurrences": 1
+            },
+            {
+              "path": "addons/thread-utility-addon/src/api/ui/dialog.js",
+              "occurrences": 1
             }
           ]
         },
@@ -4504,6 +4598,10 @@
             {
               "path": "addons/library-addon/src/api/ui/manager.js",
               "occurrences": 1
+            },
+            {
+              "path": "addons/thread-utility-addon/src/api/ui/dialog.js",
+              "occurrences": 1
             }
           ]
         },
@@ -4528,6 +4626,10 @@
             },
             {
               "path": "addons/library-addon/src/api/ui/dialog.js",
+              "occurrences": 1
+            },
+            {
+              "path": "addons/thread-utility-addon/src/api/ui/dialog.js",
               "occurrences": 1
             }
           ]
@@ -4580,6 +4682,10 @@
             {
               "path": "addons/library-addon/src/api/ui/mount.js",
               "occurrences": 1
+            },
+            {
+              "path": "addons/thread-utility-addon/src/api/ui/mount.js",
+              "occurrences": 1
             }
           ]
         },
@@ -4617,6 +4723,10 @@
             {
               "path": "addons/site-repair-addon/src/api/ui/style.js",
               "occurrences": 1
+            },
+            {
+              "path": "addons/thread-utility-addon/src/api/ui/style.js",
+              "occurrences": 1
             }
           ]
         },
@@ -4650,6 +4760,10 @@
             {
               "path": "addons/site-repair-addon/src/api/ui/style.js",
               "occurrences": 1
+            },
+            {
+              "path": "addons/thread-utility-addon/src/api/ui/style.js",
+              "occurrences": 1
             }
           ]
         },
@@ -4675,6 +4789,10 @@
             {
               "path": "addons/library-addon/src/api/ui/mount.js",
               "occurrences": 1
+            },
+            {
+              "path": "addons/thread-utility-addon/src/api/ui/mount.js",
+              "occurrences": 1
             }
           ]
         },
@@ -4696,6 +4814,14 @@
             {
               "path": "addons/site-repair-addon/src/app/createSiteRepairApp.js",
               "occurrences": 1
+            },
+            {
+              "path": "addons/thread-utility-addon/src/api/ui/mount.js",
+              "occurrences": 1
+            },
+            {
+              "path": "addons/thread-utility-addon/src/app/createThreadUtilityApp.js",
+              "occurrences": 3
             }
           ]
         }
@@ -7945,7 +8071,7 @@
       },
       "source": {
         "fileCount": 50,
-        "authoredBytes": 163277,
+        "authoredBytes": 163276,
         "physicalLines": 5547,
         "nonblankLines": 5001,
         "largestFiles": [
@@ -8073,7 +8199,7 @@
         "files": [
           {
             "path": "addons/masked-direct-addon/src/api/observer.js",
-            "bytes": 592,
+            "bytes": 591,
             "physicalLines": 19,
             "nonblankLines": 16
           },
@@ -8376,7 +8502,7 @@
       "builds": {
         "regular": {
           "bytes": 163616,
-          "gzipBytes": 33724,
+          "gzipBytes": 33728,
           "headerBytes": 2787,
           "contributors": [
             {
@@ -8506,7 +8632,7 @@
         },
         "release": {
           "bytes": 119133,
-          "gzipBytes": 28540,
+          "gzipBytes": 28542,
           "headerBytes": 2787,
           "contributors": [
             {
@@ -8636,7 +8762,7 @@
         }
       },
       "manifest": {
-        "version": "1.1.0",
+        "version": "1.1.1",
         "pageScopes": [
           "f95zone"
         ],
@@ -8699,29 +8825,29 @@
       "thirdPartyOrVendored": [],
       "baseline": {
         "authoredBytes": {
-          "current": 163277,
-          "baseline": 161596,
-          "delta": 1681
+          "current": 163276,
+          "baseline": 162344,
+          "delta": 932
         },
         "regularBytes": {
           "current": 163616,
-          "baseline": 161479,
-          "delta": 2137
+          "baseline": 162198,
+          "delta": 1418
         },
         "releaseBytes": {
           "current": 119133,
-          "baseline": 136290,
-          "delta": -17157
+          "baseline": 136884,
+          "delta": -17751
         },
         "regularGzipBytes": {
-          "current": 33724,
-          "baseline": 33421,
-          "delta": 303
+          "current": 33728,
+          "baseline": 33502,
+          "delta": 226
         },
         "releaseGzipBytes": {
-          "current": 28540,
-          "baseline": 28396,
-          "delta": 144
+          "current": 28542,
+          "baseline": 28456,
+          "delta": 86
         },
         "owningFiles": [
           "addons/masked-direct-addon/src/domain/directDownload/processingTrigger.js",
@@ -9291,6 +9417,707 @@
         ],
         "behaviorDelta": "No behavior change is made or inferred by this measurement package; accepted behavior is covered by TEST-ADDONS-01."
       }
+    },
+    {
+      "addonId": "thread-utility-addon",
+      "authoredBoundary": {
+        "entry-or-other": {
+          "fileCount": 0,
+          "authoredBytes": 0,
+          "physicalLines": 0,
+          "nonblankLines": 0,
+          "largestFiles": [],
+          "files": []
+        }
+      },
+      "source": {
+        "fileCount": 36,
+        "authoredBytes": 92672,
+        "physicalLines": 2981,
+        "nonblankLines": 2755,
+        "largestFiles": [
+          {
+            "path": "addons/thread-utility-addon/src/app/createThreadUtilityApp.js",
+            "bytes": 11684,
+            "physicalLines": 325,
+            "nonblankLines": 316
+          },
+          {
+            "path": "addons/thread-utility-addon/src/ui/palette.js",
+            "bytes": 8420,
+            "physicalLines": 206,
+            "nonblankLines": 200
+          },
+          {
+            "path": "addons/thread-utility-addon/src/ui/threadUtility.css",
+            "bytes": 7632,
+            "physicalLines": 413,
+            "nonblankLines": 350
+          },
+          {
+            "path": "addons/thread-utility-addon/src/app/uiController.js",
+            "bytes": 6675,
+            "physicalLines": 206,
+            "nonblankLines": 194
+          },
+          {
+            "path": "addons/thread-utility-addon/src/domain/content/parser.js",
+            "bytes": 6449,
+            "physicalLines": 259,
+            "nonblankLines": 239
+          },
+          {
+            "path": "addons/thread-utility-addon/src/domain/snapshot/parser.js",
+            "bytes": 5457,
+            "physicalLines": 168,
+            "nonblankLines": 155
+          },
+          {
+            "path": "addons/thread-utility-addon/src/app/settingsEditor.js",
+            "bytes": 4657,
+            "physicalLines": 143,
+            "nonblankLines": 133
+          },
+          {
+            "path": "addons/thread-utility-addon/src/ui/bindings.js",
+            "bytes": 4344,
+            "physicalLines": 139,
+            "nonblankLines": 132
+          },
+          {
+            "path": "addons/thread-utility-addon/src/domain/utilities/quickSearch.js",
+            "bytes": 3960,
+            "physicalLines": 107,
+            "nonblankLines": 100
+          },
+          {
+            "path": "addons/thread-utility-addon/src/domain/tags/model.js",
+            "bytes": 3848,
+            "physicalLines": 120,
+            "nonblankLines": 111
+          },
+          {
+            "path": "addons/thread-utility-addon/src/domain/utilities/controller.js",
+            "bytes": 3764,
+            "physicalLines": 109,
+            "nonblankLines": 102
+          },
+          {
+            "path": "addons/thread-utility-addon/src/domain/downloads/parser.js",
+            "bytes": 3194,
+            "physicalLines": 92,
+            "nonblankLines": 84
+          },
+          {
+            "path": "addons/thread-utility-addon/src/ui/settingsDialog.js",
+            "bytes": 2916,
+            "physicalLines": 57,
+            "nonblankLines": 56
+          },
+          {
+            "path": "addons/thread-utility-addon/src/app/settings.js",
+            "bytes": 2693,
+            "physicalLines": 82,
+            "nonblankLines": 78
+          },
+          {
+            "path": "addons/thread-utility-addon/src/domain/settings/model.js",
+            "bytes": 2687,
+            "physicalLines": 78,
+            "nonblankLines": 71
+          },
+          {
+            "path": "addons/thread-utility-addon/src/domain/downloads/controller.js",
+            "bytes": 2358,
+            "physicalLines": 75,
+            "nonblankLines": 68
+          },
+          {
+            "path": "addons/thread-utility-addon/src/app/commands.js",
+            "bytes": 1842,
+            "physicalLines": 67,
+            "nonblankLines": 63
+          },
+          {
+            "path": "addons/thread-utility-addon/src/app/registration.js",
+            "bytes": 1719,
+            "physicalLines": 55,
+            "nonblankLines": 50
+          },
+          {
+            "path": "addons/thread-utility-addon/src/main.js",
+            "bytes": 1194,
+            "physicalLines": 32,
+            "nonblankLines": 27
+          },
+          {
+            "path": "addons/thread-utility-addon/src/domain/utilities/clipboard.js",
+            "bytes": 1124,
+            "physicalLines": 38,
+            "nonblankLines": 36
+          }
+        ],
+        "files": [
+          {
+            "path": "addons/thread-utility-addon/src/api/bridge.js",
+            "bytes": 534,
+            "physicalLines": 19,
+            "nonblankLines": 15
+          },
+          {
+            "path": "addons/thread-utility-addon/src/api/meta.js",
+            "bytes": 93,
+            "physicalLines": 3,
+            "nonblankLines": 3
+          },
+          {
+            "path": "addons/thread-utility-addon/src/api/page.js",
+            "bytes": 155,
+            "physicalLines": 5,
+            "nonblankLines": 5
+          },
+          {
+            "path": "addons/thread-utility-addon/src/api/storage.js",
+            "bytes": 411,
+            "physicalLines": 17,
+            "nonblankLines": 15
+          },
+          {
+            "path": "addons/thread-utility-addon/src/api/toast.js",
+            "bytes": 163,
+            "physicalLines": 6,
+            "nonblankLines": 6
+          },
+          {
+            "path": "addons/thread-utility-addon/src/api/ui/dialog.js",
+            "bytes": 387,
+            "physicalLines": 11,
+            "nonblankLines": 9
+          },
+          {
+            "path": "addons/thread-utility-addon/src/api/ui/mount.js",
+            "bytes": 312,
+            "physicalLines": 11,
+            "nonblankLines": 9
+          },
+          {
+            "path": "addons/thread-utility-addon/src/api/ui/style.js",
+            "bytes": 253,
+            "physicalLines": 7,
+            "nonblankLines": 6
+          },
+          {
+            "path": "addons/thread-utility-addon/src/app/commands.js",
+            "bytes": 1842,
+            "physicalLines": 67,
+            "nonblankLines": 63
+          },
+          {
+            "path": "addons/thread-utility-addon/src/app/createThreadUtilityApp.js",
+            "bytes": 11684,
+            "physicalLines": 325,
+            "nonblankLines": 316
+          },
+          {
+            "path": "addons/thread-utility-addon/src/app/lifecycle.js",
+            "bytes": 245,
+            "physicalLines": 8,
+            "nonblankLines": 7
+          },
+          {
+            "path": "addons/thread-utility-addon/src/app/registration.js",
+            "bytes": 1719,
+            "physicalLines": 55,
+            "nonblankLines": 50
+          },
+          {
+            "path": "addons/thread-utility-addon/src/app/settings.js",
+            "bytes": 2693,
+            "physicalLines": 82,
+            "nonblankLines": 78
+          },
+          {
+            "path": "addons/thread-utility-addon/src/app/settingsEditor.js",
+            "bytes": 4657,
+            "physicalLines": 143,
+            "nonblankLines": 133
+          },
+          {
+            "path": "addons/thread-utility-addon/src/app/uiController.js",
+            "bytes": 6675,
+            "physicalLines": 206,
+            "nonblankLines": 194
+          },
+          {
+            "path": "addons/thread-utility-addon/src/constants.js",
+            "bytes": 343,
+            "physicalLines": 5,
+            "nonblankLines": 5
+          },
+          {
+            "path": "addons/thread-utility-addon/src/core/adaptor.js",
+            "bytes": 67,
+            "physicalLines": 1,
+            "nonblankLines": 1
+          },
+          {
+            "path": "addons/thread-utility-addon/src/domain/content/parser.js",
+            "bytes": 6449,
+            "physicalLines": 259,
+            "nonblankLines": 239
+          },
+          {
+            "path": "addons/thread-utility-addon/src/domain/downloads/controller.js",
+            "bytes": 2358,
+            "physicalLines": 75,
+            "nonblankLines": 68
+          },
+          {
+            "path": "addons/thread-utility-addon/src/domain/downloads/parser.js",
+            "bytes": 3194,
+            "physicalLines": 92,
+            "nonblankLines": 84
+          },
+          {
+            "path": "addons/thread-utility-addon/src/domain/settings/model.js",
+            "bytes": 2687,
+            "physicalLines": 78,
+            "nonblankLines": 71
+          },
+          {
+            "path": "addons/thread-utility-addon/src/domain/snapshot/limits.js",
+            "bytes": 147,
+            "physicalLines": 8,
+            "nonblankLines": 8
+          },
+          {
+            "path": "addons/thread-utility-addon/src/domain/snapshot/parser.js",
+            "bytes": 5457,
+            "physicalLines": 168,
+            "nonblankLines": 155
+          },
+          {
+            "path": "addons/thread-utility-addon/src/domain/snapshot/sourceRegistry.js",
+            "bytes": 933,
+            "physicalLines": 37,
+            "nonblankLines": 32
+          },
+          {
+            "path": "addons/thread-utility-addon/src/domain/state.js",
+            "bytes": 666,
+            "physicalLines": 30,
+            "nonblankLines": 30
+          },
+          {
+            "path": "addons/thread-utility-addon/src/domain/tags/model.js",
+            "bytes": 3848,
+            "physicalLines": 120,
+            "nonblankLines": 111
+          },
+          {
+            "path": "addons/thread-utility-addon/src/domain/utilities/clipboard.js",
+            "bytes": 1124,
+            "physicalLines": 38,
+            "nonblankLines": 36
+          },
+          {
+            "path": "addons/thread-utility-addon/src/domain/utilities/controller.js",
+            "bytes": 3764,
+            "physicalLines": 109,
+            "nonblankLines": 102
+          },
+          {
+            "path": "addons/thread-utility-addon/src/domain/utilities/quickSearch.js",
+            "bytes": 3960,
+            "physicalLines": 107,
+            "nonblankLines": 100
+          },
+          {
+            "path": "addons/thread-utility-addon/src/domain/utilities/registry.js",
+            "bytes": 1096,
+            "physicalLines": 33,
+            "nonblankLines": 30
+          },
+          {
+            "path": "addons/thread-utility-addon/src/main.js",
+            "bytes": 1194,
+            "physicalLines": 32,
+            "nonblankLines": 27
+          },
+          {
+            "path": "addons/thread-utility-addon/src/ui/bindings.js",
+            "bytes": 4344,
+            "physicalLines": 139,
+            "nonblankLines": 132
+          },
+          {
+            "path": "addons/thread-utility-addon/src/ui/launcher.js",
+            "bytes": 250,
+            "physicalLines": 9,
+            "nonblankLines": 9
+          },
+          {
+            "path": "addons/thread-utility-addon/src/ui/palette.js",
+            "bytes": 8420,
+            "physicalLines": 206,
+            "nonblankLines": 200
+          },
+          {
+            "path": "addons/thread-utility-addon/src/ui/settingsDialog.js",
+            "bytes": 2916,
+            "physicalLines": 57,
+            "nonblankLines": 56
+          },
+          {
+            "path": "addons/thread-utility-addon/src/ui/threadUtility.css",
+            "bytes": 7632,
+            "physicalLines": 413,
+            "nonblankLines": 350
+          }
+        ]
+      },
+      "builds": {
+        "regular": {
+          "bytes": 108051,
+          "gzipBytes": 23960,
+          "headerBytes": 971,
+          "contributors": [
+            {
+              "path": "addons/thread-utility-addon/src/app/createThreadUtilityApp.js",
+              "bytes": 10762
+            },
+            {
+              "path": "addons/shared/runtimeLifecycle.js",
+              "bytes": 9221
+            },
+            {
+              "path": "addons/thread-utility-addon/src/ui/palette.js",
+              "bytes": 8318
+            },
+            {
+              "path": "addons/thread-utility-addon/src/ui/threadUtility.css",
+              "bytes": 8079
+            },
+            {
+              "path": "addons/thread-utility-addon/src/domain/content/parser.js",
+              "bytes": 6776
+            },
+            {
+              "path": "addons/thread-utility-addon/src/app/uiController.js",
+              "bytes": 6396
+            },
+            {
+              "path": "addons/thread-utility-addon/src/domain/snapshot/parser.js",
+              "bytes": 5560
+            },
+            {
+              "path": "addons/thread-utility-addon/src/ui/bindings.js",
+              "bytes": 4525
+            },
+            {
+              "path": "addons/thread-utility-addon/src/app/settingsEditor.js",
+              "bytes": 4356
+            },
+            {
+              "path": "addons/thread-utility-addon/src/domain/utilities/quickSearch.js",
+              "bytes": 4004
+            },
+            {
+              "path": "addons/thread-utility-addon/src/domain/tags/model.js",
+              "bytes": 3960
+            },
+            {
+              "path": "addons/shared/coreBridge.js",
+              "bytes": 3803
+            },
+            {
+              "path": "addons/thread-utility-addon/src/domain/utilities/controller.js",
+              "bytes": 3724
+            },
+            {
+              "path": "addons/thread-utility-addon/src/domain/downloads/parser.js",
+              "bytes": 3225
+            },
+            {
+              "path": "addons/thread-utility-addon/src/ui/settingsDialog.js",
+              "bytes": 2902
+            },
+            {
+              "path": "addons/thread-utility-addon/src/domain/settings/model.js",
+              "bytes": 2664
+            },
+            {
+              "path": "addons/thread-utility-addon/src/app/settings.js",
+              "bytes": 2540
+            },
+            {
+              "path": "addons/thread-utility-addon/src/domain/downloads/controller.js",
+              "bytes": 2295
+            },
+            {
+              "path": "addons/thread-utility-addon/src/app/commands.js",
+              "bytes": 1820
+            },
+            {
+              "path": "addons/thread-utility-addon/src/app/registration.js",
+              "bytes": 1563
+            }
+          ],
+          "sharedRuntime": {
+            "bytes": 13106,
+            "contributors": [
+              {
+                "path": "addons/shared/runtimeLifecycle.js",
+                "bytes": 9221
+              },
+              {
+                "path": "addons/shared/coreBridge.js",
+                "bytes": 3803
+              },
+              {
+                "path": "addons/shared/runtimeKit.js",
+                "bytes": 82
+              }
+            ]
+          },
+          "uiCss": {
+            "bytes": 24073,
+            "contributors": [
+              {
+                "path": "addons/thread-utility-addon/src/ui/palette.js",
+                "bytes": 8318
+              },
+              {
+                "path": "addons/thread-utility-addon/src/ui/threadUtility.css",
+                "bytes": 8079
+              },
+              {
+                "path": "addons/thread-utility-addon/src/ui/bindings.js",
+                "bytes": 4525
+              },
+              {
+                "path": "addons/thread-utility-addon/src/ui/settingsDialog.js",
+                "bytes": 2902
+              },
+              {
+                "path": "addons/thread-utility-addon/src/ui/launcher.js",
+                "bytes": 249
+              }
+            ]
+          },
+          "storageIdbDomain": {
+            "bytes": 1138,
+            "contributors": [
+              {
+                "path": "addons/thread-utility-addon/src/domain/state.js",
+                "bytes": 716
+              },
+              {
+                "path": "addons/thread-utility-addon/src/api/storage.js",
+                "bytes": 422
+              }
+            ]
+          }
+        },
+        "release": {
+          "bytes": 81307,
+          "gzipBytes": 21030,
+          "headerBytes": 971,
+          "contributors": [
+            {
+              "path": "addons/thread-utility-addon/src/ui/threadUtility.css",
+              "bytes": 7661
+            },
+            {
+              "path": "addons/thread-utility-addon/src/ui/palette.js",
+              "bytes": 7629
+            },
+            {
+              "path": "addons/thread-utility-addon/src/app/createThreadUtilityApp.js",
+              "bytes": 7543
+            },
+            {
+              "path": "addons/shared/runtimeLifecycle.js",
+              "bytes": 6436
+            },
+            {
+              "path": "addons/thread-utility-addon/src/domain/content/parser.js",
+              "bytes": 4867
+            },
+            {
+              "path": "addons/thread-utility-addon/src/app/uiController.js",
+              "bytes": 4594
+            },
+            {
+              "path": "addons/thread-utility-addon/src/domain/snapshot/parser.js",
+              "bytes": 4339
+            },
+            {
+              "path": "addons/thread-utility-addon/src/app/settingsEditor.js",
+              "bytes": 3146
+            },
+            {
+              "path": "addons/thread-utility-addon/src/ui/bindings.js",
+              "bytes": 3104
+            },
+            {
+              "path": "addons/thread-utility-addon/src/domain/utilities/quickSearch.js",
+              "bytes": 3046
+            },
+            {
+              "path": "addons/thread-utility-addon/src/domain/tags/model.js",
+              "bytes": 2918
+            },
+            {
+              "path": "addons/thread-utility-addon/src/ui/settingsDialog.js",
+              "bytes": 2799
+            },
+            {
+              "path": "addons/shared/coreBridge.js",
+              "bytes": 2667
+            },
+            {
+              "path": "addons/thread-utility-addon/src/domain/utilities/controller.js",
+              "bytes": 2617
+            },
+            {
+              "path": "addons/thread-utility-addon/src/domain/downloads/parser.js",
+              "bytes": 2463
+            },
+            {
+              "path": "addons/thread-utility-addon/src/domain/settings/model.js",
+              "bytes": 2027
+            },
+            {
+              "path": "addons/thread-utility-addon/src/app/settings.js",
+              "bytes": 2016
+            },
+            {
+              "path": "addons/thread-utility-addon/src/domain/downloads/controller.js",
+              "bytes": 1709
+            },
+            {
+              "path": "addons/thread-utility-addon/src/app/registration.js",
+              "bytes": 1205
+            },
+            {
+              "path": "addons/thread-utility-addon/src/app/commands.js",
+              "bytes": 1154
+            }
+          ],
+          "sharedRuntime": {
+            "bytes": 9172,
+            "contributors": [
+              {
+                "path": "addons/shared/runtimeLifecycle.js",
+                "bytes": 6436
+              },
+              {
+                "path": "addons/shared/coreBridge.js",
+                "bytes": 2667
+              },
+              {
+                "path": "addons/shared/runtimeKit.js",
+                "bytes": 69
+              }
+            ]
+          },
+          "uiCss": {
+            "bytes": 21428,
+            "contributors": [
+              {
+                "path": "addons/thread-utility-addon/src/ui/threadUtility.css",
+                "bytes": 7661
+              },
+              {
+                "path": "addons/thread-utility-addon/src/ui/palette.js",
+                "bytes": 7629
+              },
+              {
+                "path": "addons/thread-utility-addon/src/ui/bindings.js",
+                "bytes": 3104
+              },
+              {
+                "path": "addons/thread-utility-addon/src/ui/settingsDialog.js",
+                "bytes": 2799
+              },
+              {
+                "path": "addons/thread-utility-addon/src/ui/launcher.js",
+                "bytes": 235
+              }
+            ]
+          },
+          "storageIdbDomain": {
+            "bytes": 771,
+            "contributors": [
+              {
+                "path": "addons/thread-utility-addon/src/domain/state.js",
+                "bytes": 441
+              },
+              {
+                "path": "addons/thread-utility-addon/src/api/storage.js",
+                "bytes": 330
+              }
+            ]
+          }
+        }
+      },
+      "manifest": {
+        "version": "0.1.1",
+        "pageScopes": [
+          "thread"
+        ],
+        "runtimeMode": "core-required",
+        "headerBytes": {
+          "regular": 971,
+          "release": 971
+        },
+        "compatibility": {
+          "matches": [
+            "*://f95zone.to/threads/*"
+          ],
+          "grants": [
+            "none"
+          ],
+          "runAt": "document-idle"
+        }
+      },
+      "thirdPartyOrVendored": [],
+      "baseline": {
+        "authoredBytes": {
+          "current": 92672,
+          "baseline": 92672,
+          "delta": 0
+        },
+        "regularBytes": {
+          "current": 108051,
+          "baseline": 107734,
+          "delta": 317
+        },
+        "releaseBytes": {
+          "current": 81307,
+          "baseline": 97188,
+          "delta": -15881
+        },
+        "regularGzipBytes": {
+          "current": 23960,
+          "baseline": 23870,
+          "delta": 90
+        },
+        "releaseGzipBytes": {
+          "current": 21030,
+          "baseline": 21364,
+          "delta": -334
+        },
+        "owningFiles": [
+          "addons/thread-utility-addon/src/app/createThreadUtilityApp.js",
+          "addons/thread-utility-addon/src/ui/palette.js",
+          "addons/thread-utility-addon/src/ui/threadUtility.css",
+          "addons/thread-utility-addon/src/app/uiController.js",
+          "addons/thread-utility-addon/src/domain/content/parser.js"
+        ],
+        "behaviorDelta": "No behavior change is made or inferred by this measurement package; accepted behavior is covered by TEST-ADDONS-01."
+      }
     }
   ],
   "actionFamilyCosts": {
@@ -9857,13 +10684,14 @@
       {
         "action": "config.getTagPrefs",
         "capability": "storage",
-        "consumerCount": 5,
+        "consumerCount": 6,
         "callers": [
           "addons/example-addon/src/api/storage.js",
           "addons/example-addon/src/ui/panel.js",
           "addons/latest-filters-addon/src/api/storage.js",
           "addons/library-addon/src/api/storage.js",
-          "addons/library-addon/src/api/ui/manager.js"
+          "addons/library-addon/src/api/ui/manager.js",
+          "addons/thread-utility-addon/src/api/storage.js"
         ]
       },
       {
@@ -10001,27 +10829,29 @@
       {
         "action": "page.getContext",
         "capability": "page",
-        "consumerCount": 6,
+        "consumerCount": 7,
         "callers": [
           "addons/example-addon/src/api/page.js",
           "addons/example-addon/src/ui/panel.js",
           "addons/latest-filters-addon/src/api/page.js",
           "addons/library-addon/src/api/page.js",
           "addons/masked-direct-addon/src/api/page.js",
-          "addons/site-repair-addon/src/api/meta.js"
+          "addons/site-repair-addon/src/api/meta.js",
+          "addons/thread-utility-addon/src/api/page.js"
         ]
       },
       {
         "action": "storage.get",
         "capability": "storage",
-        "consumerCount": 6,
+        "consumerCount": 7,
         "callers": [
           "addons/example-addon/src/api/storage.js",
           "addons/example-addon/src/ui/panel.js",
           "addons/latest-filters-addon/src/api/storage.js",
           "addons/library-addon/src/api/storage.js",
           "addons/masked-direct-addon/src/app/settings.js",
-          "addons/site-repair-addon/src/api/storage.js"
+          "addons/site-repair-addon/src/api/storage.js",
+          "addons/thread-utility-addon/src/api/storage.js"
         ]
       },
       {
@@ -10036,27 +10866,29 @@
       {
         "action": "storage.set",
         "capability": "storage",
-        "consumerCount": 6,
+        "consumerCount": 7,
         "callers": [
           "addons/example-addon/src/api/storage.js",
           "addons/example-addon/src/ui/panel.js",
           "addons/latest-filters-addon/src/api/storage.js",
           "addons/library-addon/src/api/storage.js",
           "addons/masked-direct-addon/src/app/settings.js",
-          "addons/site-repair-addon/src/api/storage.js"
+          "addons/site-repair-addon/src/api/storage.js",
+          "addons/thread-utility-addon/src/api/storage.js"
         ]
       },
       {
         "action": "toast.show",
         "capability": "toast",
-        "consumerCount": 6,
+        "consumerCount": 7,
         "callers": [
           "addons/example-addon/src/api/toast.js",
           "addons/example-addon/src/ui/panel.js",
           "addons/latest-filters-addon/src/api/toast.js",
           "addons/library-addon/src/api/toast.js",
           "addons/masked-direct-addon/src/api/toast.js",
-          "addons/site-repair-addon/src/api/toast.js"
+          "addons/site-repair-addon/src/api/toast.js",
+          "addons/thread-utility-addon/src/api/toast.js"
         ]
       },
       {
@@ -10073,36 +10905,39 @@
       {
         "action": "ui.dialog.close",
         "capability": "ui",
-        "consumerCount": 5,
+        "consumerCount": 6,
         "callers": [
           "addons/example-addon/src/api/ui/dialog.js",
           "addons/example-addon/src/ui/panel.js",
           "addons/latest-filters-addon/src/api/ui/dialog.js",
           "addons/library-addon/src/api/ui/dialog.js",
-          "addons/library-addon/src/api/ui/manager.js"
+          "addons/library-addon/src/api/ui/manager.js",
+          "addons/thread-utility-addon/src/api/ui/dialog.js"
         ]
       },
       {
         "action": "ui.dialog.open",
         "capability": "ui",
+        "consumerCount": 6,
+        "callers": [
+          "addons/example-addon/src/api/ui/dialog.js",
+          "addons/example-addon/src/ui/panel.js",
+          "addons/latest-filters-addon/src/api/ui/dialog.js",
+          "addons/library-addon/src/api/ui/dialog.js",
+          "addons/library-addon/src/api/ui/manager.js",
+          "addons/thread-utility-addon/src/api/ui/dialog.js"
+        ]
+      },
+      {
+        "action": "ui.dialog.update",
+        "capability": "ui",
         "consumerCount": 5,
         "callers": [
           "addons/example-addon/src/api/ui/dialog.js",
           "addons/example-addon/src/ui/panel.js",
           "addons/latest-filters-addon/src/api/ui/dialog.js",
           "addons/library-addon/src/api/ui/dialog.js",
-          "addons/library-addon/src/api/ui/manager.js"
-        ]
-      },
-      {
-        "action": "ui.dialog.update",
-        "capability": "ui",
-        "consumerCount": 4,
-        "callers": [
-          "addons/example-addon/src/api/ui/dialog.js",
-          "addons/example-addon/src/ui/panel.js",
-          "addons/latest-filters-addon/src/api/ui/dialog.js",
-          "addons/library-addon/src/api/ui/dialog.js"
+          "addons/thread-utility-addon/src/api/ui/dialog.js"
         ]
       },
       {
@@ -10126,18 +10961,19 @@
       {
         "action": "ui.mount",
         "capability": "ui",
-        "consumerCount": 4,
+        "consumerCount": 5,
         "callers": [
           "addons/example-addon/src/api/ui/mount.js",
           "addons/example-addon/src/ui/panel.js",
           "addons/latest-filters-addon/src/api/ui/mount.js",
-          "addons/library-addon/src/api/ui/mount.js"
+          "addons/library-addon/src/api/ui/mount.js",
+          "addons/thread-utility-addon/src/api/ui/mount.js"
         ]
       },
       {
         "action": "ui.style.register",
         "capability": "ui",
-        "consumerCount": 7,
+        "consumerCount": 8,
         "callers": [
           "addons/example-addon/src/api/ui/style.js",
           "addons/example-addon/src/ui/panel.js",
@@ -10145,13 +10981,14 @@
           "addons/library-addon/src/api/ui/manager.js",
           "addons/library-addon/src/api/ui/style.js",
           "addons/masked-direct-addon/src/app/styleController.js",
-          "addons/site-repair-addon/src/api/ui/style.js"
+          "addons/site-repair-addon/src/api/ui/style.js",
+          "addons/thread-utility-addon/src/api/ui/style.js"
         ]
       },
       {
         "action": "ui.style.unregister",
         "capability": "ui",
-        "consumerCount": 7,
+        "consumerCount": 8,
         "callers": [
           "addons/example-addon/src/api/ui/style.js",
           "addons/example-addon/src/ui/panel.js",
@@ -10159,27 +10996,30 @@
           "addons/library-addon/src/api/ui/manager.js",
           "addons/library-addon/src/api/ui/style.js",
           "addons/masked-direct-addon/src/app/styleController.js",
-          "addons/site-repair-addon/src/api/ui/style.js"
+          "addons/site-repair-addon/src/api/ui/style.js",
+          "addons/thread-utility-addon/src/api/ui/style.js"
         ]
       },
       {
         "action": "ui.unmount",
         "capability": "ui",
-        "consumerCount": 4,
+        "consumerCount": 5,
         "callers": [
           "addons/example-addon/src/api/ui/mount.js",
           "addons/example-addon/src/ui/panel.js",
           "addons/latest-filters-addon/src/api/ui/mount.js",
-          "addons/library-addon/src/api/ui/mount.js"
+          "addons/library-addon/src/api/ui/mount.js",
+          "addons/thread-utility-addon/src/api/ui/mount.js"
         ]
       },
       {
         "action": "ui.update",
         "capability": "ui",
-        "consumerCount": 2,
+        "consumerCount": 3,
         "callers": [
           "addons/example-addon/src/api/ui/mount.js",
-          "addons/example-addon/src/ui/panel.js"
+          "addons/example-addon/src/ui/panel.js",
+          "addons/thread-utility-addon/src/api/ui/mount.js"
         ]
       }
     ],
@@ -10187,14 +11027,15 @@
       {
         "action": "page.getContext",
         "capability": "page",
-        "consumerCount": 6,
+        "consumerCount": 7,
         "callers": [
           "addons/example-addon/src/api/page.js",
           "addons/example-addon/src/ui/panel.js",
           "addons/latest-filters-addon/src/api/page.js",
           "addons/library-addon/src/api/page.js",
           "addons/masked-direct-addon/src/api/page.js",
-          "addons/site-repair-addon/src/api/meta.js"
+          "addons/site-repair-addon/src/api/meta.js",
+          "addons/thread-utility-addon/src/api/page.js"
         ]
       },
       {
@@ -10212,12 +11053,13 @@
       {
         "action": "ui.dialog.update",
         "capability": "ui",
-        "consumerCount": 4,
+        "consumerCount": 5,
         "callers": [
           "addons/example-addon/src/api/ui/dialog.js",
           "addons/example-addon/src/ui/panel.js",
           "addons/latest-filters-addon/src/api/ui/dialog.js",
-          "addons/library-addon/src/api/ui/dialog.js"
+          "addons/library-addon/src/api/ui/dialog.js",
+          "addons/thread-utility-addon/src/api/ui/dialog.js"
         ]
       }
     ],
@@ -10360,6 +11202,16 @@
           "addonId": "site-repair-addon",
           "mode": "release",
           "bytes": 2651
+        },
+        {
+          "addonId": "thread-utility-addon",
+          "mode": "regular",
+          "bytes": 3803
+        },
+        {
+          "addonId": "thread-utility-addon",
+          "mode": "release",
+          "bytes": 2667
         }
       ],
       "treeShaking": "bundle contribution is reported per add-on/mode; source bytes are not assumed to be fully emitted"
@@ -10493,13 +11345,14 @@
     {
       "helper": "addons/shared/runtimeKit.js",
       "sourceBytes": 770,
-      "consumerCount": 5,
+      "consumerCount": 6,
       "consumers": [
         "example-addon",
         "halloween-theme-addon",
         "latest-filters-addon",
         "library-addon",
-        "site-repair-addon"
+        "site-repair-addon",
+        "thread-utility-addon"
       ],
       "importers": [
         "addons/example-addon/src/core/adaptor.js",
@@ -10510,7 +11363,8 @@
         "addons/library-addon/src/api/bridge.js",
         "addons/library-addon/src/core/adaptor.js",
         "addons/site-repair-addon/src/api/bridge.js",
-        "addons/site-repair-addon/src/core/adaptor.js"
+        "addons/site-repair-addon/src/core/adaptor.js",
+        "addons/thread-utility-addon/src/core/adaptor.js"
       ],
       "oneConsumer": false,
       "bundledBytes": [
@@ -10563,6 +11417,16 @@
           "addonId": "site-repair-addon",
           "mode": "release",
           "bytes": 424
+        },
+        {
+          "addonId": "thread-utility-addon",
+          "mode": "regular",
+          "bytes": 82
+        },
+        {
+          "addonId": "thread-utility-addon",
+          "mode": "release",
+          "bytes": 69
         }
       ],
       "treeShaking": "bundle contribution is reported per add-on/mode; source bytes are not assumed to be fully emitted"
@@ -10570,20 +11434,22 @@
     {
       "helper": "addons/shared/runtimeLifecycle.js",
       "sourceBytes": 9195,
-      "consumerCount": 5,
+      "consumerCount": 6,
       "consumers": [
         "example-addon",
         "halloween-theme-addon",
         "latest-filters-addon",
         "library-addon",
-        "site-repair-addon"
+        "site-repair-addon",
+        "thread-utility-addon"
       ],
       "importers": [
         "addons/example-addon/src/app/lifecycle.js",
         "addons/halloween-theme-addon/src/app/lifecycle.js",
         "addons/latest-filters-addon/src/app/lifecycle.js",
         "addons/library-addon/src/app/lifecycle.js",
-        "addons/site-repair-addon/src/app/lifecycle.js"
+        "addons/site-repair-addon/src/app/lifecycle.js",
+        "addons/thread-utility-addon/src/app/lifecycle.js"
       ],
       "oneConsumer": false,
       "bundledBytes": [
@@ -10634,6 +11500,16 @@
         },
         {
           "addonId": "site-repair-addon",
+          "mode": "release",
+          "bytes": 6436
+        },
+        {
+          "addonId": "thread-utility-addon",
+          "mode": "regular",
+          "bytes": 9221
+        },
+        {
+          "addonId": "thread-utility-addon",
           "mode": "release",
           "bytes": 6436
         }
@@ -13763,7 +14639,7 @@
         },
         {
           "path": "addons/shared/runtimeKit.js",
-          "fanIn": 9,
+          "fanIn": 10,
           "fanOut": 1,
           "exports": [
             "createCoreAdaptor",
@@ -13776,7 +14652,7 @@
         },
         {
           "path": "addons/shared/runtimeLifecycle.js",
-          "fanIn": 5,
+          "fanIn": 6,
           "fanOut": 0,
           "exports": [
             "createAddonRuntimeLifecycle",
@@ -13958,6 +14834,324 @@
           "exports": [
             "createImageRepairStatusUi"
           ]
+        },
+        {
+          "path": "addons/thread-utility-addon/src/api/bridge.js",
+          "fanIn": 4,
+          "fanOut": 0,
+          "exports": [
+            "waitForCorePing",
+            "registerAddonRuntime",
+            "updateAddonRuntimeStatus",
+            "bindRuntimeCommands",
+            "notifyTeardownComplete"
+          ]
+        },
+        {
+          "path": "addons/thread-utility-addon/src/api/meta.js",
+          "fanIn": 1,
+          "fanOut": 0,
+          "exports": [
+            "getAddonAccess"
+          ]
+        },
+        {
+          "path": "addons/thread-utility-addon/src/api/page.js",
+          "fanIn": 1,
+          "fanOut": 0,
+          "exports": [
+            "getPageContext"
+          ]
+        },
+        {
+          "path": "addons/thread-utility-addon/src/api/storage.js",
+          "fanIn": 3,
+          "fanOut": 0,
+          "exports": [
+            "getStoredValue",
+            "setStoredValue",
+            "getTagPrefs"
+          ]
+        },
+        {
+          "path": "addons/thread-utility-addon/src/api/toast.js",
+          "fanIn": 2,
+          "fanOut": 0,
+          "exports": [
+            "showCoreToast"
+          ]
+        },
+        {
+          "path": "addons/thread-utility-addon/src/api/ui/dialog.js",
+          "fanIn": 2,
+          "fanOut": 0,
+          "exports": [
+            "openDialog",
+            "updateDialog",
+            "closeDialog"
+          ]
+        },
+        {
+          "path": "addons/thread-utility-addon/src/api/ui/mount.js",
+          "fanIn": 1,
+          "fanOut": 0,
+          "exports": [
+            "mountUi",
+            "updateUi",
+            "unmountUi"
+          ]
+        },
+        {
+          "path": "addons/thread-utility-addon/src/api/ui/style.js",
+          "fanIn": 1,
+          "fanOut": 0,
+          "exports": [
+            "registerStyle",
+            "unregisterStyle"
+          ]
+        },
+        {
+          "path": "addons/thread-utility-addon/src/app/commands.js",
+          "fanIn": 1,
+          "fanOut": 2,
+          "exports": [
+            "createThreadUtilityCommandController"
+          ]
+        },
+        {
+          "path": "addons/thread-utility-addon/src/app/createThreadUtilityApp.js",
+          "fanIn": 1,
+          "fanOut": 20,
+          "exports": [
+            "createThreadUtilityApp"
+          ]
+        },
+        {
+          "path": "addons/thread-utility-addon/src/app/lifecycle.js",
+          "fanIn": 1,
+          "fanOut": 1,
+          "exports": [
+            "createThreadUtilityLifecycle"
+          ]
+        },
+        {
+          "path": "addons/thread-utility-addon/src/app/registration.js",
+          "fanIn": 1,
+          "fanOut": 3,
+          "exports": [
+            "createThreadUtilityRegistration"
+          ]
+        },
+        {
+          "path": "addons/thread-utility-addon/src/app/settings.js",
+          "fanIn": 2,
+          "fanOut": 3,
+          "exports": [
+            "THREAD_UTILITY_SETTINGS_DEFAULTS",
+            "THREAD_UTILITY_PANEL_SETTINGS",
+            "normalizeThreadUtilitySettings",
+            "loadThreadUtilitySettings"
+          ]
+        },
+        {
+          "path": "addons/thread-utility-addon/src/app/settingsEditor.js",
+          "fanIn": 1,
+          "fanOut": 5,
+          "exports": [
+            "createThreadUtilitySettingsEditor"
+          ]
+        },
+        {
+          "path": "addons/thread-utility-addon/src/app/uiController.js",
+          "fanIn": 1,
+          "fanOut": 8,
+          "exports": [
+            "createThreadUtilityUiController"
+          ]
+        },
+        {
+          "path": "addons/thread-utility-addon/src/constants.js",
+          "fanIn": 5,
+          "fanOut": 0,
+          "exports": [
+            "THREAD_UTILITY_SETTINGS_KEY",
+            "THREAD_UTILITY_MOUNT_ID",
+            "THREAD_UTILITY_DIALOG_ID",
+            "THREAD_UTILITY_SETTINGS_DIALOG_ID",
+            "THREAD_UTILITY_STYLE_ID"
+          ]
+        },
+        {
+          "path": "addons/thread-utility-addon/src/core/adaptor.js",
+          "fanIn": 1,
+          "fanOut": 1,
+          "exports": [
+            "createCoreAdaptor"
+          ]
+        },
+        {
+          "path": "addons/thread-utility-addon/src/domain/content/parser.js",
+          "fanIn": 1,
+          "fanOut": 0,
+          "exports": [
+            "parseContentSections",
+            "CONTENT_LIMITS"
+          ]
+        },
+        {
+          "path": "addons/thread-utility-addon/src/domain/downloads/controller.js",
+          "fanIn": 1,
+          "fanOut": 2,
+          "exports": [
+            "createDownloadController"
+          ]
+        },
+        {
+          "path": "addons/thread-utility-addon/src/domain/downloads/parser.js",
+          "fanIn": 1,
+          "fanOut": 0,
+          "exports": [
+            "parseDownloads",
+            "DOWNLOAD_LIMIT"
+          ]
+        },
+        {
+          "path": "addons/thread-utility-addon/src/domain/settings/model.js",
+          "fanIn": 1,
+          "fanOut": 1,
+          "exports": [
+            "createSettingsDraft",
+            "resetSettingsDraft",
+            "addDraftUtility",
+            "moveDraftUtility",
+            "deleteDraftUtility",
+            "validateSettingsDraft"
+          ]
+        },
+        {
+          "path": "addons/thread-utility-addon/src/domain/snapshot/limits.js",
+          "fanIn": 1,
+          "fanOut": 0,
+          "exports": [
+            "SNAPSHOT_LIMITS"
+          ]
+        },
+        {
+          "path": "addons/thread-utility-addon/src/domain/snapshot/parser.js",
+          "fanIn": 1,
+          "fanOut": 1,
+          "exports": [
+            "captureThreadSnapshot"
+          ]
+        },
+        {
+          "path": "addons/thread-utility-addon/src/domain/snapshot/sourceRegistry.js",
+          "fanIn": 1,
+          "fanOut": 0,
+          "exports": [
+            "createSnapshotSourceRegistry"
+          ]
+        },
+        {
+          "path": "addons/thread-utility-addon/src/domain/state.js",
+          "fanIn": 1,
+          "fanOut": 0,
+          "exports": [
+            "createInitialState"
+          ]
+        },
+        {
+          "path": "addons/thread-utility-addon/src/domain/tags/model.js",
+          "fanIn": 2,
+          "fanOut": 0,
+          "exports": [
+            "normalizeCoreTagPrefs",
+            "buildDisplayTags",
+            "buildTagView",
+            "CORE_TAG_STATUS_PRECEDENCE"
+          ]
+        },
+        {
+          "path": "addons/thread-utility-addon/src/domain/utilities/clipboard.js",
+          "fanIn": 3,
+          "fanOut": 0,
+          "exports": [
+            "writeClipboard"
+          ]
+        },
+        {
+          "path": "addons/thread-utility-addon/src/domain/utilities/controller.js",
+          "fanIn": 1,
+          "fanOut": 3,
+          "exports": [
+            "FIXED_UTILITY_DEFINITIONS",
+            "createUtilityController"
+          ]
+        },
+        {
+          "path": "addons/thread-utility-addon/src/domain/utilities/quickSearch.js",
+          "fanIn": 3,
+          "fanOut": 0,
+          "exports": [
+            "QUICK_SEARCH_LIMIT",
+            "DEFAULT_QUICK_SEARCHES",
+            "normalizeQuickSearches",
+            "buildSearchTerm",
+            "buildQuickSearchUrl",
+            "registerQuickSearchUtilities"
+          ]
+        },
+        {
+          "path": "addons/thread-utility-addon/src/domain/utilities/registry.js",
+          "fanIn": 1,
+          "fanOut": 0,
+          "exports": [
+            "createUtilityRegistry"
+          ]
+        },
+        {
+          "path": "addons/thread-utility-addon/src/main.js",
+          "fanIn": 0,
+          "fanOut": 3,
+          "exports": []
+        },
+        {
+          "path": "addons/thread-utility-addon/src/ui/bindings.js",
+          "fanIn": 1,
+          "fanOut": 0,
+          "exports": [
+            "createThreadUtilityBindings"
+          ]
+        },
+        {
+          "path": "addons/thread-utility-addon/src/ui/launcher.js",
+          "fanIn": 1,
+          "fanOut": 0,
+          "exports": [
+            "renderLauncher"
+          ]
+        },
+        {
+          "path": "addons/thread-utility-addon/src/ui/palette.js",
+          "fanIn": 1,
+          "fanOut": 1,
+          "exports": [
+            "renderPalette"
+          ]
+        },
+        {
+          "path": "addons/thread-utility-addon/src/ui/settingsDialog.js",
+          "fanIn": 1,
+          "fanOut": 0,
+          "exports": [
+            "renderSettingsDialog"
+          ]
+        },
+        {
+          "path": "addons/thread-utility-addon/src/ui/threadUtility.css",
+          "fanIn": 1,
+          "fanOut": 0,
+          "exports": []
         }
       ],
       "cycles": [],
@@ -13971,7 +15165,8 @@
         "addons/library-addon/src/ui/utils/threadDiff.js",
         "addons/masked-direct-addon/src/main.js",
         "addons/site-repair-addon/src/main.js",
-        "addons/site-repair-addon/src/repairs/latestAjax/policy.js"
+        "addons/site-repair-addon/src/repairs/latestAjax/policy.js",
+        "addons/thread-utility-addon/src/main.js"
       ],
       "unreferencedExports": [
         "addons/example-addon/src/app/settings.js#normalizeExampleSettings",
@@ -14022,7 +15217,13 @@
         "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js#LATEST_AJAX_STATUS_EVENT",
         "addons/site-repair-addon/src/repairs/latestAjax/policy.js#isLatestDataRequest",
         "addons/site-repair-addon/src/repairs/latestAjax/policy.js#normalizeLatestAjaxErrorPayload",
-        "addons/site-repair-addon/src/repairs/latestAjax/policy.js#shouldRetryLatestAjaxError"
+        "addons/site-repair-addon/src/repairs/latestAjax/policy.js#shouldRetryLatestAjaxError",
+        "addons/thread-utility-addon/src/app/settings.js#normalizeThreadUtilitySettings",
+        "addons/thread-utility-addon/src/domain/content/parser.js#CONTENT_LIMITS",
+        "addons/thread-utility-addon/src/domain/downloads/parser.js#DOWNLOAD_LIMIT",
+        "addons/thread-utility-addon/src/domain/tags/model.js#CORE_TAG_STATUS_PRECEDENCE",
+        "addons/thread-utility-addon/src/domain/utilities/controller.js#FIXED_UTILITY_DEFINITIONS",
+        "addons/thread-utility-addon/src/domain/utilities/quickSearch.js#buildSearchTerm"
       ],
       "duplicateExports": [
         {
@@ -14040,7 +15241,8 @@
             "addons/latest-filters-addon/src/api/bridge.js",
             "addons/library-addon/src/api/bridge.js",
             "addons/shared/runtimeKit.js",
-            "addons/site-repair-addon/src/api/bridge.js"
+            "addons/site-repair-addon/src/api/bridge.js",
+            "addons/thread-utility-addon/src/api/bridge.js"
           ]
         },
         {
@@ -14062,7 +15264,8 @@
           "paths": [
             "addons/example-addon/src/api/ui/dialog.js",
             "addons/latest-filters-addon/src/api/ui/dialog.js",
-            "addons/library-addon/src/api/ui/dialog.js"
+            "addons/library-addon/src/api/ui/dialog.js",
+            "addons/thread-utility-addon/src/api/ui/dialog.js"
           ]
         },
         {
@@ -14080,7 +15283,8 @@
             "addons/latest-filters-addon/src/core/adaptor.js",
             "addons/library-addon/src/core/adaptor.js",
             "addons/shared/runtimeKit.js",
-            "addons/site-repair-addon/src/core/adaptor.js"
+            "addons/site-repair-addon/src/core/adaptor.js",
+            "addons/thread-utility-addon/src/core/adaptor.js"
           ]
         },
         {
@@ -14094,7 +15298,8 @@
           "name": "createInitialState",
           "paths": [
             "addons/example-addon/src/domain/state.js",
-            "addons/library-addon/src/ui/manager/state.js"
+            "addons/library-addon/src/ui/manager/state.js",
+            "addons/thread-utility-addon/src/domain/state.js"
           ]
         },
         {
@@ -14125,7 +15330,8 @@
             "addons/halloween-theme-addon/src/api/meta.js",
             "addons/latest-filters-addon/src/api/meta.js",
             "addons/library-addon/src/api/meta.js",
-            "addons/site-repair-addon/src/api/meta.js"
+            "addons/site-repair-addon/src/api/meta.js",
+            "addons/thread-utility-addon/src/api/meta.js"
           ]
         },
         {
@@ -14142,7 +15348,8 @@
             "addons/latest-filters-addon/src/api/page.js",
             "addons/library-addon/src/api/page.js",
             "addons/masked-direct-addon/src/api/page.js",
-            "addons/site-repair-addon/src/api/meta.js"
+            "addons/site-repair-addon/src/api/meta.js",
+            "addons/thread-utility-addon/src/api/page.js"
           ]
         },
         {
@@ -14150,14 +15357,16 @@
           "paths": [
             "addons/example-addon/src/api/storage.js",
             "addons/library-addon/src/api/storage.js",
-            "addons/site-repair-addon/src/api/storage.js"
+            "addons/site-repair-addon/src/api/storage.js",
+            "addons/thread-utility-addon/src/api/storage.js"
           ]
         },
         {
           "name": "getTagPrefs",
           "paths": [
             "addons/example-addon/src/api/storage.js",
-            "addons/library-addon/src/api/storage.js"
+            "addons/library-addon/src/api/storage.js",
+            "addons/thread-utility-addon/src/api/storage.js"
           ]
         },
         {
@@ -14172,7 +15381,8 @@
           "paths": [
             "addons/example-addon/src/api/ui/mount.js",
             "addons/latest-filters-addon/src/api/ui/mount.js",
-            "addons/library-addon/src/api/ui/mount.js"
+            "addons/library-addon/src/api/ui/mount.js",
+            "addons/thread-utility-addon/src/api/ui/mount.js"
           ]
         },
         {
@@ -14203,7 +15413,8 @@
             "addons/halloween-theme-addon/src/api/bridge.js",
             "addons/latest-filters-addon/src/api/bridge.js",
             "addons/library-addon/src/api/bridge.js",
-            "addons/shared/runtimeKit.js"
+            "addons/shared/runtimeKit.js",
+            "addons/thread-utility-addon/src/api/bridge.js"
           ]
         },
         {
@@ -14211,7 +15422,8 @@
           "paths": [
             "addons/example-addon/src/api/ui/dialog.js",
             "addons/latest-filters-addon/src/api/ui/dialog.js",
-            "addons/library-addon/src/api/ui/dialog.js"
+            "addons/library-addon/src/api/ui/dialog.js",
+            "addons/thread-utility-addon/src/api/ui/dialog.js"
           ]
         },
         {
@@ -14242,7 +15454,8 @@
             "addons/halloween-theme-addon/src/api/bridge.js",
             "addons/latest-filters-addon/src/api/bridge.js",
             "addons/library-addon/src/api/bridge.js",
-            "addons/shared/runtimeKit.js"
+            "addons/shared/runtimeKit.js",
+            "addons/thread-utility-addon/src/api/bridge.js"
           ]
         },
         {
@@ -14251,7 +15464,8 @@
             "addons/example-addon/src/api/ui/style.js",
             "addons/latest-filters-addon/src/api/ui/style.js",
             "addons/library-addon/src/api/ui/style.js",
-            "addons/site-repair-addon/src/api/ui/style.js"
+            "addons/site-repair-addon/src/api/ui/style.js",
+            "addons/thread-utility-addon/src/api/ui/style.js"
           ]
         },
         {
@@ -14280,7 +15494,8 @@
           "paths": [
             "addons/example-addon/src/api/storage.js",
             "addons/library-addon/src/api/storage.js",
-            "addons/site-repair-addon/src/api/storage.js"
+            "addons/site-repair-addon/src/api/storage.js",
+            "addons/thread-utility-addon/src/api/storage.js"
           ]
         },
         {
@@ -14289,7 +15504,8 @@
             "addons/example-addon/src/api/toast.js",
             "addons/library-addon/src/api/toast.js",
             "addons/masked-direct-addon/src/api/toast.js",
-            "addons/site-repair-addon/src/api/toast.js"
+            "addons/site-repair-addon/src/api/toast.js",
+            "addons/thread-utility-addon/src/api/toast.js"
           ]
         },
         {
@@ -14311,7 +15527,8 @@
           "paths": [
             "addons/example-addon/src/api/ui/mount.js",
             "addons/latest-filters-addon/src/api/ui/mount.js",
-            "addons/library-addon/src/api/ui/mount.js"
+            "addons/library-addon/src/api/ui/mount.js",
+            "addons/thread-utility-addon/src/api/ui/mount.js"
           ]
         },
         {
@@ -14320,7 +15537,8 @@
             "addons/example-addon/src/api/ui/style.js",
             "addons/latest-filters-addon/src/api/ui/style.js",
             "addons/library-addon/src/api/ui/style.js",
-            "addons/site-repair-addon/src/api/ui/style.js"
+            "addons/site-repair-addon/src/api/ui/style.js",
+            "addons/thread-utility-addon/src/api/ui/style.js"
           ]
         },
         {
@@ -14330,7 +15548,8 @@
             "addons/halloween-theme-addon/src/api/bridge.js",
             "addons/latest-filters-addon/src/api/bridge.js",
             "addons/library-addon/src/api/bridge.js",
-            "addons/shared/runtimeKit.js"
+            "addons/shared/runtimeKit.js",
+            "addons/thread-utility-addon/src/api/bridge.js"
           ]
         },
         {
@@ -14338,7 +15557,8 @@
           "paths": [
             "addons/example-addon/src/api/ui/dialog.js",
             "addons/latest-filters-addon/src/api/ui/dialog.js",
-            "addons/library-addon/src/api/ui/dialog.js"
+            "addons/library-addon/src/api/ui/dialog.js",
+            "addons/thread-utility-addon/src/api/ui/dialog.js"
           ]
         },
         {
@@ -14349,6 +15569,13 @@
           ]
         },
         {
+          "name": "updateUi",
+          "paths": [
+            "addons/example-addon/src/api/ui/mount.js",
+            "addons/thread-utility-addon/src/api/ui/mount.js"
+          ]
+        },
+        {
           "name": "waitForCorePing",
           "paths": [
             "addons/example-addon/src/api/bridge.js",
@@ -14356,7 +15583,8 @@
             "addons/latest-filters-addon/src/api/bridge.js",
             "addons/library-addon/src/api/bridge.js",
             "addons/shared/runtimeKit.js",
-            "addons/site-repair-addon/src/api/bridge.js"
+            "addons/site-repair-addon/src/api/bridge.js",
+            "addons/thread-utility-addon/src/api/bridge.js"
           ]
         },
         {
@@ -14377,19 +15605,29 @@
           ]
         },
         {
+          "name": "begin",
+          "paths": [
+            "addons/latest-filters-addon/src/app/operationTracker.js",
+            "addons/thread-utility-addon/src/domain/snapshot/sourceRegistry.js"
+          ]
+        },
+        {
           "name": "bind",
           "paths": [
             "addons/example-addon/src/app/commands.js",
             "addons/halloween-theme-addon/src/app/commands.js",
             "addons/latest-filters-addon/src/app/commands.js",
-            "addons/latest-filters-addon/src/ui/filterResetControls.js"
+            "addons/latest-filters-addon/src/ui/filterResetControls.js",
+            "addons/thread-utility-addon/src/app/commands.js",
+            "addons/thread-utility-addon/src/app/settingsEditor.js"
           ]
         },
         {
           "name": "bindRuntimeCommands",
           "paths": [
             "addons/example-addon/src/api/bridge.js",
-            "addons/shared/runtimeKit.js"
+            "addons/shared/runtimeKit.js",
+            "addons/thread-utility-addon/src/api/bridge.js"
           ]
         },
         {
@@ -14403,7 +15641,16 @@
             "addons/latest-filters-addon/src/main.js",
             "addons/library-addon/src/app/createLibraryAddonApp.js",
             "addons/library-addon/src/main.js",
-            "addons/site-repair-addon/src/app/createSiteRepairApp.js"
+            "addons/site-repair-addon/src/app/createSiteRepairApp.js",
+            "addons/thread-utility-addon/src/app/createThreadUtilityApp.js",
+            "addons/thread-utility-addon/src/main.js"
+          ]
+        },
+        {
+          "name": "boundedText",
+          "paths": [
+            "addons/thread-utility-addon/src/domain/snapshot/parser.js",
+            "addons/thread-utility-addon/src/domain/utilities/quickSearch.js"
           ]
         },
         {
@@ -14414,6 +15661,13 @@
           ]
         },
         {
+          "name": "clear",
+          "paths": [
+            "addons/library-addon/src/ui/threadTitle/threadTitleController.js",
+            "addons/thread-utility-addon/src/domain/snapshot/sourceRegistry.js"
+          ]
+        },
+        {
           "name": "close",
           "paths": [
             "addons/library-addon/src/app/managerController.js",
@@ -14421,7 +15675,8 @@
             "addons/library-addon/src/ui/entryEditor/editorController.js",
             "addons/library-addon/src/ui/manager/managerApp.js",
             "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
-            "addons/masked-direct-addon/src/app/managedTabs.js"
+            "addons/masked-direct-addon/src/app/managedTabs.js",
+            "addons/thread-utility-addon/src/app/settingsEditor.js"
           ]
         },
         {
@@ -14429,7 +15684,8 @@
           "paths": [
             "addons/example-addon/src/api/ui/dialog.js",
             "addons/latest-filters-addon/src/api/ui/dialog.js",
-            "addons/library-addon/src/api/ui/dialog.js"
+            "addons/library-addon/src/api/ui/dialog.js",
+            "addons/thread-utility-addon/src/api/ui/dialog.js"
           ]
         },
         {
@@ -14450,7 +15706,15 @@
           "name": "createInitialState",
           "paths": [
             "addons/example-addon/src/domain/state.js",
-            "addons/library-addon/src/ui/manager/state.js"
+            "addons/library-addon/src/ui/manager/state.js",
+            "addons/thread-utility-addon/src/domain/state.js"
+          ]
+        },
+        {
+          "name": "currentContext",
+          "paths": [
+            "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
+            "addons/thread-utility-addon/src/domain/utilities/controller.js"
           ]
         },
         {
@@ -14459,6 +15723,13 @@
             "addons/masked-direct-addon/src/shared/utils.js",
             "addons/shared/debugLog.js",
             "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js"
+          ]
+        },
+        {
+          "name": "descriptor",
+          "paths": [
+            "addons/example-addon/src/app/registration.js",
+            "addons/thread-utility-addon/src/app/registration.js"
           ]
         },
         {
@@ -14474,7 +15745,8 @@
             "addons/example-addon/src/app/uiController.js",
             "addons/shared/runtimeLifecycle.js",
             "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-            "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js"
+            "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+            "addons/thread-utility-addon/src/app/uiController.js"
           ]
         },
         {
@@ -14490,7 +15762,15 @@
             "addons/example-addon/src/app/uiController.js",
             "addons/shared/runtimeLifecycle.js",
             "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-            "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js"
+            "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+            "addons/thread-utility-addon/src/app/uiController.js"
+          ]
+        },
+        {
+          "name": "ensureStyle",
+          "paths": [
+            "addons/latest-filters-addon/src/ui/renderer.js",
+            "addons/thread-utility-addon/src/app/uiController.js"
           ]
         },
         {
@@ -14499,7 +15779,10 @@
             "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
             "addons/library-addon/src/ui/entryEditor/editorRenderer.js",
             "addons/library-addon/src/ui/updateInbox/updateInboxRenderer.js",
-            "addons/shared/htmlUtils.js"
+            "addons/shared/htmlUtils.js",
+            "addons/thread-utility-addon/src/domain/content/parser.js",
+            "addons/thread-utility-addon/src/ui/palette.js",
+            "addons/thread-utility-addon/src/ui/settingsDialog.js"
           ]
         },
         {
@@ -14522,7 +15805,8 @@
             "addons/example-addon/src/api/meta.js",
             "addons/halloween-theme-addon/src/api/meta.js",
             "addons/latest-filters-addon/src/api/meta.js",
-            "addons/site-repair-addon/src/api/meta.js"
+            "addons/site-repair-addon/src/api/meta.js",
+            "addons/thread-utility-addon/src/api/meta.js"
           ]
         },
         {
@@ -14532,7 +15816,8 @@
             "addons/latest-filters-addon/src/api/page.js",
             "addons/library-addon/src/api/page.js",
             "addons/masked-direct-addon/src/api/page.js",
-            "addons/site-repair-addon/src/api/meta.js"
+            "addons/site-repair-addon/src/api/meta.js",
+            "addons/thread-utility-addon/src/api/page.js"
           ]
         },
         {
@@ -14554,7 +15839,15 @@
           "paths": [
             "addons/example-addon/src/api/storage.js",
             "addons/library-addon/src/api/storage.js",
-            "addons/site-repair-addon/src/api/storage.js"
+            "addons/site-repair-addon/src/api/storage.js",
+            "addons/thread-utility-addon/src/api/storage.js"
+          ]
+        },
+        {
+          "name": "getTagPrefs",
+          "paths": [
+            "addons/example-addon/src/api/storage.js",
+            "addons/thread-utility-addon/src/api/storage.js"
           ]
         },
         {
@@ -14565,7 +15858,8 @@
             "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
             "addons/library-addon/src/ui/entryEditor/editorController.js",
             "addons/library-addon/src/ui/manager/managerApp.js",
-            "addons/library-addon/src/ui/updateInbox/updateInboxController.js"
+            "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+            "addons/thread-utility-addon/src/app/uiController.js"
           ]
         },
         {
@@ -14613,7 +15907,8 @@
           "name": "mountUi",
           "paths": [
             "addons/example-addon/src/api/ui/mount.js",
-            "addons/latest-filters-addon/src/api/ui/mount.js"
+            "addons/latest-filters-addon/src/api/ui/mount.js",
+            "addons/thread-utility-addon/src/api/ui/mount.js"
           ]
         },
         {
@@ -14635,7 +15930,8 @@
           "name": "notifyTeardownComplete",
           "paths": [
             "addons/example-addon/src/api/bridge.js",
-            "addons/shared/runtimeKit.js"
+            "addons/shared/runtimeKit.js",
+            "addons/thread-utility-addon/src/api/bridge.js"
           ]
         },
         {
@@ -14645,7 +15941,9 @@
             "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
             "addons/library-addon/src/ui/entryEditor/editorController.js",
             "addons/library-addon/src/ui/manager/managerApp.js",
-            "addons/library-addon/src/ui/updateInbox/updateInboxController.js"
+            "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+            "addons/thread-utility-addon/src/app/settingsEditor.js",
+            "addons/thread-utility-addon/src/domain/downloads/controller.js"
           ]
         },
         {
@@ -14653,7 +15951,8 @@
           "paths": [
             "addons/example-addon/src/api/ui/dialog.js",
             "addons/latest-filters-addon/src/api/ui/dialog.js",
-            "addons/library-addon/src/api/ui/dialog.js"
+            "addons/library-addon/src/api/ui/dialog.js",
+            "addons/thread-utility-addon/src/api/ui/dialog.js"
           ]
         },
         {
@@ -14669,7 +15968,8 @@
             "addons/example-addon/src/app/registration.js",
             "addons/library-addon/src/app/registration.js",
             "addons/masked-direct-addon/src/app/registration.js",
-            "addons/site-repair-addon/src/app/createSiteRepairApp.js"
+            "addons/site-repair-addon/src/app/createSiteRepairApp.js",
+            "addons/thread-utility-addon/src/app/registration.js"
           ]
         },
         {
@@ -14688,7 +15988,9 @@
             "addons/latest-filters-addon/src/app/registration.js",
             "addons/library-addon/src/app/registration.js",
             "addons/masked-direct-addon/src/app/managedTabs.js",
-            "addons/masked-direct-addon/src/app/registration.js"
+            "addons/masked-direct-addon/src/app/registration.js",
+            "addons/thread-utility-addon/src/app/registration.js",
+            "addons/thread-utility-addon/src/domain/utilities/registry.js"
           ]
         },
         {
@@ -14703,7 +16005,8 @@
           "name": "registerAddonRuntime",
           "paths": [
             "addons/example-addon/src/api/bridge.js",
-            "addons/shared/runtimeKit.js"
+            "addons/shared/runtimeKit.js",
+            "addons/thread-utility-addon/src/api/bridge.js"
           ]
         },
         {
@@ -14712,7 +16015,8 @@
             "addons/example-addon/src/api/ui/style.js",
             "addons/latest-filters-addon/src/api/ui/style.js",
             "addons/library-addon/src/ui/manager/managerApp.js",
-            "addons/site-repair-addon/src/api/ui/style.js"
+            "addons/site-repair-addon/src/api/ui/style.js",
+            "addons/thread-utility-addon/src/api/ui/style.js"
           ]
         },
         {
@@ -14726,7 +16030,8 @@
           "name": "render",
           "paths": [
             "addons/library-addon/src/ui/threadTitle/threadTitleController.js",
-            "addons/library-addon/src/ui/updateInbox/updateInboxController.js"
+            "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+            "addons/thread-utility-addon/src/app/settingsEditor.js"
           ]
         },
         {
@@ -14734,6 +16039,13 @@
           "paths": [
             "addons/example-addon/src/ui/dockRenderer.js",
             "addons/library-addon/src/ui/components/dock/dockRenderer.js"
+          ]
+        },
+        {
+          "name": "renderSummary",
+          "paths": [
+            "addons/latest-filters-addon/src/ui/renderer.js",
+            "addons/thread-utility-addon/src/ui/palette.js"
           ]
         },
         {
@@ -14749,14 +16061,16 @@
             "addons/example-addon/src/domain/bulkImport/controller.js",
             "addons/latest-filters-addon/src/app/surpriseController.js",
             "addons/library-addon/src/library/autoUpdateScheduler.js",
-            "addons/library-addon/src/ui/manager/handlers/updateCheckHandlers.js"
+            "addons/library-addon/src/ui/manager/handlers/updateCheckHandlers.js",
+            "addons/thread-utility-addon/src/app/commands.js"
           ]
         },
         {
           "name": "save",
           "paths": [
             "addons/library-addon/src/app/settings.js",
-            "addons/library-addon/src/ui/entryEditor/editorController.js"
+            "addons/library-addon/src/ui/entryEditor/editorController.js",
+            "addons/thread-utility-addon/src/app/settingsEditor.js"
           ]
         },
         {
@@ -14777,7 +16091,8 @@
           "name": "setStoredValue",
           "paths": [
             "addons/example-addon/src/api/storage.js",
-            "addons/site-repair-addon/src/api/storage.js"
+            "addons/site-repair-addon/src/api/storage.js",
+            "addons/thread-utility-addon/src/api/storage.js"
           ]
         },
         {
@@ -14785,7 +16100,8 @@
           "paths": [
             "addons/example-addon/src/api/toast.js",
             "addons/masked-direct-addon/src/api/toast.js",
-            "addons/site-repair-addon/src/api/toast.js"
+            "addons/site-repair-addon/src/api/toast.js",
+            "addons/thread-utility-addon/src/api/toast.js"
           ]
         },
         {
@@ -14811,7 +16127,8 @@
             "addons/latest-filters-addon/src/app/registration.js",
             "addons/library-addon/src/app/registration.js",
             "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
-            "addons/site-repair-addon/src/app/createSiteRepairApp.js"
+            "addons/site-repair-addon/src/app/createSiteRepairApp.js",
+            "addons/thread-utility-addon/src/app/registration.js"
           ]
         },
         {
@@ -14834,14 +16151,16 @@
           "paths": [
             "addons/library-addon/src/library/activityEventModel.js",
             "addons/library-addon/src/library/recordModel.js",
-            "addons/library-addon/src/library/updateEventModel.js"
+            "addons/library-addon/src/library/updateEventModel.js",
+            "addons/thread-utility-addon/src/domain/downloads/parser.js"
           ]
         },
         {
           "name": "unmountUi",
           "paths": [
             "addons/example-addon/src/api/ui/mount.js",
-            "addons/latest-filters-addon/src/api/ui/mount.js"
+            "addons/latest-filters-addon/src/api/ui/mount.js",
+            "addons/thread-utility-addon/src/api/ui/mount.js"
           ]
         },
         {
@@ -14850,14 +16169,16 @@
             "addons/example-addon/src/api/ui/style.js",
             "addons/latest-filters-addon/src/api/ui/style.js",
             "addons/library-addon/src/ui/manager/managerApp.js",
-            "addons/site-repair-addon/src/api/ui/style.js"
+            "addons/site-repair-addon/src/api/ui/style.js",
+            "addons/thread-utility-addon/src/api/ui/style.js"
           ]
         },
         {
           "name": "updateAddonRuntimeStatus",
           "paths": [
             "addons/example-addon/src/api/bridge.js",
-            "addons/shared/runtimeKit.js"
+            "addons/shared/runtimeKit.js",
+            "addons/thread-utility-addon/src/api/bridge.js"
           ]
         },
         {
@@ -14865,7 +16186,8 @@
           "paths": [
             "addons/example-addon/src/api/ui/dialog.js",
             "addons/latest-filters-addon/src/api/ui/dialog.js",
-            "addons/library-addon/src/api/ui/dialog.js"
+            "addons/library-addon/src/api/ui/dialog.js",
+            "addons/thread-utility-addon/src/api/ui/dialog.js"
           ]
         },
         {
@@ -14873,6 +16195,13 @@
           "paths": [
             "addons/halloween-theme-addon/src/app/createHalloweenThemeApp.js",
             "addons/shared/coreBridge.js"
+          ]
+        },
+        {
+          "name": "updateUi",
+          "paths": [
+            "addons/example-addon/src/api/ui/mount.js",
+            "addons/thread-utility-addon/src/api/ui/mount.js"
           ]
         },
         {
@@ -14892,7 +16221,8 @@
           "paths": [
             "addons/example-addon/src/api/bridge.js",
             "addons/shared/coreBridge.js",
-            "addons/shared/runtimeKit.js"
+            "addons/shared/runtimeKit.js",
+            "addons/thread-utility-addon/src/api/bridge.js"
           ]
         },
         {
@@ -15097,6 +16427,29 @@
         ],
         "unusedDeclaredCapabilities": [],
         "confidence": "conservative; registration and lifecycle capabilities may not have action-string evidence"
+      },
+      {
+        "addonId": "thread-utility-addon",
+        "declared": [
+          "page",
+          "storage",
+          "toast",
+          "ui.dialog",
+          "ui.mount",
+          "ui.style"
+        ],
+        "evidenceUsed": [
+          "feature",
+          "page",
+          "storage",
+          "toast",
+          "ui",
+          "ui.dialog",
+          "ui.mount",
+          "ui.style"
+        ],
+        "unusedDeclaredCapabilities": [],
+        "confidence": "conservative; registration and lifecycle capabilities may not have action-string evidence"
       }
     ],
     "duplication": {
@@ -15123,6 +16476,10 @@
               },
               {
                 "path": "addons/library-addon/src/api/ui/manager.js",
+                "occurrences": 1
+              },
+              {
+                "path": "addons/thread-utility-addon/src/api/storage.js",
                 "occurrences": 1
               }
             ]
@@ -15406,6 +16763,10 @@
               {
                 "path": "addons/site-repair-addon/src/api/meta.js",
                 "occurrences": 1
+              },
+              {
+                "path": "addons/thread-utility-addon/src/api/page.js",
+                "occurrences": 1
               }
             ]
           },
@@ -15442,6 +16803,10 @@
               },
               {
                 "path": "addons/site-repair-addon/src/api/storage.js",
+                "occurrences": 1
+              },
+              {
+                "path": "addons/thread-utility-addon/src/api/storage.js",
                 "occurrences": 1
               }
             ]
@@ -15497,6 +16862,10 @@
               {
                 "path": "addons/site-repair-addon/src/api/storage.js",
                 "occurrences": 1
+              },
+              {
+                "path": "addons/thread-utility-addon/src/api/storage.js",
+                "occurrences": 1
               }
             ]
           },
@@ -15525,6 +16894,10 @@
               },
               {
                 "path": "addons/site-repair-addon/src/api/toast.js",
+                "occurrences": 1
+              },
+              {
+                "path": "addons/thread-utility-addon/src/api/toast.js",
                 "occurrences": 1
               }
             ]
@@ -15576,6 +16949,10 @@
               {
                 "path": "addons/library-addon/src/api/ui/manager.js",
                 "occurrences": 1
+              },
+              {
+                "path": "addons/thread-utility-addon/src/api/ui/dialog.js",
+                "occurrences": 1
               }
             ]
           },
@@ -15605,6 +16982,10 @@
               {
                 "path": "addons/library-addon/src/api/ui/manager.js",
                 "occurrences": 1
+              },
+              {
+                "path": "addons/thread-utility-addon/src/api/ui/dialog.js",
+                "occurrences": 1
               }
             ]
           },
@@ -15629,6 +17010,10 @@
               },
               {
                 "path": "addons/library-addon/src/api/ui/dialog.js",
+                "occurrences": 1
+              },
+              {
+                "path": "addons/thread-utility-addon/src/api/ui/dialog.js",
                 "occurrences": 1
               }
             ]
@@ -15681,6 +17066,10 @@
               {
                 "path": "addons/library-addon/src/api/ui/mount.js",
                 "occurrences": 1
+              },
+              {
+                "path": "addons/thread-utility-addon/src/api/ui/mount.js",
+                "occurrences": 1
               }
             ]
           },
@@ -15718,6 +17107,10 @@
               {
                 "path": "addons/site-repair-addon/src/api/ui/style.js",
                 "occurrences": 1
+              },
+              {
+                "path": "addons/thread-utility-addon/src/api/ui/style.js",
+                "occurrences": 1
               }
             ]
           },
@@ -15751,6 +17144,10 @@
               {
                 "path": "addons/site-repair-addon/src/api/ui/style.js",
                 "occurrences": 1
+              },
+              {
+                "path": "addons/thread-utility-addon/src/api/ui/style.js",
+                "occurrences": 1
               }
             ]
           },
@@ -15776,6 +17173,10 @@
               {
                 "path": "addons/library-addon/src/api/ui/mount.js",
                 "occurrences": 1
+              },
+              {
+                "path": "addons/thread-utility-addon/src/api/ui/mount.js",
+                "occurrences": 1
               }
             ]
           },
@@ -15797,6 +17198,14 @@
               {
                 "path": "addons/site-repair-addon/src/app/createSiteRepairApp.js",
                 "occurrences": 1
+              },
+              {
+                "path": "addons/thread-utility-addon/src/api/ui/mount.js",
+                "occurrences": 1
+              },
+              {
+                "path": "addons/thread-utility-addon/src/app/createThreadUtilityApp.js",
+                "occurrences": 3
               }
             ]
           }
