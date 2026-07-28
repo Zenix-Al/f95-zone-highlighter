@@ -9,7 +9,7 @@
       "regular": "caacd5214f6f63a95e6bed0cbe8ab2e21cce9758edd76f9a13d8df5f85d82f2b"
     },
     "masked-direct-addon": {
-      "release": "59dbb55fd199718169f3c97a63332e4aa4155ed85d54b2707a397fc95e6d41ad",
+      "release": "0613e1f95ef7513b139343a42b8578028ab0fb070f3484bee6b50f34f7e6a88f",
       "regular": "da7aad86e1c5bb8841fc3ff47743fa8dfaeaffa0136c2d2e74b4bda93870a0c8"
     },
     "latest-filters-addon": {
@@ -27,6 +27,9 @@
     "site-repair-addon": {
       "regular": "504794a9fa8d7cb0a2a80049c787d736b7300a5340c735aa4f56920e1c70bc45",
       "release": "ca5c15ff4b103d81abec821bff5f01f0865cd4e987dbec568eb7fd93477a7534"
+    },
+    "thread-utility-addon": {
+      "release": "2b85e6b4e46840483de567b5c9b336480cc8e96c340a95940e4f7be88d96d253"
     }
   }
 }

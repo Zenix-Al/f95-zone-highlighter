@@ -191,7 +191,12 @@ export async function readProcessingDownloadTriggerBySource(
   const normalizedHost = String(host || "").trim().toLowerCase();
   const normalizedIdentifier = normalizeSourceIdentifier(sourceIdentifier);
   if (
-    !["datanodes.to", "download.gg", "drive.google.com"].includes(
+    ![
+      "datanodes.to",
+      "download.gg",
+      "drive.google.com",
+      "vik1ngfile.site",
+    ].includes(
       normalizedHost,
     ) ||
     !normalizedIdentifier ||
@@ -253,7 +258,12 @@ function getRequestKey(requestId) {
 async function addSourceLookup(GMApi, trigger) {
   const identifier = getSourceIdentifier(trigger.sourceUrl, trigger.host);
   if (
-    !["datanodes.to", "download.gg", "drive.google.com"].includes(
+    ![
+      "datanodes.to",
+      "download.gg",
+      "drive.google.com",
+      "vik1ngfile.site",
+    ].includes(
       trigger.host,
     ) ||
     !identifier
@@ -297,7 +307,12 @@ async function addSourceLookup(GMApi, trigger) {
 async function removeSourceLookup(GMApi, trigger) {
   const identifier = getSourceIdentifier(trigger.sourceUrl, trigger.host);
   if (
-    !["datanodes.to", "download.gg", "drive.google.com"].includes(
+    ![
+      "datanodes.to",
+      "download.gg",
+      "drive.google.com",
+      "vik1ngfile.site",
+    ].includes(
       trigger.host,
     ) ||
     !identifier ||

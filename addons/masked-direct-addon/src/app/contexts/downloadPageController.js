@@ -75,6 +75,8 @@ export function createDownloadPageController({
           ? await recoverMarkerlessDatanodesRequest(GMApi)
           : host === "download.gg"
             ? await recoverMarkerlessDownloadGgRequest(GMApi)
+            : host === "vik1ngfile.site"
+              ? await recoverMarkerlessVik1ngfileRequest(GMApi)
             : await recoverMarkerlessGoogleDriveRequest(GMApi);
       if (recovered.active) {
         restoreRouteMarkersFromTrigger(recovered, originTabQueryKey);
@@ -205,6 +207,7 @@ function isRecoverableMarkerlessDownload(host) {
     isMarkerlessDatanodesDownload(host) ||
     (host === "download.gg" &&
       /^\/(?:[a-z]{2}(?:-[a-z]{2})?\/)?file-/i.test(location.pathname)) ||
+    (host === "vik1ngfile.site" && location.pathname.startsWith("/f/")) ||
     (host === "drive.google.com" &&
       ((location.hostname === "drive.usercontent.google.com" &&
         location.pathname.startsWith("/download")) ||
@@ -213,6 +216,15 @@ function isRecoverableMarkerlessDownload(host) {
             location.pathname === "/open" ||
             location.pathname === "/uc"))))
   );
+}
+
+async function recoverMarkerlessVik1ngfileRequest(GMApi) {
+  const sourceIdentifier = location.pathname.split("/").filter(Boolean).at(-1);
+  if (!sourceIdentifier) return { active: false };
+  return readProcessingDownloadTriggerBySource(GMApi, {
+    host: "vik1ngfile.site",
+    sourceIdentifier,
+  });
 }
 
 async function recoverMarkerlessDownloadGgRequest(GMApi) {
@@ -358,6 +370,7 @@ function shouldKeepRouteMarkersInSession() {
       (host === "datanodes.to" && location.pathname.startsWith("/download")) ||
       (host === "download.gg" &&
         /^\/(?:[a-z]{2}(?:-[a-z]{2})?\/)?file-/i.test(location.pathname)) ||
+      (host === "vik1ngfile.site" && location.pathname.startsWith("/f/")) ||
       host === "drive.google.com"
     );
   } catch {

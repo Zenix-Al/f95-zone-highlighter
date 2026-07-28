@@ -136,6 +136,8 @@ module.exports = function registerAddonMatrixTests(context) {
           const expected =
             entry.id === "latest-filters-addon"
               ? route.id === "latest"
+              : entry.id === "thread-utility-addon"
+                ? route.id === "thread"
               : entry.id === "masked-direct-addon"
                 ? ["thread", "masked"].includes(route.id)
                 : true;

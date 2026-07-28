@@ -218,12 +218,12 @@
     }
   ],
   "build": {
-    "authoredBytes": 308478,
+    "authoredBytes": 308477,
     "fileCount": 92,
     "regular": {
       "mode": "regular",
-      "bytes": 319005,
-      "gzipBytes": 65901,
+      "bytes": 319003,
+      "gzipBytes": 65904,
       "contributors": [
         {
           "path": "addons/library-addon/src/library/service.js",
@@ -287,7 +287,7 @@
         },
         {
           "path": "addons/library-addon/src/ui/assets/manager.html",
-          "bytes": 5990
+          "bytes": 5988
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorRenderer.js",
@@ -309,7 +309,7 @@
     },
     "release": {
       "mode": "release",
-      "bytes": 278932,
+      "bytes": 278930,
       "gzipBytes": 57080,
       "contributors": [
         {
@@ -350,7 +350,7 @@
         },
         {
           "path": "addons/library-addon/src/ui/assets/manager.html",
-          "bytes": 5841
+          "bytes": 5840
         },
         {
           "path": "addons/library-addon/src/app/dockController.js",

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "identifier": "1d622d03c72f3fadafcad7ae25ce8de8a5ccc6f87c6c587cc817a259ade9ce7c",
+  "identifier": "cffd6990b52353a6a27c2bca48ec1ac49321a9fb0e33e7aae458091d71d7485f",
   "catalog": [
     {
       "id": "example-addon",
@@ -127,7 +127,7 @@
       "id": "masked-direct-addon",
       "name": "F95UE Masked + Direct Download Add-on",
       "description": "Combines masked-link skipper and direct-download flows into one trusted add-on.",
-      "version": "1.2.0",
+      "version": "1.1.1",
       "pageScopes": [
         "f95zone"
       ],
@@ -224,6 +224,34 @@
       "legacyIds": [
         "image-repair-addon"
       ]
+    },
+    {
+      "id": "thread-utility-addon",
+      "name": "F95UE Thread Utility Add-on",
+      "description": "Provides a compact thread dashboard and extensible thread utilities.",
+      "version": "0.1.1",
+      "pageScopes": [
+        "thread"
+      ],
+      "runtimeMode": "core-required",
+      "matches": [
+        "*://f95zone.to/threads/*"
+      ],
+      "grants": [
+        "none"
+      ],
+      "runAt": "document-idle",
+      "requiresCore": true,
+      "capabilities": [
+        "page",
+        "storage",
+        "toast",
+        "ui.style",
+        "ui.mount",
+        "ui.dialog"
+      ],
+      "downloadUrl": "",
+      "trusted": true
     }
   ]
 }

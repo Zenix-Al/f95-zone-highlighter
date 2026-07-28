@@ -109,8 +109,12 @@ Normal host automation resumes only after the challenge page disappears.
 Vik1ngFile support is active again for `/f/<id>` routes on both
 `vik1ngfile.site` and its `vikingfile.com` alias. Both names normalize to one
 host setting and use this same challenge gate before each of the two expected
-download controls. Its live selector flow remains provisional until the
-currently unreachable host can be verified manually.
+download controls. VikingFile receives a clean destination URL because its
+cross-origin alias redirect removes unknown query parameters before the add-on
+can retain them in session storage. The clean `/f/<id>` route recovers exactly
+one live GM request by file ID; ambiguous same-file requests remain manual.
+Its live selector flow remains provisional until the currently unreachable
+host can be verified manually.
 
 DelaFil support is limited to `/<hex-id>/<filename>` file routes. It uses the
 site-generated same-file link containing `pt` or `download_token`, performs one
