@@ -65,6 +65,7 @@ export function createThreadUtilitySettingsEditor({
 
   async function save() {
     capture();
+    const session = active;
     const validation = validateSettingsDraft(active?.draft);
     if (!validation.ok) {
       active.error = "Complete every utility label and query before saving.";
@@ -73,6 +74,7 @@ export function createThreadUtilitySettingsEditor({
     }
     const next = { ...getSettings(), ...validation.value };
     const result = await setStoredValue(core, THREAD_UTILITY_SETTINGS_KEY, next);
+    if (active !== session) return { ok: false, reason: "stale_generation" };
     if (!result?.ok) {
       active.error = "Settings could not be saved. Your draft is still open.";
       await render();
@@ -113,13 +115,20 @@ export function createThreadUtilitySettingsEditor({
 
   async function open() {
     if (active) return { ok: true, value: { alreadyOpen: true } };
-    active = { draft: createSettingsDraft(getSettings()), error: "" };
+    const session = { draft: createSettingsDraft(getSettings()), error: "" };
+    active = session;
     const result = await openDialog(core, {
       dialogId: THREAD_UTILITY_SETTINGS_DIALOG_ID,
       title: "Thread Utility Settings",
-      html: renderSettingsDialog(active.draft),
+      html: renderSettingsDialog(session.draft),
       size: "lg",
     });
+    if (active !== session) {
+      if (result?.ok) {
+        await closeDialog(core, THREAD_UTILITY_SETTINGS_DIALOG_ID, "stale-dialog-open");
+      }
+      return { ok: false, reason: "stale_generation" };
+    }
     if (!result?.ok) {
       active = null;
       return result;

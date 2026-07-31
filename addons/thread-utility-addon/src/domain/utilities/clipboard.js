@@ -1,4 +1,4 @@
-const CLIPBOARD_LIMIT = 4096;
+export const CLIPBOARD_LIMIT = 4096;
 
 export async function writeClipboard(
   value,

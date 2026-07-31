@@ -3,7 +3,6 @@ export function createThreadUtilityBindings({
   isEnabled,
   onOpenPalette,
   onRunUtility,
-  onCopyDescription,
   onDownloadAction,
   onOpenSettings,
   onRefreshPalette,
@@ -40,17 +39,6 @@ export function createThreadUtilityBindings({
     if (clickHandler) return;
     clickHandler = (event) => {
       if (!isEnabled()) return;
-      const downloadButton = event.target?.closest?.(
-        "button[data-download-action]",
-      );
-      if (downloadButton?.closest?.('[data-role="threadUtilityPalette"]')) {
-        event.preventDefault();
-        void onDownloadAction(
-          String(downloadButton.dataset.downloadAction || ""),
-          String(downloadButton.dataset.downloadId || ""),
-        );
-        return;
-      }
       const button = resolveLauncherButton(event);
       if (!button) return;
       event.preventDefault();
@@ -69,6 +57,17 @@ export function createThreadUtilityBindings({
     if (dialogClickHandler) return;
     dialogClickHandler = (event) => {
       if (!isEnabled()) return;
+      const downloadButton = event.target?.closest?.(
+        "button[data-download-action]",
+      );
+      if (downloadButton?.closest?.('[data-role="threadUtilityPalette"]')) {
+        event.preventDefault();
+        void onDownloadAction(
+          String(downloadButton.dataset.downloadAction || ""),
+          String(downloadButton.dataset.downloadId || ""),
+        );
+        return;
+      }
       const footerButton = event.target?.closest?.(
         "button[data-thread-utility-footer-action]",
       );
@@ -87,14 +86,6 @@ export function createThreadUtilityBindings({
         if (!sectionId) return;
         event.preventDefault();
         void onToggleContent(sectionId);
-        return;
-      }
-      const copyDescriptionButton = event.target?.closest?.(
-        'button[data-thread-utility-action="copy-description"]',
-      );
-      if (copyDescriptionButton?.closest?.('[data-role="threadUtilityPalette"]')) {
-        event.preventDefault();
-        void onCopyDescription();
         return;
       }
       const utilityButton = event.target?.closest?.(
@@ -131,6 +122,7 @@ export function createThreadUtilityBindings({
   return {
     bindDialogEvents,
     bindLauncherEvents,
+    openPalette: () => onOpenPalette(),
     owner: addonId,
     rebindDialogEvents,
     unbindDialogEvents,

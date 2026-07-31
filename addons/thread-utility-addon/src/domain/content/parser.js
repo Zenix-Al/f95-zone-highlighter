@@ -21,6 +21,12 @@ const BOUNDARY_LABELS = new Set([
   "tags",
   "download",
   "downloads",
+  "changelog",
+  "changelogs",
+  "developer note",
+  "developer notes",
+  "feature",
+  "features",
 ]);
 
 const ALLOWED_TAGS = new Map([
@@ -247,10 +253,14 @@ export function parseContentSections(root, { baseUrl = root?.ownerDocument?.base
       cloneSectionRange(root, markers, markerIndex),
       baseUrl,
     );
+    const html = normalized.html.replace(/^(?:(?:\s|&nbsp;)*:(?:\s|&nbsp;)*|(?:\s|&nbsp;)*<br>)+/i, "");
+    const text = normalized.text.replace(/^:\s*/, "");
     result[id] = Object.freeze({
       id,
-      available: Boolean(normalized.text),
+      available: Boolean(text),
       ...normalized,
+      html,
+      text,
     });
   }
   return Object.freeze(result);

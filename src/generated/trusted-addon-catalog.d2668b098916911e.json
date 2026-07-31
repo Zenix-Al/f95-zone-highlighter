@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "identifier": "cffd6990b52353a6a27c2bca48ec1ac49321a9fb0e33e7aae458091d71d7485f",
+  "identifier": "d2668b098916911eadbc9a70501a2c72ddd9f8de1ed849ca3348c40f745cfc17",
   "catalog": [
     {
       "id": "example-addon",
@@ -229,7 +229,7 @@
       "id": "thread-utility-addon",
       "name": "F95UE Thread Utility Add-on",
       "description": "Provides a compact thread dashboard and extensible thread utilities.",
-      "version": "0.1.1",
+      "version": "0.1.0",
       "pageScopes": [
         "thread"
       ],
@@ -243,11 +243,13 @@
       "runAt": "document-idle",
       "requiresCore": true,
       "capabilities": [
+        "feature",
         "page",
         "storage",
         "toast",
         "ui.style",
         "ui.mount",
+        "ui.dock",
         "ui.dialog"
       ],
       "downloadUrl": "",

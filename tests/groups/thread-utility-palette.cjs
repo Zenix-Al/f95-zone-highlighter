@@ -38,7 +38,6 @@ module.exports = function registerThreadUtilityPalette(context) {
         status: index === 0 ? "preferred" : "neutral",
       })),
       utilities: [
-        { id: "opening-post", family: "fixed", label: "Go to opening post" },
         { id: "copy-thread-link", family: "fixed", label: "Copy thread link" },
         { id: "copy-title", family: "fixed", label: "Copy title" },
         { id: "search-1", family: "quick-search", label: "Search title" },
@@ -74,8 +73,9 @@ module.exports = function registerThreadUtilityPalette(context) {
     const html = renderPalette(state());
     const order = [
       "Example Game",
+      'data-utility-id="copy-title"',
+      'data-utility-id="copy-thread-link"',
       "thread-utility-tags",
-      "thread-utility-primary-actions",
       "thread-utility-utility-grid",
       "Description",
       "Installation",
@@ -86,6 +86,8 @@ module.exports = function registerThreadUtilityPalette(context) {
     assert.deepStrictEqual([...order].sort((a, b) => a - b), order);
     assert.match(html, />\+6<\/button>/);
     assert.match(html, /aria-expanded="false"/);
+    assert.doesNotMatch(html, /Open thread|Copy title \+ URL|Copy description/);
+    assert.match(html, /data-preserve-scroll="palette"/);
     assert.strictEqual(
       state().ui.openContentSection,
       null,
@@ -99,6 +101,15 @@ module.exports = function registerThreadUtilityPalette(context) {
     assert.strictEqual(footer.parentElement, palette);
     assert.strictEqual(scroll.contains(footer), false);
     window.close();
+  });
+
+  runTest("THREAD-UTILITY-PALETTE-01 renders a missing rating as a dash", () => {
+    const { renderPalette } = loadModule(
+      "addons/thread-utility-addon/src/ui/palette.js",
+    );
+    const missingRating = state();
+    missingRating.snapshot.rating = null;
+    assert.match(renderPalette(missingRating), /<b>Rating<\/b> -/);
   });
 
   runTest("THREAD-UTILITY-PALETTE-01 keeps utilities in partial and failure states", () => {

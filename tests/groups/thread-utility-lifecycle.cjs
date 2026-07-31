@@ -95,14 +95,8 @@ module.exports = function registerThreadUtilityLifecycle(context) {
     return createThreadUtilityApp({ core, runtime: runtime() });
   }
 
-  function clickLauncher() {
-    const root = document.createElement("div");
-    root.dataset.role = "threadUtilityLauncher";
-    const button = document.createElement("button");
-    button.dataset.threadUtilityAction = "open-palette";
-    root.appendChild(button);
-    document.body.appendChild(root);
-    button.dispatchEvent(new window.MouseEvent("click", { bubbles: true, composed: true }));
+  function clickLauncher(core) {
+    core.command({ command: "dock-action", actionId: "open-palette" });
   }
 
   function flush() {
@@ -117,10 +111,10 @@ module.exports = function registerThreadUtilityLifecycle(context) {
       await app.bootstrap();
       await app.getLifecycle().disable("cycle-disable");
       await app.getLifecycle().enable("cycle-enable");
-      clickLauncher();
+      clickLauncher(core);
       await flush();
-      assert.strictEqual(core.actions.filter(({ action }) => action === "ui.mount").length, 2);
-      assert.strictEqual(core.actions.filter(({ action }) => action === "ui.unmount").length, 1);
+      assert.strictEqual(core.actions.filter(({ action }) => action === "ui.dock.setButtons").length, 2);
+      assert.strictEqual(core.actions.filter(({ action }) => action === "ui.dock.removeButtons").length, 1);
       assert.strictEqual(core.actions.filter(({ action }) => action === "ui.dialog.open").length, 1);
       await app.getLifecycle().teardown("cycle-complete");
     } finally {
@@ -135,7 +129,7 @@ module.exports = function registerThreadUtilityLifecycle(context) {
       const core = createCore({ dialogOpen: pendingOpen });
       const app = createApp(core);
       await app.bootstrap();
-      clickLauncher();
+      clickLauncher(core);
       await flush();
       core.command({
         command: "before-page-change",
@@ -170,7 +164,7 @@ module.exports = function registerThreadUtilityLifecycle(context) {
       const core = createCore();
       const app = createApp(core);
       await app.bootstrap();
-      clickLauncher();
+      clickLauncher(core);
       await flush();
       assert.strictEqual(app.getState().ui.dialogOpen, true);
       for (const reason of ["escape", "backdrop", "replacement", "api-close"]) {
@@ -203,7 +197,7 @@ module.exports = function registerThreadUtilityLifecycle(context) {
         tagsExpanded: false,
         openContentSection: null,
       });
-      assert.strictEqual(core.actions.filter(({ action }) => action === "ui.mount").length, 0);
+      assert.strictEqual(core.actions.filter(({ action }) => action === "ui.dock.setButtons").length, 0);
       assert.deepStrictEqual(await app.getLifecycle().enable("style-retry"), { ok: true });
       assert.strictEqual(app.getState().enabled, true);
       await app.getLifecycle().teardown("style-test");
@@ -218,11 +212,11 @@ module.exports = function registerThreadUtilityLifecycle(context) {
       const core = createCore({ failDialogOnce: true });
       const app = createApp(core);
       await app.bootstrap();
-      clickLauncher();
+      clickLauncher(core);
       await flush();
       assert.strictEqual(app.getState().ui.dialogOpen, false);
       assert.strictEqual(app.getState().ui.dialogOpening, false);
-      clickLauncher();
+      clickLauncher(core);
       await flush();
       assert.strictEqual(app.getState().ui.dialogOpen, true);
       assert.strictEqual(
@@ -241,7 +235,7 @@ module.exports = function registerThreadUtilityLifecycle(context) {
       const core = createCore({ settings: [{ showLauncher: true }, { showLauncher: false }] });
       const app = createApp(core);
       await app.bootstrap();
-      clickLauncher();
+      clickLauncher(core);
       await flush();
       assert.strictEqual(app.getState().ui.dialogOpen, true);
       await app.getLifecycle().refresh("settings-refresh");

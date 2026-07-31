@@ -84,7 +84,7 @@ function ratingValue(document) {
   ).trim();
   if (!raw) return null;
   const rating = Number(raw);
-  return Number.isFinite(rating) && rating >= 0 && rating <= 5 ? rating : null;
+  return Number.isFinite(rating) && rating > 0 && rating <= 5 ? rating : null;
 }
 
 function findStarter(document) {

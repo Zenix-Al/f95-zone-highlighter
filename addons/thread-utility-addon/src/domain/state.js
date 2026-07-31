@@ -1,6 +1,9 @@
 export function createInitialState() {
   return {
-    enabled: false,
+    // Registration happens before addon.access resolves. Start from the
+    // canonical optimistic state so the runtime does not disable its own
+    // handshake; persisted core state is applied immediately afterward.
+    enabled: true,
     pageContext: null,
     snapshot: null,
     settings: {

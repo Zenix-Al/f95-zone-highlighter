@@ -34,6 +34,7 @@ for (const group of [
   "thread-utility-downloads",
   "thread-utility-palette",
   "thread-utility-settings",
+  "thread-utility-hardening",
   "masked-direct-parallel-baseline",
   "masked-direct-toast-remove",
   "masked-direct-parallel-requests",

@@ -230,7 +230,7 @@ module.exports = function registerThreadUtilityTags(context) {
           addonName: "Thread Utility",
           addonVersion: "0.1.0",
           addonDescription: "fixture",
-          capabilities: ["page", "storage", "toast", "ui.style", "ui.mount", "ui.dialog"],
+          capabilities: ["page", "storage", "toast", "ui.style", "ui.mount", "ui.dock", "ui.dialog"],
           requiresCore: true,
           pageScopes: ["thread"],
           runtimeMode: "core-required",
@@ -241,13 +241,7 @@ module.exports = function registerThreadUtilityTags(context) {
       const lifecycleGeneration = app.getLifecycle().getGeneration();
       const snapshot = app.getSnapshot();
 
-      const launcher = document.createElement("div");
-      launcher.dataset.role = "threadUtilityLauncher";
-      const openButton = document.createElement("button");
-      openButton.dataset.threadUtilityAction = "open-palette";
-      launcher.appendChild(openButton);
-      document.body.appendChild(launcher);
-      openButton.dispatchEvent(new window.MouseEvent("click", { bubbles: true, composed: true }));
+      commandHandler({ command: "dock-action", actionId: "open-palette" });
       await new Promise((resolve) => setImmediate(resolve));
       const open = actions.find(({ action }) => action === "ui.dialog.open");
       assert.match(open.payload.html, />\+3<\/button>/);

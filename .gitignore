@@ -73,6 +73,7 @@ coverage/
 *.swo
 *.bak
 *.tmp
+tests/.tmp*/
 
 # Testing / Coverage
 .coverage

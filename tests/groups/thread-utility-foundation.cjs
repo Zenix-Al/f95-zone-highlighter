@@ -15,11 +15,13 @@ module.exports = function registerThreadUtilityFoundation(context) {
 
   const addonId = "thread-utility-addon";
   const expectedCapabilities = [
+    "feature",
     "page",
     "storage",
     "toast",
     "ui.style",
     "ui.mount",
+    "ui.dock",
     "ui.dialog",
   ];
 
@@ -115,6 +117,54 @@ module.exports = function registerThreadUtilityFoundation(context) {
     }
   });
 
+  runTest("THREAD-UTILITY-FOUNDATION-01 exposes core enable recovery while disabled", () => {
+    const sandbox = createDomSandbox();
+    try {
+      const { createAddonPanelActions } = loadModule(
+        "src/ui/components/addons/addonPanelActions.js",
+      );
+      const actions = createAddonPanelActions(document, {
+        id: addonId,
+        status: "disabled",
+        capabilities: expectedCapabilities,
+        canEnable: true,
+        activeOnPage: true,
+        installedSeenAt: Date.now(),
+        panelActions: [],
+      });
+      const button = actions.querySelector('[data-addon-action="toggle-addon-feature"]');
+      assert.ok(button, "Disabled Thread Utility must expose an Enable control");
+      assert.strictEqual(button.textContent, "Enable");
+    } finally {
+      sandbox.restore();
+    }
+  });
+
+  runTest("THREAD-UTILITY-FOUNDATION-01 authorizes its page dock launcher", () => {
+    const { actionUiMount } = loadModule(
+      "src/services/addons/actions/families/ui.js",
+    );
+    let mounted = null;
+    const result = actionUiMount(
+      addonId,
+      {
+        mountId: "thread-utility-launcher",
+        slot: "page.dock",
+        html: "<button>Thread Utility</button>",
+      },
+      10_000,
+      (value) => String(value || ""),
+      (id, payload) => {
+        mounted = { id, payload };
+        return { ok: true };
+      },
+      new Set(expectedCapabilities),
+    );
+    assert.deepStrictEqual(result, { ok: true });
+    assert.strictEqual(mounted?.id, addonId);
+    assert.strictEqual(mounted?.payload?.slot, "page.dock");
+  });
+
   runTest("THREAD-UTILITY-FOUNDATION-01 follows canonical source boundaries", () => {
     const sourceRoot = path.join(ROOT, "addons", addonId, "src");
     for (const relativePath of [
@@ -171,11 +221,41 @@ module.exports = function registerThreadUtilityFoundation(context) {
         await app.bootstrap();
         assert.strictEqual(app.getState().enabled, false);
         assert.strictEqual(
-          core.actions.some(({ action }) => action === "ui.mount"),
+          core.actions.some(({ action }) => action === "ui.dock.setButtons"),
           false,
         );
         await app.getLifecycle().teardown("foundation-test");
       }
+    } finally {
+      sandbox.restore();
+    }
+  });
+
+  runTest("THREAD-UTILITY-FOUNDATION-01 keeps initial registration active until persisted access resolves", async () => {
+    const sandbox = createDomSandbox();
+    try {
+      let resolveAccess;
+      const access = new Promise((resolve) => {
+        resolveAccess = resolve;
+      });
+      const core = createCore({ access });
+      const app = loadApp()({ core, runtime: runtime() });
+      const bootstrap = app.bootstrap();
+      const firstRegistration = core.actions.find(({ action }) => action === "register");
+      assert.ok(firstRegistration, "Thread Utility must register before requesting access");
+      assert.strictEqual(
+        firstRegistration.descriptor.status,
+        "installed",
+        "Initial registration must not disable its own core handshake",
+      );
+      resolveAccess({ ok: true, value: { blocked: false, enabled: true } });
+      await bootstrap;
+      assert.strictEqual(app.getState().enabled, true);
+      assert.strictEqual(
+        core.actions.filter(({ action }) => action === "ui.dock.setButtons").length,
+        1,
+      );
+      await app.getLifecycle().teardown("handshake-test");
     } finally {
       sandbox.restore();
     }
@@ -193,7 +273,7 @@ module.exports = function registerThreadUtilityFoundation(context) {
         1,
       );
       assert.strictEqual(
-        core.actions.filter(({ action }) => action === "ui.mount").length,
+        core.actions.filter(({ action }) => action === "ui.dock.setButtons").length,
         1,
       );
 
@@ -203,17 +283,11 @@ module.exports = function registerThreadUtilityFoundation(context) {
         1,
       );
       assert.strictEqual(
-        core.actions.filter(({ action }) => action === "ui.mount").length,
+        core.actions.filter(({ action }) => action === "ui.dock.setButtons").length,
         1,
       );
 
-      const root = document.createElement("div");
-      root.dataset.role = "threadUtilityLauncher";
-      const button = document.createElement("button");
-      button.dataset.threadUtilityAction = "open-palette";
-      root.appendChild(button);
-      document.body.appendChild(root);
-      button.dispatchEvent(new window.MouseEvent("click", { bubbles: true, composed: true }));
+      core.command({ command: "dock-action", actionId: "open-palette" });
       await new Promise((resolve) => setImmediate(resolve));
 
       const dialogActions = core.actions.filter(({ action }) => action === "ui.dialog.open");

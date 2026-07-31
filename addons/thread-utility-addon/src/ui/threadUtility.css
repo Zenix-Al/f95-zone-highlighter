@@ -19,7 +19,7 @@
 .thread-utility-palette {
   display: flex;
   flex-direction: column;
-  max-height: min(76vh, 760px);
+  max-height: min(calc(100vh - 80px), 760px);
   min-height: 320px;
   overflow: hidden;
   border: 1px solid #454b55;
@@ -40,6 +40,38 @@
   color: #f3f5f7;
   font-size: 20px;
   line-height: 1.25;
+}
+
+.thread-utility-title-row,
+.thread-utility-title-actions {
+  display: flex;
+  align-items: center;
+}
+
+.thread-utility-title-row {
+  gap: 8px;
+}
+
+.thread-utility-title-actions {
+  flex: 0 0 auto;
+  gap: 4px;
+}
+
+.thread-utility-title-actions button {
+  width: 28px;
+  height: 28px;
+  border: 1px solid #454b55;
+  border-radius: 5px;
+  background: #30353d;
+  color: #e8ebef;
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1;
+  padding: 0;
+}
+
+.thread-utility-title-actions button:hover {
+  background: #3b414b;
 }
 
 .thread-utility-prefixes,
@@ -105,33 +137,49 @@
 .thread-utility-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  align-items: center;
+  gap: 4px;
   margin-bottom: 14px;
 }
 
 .thread-utility-tag,
 .thread-utility-tag-toggle {
-  border: 1px solid #454a53;
+  display: inline-flex;
+  align-items: center;
+  height: 18px;
+  border: 1px solid #3a3f47;
   border-radius: 999px;
-  background: #292d34;
-  color: #dfe3e8;
-  padding: 4px 9px;
+  background: #23262b;
+  color: #e6e9ee;
+  font-size: 11px;
+  line-height: 18px;
+  padding: 0 7px;
+  white-space: nowrap;
+  user-select: none;
 }
 
 .thread-utility-tag--marked {
-  border-color: #9b59d0;
+  border-color: rgba(156, 39, 176, 0.28);
+  background: rgba(156, 39, 176, 0.14);
+  color: #f0d2ff;
 }
 
 .thread-utility-tag--preferred {
-  border-color: #4c9f70;
+  border-color: rgba(76, 175, 80, 0.28);
+  background: rgba(76, 175, 80, 0.14);
+  color: #d6ffd9;
 }
 
 .thread-utility-tag--excluded {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
   color: #9298a1;
-  opacity: 0.72;
 }
 
 .thread-utility-tag-toggle {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: #cbd3dd;
   cursor: pointer;
 }
 
@@ -143,8 +191,8 @@
 .thread-utility-primary-actions,
 .thread-utility-utility-grid {
   display: grid;
-  gap: 8px;
-  margin-top: 10px;
+  gap: 4px;
+  margin-top: 6px;
 }
 
 .thread-utility-primary-actions {
@@ -156,12 +204,10 @@
 }
 
 .thread-utility-action {
-  border: 1px solid #4a505a;
   border-radius: 6px;
-  background: #30353d;
   color: #edf0f4;
   cursor: pointer;
-  padding: 7px 10px;
+  padding: 4px 8px;
   text-align: center;
 }
 
@@ -181,15 +227,12 @@
 
 .thread-utility-content-sections {
   display: grid;
-  gap: 10px;
-  margin-top: 16px;
+  gap: 4px;
+  margin-top: 10px;
 }
 
 .thread-utility-content-section {
-  border: 1px solid #424750;
-  border-radius: 7px;
-  background: #24282e;
-  padding: 11px;
+  padding: 2px 0;
 }
 
 .thread-utility-content-heading {
@@ -199,43 +242,30 @@
   gap: 10px;
 }
 
-.thread-utility-content-heading h3 {
-  margin: 0;
-}
-
 .thread-utility-content {
   margin-top: 9px;
   overflow-wrap: anywhere;
 }
-
-.thread-utility-content-preview {
-  display: -webkit-box;
-  overflow: hidden;
-  -webkit-box-orient: vertical;
-}
-
-.thread-utility-content-preview--2 { -webkit-line-clamp: 2; }
-.thread-utility-content-preview--3 { -webkit-line-clamp: 3; }
-.thread-utility-content-preview--4 { -webkit-line-clamp: 4; }
-.thread-utility-content-preview--5 { -webkit-line-clamp: 5; }
-.thread-utility-content-preview--6 { -webkit-line-clamp: 6; }
-.thread-utility-content-preview--7 { -webkit-line-clamp: 7; }
-.thread-utility-content-preview--8 { -webkit-line-clamp: 8; }
 
 .thread-utility-content img,
 .thread-utility-content button {
   display: none;
 }
 
-.thread-utility-content-toggle,
-.thread-utility-content-heading button {
-  border: 1px solid #505660;
-  border-radius: 5px;
-  background: #30353d;
+.thread-utility-content-disclosure {
+  flex: 1 1 auto;
+  border: 0;
+  background: transparent;
   color: #e8ebef;
   cursor: pointer;
-  margin-top: 9px;
-  padding: 6px 9px;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 4px 0;
+  text-align: left;
+}
+
+.thread-utility-content-disclosure:hover {
+  color: #fff;
 }
 
 .thread-utility-truncated {
@@ -245,24 +275,51 @@
   margin-top: 7px;
 }
 
-.thread-utility-download {
+.thread-utility-download-group {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
+  align-items: flex-start;
+  gap: 8px;
   border-top: 1px solid #3d424a;
   padding: 8px 0;
 }
 
+.thread-utility-download-group > strong {
+  flex: 0 0 auto;
+  min-width: 72px;
+  padding-top: 4px;
+}
+
+.thread-utility-download-links {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+.thread-utility-download {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.thread-utility-download-label {
+  color: #e6e9ee;
+}
+
+.thread-utility-download-separator {
+  color: #737a84;
+}
+
 .thread-utility-download button,
-#thread-utility-downloads-content > button,
 .thread-utility-footer button {
   border: 1px solid #505660;
   border-radius: 5px;
   background: #30353d;
   color: #e8ebef;
   cursor: pointer;
-  padding: 5px 8px;
+  padding: 0px 8px;
 }
 
 .thread-utility-palette button:focus-visible {
@@ -310,12 +367,31 @@
   }
 }
 
+.thread-utility-settings-root {
+  display: block;
+}
+
+.thread-utility-settings-window {
+  box-sizing: border-box;
+  width: 100%;
+  max-height: min(760px, calc(100vh - 48px));
+  overflow: hidden;
+  border: 1px solid #3f4043;
+  border-radius: 10px;
+  background: #191b1e;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  color: #f0f2f6;
+  outline: none;
+}
+
 .thread-utility-settings {
+  box-sizing: border-box;
   display: grid;
   gap: 14px;
-  max-height: min(72vh, 720px);
+  max-height: min(740px, calc(100vh - 68px));
   overflow-y: auto;
   color: #d8dbe0;
+  padding: 14px;
 }
 
 .thread-utility-settings-options {
@@ -370,7 +446,7 @@
   position: sticky;
   bottom: 0;
   background: #252a31;
-  padding: 10px 0;
+  padding: 10px 0 0;
 }
 
 .thread-utility-settings-actions span {

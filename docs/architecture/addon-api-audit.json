@@ -6449,11 +6449,13 @@
             "thread"
           ],
           "capabilities": [
+            "feature",
             "page",
             "storage",
             "toast",
             "ui.style",
             "ui.mount",
+            "ui.dock",
             "ui.dialog"
           ]
         },
@@ -6464,6 +6466,7 @@
           "addons/thread-utility-addon/src/api/storage.js",
           "addons/thread-utility-addon/src/api/toast.js",
           "addons/thread-utility-addon/src/api/ui/dialog.js",
+          "addons/thread-utility-addon/src/api/ui/dock.js",
           "addons/thread-utility-addon/src/api/ui/mount.js",
           "addons/thread-utility-addon/src/api/ui/style.js",
           "addons/thread-utility-addon/src/app/commands.js",
@@ -6478,6 +6481,7 @@
           "addons/thread-utility-addon/src/domain/content/parser.js",
           "addons/thread-utility-addon/src/domain/downloads/controller.js",
           "addons/thread-utility-addon/src/domain/downloads/parser.js",
+          "addons/thread-utility-addon/src/domain/limits.js",
           "addons/thread-utility-addon/src/domain/settings/model.js",
           "addons/thread-utility-addon/src/domain/snapshot/limits.js",
           "addons/thread-utility-addon/src/domain/snapshot/parser.js",
@@ -6561,7 +6565,7 @@
             "callSites": [
               {
                 "path": "addons/thread-utility-addon/src/api/ui/dialog.js",
-                "line": 10,
+                "line": 23,
                 "text": "return core.invokeCoreAction(\"ui.dialog.close\", { dialogId, reason });"
               }
             ]
@@ -6571,8 +6575,8 @@
             "callSites": [
               {
                 "path": "addons/thread-utility-addon/src/api/ui/dialog.js",
-                "line": 2,
-                "text": "return core.invokeCoreAction(\"ui.dialog.open\", payload || {});"
+                "line": 13,
+                "text": "return core.invokeCoreAction(\"ui.dialog.open\", { ...payload, html });"
               }
             ]
           },
@@ -6581,8 +6585,28 @@
             "callSites": [
               {
                 "path": "addons/thread-utility-addon/src/api/ui/dialog.js",
+                "line": 19,
+                "text": "return core.invokeCoreAction(\"ui.dialog.update\", { dialogId, html: safeHtml });"
+              }
+            ]
+          },
+          {
+            "id": "ui.dock.removeButtons",
+            "callSites": [
+              {
+                "path": "addons/thread-utility-addon/src/api/ui/dock.js",
                 "line": 6,
-                "text": "return core.invokeCoreAction(\"ui.dialog.update\", { dialogId, html });"
+                "text": "return core.invokeCoreAction(\"ui.dock.removeButtons\", {});"
+              }
+            ]
+          },
+          {
+            "id": "ui.dock.setButtons",
+            "callSites": [
+              {
+                "path": "addons/thread-utility-addon/src/api/ui/dock.js",
+                "line": 2,
+                "text": "return core.invokeCoreAction(\"ui.dock.setButtons\", { buttons });"
               }
             ]
           },
@@ -6601,7 +6625,7 @@
             "callSites": [
               {
                 "path": "addons/thread-utility-addon/src/api/ui/style.js",
-                "line": 2,
+                "line": 7,
                 "text": "return core.invokeCoreAction(\"ui.style.register\", { styleId, cssText });"
               }
             ]
@@ -6611,7 +6635,7 @@
             "callSites": [
               {
                 "path": "addons/thread-utility-addon/src/api/ui/style.js",
-                "line": 6,
+                "line": 11,
                 "text": "return core.invokeCoreAction(\"ui.style.unregister\", { styleId });"
               }
             ]
@@ -6640,12 +6664,12 @@
         "globalEventListeners": [
           {
             "path": "addons/thread-utility-addon/src/ui/bindings.js",
-            "line": 59,
+            "line": 47,
             "text": "window.addEventListener(\"click\", clickHandler, true);"
           },
           {
             "path": "addons/thread-utility-addon/src/ui/bindings.js",
-            "line": 117,
+            "line": 108,
             "text": "document.addEventListener(\"click\", dialogClickHandler, true);"
           }
         ],
@@ -6666,7 +6690,7 @@
         "urlAndPageParsing": [
           {
             "path": "addons/thread-utility-addon/src/domain/content/parser.js",
-            "line": 143,
+            "line": 149,
             "text": "const url = new URL(String(value || \"\"), baseUrl);"
           },
           {
@@ -6688,11 +6712,6 @@
             "path": "addons/thread-utility-addon/src/domain/downloads/parser.js",
             "line": 79,
             "text": ": url.pathname.startsWith(\"/masked/\") || actionType === \"masked\""
-          },
-          {
-            "path": "addons/thread-utility-addon/src/domain/utilities/controller.js",
-            "line": 98,
-            "text": "const url = new URL(snapshot.url);"
           },
           {
             "path": "addons/thread-utility-addon/src/domain/utilities/quickSearch.js",
@@ -6733,22 +6752,22 @@
           },
           {
             "path": "addons/thread-utility-addon/src/app/settingsEditor.js",
-            "line": 91,
+            "line": 93,
             "text": "? form?.querySelector('[data-settings-action=\"save\"]')"
           },
           {
             "path": "addons/thread-utility-addon/src/domain/content/parser.js",
-            "line": 80,
+            "line": 86,
             "text": "|| element.querySelector(\".button-text\")?.textContent"
           },
           {
             "path": "addons/thread-utility-addon/src/domain/content/parser.js",
-            "line": 89,
+            "line": 95,
             "text": "for (const element of root.querySelectorAll("
           },
           {
             "path": "addons/thread-utility-addon/src/domain/content/parser.js",
-            "line": 104,
+            "line": 110,
             "text": "?.querySelector(\".bbCodeSpoiler-content\") || null;"
           },
           {
@@ -6791,22 +6810,22 @@
         "cancellationAndTeardown": [
           {
             "path": "addons/thread-utility-addon/src/app/commands.js",
-            "line": 34,
+            "line": 35,
             "text": "case \"disable\":"
           },
           {
             "path": "addons/thread-utility-addon/src/app/commands.js",
-            "line": 35,
+            "line": 36,
             "text": "run(\"disable\", lifecycle.disable(context));"
           },
           {
             "path": "addons/thread-utility-addon/src/app/commands.js",
-            "line": 51,
+            "line": 55,
             "text": "case \"teardown\":"
           },
           {
             "path": "addons/thread-utility-addon/src/app/commands.js",
-            "line": 52,
+            "line": 56,
             "text": "run(\"teardown\", lifecycle.teardown(context));"
           },
           {
@@ -6871,217 +6890,227 @@
           },
           {
             "path": "addons/thread-utility-addon/src/app/createThreadUtilityApp.js",
-            "line": 132,
+            "line": 131,
             "text": "const generation = lifecycle.getGeneration();"
           },
           {
             "path": "addons/thread-utility-addon/src/app/createThreadUtilityApp.js",
-            "line": 133,
+            "line": 132,
             "text": "if (!state.ui.dialogOpen || state.ui.dialogGeneration !== generation) {"
           },
           {
             "path": "addons/thread-utility-addon/src/app/createThreadUtilityApp.js",
-            "line": 138,
-            "text": "await ui.updatePalette(generation);"
+            "line": 137,
+            "text": "const loadingResult = await ui.updatePalette(generation);"
           },
           {
             "path": "addons/thread-utility-addon/src/app/createThreadUtilityApp.js",
-            "line": 140,
+            "line": 141,
+            "text": "|| lifecycle.getGeneration() !== generation"
+          },
+          {
+            "path": "addons/thread-utility-addon/src/app/createThreadUtilityApp.js",
+            "line": 146,
             "text": "capturePaletteData(generation);"
           },
           {
             "path": "addons/thread-utility-addon/src/app/createThreadUtilityApp.js",
-            "line": 145,
-            "text": "return ui.updatePalette(generation);"
+            "line": 151,
+            "text": "return lifecycle.getGeneration() === generation"
           },
           {
             "path": "addons/thread-utility-addon/src/app/createThreadUtilityApp.js",
-            "line": 177,
+            "line": 152,
+            "text": "? ui.updatePalette(generation)"
+          },
+          {
+            "path": "addons/thread-utility-addon/src/app/createThreadUtilityApp.js",
+            "line": 188,
             "text": "async function loadContextAndSettings({ generation, isCurrent }) {"
           },
           {
             "path": "addons/thread-utility-addon/src/app/createThreadUtilityApp.js",
-            "line": 183,
+            "line": 194,
             "text": "if (!isCurrent()) return false;"
           },
           {
             "path": "addons/thread-utility-addon/src/app/createThreadUtilityApp.js",
-            "line": 195,
+            "line": 206,
             "text": "generation,"
           },
           {
             "path": "addons/thread-utility-addon/src/app/createThreadUtilityApp.js",
-            "line": 211,
+            "line": 222,
             "text": "generation: currentGeneration,"
           },
           {
             "path": "addons/thread-utility-addon/src/app/createThreadUtilityApp.js",
-            "line": 213,
+            "line": 224,
             "text": "isCurrent: () => ("
           },
           {
             "path": "addons/thread-utility-addon/src/app/createThreadUtilityApp.js",
-            "line": 230,
+            "line": 241,
             "text": "isCurrent: () => ("
           },
           {
             "path": "addons/thread-utility-addon/src/app/createThreadUtilityApp.js",
-            "line": 247,
+            "line": 258,
             "text": "return isCurrent();"
           },
           {
             "path": "addons/thread-utility-addon/src/app/createThreadUtilityApp.js",
-            "line": 251,
+            "line": 262,
             "text": "onEnable: async ({ generation, isCurrent }) => {"
           },
           {
             "path": "addons/thread-utility-addon/src/app/createThreadUtilityApp.js",
-            "line": 252,
+            "line": 263,
             "text": "if (!await loadContextAndSettings({ generation, isCurrent }) || !isCurrent()) {"
           },
           {
             "path": "addons/thread-utility-addon/src/app/createThreadUtilityApp.js",
-            "line": 254,
+            "line": 265,
             "text": "await ui.disable(\"out-of-scope\");"
           },
           {
             "path": "addons/thread-utility-addon/src/app/createThreadUtilityApp.js",
-            "line": 259,
+            "line": 270,
             "text": "const result = await ui.enable({ isCurrent });"
           },
           {
             "path": "addons/thread-utility-addon/src/app/createThreadUtilityApp.js",
-            "line": 260,
+            "line": 271,
             "text": "if (!result?.ok || !isCurrent()) {"
           },
           {
             "path": "addons/thread-utility-addon/src/app/createThreadUtilityApp.js",
-            "line": 276,
+            "line": 287,
             "text": "await ui.disable(reason);"
           },
           {
             "path": "addons/thread-utility-addon/src/app/createThreadUtilityApp.js",
-            "line": 280,
+            "line": 291,
             "text": "onRefresh: async ({ generation, isCurrent }) => {"
           },
           {
             "path": "addons/thread-utility-addon/src/app/createThreadUtilityApp.js",
-            "line": 283,
+            "line": 294,
             "text": "if (!await loadContextAndSettings({ generation, isCurrent }) || !isCurrent()) {"
           },
           {
             "path": "addons/thread-utility-addon/src/app/createThreadUtilityApp.js",
-            "line": 285,
+            "line": 296,
             "text": "await ui.disable(\"out-of-scope\");"
           },
           {
             "path": "addons/thread-utility-addon/src/app/createThreadUtilityApp.js",
-            "line": 289,
+            "line": 300,
             "text": "const result = await ui.enable({ isCurrent });"
           },
           {
             "path": "addons/thread-utility-addon/src/app/createThreadUtilityApp.js",
-            "line": 290,
+            "line": 301,
             "text": "if (!result?.ok || !isCurrent()) return { ok: false, reason: \"refresh_superseded\" };"
           },
           {
             "path": "addons/thread-utility-addon/src/app/createThreadUtilityApp.js",
-            "line": 299,
+            "line": 310,
             "text": "await ui.disable(reason);"
           },
           {
             "path": "addons/thread-utility-addon/src/app/settingsEditor.js",
-            "line": 99,
+            "line": 101,
             "text": "else if (action === \"cancel\") void close(\"settings-cancel\");"
           },
           {
             "path": "addons/thread-utility-addon/src/app/uiController.js",
-            "line": 42,
+            "line": 37,
             "text": "async function openPalette({ generation, isCurrent = () => true } = {}) {"
           },
           {
             "path": "addons/thread-utility-addon/src/app/uiController.js",
-            "line": 43,
+            "line": 38,
             "text": "if (!state.enabled || isTerminal() || !isCurrent()) {"
           },
           {
             "path": "addons/thread-utility-addon/src/app/uiController.js",
-            "line": 48,
+            "line": 43,
             "text": "state.ui.dialogGeneration = generation;"
           },
           {
             "path": "addons/thread-utility-addon/src/app/uiController.js",
-            "line": 59,
+            "line": 54,
             "text": "if (!isCurrent() || state.ui.dialogGeneration !== generation) {"
           },
           {
             "path": "addons/thread-utility-addon/src/app/uiController.js",
-            "line": 67,
+            "line": 62,
             "text": "if (state.ui.dialogGeneration === generation) state.ui.dialogOpening = false;"
           },
           {
             "path": "addons/thread-utility-addon/src/app/uiController.js",
-            "line": 71,
+            "line": 66,
             "text": "async function updatePalette(generation = state.ui.dialogGeneration) {"
           },
           {
             "path": "addons/thread-utility-addon/src/app/uiController.js",
-            "line": 75,
+            "line": 70,
             "text": "|| generation !== state.ui.dialogGeneration"
           },
           {
             "path": "addons/thread-utility-addon/src/app/uiController.js",
-            "line": 86,
+            "line": 81,
             "text": "|| generation !== state.ui.dialogGeneration"
           },
           {
             "path": "addons/thread-utility-addon/src/app/uiController.js",
-            "line": 95,
+            "line": 90,
             "text": "async function enable({ isCurrent = () => true } = {}) {"
           },
           {
             "path": "addons/thread-utility-addon/src/app/uiController.js",
-            "line": 98,
+            "line": 93,
             "text": "if (!isCurrent()) {"
           },
           {
             "path": "addons/thread-utility-addon/src/app/uiController.js",
-            "line": 99,
+            "line": 94,
+            "text": "await disable(\"stale-enable\");"
+          },
+          {
+            "path": "addons/thread-utility-addon/src/app/uiController.js",
+            "line": 103,
+            "text": "if (!isCurrent()) {"
+          },
+          {
+            "path": "addons/thread-utility-addon/src/app/uiController.js",
+            "line": 104,
             "text": "await disable(\"stale-enable\");"
           },
           {
             "path": "addons/thread-utility-addon/src/app/uiController.js",
             "line": 109,
-            "text": "if (!isCurrent()) {"
-          },
-          {
-            "path": "addons/thread-utility-addon/src/app/uiController.js",
-            "line": 110,
-            "text": "await disable(\"stale-enable\");"
-          },
-          {
-            "path": "addons/thread-utility-addon/src/app/uiController.js",
-            "line": 115,
             "text": "await disable(\"enable-rollback\");"
           },
           {
             "path": "addons/thread-utility-addon/src/app/uiController.js",
-            "line": 120,
+            "line": 114,
             "text": "async function disable(reason = \"disable\") {"
           },
           {
             "path": "addons/thread-utility-addon/src/app/uiController.js",
-            "line": 198,
+            "line": 183,
             "text": "disable,"
           },
           {
             "path": "addons/thread-utility-addon/src/domain/downloads/controller.js",
-            "line": 13,
+            "line": 12,
             "text": "if (!context?.isCurrent?.()) return null;"
           },
           {
             "path": "addons/thread-utility-addon/src/domain/downloads/controller.js",
-            "line": 34,
+            "line": 56,
             "text": "if (!context?.isCurrent?.()) return { ok: false, reason: \"stale_generation\" };"
           },
           {
@@ -7140,17 +7169,42 @@
             "text": "getGeneration: () => generation,"
           },
           {
+            "path": "addons/thread-utility-addon/src/domain/state.js",
+            "line": 4,
+            "text": "// canonical optimistic state so the runtime does not disable its own"
+          },
+          {
             "path": "addons/thread-utility-addon/src/domain/utilities/controller.js",
-            "line": 45,
+            "line": 23,
+            "text": "async function notify(result, successMessage, isCurrent = () => true) {"
+          },
+          {
+            "path": "addons/thread-utility-addon/src/domain/utilities/controller.js",
+            "line": 24,
+            "text": "if (!isCurrent()) return { ok: false, reason: \"stale_generation\" };"
+          },
+          {
+            "path": "addons/thread-utility-addon/src/domain/utilities/controller.js",
+            "line": 44,
             "text": "return context?.snapshot && context.isCurrent?.() ? context : null;"
           },
           {
+            "path": "addons/thread-utility-addon/src/domain/utilities/controller.js",
+            "line": 74,
+            "text": "context.isCurrent,"
+          },
+          {
+            "path": "addons/thread-utility-addon/src/domain/utilities/controller.js",
+            "line": 81,
+            "text": "context.isCurrent,"
+          },
+          {
             "path": "addons/thread-utility-addon/src/ui/settingsDialog.js",
-            "line": 52,
+            "line": 55,
             "text": "<button type=\"button\" data-settings-action=\"cancel\">Cancel</button>"
           }
         ],
-        "rawActionCount": 14
+        "rawActionCount": 16
       }
     ],
     "bridgeEvents": [
@@ -8124,7 +8178,7 @@
         },
         {
           "path": "addons/thread-utility-addon/src/api/ui/dialog.js",
-          "line": 10,
+          "line": 23,
           "text": "return core.invokeCoreAction(\"ui.dialog.close\", { dialogId, reason });"
         }
       ],
@@ -8166,8 +8220,8 @@
         },
         {
           "path": "addons/thread-utility-addon/src/api/ui/dialog.js",
-          "line": 2,
-          "text": "return core.invokeCoreAction(\"ui.dialog.open\", payload || {});"
+          "line": 13,
+          "text": "return core.invokeCoreAction(\"ui.dialog.open\", { ...payload, html });"
         }
       ],
       "consumers": [
@@ -8203,8 +8257,8 @@
         },
         {
           "path": "addons/thread-utility-addon/src/api/ui/dialog.js",
-          "line": 6,
-          "text": "return core.invokeCoreAction(\"ui.dialog.update\", { dialogId, html });"
+          "line": 19,
+          "text": "return core.invokeCoreAction(\"ui.dialog.update\", { dialogId, html: safeHtml });"
         }
       ],
       "consumers": [
@@ -8227,12 +8281,18 @@
           "path": "addons/example-addon/src/ui/panel.js",
           "line": 176,
           "text": "renderButton(\"dock-remove\", \"ui.dock.removeButtons\"),"
+        },
+        {
+          "path": "addons/thread-utility-addon/src/api/ui/dock.js",
+          "line": 6,
+          "text": "return core.invokeCoreAction(\"ui.dock.removeButtons\", {});"
         }
       ],
       "consumers": [
-        "example-addon"
+        "example-addon",
+        "thread-utility-addon"
       ],
-      "consumerCount": 1
+      "consumerCount": 2
     },
     {
       "id": "ui.dock.setButtons",
@@ -8246,12 +8306,18 @@
           "path": "addons/example-addon/src/ui/panel.js",
           "line": 175,
           "text": "renderButton(\"dock-set\", \"ui.dock.setButtons\"),"
+        },
+        {
+          "path": "addons/thread-utility-addon/src/api/ui/dock.js",
+          "line": 2,
+          "text": "return core.invokeCoreAction(\"ui.dock.setButtons\", { buttons });"
         }
       ],
       "consumers": [
-        "example-addon"
+        "example-addon",
+        "thread-utility-addon"
       ],
-      "consumerCount": 1
+      "consumerCount": 2
     },
     {
       "id": "ui.mount",
@@ -8330,7 +8396,7 @@
         },
         {
           "path": "addons/thread-utility-addon/src/api/ui/style.js",
-          "line": 2,
+          "line": 7,
           "text": "return core.invokeCoreAction(\"ui.style.register\", { styleId, cssText });"
         }
       ],
@@ -8384,7 +8450,7 @@
         },
         {
           "path": "addons/thread-utility-addon/src/api/ui/style.js",
-          "line": 6,
+          "line": 11,
           "text": "return core.invokeCoreAction(\"ui.style.unregister\", { styleId });"
         }
       ],

@@ -240,7 +240,7 @@
       "id": "thread-utility-addon",
       "name": "F95UE Thread Utility Add-on",
       "description": "Provides a compact thread dashboard and extensible thread utilities.",
-      "version": "0.1.1",
+      "version": "0.1.0",
       "author": "X Death",
       "entry": "addons/thread-utility-addon/src/main.js",
       "outfile": "addons/thread-utility-addon/dist/thread-utility-addon.user.js",
@@ -257,11 +257,13 @@
         "thread"
       ],
       "capabilities": [
+        "feature",
         "page",
         "storage",
         "toast",
         "ui.style",
         "ui.mount",
+        "ui.dock",
         "ui.dialog"
       ]
     }
