@@ -1,13 +1,18 @@
 import { stateManager } from "../../config.js";
 import ui_html from "../assets/ui.html";
+import { hideTagSearchResults } from "./tag-search";
+import { ensureModalCss } from "../helpers/cssInjector.js";
 import { initModalUi } from "../settings/index.js";
 
 export async function openModal() {
+  ensureModalCss();
   await initModalUi();
   stateManager.get("shadowRoot").getElementById("tag-config-modal").style.display = "block";
 }
 export function closeModal() {
-  stateManager.get("shadowRoot").getElementById("tag-config-modal").style.display = "none";
+  const shadowRoot = stateManager.get("shadowRoot");
+  hideTagSearchResults(shadowRoot?.getElementById("search-results"));
+  shadowRoot.getElementById("tag-config-modal").style.display = "none";
 }
 
 export function injectModal() {
@@ -20,14 +25,10 @@ export function injectModal() {
 
   modal.addEventListener("click", (e) => {
     // Close modal if the click is on the backdrop, not the content.
-    // Ignore clicks that land inside an open dark-color picker popover.
     const path = e.composedPath ? e.composedPath() : [];
     const clickedInsideModal = path.includes(modalContent);
-    const clickedPopover = path.some(
-      (node) => node && node.classList && node.classList.contains("dark-color-popover"),
-    );
 
-    if (!clickedInsideModal && !clickedPopover) {
+    if (!clickedInsideModal) {
       closeModal();
     }
   });

@@ -3,6 +3,9 @@ const harness = require("./harness.cjs");
 for (const group of [
   "core",
   "config",
+  "core-runtime-performance",
+  "core-size-reduction",
+  "core-size-dialog-shell",
   "addon-service",
   "addons",
   "addon-matrix",

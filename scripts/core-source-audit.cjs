@@ -18,6 +18,37 @@ const EXCLUDED_SOURCE_HINTS = Object.freeze([
   ADDON_UI_RENDERER,
 ]);
 const BASELINE_SCHEMA_VERSION = 1;
+const REDUCTION_REPORT_SCHEMA_VERSION = 2;
+const REDUCTION_CANDIDATES = Object.freeze({
+  customColorPicker: Object.freeze({ exact: ["src/ui/components/darkColorPicker.js"] }),
+  modalHtml: Object.freeze({ exact: ["src/ui/assets/ui.html"] }),
+  featureHealthUi: Object.freeze({ exact: ["src/ui/components/featureHealth/index.js"] }),
+  dialogs: Object.freeze({ exact: ["src/ui/components/dialog.js"] }),
+  latestOverlay: Object.freeze({
+    exact: ["src/config/latestOverlayScoring.js"],
+    prefixes: ["src/features/latest-overlay/"],
+    excludePrefixes: ["src/features/latest-overlay/capture/"],
+  }),
+  storageMigration: Object.freeze({ exact: ["src/services/configMigrationService.js"] }),
+  configTransfer: Object.freeze({
+    prefixes: ["src/services/configTransfer/", "src/ui/configTransfer/"],
+  }),
+  optionalFeatures: Object.freeze({
+    prefixes: [
+      "src/features/signature-collapse/",
+      "src/features/wide-latest/",
+      "src/features/wideForum/",
+      "src/features/dismiss-notification/",
+      "src/features/latest-control/",
+    ],
+  }),
+  tagManagement: Object.freeze({
+    exact: ["src/services/tagsService.js"],
+    prefixes: ["src/ui/components/tag-search/"],
+  }),
+  fastCapture: Object.freeze({ prefixes: ["src/features/latest-overlay/capture/"] }),
+  notificationService: Object.freeze({ exact: ["src/services/notificationService.js"] }),
+});
 
 function normalizePath(value) {
   return String(value || "").replace(/\\/g, "/").replace(/^\.\//, "");
@@ -253,7 +284,10 @@ function sourceReport(rootDir) {
 
 function getPlugins(rootDir, release) {
   const stripCssComments = require(path.join(rootDir, "build", "stripCssComments.js")).stripCssComments;
-  const plugins = [stripCssComments];
+  const compactCoreModalHtmlAsset = require(
+    path.join(rootDir, "build", "compactCoreModalHtml.js"),
+  ).compactCoreModalHtmlAsset;
+  const plugins = [compactCoreModalHtmlAsset, stripCssComments];
   if (release) plugins.push(require(path.join(rootDir, "build", "stripDebugLogs.js")).stripDebugLogs);
   return plugins;
 }
@@ -271,7 +305,98 @@ function bundleContributors(rootDir, metafile, include = () => true) {
     .sort((a, b) => b.bytes - a.bytes || a.path.localeCompare(b.path));
 }
 
-async function buildOne(rootDir, tempDir, name, { release, uglified }) {
+function matchesCandidatePath(relative, definition) {
+  const value = normalizePath(relative);
+  if ((definition.excludePrefixes || []).some((prefix) => value.startsWith(prefix))) return false;
+  return (definition.exact || []).includes(value)
+    || (definition.prefixes || []).some((prefix) => value.startsWith(prefix));
+}
+
+function sumCandidateBytes(entries, definition) {
+  return entries
+    .filter((entry) => matchesCandidatePath(entry.path, definition))
+    .reduce((sum, entry) => sum + entry.bytes, 0);
+}
+
+function candidatePaths(entries, definition) {
+  return entries
+    .filter((entry) => matchesCandidatePath(entry.path, definition))
+    .map((entry) => entry.path)
+    .sort();
+}
+
+function cssRuleEvidence(rootDir) {
+  const cssPath = path.join(rootDir, "src/ui/assets/css.css");
+  if (!fs.existsSync(cssPath)) return {};
+  const { parseRules } = require("./css-audit.cjs");
+  const rules = parseRules(fs.readFileSync(cssPath, "utf8")).rules;
+  const summarize = (matches) => {
+    const selected = rules.filter((rule) => rule.selectors.some(matches));
+    return {
+      ruleCount: selected.length,
+      authoredBytes: selected.reduce((sum, rule) => sum + rule.authoredBytes, 0),
+      selectors: selected.flatMap((rule) => rule.selectors).sort(),
+    };
+  };
+  return {
+    customColorPicker: summarize((selector) => selector.includes(".dark-color-")),
+    featureHealthUi: summarize((selector) => selector.includes(".feature-health-")),
+    dialogs: summarize((selector) =>
+      selector.includes(".config-dialog-") || selector.includes(".config-reorder-")),
+  };
+}
+
+function modalHtmlEvidence(rootDir) {
+  const htmlPath = path.join(rootDir, "src/ui/assets/ui.html");
+  if (!fs.existsSync(htmlPath)) return null;
+  const source = fs.readFileSync(htmlPath, "utf8");
+  const { compactCoreModalHtml } = require(path.join(
+    rootDir,
+    "build",
+    "compactCoreModalHtml.js",
+  ));
+  const compacted = compactCoreModalHtml(source);
+  return {
+    authoredBytes: Buffer.byteLength(source),
+    transformedBytes: Buffer.byteLength(compacted),
+    interTagSingleSpaceBytes: Buffer.byteLength(compacted),
+    estimatedReductionBytes: Buffer.byteLength(source) - Buffer.byteLength(compacted),
+    transform: "Replace source line breaks and inter-tag indentation with one space, then trim.",
+  };
+}
+
+function buildReductionEvidence(rootDir, authored, bundle) {
+  const authoredEntries = Object.entries(authored.bytesByFile)
+    .map(([entryPath, bytes]) => ({ path: entryPath, bytes }));
+  const cssRules = cssRuleEvidence(rootDir);
+  const candidates = {};
+  const assignments = new Map();
+
+  for (const [id, definition] of Object.entries(REDUCTION_CANDIDATES)) {
+    const paths = candidatePaths(authoredEntries, definition);
+    for (const entryPath of paths) {
+      const previous = assignments.get(entryPath);
+      if (previous) throw new Error(`Reduction candidate path is assigned twice: ${entryPath} (${previous}, ${id}).`);
+      assignments.set(entryPath, id);
+    }
+    candidates[id] = {
+      paths,
+      authoredBytes: sumCandidateBytes(authoredEntries, definition),
+      readableBundleBytes: sumCandidateBytes(bundle.readable.coreContributors, definition),
+      uglifiedBundleBytes: sumCandidateBytes(bundle.uglified.coreContributors, definition),
+      ...(cssRules[id] ? { cssRules: cssRules[id] } : {}),
+      ...(id === "modalHtml" ? { html: modalHtmlEvidence(rootDir) } : {}),
+    };
+  }
+
+  return {
+    completeCoreContributors: true,
+    candidateFilesAssignedOnce: true,
+    candidates,
+  };
+}
+
+async function buildOne(rootDir, tempDir, name, { release, uglified, completeContributors = false }) {
   const outfile = path.join(tempDir, name);
   const result = await esbuild.build({
     absWorkingDir: rootDir,
@@ -303,7 +428,7 @@ async function buildOne(rootDir, tempDir, name, { release, uglified }) {
     coreBytes: sumBytes(coreContributors),
     excludedBytes: sumBytes(excludedContributors),
     contributors: contributors.slice(0, 20),
-    coreContributors: coreContributors.slice(0, 20),
+    coreContributors: completeContributors ? coreContributors : coreContributors.slice(0, 20),
     excludedContributors: excludedContributors.slice(0, 20),
   };
 }
@@ -323,12 +448,20 @@ function sameSnapshot(before, after) {
   return JSON.stringify(before) === JSON.stringify(after);
 }
 
-async function runCoreSmokeBuild({ rootDir = process.cwd() } = {}) {
+async function runCoreSmokeBuild({ rootDir = process.cwd(), completeContributors = false } = {}) {
   const before = snapshotWorkingTree(rootDir);
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "f95ue-core-smoke-"));
   try {
-    const readable = await buildOne(rootDir, tempDir, "core-readable.user.js", { release: false, uglified: false });
-    const uglified = await buildOne(rootDir, tempDir, "core-uglified.user.js", { release: true, uglified: true });
+    const readable = await buildOne(rootDir, tempDir, "core-readable.user.js", {
+      release: false,
+      uglified: false,
+      completeContributors,
+    });
+    const uglified = await buildOne(rootDir, tempDir, "core-uglified.user.js", {
+      release: true,
+      uglified: true,
+      completeContributors,
+    });
     const after = snapshotWorkingTree(rootDir);
     if (!sameSnapshot(before, after)) throw new Error("Core smoke build modified tracked repository state.");
     return { readable, uglified };
@@ -341,22 +474,38 @@ function compareReports(current, baseline) {
   const pairs = [
     ["authoredBytes", current.authored.authoredBytes, baseline.authored?.authoredBytes],
     ["readableBytes", current.bundle.readable.bytes, baseline.bundle?.readable?.bytes],
+    ["readableCoreBytes", current.bundle.readable.coreBytes, baseline.bundle?.readable?.coreBytes],
     ["readableGzipBytes", current.bundle.readable.gzipBytes, baseline.bundle?.readable?.gzipBytes],
     ["uglifiedBytes", current.bundle.uglified.bytes, baseline.bundle?.uglified?.bytes],
+    ["uglifiedCoreBytes", current.bundle.uglified.coreBytes, baseline.bundle?.uglified?.coreBytes],
     ["uglifiedGzipBytes", current.bundle.uglified.gzipBytes, baseline.bundle?.uglified?.gzipBytes],
   ];
-  return Object.fromEntries(pairs.map(([name, now, before]) => [name, {
+  const comparison = Object.fromEntries(pairs.map(([name, now, before]) => [name, {
     current: now,
     baseline: before ?? null,
     delta: before === undefined ? null : now - before,
   }]));
+  const baselineCandidates = baseline.reductionEvidence?.candidates;
+  const currentCandidates = current.reductionEvidence?.candidates;
+  if (baselineCandidates && currentCandidates) {
+    comparison.candidates = Object.fromEntries(Object.entries(currentCandidates).map(([id, candidate]) => {
+      const before = baselineCandidates[id] || {};
+      const fields = ["authoredBytes", "readableBundleBytes", "uglifiedBundleBytes"];
+      return [id, Object.fromEntries(fields.map((field) => [field, {
+        current: candidate[field],
+        baseline: before[field] ?? null,
+        delta: before[field] === undefined ? null : candidate[field] - before[field],
+      }]))];
+    }));
+  }
+  return comparison;
 }
 
-async function createReport({ rootDir = process.cwd(), compare = null } = {}) {
+async function createReport({ rootDir = process.cwd(), compare = null, reduction = false } = {}) {
   const authored = sourceReport(rootDir);
-  const bundle = await runCoreSmokeBuild({ rootDir });
+  const bundle = await runCoreSmokeBuild({ rootDir, completeContributors: reduction });
   const report = {
-    reportSchemaVersion: BASELINE_SCHEMA_VERSION,
+    reportSchemaVersion: reduction ? REDUCTION_REPORT_SCHEMA_VERSION : BASELINE_SCHEMA_VERSION,
     tool: "core-source-audit",
     reportedObservation: {
       value: 480,
@@ -370,6 +519,7 @@ async function createReport({ rootDir = process.cwd(), compare = null } = {}) {
     authored,
     bundle,
   };
+  if (reduction) report.reductionEvidence = buildReductionEvidence(rootDir, authored, bundle);
   if (compare) report.comparison = compareReports(report, compare);
   return report;
 }
@@ -379,7 +529,14 @@ function stableJson(value) {
 }
 
 function parseArgs(args) {
-  const options = { rootDir: process.cwd(), output: null, compare: null, check: null, smokeOnly: false };
+  const options = {
+    rootDir: process.cwd(),
+    output: null,
+    compare: null,
+    check: null,
+    smokeOnly: false,
+    reduction: false,
+  };
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
     if (arg === "--root") options.rootDir = path.resolve(args[++index]);
@@ -387,6 +544,7 @@ function parseArgs(args) {
     else if (arg === "--compare") options.compare = path.resolve(options.rootDir, args[++index]);
     else if (arg === "--check") options.check = path.resolve(options.rootDir, args[++index]);
     else if (arg === "--smoke-build") options.smokeOnly = true;
+    else if (arg === "--reduction") options.reduction = true;
   }
   return options;
 }
@@ -399,7 +557,11 @@ async function main(args = process.argv.slice(2)) {
     return;
   }
   const baseline = options.compare ? JSON.parse(fs.readFileSync(options.compare, "utf8")) : null;
-  const report = await createReport({ rootDir: options.rootDir, compare: baseline });
+  const report = await createReport({
+    rootDir: options.rootDir,
+    compare: baseline,
+    reduction: options.reduction,
+  });
   const output = stableJson(report);
   if (options.output) {
     fs.mkdirSync(path.dirname(options.output), { recursive: true });
@@ -416,6 +578,7 @@ if (require.main === module) main().catch((error) => { console.error(`Core audit
 module.exports = {
   auditCoreSource: sourceReport,
   compareReports,
+  buildReductionEvidence,
   createReport,
   isAuditedSource,
   runCoreSmokeBuild,

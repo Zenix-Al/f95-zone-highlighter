@@ -55,10 +55,13 @@ Supported core input types:
 |---|---|
 | `toggle` | Boolean switch |
 | `number` | Numeric input with min/max |
-| `color` | Custom dark color picker |
+| `color` | Native browser color input |
 | `select` | Dropdown selection |
 
-Color inputs use the custom dark color picker rather than the browser's native color input. An unsupported type throws an error, making metadata/type mismatches fail visibly.
+Color inputs use the browser's native color picker and retain the
+`config-color-input` class for swatch sizing and styling. They use the same
+change, coercion, persistence, and effect pipeline as other settings. An
+unsupported type throws an error, making metadata/type mismatches fail visibly.
 
 ## Value Coercion (`renderers/coerceSettingValue.js`)
 

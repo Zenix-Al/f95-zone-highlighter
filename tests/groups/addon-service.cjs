@@ -258,430 +258,104 @@ runTest("OBSERVE selector helper chooses fallbacks without failing optional miss
   assert.strictEqual(queryFirstBySelectors([".missing"], root, { key: "optional.selector", required: false }), null);
 });
 
-runTest("matchesFastCaptureUrl supports string and array urlIncludes", () => {
-  assert.strictEqual(
-    matchesFastCaptureUrl(
-      "https://example.com/latest_data.php?page=1",
-      "latest_data.php",
-    ),
-    true,
+runTest("Latest capture has one fixed endpoint instead of generic URL rules", () => {
+  const source = fs.readFileSync(
+    path.join(ROOT, "src/features/latest-overlay/capture/latestCaptureService.js"),
+    "utf8",
   );
-  assert.strictEqual(
-    matchesFastCaptureUrl("https://example.com/api/feed", [
-      "latest_data.php",
-      "/api/feed",
-    ]),
-    true,
-  );
-  assert.strictEqual(
-    matchesFastCaptureUrl("https://example.com/api/feed", "/missing"),
-    false,
-  );
+  assert.ok(source.includes('const LATEST_ENDPOINT = "latest_data.php"'));
+  assert.strictEqual(source.includes("urlIncludes"), false);
 });
 
-runTest(
-  "fast capture handles fetch success and disables once-captured listeners",
-  () => {
-    resetFastCaptureHarness();
-
-    registerFastCaptureFeatures([
-      {
-        name: "Latest Raw Capture",
-        featureKey: "latest-raw-capture",
-        bootstrapMode: "fast",
-        fastCapture: {
-          urlIncludes: ["latest_data.php"],
-          dataPath: "msg.data",
-          transport: "fetch",
-          once: true,
-        },
-        isApplicable: () => true,
-      },
-    ]);
-
-    const captured = processCompletedFastCapture(
-      "fetch",
-      "https://f95zone.to/latest_data.php?page=1",
-      JSON.stringify({ msg: { data: [{ id: 1 }] } }),
-    );
-    const snapshot = getFastCaptureSnapshot("latest-raw-capture");
-
-    assert.strictEqual(captured, 1);
-    assert.strictEqual(snapshot.status, "captured");
-    assert.deepStrictEqual(getFastCaptureData("latest-raw-capture"), [
-      { id: 1 },
-    ]);
-    assert.strictEqual(hasFastCaptureData("latest-raw-capture"), true);
-    assert.strictEqual(
-      processCompletedFastCapture(
-        "fetch",
-        "https://f95zone.to/latest_data.php?page=2",
-        JSON.stringify({ msg: { data: [{ id: 2 }] } }),
-      ),
-      0,
-    );
-  },
-);
-
-runTest(
-  "latest mode overwrites the snapshot on every matching response",
-  () => {
-    resetFastCaptureHarness();
-    registerFastCaptureFeatures([
-      {
-        name: "Latest Capture",
-        featureKey: "latest-capture",
-        bootstrapMode: "fast",
-        fastCapture: {
-          urlIncludes: ["latest_data.php"],
-          dataPath: "msg.data",
-          transport: "fetch",
-          mode: "latest",
-          ttlMs: 30000,
-        },
-        isApplicable: () => true,
-      },
-    ]);
-
-    processCompletedFastCapture(
-      "fetch",
-      "https://f95zone.to/latest_data.php?page=1",
-      JSON.stringify({ msg: { data: [{ id: 1 }] } }),
-    );
-    processCompletedFastCapture(
-      "fetch",
-      "https://f95zone.to/latest_data.php?page=2",
-      JSON.stringify({ msg: { data: [{ id: 2 }] } }),
-    );
-
-    const snapshot = getFastCaptureSnapshot("latest-capture");
-    assert.deepStrictEqual(snapshot.data, [{ id: 2 }]);
-    assert.strictEqual(snapshot.mode, "latest");
-    assert.ok(snapshot.expiresAt > snapshot.capturedAt);
-  },
-);
-
-runTest("ROUTE-01 oncePerRoute capture consumes the shared route generation", () => {
-  resetFastCaptureHarness();
-  resetRouteStateForTests();
-  const feature = {
-    name: "Route Capture",
-    featureKey: "route-capture",
-    bootstrapMode: "fast",
-    fastCapture: {
-      urlIncludes: ["latest_data.php"],
-      dataPath: "msg.data",
-      transport: "fetch",
-      mode: "oncePerRoute",
-    },
-    isApplicable: () => true,
-  };
-  const firstRoute = beginRoute({ href: "https://f95zone.to/sam/latest_alpha#one" });
-  registerFastCaptureFeatures([feature], firstRoute);
-  processCompletedFastCapture(
-    "fetch",
-    "https://f95zone.to/latest_data.php?page=1",
-    JSON.stringify({ msg: { data: [1] } }),
-  );
-  assert.strictEqual(
-    processCompletedFastCapture(
-      "fetch",
-      "https://f95zone.to/latest_data.php?page=2",
-      JSON.stringify({ msg: { data: [2] } }),
-    ),
-    0,
-  );
-
-  const secondRoute = beginRoute({ href: "https://f95zone.to/sam/latest_alpha#two" });
-  refreshFastCaptureFeatures([feature], secondRoute);
-  assert.strictEqual(
-    processCompletedFastCapture(
-      "fetch",
-      "https://f95zone.to/latest_data.php?page=2",
-      JSON.stringify({ msg: { data: [2] } }),
-    ),
-    1,
-  );
-  resetRouteStateForTests();
+runTest("CORE-SIZE-LATEST-CAPTURE-01 keeps the newest valid Latest snapshot", () => {
+  const capture = loadModule("src/features/latest-overlay/capture/index.js");
+  capture.resetLatestCaptureForTests();
+  capture.resetLatestCaptureStoreForTests();
+  capture.startLatestCapture({ generation: 1 }, { active: true });
+  assert.strictEqual(capture.processCompletedLatestCapture("fetch", "https://f95zone.to/sam/latest_data.php", JSON.stringify({ msg: { data: [{ thread_id: 1 }] } })), true);
+  assert.deepStrictEqual(capture.getLatestCaptureSnapshot().data, [{ thread_id: 1 }]);
+  capture.processCompletedLatestCapture("xhr", "https://f95zone.to/sam/latest_data.php", JSON.stringify({ msg: { data: [{ thread_id: 2 }] } }));
+  assert.deepStrictEqual(capture.getLatestCaptureSnapshot().data, [{ thread_id: 2 }]);
+  capture.processCompletedLatestCapture("fetch", "https://f95zone.to/sam/latest_data.php", "{broken");
+  assert.deepStrictEqual(capture.getLatestCaptureSnapshot().data, [{ thread_id: 2 }]);
 });
 
-runTest(
-  "fast capture handles xhr capture while allowing one feature failure without breaking another",
-  () => {
-    resetFastCaptureHarness();
-    global.document = { body: null };
-
-    registerFastCaptureFeatures([
-      {
-        name: "Valid Capture",
-        featureKey: "valid-capture",
-        bootstrapMode: "fast",
-        fastCapture: {
-          urlIncludes: ["latest_data.php"],
-          dataPath: "msg.data",
-          transport: "xhr",
-          once: true,
-        },
-        isApplicable: () => true,
-      },
-      {
-        name: "Broken Capture",
-        featureKey: "broken-capture",
-        bootstrapMode: "fast",
-        fastCapture: {
-          urlIncludes: ["latest_data.php"],
-          dataPath: "msg.missing",
-          transport: "xhr",
-          once: true,
-        },
-        isApplicable: () => true,
-      },
-    ]);
-
-    const captured = processCompletedFastCapture(
-      "xhr",
-      "https://f95zone.to/latest_data.php?cmd=refresh",
-      JSON.stringify({ msg: { data: ["ok"] } }),
-    );
-
-    assert.strictEqual(captured, 1);
-    assert.strictEqual(
-      getFastCaptureSnapshot("valid-capture").status,
-      "captured",
-    );
-    assert.strictEqual(getFastCaptureSnapshot("broken-capture").status, "idle");
-  },
-);
-
-runTest("fast capture recovers after malformed matching JSON", () => {
-  resetFastCaptureHarness();
-  global.document = { body: null };
-
-  registerFastCaptureFeatures([
-    {
-      name: "Recoverable Capture",
-      featureKey: "recoverable-capture",
-      bootstrapMode: "fast",
-      fastCapture: {
-        urlIncludes: ["latest_data.php"],
-        dataPath: "msg.data",
-        transport: "fetch",
-        once: true,
-      },
-      isApplicable: () => true,
-    },
-  ]);
-
-  assert.strictEqual(
-    processCompletedFastCapture(
-      "fetch",
-      "https://f95zone.to/latest_data.php",
-      "not-json",
-    ),
-    0,
-  );
-  assert.strictEqual(
-    getFastCaptureSnapshot("recoverable-capture").status,
-    "idle",
-  );
-
-  assert.strictEqual(
-    processCompletedFastCapture(
-      "fetch",
-      "https://f95zone.to/latest_data.php",
-      JSON.stringify({ msg: { data: { ok: true } } }),
-    ),
-    1,
-  );
-  assert.deepStrictEqual(getFastCaptureData("recoverable-capture"), {
-    ok: true,
-  });
-});
-
-runTest(
-  "malformed latest responses preserve the last valid fast capture",
-  () => {
-    resetFastCaptureHarness();
-
-    registerFastCaptureFeatures([
-      {
-        name: "Latest Capture",
-        featureKey: "latest-malformed-capture",
-        bootstrapMode: "fast",
-        fastCapture: {
-          urlIncludes: ["latest_data.php"],
-          dataPath: "msg.data",
-          transport: "fetch",
-          mode: "latest",
-        },
-        isApplicable: () => true,
-      },
-    ]);
-
-    processCompletedFastCapture(
-      "fetch",
-      "https://f95zone.to/latest_data.php",
-      JSON.stringify({ msg: { data: [{ id: 1 }] } }),
-    );
-
-    assert.strictEqual(
-      processCompletedFastCapture(
-        "fetch",
-        "https://f95zone.to/latest_data.php",
-        "not-json",
-      ),
-      0,
-    );
-    assert.strictEqual(
-      getFastCaptureSnapshot("latest-malformed-capture").status,
-      "captured",
-    );
-    assert.deepStrictEqual(getFastCaptureData("latest-malformed-capture"), [
-      { id: 1 },
-    ]);
-  },
-);
-
-runTest("fast capture subscribers receive captured snapshots", () => {
-  resetFastCaptureHarness();
-  global.document = { body: null };
-
+runTest("CORE-SIZE-LATEST-CAPTURE-01 exposes one private consumer plus an immediate read", () => {
+  const capture = loadModule("src/features/latest-overlay/capture/index.js");
+  capture.resetLatestCaptureForTests();
+  capture.resetLatestCaptureStoreForTests();
+  capture.startLatestCapture({ generation: 2 }, { active: true });
   const seen = [];
-  const unsubscribe = subscribeFastCapture("subscriber-capture", (snapshot) => {
-    seen.push(snapshot);
-  });
-
-  registerFastCaptureFeatures([
-    {
-      name: "Subscriber Capture",
-      featureKey: "subscriber-capture",
-      bootstrapMode: "fast",
-      fastCapture: {
-        urlIncludes: ["latest_data.php"],
-        dataPath: "msg.data",
-        transport: "fetch",
-        once: true,
-      },
-      isApplicable: () => true,
-    },
-  ]);
-
-  processCompletedFastCapture(
-    "fetch",
-    "https://f95zone.to/latest_data.php",
-    JSON.stringify({ msg: { data: { hello: "world" } } }),
-  );
-  unsubscribe();
-
-  assert.strictEqual(seen.length, 2);
-  assert.strictEqual(seen[0].status, "idle");
-  assert.strictEqual(seen[1].status, "captured");
-  assert.deepStrictEqual(seen[1].data, { hello: "world" });
-});
-
-runTest("fast capture subscribers receive cached snapshot on subscribe", () => {
-  resetFastCaptureHarness();
-
-  registerFastCaptureFeatures([
-    {
-      name: "Cached Capture",
-      featureKey: "cached-capture",
-      bootstrapMode: "fast",
-      fastCapture: {
-        urlIncludes: ["latest_data.php"],
-        dataPath: "msg.data",
-        transport: "fetch",
-        mode: "latest",
-      },
-      isApplicable: () => true,
-    },
-  ]);
-
-  processCompletedFastCapture(
-    "fetch",
-    "https://f95zone.to/latest_data.php",
-    JSON.stringify({ msg: { data: [{ id: 7 }] } }),
-  );
-
-  const seen = [];
-  const unsubscribe = subscribeFastCapture("cached-capture", (snapshot) => {
-    seen.push(snapshot);
-  });
-  unsubscribe();
-
+  const release = capture.setLatestCaptureConsumer((snapshot) => seen.push(snapshot));
+  assert.strictEqual(seen.length, 0);
+  assert.strictEqual(capture.getLatestCaptureSnapshot().status, "idle");
+  capture.processCompletedLatestCapture("fetch", "https://f95zone.to/sam/latest_data.php", JSON.stringify({ msg: { data: [1] } }));
   assert.strictEqual(seen.length, 1);
-  assert.strictEqual(seen[0].status, "captured");
-  assert.deepStrictEqual(seen[0].data, [{ id: 7 }]);
+  assert.deepStrictEqual(seen[0].data, [1]);
+  release();
+  capture.processCompletedLatestCapture("fetch", "https://f95zone.to/sam/latest_data.php", JSON.stringify({ msg: { data: [2] } }));
+  assert.strictEqual(seen.length, 1);
 });
 
-runTest("fast capture accepts the exact response limit and rejects one byte over", () => {
-  resetFastCaptureHarness();
-  registerFastCaptureFeatures([{
-    featureKey: "limit-capture",
-    bootstrapMode: "fast",
-    fastCapture: { urlIncludes: "limit_data.php", dataPath: "msg.data", transport: "fetch" },
-    isApplicable: () => true,
-  }]);
-  const exact = "x".repeat(FAST_CAPTURE_LIMITS.maxResponseBytes);
-  const over = `${exact}x`;
-  assert.strictEqual(enqueueFastCaptureProcessing("fetch", "https://f95zone.to/limit_data.php", exact), true);
-  assert.strictEqual(enqueueFastCaptureProcessing("fetch", "https://f95zone.to/limit_data.php", over), false);
-  assert.strictEqual(getFastCaptureDiagnostics().dropped.payload_too_large, 1);
+runTest("CORE-SIZE-LATEST-CAPTURE-01 enforces endpoint origin response and payload bounds", () => {
+  const previousLocation = global.location;
+  global.location = new URL("https://f95zone.to/sam/latest/");
+  const capture = loadModule("src/features/latest-overlay/capture/index.js");
+  capture.resetLatestCaptureForTests();
+  capture.resetLatestCaptureStoreForTests();
+  capture.startLatestCapture({ generation: 3 }, { active: true });
+  const payload = JSON.stringify({ msg: { data: [1] } });
+  assert.strictEqual(capture.processCompletedLatestCapture("other", "https://f95zone.to/sam/latest_data.php", payload), false);
+  assert.strictEqual(capture.processCompletedLatestCapture("fetch", "https://other.test/latest_data.php", payload), false);
+  assert.strictEqual(capture.processCompletedLatestCapture("fetch", "https://f95zone.to/not-latest.php", payload), false);
+  assert.strictEqual(capture.processCompletedLatestCapture("fetch", "https://f95zone.to/sam/latest_data.php", "x".repeat(capture.FAST_CAPTURE_LIMITS.maxResponseBytes + 1)), false);
+  const diagnostics = capture.getLatestCaptureDiagnostics();
+  assert.strictEqual(diagnostics.dropped.invalid_transport, 1);
+  assert.strictEqual(diagnostics.dropped.foreign_origin, 1);
+  assert.strictEqual(diagnostics.dropped.payload_too_large, 1);
+  assert.strictEqual(diagnostics.entryCount, 0);
+  global.location = previousLocation;
 });
 
-runTest("fast capture expires entries at the configured TTL", () => {
-  resetFastCaptureHarness();
-  const originalNow = Date.now;
-  try {
-    Date.now = () => 1_000;
-    registerFastCaptureFeatures([{
-      featureKey: "ttl-capture",
-      bootstrapMode: "fast",
-      fastCapture: { urlIncludes: "ttl_data.php", dataPath: "msg.data", transport: "fetch", ttlMs: 1 },
-      isApplicable: () => true,
-    }]);
-    processCompletedFastCapture("fetch", "https://f95zone.to/ttl_data.php", JSON.stringify({ msg: { data: [1] } }));
-    assert.strictEqual(hasFastCaptureData("ttl-capture"), true);
-    Date.now = () => 1_002;
-    assert.strictEqual(hasFastCaptureData("ttl-capture"), false);
-  } finally {
-    Date.now = originalNow;
-  }
-});
-
-runTest("fast capture evicts oldest snapshots when retained bytes exceed the cap", () => {
-  resetFastCaptureHarness();
-  const features = Array.from({ length: 5 }, (_, index) => ({
-    featureKey: `eviction-capture-${index}`,
-    bootstrapMode: "fast",
-    fastCapture: { urlIncludes: "eviction_data.php", dataPath: "msg.data", transport: "fetch" },
-    isApplicable: () => true,
-  }));
-  registerFastCaptureFeatures(features);
-  const payload = JSON.stringify({ msg: { data: "x".repeat(FAST_CAPTURE_LIMITS.maxResponseBytes - 128) } });
-  processCompletedFastCapture("fetch", "https://f95zone.to/eviction_data.php", payload);
-  const diagnostics = getFastCaptureDiagnostics();
-  assert.ok(diagnostics.retainedBytes <= FAST_CAPTURE_LIMITS.maxRetainedBytes);
-  assert.ok(diagnostics.evictedEntries > 0);
-});
-
-runTest("fast capture discards queued work from a stale route generation", async () => {
-  resetFastCaptureHarness();
-  const feature = {
-    featureKey: "stale-route-capture",
-    bootstrapMode: "fast",
-    fastCapture: { urlIncludes: "stale_data.php", dataPath: "msg.data", transport: "fetch" },
-    isApplicable: () => true,
-  };
-  registerFastCaptureFeatures([feature], { generation: 1 });
-  assert.strictEqual(
-    enqueueFastCaptureProcessing("fetch", "https://f95zone.to/stale_data.php", JSON.stringify({ msg: { data: [1] } })),
-    true,
-  );
-  refreshFastCaptureFeatures([feature], { generation: 2 });
+runTest("CORE-SIZE-LATEST-CAPTURE-01 rejects stale route work and clears queued generations", async () => {
+  const capture = loadModule("src/features/latest-overlay/capture/index.js");
+  capture.resetLatestCaptureForTests();
+  capture.resetLatestCaptureStoreForTests();
+  capture.startLatestCapture({ generation: 4 }, { active: true });
+  const payload = JSON.stringify({ msg: { data: [1] } });
+  assert.strictEqual(capture.processCompletedLatestCapture("fetch", "https://f95zone.to/sam/latest_data.php", payload, { generation: 3 }), false);
+  assert.strictEqual(capture.enqueueLatestCaptureProcessing("fetch", "https://f95zone.to/sam/latest_data.php", payload), true);
+  capture.refreshLatestCapture({ generation: 5 }, { active: true });
   await new Promise((resolve) => setTimeout(resolve, 5));
+  assert.strictEqual(capture.getLatestCaptureSnapshot().status, "idle");
+  assert.ok(capture.getLatestCaptureDiagnostics().dropped.stale_route >= 1);
+});
 
-  assert.strictEqual(hasFastCaptureData("stale-route-capture"), false);
+runTest("CORE-SIZE-LATEST-CAPTURE-01 diagnostics are bounded and body-free", () => {
+  const capture = loadModule("src/features/latest-overlay/capture/index.js");
+  capture.resetLatestCaptureForTests();
+  capture.resetLatestCaptureStoreForTests();
+  capture.startLatestCapture({ generation: 6 }, { active: true });
+  const secret = "private-response-body";
+  capture.processCompletedLatestCapture("fetch", "https://f95zone.to/sam/latest_data.php", JSON.stringify({ msg: { data: [secret] } }));
+  const diagnostics = capture.getLatestCaptureDiagnostics();
+  assert.strictEqual(JSON.stringify(diagnostics).includes(secret), false);
+  assert.strictEqual(diagnostics.entryCount, 1);
+  assert.strictEqual(diagnostics.registeredRules, 1);
+  assert.ok(diagnostics.retainedBytes > 0);
+  assert.ok(diagnostics.retainedBytes <= capture.FAST_CAPTURE_LIMITS.maxRetainedBytes);
+});
+
+runTest("CORE-SIZE-LATEST-CAPTURE-01 removes generic production contracts", () => {
+  const production = [
+    "src/features/latest-overlay/capture/index.js",
+    "src/core/featureFactory.js",
+    "src/core/createStyledFeature.js",
+    "src/features/latest-overlay/index.js",
+  ].map((file) => fs.readFileSync(path.join(ROOT, file), "utf8")).join("\n");
+  for (const removed of ["registerFastCaptureFeatures", "subscribeFastCapture", "normalizeFastCaptureConfig", "fastCapture:"]) {
+    assert.strictEqual(production.includes(removed), false, removed);
+  }
 });
 
 runTest(
@@ -734,4 +408,3 @@ runTest("ADDON-BRIDGE protocol rejects malformed envelopes and replay IDs", () =
 });
 
 };
-

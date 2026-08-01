@@ -1,0 +1,177 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Global scrollbar styling for UI inside the shadow root
+   Applies to all scrollable elements without needing per-element rules. */
+* {
+  /* Firefox */
+  scrollbar-color: var(--f95ue-scrollbar-thumb, #893839) var(--f95ue-scrollbar-track, #191b1e);
+  scrollbar-width: thin;
+}
+
+/* WebKit browsers */
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: var(--f95ue-scrollbar-track, #191b1e);
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--f95ue-scrollbar-thumb, #893839);
+  border-radius: 6px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+#toast-container {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 13210; /* above settings modal (13000) and dialog backdrops (13100) */
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.toast {
+  padding: 10px;
+  background-color: #333;
+  color: #fff;
+  border-radius: 8px;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+#f95ue-page-dock {
+  position: fixed;
+  left: 0;
+  bottom: 20px;
+  z-index: 10020;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: flex-start;
+  gap: 8px;
+  max-width: calc(100vw - 12px);
+  padding-left: 8px;
+  /* Don't block clicks on the page behind the dock (only the buttons should be clickable). */
+  pointer-events: none;
+}
+
+#f95ue-page-dock-main-slot,
+.f95ue-page-dock-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#f95ue-page-dock-addon-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 0;
+  overflow: visible;
+  margin-bottom: 8px;
+}
+
+.f95ue-page-dock-group {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+#tag-config-button {
+  padding: 10px 12px;
+  font-size: 20px;
+  min-width: 52px;
+}
+
+#tag-config-button,
+.f95ue-page-dock-btn {
+  cursor: pointer;
+  border: 2px inset #461616;
+  background: #cc3131;
+  color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  opacity: 0.75;
+  pointer-events: auto;
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease,
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.f95ue-page-dock-btn {
+  padding: 10px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.f95ue-page-dock-btn.secondary {
+  border-color: #3b4f63;
+  background: #2b3947;
+}
+
+.f95ue-page-dock-btn.saved {
+  border-color: #356d63;
+  background: #244c45;
+}
+
+#tag-config-button:hover,
+.f95ue-page-dock-btn:hover {
+  opacity: 1;
+}
+
+#tag-config-button:active,
+.f95ue-page-dock-btn:active {
+  transform: scale(0.9);
+}
+
+#f95ue-page-dock.is-collapsed #tag-config-button {
+  transform: translateX(calc(-100% + 26px));
+  opacity: 0.9;
+}
+
+#f95ue-page-dock.is-collapsed .f95ue-page-dock-btn {
+  transform: translateX(calc(-100% + 14px));
+  opacity: 0.7;
+}
+
+#f95ue-page-dock.is-collapsed #tag-config-button:hover,
+#f95ue-page-dock.is-collapsed #tag-config-button:focus-visible,
+#f95ue-page-dock.is-collapsed .f95ue-page-dock-btn:hover,
+#f95ue-page-dock.is-collapsed .f95ue-page-dock-btn:focus-visible {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+@media (max-width: 640px) {
+  #f95ue-page-dock {
+    bottom: 12px;
+    gap: 8px;
+    padding-left: 6px;
+  }
+
+  #tag-config-button,
+  .f95ue-page-dock-btn {
+    padding: 9px 12px;
+  }
+}

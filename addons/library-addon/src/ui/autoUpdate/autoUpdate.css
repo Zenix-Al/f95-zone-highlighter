@@ -2,7 +2,7 @@ __ROOT__ {
   box-sizing: border-box;
   display: grid;
   gap: 16px;
-  width: min(720px, 100%);
+  width: 100%;
   padding: 18px;
   color: #f0f2f6;
   color-scheme: dark;

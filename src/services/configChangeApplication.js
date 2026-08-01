@@ -7,6 +7,18 @@ import { getMetadataByConfigPath } from "../ui/settings/metaRegistry.js";
 
 function clone(value) { return JSON.parse(JSON.stringify(value)); }
 
+function cloneRuntimeSnapshot(value) {
+  const source = value && typeof value === "object" ? value : {};
+  const snapshot = clone({
+    ...source,
+    tags: [],
+    prefixes: { items: [], categories: {} },
+  });
+  snapshot.tags = source.tags;
+  snapshot.prefixes = source.prefixes;
+  return snapshot;
+}
+
 function valueAtPath(value, path) {
   return getByPath(value, path.replace(/\[(\d+)\]/g, ".$1"));
 }
@@ -68,8 +80,8 @@ export function applyConfigChange(
     notify = true,
   } = {},
 ) {
-  const previous = clone(config);
-  const requestedNext = clone(nextConfig);
+  const previous = cloneRuntimeSnapshot(config);
+  const requestedNext = cloneRuntimeSnapshot(nextConfig);
   const next = requestedNext;
   const paths = sortChangedPaths(changedPaths(previous, next));
   Object.assign(config, next);
@@ -97,7 +109,7 @@ export function applyConfigChange(
 
   return {
     previous,
-    config: clone(config),
+    config: cloneRuntimeSnapshot(config),
     changedPaths: paths,
     appliedPaths: paths,
     origin,

@@ -211,10 +211,11 @@ export function buildMigrationPlan({
 
 export function getCanonicalData(configValue) {
   const source = isRecord(configValue) ? configValue : {};
-  const canonical = clone(source) || {};
-  canonical.tags = [];
-  canonical.prefixes = { items: [], categories: {} };
-  return canonical;
+  return clone({
+    ...source,
+    tags: [],
+    prefixes: { items: [], categories: {} },
+  }) || {};
 }
 
 export function isCurrentMigrationMarker(value) {

@@ -1,132 +1,53 @@
-# Fast Capture Service (`fastCapture`)
+# Latest Overlay capture
 
-The **Fast Capture** service (`src/services/fastCapture/`) is a performance optimization utility that intercepts and caches AJAX (XHR/Fetch) network responses early in the page load lifecycle—specifically before the DOM is parsed or the main script features are fully instantiated.
+Latest capture is private infrastructure owned by
+`src/features/latest-overlay/capture/`. It observes the site's first
+`latest_data.php` XHR or fetch request before normal feature enable, retains one
+bounded snapshot, and lets Latest Overlay reuse that response instead of issuing
+a duplicate request.
 
----
+It is not a general core service or an add-on API. Feature descriptors do not
+accept capture rules, and no action, bridge command, settings entry, or trusted
+add-on can read captured response bodies.
 
-## Why Use Fast Capture?
-In single-page-like dynamic forums, page data is loaded via asynchronous API calls during the document's early load stages. If a feature has to wait for the body to boot, then make its own request to fetch that exact same data, the user experiences significant layout delay and double network usage.
+## Lifecycle
 
-Fast Capture intercepts the website's native calls and stores the payloads in-memory. When your feature is enabled, the data is already waiting in the `fastCaptureStore`, avoiding redundant HTTP requests.
+1. The loader explicitly starts capture during fast bootstrap, before a body is
+   required, and passes whether the current route is Latest.
+2. The page transport installs the page-world XHR/fetch hooks. The sandbox
+   transport remains the fallback when the page bridge is unavailable.
+3. Matching same-origin responses enter the bounded queue. Valid
+   `payload.msg.data` replaces the single current snapshot.
+4. When Latest Overlay enables, its handler installs the sole private consumer
+   callback and immediately reads the current snapshot. This covers a response
+   that arrived before enable without replaying or duplicating it.
+5. Later valid responses notify that callback and replace the snapshot.
+6. Disable removes the handler callback and clears its derived record index.
+   Route refresh advances the capture generation and rejects queued stale work.
 
----
+The initial recovery watch checks resource performance entries for a matching
+request that completed before interception. If found, it performs one
+same-origin credentialed fetch and feeds the result through the same validation
+path.
 
-## Configuring Fast Capture in a Feature
+## Fixed contract and limits
 
-To use Fast Capture, the feature must boot in `"fast"` mode. You configure it by passing a `fastCapture` object to `createFeature` or `createStyledFeature`:
+- Endpoint substring: `latest_data.php`
+- Payload path: `msg.data`
+- Transports: XHR and fetch
+- Retention mode: newest valid response only
+- Snapshot TTL: 30 seconds
+- Maximum response: 512 KiB
+- Maximum queued responses: 20
+- Maximum retained bytes: 2 MiB (the single-response limit is narrower)
 
-```javascript
-// src/features/latest-overlay/index.js
-export const latestOverlayFeature = createStyledFeature("Latest Overlay", {
-  id: "latest-raw-capture",
-  configPath: "latestSettings.latestOverlayToggle",
-  pageScopes: ["isLatest"],
-  isApplicable: ({ stateManager }) => stateManager.get("isLatest"),
-  bootstrapMode: "fast", // Required for early interception
-  fastCapture: {
-    urlIncludes: "latest_data.php", // URL string to match
-    dataPath: "msg.data",           // JSON property path where target data resides
-    transport: "any",               // "xhr", "fetch", or "any"
-    mode: "latest",                 // "latest", "oncePerRoute", or "oncePerDocument"
-    ttlMs: 30000,                   // Cache time-to-live
-  },
-  styleCss: featureCss,
-  enable: runEnableLatestOverlay,
-  disable: runDisableLatestOverlay,
-});
-```
+Only same-origin HTTP(S) URLs are accepted. Invalid transports or URLs,
+foreign origins, unsupported response types, oversized payloads, malformed
+JSON, missing data, queue overflow, and stale route generations cannot commit a
+new valid snapshot. A malformed later response does not destroy the previous
+valid snapshot.
 
-### Configuration Options
-- **`urlIncludes`**: *(String | Array)* One or more URL substrings to match against.
-- **`dataPath`**: *(String)* The dot-notated path inside the JSON response to capture (uses `utils/objectPath.js`).
-- **`transport`**: *(String)* `'xhr'`, `'fetch'`, or `'any'` (default).
-- **`mode`**: *(String)*
-  - `'latest'`: Always capture and overwrite with the newest response.
-  - `'oncePerRoute'`: Intercept once per client-side route change.
-  - `'oncePerDocument'`: Intercept once per full page load.
-- **`ttlMs`**: *(Number)* Expiration lifetime of the captured snapshot in milliseconds. It defaults to 30 seconds and is capped at that value.
-
-## Ownership and limits
-
-`src/services/fastCapture/index.js` is the public facade for both consumers and
-bootstrap orchestration. `rules.js` owns feature-rule normalization,
-`pageCaptureTransport.js` and `sandboxCaptureTransport.js` own interception,
-`captureQueue.js` owns frame-budgeted queued processing, and
-`fastCaptureStore.js` owns snapshots and subscriber notification.
-
-The service accepts same-origin HTTP(S) XHR/fetch responses only. It rejects
-malformed URLs, unsupported response types, stale-route work, and payloads over
-512 KiB before parsing. The queue accepts at most 20 pending items; retained
-snapshots are capped at 2 MiB and oldest snapshots are evicted first. Diagnostics
-expose only counts, byte totals, ages, drop reasons, and queue state—never bodies.
-
----
-
-## Consuming Captured Data in Feature Logic
-
-Import consumer helpers from the fast-capture service facade:
-
-```javascript
-import { 
-  getFastCaptureSnapshot, 
-  subscribeFastCapture, 
-  hasFastCaptureData 
-} from "../../services/fastCapture/index.js";
-```
-
-### API Reference
-- **`hasFastCaptureData(featureKey)`**: Returns a `boolean` indicating if a valid snapshot is available.
-- **`getFastCaptureData(featureKey)`**: Returns the extracted raw data payload.
-- **`getFastCaptureSnapshot(featureKey)`**: Returns the full wrapper snapshot object:
-  ```javascript
-  {
-    status: "captured" | "pending" | "error",
-    data: [...],           // Extracted data
-    sourceUrl: "...",      // Intercepted URL
-    capturedAt: 172000..., // Timestamp
-    errorMessage: null     // Present if status is "error"
-  }
-  ```
-- **`subscribeFastCapture(featureKey, callback)`**: Subscribes to updates. The callback is invoked as soon as a response is captured. Returns an unsubscribe function.
-
-### Real-World Usage Pattern
-```javascript
-// src/features/latest-overlay/handler.js
-let unsubscribeLatestData = null;
-
-export function enableLatestOverlay() {
-  // 1. Subscribe to upcoming network captures
-  unsubscribeLatestData = subscribeFastCapture("latest-raw-capture", (snapshot) => {
-    if (snapshot.status === "captured") {
-      renderOverlayTiles(snapshot.data);
-    } else if (snapshot.status === "error") {
-      showErrorPlaceholder(snapshot.errorMessage);
-    }
-  });
-
-  // 2. Proactively check if the response was already captured before enabling
-  const currentSnapshot = getFastCaptureSnapshot("latest-raw-capture");
-  if (currentSnapshot.status === "captured") {
-    renderOverlayTiles(currentSnapshot.data);
-  }
-}
-
-export function disableLatestOverlay() {
-  if (unsubscribeLatestData) {
-    unsubscribeLatestData();
-    unsubscribeLatestData = null;
-  }
-}
-```
-
----
-
-## How It Works Under the Hood
-
-1. **Interception**:
-   - **`pageCaptureTransport.js`**: Patches the page's global `window.fetch` and `window.XMLHttpRequest` prototypes when running in the page context.
-   - **`sandboxCaptureTransport.js`**: Fallback interception for sandbox contexts.
-2. **Buffering**: Captured payloads are queued (`captureQueue.js`) and parsed asynchronously to avoid blocking the main thread.
-3. **Performance Recovery Cache**:
-   - If an API request completed before the userscript started executing, Fast Capture tries to recover it by querying the browser's HTTP resource cache via the **Performance API** (`PerformanceObserver`).
-   - If a matching request is found in the resource timeline, Fast Capture silently re-fetches it via `fetch(..., { credentials: "same-origin" })` to populate the store.
+Diagnostics expose status, age, byte counts, queue state, recovery state, and
+bounded drop counters. They never include response bodies. The implementation
+entry point is `src/features/latest-overlay/capture/index.js`; it intentionally
+has no compatibility facade under `src/services/`.

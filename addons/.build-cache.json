@@ -2,7 +2,7 @@
   "addons": {
     "library-addon": {
       "regular": "3eba47d258104459afe1337e741589ce2f5a67ce400cb17e13b78cd3698d9a95",
-      "release": "5cd868490f546f1ddefc744e79d45ceea09066f7579f3898ba0b4cd43084c2b4"
+      "release": "2456df9fe9dcb4560244bcbc881fc2a265e4380d5b787e6c935baa179fe5d723"
     },
     "image-repair-addon": {
       "release": "599180b41d1edaf69497c5acbf83bdcee2b3417604595341691dd6eac64a4450",
@@ -13,7 +13,7 @@
       "regular": "da7aad86e1c5bb8841fc3ff47743fa8dfaeaffa0136c2d2e74b4bda93870a0c8"
     },
     "latest-filters-addon": {
-      "release": "4ab43167b5e7469b39376a312de3fd19d0dab39517b1189c82d9dc40e3e9c7de",
+      "release": "4f710e18bac0fbf71d9b0003384b4f2f866a7e616a31d939f9379d77d24d64c1",
       "regular": "486b368d421e3d4d700dd98bbc8caae0dfed2c77e89ace3471dd37d2851c60a8"
     },
     "halloween-theme-addon": {

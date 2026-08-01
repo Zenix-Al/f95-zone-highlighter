@@ -1,24 +1,28 @@
 {
   "reportSchemaVersion": 1,
   "tool": "css-audit",
-  "stylesheet": "src/ui/assets/css.css",
-  "authoredBytes": 31122,
+  "stylesheet": "src/ui/assets/startup.css + src/ui/assets/css.css",
+  "stylesheets": [
+    "src/ui/assets/startup.css",
+    "src/ui/assets/css.css"
+  ],
+  "authoredBytes": 29892,
   "bundle": {
     "readable": {
-      "fullBytes": 633664,
-      "gzipBytes": 133256,
-      "contributionBytes": 25542
+      "fullBytes": 613472,
+      "gzipBytes": 132099,
+      "contributionBytes": 21749
     },
     "uglified": {
-      "fullBytes": 322955,
-      "gzipBytes": 94521,
-      "contributionBytes": 25528
+      "fullBytes": 309707,
+      "gzipBytes": 92836,
+      "contributionBytes": 24665
     }
   },
-  "ruleCount": 215,
-  "styleRuleCount": 215,
-  "selectorCount": 234,
-  "declarationCount": 881,
+  "ruleCount": 206,
+  "styleRuleCount": 206,
+  "selectorCount": 226,
+  "declarationCount": 846,
   "mediaQueryCount": 4,
   "keyframeCount": 0,
   "customProperties": [],
@@ -61,1185 +65,1145 @@
     },
     {
       "selector": "*::-webkit-scrollbar-track",
-      "sourceLine": 20,
+      "sourceLine": 21,
       "atRules": []
     },
     {
       "selector": "*::-webkit-scrollbar-thumb",
-      "sourceLine": 23,
-      "atRules": []
-    },
-    {
-      "selector": ".modal-error-notif",
-      "sourceLine": 30,
-      "atRules": []
-    },
-    {
-      "selector": ".centered-item",
-      "sourceLine": 44,
-      "atRules": []
-    },
-    {
-      "selector": ".settings-wrapper-inner",
-      "sourceLine": 51,
-      "atRules": []
-    },
-    {
-      "selector": ".tag-chip",
-      "sourceLine": 57,
-      "atRules": []
-    },
-    {
-      "selector": ".tag-chip span",
-      "sourceLine": 71,
-      "atRules": []
-    },
-    {
-      "selector": ".tag-chip.dragging",
-      "sourceLine": 76,
+      "sourceLine": 25,
       "atRules": []
     },
     {
       "selector": "#toast-container",
-      "sourceLine": 80,
+      "sourceLine": 32,
       "atRules": []
     },
     {
       "selector": ".toast",
-      "sourceLine": 92,
+      "sourceLine": 44,
       "atRules": []
     },
     {
       "selector": ".toast.show",
+      "sourceLine": 56,
+      "atRules": []
+    },
+    {
+      "selector": "#f95ue-page-dock",
+      "sourceLine": 61,
+      "atRules": []
+    },
+    {
+      "selector": "#f95ue-page-dock-main-slot",
+      "sourceLine": 76,
+      "atRules": []
+    },
+    {
+      "selector": ".f95ue-page-dock-group",
+      "sourceLine": 76,
+      "atRules": []
+    },
+    {
+      "selector": "#f95ue-page-dock-addon-slot",
+      "sourceLine": 83,
+      "atRules": []
+    },
+    {
+      "selector": ".f95ue-page-dock-group",
+      "sourceLine": 93,
+      "atRules": []
+    },
+    {
+      "selector": "#tag-config-button",
+      "sourceLine": 98,
+      "atRules": []
+    },
+    {
+      "selector": "#tag-config-button",
       "sourceLine": 104,
       "atRules": []
     },
     {
-      "selector": "#tag-config-modal",
-      "sourceLine": 109,
+      "selector": ".f95ue-page-dock-btn",
+      "sourceLine": 104,
       "atRules": []
     },
     {
-      "selector": ".tag-list-container",
-      "sourceLine": 122,
+      "selector": ".f95ue-page-dock-btn",
+      "sourceLine": 121,
       "atRules": []
     },
     {
-      "selector": ".preferred-tag-item",
+      "selector": ".f95ue-page-dock-btn.secondary",
+      "sourceLine": 128,
+      "atRules": []
+    },
+    {
+      "selector": ".f95ue-page-dock-btn.saved",
       "sourceLine": 133,
       "atRules": []
     },
     {
-      "selector": ".drag-ghost",
+      "selector": "#tag-config-button:hover",
       "sourceLine": 138,
       "atRules": []
     },
     {
-      "selector": ".tag-actions",
+      "selector": ".f95ue-page-dock-btn:hover",
+      "sourceLine": 138,
+      "atRules": []
+    },
+    {
+      "selector": "#tag-config-button:active",
+      "sourceLine": 143,
+      "atRules": []
+    },
+    {
+      "selector": ".f95ue-page-dock-btn:active",
+      "sourceLine": 143,
+      "atRules": []
+    },
+    {
+      "selector": "#f95ue-page-dock.is-collapsed #tag-config-button",
       "sourceLine": 148,
       "atRules": []
     },
     {
-      "selector": "#search-container",
+      "selector": "#f95ue-page-dock.is-collapsed .f95ue-page-dock-btn",
       "sourceLine": 153,
       "atRules": []
     },
     {
-      "selector": ".tag-priority-note",
-      "sourceLine": 159,
+      "selector": "#f95ue-page-dock.is-collapsed #tag-config-button:hover",
+      "sourceLine": 158,
       "atRules": []
     },
     {
-      "selector": ".tag-list-section",
-      "sourceLine": 170,
+      "selector": "#f95ue-page-dock.is-collapsed #tag-config-button:focus-visible",
+      "sourceLine": 158,
       "atRules": []
     },
     {
-      "selector": ".tag-list-header",
+      "selector": "#f95ue-page-dock.is-collapsed .f95ue-page-dock-btn:hover",
+      "sourceLine": 158,
+      "atRules": []
+    },
+    {
+      "selector": "#f95ue-page-dock.is-collapsed .f95ue-page-dock-btn:focus-visible",
+      "sourceLine": 158,
+      "atRules": []
+    },
+    {
+      "selector": "#f95ue-page-dock",
+      "sourceLine": 167,
+      "atRules": [
+        "@media (max-width: 640px)"
+      ]
+    },
+    {
+      "selector": "#tag-config-button",
       "sourceLine": 173,
+      "atRules": [
+        "@media (max-width: 640px)"
+      ]
+    },
+    {
+      "selector": ".f95ue-page-dock-btn",
+      "sourceLine": 173,
+      "atRules": [
+        "@media (max-width: 640px)"
+      ]
+    },
+    {
+      "selector": ".modal-error-notif",
+      "sourceLine": 179,
       "atRules": []
     },
     {
-      "selector": ".excluded-tag-item",
-      "sourceLine": 181,
+      "selector": ".centered-item",
+      "sourceLine": 193,
       "atRules": []
     },
     {
-      "selector": ".marked-tag-item",
-      "sourceLine": 187,
+      "selector": ".settings-wrapper-inner",
+      "sourceLine": 200,
       "atRules": []
     },
     {
-      "selector": ".tag-list-item",
-      "sourceLine": 192,
-      "atRules": []
-    },
-    {
-      "selector": ".tag-list-item:hover",
-      "sourceLine": 197,
-      "atRules": []
-    },
-    {
-      "selector": ".tag-list-item.dragging",
-      "sourceLine": 201,
-      "atRules": []
-    },
-    {
-      "selector": ".tag-list-item.drag-over",
+      "selector": ".tag-chip",
       "sourceLine": 206,
       "atRules": []
     },
     {
-      "selector": ".offscreen-copy",
-      "sourceLine": 212,
+      "selector": ".tag-chip span",
+      "sourceLine": 220,
       "atRules": []
     },
     {
-      "selector": ".tag-list-container.drag-over",
-      "sourceLine": 223,
+      "selector": ".tag-chip.dragging",
+      "sourceLine": 225,
       "atRules": []
     },
     {
-      "selector": ".tag-list-container.drag-target",
+      "selector": "#tag-config-modal",
       "sourceLine": 229,
       "atRules": []
     },
     {
-      "selector": "#search-results li",
-      "sourceLine": 235,
+      "selector": ".tag-list-container",
+      "sourceLine": 242,
       "atRules": []
     },
     {
-      "selector": "#search-results li:hover",
-      "sourceLine": 246,
-      "atRules": []
-    },
-    {
-      "selector": ".tags-search-input-wrap",
-      "sourceLine": 249,
-      "atRules": []
-    },
-    {
-      "selector": "#tags-search",
+      "selector": ".preferred-tag-item",
       "sourceLine": 253,
       "atRules": []
     },
     {
-      "selector": ".tags-search-clear",
-      "sourceLine": 262,
+      "selector": ".drag-ghost",
+      "sourceLine": 258,
       "atRules": []
     },
     {
-      "selector": ".tags-search-clear.visible",
-      "sourceLine": 284,
+      "selector": ".tag-actions",
+      "sourceLine": 268,
       "atRules": []
     },
     {
-      "selector": ".tags-search-clear:hover",
-      "sourceLine": 289,
+      "selector": "#search-container",
+      "sourceLine": 273,
       "atRules": []
     },
     {
-      "selector": ".tags-search-clear:focus-visible",
-      "sourceLine": 294,
+      "selector": ".tag-priority-note",
+      "sourceLine": 279,
       "atRules": []
     },
     {
-      "selector": "#tags-search:focus",
-      "sourceLine": 298,
+      "selector": ".tag-list-section",
+      "sourceLine": 290,
       "atRules": []
     },
     {
-      "selector": ".tag-btn",
-      "sourceLine": 304,
+      "selector": ".tag-list-header",
+      "sourceLine": 293,
       "atRules": []
     },
     {
-      "selector": ".tag-btn:hover",
-      "sourceLine": 320,
+      "selector": ".excluded-tag-item",
+      "sourceLine": 301,
       "atRules": []
     },
     {
-      "selector": ".tag-btn.preferred",
-      "sourceLine": 324,
+      "selector": ".marked-tag-item",
+      "sourceLine": 307,
       "atRules": []
     },
     {
-      "selector": ".tag-btn.excluded",
-      "sourceLine": 328,
+      "selector": ".tag-list-item",
+      "sourceLine": 312,
       "atRules": []
     },
     {
-      "selector": ".tag-btn.marked",
+      "selector": ".tag-list-item:hover",
+      "sourceLine": 317,
+      "atRules": []
+    },
+    {
+      "selector": ".tag-list-item.dragging",
+      "sourceLine": 321,
+      "atRules": []
+    },
+    {
+      "selector": ".tag-list-item.drag-over",
+      "sourceLine": 326,
+      "atRules": []
+    },
+    {
+      "selector": ".offscreen-copy",
       "sourceLine": 332,
       "atRules": []
     },
     {
+      "selector": ".tag-list-container.drag-over",
+      "sourceLine": 343,
+      "atRules": []
+    },
+    {
+      "selector": ".tag-list-container.drag-target",
+      "sourceLine": 349,
+      "atRules": []
+    },
+    {
+      "selector": "#search-results li",
+      "sourceLine": 355,
+      "atRules": []
+    },
+    {
+      "selector": "#search-results li:hover",
+      "sourceLine": 366,
+      "atRules": []
+    },
+    {
+      "selector": "#search-results .tag-search-load-more-row",
+      "sourceLine": 370,
+      "atRules": []
+    },
+    {
+      "selector": ".tag-search-load-more",
+      "sourceLine": 375,
+      "atRules": []
+    },
+    {
+      "selector": ".tag-search-load-more:hover",
+      "sourceLine": 385,
+      "atRules": []
+    },
+    {
+      "selector": ".tag-search-load-more:focus-visible",
+      "sourceLine": 385,
+      "atRules": []
+    },
+    {
+      "selector": ".tags-search-input-wrap",
+      "sourceLine": 390,
+      "atRules": []
+    },
+    {
+      "selector": "#tags-search",
+      "sourceLine": 394,
+      "atRules": []
+    },
+    {
+      "selector": ".tags-search-clear",
+      "sourceLine": 403,
+      "atRules": []
+    },
+    {
+      "selector": ".tags-search-clear.visible",
+      "sourceLine": 425,
+      "atRules": []
+    },
+    {
+      "selector": ".tags-search-clear:hover",
+      "sourceLine": 430,
+      "atRules": []
+    },
+    {
+      "selector": ".tags-search-clear:focus-visible",
+      "sourceLine": 435,
+      "atRules": []
+    },
+    {
+      "selector": "#tags-search:focus",
+      "sourceLine": 439,
+      "atRules": []
+    },
+    {
       "selector": ".tag-btn",
-      "sourceLine": 339,
+      "sourceLine": 445,
+      "atRules": []
+    },
+    {
+      "selector": ".tag-btn:hover",
+      "sourceLine": 461,
+      "atRules": []
+    },
+    {
+      "selector": ".tag-btn.preferred",
+      "sourceLine": 465,
+      "atRules": []
+    },
+    {
+      "selector": ".tag-btn.excluded",
+      "sourceLine": 469,
+      "atRules": []
+    },
+    {
+      "selector": ".tag-btn.marked",
+      "sourceLine": 473,
+      "atRules": []
+    },
+    {
+      "selector": ".tag-btn",
+      "sourceLine": 480,
       "atRules": [
         "@media (max-width: 480px)"
       ]
     },
     {
       "selector": ".preferred-tag-remove",
-      "sourceLine": 347,
+      "sourceLine": 488,
       "atRules": []
     },
     {
       "selector": ".excluded-tag-remove",
-      "sourceLine": 347,
+      "sourceLine": 488,
       "atRules": []
     },
     {
       "selector": ".tag-remove-btn",
-      "sourceLine": 347,
+      "sourceLine": 488,
       "atRules": []
     },
     {
       "selector": "#search-results",
-      "sourceLine": 364,
+      "sourceLine": 505,
       "atRules": []
     },
     {
       "selector": "#tag-config-modal input",
-      "sourceLine": 381,
+      "sourceLine": 522,
       "atRules": []
     },
     {
       "selector": "#tag-config-modal textarea",
-      "sourceLine": 381,
+      "sourceLine": 522,
       "atRules": []
     },
     {
       "selector": "#tag-config-modal select",
-      "sourceLine": 381,
+      "sourceLine": 522,
       "atRules": []
     },
     {
       "selector": "#tag-config-modal input:focus",
-      "sourceLine": 389,
+      "sourceLine": 530,
       "atRules": []
     },
     {
       "selector": "#tag-config-modal textarea:focus",
-      "sourceLine": 389,
+      "sourceLine": 530,
       "atRules": []
     },
     {
       "selector": "#tag-config-modal select:focus",
-      "sourceLine": 389,
+      "sourceLine": 530,
       "atRules": []
     },
     {
       "selector": "#tag-config-modal input[type=\"checkbox\"]",
-      "sourceLine": 397,
+      "sourceLine": 538,
       "atRules": []
     },
     {
       "selector": "#tag-config-modal input[type=\"radio\"]",
-      "sourceLine": 397,
+      "sourceLine": 538,
       "atRules": []
     },
     {
       "selector": "#tag-config-modal .config-color-input",
-      "sourceLine": 403,
+      "sourceLine": 544,
       "atRules": []
     },
     {
       "selector": "#tag-config-modal .config-color-input::-webkit-color-swatch-wrapper",
-      "sourceLine": 416,
+      "sourceLine": 557,
       "atRules": []
     },
     {
       "selector": "#tag-config-modal .config-color-input::-webkit-color-swatch",
-      "sourceLine": 420,
+      "sourceLine": 561,
       "atRules": []
     },
     {
       "selector": ".modal-btn",
-      "sourceLine": 425,
+      "sourceLine": 566,
       "atRules": []
     },
     {
       "selector": ".modal-btn:hover",
-      "sourceLine": 440,
+      "sourceLine": 581,
       "atRules": []
     },
     {
       "selector": ".modal-btn:active",
-      "sourceLine": 445,
+      "sourceLine": 586,
       "atRules": []
     },
     {
       "selector": ".config-button",
-      "sourceLine": 450,
+      "sourceLine": 591,
       "atRules": []
     },
     {
       "selector": ".config-button:hover",
-      "sourceLine": 459,
+      "sourceLine": 600,
       "atRules": []
     },
     {
       "selector": ".feature-health-box",
-      "sourceLine": 464,
-      "atRules": []
-    },
-    {
-      "selector": ".feature-health-header",
-      "sourceLine": 472,
-      "atRules": []
-    },
-    {
-      "selector": ".feature-health-title",
-      "sourceLine": 478,
-      "atRules": []
-    },
-    {
-      "selector": ".feature-health-actions",
-      "sourceLine": 484,
-      "atRules": []
-    },
-    {
-      "selector": ".feature-health-close",
-      "sourceLine": 489,
-      "atRules": []
-    },
-    {
-      "selector": ".feature-health-close:hover",
-      "sourceLine": 499,
-      "atRules": []
-    },
-    {
-      "selector": ".feature-health-content",
-      "sourceLine": 503,
-      "atRules": []
-    },
-    {
-      "selector": ".feature-health-line",
-      "sourceLine": 508,
-      "atRules": []
-    },
-    {
-      "selector": ".config-row",
-      "sourceLine": 513,
-      "atRules": []
-    },
-    {
-      "selector": ".config-row label",
-      "sourceLine": 524,
-      "atRules": []
-    },
-    {
-      "selector": ".setting-tooltip-badge",
-      "sourceLine": 534,
-      "atRules": []
-    },
-    {
-      "selector": ".setting-tooltip-badge:hover",
-      "sourceLine": 552,
-      "atRules": []
-    },
-    {
-      "selector": ".config-row input[type=\"checkbox\"]",
-      "sourceLine": 558,
-      "atRules": []
-    },
-    {
-      "selector": ".config-row input:not([type=\"checkbox\"])",
-      "sourceLine": 567,
-      "atRules": []
-    },
-    {
-      "selector": ".config-row select",
-      "sourceLine": 575,
-      "atRules": []
-    },
-    {
-      "selector": ".config-row select:focus",
-      "sourceLine": 589,
-      "atRules": []
-    },
-    {
-      "selector": ".config-row input[type=\"number\"]",
-      "sourceLine": 594,
-      "atRules": []
-    },
-    {
-      "selector": ".config-row input[type=\"number\"]:focus",
       "sourceLine": 605,
       "atRules": []
     },
     {
-      "selector": ".config-row input[type=\"number\"]::-webkit-inner-spin-button",
-      "sourceLine": 610,
+      "selector": ".feature-health-header",
+      "sourceLine": 613,
       "atRules": []
     },
     {
-      "selector": ".config-row input[type=\"number\"]::-webkit-outer-spin-button",
-      "sourceLine": 610,
+      "selector": ".feature-health-title",
+      "sourceLine": 619,
       "atRules": []
     },
     {
-      "selector": ".config-row input[type=\"color\"]",
-      "sourceLine": 616,
+      "selector": ".feature-health-actions",
+      "sourceLine": 625,
       "atRules": []
     },
     {
-      "selector": ".config-row .config-color-input",
-      "sourceLine": 623,
+      "selector": ".feature-health-close",
+      "sourceLine": 630,
       "atRules": []
     },
     {
-      "selector": ".dark-color-popover",
-      "sourceLine": 629,
+      "selector": ".feature-health-close:hover",
+      "sourceLine": 640,
       "atRules": []
     },
     {
-      "selector": ".dark-color-popover.open",
-      "sourceLine": 645,
+      "selector": ".feature-health-content",
+      "sourceLine": 644,
       "atRules": []
     },
     {
-      "selector": ".dark-color-preview",
-      "sourceLine": 650,
+      "selector": ".config-row",
+      "sourceLine": 655,
       "atRules": []
     },
     {
-      "selector": ".dark-color-hex",
-      "sourceLine": 658,
-      "atRules": []
-    },
-    {
-      "selector": ".dark-color-labels",
+      "selector": ".config-row label",
       "sourceLine": 666,
       "atRules": []
     },
     {
-      "selector": ".dark-color-sliders",
+      "selector": ".setting-tooltip-badge",
       "sourceLine": 676,
       "atRules": []
     },
     {
-      "selector": ".dark-color-slider",
-      "sourceLine": 681,
+      "selector": ".setting-tooltip-badge:hover",
+      "sourceLine": 694,
       "atRules": []
     },
     {
-      "selector": ".dark-color-slider.hue",
-      "sourceLine": 686,
+      "selector": ".config-row input[type=\"checkbox\"]",
+      "sourceLine": 700,
       "atRules": []
     },
     {
-      "selector": ".dark-color-footer",
-      "sourceLine": 690,
+      "selector": ".config-row input:not([type=\"checkbox\"])",
+      "sourceLine": 709,
       "atRules": []
     },
     {
-      "selector": ".dark-color-btn",
-      "sourceLine": 697,
-      "atRules": []
-    },
-    {
-      "selector": ".dark-color-btn.apply",
-      "sourceLine": 707,
-      "atRules": []
-    },
-    {
-      "selector": ".config-row .config-button",
-      "sourceLine": 713,
-      "atRules": []
-    },
-    {
-      "selector": ".config-row:hover",
+      "selector": ".config-row select",
       "sourceLine": 717,
       "atRules": []
     },
     {
-      "selector": "#f95ue-page-dock",
-      "sourceLine": 721,
+      "selector": ".config-row select:focus",
+      "sourceLine": 731,
       "atRules": []
     },
     {
-      "selector": "#f95ue-page-dock-main-slot",
+      "selector": ".config-row input[type=\"number\"]",
       "sourceLine": 736,
       "atRules": []
     },
     {
-      "selector": ".f95ue-page-dock-group",
-      "sourceLine": 736,
+      "selector": ".config-row input[type=\"number\"]:focus",
+      "sourceLine": 747,
       "atRules": []
     },
     {
-      "selector": "#f95ue-page-dock-addon-slot",
-      "sourceLine": 743,
+      "selector": ".config-row input[type=\"number\"]::-webkit-inner-spin-button",
+      "sourceLine": 752,
       "atRules": []
     },
     {
-      "selector": ".f95ue-page-dock-group",
-      "sourceLine": 753,
+      "selector": ".config-row input[type=\"number\"]::-webkit-outer-spin-button",
+      "sourceLine": 752,
       "atRules": []
     },
     {
-      "selector": "#tag-config-button",
+      "selector": ".config-row input[type=\"color\"]",
       "sourceLine": 758,
       "atRules": []
     },
     {
-      "selector": "#tag-config-button",
-      "sourceLine": 764,
+      "selector": ".config-row .config-color-input",
+      "sourceLine": 765,
       "atRules": []
     },
     {
-      "selector": ".f95ue-page-dock-btn",
-      "sourceLine": 764,
+      "selector": ".config-row .config-button",
+      "sourceLine": 771,
       "atRules": []
     },
     {
-      "selector": ".f95ue-page-dock-btn",
-      "sourceLine": 781,
+      "selector": ".config-row:hover",
+      "sourceLine": 775,
       "atRules": []
-    },
-    {
-      "selector": ".f95ue-page-dock-btn.secondary",
-      "sourceLine": 788,
-      "atRules": []
-    },
-    {
-      "selector": ".f95ue-page-dock-btn.saved",
-      "sourceLine": 793,
-      "atRules": []
-    },
-    {
-      "selector": "#tag-config-button:hover",
-      "sourceLine": 798,
-      "atRules": []
-    },
-    {
-      "selector": ".f95ue-page-dock-btn:hover",
-      "sourceLine": 798,
-      "atRules": []
-    },
-    {
-      "selector": "#tag-config-button:active",
-      "sourceLine": 803,
-      "atRules": []
-    },
-    {
-      "selector": ".f95ue-page-dock-btn:active",
-      "sourceLine": 803,
-      "atRules": []
-    },
-    {
-      "selector": "#f95ue-page-dock.is-collapsed #tag-config-button",
-      "sourceLine": 808,
-      "atRules": []
-    },
-    {
-      "selector": "#f95ue-page-dock.is-collapsed .f95ue-page-dock-btn",
-      "sourceLine": 813,
-      "atRules": []
-    },
-    {
-      "selector": "#f95ue-page-dock.is-collapsed #tag-config-button:hover",
-      "sourceLine": 818,
-      "atRules": []
-    },
-    {
-      "selector": "#f95ue-page-dock.is-collapsed #tag-config-button:focus-visible",
-      "sourceLine": 818,
-      "atRules": []
-    },
-    {
-      "selector": "#f95ue-page-dock.is-collapsed .f95ue-page-dock-btn:hover",
-      "sourceLine": 818,
-      "atRules": []
-    },
-    {
-      "selector": "#f95ue-page-dock.is-collapsed .f95ue-page-dock-btn:focus-visible",
-      "sourceLine": 818,
-      "atRules": []
-    },
-    {
-      "selector": "#f95ue-page-dock",
-      "sourceLine": 827,
-      "atRules": [
-        "@media (max-width: 640px)"
-      ]
-    },
-    {
-      "selector": "#tag-config-button",
-      "sourceLine": 833,
-      "atRules": [
-        "@media (max-width: 640px)"
-      ]
-    },
-    {
-      "selector": ".f95ue-page-dock-btn",
-      "sourceLine": 833,
-      "atRules": [
-        "@media (max-width: 640px)"
-      ]
     },
     {
       "selector": "#tag-config-modal .modal-content",
-      "sourceLine": 839,
+      "sourceLine": 779,
       "atRules": []
     },
     {
       "selector": ".settings-mobile-panel-header",
-      "sourceLine": 857,
+      "sourceLine": 797,
       "atRules": []
     },
     {
       "selector": ".settings-mobile-panel-title",
-      "sourceLine": 861,
+      "sourceLine": 801,
       "atRules": []
     },
     {
       "selector": ".settings-mobile-nav-btn",
-      "sourceLine": 872,
+      "sourceLine": 812,
       "atRules": []
     },
     {
       "selector": ".settings-mobile-nav-btn:hover",
-      "sourceLine": 884,
+      "sourceLine": 824,
       "atRules": []
     },
     {
       "selector": "#tag-config-modal .modal-content",
-      "sourceLine": 890,
+      "sourceLine": 830,
       "atRules": [
         "@media (max-width: 480px)"
       ]
     },
     {
       "selector": ".settings-shell",
-      "sourceLine": 895,
+      "sourceLine": 835,
       "atRules": []
     },
     {
       "selector": ".settings-sidebar",
-      "sourceLine": 902,
+      "sourceLine": 842,
       "atRules": []
     },
     {
       "selector": ".settings-sidebar-title",
-      "sourceLine": 912,
+      "sourceLine": 852,
       "atRules": []
     },
     {
       "selector": ".settings-nav",
-      "sourceLine": 919,
+      "sourceLine": 859,
       "atRules": []
     },
     {
       "selector": ".settings-nav-group",
-      "sourceLine": 928,
+      "sourceLine": 868,
       "atRules": []
     },
     {
       "selector": ".settings-nav-group + .settings-nav-group",
-      "sourceLine": 934,
+      "sourceLine": 874,
       "atRules": []
     },
     {
       "selector": ".settings-nav-group-label",
-      "sourceLine": 940,
+      "sourceLine": 880,
       "atRules": []
     },
     {
       "selector": ".settings-nav-pinned-items",
-      "sourceLine": 948,
+      "sourceLine": 888,
       "atRules": []
     },
     {
       "selector": ".settings-nav-item",
-      "sourceLine": 954,
+      "sourceLine": 894,
       "atRules": []
     },
     {
       "selector": ".settings-nav-item:hover",
-      "sourceLine": 971,
+      "sourceLine": 911,
       "atRules": []
     },
     {
       "selector": ".settings-nav-item.active",
-      "sourceLine": 976,
+      "sourceLine": 916,
       "atRules": []
     },
     {
       "selector": ".settings-nav-item.settings-nav-addon-item",
-      "sourceLine": 982,
+      "sourceLine": 922,
       "atRules": []
     },
     {
       "selector": ".settings-nav-item.settings-nav-addon-item::after",
-      "sourceLine": 987,
+      "sourceLine": 927,
       "atRules": []
     },
     {
       "selector": ".settings-sidebar-footer",
-      "sourceLine": 1000,
+      "sourceLine": 940,
       "atRules": []
     },
     {
       "selector": ".settings-close-btn",
-      "sourceLine": 1005,
+      "sourceLine": 945,
       "atRules": []
     },
     {
       "selector": ".settings-main",
-      "sourceLine": 1010,
+      "sourceLine": 950,
       "atRules": []
     },
     {
       "selector": ".settings-panel",
-      "sourceLine": 1017,
+      "sourceLine": 957,
       "atRules": []
     },
     {
       "selector": ".settings-panel.active",
-      "sourceLine": 1024,
+      "sourceLine": 964,
       "atRules": []
     },
     {
       "selector": ".settings-panel .settings-wrapper-inner",
-      "sourceLine": 1028,
+      "sourceLine": 968,
       "atRules": []
     },
     {
       "selector": ".settings-panel-actions",
-      "sourceLine": 1032,
+      "sourceLine": 972,
       "atRules": []
     },
     {
       "selector": ".addins-panel-section + .addins-panel-section",
-      "sourceLine": 1038,
+      "sourceLine": 978,
       "atRules": []
     },
     {
       "selector": ".addins-panel-header-row",
-      "sourceLine": 1042,
+      "sourceLine": 982,
       "atRules": []
     },
     {
       "selector": ".addins-panel-title",
-      "sourceLine": 1049,
+      "sourceLine": 989,
       "atRules": []
     },
     {
       "selector": ".addins-panel-subtitle",
-      "sourceLine": 1055,
+      "sourceLine": 995,
       "atRules": []
     },
     {
       "selector": ".addins-list",
-      "sourceLine": 1062,
+      "sourceLine": 1002,
       "atRules": []
     },
     {
       "selector": ".addins-empty-state",
-      "sourceLine": 1068,
+      "sourceLine": 1008,
       "atRules": []
     },
     {
       "selector": ".addins-card",
-      "sourceLine": 1068,
+      "sourceLine": 1008,
       "atRules": []
     },
     {
       "selector": ".addins-empty-state",
-      "sourceLine": 1075,
+      "sourceLine": 1015,
       "atRules": []
     },
     {
       "selector": ".addins-empty-title",
-      "sourceLine": 1079,
+      "sourceLine": 1019,
       "atRules": []
     },
     {
       "selector": ".addins-empty-copy",
-      "sourceLine": 1085,
+      "sourceLine": 1025,
       "atRules": []
     },
     {
       "selector": ".addins-card",
-      "sourceLine": 1092,
+      "sourceLine": 1032,
       "atRules": []
     },
     {
       "selector": ".addins-card-head",
-      "sourceLine": 1096,
+      "sourceLine": 1036,
       "atRules": []
     },
     {
       "selector": ".addins-card-name",
-      "sourceLine": 1103,
+      "sourceLine": 1043,
       "atRules": []
     },
     {
       "selector": ".addins-card-meta",
-      "sourceLine": 1109,
+      "sourceLine": 1049,
       "atRules": []
     },
     {
       "selector": ".addins-card-description",
-      "sourceLine": 1115,
+      "sourceLine": 1055,
       "atRules": []
     },
     {
       "selector": ".addins-card-badges",
-      "sourceLine": 1122,
+      "sourceLine": 1062,
       "atRules": []
     },
     {
       "selector": ".addins-badge",
-      "sourceLine": 1129,
+      "sourceLine": 1069,
       "atRules": []
     },
     {
       "selector": ".addins-badge.planned",
-      "sourceLine": 1145,
+      "sourceLine": 1085,
       "atRules": []
     },
     {
       "selector": ".addins-badge.installed",
-      "sourceLine": 1151,
+      "sourceLine": 1091,
       "atRules": []
     },
     {
       "selector": ".addins-badge.running",
-      "sourceLine": 1157,
+      "sourceLine": 1097,
       "atRules": []
     },
     {
       "selector": ".addins-badge.pinned",
-      "sourceLine": 1163,
+      "sourceLine": 1103,
       "atRules": []
     },
     {
       "selector": ".addins-badge.disabled",
-      "sourceLine": 1169,
+      "sourceLine": 1109,
       "atRules": []
     },
     {
       "selector": ".addins-badge.needs-update",
-      "sourceLine": 1175,
+      "sourceLine": 1115,
       "atRules": []
     },
     {
       "selector": ".addins-badge.error",
-      "sourceLine": 1181,
+      "sourceLine": 1121,
       "atRules": []
     },
     {
       "selector": ".addins-badge.broken",
-      "sourceLine": 1187,
+      "sourceLine": 1127,
       "atRules": []
     },
     {
       "selector": ".addins-status-copy",
-      "sourceLine": 1193,
+      "sourceLine": 1133,
       "atRules": []
     },
     {
       "selector": ".addins-status-copy.disabled",
-      "sourceLine": 1201,
+      "sourceLine": 1141,
       "atRules": []
     },
     {
       "selector": ".addins-status-copy.needs-update",
-      "sourceLine": 1207,
+      "sourceLine": 1147,
       "atRules": []
     },
     {
       "selector": ".addins-status-copy.error",
-      "sourceLine": 1213,
+      "sourceLine": 1153,
       "atRules": []
     },
     {
       "selector": ".addins-status-copy.broken",
-      "sourceLine": 1219,
+      "sourceLine": 1159,
       "atRules": []
     },
     {
       "selector": ".settings-addon-status-note.disabled",
-      "sourceLine": 1225,
+      "sourceLine": 1165,
       "atRules": []
     },
     {
       "selector": ".settings-addon-status-note.needs-update",
-      "sourceLine": 1231,
+      "sourceLine": 1171,
       "atRules": []
     },
     {
       "selector": ".settings-addon-status-note.error",
-      "sourceLine": 1237,
+      "sourceLine": 1177,
       "atRules": []
     },
     {
       "selector": ".settings-addon-status-note.broken",
-      "sourceLine": 1243,
+      "sourceLine": 1183,
       "atRules": []
     },
     {
       "selector": ".addins-panel-status-row",
-      "sourceLine": 1249,
+      "sourceLine": 1189,
       "atRules": []
     },
     {
       "selector": ".addins-panel-actions",
-      "sourceLine": 1256,
+      "sourceLine": 1196,
       "atRules": []
     },
     {
       "selector": ".addins-panel-settings",
-      "sourceLine": 1263,
+      "sourceLine": 1203,
       "atRules": []
     },
     {
       "selector": ".addins-setting-row",
-      "sourceLine": 1271,
+      "sourceLine": 1211,
       "atRules": []
     },
     {
       "selector": ".addins-card-actions",
-      "sourceLine": 1275,
+      "sourceLine": 1215,
       "atRules": []
     },
     {
       "selector": ".addins-action-btn",
-      "sourceLine": 1282,
+      "sourceLine": 1222,
       "atRules": []
     },
     {
       "selector": ".addins-action-btn:hover",
-      "sourceLine": 1298,
+      "sourceLine": 1238,
       "atRules": []
     },
     {
       "selector": ".addins-action-btn.secondary",
-      "sourceLine": 1304,
+      "sourceLine": 1244,
       "atRules": []
     },
     {
       "selector": ".addins-action-btn.addon-enable-btn",
-      "sourceLine": 1308,
+      "sourceLine": 1248,
       "atRules": []
     },
     {
       "selector": ".addins-action-btn.addon-enable-btn:hover",
-      "sourceLine": 1314,
+      "sourceLine": 1254,
       "atRules": []
     },
     {
       "selector": ".addins-action-btn.addon-disable-btn",
-      "sourceLine": 1320,
+      "sourceLine": 1260,
       "atRules": []
     },
     {
       "selector": ".addins-action-btn:disabled",
-      "sourceLine": 1324,
+      "sourceLine": 1264,
       "atRules": []
     },
     {
       "selector": ".addins-action-btn:disabled:hover",
-      "sourceLine": 1329,
+      "sourceLine": 1269,
       "atRules": []
     },
     {
       "selector": "#tag-config-modal",
-      "sourceLine": 1336,
+      "sourceLine": 1276,
       "atRules": [
         "@media (max-width: 760px)"
       ]
     },
     {
       "selector": "#tag-config-modal .modal-content",
-      "sourceLine": 1340,
+      "sourceLine": 1280,
       "atRules": [
         "@media (max-width: 760px)"
       ]
     },
     {
       "selector": ".settings-shell",
-      "sourceLine": 1349,
+      "sourceLine": 1289,
       "atRules": [
         "@media (max-width: 760px)"
       ]
     },
     {
       "selector": ".settings-sidebar",
-      "sourceLine": 1355,
+      "sourceLine": 1295,
       "atRules": [
         "@media (max-width: 760px)"
       ]
     },
     {
       "selector": ".settings-sidebar-title",
-      "sourceLine": 1363,
+      "sourceLine": 1303,
       "atRules": [
         "@media (max-width: 760px)"
       ]
     },
     {
       "selector": ".settings-nav",
-      "sourceLine": 1368,
+      "sourceLine": 1308,
       "atRules": [
         "@media (max-width: 760px)"
       ]
     },
     {
       "selector": ".settings-nav-item.settings-nav-addon-item",
-      "sourceLine": 1372,
+      "sourceLine": 1312,
       "atRules": [
         "@media (max-width: 760px)"
       ]
     },
     {
       "selector": ".settings-nav-item.settings-nav-addon-item::after",
-      "sourceLine": 1376,
+      "sourceLine": 1316,
       "atRules": [
         "@media (max-width: 760px)"
       ]
     },
     {
       "selector": ".settings-panel:not(#settings-panel-color):not(#settings-panel-addins) .config-row label",
-      "sourceLine": 1381,
+      "sourceLine": 1321,
       "atRules": [
         "@media (max-width: 760px)"
       ]
     },
     {
       "selector": ".settings-main",
-      "sourceLine": 1385,
+      "sourceLine": 1325,
       "atRules": [
         "@media (max-width: 760px)"
       ]
     },
     {
       "selector": ".settings-shell.mobile-show-panel .settings-sidebar",
-      "sourceLine": 1392,
+      "sourceLine": 1332,
       "atRules": [
         "@media (max-width: 760px)"
       ]
     },
     {
       "selector": ".settings-shell.mobile-show-panel .settings-main",
-      "sourceLine": 1396,
+      "sourceLine": 1336,
       "atRules": [
         "@media (max-width: 760px)"
       ]
     },
     {
       "selector": ".settings-shell.mobile-show-panel .settings-mobile-panel-header",
-      "sourceLine": 1401,
+      "sourceLine": 1341,
       "atRules": [
         "@media (max-width: 760px)"
       ]
     },
     {
       "selector": ".settings-panel",
-      "sourceLine": 1411,
+      "sourceLine": 1351,
       "atRules": [
         "@media (max-width: 760px)"
       ]
     },
     {
       "selector": "#tag-config-modal.show",
-      "sourceLine": 1419,
+      "sourceLine": 1359,
       "atRules": []
     },
     {
       "selector": ".config-header",
-      "sourceLine": 1423,
+      "sourceLine": 1363,
       "atRules": []
     },
     {
       "selector": ".config-dialog-backdrop",
-      "sourceLine": 1441,
+      "sourceLine": 1381,
       "atRules": []
     },
     {
       "selector": ".config-dialog-panel",
-      "sourceLine": 1452,
+      "sourceLine": 1392,
       "atRules": []
     },
     {
       "selector": ".config-dialog-title",
-      "sourceLine": 1461,
+      "sourceLine": 1401,
       "atRules": []
     },
     {
       "selector": ".config-dialog-description",
-      "sourceLine": 1468,
+      "sourceLine": 1408,
       "atRules": []
     },
     {
       "selector": ".config-dialog-settings",
-      "sourceLine": 1475,
+      "sourceLine": 1415,
       "atRules": []
     },
     {
       "selector": ".config-dialog-input",
-      "sourceLine": 1483,
+      "sourceLine": 1423,
       "atRules": []
     },
     {
       "selector": ".config-dialog-input:focus",
-      "sourceLine": 1492,
+      "sourceLine": 1432,
       "atRules": []
     },
     {
       "selector": ".config-dialog-error",
-      "sourceLine": 1497,
+      "sourceLine": 1437,
       "atRules": []
     },
     {
       "selector": ".config-dialog-actions",
-      "sourceLine": 1504,
+      "sourceLine": 1444,
       "atRules": []
     },
     {
       "selector": ".config-reorder-list",
-      "sourceLine": 1512,
+      "sourceLine": 1452,
       "atRules": []
     },
     {
       "selector": ".config-reorder-item",
-      "sourceLine": 1519,
+      "sourceLine": 1459,
       "atRules": []
     },
     {
       "selector": ".config-reorder-label",
-      "sourceLine": 1529,
+      "sourceLine": 1469,
       "atRules": []
     },
     {
       "selector": ".config-reorder-handle",
-      "sourceLine": 1536,
+      "sourceLine": 1476,
       "atRules": []
     },
     {
       "selector": ".config-reorder-btn",
-      "sourceLine": 1540,
+      "sourceLine": 1480,
       "atRules": []
     },
     {
       "selector": ".config-reorder-btn:hover:not(:disabled)",
-      "sourceLine": 1557,
+      "sourceLine": 1497,
       "atRules": []
     },
     {
       "selector": ".config-reorder-btn:disabled",
-      "sourceLine": 1563,
+      "sourceLine": 1503,
       "atRules": []
     },
     {
       "selector": ".config-transfer-dialog-error",
-      "sourceLine": 1568,
+      "sourceLine": 1508,
       "atRules": []
     }
   ],
@@ -1269,6 +1233,36 @@
           "file": "src/ui/components/configButton.js",
           "line": 6,
           "excerpt": "const PAGE_DOCK_ADDON_SLOT_ID = \"f95ue-page-dock-addon-slot\";"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/src_core_teardown.js.cjs",
+          "line": 4221,
+          "excerpt": "var ADDON_DOCK_SLOT_ID = \"f95ue-page-dock-addon-slot\";"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/src_services_addons_actionRuntime.js.cjs",
+          "line": 4496,
+          "excerpt": "var ADDON_DOCK_SLOT_ID = \"f95ue-page-dock-addon-slot\";"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/src_services_addons_uiHost.js.cjs",
+          "line": 4576,
+          "excerpt": "var ADDON_DOCK_SLOT_ID = \"f95ue-page-dock-addon-slot\";"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/src_services_addonsService.js.cjs",
+          "line": 4528,
+          "excerpt": "var ADDON_DOCK_SLOT_ID = \"f95ue-page-dock-addon-slot\";"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/tests_fixtures_bootstrapHarness.js.cjs",
+          "line": 4356,
+          "excerpt": "var ADDON_DOCK_SLOT_ID = \"f95ue-page-dock-addon-slot\";"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/tests_fixtures_routeTeardownHarness.js.cjs",
+          "line": 4276,
+          "excerpt": "var ADDON_DOCK_SLOT_ID = \"f95ue-page-dock-addon-slot\";"
         }
       ],
       "protectedReason": null
@@ -1308,12 +1302,12 @@
       "callSites": [
         {
           "file": "src/services/tagsService.js",
-          "line": 18,
+          "line": 21,
           "excerpt": "const results = stateManager.get(\"shadowRoot\").getElementById(\"search-results\");"
         },
         {
           "file": "src/services/tagsService.js",
-          "line": 34,
+          "line": 37,
           "excerpt": "const results = stateManager.get(\"shadowRoot\").getElementById(\"search-results\");"
         },
         {
@@ -1328,17 +1322,22 @@
         },
         {
           "file": "src/ui/components/listeners.js",
-          "line": 23,
+          "line": 24,
           "excerpt": "const results = stateManager.get(\"shadowRoot\").getElementById(\"search-results\");"
         },
         {
-          "file": "src/ui/components/tag-search/index.js",
-          "line": 206,
-          "excerpt": "const results = shadowRoot?.getElementById(\"search-results\");"
+          "file": "src/ui/components/modal.js",
+          "line": 14,
+          "excerpt": "hideTagSearchResults(shadowRoot?.getElementById(\"search-results\"));"
         },
         {
           "file": "src/ui/components/tag-search/index.js",
-          "line": 271,
+          "line": 130,
+          "excerpt": "export function hideTagSearchResults(results = getShadowRoot()?.getElementById(\"search-results\")) {"
+        },
+        {
+          "file": "src/ui/components/tag-search/index.js",
+          "line": 293,
           "excerpt": "const results = shadowRoot?.getElementById(\"search-results\");"
         }
       ],
@@ -1416,28 +1415,43 @@
       "callSites": [
         {
           "file": "src/ui/components/modal.js",
-          "line": 7,
+          "line": 10,
           "excerpt": "stateManager.get(\"shadowRoot\").getElementById(\"tag-config-modal\").style.display = \"block\";"
         },
         {
           "file": "src/ui/components/modal.js",
-          "line": 10,
-          "excerpt": "stateManager.get(\"shadowRoot\").getElementById(\"tag-config-modal\").style.display = \"none\";"
+          "line": 15,
+          "excerpt": "shadowRoot.getElementById(\"tag-config-modal\").style.display = \"none\";"
         },
         {
           "file": "src/ui/components/modal.js",
-          "line": 15,
+          "line": 20,
           "excerpt": "modal.id = \"tag-config-modal\";"
         },
         {
           "file": "src/ui/components/modal.js",
-          "line": 15,
+          "line": 20,
           "excerpt": "modal.id = \"tag-config-modal\";"
         },
         {
           "file": "src/ui/settings/modalLifecycle.js",
           "line": 48,
           "excerpt": "const modal = shadowRoot.getElementById(\"tag-config-modal\");"
+        },
+        {
+          "file": "tests/.tmp-modal-css-verify/tests_fixtures_tagSearchBoundHarness.js.cjs",
+          "line": 5891,
+          "excerpt": "modal.id = \"tag-config-modal\";"
+        },
+        {
+          "file": "tests/.tmp-modal-css-verify/tests_fixtures_tagSearchBoundHarness.js.cjs",
+          "line": 5891,
+          "excerpt": "modal.id = \"tag-config-modal\";"
+        },
+        {
+          "file": "tests/.tmp-tag-search-bound/tests_fixtures_tagSearchBoundHarness.js.cjs",
+          "line": 2832,
+          "excerpt": "modal.id = \"tag-config-modal\";"
         }
       ],
       "protectedReason": null
@@ -1463,22 +1477,22 @@
         },
         {
           "file": "src/ui/components/listeners.js",
-          "line": 22,
+          "line": 23,
           "excerpt": "const input = stateManager.get(\"shadowRoot\").getElementById(\"tags-search\");"
         },
         {
           "file": "src/ui/components/tag-search/index.js",
-          "line": 207,
+          "line": 294,
           "excerpt": "const input = shadowRoot?.getElementById(\"tags-search\");"
         },
         {
           "file": "src/ui/components/tag-search/index.js",
-          "line": 270,
+          "line": 348,
           "excerpt": "const input = shadowRoot?.getElementById(\"tags-search\");"
         },
         {
           "file": "src/ui/components/tag-search/index.js",
-          "line": 272,
+          "line": 350,
           "excerpt": "const clearBtn = shadowRoot?.getElementById(\"tags-search-clear\");"
         },
         {
@@ -1514,24 +1528,24 @@
           "excerpt": "container = createEl(\"div\", { attrs: { id: \"toast-container\" } });"
         },
         {
-          "file": "tests/fixtures/configInteractionHarness.js",
-          "line": 141,
-          "excerpt": "const loadToasts = [...document.querySelectorAll(\"#toast-container .toast\")]"
+          "file": "tests/.tmp-config-catalog-copy/src_core_featureFactory.js.cjs",
+          "line": 781,
+          "excerpt": "let container = document.getElementById(\"toast-container\");"
         },
         {
-          "file": "tests/fixtures/configInteractionHarness.js",
-          "line": 149,
-          "excerpt": "const interactiveToasts = [...document.querySelectorAll(\"#toast-container .toast\")]"
+          "file": "tests/.tmp-config-catalog-copy/src_core_featureFactory.js.cjs",
+          "line": 790,
+          "excerpt": "let container = shadowRoot.getElementById(\"toast-container\");"
         },
         {
-          "file": "tests/fixtures/configInteractionHarness.js",
-          "line": 176,
-          "excerpt": "toasts: [...document.querySelectorAll(\"#toast-container .toast\")]"
+          "file": "tests/.tmp-config-catalog-copy/src_core_featureFactory.js.cjs",
+          "line": 783,
+          "excerpt": "container = createEl(\"div\", { attrs: { id: \"toast-container\" } });"
         },
         {
-          "file": "tests/run.cjs",
-          "line": 2375,
-          "excerpt": "const container = docWithBody.getElementById(\"toast-container\");"
+          "file": "tests/.tmp-config-catalog-copy/src_core_featureFactory.js.cjs",
+          "line": 792,
+          "excerpt": "container = createEl(\"div\", { attrs: { id: \"toast-container\" } });"
         }
       ],
       "protectedReason": null
@@ -1569,6 +1583,16 @@
           "file": "src/ui/settings/panelNavigation.js",
           "line": 53,
           "excerpt": "panel.classList.toggle(\"active\", isActive);"
+        },
+        {
+          "file": "tests/concept/latest.min.js",
+          "line": 39,
+          "excerpt": "n=f.find(\".resource-tile_body\"),E=m.hasClass(\"grid\");g=(E?f:g).width();var D=m.hasClass(\"resource-wrap-comic\")||m.hasClass(\"resource-wrap-asset\")?E?.7678:1.5:1.77777777778,A=g/D;E?n.css({position:\"absolute\",top:A}):n.css({position:\"absolute\",top:0,left:g,height:A,\"max-height\":A,width:f.width()-g});D=f.data(\"images\").split(\",\");var x=b('<ul class=\"resource-tile_gallery-wrap\" style=\"height:'+A+\"px;width:\"+g+'px\"></ul>');D.forEach(function(L,ba){x.append(\"<li\"+(0===ba?' class=\"active\"':\"\")+\" style=\\\"background-image:url('\"+"
+        },
+        {
+          "file": "tests/concept/latest.min.js",
+          "line": 39,
+          "excerpt": "n=f.find(\".resource-tile_body\"),E=m.hasClass(\"grid\");g=(E?f:g).width();var D=m.hasClass(\"resource-wrap-comic\")||m.hasClass(\"resource-wrap-asset\")?E?.7678:1.5:1.77777777778,A=g/D;E?n.css({position:\"absolute\",top:A}):n.css({position:\"absolute\",top:0,left:g,height:A,\"max-height\":A,width:f.width()-g});D=f.data(\"images\").split(\",\");var x=b('<ul class=\"resource-tile_gallery-wrap\" style=\"height:'+A+\"px;width:\"+g+'px\"></ul>');D.forEach(function(L,ba){x.append(\"<li\"+(0===ba?' class=\"active\"':\"\")+\" style=\\\"background-image:url('\"+"
         }
       ],
       "protectedReason": null
@@ -1580,6 +1604,41 @@
         {
           "file": "src/ui/components/addons/actionButton.js",
           "line": 5,
+          "excerpt": "className: `addins-action-btn${extraClass ? ` ${extraClass}` : \"\"}`,"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/src_ui_components_addons_addonPanelActions.js.cjs",
+          "line": 47,
+          "excerpt": "className: `addins-action-btn${extraClass ? ` ${extraClass}` : \"\"}`,"
+        },
+        {
+          "file": "tests/.tmp-download-clicks/src_ui_components_addons_addonPanelActions.js.cjs",
+          "line": 47,
+          "excerpt": "className: `addins-action-btn${extraClass ? ` ${extraClass}` : \"\"}`,"
+        },
+        {
+          "file": "tests/.tmp-modal-css-full/src_ui_components_addons_addonPanelActions.js.cjs",
+          "line": 47,
+          "excerpt": "className: `addins-action-btn${extraClass ? ` ${extraClass}` : \"\"}`,"
+        },
+        {
+          "file": "tests/.tmp-modal-css-verify/src_ui_components_addons_addonPanelActions.js.cjs",
+          "line": 47,
+          "excerpt": "className: `addins-action-btn${extraClass ? ` ${extraClass}` : \"\"}`,"
+        },
+        {
+          "file": "tests/.tmp-performance-baseline/src_ui_components_addons_addonPanelActions.js.cjs",
+          "line": 47,
+          "excerpt": "className: `addins-action-btn${extraClass ? ` ${extraClass}` : \"\"}`,"
+        },
+        {
+          "file": "tests/.tmp-rating-fix/src_ui_components_addons_addonPanelActions.js.cjs",
+          "line": 47,
+          "excerpt": "className: `addins-action-btn${extraClass ? ` ${extraClass}` : \"\"}`,"
+        },
+        {
+          "file": "tests/.tmp-settings-shell/src_ui_components_addons_addonPanelActions.js.cjs",
+          "line": 47,
           "excerpt": "className: `addins-action-btn${extraClass ? ` ${extraClass}` : \"\"}`,"
         }
       ],
@@ -1782,6 +1841,41 @@
           "file": "src/ui/components/addons/addonPanelActions.js",
           "line": 6,
           "excerpt": "className: \"addins-panel-actions\","
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/src_ui_components_addons_addonPanelActions.js.cjs",
+          "line": 61,
+          "excerpt": "className: \"addins-panel-actions\","
+        },
+        {
+          "file": "tests/.tmp-download-clicks/src_ui_components_addons_addonPanelActions.js.cjs",
+          "line": 61,
+          "excerpt": "className: \"addins-panel-actions\","
+        },
+        {
+          "file": "tests/.tmp-modal-css-full/src_ui_components_addons_addonPanelActions.js.cjs",
+          "line": 61,
+          "excerpt": "className: \"addins-panel-actions\","
+        },
+        {
+          "file": "tests/.tmp-modal-css-verify/src_ui_components_addons_addonPanelActions.js.cjs",
+          "line": 61,
+          "excerpt": "className: \"addins-panel-actions\","
+        },
+        {
+          "file": "tests/.tmp-performance-baseline/src_ui_components_addons_addonPanelActions.js.cjs",
+          "line": 61,
+          "excerpt": "className: \"addins-panel-actions\","
+        },
+        {
+          "file": "tests/.tmp-rating-fix/src_ui_components_addons_addonPanelActions.js.cjs",
+          "line": 61,
+          "excerpt": "className: \"addins-panel-actions\","
+        },
+        {
+          "file": "tests/.tmp-settings-shell/src_ui_components_addons_addonPanelActions.js.cjs",
+          "line": 61,
+          "excerpt": "className: \"addins-panel-actions\","
         }
       ],
       "protectedReason": null
@@ -1930,18 +2024,6 @@
       "protectedReason": "No repository creation/reference evidence; retain conservatively."
     },
     {
-      "selector": ".apply",
-      "category": "dynamic-reference",
-      "callSites": [
-        {
-          "file": "src/ui/components/darkColorPicker.js",
-          "line": 201,
-          "excerpt": "className: \"dark-color-btn apply\","
-        }
-      ],
-      "protectedReason": null
-    },
-    {
       "selector": ".broken",
       "category": "unresolved",
       "callSites": [],
@@ -1972,6 +2054,41 @@
           "file": "src/ui/renderers/renderSetting.js",
           "line": 32,
           "excerpt": "className: \"config-button\","
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy/src_ui_renderers_renderSetting.js.cjs",
+          "line": 2439,
+          "excerpt": "className: \"config-button\","
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3052,
+          "excerpt": "className: \"config-button\","
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy-2/src_ui_renderers_renderSetting.js.cjs",
+          "line": 2439,
+          "excerpt": "className: \"config-button\","
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy-2/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3052,
+          "excerpt": "className: \"config-button\","
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/src_ui_renderers_renderSetting.js.cjs",
+          "line": 2439,
+          "excerpt": "className: \"config-button\","
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3052,
+          "excerpt": "className: \"config-button\","
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/tests_fixtures_routeHarness.js.cjs",
+          "line": 3441,
+          "excerpt": "className: \"config-button\","
         }
       ],
       "protectedReason": null
@@ -1981,8 +2098,43 @@
       "category": "dynamic-reference",
       "callSites": [
         {
-          "file": "src/ui/components/darkColorPicker.js",
-          "line": 317,
+          "file": "src/ui/renderers/createInput.js",
+          "line": 18,
+          "excerpt": "input.classList.add(\"config-color-input\");"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy/src_ui_renderers_createInput.js.cjs",
+          "line": 616,
+          "excerpt": "input.classList.add(\"config-color-input\");"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy/src_ui_renderers_renderSetting.js.cjs",
+          "line": 2312,
+          "excerpt": "input.classList.add(\"config-color-input\");"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 2925,
+          "excerpt": "input.classList.add(\"config-color-input\");"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy-2/src_ui_renderers_createInput.js.cjs",
+          "line": 616,
+          "excerpt": "input.classList.add(\"config-color-input\");"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy-2/src_ui_renderers_renderSetting.js.cjs",
+          "line": 2312,
+          "excerpt": "input.classList.add(\"config-color-input\");"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy-2/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 2925,
+          "excerpt": "input.classList.add(\"config-color-input\");"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/src_ui_renderers_createInput.js.cjs",
+          "line": 616,
           "excerpt": "input.classList.add(\"config-color-input\");"
         }
       ],
@@ -2011,6 +2163,26 @@
           "file": "src/ui/components/dialog.js",
           "line": 357,
           "excerpt": "const actions = createEl(\"div\", { className: \"config-dialog-actions\" });"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3203,
+          "excerpt": "const actions = createEl(\"div\", { className: \"config-dialog-actions\" });"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3271,
+          "excerpt": "const actions = createEl(\"div\", { className: \"config-dialog-actions\" });"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy-2/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3203,
+          "excerpt": "const actions = createEl(\"div\", { className: \"config-dialog-actions\" });"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy-2/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3271,
+          "excerpt": "const actions = createEl(\"div\", { className: \"config-dialog-actions\" });"
         }
       ],
       "protectedReason": null
@@ -2038,6 +2210,26 @@
           "file": "src/ui/components/dialog.js",
           "line": 336,
           "excerpt": "className: \"config-dialog-backdrop\","
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3163,
+          "excerpt": "className: \"config-dialog-backdrop\""
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3256,
+          "excerpt": "className: \"config-dialog-backdrop\""
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy-2/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3163,
+          "excerpt": "className: \"config-dialog-backdrop\""
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy-2/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3256,
+          "excerpt": "className: \"config-dialog-backdrop\""
         }
       ],
       "protectedReason": null
@@ -2064,6 +2256,26 @@
         {
           "file": "src/ui/components/dialog.js",
           "line": 347,
+          "excerpt": "const body = createEl(\"div\", { className: \"config-dialog-description\", text: description });"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3167,
+          "excerpt": "const body = createEl(\"div\", { className: \"config-dialog-description\", text: description });"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3263,
+          "excerpt": "const body = createEl(\"div\", { className: \"config-dialog-description\", text: description });"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy-2/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3167,
+          "excerpt": "const body = createEl(\"div\", { className: \"config-dialog-description\", text: description });"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy-2/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3263,
           "excerpt": "const body = createEl(\"div\", { className: \"config-dialog-description\", text: description });"
         }
       ],
@@ -2121,6 +2333,26 @@
           "file": "src/ui/components/dialog.js",
           "line": 339,
           "excerpt": "const panel = createEl(\"div\", { className: \"config-dialog-panel\" });"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3165,
+          "excerpt": "const panel = createEl(\"div\", { className: \"config-dialog-panel\" });"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3258,
+          "excerpt": "const panel = createEl(\"div\", { className: \"config-dialog-panel\" });"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy-2/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3165,
+          "excerpt": "const panel = createEl(\"div\", { className: \"config-dialog-panel\" });"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy-2/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3258,
+          "excerpt": "const panel = createEl(\"div\", { className: \"config-dialog-panel\" });"
         }
       ],
       "protectedReason": null
@@ -2132,6 +2364,41 @@
         {
           "file": "src/ui/components/dialog.js",
           "line": 351,
+          "excerpt": "const content = createEl(\"div\", { className: \"config-dialog-settings\" });"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3266,
+          "excerpt": "const content = createEl(\"div\", { className: \"config-dialog-settings\" });"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy-2/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3266,
+          "excerpt": "const content = createEl(\"div\", { className: \"config-dialog-settings\" });"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3266,
+          "excerpt": "const content = createEl(\"div\", { className: \"config-dialog-settings\" });"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/tests_fixtures_routeHarness.js.cjs",
+          "line": 4348,
+          "excerpt": "const content = createEl(\"div\", { className: \"config-dialog-settings\" });"
+        },
+        {
+          "file": "tests/.tmp-download-clicks/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3226,
+          "excerpt": "const content = createEl(\"div\", { className: \"config-dialog-settings\" });"
+        },
+        {
+          "file": "tests/.tmp-download-clicks/tests_fixtures_routeHarness.js.cjs",
+          "line": 4309,
+          "excerpt": "const content = createEl(\"div\", { className: \"config-dialog-settings\" });"
+        },
+        {
+          "file": "tests/.tmp-modal-css-full/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3226,
           "excerpt": "const content = createEl(\"div\", { className: \"config-dialog-settings\" });"
         }
       ],
@@ -2160,6 +2427,26 @@
           "file": "src/ui/components/dialog.js",
           "line": 341,
           "excerpt": "const header = createEl(\"div\", { className: \"config-dialog-title\", text: title });"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3166,
+          "excerpt": "const header = createEl(\"div\", { className: \"config-dialog-title\", text: title });"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3259,
+          "excerpt": "const header = createEl(\"div\", { className: \"config-dialog-title\", text: title });"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy-2/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3166,
+          "excerpt": "const header = createEl(\"div\", { className: \"config-dialog-title\", text: title });"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy-2/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3259,
+          "excerpt": "const header = createEl(\"div\", { className: \"config-dialog-title\", text: title });"
         }
       ],
       "protectedReason": null
@@ -2187,6 +2474,26 @@
           "file": "src/ui/renderers/renderSetting.js",
           "line": 11,
           "excerpt": "return createEl(\"div\", { className: \"config-header\", text: meta.text });"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy/src_ui_renderers_renderSetting.js.cjs",
+          "line": 2422,
+          "excerpt": "return createEl(\"div\", { className: \"config-header\", text: meta.text });"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3035,
+          "excerpt": "return createEl(\"div\", { className: \"config-header\", text: meta.text });"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy-2/src_ui_renderers_renderSetting.js.cjs",
+          "line": 2422,
+          "excerpt": "return createEl(\"div\", { className: \"config-header\", text: meta.text });"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy-2/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3035,
+          "excerpt": "return createEl(\"div\", { className: \"config-header\", text: meta.text });"
         }
       ],
       "protectedReason": null
@@ -2204,6 +2511,36 @@
           "file": "src/ui/components/dialog.js",
           "line": 256,
           "excerpt": "className: \"config-reorder-btn\","
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3176,
+          "excerpt": "className: \"config-reorder-btn\","
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3187,
+          "excerpt": "className: \"config-reorder-btn\","
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy-2/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3176,
+          "excerpt": "className: \"config-reorder-btn\","
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy-2/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3187,
+          "excerpt": "className: \"config-reorder-btn\","
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3176,
+          "excerpt": "className: \"config-reorder-btn\","
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3187,
+          "excerpt": "className: \"config-reorder-btn\","
         }
       ],
       "protectedReason": null
@@ -2215,6 +2552,41 @@
         {
           "file": "src/ui/components/dialog.js",
           "line": 241,
+          "excerpt": "const handle = createEl(\"div\", { className: \"config-reorder-handle\" });"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3174,
+          "excerpt": "const handle = createEl(\"div\", { className: \"config-reorder-handle\" });"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy-2/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3174,
+          "excerpt": "const handle = createEl(\"div\", { className: \"config-reorder-handle\" });"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3174,
+          "excerpt": "const handle = createEl(\"div\", { className: \"config-reorder-handle\" });"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/tests_fixtures_routeHarness.js.cjs",
+          "line": 4256,
+          "excerpt": "const handle = createEl(\"div\", { className: \"config-reorder-handle\" });"
+        },
+        {
+          "file": "tests/.tmp-download-clicks/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3134,
+          "excerpt": "const handle = createEl(\"div\", { className: \"config-reorder-handle\" });"
+        },
+        {
+          "file": "tests/.tmp-download-clicks/tests_fixtures_routeHarness.js.cjs",
+          "line": 4217,
+          "excerpt": "const handle = createEl(\"div\", { className: \"config-reorder-handle\" });"
+        },
+        {
+          "file": "tests/.tmp-modal-css-full/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3134,
           "excerpt": "const handle = createEl(\"div\", { className: \"config-reorder-handle\" });"
         }
       ],
@@ -2228,6 +2600,41 @@
           "file": "src/ui/components/dialog.js",
           "line": 237,
           "excerpt": "const row = createEl(\"div\", { className: \"config-reorder-item\" });"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3172,
+          "excerpt": "const row = createEl(\"div\", { className: \"config-reorder-item\" });"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy-2/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3172,
+          "excerpt": "const row = createEl(\"div\", { className: \"config-reorder-item\" });"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3172,
+          "excerpt": "const row = createEl(\"div\", { className: \"config-reorder-item\" });"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/tests_fixtures_routeHarness.js.cjs",
+          "line": 4254,
+          "excerpt": "const row = createEl(\"div\", { className: \"config-reorder-item\" });"
+        },
+        {
+          "file": "tests/.tmp-download-clicks/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3132,
+          "excerpt": "const row = createEl(\"div\", { className: \"config-reorder-item\" });"
+        },
+        {
+          "file": "tests/.tmp-download-clicks/tests_fixtures_routeHarness.js.cjs",
+          "line": 4215,
+          "excerpt": "const row = createEl(\"div\", { className: \"config-reorder-item\" });"
+        },
+        {
+          "file": "tests/.tmp-modal-css-full/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3132,
+          "excerpt": "const row = createEl(\"div\", { className: \"config-reorder-item\" });"
         }
       ],
       "protectedReason": null
@@ -2240,6 +2647,41 @@
           "file": "src/ui/components/dialog.js",
           "line": 239,
           "excerpt": "const label = createEl(\"span\", { className: \"config-reorder-label\", text: item.label });"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3173,
+          "excerpt": "const label = createEl(\"span\", { className: \"config-reorder-label\", text: item.label });"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy-2/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3173,
+          "excerpt": "const label = createEl(\"span\", { className: \"config-reorder-label\", text: item.label });"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3173,
+          "excerpt": "const label = createEl(\"span\", { className: \"config-reorder-label\", text: item.label });"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/tests_fixtures_routeHarness.js.cjs",
+          "line": 4255,
+          "excerpt": "const label = createEl(\"span\", { className: \"config-reorder-label\", text: item.label });"
+        },
+        {
+          "file": "tests/.tmp-download-clicks/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3133,
+          "excerpt": "const label = createEl(\"span\", { className: \"config-reorder-label\", text: item.label });"
+        },
+        {
+          "file": "tests/.tmp-download-clicks/tests_fixtures_routeHarness.js.cjs",
+          "line": 4216,
+          "excerpt": "const label = createEl(\"span\", { className: \"config-reorder-label\", text: item.label });"
+        },
+        {
+          "file": "tests/.tmp-modal-css-full/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3133,
+          "excerpt": "const label = createEl(\"span\", { className: \"config-reorder-label\", text: item.label });"
         }
       ],
       "protectedReason": null
@@ -2251,6 +2693,41 @@
         {
           "file": "src/ui/components/dialog.js",
           "line": 232,
+          "excerpt": "const list = createEl(\"div\", { className: \"config-reorder-list\" });"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3168,
+          "excerpt": "const list = createEl(\"div\", { className: \"config-reorder-list\" });"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy-2/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3168,
+          "excerpt": "const list = createEl(\"div\", { className: \"config-reorder-list\" });"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3168,
+          "excerpt": "const list = createEl(\"div\", { className: \"config-reorder-list\" });"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/tests_fixtures_routeHarness.js.cjs",
+          "line": 4250,
+          "excerpt": "const list = createEl(\"div\", { className: \"config-reorder-list\" });"
+        },
+        {
+          "file": "tests/.tmp-download-clicks/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3128,
+          "excerpt": "const list = createEl(\"div\", { className: \"config-reorder-list\" });"
+        },
+        {
+          "file": "tests/.tmp-download-clicks/tests_fixtures_routeHarness.js.cjs",
+          "line": 4211,
+          "excerpt": "const list = createEl(\"div\", { className: \"config-reorder-list\" });"
+        },
+        {
+          "file": "tests/.tmp-modal-css-full/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3128,
           "excerpt": "const list = createEl(\"div\", { className: \"config-reorder-list\" });"
         }
       ],
@@ -2274,6 +2751,31 @@
           "file": "src/ui/renderers/renderSetting.js",
           "line": 54,
           "excerpt": "const row = createEl(\"div\", { className: \"config-row\" });"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy/src_ui_renderers_renderSetting.js.cjs",
+          "line": 2435,
+          "excerpt": "const row2 = createEl(\"div\", { className: \"config-row\" });"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy/src_ui_renderers_renderSetting.js.cjs",
+          "line": 2458,
+          "excerpt": "const row = createEl(\"div\", { className: \"config-row\" });"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3048,
+          "excerpt": "const row2 = createEl(\"div\", { className: \"config-row\" });"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 3071,
+          "excerpt": "const row = createEl(\"div\", { className: \"config-row\" });"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy-2/src_ui_renderers_renderSetting.js.cjs",
+          "line": 2435,
+          "excerpt": "const row2 = createEl(\"div\", { className: \"config-row\" });"
         }
       ],
       "protectedReason": null
@@ -2291,112 +2793,6 @@
       "protectedReason": null
     },
     {
-      "selector": ".dark-color-btn",
-      "category": "dynamic-reference",
-      "callSites": [
-        {
-          "file": "src/ui/components/darkColorPicker.js",
-          "line": 201,
-          "excerpt": "className: \"dark-color-btn apply\","
-        },
-        {
-          "file": "src/ui/components/darkColorPicker.js",
-          "line": 206,
-          "excerpt": "className: \"dark-color-btn\","
-        }
-      ],
-      "protectedReason": null
-    },
-    {
-      "selector": ".dark-color-footer",
-      "category": "dynamic-reference",
-      "callSites": [
-        {
-          "file": "src/ui/components/darkColorPicker.js",
-          "line": 199,
-          "excerpt": "const footer = createEl(\"div\", { className: \"dark-color-footer\" });"
-        }
-      ],
-      "protectedReason": null
-    },
-    {
-      "selector": ".dark-color-hex",
-      "category": "dynamic-reference",
-      "callSites": [
-        {
-          "file": "src/ui/components/darkColorPicker.js",
-          "line": 170,
-          "excerpt": "hexInput.className = \"dark-color-hex\";"
-        }
-      ],
-      "protectedReason": null
-    },
-    {
-      "selector": ".dark-color-labels",
-      "category": "dynamic-reference",
-      "callSites": [
-        {
-          "file": "src/ui/components/darkColorPicker.js",
-          "line": 189,
-          "excerpt": "const labels = createEl(\"div\", { className: \"dark-color-labels\" });"
-        }
-      ],
-      "protectedReason": null
-    },
-    {
-      "selector": ".dark-color-popover",
-      "category": "dynamic-reference",
-      "callSites": [
-        {
-          "file": "src/ui/components/darkColorPicker.js",
-          "line": 163,
-          "excerpt": "const panel = createEl(\"div\", { className: \"dark-color-popover\" });"
-        }
-      ],
-      "protectedReason": null
-    },
-    {
-      "selector": ".dark-color-preview",
-      "category": "dynamic-reference",
-      "callSites": [
-        {
-          "file": "src/ui/components/darkColorPicker.js",
-          "line": 167,
-          "excerpt": "const preview = createEl(\"div\", { className: \"dark-color-preview\" });"
-        }
-      ],
-      "protectedReason": null
-    },
-    {
-      "selector": ".dark-color-slider",
-      "category": "dynamic-reference",
-      "callSites": [
-        {
-          "file": "src/ui/components/darkColorPicker.js",
-          "line": 175,
-          "excerpt": "const r = createEl(\"input\", { className: className || \"dark-color-slider\" });"
-        },
-        {
-          "file": "src/ui/components/darkColorPicker.js",
-          "line": 185,
-          "excerpt": "const hue = createRange(\"Hue\", { min: 0, max: 360, className: \"dark-color-slider hue\" });"
-        }
-      ],
-      "protectedReason": null
-    },
-    {
-      "selector": ".dark-color-sliders",
-      "category": "dynamic-reference",
-      "callSites": [
-        {
-          "file": "src/ui/components/darkColorPicker.js",
-          "line": 196,
-          "excerpt": "const sliders = createEl(\"div\", { className: \"dark-color-sliders\" });"
-        }
-      ],
-      "protectedReason": null
-    },
-    {
       "selector": ".disabled",
       "category": "dynamic-reference",
       "callSites": [
@@ -2404,6 +2800,41 @@
           "file": "src/ui/components/addons/addonPanelSettings.js",
           "line": 34,
           "excerpt": "className: \"addins-status-copy disabled\","
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/addons_library-addon_src_app_createLibraryAddonApp.js.cjs",
+          "line": 4989,
+          "excerpt": "${entries.length ? `<button type=\"button\" class=\"primary\" data-inbox-action=\"acknowledge-all\"${busy ? \" disabled\" : \"\"}>Acknowledge all</button>` : \"\"}"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/addons_library-addon_src_app_createLibraryAddonApp.js.cjs",
+          "line": 5431,
+          "excerpt": "<button type=\"button\" class=\"f95ue-row-menu-item\" data-action=\"row-update-thread\" data-thread-id=\"${entry.threadId}\" ${canUpdate ? \"\" : \"disabled\"}>Update</button>"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/addons_library-addon_src_ui_components_manager_tableRenderer.js.cjs",
+          "line": 206,
+          "excerpt": "<button type=\"button\" class=\"f95ue-row-menu-item\" data-action=\"row-update-thread\" data-thread-id=\"${entry.threadId}\" ${canUpdate ? \"\" : \"disabled\"}>Update</button>"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/addons_library-addon_src_ui_manager_managerApp.js.cjs",
+          "line": 2293,
+          "excerpt": "${entries.length ? `<button type=\"button\" class=\"primary\" data-inbox-action=\"acknowledge-all\"${busy ? \" disabled\" : \"\"}>Acknowledge all</button>` : \"\"}"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/addons_library-addon_src_ui_manager_managerApp.js.cjs",
+          "line": 2735,
+          "excerpt": "<button type=\"button\" class=\"f95ue-row-menu-item\" data-action=\"row-update-thread\" data-thread-id=\"${entry.threadId}\" ${canUpdate ? \"\" : \"disabled\"}>Update</button>"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/addons_library-addon_src_ui_updateInbox_updateInboxController.js.cjs",
+          "line": 130,
+          "excerpt": "${entries.length ? `<button type=\"button\" class=\"primary\" data-inbox-action=\"acknowledge-all\"${busy ? \" disabled\" : \"\"}>Acknowledge all</button>` : \"\"}"
+        },
+        {
+          "file": "tests/.tmp-download-clicks/addons_library-addon_src_app_createLibraryAddonApp.js.cjs",
+          "line": 4989,
+          "excerpt": "${entries.length ? `<button type=\"button\" class=\"primary\" data-inbox-action=\"acknowledge-all\"${busy ? \" disabled\" : \"\"}>Acknowledge all</button>` : \"\"}"
         }
       ],
       "protectedReason": null
@@ -2415,6 +2846,41 @@
         {
           "file": "src/ui/components/tag-search/tagDrag.js",
           "line": 313,
+          "excerpt": "ghost.classList.add(\"drag-ghost\");"
+        },
+        {
+          "file": "tests/.tmp-modal-css-verify/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 6123,
+          "excerpt": "ghost.classList.add(\"drag-ghost\");"
+        },
+        {
+          "file": "tests/.tmp-modal-css-verify/tests_fixtures_tagSearchBoundHarness.js.cjs",
+          "line": 2457,
+          "excerpt": "ghost.classList.add(\"drag-ghost\");"
+        },
+        {
+          "file": "tests/.tmp-tag-search-bound/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 6049,
+          "excerpt": "ghost.classList.add(\"drag-ghost\");"
+        },
+        {
+          "file": "tests/.tmp-tag-search-bound/tests_fixtures_tagSearchBoundHarness.js.cjs",
+          "line": 2403,
+          "excerpt": "ghost.classList.add(\"drag-ghost\");"
+        },
+        {
+          "file": "tests/.tmp-tag-search-bound-2/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 6049,
+          "excerpt": "ghost.classList.add(\"drag-ghost\");"
+        },
+        {
+          "file": "tests/.tmp-tag-search-bound-2/tests_fixtures_tagSearchBoundHarness.js.cjs",
+          "line": 2403,
+          "excerpt": "ghost.classList.add(\"drag-ghost\");"
+        },
+        {
+          "file": "tests/.tmp-tag-search-full/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 6123,
           "excerpt": "ghost.classList.add(\"drag-ghost\");"
         }
       ],
@@ -2480,6 +2946,36 @@
           "file": "src/ui/components/tag-search/tagDrag.js",
           "line": 63,
           "excerpt": "container.classList.remove(\"drag-target\");"
+        },
+        {
+          "file": "tests/.tmp-modal-css-verify/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 5922,
+          "excerpt": "container.classList.add(\"drag-target\");"
+        },
+        {
+          "file": "tests/.tmp-modal-css-verify/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 5930,
+          "excerpt": "container.classList.remove(\"drag-target\");"
+        },
+        {
+          "file": "tests/.tmp-modal-css-verify/tests_fixtures_tagSearchBoundHarness.js.cjs",
+          "line": 2246,
+          "excerpt": "container.classList.add(\"drag-target\");"
+        },
+        {
+          "file": "tests/.tmp-modal-css-verify/tests_fixtures_tagSearchBoundHarness.js.cjs",
+          "line": 2254,
+          "excerpt": "container.classList.remove(\"drag-target\");"
+        },
+        {
+          "file": "tests/.tmp-tag-search-bound/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 5848,
+          "excerpt": "container.classList.add(\"drag-target\");"
+        },
+        {
+          "file": "tests/.tmp-tag-search-bound/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 5856,
+          "excerpt": "container.classList.remove(\"drag-target\");"
         }
       ],
       "protectedReason": null
@@ -2502,6 +2998,31 @@
           "file": "src/ui/components/tag-search/tagDrag.js",
           "line": 340,
           "excerpt": "item.classList.add(\"dragging\");"
+        },
+        {
+          "file": "tests/.tmp-modal-css-verify/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 6098,
+          "excerpt": "item.classList.add(\"dragging\");"
+        },
+        {
+          "file": "tests/.tmp-modal-css-verify/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 6105,
+          "excerpt": "item.classList.remove(\"dragging\");"
+        },
+        {
+          "file": "tests/.tmp-modal-css-verify/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 6148,
+          "excerpt": "item.classList.add(\"dragging\");"
+        },
+        {
+          "file": "tests/.tmp-modal-css-verify/tests_fixtures_tagSearchBoundHarness.js.cjs",
+          "line": 2432,
+          "excerpt": "item.classList.add(\"dragging\");"
+        },
+        {
+          "file": "tests/.tmp-modal-css-verify/tests_fixtures_tagSearchBoundHarness.js.cjs",
+          "line": 2439,
+          "excerpt": "item.classList.remove(\"dragging\");"
         }
       ],
       "protectedReason": null
@@ -2541,14 +3062,14 @@
           "excerpt": "const error = createEl(\"div\", { className: \"config-dialog-error\" });"
         },
         {
-          "file": "src/ui/components/featureHealth/index.js",
-          "line": 241,
-          "excerpt": "className: \"feature-health-line feature-health-error\","
+          "file": "src/ui/configTransfer/dialogError.js",
+          "line": 29,
+          "excerpt": "className: \"config-transfer-dialog-error\","
         },
         {
-          "file": "src/ui/components/featureHealth/index.js",
-          "line": 259,
-          "excerpt": "className: \"feature-health-line feature-health-error\","
+          "file": "src/ui/renderers/addonsRenderer.js",
+          "line": 143,
+          "excerpt": "className: \"settings-addon-status-note error\","
         }
       ],
       "protectedReason": null
@@ -2584,6 +3105,36 @@
           "file": "src/ui/components/configButton.js",
           "line": 89,
           "excerpt": "button.className = \"f95ue-page-dock-btn\";"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy/src_ui_components_addons_addonDockGroup.js.cjs",
+          "line": 66,
+          "excerpt": "className: \"f95ue-page-dock-btn\","
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy-2/src_ui_components_addons_addonDockGroup.js.cjs",
+          "line": 66,
+          "excerpt": "className: \"f95ue-page-dock-btn\","
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/addons_example-addon_src_app_createExampleAddonApp.js.cjs",
+          "line": 1328,
+          "excerpt": "var dock_default = '<div class=\"f95ue-page-dock-group\" data-role=\"exampleDock\">\\r\\n  <button type=\"button\" class=\"f95ue-page-dock-btn secondary\" data-action=\"open-example\">\\r\\n    Example API\\r\\n  </button>\\r\\n</div>\\r\\n';"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/addons_example-addon_src_app_createExampleAddonApp.js.cjs",
+          "line": 1328,
+          "excerpt": "var dock_default = '<div class=\"f95ue-page-dock-group\" data-role=\"exampleDock\">\\r\\n  <button type=\"button\" class=\"f95ue-page-dock-btn secondary\" data-action=\"open-example\">\\r\\n    Example API\\r\\n  </button>\\r\\n</div>\\r\\n';"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/addons_library-addon_src_app_createLibraryAddonApp.js.cjs",
+          "line": 5809,
+          "excerpt": "var dock_default = '<div class=\"f95ue-page-dock-group\" data-role=\"libraryDock\">\\r\\n  __PRIMARY_BUTTON__\\r\\n  __UPDATE_BUTTON__\\r\\n  <button type=\"button\" class=\"f95ue-page-dock-btn secondary\" data-action=\"open-library\">\\r\\n    Library\\r\\n  </button>\\r\\n</div>\\r\\n';"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/addons_library-addon_src_app_createLibraryAddonApp.js.cjs",
+          "line": 5820,
+          "excerpt": "return `<button type=\"button\" class=\"f95ue-page-dock-btn secondary\" data-action=\"update-thread\" title=\"Update from this thread\">Update</button>`;"
         }
       ],
       "protectedReason": null
@@ -2596,6 +3147,41 @@
           "file": "src/ui/components/addons/addonDockGroup.js",
           "line": 14,
           "excerpt": "className: \"f95ue-page-dock-group\","
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy/src_ui_components_addons_addonDockGroup.js.cjs",
+          "line": 55,
+          "excerpt": "className: \"f95ue-page-dock-group\","
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy-2/src_ui_components_addons_addonDockGroup.js.cjs",
+          "line": 55,
+          "excerpt": "className: \"f95ue-page-dock-group\","
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/addons_example-addon_src_app_createExampleAddonApp.js.cjs",
+          "line": 1328,
+          "excerpt": "var dock_default = '<div class=\"f95ue-page-dock-group\" data-role=\"exampleDock\">\\r\\n  <button type=\"button\" class=\"f95ue-page-dock-btn secondary\" data-action=\"open-example\">\\r\\n    Example API\\r\\n  </button>\\r\\n</div>\\r\\n';"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/addons_example-addon_src_app_createExampleAddonApp.js.cjs",
+          "line": 1328,
+          "excerpt": "var dock_default = '<div class=\"f95ue-page-dock-group\" data-role=\"exampleDock\">\\r\\n  <button type=\"button\" class=\"f95ue-page-dock-btn secondary\" data-action=\"open-example\">\\r\\n    Example API\\r\\n  </button>\\r\\n</div>\\r\\n';"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/addons_library-addon_src_app_createLibraryAddonApp.js.cjs",
+          "line": 5809,
+          "excerpt": "var dock_default = '<div class=\"f95ue-page-dock-group\" data-role=\"libraryDock\">\\r\\n  __PRIMARY_BUTTON__\\r\\n  __UPDATE_BUTTON__\\r\\n  <button type=\"button\" class=\"f95ue-page-dock-btn secondary\" data-action=\"open-library\">\\r\\n    Library\\r\\n  </button>\\r\\n</div>\\r\\n';"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/addons_library-addon_src_app_createLibraryAddonApp.js.cjs",
+          "line": 5809,
+          "excerpt": "var dock_default = '<div class=\"f95ue-page-dock-group\" data-role=\"libraryDock\">\\r\\n  __PRIMARY_BUTTON__\\r\\n  __UPDATE_BUTTON__\\r\\n  <button type=\"button\" class=\"f95ue-page-dock-btn secondary\" data-action=\"open-library\">\\r\\n    Library\\r\\n  </button>\\r\\n</div>\\r\\n';"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/src_core_teardown.js.cjs",
+          "line": 4184,
+          "excerpt": "className: \"f95ue-page-dock-group\","
         }
       ],
       "protectedReason": null
@@ -2606,7 +3192,7 @@
       "callSites": [
         {
           "file": "src/ui/components/featureHealth/index.js",
-          "line": 191,
+          "line": 161,
           "excerpt": "className: \"feature-health-actions\","
         }
       ],
@@ -2618,8 +3204,8 @@
       "callSites": [
         {
           "file": "src/ui/components/featureHealth/index.js",
-          "line": 202,
-          "excerpt": "const boxEl = createEl(\"div\", { className: \"feature-health-box\" });"
+          "line": 172,
+          "excerpt": "box = createEl(\"div\", { className: \"feature-health-box\", children: [header, content] });"
         }
       ],
       "protectedReason": null
@@ -2630,13 +3216,13 @@
       "callSites": [
         {
           "file": "src/ui/components/featureHealth/index.js",
-          "line": 177,
-          "excerpt": "className: \"feature-health-close\","
+          "line": 154,
+          "excerpt": "const copyBtn = createEl(\"button\", { className: \"feature-health-close\", text: \"Copy\" });"
         },
         {
           "file": "src/ui/components/featureHealth/index.js",
-          "line": 184,
-          "excerpt": "className: \"feature-health-close\","
+          "line": 157,
+          "excerpt": "const closeBtn = createEl(\"button\", { className: \"feature-health-close\", text: \"Close\" });"
         }
       ],
       "protectedReason": null
@@ -2647,8 +3233,8 @@
       "callSites": [
         {
           "file": "src/ui/components/featureHealth/index.js",
-          "line": 200,
-          "excerpt": "const content = createEl(\"div\", { className: \"feature-health-content\" });"
+          "line": 171,
+          "excerpt": "const content = createEl(\"pre\", { className: \"feature-health-content\" });"
         }
       ],
       "protectedReason": null
@@ -2659,45 +3245,8 @@
       "callSites": [
         {
           "file": "src/ui/components/featureHealth/index.js",
-          "line": 196,
+          "line": 165,
           "excerpt": "className: \"feature-health-header\","
-        }
-      ],
-      "protectedReason": null
-    },
-    {
-      "selector": ".feature-health-line",
-      "category": "dynamic-reference",
-      "callSites": [
-        {
-          "file": "src/ui/components/featureHealth/index.js",
-          "line": 232,
-          "excerpt": "className: \"feature-health-line\","
-        },
-        {
-          "file": "src/ui/components/featureHealth/index.js",
-          "line": 241,
-          "excerpt": "className: \"feature-health-line feature-health-error\","
-        },
-        {
-          "file": "src/ui/components/featureHealth/index.js",
-          "line": 252,
-          "excerpt": "className: \"feature-health-line feature-health-sep\","
-        },
-        {
-          "file": "src/ui/components/featureHealth/index.js",
-          "line": 259,
-          "excerpt": "className: \"feature-health-line feature-health-error\","
-        },
-        {
-          "file": "src/ui/components/featureHealth/index.js",
-          "line": 268,
-          "excerpt": "className: \"feature-health-line feature-health-sep\","
-        },
-        {
-          "file": "src/ui/components/featureHealth/index.js",
-          "line": 276,
-          "excerpt": "className: \"feature-health-line\","
         }
       ],
       "protectedReason": null
@@ -2713,20 +3262,8 @@
         },
         {
           "file": "src/ui/components/featureHealth/index.js",
-          "line": 194,
-          "excerpt": "const title = createEl(\"div\", { className: \"feature-health-title\", text: \"Diagnostic\" });"
-        }
-      ],
-      "protectedReason": null
-    },
-    {
-      "selector": ".hue",
-      "category": "dynamic-reference",
-      "callSites": [
-        {
-          "file": "src/ui/components/darkColorPicker.js",
-          "line": 185,
-          "excerpt": "const hue = createRange(\"Hue\", { min: 0, max: 360, className: \"dark-color-slider hue\" });"
+          "line": 167,
+          "excerpt": "createEl(\"div\", { className: \"feature-health-title\", text: \"Diagnostic\" }),"
         }
       ],
       "protectedReason": null
@@ -2896,25 +3433,8 @@
       "callSites": [
         {
           "file": "src/ui/components/featureHealth/index.js",
-          "line": 20,
+          "line": 24,
           "excerpt": "textarea.className = \"offscreen-copy\";"
-        }
-      ],
-      "protectedReason": null
-    },
-    {
-      "selector": ".open",
-      "category": "dynamic-reference",
-      "callSites": [
-        {
-          "file": "src/ui/components/darkColorPicker.js",
-          "line": 138,
-          "excerpt": "panel.classList.remove(\"open\");"
-        },
-        {
-          "file": "src/ui/components/darkColorPicker.js",
-          "line": 291,
-          "excerpt": "panel.classList.add(\"open\");"
         }
       ],
       "protectedReason": null
@@ -2942,6 +3462,26 @@
           "file": "src/ui/assets/ui.html",
           "line": 37,
           "excerpt": "<div id=\"settings-nav-pinned-items\" class=\"settings-nav-pinned-items\"></div>"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/addons_library-addon_src_app_createLibraryAddonApp.js.cjs",
+          "line": 2935,
+          "excerpt": "var manager_default2 = '<div class=\"f95ue-library-manager-root\">\\n  <div\\n    class=\"f95ue-library-manager-window\"\\n    role=\"document\"\\n    aria-label=\"Library Manager\"\\n    tabindex=\"-1\"\\n  >\\n    <div class=\"f95ue-library-header\">\\n      <div class=\"f95ue-library-title\">Library Manager</div>\\n      <button type=\"button\" data-action=\"close\">Close</button>\\n    </div>\\n\\n    <div class=\"f95ue-library-toolbar\">\\n      <div class=\"f95ue-library-search-wrap\">\\n        <input type=\"search\" placeholder=\"Search title, id, tags...\" data-field=\"search\" />\\n        <span\\n          class=\"f95ue-library-search-help\"\\n          title=\"Advanced search: tag:ntr status:playing score>=8 pinned has:note id:123\"\\n          >?</span\\n        >\\n      </div>\\n      <select data-field=\"status\">\\n        <option value=\"all\">All Status</option>\\n        <option value=\"saved\">saved</option>\\n        <option value=\"playing\">playing</option>\\n        <option value=\"completed\">completed</option>\\n        <option value=\"dropped\">dropped</option>\\n      </select>\\n      <select data-field=\"sort\">\\n        <option value=\"updatedAt:desc\">Updated (Newest)</option>\\n        <option value=\"updatedAt:asc\">Updated (Oldest)</option>\\n          <option value=\"title:asc\">Title (A-Z)</option>\\n          <option value=\"rating:desc\">My Rating (Highest)</option>\\n          <option value=\"rating:asc\">My Rating (Lowest)</option>\\n        <option value=\"title:desc\">Title (Z-A)</option>\\n      </select>\\n      <select data-field=\"pageSize\" title=\"Rows per page\">\\n        <option value=\"25\">25 / page</option>\\n        <option value=\"50\" selected>50 / page</option>\\n        <option value=\"100\">100 / page</option>\\n        <option value=\"200\">200 / page</option>\\n      </select>\\n    </div>\\n\\n    <div class=\"f95ue-library-actions\">\\n      <label class=\"bulk-select-all\"\\n        ><input type=\"checkbox\" data-action=\"toggle-all\" /> All</label\\n      >\\n      <span data-role=\"selectedInfo\">0 selected</span>\\n      <button type=\"button\" data-action=\"check-selected-updates\">Check for updates</button>\\n      <details class=\"f95ue-library-more-actions f95ue-library-bulk-actions\">\\n        <summary>Bulk actions</summary>\\n        <div class=\"f95ue-library-more-grid\">\\n          <label>\\n            <span>Apply to selected records</span>\\n            <select data-field=\"bulkAction\">\\n              <option value=\"status:saved\">Status: saved</option>\\n              <option value=\"status:backlog\">Status: backlog</option>\\n              <option value=\"status:playing\">Status: playing</option>\\n              <option value=\"status:paused\">Status: paused</option>\\n              <option value=\"status:completed\">Status: completed</option>\\n              <option value=\"status:dropped\">Status: dropped</option>\\n              <option value=\"pin\">Pin selected</option>\\n              <option value=\"unpin\">Unpin selected</option>\\n              <option value=\"auto-enable\">Enable auto update</option>\\n              <option value=\"auto-disable\">Disable auto update</option>\\n              <option value=\"remove\">Remove selected</option>\\n              <option value=\"clear\">Clear selection</option>\\n            </select>\\n          </label>\\n          <button type=\"button\" data-action=\"bulk-apply\">Apply</button>\\n        </div>\\n      </details>\\n      <button type=\"button\" data-action=\"open-auto-update\">Auto update</button>\\n      <button type=\"button\" data-action=\"open-updates\">\\n        Updates <span data-role=\"updatesCount\">0</span>\\n      </button>\\n      <div\\n        id=\"f95ue-library-rows-status\"\\n        class=\"f95ue-library-status-line f95ue-library-toolbar-status\"\\n        role=\"status\"\\n        aria-live=\"polite\"\\n      ></div>\\n      <button type=\"button\" data-action=\"cancel-manual-check\" data-role=\"cancelManualCheck\" hidden>\\n        Cancel check\\n      </button>\\n      <details class=\"f95ue-library-more-actions f95ue-library-export-actions\">\\n        <summary>Export</summary>\\n        <div class=\"f95ue-library-more-grid\">\\n          <label>\\n            <span>Records to export</span>\\n            <select data-field=\"exportScope\">\\n              <option value=\"all\">All records</option>\\n              <option value=\"filtered\">Filtered records</option>\\n              <option value=\"selected\">Selected records</option>\\n            </select>\\n          </label>\\n          <button type=\"button\" data-action=\"export\">Export JSON</button>\\n          <label>\\n            <span>Import policy</span>\\n            <select data-field=\"conflictPolicy\">\\n              <option value=\"newer\">Newer Wins</option>\\n              <option value=\"replace\">Replace Existing</option>\\n              <option value=\"skip\">Skip Existing</option>\\n            </select>\\n          </label>\\n          <button type=\"button\" class=\"ghost\" data-action=\"import\">Import JSON</button>\\n        </div>\\n      </details>\\n      <input type=\"file\" data-field=\"importFile\" accept=\"application/json,.json\" hidden />\\n    </div>\\n\\n    <div class=\"f95ue-library-layout\">\\n      <div class=\"f95ue-library-list-panel\">\\n        <div class=\"f95ue-library-table-wrap\">\\n          <table>\\n            <thead>\\n              <tr>\\n                <th class=\"col-check\"></th>\\n                <th>Title</th>\\n                <th>Status</th>\\n                  <th>My Rating</th>\\n                <th>Updated</th>\\n                <th>Prefixes</th>\\n                <th>Version</th>\\n                <th>Developer</th>\\n                <th>Tags</th>\\n                <th>Note</th>\\n                <th>Action</th>\\n              </tr>\\n            </thead>\\n            <tbody data-role=\"rows\"></tbody>\\n          </table>\\n        </div>\\n      </div>\\n    </div>\\n    <div class=\"f95ue-library-footer\">\\n      <button type=\"button\" data-action=\"prev\">Prev</button>\\n      <span data-role=\"pageInfo\">Page 1</span>\\n      <button type=\"button\" data-action=\"next\">Next</button>\\n    </div>\\n  </div>\\n</div>\\n';"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/addons_library-addon_src_ui_manager_managerApp.js.cjs",
+          "line": 30,
+          "excerpt": "var manager_default2 = '<div class=\"f95ue-library-manager-root\">\\n  <div\\n    class=\"f95ue-library-manager-window\"\\n    role=\"document\"\\n    aria-label=\"Library Manager\"\\n    tabindex=\"-1\"\\n  >\\n    <div class=\"f95ue-library-header\">\\n      <div class=\"f95ue-library-title\">Library Manager</div>\\n      <button type=\"button\" data-action=\"close\">Close</button>\\n    </div>\\n\\n    <div class=\"f95ue-library-toolbar\">\\n      <div class=\"f95ue-library-search-wrap\">\\n        <input type=\"search\" placeholder=\"Search title, id, tags...\" data-field=\"search\" />\\n        <span\\n          class=\"f95ue-library-search-help\"\\n          title=\"Advanced search: tag:ntr status:playing score>=8 pinned has:note id:123\"\\n          >?</span\\n        >\\n      </div>\\n      <select data-field=\"status\">\\n        <option value=\"all\">All Status</option>\\n        <option value=\"saved\">saved</option>\\n        <option value=\"playing\">playing</option>\\n        <option value=\"completed\">completed</option>\\n        <option value=\"dropped\">dropped</option>\\n      </select>\\n      <select data-field=\"sort\">\\n        <option value=\"updatedAt:desc\">Updated (Newest)</option>\\n        <option value=\"updatedAt:asc\">Updated (Oldest)</option>\\n          <option value=\"title:asc\">Title (A-Z)</option>\\n          <option value=\"rating:desc\">My Rating (Highest)</option>\\n          <option value=\"rating:asc\">My Rating (Lowest)</option>\\n        <option value=\"title:desc\">Title (Z-A)</option>\\n      </select>\\n      <select data-field=\"pageSize\" title=\"Rows per page\">\\n        <option value=\"25\">25 / page</option>\\n        <option value=\"50\" selected>50 / page</option>\\n        <option value=\"100\">100 / page</option>\\n        <option value=\"200\">200 / page</option>\\n      </select>\\n    </div>\\n\\n    <div class=\"f95ue-library-actions\">\\n      <label class=\"bulk-select-all\"\\n        ><input type=\"checkbox\" data-action=\"toggle-all\" /> All</label\\n      >\\n      <span data-role=\"selectedInfo\">0 selected</span>\\n      <button type=\"button\" data-action=\"check-selected-updates\">Check for updates</button>\\n      <details class=\"f95ue-library-more-actions f95ue-library-bulk-actions\">\\n        <summary>Bulk actions</summary>\\n        <div class=\"f95ue-library-more-grid\">\\n          <label>\\n            <span>Apply to selected records</span>\\n            <select data-field=\"bulkAction\">\\n              <option value=\"status:saved\">Status: saved</option>\\n              <option value=\"status:backlog\">Status: backlog</option>\\n              <option value=\"status:playing\">Status: playing</option>\\n              <option value=\"status:paused\">Status: paused</option>\\n              <option value=\"status:completed\">Status: completed</option>\\n              <option value=\"status:dropped\">Status: dropped</option>\\n              <option value=\"pin\">Pin selected</option>\\n              <option value=\"unpin\">Unpin selected</option>\\n              <option value=\"auto-enable\">Enable auto update</option>\\n              <option value=\"auto-disable\">Disable auto update</option>\\n              <option value=\"remove\">Remove selected</option>\\n              <option value=\"clear\">Clear selection</option>\\n            </select>\\n          </label>\\n          <button type=\"button\" data-action=\"bulk-apply\">Apply</button>\\n        </div>\\n      </details>\\n      <button type=\"button\" data-action=\"open-auto-update\">Auto update</button>\\n      <button type=\"button\" data-action=\"open-updates\">\\n        Updates <span data-role=\"updatesCount\">0</span>\\n      </button>\\n      <div\\n        id=\"f95ue-library-rows-status\"\\n        class=\"f95ue-library-status-line f95ue-library-toolbar-status\"\\n        role=\"status\"\\n        aria-live=\"polite\"\\n      ></div>\\n      <button type=\"button\" data-action=\"cancel-manual-check\" data-role=\"cancelManualCheck\" hidden>\\n        Cancel check\\n      </button>\\n      <details class=\"f95ue-library-more-actions f95ue-library-export-actions\">\\n        <summary>Export</summary>\\n        <div class=\"f95ue-library-more-grid\">\\n          <label>\\n            <span>Records to export</span>\\n            <select data-field=\"exportScope\">\\n              <option value=\"all\">All records</option>\\n              <option value=\"filtered\">Filtered records</option>\\n              <option value=\"selected\">Selected records</option>\\n            </select>\\n          </label>\\n          <button type=\"button\" data-action=\"export\">Export JSON</button>\\n          <label>\\n            <span>Import policy</span>\\n            <select data-field=\"conflictPolicy\">\\n              <option value=\"newer\">Newer Wins</option>\\n              <option value=\"replace\">Replace Existing</option>\\n              <option value=\"skip\">Skip Existing</option>\\n            </select>\\n          </label>\\n          <button type=\"button\" class=\"ghost\" data-action=\"import\">Import JSON</button>\\n        </div>\\n      </details>\\n      <input type=\"file\" data-field=\"importFile\" accept=\"application/json,.json\" hidden />\\n    </div>\\n\\n    <div class=\"f95ue-library-layout\">\\n      <div class=\"f95ue-library-list-panel\">\\n        <div class=\"f95ue-library-table-wrap\">\\n          <table>\\n            <thead>\\n              <tr>\\n                <th class=\"col-check\"></th>\\n                <th>Title</th>\\n                <th>Status</th>\\n                  <th>My Rating</th>\\n                <th>Updated</th>\\n                <th>Prefixes</th>\\n                <th>Version</th>\\n                <th>Developer</th>\\n                <th>Tags</th>\\n                <th>Note</th>\\n                <th>Action</th>\\n              </tr>\\n            </thead>\\n            <tbody data-role=\"rows\"></tbody>\\n          </table>\\n        </div>\\n      </div>\\n    </div>\\n    <div class=\"f95ue-library-footer\">\\n      <button type=\"button\" data-action=\"prev\">Prev</button>\\n      <span data-role=\"pageInfo\">Page 1</span>\\n      <button type=\"button\" data-action=\"next\">Next</button>\\n    </div>\\n  </div>\\n</div>\\n';"
+        },
+        {
+          "file": "tests/.tmp-download-clicks/addons_library-addon_src_app_createLibraryAddonApp.js.cjs",
+          "line": 2935,
+          "excerpt": "var manager_default2 = '<div class=\"f95ue-library-manager-root\">\\n  <div\\n    class=\"f95ue-library-manager-window\"\\n    role=\"document\"\\n    aria-label=\"Library Manager\"\\n    tabindex=\"-1\"\\n  >\\n    <div class=\"f95ue-library-header\">\\n      <div class=\"f95ue-library-title\">Library Manager</div>\\n      <button type=\"button\" data-action=\"close\">Close</button>\\n    </div>\\n\\n    <div class=\"f95ue-library-toolbar\">\\n      <div class=\"f95ue-library-search-wrap\">\\n        <input type=\"search\" placeholder=\"Search title, id, tags...\" data-field=\"search\" />\\n        <span\\n          class=\"f95ue-library-search-help\"\\n          title=\"Advanced search: tag:ntr status:playing score>=8 pinned has:note id:123\"\\n          >?</span\\n        >\\n      </div>\\n      <select data-field=\"status\">\\n        <option value=\"all\">All Status</option>\\n        <option value=\"saved\">saved</option>\\n        <option value=\"playing\">playing</option>\\n        <option value=\"completed\">completed</option>\\n        <option value=\"dropped\">dropped</option>\\n      </select>\\n      <select data-field=\"sort\">\\n        <option value=\"updatedAt:desc\">Updated (Newest)</option>\\n        <option value=\"updatedAt:asc\">Updated (Oldest)</option>\\n          <option value=\"title:asc\">Title (A-Z)</option>\\n          <option value=\"rating:desc\">My Rating (Highest)</option>\\n          <option value=\"rating:asc\">My Rating (Lowest)</option>\\n        <option value=\"title:desc\">Title (Z-A)</option>\\n      </select>\\n      <select data-field=\"pageSize\" title=\"Rows per page\">\\n        <option value=\"25\">25 / page</option>\\n        <option value=\"50\" selected>50 / page</option>\\n        <option value=\"100\">100 / page</option>\\n        <option value=\"200\">200 / page</option>\\n      </select>\\n    </div>\\n\\n    <div class=\"f95ue-library-actions\">\\n      <label class=\"bulk-select-all\"\\n        ><input type=\"checkbox\" data-action=\"toggle-all\" /> All</label\\n      >\\n      <span data-role=\"selectedInfo\">0 selected</span>\\n      <button type=\"button\" data-action=\"check-selected-updates\">Check for updates</button>\\n      <details class=\"f95ue-library-more-actions f95ue-library-bulk-actions\">\\n        <summary>Bulk actions</summary>\\n        <div class=\"f95ue-library-more-grid\">\\n          <label>\\n            <span>Apply to selected records</span>\\n            <select data-field=\"bulkAction\">\\n              <option value=\"status:saved\">Status: saved</option>\\n              <option value=\"status:backlog\">Status: backlog</option>\\n              <option value=\"status:playing\">Status: playing</option>\\n              <option value=\"status:paused\">Status: paused</option>\\n              <option value=\"status:completed\">Status: completed</option>\\n              <option value=\"status:dropped\">Status: dropped</option>\\n              <option value=\"pin\">Pin selected</option>\\n              <option value=\"unpin\">Unpin selected</option>\\n              <option value=\"auto-enable\">Enable auto update</option>\\n              <option value=\"auto-disable\">Disable auto update</option>\\n              <option value=\"remove\">Remove selected</option>\\n              <option value=\"clear\">Clear selection</option>\\n            </select>\\n          </label>\\n          <button type=\"button\" data-action=\"bulk-apply\">Apply</button>\\n        </div>\\n      </details>\\n      <button type=\"button\" data-action=\"open-auto-update\">Auto update</button>\\n      <button type=\"button\" data-action=\"open-updates\">\\n        Updates <span data-role=\"updatesCount\">0</span>\\n      </button>\\n      <div\\n        id=\"f95ue-library-rows-status\"\\n        class=\"f95ue-library-status-line f95ue-library-toolbar-status\"\\n        role=\"status\"\\n        aria-live=\"polite\"\\n      ></div>\\n      <button type=\"button\" data-action=\"cancel-manual-check\" data-role=\"cancelManualCheck\" hidden>\\n        Cancel check\\n      </button>\\n      <details class=\"f95ue-library-more-actions f95ue-library-export-actions\">\\n        <summary>Export</summary>\\n        <div class=\"f95ue-library-more-grid\">\\n          <label>\\n            <span>Records to export</span>\\n            <select data-field=\"exportScope\">\\n              <option value=\"all\">All records</option>\\n              <option value=\"filtered\">Filtered records</option>\\n              <option value=\"selected\">Selected records</option>\\n            </select>\\n          </label>\\n          <button type=\"button\" data-action=\"export\">Export JSON</button>\\n          <label>\\n            <span>Import policy</span>\\n            <select data-field=\"conflictPolicy\">\\n              <option value=\"newer\">Newer Wins</option>\\n              <option value=\"replace\">Replace Existing</option>\\n              <option value=\"skip\">Skip Existing</option>\\n            </select>\\n          </label>\\n          <button type=\"button\" class=\"ghost\" data-action=\"import\">Import JSON</button>\\n        </div>\\n      </details>\\n      <input type=\"file\" data-field=\"importFile\" accept=\"application/json,.json\" hidden />\\n    </div>\\n\\n    <div class=\"f95ue-library-layout\">\\n      <div class=\"f95ue-library-list-panel\">\\n        <div class=\"f95ue-library-table-wrap\">\\n          <table>\\n            <thead>\\n              <tr>\\n                <th class=\"col-check\"></th>\\n                <th>Title</th>\\n                <th>Status</th>\\n                  <th>My Rating</th>\\n                <th>Updated</th>\\n                <th>Prefixes</th>\\n                <th>Version</th>\\n                <th>Developer</th>\\n                <th>Tags</th>\\n                <th>Note</th>\\n                <th>Action</th>\\n              </tr>\\n            </thead>\\n            <tbody data-role=\"rows\"></tbody>\\n          </table>\\n        </div>\\n      </div>\\n    </div>\\n    <div class=\"f95ue-library-footer\">\\n      <button type=\"button\" data-action=\"prev\">Prev</button>\\n      <span data-role=\"pageInfo\">Page 1</span>\\n      <button type=\"button\" data-action=\"next\">Next</button>\\n    </div>\\n  </div>\\n</div>\\n';"
+        },
+        {
+          "file": "tests/.tmp-download-clicks/addons_library-addon_src_ui_manager_managerApp.js.cjs",
+          "line": 30,
+          "excerpt": "var manager_default2 = '<div class=\"f95ue-library-manager-root\">\\n  <div\\n    class=\"f95ue-library-manager-window\"\\n    role=\"document\"\\n    aria-label=\"Library Manager\"\\n    tabindex=\"-1\"\\n  >\\n    <div class=\"f95ue-library-header\">\\n      <div class=\"f95ue-library-title\">Library Manager</div>\\n      <button type=\"button\" data-action=\"close\">Close</button>\\n    </div>\\n\\n    <div class=\"f95ue-library-toolbar\">\\n      <div class=\"f95ue-library-search-wrap\">\\n        <input type=\"search\" placeholder=\"Search title, id, tags...\" data-field=\"search\" />\\n        <span\\n          class=\"f95ue-library-search-help\"\\n          title=\"Advanced search: tag:ntr status:playing score>=8 pinned has:note id:123\"\\n          >?</span\\n        >\\n      </div>\\n      <select data-field=\"status\">\\n        <option value=\"all\">All Status</option>\\n        <option value=\"saved\">saved</option>\\n        <option value=\"playing\">playing</option>\\n        <option value=\"completed\">completed</option>\\n        <option value=\"dropped\">dropped</option>\\n      </select>\\n      <select data-field=\"sort\">\\n        <option value=\"updatedAt:desc\">Updated (Newest)</option>\\n        <option value=\"updatedAt:asc\">Updated (Oldest)</option>\\n          <option value=\"title:asc\">Title (A-Z)</option>\\n          <option value=\"rating:desc\">My Rating (Highest)</option>\\n          <option value=\"rating:asc\">My Rating (Lowest)</option>\\n        <option value=\"title:desc\">Title (Z-A)</option>\\n      </select>\\n      <select data-field=\"pageSize\" title=\"Rows per page\">\\n        <option value=\"25\">25 / page</option>\\n        <option value=\"50\" selected>50 / page</option>\\n        <option value=\"100\">100 / page</option>\\n        <option value=\"200\">200 / page</option>\\n      </select>\\n    </div>\\n\\n    <div class=\"f95ue-library-actions\">\\n      <label class=\"bulk-select-all\"\\n        ><input type=\"checkbox\" data-action=\"toggle-all\" /> All</label\\n      >\\n      <span data-role=\"selectedInfo\">0 selected</span>\\n      <button type=\"button\" data-action=\"check-selected-updates\">Check for updates</button>\\n      <details class=\"f95ue-library-more-actions f95ue-library-bulk-actions\">\\n        <summary>Bulk actions</summary>\\n        <div class=\"f95ue-library-more-grid\">\\n          <label>\\n            <span>Apply to selected records</span>\\n            <select data-field=\"bulkAction\">\\n              <option value=\"status:saved\">Status: saved</option>\\n              <option value=\"status:backlog\">Status: backlog</option>\\n              <option value=\"status:playing\">Status: playing</option>\\n              <option value=\"status:paused\">Status: paused</option>\\n              <option value=\"status:completed\">Status: completed</option>\\n              <option value=\"status:dropped\">Status: dropped</option>\\n              <option value=\"pin\">Pin selected</option>\\n              <option value=\"unpin\">Unpin selected</option>\\n              <option value=\"auto-enable\">Enable auto update</option>\\n              <option value=\"auto-disable\">Disable auto update</option>\\n              <option value=\"remove\">Remove selected</option>\\n              <option value=\"clear\">Clear selection</option>\\n            </select>\\n          </label>\\n          <button type=\"button\" data-action=\"bulk-apply\">Apply</button>\\n        </div>\\n      </details>\\n      <button type=\"button\" data-action=\"open-auto-update\">Auto update</button>\\n      <button type=\"button\" data-action=\"open-updates\">\\n        Updates <span data-role=\"updatesCount\">0</span>\\n      </button>\\n      <div\\n        id=\"f95ue-library-rows-status\"\\n        class=\"f95ue-library-status-line f95ue-library-toolbar-status\"\\n        role=\"status\"\\n        aria-live=\"polite\"\\n      ></div>\\n      <button type=\"button\" data-action=\"cancel-manual-check\" data-role=\"cancelManualCheck\" hidden>\\n        Cancel check\\n      </button>\\n      <details class=\"f95ue-library-more-actions f95ue-library-export-actions\">\\n        <summary>Export</summary>\\n        <div class=\"f95ue-library-more-grid\">\\n          <label>\\n            <span>Records to export</span>\\n            <select data-field=\"exportScope\">\\n              <option value=\"all\">All records</option>\\n              <option value=\"filtered\">Filtered records</option>\\n              <option value=\"selected\">Selected records</option>\\n            </select>\\n          </label>\\n          <button type=\"button\" data-action=\"export\">Export JSON</button>\\n          <label>\\n            <span>Import policy</span>\\n            <select data-field=\"conflictPolicy\">\\n              <option value=\"newer\">Newer Wins</option>\\n              <option value=\"replace\">Replace Existing</option>\\n              <option value=\"skip\">Skip Existing</option>\\n            </select>\\n          </label>\\n          <button type=\"button\" class=\"ghost\" data-action=\"import\">Import JSON</button>\\n        </div>\\n      </details>\\n      <input type=\"file\" data-field=\"importFile\" accept=\"application/json,.json\" hidden />\\n    </div>\\n\\n    <div class=\"f95ue-library-layout\">\\n      <div class=\"f95ue-library-list-panel\">\\n        <div class=\"f95ue-library-table-wrap\">\\n          <table>\\n            <thead>\\n              <tr>\\n                <th class=\"col-check\"></th>\\n                <th>Title</th>\\n                <th>Status</th>\\n                  <th>My Rating</th>\\n                <th>Updated</th>\\n                <th>Prefixes</th>\\n                <th>Version</th>\\n                <th>Developer</th>\\n                <th>Tags</th>\\n                <th>Note</th>\\n                <th>Action</th>\\n              </tr>\\n            </thead>\\n            <tbody data-role=\"rows\"></tbody>\\n          </table>\\n        </div>\\n      </div>\\n    </div>\\n    <div class=\"f95ue-library-footer\">\\n      <button type=\"button\" data-action=\"prev\">Prev</button>\\n      <span data-role=\"pageInfo\">Page 1</span>\\n      <button type=\"button\" data-action=\"next\">Next</button>\\n    </div>\\n  </div>\\n</div>\\n';"
         }
       ],
       "protectedReason": null
@@ -2984,6 +3524,41 @@
           "file": "src/ui/components/addons/addonDockGroup.js",
           "line": 40,
           "excerpt": "button.classList.add(\"saved\");"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy/src_ui_components_addons_addonDockGroup.js.cjs",
+          "line": 78,
+          "excerpt": "button.classList.add(\"saved\");"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy-2/src_ui_components_addons_addonDockGroup.js.cjs",
+          "line": 78,
+          "excerpt": "button.classList.add(\"saved\");"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/addons_latest-filters-addon_src_app_createLatestFiltersApp.js.cjs",
+          "line": 857,
+          "excerpt": "var dialog_default = '<div class=\"f95ue-lf-dialog\" role=\"dialog\" aria-modal=\"true\" aria-label=\"Saved Filters\">\\r\\n  <div class=\"f95ue-lf-popover-header\">\\r\\n    <div class=\"f95ue-lf-popover-title\">Saved Filters</div>\\r\\n    <button type=\"button\" class=\"f95ue-lf-close\" data-action=\"close-panel\" aria-label=\"Close\">\\r\\n      &#x2715;\\r\\n    </button>\\r\\n  </div>\\r\\n  <div class=\"f95ue-lf-current\" data-role=\"current\"></div>\\r\\n  <div class=\"f95ue-lf-save-row\">\\r\\n    <input type=\"text\" data-role=\"save-name\" placeholder=\"Preset name\" maxlength=\"80\" />\\r\\n    <button type=\"button\" class=\"f95ue-lf-btn primary\" data-action=\"save-current\">\\r\\n      Save Current\\r\\n    </button>\\r\\n  </div>\\r\\n  <div class=\"f95ue-lf-toolbar\">\\r\\n    <input type=\"search\" data-role=\"search\" placeholder=\"Filter saved presets\" value=\"\" />\\r\\n  </div>\\r\\n  <div class=\"f95ue-lf-results\" data-role=\"results\"></div>\\r\\n</div>\\r\\n';"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/addons_latest-filters-addon_src_app_createLatestFiltersApp.js.cjs",
+          "line": 952,
+          "excerpt": "return `<div class=\"${NS}-empty\">No saved filters match the current search.</div>`;"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/addons_latest-filters-addon_src_ui_renderer.js.cjs",
+          "line": 47,
+          "excerpt": "var dialog_default = '<div class=\"f95ue-lf-dialog\" role=\"dialog\" aria-modal=\"true\" aria-label=\"Saved Filters\">\\r\\n  <div class=\"f95ue-lf-popover-header\">\\r\\n    <div class=\"f95ue-lf-popover-title\">Saved Filters</div>\\r\\n    <button type=\"button\" class=\"f95ue-lf-close\" data-action=\"close-panel\" aria-label=\"Close\">\\r\\n      &#x2715;\\r\\n    </button>\\r\\n  </div>\\r\\n  <div class=\"f95ue-lf-current\" data-role=\"current\"></div>\\r\\n  <div class=\"f95ue-lf-save-row\">\\r\\n    <input type=\"text\" data-role=\"save-name\" placeholder=\"Preset name\" maxlength=\"80\" />\\r\\n    <button type=\"button\" class=\"f95ue-lf-btn primary\" data-action=\"save-current\">\\r\\n      Save Current\\r\\n    </button>\\r\\n  </div>\\r\\n  <div class=\"f95ue-lf-toolbar\">\\r\\n    <input type=\"search\" data-role=\"search\" placeholder=\"Filter saved presets\" value=\"\" />\\r\\n  </div>\\r\\n  <div class=\"f95ue-lf-results\" data-role=\"results\"></div>\\r\\n</div>\\r\\n';"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/addons_latest-filters-addon_src_ui_renderer.js.cjs",
+          "line": 142,
+          "excerpt": "return `<div class=\"${NS}-empty\">No saved filters match the current search.</div>`;"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/addons_library-addon_src_app_createLibraryAddonApp.js.cjs",
+          "line": 2935,
+          "excerpt": "var manager_default2 = '<div class=\"f95ue-library-manager-root\">\\n  <div\\n    class=\"f95ue-library-manager-window\"\\n    role=\"document\"\\n    aria-label=\"Library Manager\"\\n    tabindex=\"-1\"\\n  >\\n    <div class=\"f95ue-library-header\">\\n      <div class=\"f95ue-library-title\">Library Manager</div>\\n      <button type=\"button\" data-action=\"close\">Close</button>\\n    </div>\\n\\n    <div class=\"f95ue-library-toolbar\">\\n      <div class=\"f95ue-library-search-wrap\">\\n        <input type=\"search\" placeholder=\"Search title, id, tags...\" data-field=\"search\" />\\n        <span\\n          class=\"f95ue-library-search-help\"\\n          title=\"Advanced search: tag:ntr status:playing score>=8 pinned has:note id:123\"\\n          >?</span\\n        >\\n      </div>\\n      <select data-field=\"status\">\\n        <option value=\"all\">All Status</option>\\n        <option value=\"saved\">saved</option>\\n        <option value=\"playing\">playing</option>\\n        <option value=\"completed\">completed</option>\\n        <option value=\"dropped\">dropped</option>\\n      </select>\\n      <select data-field=\"sort\">\\n        <option value=\"updatedAt:desc\">Updated (Newest)</option>\\n        <option value=\"updatedAt:asc\">Updated (Oldest)</option>\\n          <option value=\"title:asc\">Title (A-Z)</option>\\n          <option value=\"rating:desc\">My Rating (Highest)</option>\\n          <option value=\"rating:asc\">My Rating (Lowest)</option>\\n        <option value=\"title:desc\">Title (Z-A)</option>\\n      </select>\\n      <select data-field=\"pageSize\" title=\"Rows per page\">\\n        <option value=\"25\">25 / page</option>\\n        <option value=\"50\" selected>50 / page</option>\\n        <option value=\"100\">100 / page</option>\\n        <option value=\"200\">200 / page</option>\\n      </select>\\n    </div>\\n\\n    <div class=\"f95ue-library-actions\">\\n      <label class=\"bulk-select-all\"\\n        ><input type=\"checkbox\" data-action=\"toggle-all\" /> All</label\\n      >\\n      <span data-role=\"selectedInfo\">0 selected</span>\\n      <button type=\"button\" data-action=\"check-selected-updates\">Check for updates</button>\\n      <details class=\"f95ue-library-more-actions f95ue-library-bulk-actions\">\\n        <summary>Bulk actions</summary>\\n        <div class=\"f95ue-library-more-grid\">\\n          <label>\\n            <span>Apply to selected records</span>\\n            <select data-field=\"bulkAction\">\\n              <option value=\"status:saved\">Status: saved</option>\\n              <option value=\"status:backlog\">Status: backlog</option>\\n              <option value=\"status:playing\">Status: playing</option>\\n              <option value=\"status:paused\">Status: paused</option>\\n              <option value=\"status:completed\">Status: completed</option>\\n              <option value=\"status:dropped\">Status: dropped</option>\\n              <option value=\"pin\">Pin selected</option>\\n              <option value=\"unpin\">Unpin selected</option>\\n              <option value=\"auto-enable\">Enable auto update</option>\\n              <option value=\"auto-disable\">Disable auto update</option>\\n              <option value=\"remove\">Remove selected</option>\\n              <option value=\"clear\">Clear selection</option>\\n            </select>\\n          </label>\\n          <button type=\"button\" data-action=\"bulk-apply\">Apply</button>\\n        </div>\\n      </details>\\n      <button type=\"button\" data-action=\"open-auto-update\">Auto update</button>\\n      <button type=\"button\" data-action=\"open-updates\">\\n        Updates <span data-role=\"updatesCount\">0</span>\\n      </button>\\n      <div\\n        id=\"f95ue-library-rows-status\"\\n        class=\"f95ue-library-status-line f95ue-library-toolbar-status\"\\n        role=\"status\"\\n        aria-live=\"polite\"\\n      ></div>\\n      <button type=\"button\" data-action=\"cancel-manual-check\" data-role=\"cancelManualCheck\" hidden>\\n        Cancel check\\n      </button>\\n      <details class=\"f95ue-library-more-actions f95ue-library-export-actions\">\\n        <summary>Export</summary>\\n        <div class=\"f95ue-library-more-grid\">\\n          <label>\\n            <span>Records to export</span>\\n            <select data-field=\"exportScope\">\\n              <option value=\"all\">All records</option>\\n              <option value=\"filtered\">Filtered records</option>\\n              <option value=\"selected\">Selected records</option>\\n            </select>\\n          </label>\\n          <button type=\"button\" data-action=\"export\">Export JSON</button>\\n          <label>\\n            <span>Import policy</span>\\n            <select data-field=\"conflictPolicy\">\\n              <option value=\"newer\">Newer Wins</option>\\n              <option value=\"replace\">Replace Existing</option>\\n              <option value=\"skip\">Skip Existing</option>\\n            </select>\\n          </label>\\n          <button type=\"button\" class=\"ghost\" data-action=\"import\">Import JSON</button>\\n        </div>\\n      </details>\\n      <input type=\"file\" data-field=\"importFile\" accept=\"application/json,.json\" hidden />\\n    </div>\\n\\n    <div class=\"f95ue-library-layout\">\\n      <div class=\"f95ue-library-list-panel\">\\n        <div class=\"f95ue-library-table-wrap\">\\n          <table>\\n            <thead>\\n              <tr>\\n                <th class=\"col-check\"></th>\\n                <th>Title</th>\\n                <th>Status</th>\\n                  <th>My Rating</th>\\n                <th>Updated</th>\\n                <th>Prefixes</th>\\n                <th>Version</th>\\n                <th>Developer</th>\\n                <th>Tags</th>\\n                <th>Note</th>\\n                <th>Action</th>\\n              </tr>\\n            </thead>\\n            <tbody data-role=\"rows\"></tbody>\\n          </table>\\n        </div>\\n      </div>\\n    </div>\\n    <div class=\"f95ue-library-footer\">\\n      <button type=\"button\" data-action=\"prev\">Prev</button>\\n      <span data-role=\"pageInfo\">Page 1</span>\\n      <button type=\"button\" data-action=\"next\">Next</button>\\n    </div>\\n  </div>\\n</div>\\n';"
         }
       ],
       "protectedReason": null
@@ -2996,6 +3571,41 @@
           "file": "src/ui/components/addons/addonDockGroup.js",
           "line": 38,
           "excerpt": "button.classList.add(\"secondary\");"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy/src_ui_components_addons_addonDockGroup.js.cjs",
+          "line": 76,
+          "excerpt": "button.classList.add(\"secondary\");"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy-2/src_ui_components_addons_addonDockGroup.js.cjs",
+          "line": 76,
+          "excerpt": "button.classList.add(\"secondary\");"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/addons_example-addon_src_app_createExampleAddonApp.js.cjs",
+          "line": 620,
+          "excerpt": "<button type=\"button\" class=\"f95ue-example-button secondary\" data-example-action=\"bulk-import-cancel\">"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/addons_example-addon_src_app_createExampleAddonApp.js.cjs",
+          "line": 1328,
+          "excerpt": "var dock_default = '<div class=\"f95ue-page-dock-group\" data-role=\"exampleDock\">\\r\\n  <button type=\"button\" class=\"f95ue-page-dock-btn secondary\" data-action=\"open-example\">\\r\\n    Example API\\r\\n  </button>\\r\\n</div>\\r\\n';"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/addons_example-addon_src_app_createExampleAddonApp.js.cjs",
+          "line": 1409,
+          "excerpt": "<button type=\"button\" class=\"f95ue-example-button secondary\" data-example-action=\"panel-close\">"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/addons_example-addon_src_app_createExampleAddonApp.js.cjs",
+          "line": 620,
+          "excerpt": "<button type=\"button\" class=\"f95ue-example-button secondary\" data-example-action=\"bulk-import-cancel\">"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/addons_example-addon_src_app_createExampleAddonApp.js.cjs",
+          "line": 1328,
+          "excerpt": "var dock_default = '<div class=\"f95ue-page-dock-group\" data-role=\"exampleDock\">\\r\\n  <button type=\"button\" class=\"f95ue-page-dock-btn secondary\" data-action=\"open-example\">\\r\\n    Example API\\r\\n  </button>\\r\\n</div>\\r\\n';"
         }
       ],
       "protectedReason": null
@@ -3012,6 +3622,36 @@
         {
           "file": "src/ui/renderers/createLabel.js",
           "line": 11,
+          "excerpt": "className: \"setting-tooltip-badge\","
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy/src_ui_renderers_renderSetting.js.cjs",
+          "line": 2371,
+          "excerpt": "className: \"setting-tooltip-badge\","
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 2984,
+          "excerpt": "className: \"setting-tooltip-badge\","
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy-2/src_ui_renderers_renderSetting.js.cjs",
+          "line": 2371,
+          "excerpt": "className: \"setting-tooltip-badge\","
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy-2/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 2984,
+          "excerpt": "className: \"setting-tooltip-badge\","
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/src_ui_renderers_renderSetting.js.cjs",
+          "line": 2371,
+          "excerpt": "className: \"setting-tooltip-badge\","
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 2984,
           "excerpt": "className: \"setting-tooltip-badge\","
         }
       ],
@@ -3533,6 +4173,26 @@
           "file": "src/ui/settings/panelNavigation.js",
           "line": 29,
           "excerpt": "shell.classList.toggle(\"mobile-show-panel\", Boolean(showPanel));"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy/src_core_featureFactory.js.cjs",
+          "line": 818,
+          "excerpt": "toast.classList.add(\"show\");"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy/src_core_featureFactory.js.cjs",
+          "line": 821,
+          "excerpt": "toast.classList.remove(\"show\");"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy/src_services_prefixService.js.cjs",
+          "line": 944,
+          "excerpt": "toast.classList.add(\"show\");"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy/src_services_prefixService.js.cjs",
+          "line": 947,
+          "excerpt": "toast.classList.remove(\"show\");"
         }
       ],
       "protectedReason": null
@@ -3543,7 +4203,27 @@
       "callSites": [
         {
           "file": "src/ui/components/tag-search/index.js",
-          "line": 69,
+          "line": 79,
+          "excerpt": "actions.className = \"tag-actions\";"
+        },
+        {
+          "file": "tests/.tmp-modal-css-verify/tests_fixtures_tagSearchBoundHarness.js.cjs",
+          "line": 5613,
+          "excerpt": "actions.className = \"tag-actions\";"
+        },
+        {
+          "file": "tests/.tmp-tag-search-bound/tests_fixtures_tagSearchBoundHarness.js.cjs",
+          "line": 2554,
+          "excerpt": "actions.className = \"tag-actions\";"
+        },
+        {
+          "file": "tests/.tmp-tag-search-bound-2/tests_fixtures_tagSearchBoundHarness.js.cjs",
+          "line": 2554,
+          "excerpt": "actions.className = \"tag-actions\";"
+        },
+        {
+          "file": "tests/.tmp-tag-search-full/tests_fixtures_tagSearchBoundHarness.js.cjs",
+          "line": 5613,
           "excerpt": "actions.className = \"tag-actions\";"
         }
       ],
@@ -3555,7 +4235,27 @@
       "callSites": [
         {
           "file": "src/ui/components/tag-search/index.js",
-          "line": 49,
+          "line": 63,
+          "excerpt": "btn.className = `tag-btn ${typeClass}`;"
+        },
+        {
+          "file": "tests/.tmp-modal-css-verify/tests_fixtures_tagSearchBoundHarness.js.cjs",
+          "line": 5601,
+          "excerpt": "btn.className = `tag-btn ${typeClass}`;"
+        },
+        {
+          "file": "tests/.tmp-tag-search-bound/tests_fixtures_tagSearchBoundHarness.js.cjs",
+          "line": 2542,
+          "excerpt": "btn.className = `tag-btn ${typeClass}`;"
+        },
+        {
+          "file": "tests/.tmp-tag-search-bound-2/tests_fixtures_tagSearchBoundHarness.js.cjs",
+          "line": 2542,
+          "excerpt": "btn.className = `tag-btn ${typeClass}`;"
+        },
+        {
+          "file": "tests/.tmp-tag-search-full/tests_fixtures_tagSearchBoundHarness.js.cjs",
+          "line": 5601,
           "excerpt": "btn.className = `tag-btn ${typeClass}`;"
         }
       ],
@@ -3569,6 +4269,41 @@
           "file": "src/ui/components/tag-search/tagDrag.js",
           "line": 414,
           "excerpt": "const item = createEl(\"div\", { className: `tag-list-item ${itemClass} tag-chip`, mount: sr });"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/addons_latest-filters-addon_src_app_createLatestFiltersApp.js.cjs",
+          "line": 902,
+          "excerpt": "return `<span class=\"${NS}-tag-chip\"${state ? ` data-state=\"${state}\"` : \"\"}${style}>${escapeHtml(label)}</span>`;"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/addons_latest-filters-addon_src_app_createLatestFiltersApp.js.cjs",
+          "line": 902,
+          "excerpt": "return `<span class=\"${NS}-tag-chip\"${state ? ` data-state=\"${state}\"` : \"\"}${style}>${escapeHtml(label)}</span>`;"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/addons_latest-filters-addon_src_ui_renderer.js.cjs",
+          "line": 92,
+          "excerpt": "return `<span class=\"${NS}-tag-chip\"${state ? ` data-state=\"${state}\"` : \"\"}${style}>${escapeHtml(label)}</span>`;"
+        },
+        {
+          "file": "tests/.tmp-config-catalog-full/addons_latest-filters-addon_src_ui_renderer.js.cjs",
+          "line": 92,
+          "excerpt": "return `<span class=\"${NS}-tag-chip\"${state ? ` data-state=\"${state}\"` : \"\"}${style}>${escapeHtml(label)}</span>`;"
+        },
+        {
+          "file": "tests/.tmp-download-clicks/addons_latest-filters-addon_src_app_createLatestFiltersApp.js.cjs",
+          "line": 902,
+          "excerpt": "return `<span class=\"${NS}-tag-chip\"${state ? ` data-state=\"${state}\"` : \"\"}${style}>${escapeHtml(label)}</span>`;"
+        },
+        {
+          "file": "tests/.tmp-download-clicks/addons_latest-filters-addon_src_app_createLatestFiltersApp.js.cjs",
+          "line": 902,
+          "excerpt": "return `<span class=\"${NS}-tag-chip\"${state ? ` data-state=\"${state}\"` : \"\"}${style}>${escapeHtml(label)}</span>`;"
+        },
+        {
+          "file": "tests/.tmp-download-clicks/addons_latest-filters-addon_src_ui_renderer.js.cjs",
+          "line": 92,
+          "excerpt": "return `<span class=\"${NS}-tag-chip\"${state ? ` data-state=\"${state}\"` : \"\"}${style}>${escapeHtml(label)}</span>`;"
         }
       ],
       "protectedReason": null
@@ -3654,6 +4389,41 @@
         {
           "file": "src/ui/components/tag-search/tagDrag.js",
           "line": 414,
+          "excerpt": "const item = createEl(\"div\", { className: `tag-list-item ${itemClass} tag-chip`, mount: sr });"
+        },
+        {
+          "file": "tests/.tmp-modal-css-verify/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 6212,
+          "excerpt": "const item = createEl(\"div\", { className: `tag-list-item ${itemClass} tag-chip`, mount: sr });"
+        },
+        {
+          "file": "tests/.tmp-modal-css-verify/tests_fixtures_tagSearchBoundHarness.js.cjs",
+          "line": 2546,
+          "excerpt": "const item = createEl(\"div\", { className: `tag-list-item ${itemClass} tag-chip`, mount: sr });"
+        },
+        {
+          "file": "tests/.tmp-tag-search-bound/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 6138,
+          "excerpt": "const item = createEl(\"div\", { className: `tag-list-item ${itemClass} tag-chip`, mount: sr });"
+        },
+        {
+          "file": "tests/.tmp-tag-search-bound/tests_fixtures_tagSearchBoundHarness.js.cjs",
+          "line": 2492,
+          "excerpt": "const item = createEl(\"div\", { className: `tag-list-item ${itemClass} tag-chip`, mount: sr });"
+        },
+        {
+          "file": "tests/.tmp-tag-search-bound-2/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 6138,
+          "excerpt": "const item = createEl(\"div\", { className: `tag-list-item ${itemClass} tag-chip`, mount: sr });"
+        },
+        {
+          "file": "tests/.tmp-tag-search-bound-2/tests_fixtures_tagSearchBoundHarness.js.cjs",
+          "line": 2492,
+          "excerpt": "const item = createEl(\"div\", { className: `tag-list-item ${itemClass} tag-chip`, mount: sr });"
+        },
+        {
+          "file": "tests/.tmp-tag-search-full/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 6212,
           "excerpt": "const item = createEl(\"div\", { className: `tag-list-item ${itemClass} tag-chip`, mount: sr });"
         }
       ],
@@ -3741,6 +4511,120 @@
           "file": "src/ui/components/tag-search/tagDrag.js",
           "line": 261,
           "excerpt": "className: `tag-remove-btn ${removeBtnClass}`,"
+        },
+        {
+          "file": "tests/.tmp-modal-css-verify/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 6079,
+          "excerpt": "className: `tag-remove-btn ${removeBtnClass}`,"
+        },
+        {
+          "file": "tests/.tmp-modal-css-verify/tests_fixtures_tagSearchBoundHarness.js.cjs",
+          "line": 2413,
+          "excerpt": "className: `tag-remove-btn ${removeBtnClass}`,"
+        },
+        {
+          "file": "tests/.tmp-tag-search-bound/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 6005,
+          "excerpt": "className: `tag-remove-btn ${removeBtnClass}`,"
+        },
+        {
+          "file": "tests/.tmp-tag-search-bound/tests_fixtures_tagSearchBoundHarness.js.cjs",
+          "line": 2359,
+          "excerpt": "className: `tag-remove-btn ${removeBtnClass}`,"
+        },
+        {
+          "file": "tests/.tmp-tag-search-bound-2/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 6005,
+          "excerpt": "className: `tag-remove-btn ${removeBtnClass}`,"
+        },
+        {
+          "file": "tests/.tmp-tag-search-bound-2/tests_fixtures_tagSearchBoundHarness.js.cjs",
+          "line": 2359,
+          "excerpt": "className: `tag-remove-btn ${removeBtnClass}`,"
+        },
+        {
+          "file": "tests/.tmp-tag-search-full/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 6079,
+          "excerpt": "className: `tag-remove-btn ${removeBtnClass}`,"
+        }
+      ],
+      "protectedReason": null
+    },
+    {
+      "selector": ".tag-search-load-more",
+      "category": "dynamic-reference",
+      "callSites": [
+        {
+          "file": "src/ui/components/tag-search/index.js",
+          "line": 115,
+          "excerpt": "li.className = \"tag-search-load-more-row\";"
+        },
+        {
+          "file": "src/ui/components/tag-search/index.js",
+          "line": 118,
+          "excerpt": "button.className = \"tag-search-load-more\";"
+        },
+        {
+          "file": "tests/.tmp-modal-css-verify/tests_fixtures_tagSearchBoundHarness.js.cjs",
+          "line": 5644,
+          "excerpt": "li.className = \"tag-search-load-more-row\";"
+        },
+        {
+          "file": "tests/.tmp-modal-css-verify/tests_fixtures_tagSearchBoundHarness.js.cjs",
+          "line": 5647,
+          "excerpt": "button.className = \"tag-search-load-more\";"
+        },
+        {
+          "file": "tests/.tmp-tag-search-bound/tests_fixtures_tagSearchBoundHarness.js.cjs",
+          "line": 2585,
+          "excerpt": "li.className = \"tag-search-load-more-row\";"
+        },
+        {
+          "file": "tests/.tmp-tag-search-bound/tests_fixtures_tagSearchBoundHarness.js.cjs",
+          "line": 2588,
+          "excerpt": "button.className = \"tag-search-load-more\";"
+        },
+        {
+          "file": "tests/.tmp-tag-search-bound-2/tests_fixtures_tagSearchBoundHarness.js.cjs",
+          "line": 2585,
+          "excerpt": "li.className = \"tag-search-load-more-row\";"
+        },
+        {
+          "file": "tests/.tmp-tag-search-bound-2/tests_fixtures_tagSearchBoundHarness.js.cjs",
+          "line": 2588,
+          "excerpt": "button.className = \"tag-search-load-more\";"
+        }
+      ],
+      "protectedReason": null
+    },
+    {
+      "selector": ".tag-search-load-more-row",
+      "category": "dynamic-reference",
+      "callSites": [
+        {
+          "file": "src/ui/components/tag-search/index.js",
+          "line": 115,
+          "excerpt": "li.className = \"tag-search-load-more-row\";"
+        },
+        {
+          "file": "tests/.tmp-modal-css-verify/tests_fixtures_tagSearchBoundHarness.js.cjs",
+          "line": 5644,
+          "excerpt": "li.className = \"tag-search-load-more-row\";"
+        },
+        {
+          "file": "tests/.tmp-tag-search-bound/tests_fixtures_tagSearchBoundHarness.js.cjs",
+          "line": 2585,
+          "excerpt": "li.className = \"tag-search-load-more-row\";"
+        },
+        {
+          "file": "tests/.tmp-tag-search-bound-2/tests_fixtures_tagSearchBoundHarness.js.cjs",
+          "line": 2585,
+          "excerpt": "li.className = \"tag-search-load-more-row\";"
+        },
+        {
+          "file": "tests/.tmp-tag-search-full/tests_fixtures_tagSearchBoundHarness.js.cjs",
+          "line": 5644,
+          "excerpt": "li.className = \"tag-search-load-more-row\";"
         }
       ],
       "protectedReason": null
@@ -3787,6 +4671,41 @@
           "file": "src/ui/components/toast.js",
           "line": 47,
           "excerpt": "className: \"toast\","
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy/src_core_featureFactory.js.cjs",
+          "line": 809,
+          "excerpt": "className: \"toast\","
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy/src_services_prefixService.js.cjs",
+          "line": 935,
+          "excerpt": "className: \"toast\","
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy/src_ui_components_toast.js.cjs",
+          "line": 634,
+          "excerpt": "className: \"toast\","
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy/src_ui_renderers_renderSetting.js.cjs",
+          "line": 942,
+          "excerpt": "className: \"toast\","
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy/tests_fixtures_configInteractionHarness.js.cjs",
+          "line": 984,
+          "excerpt": "className: \"toast\","
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy-2/src_core_featureFactory.js.cjs",
+          "line": 809,
+          "excerpt": "className: \"toast\","
+        },
+        {
+          "file": "tests/.tmp-config-catalog-copy-2/src_services_prefixService.js.cjs",
+          "line": 935,
+          "excerpt": "className: \"toast\","
         }
       ],
       "protectedReason": null
@@ -3797,8 +4716,28 @@
       "callSites": [
         {
           "file": "src/ui/components/tag-search/index.js",
-          "line": 41,
+          "line": 55,
           "excerpt": "clearBtn.classList.toggle(\"visible\", hasValue);"
+        },
+        {
+          "file": "tests/.tmp-modal-css-verify/tests_fixtures_tagSearchBoundHarness.js.cjs",
+          "line": 5594,
+          "excerpt": "clearBtn.classList.toggle(\"visible\", hasValue2);"
+        },
+        {
+          "file": "tests/.tmp-tag-search-bound/tests_fixtures_tagSearchBoundHarness.js.cjs",
+          "line": 2535,
+          "excerpt": "clearBtn.classList.toggle(\"visible\", hasValue2);"
+        },
+        {
+          "file": "tests/.tmp-tag-search-bound-2/tests_fixtures_tagSearchBoundHarness.js.cjs",
+          "line": 2535,
+          "excerpt": "clearBtn.classList.toggle(\"visible\", hasValue2);"
+        },
+        {
+          "file": "tests/.tmp-tag-search-full/tests_fixtures_tagSearchBoundHarness.js.cjs",
+          "line": 5594,
+          "excerpt": "clearBtn.classList.toggle(\"visible\", hasValue2);"
         }
       ],
       "protectedReason": null
@@ -3815,7 +4754,6 @@
     "src/ui/components/addons/badge.js",
     "src/ui/components/addons/settingsController.js",
     "src/ui/components/configButton.js",
-    "src/ui/components/darkColorPicker.js",
     "src/ui/components/dialog.js",
     "src/ui/components/featureHealth/index.js",
     "src/ui/components/listeners.js",
@@ -3825,38 +4763,73 @@
     "src/ui/components/toast.js",
     "src/ui/configTransfer/dialogError.js",
     "src/ui/renderers/addonsRenderer.js",
+    "src/ui/renderers/createInput.js",
     "src/ui/renderers/createLabel.js",
     "src/ui/renderers/renderSetting.js",
     "src/ui/settings/modalLifecycle.js",
     "src/ui/settings/panelNavigation.js",
-    "src/ui/settings/tagsSettings.js"
+    "src/ui/settings/tagsSettings.js",
+    "tests/.tmp-config-catalog-copy-2/src_core_featureFactory.js.cjs",
+    "tests/.tmp-config-catalog-copy-2/src_services_prefixService.js.cjs",
+    "tests/.tmp-config-catalog-copy-2/src_ui_components_addons_addonDockGroup.js.cjs",
+    "tests/.tmp-config-catalog-copy-2/src_ui_renderers_createInput.js.cjs",
+    "tests/.tmp-config-catalog-copy-2/src_ui_renderers_renderSetting.js.cjs",
+    "tests/.tmp-config-catalog-copy-2/tests_fixtures_configInteractionHarness.js.cjs",
+    "tests/.tmp-config-catalog-copy/src_core_featureFactory.js.cjs",
+    "tests/.tmp-config-catalog-copy/src_services_prefixService.js.cjs",
+    "tests/.tmp-config-catalog-copy/src_ui_components_addons_addonDockGroup.js.cjs",
+    "tests/.tmp-config-catalog-copy/src_ui_components_toast.js.cjs",
+    "tests/.tmp-config-catalog-copy/src_ui_renderers_createInput.js.cjs",
+    "tests/.tmp-config-catalog-copy/src_ui_renderers_renderSetting.js.cjs",
+    "tests/.tmp-config-catalog-copy/tests_fixtures_configInteractionHarness.js.cjs",
+    "tests/.tmp-config-catalog-full/addons_example-addon_src_app_createExampleAddonApp.js.cjs",
+    "tests/.tmp-config-catalog-full/addons_latest-filters-addon_src_app_createLatestFiltersApp.js.cjs",
+    "tests/.tmp-config-catalog-full/addons_latest-filters-addon_src_ui_renderer.js.cjs",
+    "tests/.tmp-config-catalog-full/addons_library-addon_src_app_createLibraryAddonApp.js.cjs",
+    "tests/.tmp-config-catalog-full/addons_library-addon_src_ui_components_manager_tableRenderer.js.cjs",
+    "tests/.tmp-config-catalog-full/addons_library-addon_src_ui_manager_managerApp.js.cjs",
+    "tests/.tmp-config-catalog-full/addons_library-addon_src_ui_updateInbox_updateInboxController.js.cjs",
+    "tests/.tmp-config-catalog-full/src_core_teardown.js.cjs",
+    "tests/.tmp-config-catalog-full/src_ui_components_addons_addonPanelActions.js.cjs",
+    "tests/.tmp-config-catalog-full/src_ui_renderers_createInput.js.cjs",
+    "tests/.tmp-config-catalog-full/src_ui_renderers_renderSetting.js.cjs",
+    "tests/.tmp-config-catalog-full/tests_fixtures_configInteractionHarness.js.cjs",
+    "tests/.tmp-config-catalog-full/tests_fixtures_routeHarness.js.cjs",
+    "tests/.tmp-download-clicks/addons_latest-filters-addon_src_app_createLatestFiltersApp.js.cjs",
+    "tests/.tmp-download-clicks/addons_latest-filters-addon_src_ui_renderer.js.cjs",
+    "tests/.tmp-download-clicks/addons_library-addon_src_app_createLibraryAddonApp.js.cjs",
+    "tests/.tmp-download-clicks/src_ui_components_addons_addonPanelActions.js.cjs",
+    "tests/.tmp-download-clicks/tests_fixtures_configInteractionHarness.js.cjs",
+    "tests/.tmp-download-clicks/tests_fixtures_routeHarness.js.cjs",
+    "tests/.tmp-modal-css-full/src_ui_components_addons_addonPanelActions.js.cjs",
+    "tests/.tmp-modal-css-full/tests_fixtures_configInteractionHarness.js.cjs",
+    "tests/.tmp-modal-css-verify/src_ui_components_addons_addonPanelActions.js.cjs",
+    "tests/.tmp-modal-css-verify/tests_fixtures_configInteractionHarness.js.cjs",
+    "tests/.tmp-modal-css-verify/tests_fixtures_tagSearchBoundHarness.js.cjs",
+    "tests/.tmp-performance-baseline/src_ui_components_addons_addonPanelActions.js.cjs",
+    "tests/.tmp-rating-fix/src_ui_components_addons_addonPanelActions.js.cjs",
+    "tests/.tmp-settings-shell/src_ui_components_addons_addonPanelActions.js.cjs",
+    "tests/.tmp-tag-search-bound-2/tests_fixtures_configInteractionHarness.js.cjs",
+    "tests/.tmp-tag-search-bound-2/tests_fixtures_tagSearchBoundHarness.js.cjs",
+    "tests/.tmp-tag-search-bound/tests_fixtures_configInteractionHarness.js.cjs",
+    "tests/.tmp-tag-search-bound/tests_fixtures_tagSearchBoundHarness.js.cjs",
+    "tests/.tmp-tag-search-full/tests_fixtures_configInteractionHarness.js.cjs",
+    "tests/.tmp-tag-search-full/tests_fixtures_tagSearchBoundHarness.js.cjs",
+    "tests/concept/latest.min.js"
   ],
   "externalPageSelectors": [],
   "duplicateSelectorBlocks": [],
   "duplicateDeclarationGroups": [
     {
-      "declarations": "opacity:1!;transform:translateY(0)!",
-      "occurrences": [
-        {
-          "selectorText": ".toast.show",
-          "sourceLine": 104
-        },
-        {
-          "selectorText": ".dark-color-popover.open",
-          "sourceLine": 645
-        }
-      ]
-    },
-    {
       "declarations": "background-color:var(--preferred-color)!;color:var(--preferred-text-color)!",
       "occurrences": [
         {
           "selectorText": ".preferred-tag-item",
-          "sourceLine": 133
+          "sourceLine": 253
         },
         {
           "selectorText": ".tag-btn.preferred",
-          "sourceLine": 324
+          "sourceLine": 465
         }
       ]
     },
@@ -3865,11 +4838,11 @@
       "occurrences": [
         {
           "selectorText": ".excluded-tag-item",
-          "sourceLine": 181
+          "sourceLine": 301
         },
         {
           "selectorText": ".tag-btn.excluded",
-          "sourceLine": 328
+          "sourceLine": 469
         }
       ]
     },
@@ -3878,11 +4851,11 @@
       "occurrences": [
         {
           "selectorText": ".marked-tag-item",
-          "sourceLine": 187
+          "sourceLine": 307
         },
         {
           "selectorText": ".tag-btn.marked",
-          "sourceLine": 332
+          "sourceLine": 473
         }
       ]
     },
@@ -3891,11 +4864,11 @@
       "occurrences": [
         {
           "selectorText": ".tag-list-item",
-          "sourceLine": 192
+          "sourceLine": 312
         },
         {
           "selectorText": ".tags-search-input-wrap",
-          "sourceLine": 249
+          "sourceLine": 390
         }
       ]
     },
@@ -3904,11 +4877,11 @@
       "occurrences": [
         {
           "selectorText": ".tag-list-item.drag-over",
-          "sourceLine": 206
+          "sourceLine": 326
         },
         {
           "selectorText": ".tag-list-container.drag-over",
-          "sourceLine": 223
+          "sourceLine": 343
         }
       ]
     },
@@ -3917,15 +4890,15 @@
       "occurrences": [
         {
           "selectorText": "#tags-search:focus",
-          "sourceLine": 298
+          "sourceLine": 439
         },
         {
           "selectorText": "#tag-config-modal input:focus,\r\n#tag-config-modal textarea:focus,\r\n#tag-config-modal select:focus",
-          "sourceLine": 389
+          "sourceLine": 530
         },
         {
           "selectorText": ".config-dialog-input:focus",
-          "sourceLine": 1492
+          "sourceLine": 1432
         }
       ]
     },
@@ -3934,11 +4907,11 @@
       "occurrences": [
         {
           "selectorText": "#tag-config-modal .config-color-input::-webkit-color-swatch-wrapper",
-          "sourceLine": 416
+          "sourceLine": 557
         },
         {
           "selectorText": "#tag-config-modal",
-          "sourceLine": 1336
+          "sourceLine": 1276
         }
       ]
     },
@@ -3947,11 +4920,11 @@
       "occurrences": [
         {
           "selectorText": ".modal-btn:hover",
-          "sourceLine": 440
+          "sourceLine": 581
         },
         {
           "selectorText": ".config-button:hover",
-          "sourceLine": 459
+          "sourceLine": 600
         }
       ]
     },
@@ -3960,15 +4933,15 @@
       "occurrences": [
         {
           "selectorText": ".setting-tooltip-badge:hover",
-          "sourceLine": 552
+          "sourceLine": 694
         },
         {
           "selectorText": ".addins-action-btn:hover",
-          "sourceLine": 1298
+          "sourceLine": 1238
         },
         {
           "selectorText": ".config-reorder-btn:hover:not(:disabled)",
-          "sourceLine": 1557
+          "sourceLine": 1497
         }
       ]
     },
@@ -3977,11 +4950,11 @@
       "occurrences": [
         {
           "selectorText": ".config-row select:focus",
-          "sourceLine": 589
+          "sourceLine": 731
         },
         {
           "selectorText": ".config-row input[type=\"number\"]:focus",
-          "sourceLine": 605
+          "sourceLine": 747
         }
       ]
     },
@@ -3990,11 +4963,11 @@
       "occurrences": [
         {
           "selectorText": ".settings-mobile-panel-header",
-          "sourceLine": 857
+          "sourceLine": 797
         },
         {
           "selectorText": ".settings-shell.mobile-show-panel .settings-sidebar",
-          "sourceLine": 1392
+          "sourceLine": 1332
         }
       ]
     },
@@ -4003,11 +4976,11 @@
       "occurrences": [
         {
           "selectorText": ".settings-mobile-nav-btn:hover",
-          "sourceLine": 884
+          "sourceLine": 824
         },
         {
           "selectorText": ".settings-nav-item:hover",
-          "sourceLine": 971
+          "sourceLine": 911
         }
       ]
     },
@@ -4016,11 +4989,11 @@
       "occurrences": [
         {
           "selectorText": ".settings-nav-group",
-          "sourceLine": 928
+          "sourceLine": 868
         },
         {
           "selectorText": ".settings-nav-pinned-items",
-          "sourceLine": 948
+          "sourceLine": 888
         }
       ]
     },
@@ -4029,11 +5002,11 @@
       "occurrences": [
         {
           "selectorText": ".addins-panel-header-row",
-          "sourceLine": 1042
+          "sourceLine": 982
         },
         {
           "selectorText": ".addins-card-head",
-          "sourceLine": 1096
+          "sourceLine": 1036
         }
       ]
     },
@@ -4042,11 +5015,11 @@
       "occurrences": [
         {
           "selectorText": ".addins-empty-state",
-          "sourceLine": 1075
+          "sourceLine": 1015
         },
         {
           "selectorText": ".addins-card",
-          "sourceLine": 1092
+          "sourceLine": 1032
         }
       ]
     },
@@ -4055,11 +5028,11 @@
       "occurrences": [
         {
           "selectorText": ".addins-panel-actions",
-          "sourceLine": 1256
+          "sourceLine": 1196
         },
         {
           "selectorText": ".addins-card-actions",
-          "sourceLine": 1275
+          "sourceLine": 1215
         }
       ]
     },
@@ -4068,11 +5041,11 @@
       "occurrences": [
         {
           "selectorText": ".addins-action-btn.secondary",
-          "sourceLine": 1304
+          "sourceLine": 1244
         },
         {
           "selectorText": ".addins-action-btn.addon-disable-btn",
-          "sourceLine": 1320
+          "sourceLine": 1260
         }
       ]
     },
@@ -4081,11 +5054,11 @@
       "occurrences": [
         {
           "selectorText": "#tag-config-modal.show",
-          "sourceLine": 1419
+          "sourceLine": 1359
         },
         {
           "selectorText": ".config-reorder-handle",
-          "sourceLine": 1536
+          "sourceLine": 1476
         }
       ]
     }
@@ -4100,268 +5073,273 @@
     },
     {
       "selectorText": "*::-webkit-scrollbar-track",
-      "sourceLine": 20
+      "sourceLine": 21
     },
     {
       "selectorText": "*::-webkit-scrollbar-thumb",
-      "sourceLine": 23
+      "sourceLine": 25
     },
     {
       "selectorText": ".tag-chip",
-      "sourceLine": 57
+      "sourceLine": 206
     },
     {
       "selectorText": ".drag-ghost",
-      "sourceLine": 138
+      "sourceLine": 258
     },
     {
       "selectorText": "#tag-config-modal .config-color-input::-webkit-color-swatch-wrapper",
-      "sourceLine": 416
+      "sourceLine": 557
     },
     {
       "selectorText": "#tag-config-modal .config-color-input::-webkit-color-swatch",
-      "sourceLine": 420
+      "sourceLine": 561
     },
     {
       "selectorText": ".config-row input[type=\"number\"]::-webkit-inner-spin-button,\r\n.config-row input[type=\"number\"]::-webkit-outer-spin-button",
-      "sourceLine": 610
+      "sourceLine": 752
     }
   ],
   "highSpecificitySelectors": [
     {
       "selector": "#toast-container",
       "specificity": 110,
-      "sourceLine": 80
-    },
-    {
-      "selector": "#tag-config-modal",
-      "specificity": 110,
-      "sourceLine": 109
-    },
-    {
-      "selector": "#search-container",
-      "specificity": 110,
-      "sourceLine": 153
-    },
-    {
-      "selector": "#search-results li",
-      "specificity": 121,
-      "sourceLine": 235
-    },
-    {
-      "selector": "#search-results li:hover",
-      "specificity": 121,
-      "sourceLine": 246
-    },
-    {
-      "selector": "#tags-search",
-      "specificity": 110,
-      "sourceLine": 253
-    },
-    {
-      "selector": "#tags-search:focus",
-      "specificity": 110,
-      "sourceLine": 298
-    },
-    {
-      "selector": "#search-results",
-      "specificity": 110,
-      "sourceLine": 364
-    },
-    {
-      "selector": "#tag-config-modal input",
-      "specificity": 121,
-      "sourceLine": 381
-    },
-    {
-      "selector": "#tag-config-modal textarea",
-      "specificity": 121,
-      "sourceLine": 381
-    },
-    {
-      "selector": "#tag-config-modal select",
-      "specificity": 121,
-      "sourceLine": 381
-    },
-    {
-      "selector": "#tag-config-modal input:focus",
-      "specificity": 121,
-      "sourceLine": 389
-    },
-    {
-      "selector": "#tag-config-modal textarea:focus",
-      "specificity": 121,
-      "sourceLine": 389
-    },
-    {
-      "selector": "#tag-config-modal select:focus",
-      "specificity": 121,
-      "sourceLine": 389
-    },
-    {
-      "selector": "#tag-config-modal input[type=\"checkbox\"]",
-      "specificity": 131,
-      "sourceLine": 397
-    },
-    {
-      "selector": "#tag-config-modal input[type=\"radio\"]",
-      "specificity": 131,
-      "sourceLine": 397
-    },
-    {
-      "selector": "#tag-config-modal .config-color-input",
-      "specificity": 120,
-      "sourceLine": 403
-    },
-    {
-      "selector": "#tag-config-modal .config-color-input::-webkit-color-swatch-wrapper",
-      "specificity": 120,
-      "sourceLine": 416
-    },
-    {
-      "selector": "#tag-config-modal .config-color-input::-webkit-color-swatch",
-      "specificity": 120,
-      "sourceLine": 420
-    },
-    {
-      "selector": ".config-row input[type=\"checkbox\"]",
-      "specificity": 31,
-      "sourceLine": 558
-    },
-    {
-      "selector": ".config-row input:not([type=\"checkbox\"])",
-      "specificity": 41,
-      "sourceLine": 567
-    },
-    {
-      "selector": ".config-row input[type=\"number\"]",
-      "specificity": 31,
-      "sourceLine": 594
-    },
-    {
-      "selector": ".config-row input[type=\"number\"]:focus",
-      "specificity": 41,
-      "sourceLine": 605
-    },
-    {
-      "selector": ".config-row input[type=\"number\"]::-webkit-inner-spin-button",
-      "specificity": 41,
-      "sourceLine": 610
-    },
-    {
-      "selector": ".config-row input[type=\"number\"]::-webkit-outer-spin-button",
-      "specificity": 41,
-      "sourceLine": 610
-    },
-    {
-      "selector": ".config-row input[type=\"color\"]",
-      "specificity": 31,
-      "sourceLine": 616
+      "sourceLine": 32
     },
     {
       "selector": "#f95ue-page-dock",
       "specificity": 110,
-      "sourceLine": 721
+      "sourceLine": 61
     },
     {
       "selector": "#f95ue-page-dock-main-slot",
       "specificity": 110,
-      "sourceLine": 736
+      "sourceLine": 76
     },
     {
       "selector": "#f95ue-page-dock-addon-slot",
       "specificity": 110,
-      "sourceLine": 743
+      "sourceLine": 83
     },
     {
       "selector": "#tag-config-button",
       "specificity": 110,
-      "sourceLine": 758
+      "sourceLine": 98
     },
     {
       "selector": "#tag-config-button",
       "specificity": 110,
-      "sourceLine": 764
+      "sourceLine": 104
     },
     {
       "selector": "#tag-config-button:hover",
       "specificity": 110,
-      "sourceLine": 798
+      "sourceLine": 138
     },
     {
       "selector": "#tag-config-button:active",
       "specificity": 110,
-      "sourceLine": 803
+      "sourceLine": 143
     },
     {
       "selector": "#f95ue-page-dock.is-collapsed #tag-config-button",
       "specificity": 220,
-      "sourceLine": 808
+      "sourceLine": 148
     },
     {
       "selector": "#f95ue-page-dock.is-collapsed .f95ue-page-dock-btn",
       "specificity": 120,
-      "sourceLine": 813
+      "sourceLine": 153
     },
     {
       "selector": "#f95ue-page-dock.is-collapsed #tag-config-button:hover",
       "specificity": 220,
-      "sourceLine": 818
+      "sourceLine": 158
     },
     {
       "selector": "#f95ue-page-dock.is-collapsed #tag-config-button:focus-visible",
       "specificity": 220,
-      "sourceLine": 818
+      "sourceLine": 158
     },
     {
       "selector": "#f95ue-page-dock.is-collapsed .f95ue-page-dock-btn:hover",
       "specificity": 120,
-      "sourceLine": 818
+      "sourceLine": 158
     },
     {
       "selector": "#f95ue-page-dock.is-collapsed .f95ue-page-dock-btn:focus-visible",
       "specificity": 120,
-      "sourceLine": 818
+      "sourceLine": 158
     },
     {
       "selector": "#f95ue-page-dock",
       "specificity": 110,
-      "sourceLine": 827
+      "sourceLine": 167
     },
     {
       "selector": "#tag-config-button",
       "specificity": 110,
-      "sourceLine": 833
-    },
-    {
-      "selector": "#tag-config-modal .modal-content",
-      "specificity": 120,
-      "sourceLine": 839
-    },
-    {
-      "selector": "#tag-config-modal .modal-content",
-      "specificity": 120,
-      "sourceLine": 890
+      "sourceLine": 173
     },
     {
       "selector": "#tag-config-modal",
       "specificity": 110,
-      "sourceLine": 1336
+      "sourceLine": 229
+    },
+    {
+      "selector": "#search-container",
+      "specificity": 110,
+      "sourceLine": 273
+    },
+    {
+      "selector": "#search-results li",
+      "specificity": 121,
+      "sourceLine": 355
+    },
+    {
+      "selector": "#search-results li:hover",
+      "specificity": 121,
+      "sourceLine": 366
+    },
+    {
+      "selector": "#search-results .tag-search-load-more-row",
+      "specificity": 120,
+      "sourceLine": 370
+    },
+    {
+      "selector": "#tags-search",
+      "specificity": 110,
+      "sourceLine": 394
+    },
+    {
+      "selector": "#tags-search:focus",
+      "specificity": 110,
+      "sourceLine": 439
+    },
+    {
+      "selector": "#search-results",
+      "specificity": 110,
+      "sourceLine": 505
+    },
+    {
+      "selector": "#tag-config-modal input",
+      "specificity": 121,
+      "sourceLine": 522
+    },
+    {
+      "selector": "#tag-config-modal textarea",
+      "specificity": 121,
+      "sourceLine": 522
+    },
+    {
+      "selector": "#tag-config-modal select",
+      "specificity": 121,
+      "sourceLine": 522
+    },
+    {
+      "selector": "#tag-config-modal input:focus",
+      "specificity": 121,
+      "sourceLine": 530
+    },
+    {
+      "selector": "#tag-config-modal textarea:focus",
+      "specificity": 121,
+      "sourceLine": 530
+    },
+    {
+      "selector": "#tag-config-modal select:focus",
+      "specificity": 121,
+      "sourceLine": 530
+    },
+    {
+      "selector": "#tag-config-modal input[type=\"checkbox\"]",
+      "specificity": 131,
+      "sourceLine": 538
+    },
+    {
+      "selector": "#tag-config-modal input[type=\"radio\"]",
+      "specificity": 131,
+      "sourceLine": 538
+    },
+    {
+      "selector": "#tag-config-modal .config-color-input",
+      "specificity": 120,
+      "sourceLine": 544
+    },
+    {
+      "selector": "#tag-config-modal .config-color-input::-webkit-color-swatch-wrapper",
+      "specificity": 120,
+      "sourceLine": 557
+    },
+    {
+      "selector": "#tag-config-modal .config-color-input::-webkit-color-swatch",
+      "specificity": 120,
+      "sourceLine": 561
+    },
+    {
+      "selector": ".config-row input[type=\"checkbox\"]",
+      "specificity": 31,
+      "sourceLine": 700
+    },
+    {
+      "selector": ".config-row input:not([type=\"checkbox\"])",
+      "specificity": 41,
+      "sourceLine": 709
+    },
+    {
+      "selector": ".config-row input[type=\"number\"]",
+      "specificity": 31,
+      "sourceLine": 736
+    },
+    {
+      "selector": ".config-row input[type=\"number\"]:focus",
+      "specificity": 41,
+      "sourceLine": 747
+    },
+    {
+      "selector": ".config-row input[type=\"number\"]::-webkit-inner-spin-button",
+      "specificity": 41,
+      "sourceLine": 752
+    },
+    {
+      "selector": ".config-row input[type=\"number\"]::-webkit-outer-spin-button",
+      "specificity": 41,
+      "sourceLine": 752
+    },
+    {
+      "selector": ".config-row input[type=\"color\"]",
+      "specificity": 31,
+      "sourceLine": 758
     },
     {
       "selector": "#tag-config-modal .modal-content",
       "specificity": 120,
-      "sourceLine": 1340
+      "sourceLine": 779
+    },
+    {
+      "selector": "#tag-config-modal .modal-content",
+      "specificity": 120,
+      "sourceLine": 830
+    },
+    {
+      "selector": "#tag-config-modal",
+      "specificity": 110,
+      "sourceLine": 1276
+    },
+    {
+      "selector": "#tag-config-modal .modal-content",
+      "specificity": 120,
+      "sourceLine": 1280
     },
     {
       "selector": ".settings-panel:not(#settings-panel-color):not(#settings-panel-addins) .config-row label",
       "specificity": 261,
-      "sourceLine": 1381
+      "sourceLine": 1321
     },
     {
       "selector": "#tag-config-modal.show",
       "specificity": 110,
-      "sourceLine": 1419
+      "sourceLine": 1359
     }
   ],
   "identicalMediaQueryBlocks": [],
@@ -4371,140 +5349,142 @@
       "selectorText": "#tag-config-modal .modal-content",
       "atRules": [],
       "authoredBytes": 558,
-      "sourceLine": 839
+      "sourceLine": 779
     },
     {
       "type": "style",
       "selectorText": "#search-results",
       "atRules": [],
       "authoredBytes": 423,
-      "sourceLine": 364
+      "sourceLine": 505
     },
     {
       "type": "style",
       "selectorText": ".tags-search-clear",
       "atRules": [],
       "authoredBytes": 418,
-      "sourceLine": 262
-    },
-    {
-      "type": "style",
-      "selectorText": "#tag-config-button,\r\n.f95ue-page-dock-btn",
-      "atRules": [],
-      "authoredBytes": 370,
-      "sourceLine": 764
-    },
-    {
-      "type": "style",
-      "selectorText": "#f95ue-page-dock",
-      "atRules": [],
-      "authoredBytes": 360,
-      "sourceLine": 721
+      "sourceLine": 403
     },
     {
       "type": "style",
       "selectorText": ".preferred-tag-remove,\r\n.excluded-tag-remove,\r\n.tag-remove-btn",
       "atRules": [],
       "authoredBytes": 356,
-      "sourceLine": 347
+      "sourceLine": 488
+    },
+    {
+      "type": "style",
+      "selectorText": "#tag-config-button,\n.f95ue-page-dock-btn",
+      "atRules": [],
+      "authoredBytes": 355,
+      "sourceLine": 104
     },
     {
       "type": "style",
       "selectorText": ".setting-tooltip-badge",
       "atRules": [],
       "authoredBytes": 355,
-      "sourceLine": 534
+      "sourceLine": 676
     },
     {
       "type": "style",
       "selectorText": ".addins-badge",
       "atRules": [],
       "authoredBytes": 349,
-      "sourceLine": 1129
+      "sourceLine": 1069
     },
     {
       "type": "style",
       "selectorText": ".settings-nav-item",
       "atRules": [],
       "authoredBytes": 348,
-      "sourceLine": 954
+      "sourceLine": 894
+    },
+    {
+      "type": "style",
+      "selectorText": "#f95ue-page-dock",
+      "atRules": [],
+      "authoredBytes": 347,
+      "sourceLine": 61
     },
     {
       "type": "style",
       "selectorText": ".config-reorder-btn",
       "atRules": [],
       "authoredBytes": 343,
-      "sourceLine": 1540
-    },
-    {
-      "type": "style",
-      "selectorText": ".dark-color-popover",
-      "atRules": [],
-      "authoredBytes": 337,
-      "sourceLine": 629
+      "sourceLine": 1480
     },
     {
       "type": "style",
       "selectorText": ".tag-chip",
       "atRules": [],
       "authoredBytes": 335,
-      "sourceLine": 57
+      "sourceLine": 206
     },
     {
       "type": "style",
       "selectorText": ".modal-error-notif",
       "atRules": [],
       "authoredBytes": 332,
-      "sourceLine": 30
+      "sourceLine": 179
     },
     {
       "type": "style",
       "selectorText": ".config-header",
       "atRules": [],
       "authoredBytes": 331,
-      "sourceLine": 1423
+      "sourceLine": 1363
     },
     {
       "type": "style",
       "selectorText": ".modal-btn",
       "atRules": [],
       "authoredBytes": 324,
-      "sourceLine": 425
+      "sourceLine": 566
     },
     {
       "type": "style",
       "selectorText": ".addins-action-btn",
       "atRules": [],
       "authoredBytes": 319,
-      "sourceLine": 1282
+      "sourceLine": 1222
     },
     {
       "type": "style",
       "selectorText": ".tag-btn",
       "atRules": [],
       "authoredBytes": 303,
-      "sourceLine": 304
+      "sourceLine": 445
     },
     {
       "type": "style",
-      "selectorText": "#f95ue-page-dock.is-collapsed #tag-config-button:hover,\r\n#f95ue-page-dock.is-collapsed #tag-config-button:focus-visible,\r\n#f95ue-page-dock.is-collapsed .f95ue-page-dock-btn:hover,\r\n#f95ue-page-dock.is-collapsed .f95ue-page-dock-btn:focus-visible",
+      "selectorText": "#f95ue-page-dock.is-collapsed #tag-config-button:hover,\n#f95ue-page-dock.is-collapsed #tag-config-button:focus-visible,\n#f95ue-page-dock.is-collapsed .f95ue-page-dock-btn:hover,\n#f95ue-page-dock.is-collapsed .f95ue-page-dock-btn:focus-visible",
       "atRules": [],
-      "authoredBytes": 294,
-      "sourceLine": 818
-    },
-    {
-      "type": "style",
-      "selectorText": "*",
-      "atRules": [],
-      "authoredBytes": 281,
-      "sourceLine": 7
+      "authoredBytes": 288,
+      "sourceLine": 158
     },
     {
       "type": "style",
       "selectorText": ".config-transfer-dialog-error",
       "atRules": [],
       "authoredBytes": 279,
-      "sourceLine": 1568
+      "sourceLine": 1508
+    },
+    {
+      "type": "style",
+      "selectorText": "*",
+      "atRules": [],
+      "authoredBytes": 275,
+      "sourceLine": 7
+    },
+    {
+      "type": "style",
+      "selectorText": ".settings-shell.mobile-show-panel .settings-mobile-panel-header",
+      "atRules": [
+        "@media (max-width: 760px)"
+      ],
+      "authoredBytes": 275,
+      "sourceLine": 1341
     }
   ],
   "removedSelectors": [],
@@ -4532,7 +5512,6 @@
     ".addins-panel-status-row",
     ".addins-setting-row",
     ".addins-status-copy",
-    ".apply",
     ".config-button",
     ".config-color-input",
     ".config-dialog-actions",
@@ -4551,14 +5530,6 @@
     ".config-reorder-list",
     ".config-row",
     ".config-transfer-dialog-error",
-    ".dark-color-btn",
-    ".dark-color-footer",
-    ".dark-color-hex",
-    ".dark-color-labels",
-    ".dark-color-popover",
-    ".dark-color-preview",
-    ".dark-color-slider",
-    ".dark-color-sliders",
     ".disabled",
     ".drag-ghost",
     ".drag-over",
@@ -4572,14 +5543,11 @@
     ".feature-health-close",
     ".feature-health-content",
     ".feature-health-header",
-    ".feature-health-line",
     ".feature-health-title",
-    ".hue",
     ".is-collapsed",
     ".mobile-show-panel",
     ".modal-btn",
     ".offscreen-copy",
-    ".open",
     ".saved",
     ".secondary",
     ".setting-tooltip-badge",
@@ -4596,6 +5564,8 @@
     ".tag-list-item",
     ".tag-priority-note",
     ".tag-remove-btn",
+    ".tag-search-load-more",
+    ".tag-search-load-more-row",
     ".toast",
     ".visible"
   ],
@@ -4619,53 +5589,53 @@
   "comparison": {
     "authoredBytes": {
       "before": 33564,
-      "after": 31122,
-      "delta": -2442
+      "after": 29892,
+      "delta": -3672
     },
     "readableBundleContributionBytes": {
       "before": 27394,
-      "after": 25542,
-      "delta": -1852
+      "after": 21749,
+      "delta": -5645
     },
     "readableBundleFullBytes": {
       "before": 586580,
-      "after": 633664,
-      "delta": 47084
+      "after": 613472,
+      "delta": 26892
     },
     "readableBundleGzipBytes": {
       "before": 124202,
-      "after": 133256,
-      "delta": 9054
+      "after": 132099,
+      "delta": 7897
     },
     "uglifiedBundleContributionBytes": {
       "before": 27380,
-      "after": 25528,
-      "delta": -1852
+      "after": 24665,
+      "delta": -2715
     },
     "uglifiedBundleFullBytes": {
       "before": 302505,
-      "after": 322955,
-      "delta": 20450
+      "after": 309707,
+      "delta": 7202
     },
     "uglifiedBundleGzipBytes": {
       "before": 88402,
-      "after": 94521,
-      "delta": 6119
+      "after": 92836,
+      "delta": 4434
     },
     "selectorCount": {
       "before": 252,
-      "after": 234,
-      "delta": -18
+      "after": 226,
+      "delta": -26
     },
     "declarationCount": {
       "before": 952,
-      "after": 881,
-      "delta": -71
+      "after": 846,
+      "delta": -106
     },
     "styleRuleCount": {
       "before": 231,
-      "after": 215,
-      "delta": -16
+      "after": 206,
+      "delta": -25
     },
     "mediaQueryCount": {
       "before": 4,
@@ -5047,6 +6017,151 @@
     ],
     "removedSelectors": [
       {
+        "selector": ".apply",
+        "evidence": [
+          {
+            "file": "src/ui/components/darkColorPicker.js",
+            "line": 201,
+            "excerpt": "className: \"dark-color-btn apply\","
+          }
+        ],
+        "reason": "Selector no longer appears in the parsed stylesheet."
+      },
+      {
+        "selector": ".dark-color-btn",
+        "evidence": [
+          {
+            "file": "src/ui/components/darkColorPicker.js",
+            "line": 201,
+            "excerpt": "className: \"dark-color-btn apply\","
+          },
+          {
+            "file": "src/ui/components/darkColorPicker.js",
+            "line": 206,
+            "excerpt": "className: \"dark-color-btn\","
+          }
+        ],
+        "reason": "Selector no longer appears in the parsed stylesheet."
+      },
+      {
+        "selector": ".dark-color-footer",
+        "evidence": [
+          {
+            "file": "src/ui/components/darkColorPicker.js",
+            "line": 199,
+            "excerpt": "const footer = createEl(\"div\", { className: \"dark-color-footer\" });"
+          }
+        ],
+        "reason": "Selector no longer appears in the parsed stylesheet."
+      },
+      {
+        "selector": ".dark-color-hex",
+        "evidence": [
+          {
+            "file": "src/ui/components/darkColorPicker.js",
+            "line": 170,
+            "excerpt": "hexInput.className = \"dark-color-hex\";"
+          }
+        ],
+        "reason": "Selector no longer appears in the parsed stylesheet."
+      },
+      {
+        "selector": ".dark-color-labels",
+        "evidence": [
+          {
+            "file": "src/ui/components/darkColorPicker.js",
+            "line": 189,
+            "excerpt": "const labels = createEl(\"div\", { className: \"dark-color-labels\" });"
+          }
+        ],
+        "reason": "Selector no longer appears in the parsed stylesheet."
+      },
+      {
+        "selector": ".dark-color-popover",
+        "evidence": [
+          {
+            "file": "src/ui/components/darkColorPicker.js",
+            "line": 163,
+            "excerpt": "const panel = createEl(\"div\", { className: \"dark-color-popover\" });"
+          }
+        ],
+        "reason": "Selector no longer appears in the parsed stylesheet."
+      },
+      {
+        "selector": ".dark-color-preview",
+        "evidence": [
+          {
+            "file": "src/ui/components/darkColorPicker.js",
+            "line": 167,
+            "excerpt": "const preview = createEl(\"div\", { className: \"dark-color-preview\" });"
+          }
+        ],
+        "reason": "Selector no longer appears in the parsed stylesheet."
+      },
+      {
+        "selector": ".dark-color-slider",
+        "evidence": [
+          {
+            "file": "src/ui/components/darkColorPicker.js",
+            "line": 175,
+            "excerpt": "const r = createEl(\"input\", { className: className || \"dark-color-slider\" });"
+          },
+          {
+            "file": "src/ui/components/darkColorPicker.js",
+            "line": 185,
+            "excerpt": "const hue = createRange(\"Hue\", { min: 0, max: 360, className: \"dark-color-slider hue\" });"
+          }
+        ],
+        "reason": "Selector no longer appears in the parsed stylesheet."
+      },
+      {
+        "selector": ".dark-color-sliders",
+        "evidence": [
+          {
+            "file": "src/ui/components/darkColorPicker.js",
+            "line": 196,
+            "excerpt": "const sliders = createEl(\"div\", { className: \"dark-color-sliders\" });"
+          }
+        ],
+        "reason": "Selector no longer appears in the parsed stylesheet."
+      },
+      {
+        "selector": ".feature-health-line",
+        "evidence": [
+          {
+            "file": "src/ui/components/featureHealth/index.js",
+            "line": 232,
+            "excerpt": "className: \"feature-health-line\","
+          },
+          {
+            "file": "src/ui/components/featureHealth/index.js",
+            "line": 241,
+            "excerpt": "className: \"feature-health-line feature-health-error\","
+          },
+          {
+            "file": "src/ui/components/featureHealth/index.js",
+            "line": 252,
+            "excerpt": "className: \"feature-health-line feature-health-sep\","
+          },
+          {
+            "file": "src/ui/components/featureHealth/index.js",
+            "line": 259,
+            "excerpt": "className: \"feature-health-line feature-health-error\","
+          },
+          {
+            "file": "src/ui/components/featureHealth/index.js",
+            "line": 268,
+            "excerpt": "className: \"feature-health-line feature-health-sep\","
+          },
+          {
+            "file": "src/ui/components/featureHealth/index.js",
+            "line": 276,
+            "excerpt": "className: \"feature-health-line\","
+          }
+        ],
+        "reason": "Selector no longer appears in the parsed stylesheet."
+      },
+      {
         "selector": ".hint-text",
         "evidence": [
           {
@@ -5058,6 +6173,17 @@
             "file": "src/ui/assets/ui.html",
             "line": 167,
             "excerpt": "<span class=\"hint-text\">Hover over options text to see detailed settings</span>"
+          }
+        ],
+        "reason": "Selector no longer appears in the parsed stylesheet."
+      },
+      {
+        "selector": ".hue",
+        "evidence": [
+          {
+            "file": "src/ui/components/darkColorPicker.js",
+            "line": 185,
+            "excerpt": "const hue = createRange(\"Hue\", { min: 0, max: 360, className: \"dark-color-slider hue\" });"
           }
         ],
         "reason": "Selector no longer appears in the parsed stylesheet."
@@ -5168,6 +6294,22 @@
             "file": "src/ui/assets/ui.html",
             "line": 164,
             "excerpt": "<span class=\"modal-footer-hint-separator\" aria-hidden=\"true\">|</span>"
+          }
+        ],
+        "reason": "Selector no longer appears in the parsed stylesheet."
+      },
+      {
+        "selector": ".open",
+        "evidence": [
+          {
+            "file": "src/ui/components/darkColorPicker.js",
+            "line": 138,
+            "excerpt": "panel.classList.remove(\"open\");"
+          },
+          {
+            "file": "src/ui/components/darkColorPicker.js",
+            "line": 291,
+            "excerpt": "panel.classList.add(\"open\");"
           }
         ],
         "reason": "Selector no longer appears in the parsed stylesheet."

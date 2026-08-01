@@ -4,7 +4,7 @@ const path = require("path");
 const { Window } = require("happy-dom");
 const { runCoreSmokeBuild } = require("./core-source-audit.cjs");
 
-const CSS_FILE = "src/ui/assets/css.css";
+const CSS_FILES = ["src/ui/assets/startup.css", "src/ui/assets/css.css"];
 const SOURCE_EXTENSIONS = new Set([".js", ".cjs", ".mjs", ".html", ".css"]);
 const EXCLUDED_SOURCE_PREFIXES = [
   "src/generated/",
@@ -287,7 +287,7 @@ function findTokenMatches(file, token) {
 }
 
 function sourceEvidence(rootDir, css, parsed) {
-  const sourceFiles = walkFiles(rootDir, path.join(rootDir, "src")).filter((file) => file.relative !== CSS_FILE);
+  const sourceFiles = walkFiles(rootDir, path.join(rootDir, "src")).filter((file) => !CSS_FILES.includes(file.relative));
   const testFiles = walkFiles(rootDir, path.join(rootDir, "tests")).filter((file) => !file.relative.startsWith("tests/.tmp/"));
   const contents = [...sourceFiles, ...testFiles].map((file) => ({ ...file, source: fs.readFileSync(file.absolute, "utf8") }));
   const tokens = new Set();
@@ -328,8 +328,7 @@ function sourceEvidence(rootDir, css, parsed) {
 }
 
 async function auditCss({ rootDir = process.cwd(), includeBundle = true } = {}) {
-  const absolute = path.join(rootDir, CSS_FILE);
-  const css = fs.readFileSync(absolute, "utf8");
+  const css = CSS_FILES.map((file) => fs.readFileSync(path.join(rootDir, file), "utf8")).join("\n");
   const parsed = parseRules(css);
   const evidence = sourceEvidence(rootDir, css, parsed);
   const bundle = includeBundle ? await runCoreSmokeBuild({ rootDir }) : null;
@@ -337,18 +336,19 @@ async function auditCss({ rootDir = process.cwd(), includeBundle = true } = {}) 
   return {
     reportSchemaVersion: 1,
     tool: "css-audit",
-    stylesheet: CSS_FILE,
+    stylesheet: CSS_FILES.join(" + "),
+    stylesheets: CSS_FILES,
     authoredBytes: Buffer.byteLength(css),
     bundle: bundle ? {
       readable: {
         fullBytes: bundle.readable.bytes,
         gzipBytes: bundle.readable.gzipBytes,
-        contributionBytes: bundle.readable.coreContributors.find((entry) => entry.path === CSS_FILE)?.bytes || 0,
+        contributionBytes: CSS_FILES.reduce((total, file) => total + (bundle.readable.coreContributors.find((entry) => entry.path === file)?.bytes || 0), 0),
       },
       uglified: {
         fullBytes: bundle.uglified.bytes,
         gzipBytes: bundle.uglified.gzipBytes,
-        contributionBytes: bundle.uglified.coreContributors.find((entry) => entry.path === CSS_FILE)?.bytes || 0,
+        contributionBytes: CSS_FILES.reduce((total, file) => total + (bundle.uglified.coreContributors.find((entry) => entry.path === file)?.bytes || 0), 0),
       },
     } : null,
     ruleCount: parsed.rules.length,

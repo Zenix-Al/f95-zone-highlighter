@@ -14,7 +14,8 @@ Latest Overlay dialog metadata was also not registered in the shared settings me
 
 1. waits for the existing migration/readiness barrier;
 2. queues behind earlier config updates;
-3. clones the latest committed runtime config and runs the updater against that draft;
+3. clones the latest committed canonical settings, retains unchanged runtime catalog references,
+   and runs the updater against that draft;
 4. strictly validates and commits through the existing canonical/backup revision path;
 5. applies the committed value through `configChangeApplication` and awaits registered effects.
 
@@ -28,7 +29,12 @@ Tag list paths are registered once by `settings/tagsSettings.js`; array descenda
 
 ## Storage activity and measurements
 
-The small tag-list update retains atomic persistence: it reads the current canonical envelope, validates the complete candidate, writes the verified previous envelope to backup, writes the new canonical envelope, deep-diffs the runtime config, resolves effect metadata, and schedules the registered tile/thread refresh tasks. It does not write the tag or prefix catalog caches.
+The small tag-list update retains atomic persistence: it reads the current canonical envelope,
+validates canonical settings with empty catalog placeholders, writes the verified previous
+envelope to backup, writes the new canonical envelope, deep-diffs the runtime config, resolves
+effect metadata, and schedules the registered tile/thread refresh tasks. Runtime snapshots retain
+the unchanged catalog references, so this path copies zero tag/prefix catalog items. It does not
+write the tag or prefix catalog caches.
 
 Fetched catalogs use the existing cache-only path. The regression test measured the following representative run using compact JSON byte lengths and `performance.now()` timings; timings are environment-dependent:
 

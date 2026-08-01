@@ -46,6 +46,18 @@ function cloneConfig(value) {
   return JSON.parse(JSON.stringify(value));
 }
 
+function cloneRuntimeSnapshot(value) {
+  const source = isRecord(value) ? value : {};
+  const snapshot = cloneConfig({
+    ...source,
+    tags: [],
+    prefixes: { items: [], categories: {} },
+  });
+  snapshot.tags = source.tags;
+  snapshot.prefixes = source.prefixes;
+  return snapshot;
+}
+
 function isRecord(value) {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
@@ -479,11 +491,21 @@ function notReadyResult(origin) {
   };
 }
 
-async function commitConfigNow(candidate, { origin = "local" } = {}) {
+async function commitConfigNow(candidate, {
+  origin = "local",
+  preserveRuntimeCatalogs = false,
+} = {}) {
   if (!(await ensureConfigReady())) {
     return notReadyResult(origin);
   }
-  const validation = validateConfig(candidate, { mode: "strict" });
+  const validationInput = preserveRuntimeCatalogs
+    ? {
+        ...candidate,
+        tags: [],
+        prefixes: { items: [], categories: {} },
+      }
+    : candidate;
+  const validation = validateConfig(validationInput, { mode: "strict" });
   if (!validation.valid) {
     reportPersistenceHealth("SAVE_FAILED", "Configuration commit was rejected by the schema.", {
       origin,
@@ -492,7 +514,12 @@ async function commitConfigNow(candidate, { origin = "local" } = {}) {
     return { committed: false, saved: [], failed: [{ code: "validation", issues: safeIssueSummary(validation.issues) }], issues: validation.issues, origin };
   }
 
-  const previousLiveConfig = cloneConfig(config);
+  if (preserveRuntimeCatalogs) {
+    validation.data.tags = config.tags;
+    validation.data.prefixes = config.prefixes;
+  }
+
+  const previousLiveConfig = cloneRuntimeSnapshot(config);
   try {
     const latestRaw = await storageAdapter.get(CONFIG_ENVELOPE_KEY, null);
     const latestRevision = Math.max(0, Number(latestRaw?.revision) || 0);
@@ -517,7 +544,7 @@ async function commitConfigNow(candidate, { origin = "local" } = {}) {
         updatedAt: envelope.updatedAt,
       },
       previousConfig: previousLiveConfig,
-      config: cloneConfig(applied.config),
+      config: cloneRuntimeSnapshot(applied.config),
       changedPaths: applied.changedPaths,
     };
   } catch {
@@ -551,8 +578,8 @@ export function updateConfig(updater, { origin = "local" } = {}) {
     }
     if (!(await ensureConfigReady())) return notReadyResult(origin);
 
-    const previousConfig = cloneConfig(config);
-    const draft = cloneConfig(config);
+    const previousConfig = cloneRuntimeSnapshot(config);
+    const draft = cloneRuntimeSnapshot(config);
     const changed = updater(draft);
     if (changed === false) {
       return {
@@ -567,7 +594,11 @@ export function updateConfig(updater, { origin = "local" } = {}) {
         changedPaths: [],
       };
     }
-    return commitConfigNow(draft, { origin });
+    const catalogsReplaced = draft.tags !== config.tags || draft.prefixes !== config.prefixes;
+    return commitConfigNow(draft, {
+      origin,
+      preserveRuntimeCatalogs: !catalogsReplaced,
+    });
   });
 }
 
@@ -597,7 +628,7 @@ async function saveConfigKeysNow(updates, { origin = "local" } = {}) {
       }
       await storageAdapter.set(CACHE_CONFIG_KEYS[section], cloneConfig(validation.data[section]));
     }
-    const next = { ...cloneConfig(config), ...Object.fromEntries(Object.entries(cachePatch).map(([section, value]) => [section, validateCachePayload(section, value).data[section]])) };
+    const next = { ...cloneRuntimeSnapshot(config), ...Object.fromEntries(Object.entries(cachePatch).map(([section, value]) => [section, validateCachePayload(section, value).data[section]])) };
     const applied = applyConfigChange(next, { origin });
     await applied.effects;
     if (Object.keys(corePatch).length === 0) {
@@ -612,8 +643,8 @@ async function saveConfigKeysNow(updates, { origin = "local" } = {}) {
     }
   }
 
-  const candidate = { ...cloneConfig(config), ...corePatch };
-  const result = await commitConfigNow(candidate, { origin });
+  const candidate = { ...cloneRuntimeSnapshot(config), ...corePatch };
+  const result = await commitConfigNow(candidate, { origin, preserveRuntimeCatalogs: true });
   if (result.committed) return { ...result, saved: Object.keys(patch) };
   return { ...result, saved: [], failed: result.failed || [{ code: "commit_failed" }] };
 }

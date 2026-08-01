@@ -1,7 +1,10 @@
 import { stateManager } from "../../config.js";
 import { debugLog } from "../../core/logger";
 import { addObserverCallback, removeObserverCallback } from "../../core/observer";
-import { getFastCaptureSnapshot, subscribeFastCapture } from "../../services/fastCapture/index.js";
+import {
+  getLatestCaptureSnapshot,
+  setLatestCaptureConsumer,
+} from "./capture/index.js";
 import {
   getCurrentGeneration,
   incrementGeneration,
@@ -14,10 +17,7 @@ import {
 } from "./tileProcessor.js";
 import { resetAllTiles, resetTile } from "./tilePatcher.js";
 import { setupHoverListener, teardownHoverListener } from "./hoverTagHandler.js";
-import {
-  LATEST_DATA_CAPTURE_KEY,
-  latestDataIndex,
-} from "./latestDataIndex.js";
+import { latestDataIndex } from "./latestDataIndex.js";
 
 export { reprocessAllTiles, resetTile, processTile, processAllTiles };
 
@@ -59,15 +59,10 @@ function applyLatestDataSnapshot(snapshot, { processVisibleTiles = true } = {}) 
 
 function subscribeLatestData() {
   unsubscribeLatestData?.();
-  let isInitialSnapshot = true;
-  unsubscribeLatestData = subscribeFastCapture(
-    LATEST_DATA_CAPTURE_KEY,
-    (snapshot) => {
-      applyLatestDataSnapshot(snapshot, { processVisibleTiles: !isInitialSnapshot });
-      isInitialSnapshot = false;
-    },
-    { healthId: "Latest Overlay" },
-  );
+  unsubscribeLatestData = setLatestCaptureConsumer((snapshot) => {
+    applyLatestDataSnapshot(snapshot);
+  });
+  applyLatestDataSnapshot(getLatestCaptureSnapshot(), { processVisibleTiles: false });
 }
 
 function unsubscribeLatestDataCapture() {
@@ -152,7 +147,7 @@ export function enableLatestOverlay() {
 
   debugLog("latest-overlay", "Enable started", {
     data: {
-      snapshotStatus: getFastCaptureSnapshot(LATEST_DATA_CAPTURE_KEY).status,
+      snapshotStatus: getLatestCaptureSnapshot().status,
       visibleTiles: document.getElementsByClassName("resource-tile").length,
       navigationElapsedMs: Number(performance.now().toFixed(2)),
     },

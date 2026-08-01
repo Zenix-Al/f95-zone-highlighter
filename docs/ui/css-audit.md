@@ -1,6 +1,8 @@
 # Core CSS audit
 
-`src/ui/assets/css.css` is injected into the core Shadow DOM. The deterministic audit command is:
+`src/ui/assets/startup.css` and `src/ui/assets/css.css` are injected into the
+core Shadow DOM at startup and first modal demand respectively. The
+deterministic audit evaluates them in runtime cascade order. Its commands are:
 
 ```text
 npm run audit:css

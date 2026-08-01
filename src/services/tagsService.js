@@ -5,12 +5,15 @@ import { renderList } from "../ui/components/tag-search";
 
 import { checkTags } from "./safetyService";
 import { saveConfigKeys } from "./settingsService";
-import { updatePrefixes } from "./prefixService.js";
+import {
+  normalizePrefixesFromLatestUpdatesBudgeted,
+  updatePrefixes,
+} from "./prefixService.js";
 import { debugLog } from "../core/logger";
 
-const LATEST_TAGS_BRIDGE_REQUEST_EVENT = "f95ue:latest-tags-request";
-const LATEST_TAGS_BRIDGE_RESULT_EVENT = "f95ue:latest-tags-result";
-const LATEST_TAGS_BRIDGE_MARKER = "f95ue_latest_tags_bridge_installed";
+const LATEST_CATALOG_BRIDGE_REQUEST_EVENT = "f95ue:latest-catalog-request";
+const LATEST_CATALOG_BRIDGE_RESULT_EVENT = "f95ue:latest-catalog-result";
+const LATEST_CATALOG_BRIDGE_MARKER = "f95ue_latest_catalog_bridge_installed";
 
 export function updateSearch(event) {
   checkTags(); // Ensure warning is visible if tags are missing
@@ -77,37 +80,32 @@ async function normalizeTagsFromLatestUpdatesBudgeted(rawTags) {
   });
 }
 
-function ensureLatestTagsPageBridge() {
+function ensureLatestCatalogPageBridge() {
   return ensurePageBridge({
-    marker: LATEST_TAGS_BRIDGE_MARKER,
+    marker: LATEST_CATALOG_BRIDGE_MARKER,
     scriptContent: `
     (() => {
-      if (window.__f95ueLatestTagsBridgeInstalled) return;
-      window.__f95ueLatestTagsBridgeInstalled = true;
+      if (window.__f95ueLatestCatalogBridgeInstalled) return;
+      window.__f95ueLatestCatalogBridgeInstalled = true;
 
-      window.addEventListener("${LATEST_TAGS_BRIDGE_REQUEST_EVENT}", () => {
-        let ok = false;
-        let reason = "";
-        let tags = null;
+      window.addEventListener("${LATEST_CATALOG_BRIDGE_REQUEST_EVENT}", () => {
+        const detail = { tags: null, prefixes: null, reasons: {} };
 
         try {
           const latest = window.latestUpdates;
-          const latestTags = latest && latest.tags;
-          if (latestTags) {
-            tags = latestTags;
-            ok = true;
-          } else {
-            reason = "latest_updates_missing_tags";
-          }
+          detail.tags = latest && latest.tags;
+          detail.prefixes = latest && latest.prefixes;
+          if (!detail.tags) detail.reasons.tags = "latest_updates_missing_tags";
+          if (!detail.prefixes) detail.reasons.prefixes = "latest_updates_missing_prefixes";
         } catch (error) {
-          reason = error?.message ? String(error.message) : "latest_updates_read_throw";
+          const reason = error?.message ? String(error.message) : "latest_updates_read_throw";
+          detail.reasons.tags = reason;
+          detail.reasons.prefixes = reason;
         }
 
         try {
           window.dispatchEvent(
-            new CustomEvent("${LATEST_TAGS_BRIDGE_RESULT_EVENT}", {
-              detail: { ok, reason, tags },
-            }),
+            new CustomEvent("${LATEST_CATALOG_BRIDGE_RESULT_EVENT}", { detail }),
           );
         } catch {}
       });
@@ -116,51 +114,62 @@ function ensureLatestTagsPageBridge() {
   });
 }
 
-async function readLatestTagsFromWindow() {
-  const latest = typeof window !== "undefined" ? window.latestUpdates || null : null;
-  const tags = await normalizeTagsFromLatestUpdatesBudgeted(latest?.tags);
-  return { ok: tags.length > 0, source: "window", reason: tags.length ? "" : "window_empty", tags };
+function readLatestCatalogFromWindow() {
+  try {
+    return typeof window !== "undefined" ? window.latestUpdates || {} : {};
+  } catch {
+    return {};
+  }
 }
 
-function readLatestTagsViaPageBridge(timeoutMs = 1200) {
-  const bridgeReady = ensureLatestTagsPageBridge();
+async function readLatestCatalogViaPageBridge(timeoutMs = 1200) {
+  const bridgeReady = ensureLatestCatalogPageBridge();
   if (!bridgeReady) {
-    return Promise.resolve({
-      ok: false,
-      source: "pageBridge",
-      reason: "bridge_inject_failed",
-      tags: [],
-    });
+    return { tags: null, prefixes: null, reasons: { tags: "bridge_inject_failed", prefixes: "bridge_inject_failed" } };
   }
 
-  return requestPageBridge({
-    requestEvent: LATEST_TAGS_BRIDGE_REQUEST_EVENT,
-    resultEvent: LATEST_TAGS_BRIDGE_RESULT_EVENT,
+  const result = await requestPageBridge({
+    requestEvent: LATEST_CATALOG_BRIDGE_REQUEST_EVENT,
+    resultEvent: LATEST_CATALOG_BRIDGE_RESULT_EVENT,
     timeoutMs,
-  }).then(async (result) => {
-    if (!result.received) {
-      return {
-        ok: false,
-        source: "pageBridge",
-        reason: result.reason || "bridge_timeout",
-        tags: [],
-      };
-    }
-
-    const detail = result.detail || {};
-    const tags = await normalizeTagsFromLatestUpdatesBudgeted(detail.tags);
-    return {
-      ok: Boolean(detail.ok) && tags.length > 0,
-      source: "pageBridge",
-      reason: typeof detail.reason === "string" ? detail.reason : "",
-      tags,
-    };
   });
+  if (result.received) return result.detail || {};
+  const reason = result.reason || "bridge_timeout";
+  return { tags: null, prefixes: null, reasons: { tags: reason, prefixes: reason } };
 }
 
-async function refreshTagsFromLatestUpdates() {
-  const directResult = await readLatestTagsFromWindow();
-  const result = directResult.ok ? directResult : await readLatestTagsViaPageBridge();
+async function readLatestCatalogs() {
+  const direct = readLatestCatalogFromWindow();
+  let [tags, prefixes] = await Promise.all([
+    normalizeTagsFromLatestUpdatesBudgeted(direct.tags),
+    normalizePrefixesFromLatestUpdatesBudgeted(direct.prefixes),
+  ]);
+  const directTagsValid = tags.length > 0;
+  const directPrefixesValid = prefixes.items.length > 0;
+  let bridge = null;
+  if (!directTagsValid || !directPrefixesValid) {
+    bridge = await readLatestCatalogViaPageBridge();
+    const normalized = await Promise.all([
+      tags.length ? tags : normalizeTagsFromLatestUpdatesBudgeted(bridge.tags),
+      prefixes.items.length ? prefixes : normalizePrefixesFromLatestUpdatesBudgeted(bridge.prefixes),
+    ]);
+    [tags, prefixes] = normalized;
+  }
+  return {
+    tags: {
+      tags,
+      source: directTagsValid ? "window" : "pageBridge",
+      reason: tags.length ? "" : bridge ? bridge.reasons?.tags || "" : "window_empty",
+    },
+    prefixes: {
+      prefixes,
+      source: directPrefixesValid ? "window" : "pageBridge",
+      reason: prefixes.items.length ? "" : bridge ? bridge.reasons?.prefixes || "" : "window_empty",
+    },
+  };
+}
+
+async function refreshTagsFromLatestUpdates(result) {
   const newTags = result.tags;
 
   if (newTags.length === 0) {
@@ -244,9 +253,10 @@ export async function updateTags() {
   stateManager.set("tagsUpdateStatus", "UPDATING");
 
   try {
+    const catalogs = await readLatestCatalogs();
     const [tagUpdateResult, prefixUpdateResult] = await Promise.allSettled([
-      refreshTagsFromLatestUpdates(),
-      updatePrefixes(),
+      refreshTagsFromLatestUpdates(catalogs.tags),
+      updatePrefixes(catalogs.prefixes),
     ]);
     if (tagUpdateResult.status === "rejected") throw tagUpdateResult.reason;
 

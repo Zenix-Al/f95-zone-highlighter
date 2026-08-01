@@ -1905,9 +1905,9 @@
       "id": "latest-filters-addon",
       "source": {
         "fileCount": 30,
-        "authoredBytes": 75348,
-        "physicalLines": 2247,
-        "nonblankLines": 1981,
+        "authoredBytes": 75271,
+        "physicalLines": 2246,
+        "nonblankLines": 1980,
         "files": [
           {
             "path": "addons/latest-filters-addon/src/api/bridge.js",
@@ -2073,9 +2073,9 @@
           },
           {
             "path": "addons/latest-filters-addon/src/ui/panel.css",
-            "bytes": 6202,
-            "physicalLines": 286,
-            "nonblankLines": 251
+            "bytes": 6125,
+            "physicalLines": 285,
+            "nonblankLines": 250
           },
           {
             "path": "addons/latest-filters-addon/src/ui/panel.html",
@@ -2094,8 +2094,8 @@
       "builds": {
         "regular": {
           "mode": "regular",
-          "bytes": 87869,
-          "gzipBytes": 19890,
+          "bytes": 87791,
+          "gzipBytes": 19845,
           "contributors": [
             {
               "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
@@ -2107,7 +2107,7 @@
             },
             {
               "path": "addons/latest-filters-addon/src/ui/panel.css",
-              "bytes": 6514
+              "bytes": 6436
             },
             {
               "path": "addons/latest-filters-addon/src/ui/renderer.js",
@@ -2181,8 +2181,8 @@
         },
         "release": {
           "mode": "release",
-          "bytes": 77993,
-          "gzipBytes": 17401,
+          "bytes": 77915,
+          "gzipBytes": 17355,
           "contributors": [
             {
               "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
@@ -2194,7 +2194,7 @@
             },
             {
               "path": "addons/latest-filters-addon/src/ui/panel.css",
-              "bytes": 6223
+              "bytes": 6146
             },
             {
               "path": "addons/latest-filters-addon/src/ui/renderer.js",
@@ -2272,7 +2272,7 @@
       "id": "library-addon",
       "source": {
         "fileCount": 92,
-        "authoredBytes": 308477,
+        "authoredBytes": 308420,
         "physicalLines": 9780,
         "nonblankLines": 8828,
         "files": [
@@ -2578,9 +2578,9 @@
           },
           {
             "path": "addons/library-addon/src/ui/assets/manager.css",
-            "bytes": 19962,
-            "physicalLines": 961,
-            "nonblankLines": 834
+            "bytes": 19947,
+            "physicalLines": 962,
+            "nonblankLines": 835
           },
           {
             "path": "addons/library-addon/src/ui/assets/manager.html",
@@ -2590,15 +2590,15 @@
           },
           {
             "path": "addons/library-addon/src/ui/autoUpdate/autoUpdate.css",
-            "bytes": 1332,
+            "bytes": 1320,
             "physicalLines": 76,
             "nonblankLines": 67
           },
           {
             "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
-            "bytes": 4488,
-            "physicalLines": 124,
-            "nonblankLines": 116
+            "bytes": 4470,
+            "physicalLines": 123,
+            "nonblankLines": 115
           },
           {
             "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
@@ -2638,7 +2638,7 @@
           },
           {
             "path": "addons/library-addon/src/ui/entryEditor/editor.css",
-            "bytes": 3947,
+            "bytes": 3935,
             "physicalLines": 203,
             "nonblankLines": 178
           },
@@ -2833,8 +2833,8 @@
       "builds": {
         "regular": {
           "mode": "regular",
-          "bytes": 319003,
-          "gzipBytes": 65904,
+          "bytes": 318945,
+          "gzipBytes": 65894,
           "contributors": [
             {
               "path": "addons/library-addon/src/library/service.js",
@@ -2842,7 +2842,7 @@
             },
             {
               "path": "addons/library-addon/src/ui/assets/manager.css",
-              "bytes": 20951
+              "bytes": 20937
             },
             {
               "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
@@ -2920,8 +2920,8 @@
         },
         "release": {
           "mode": "release",
-          "bytes": 278930,
-          "gzipBytes": 57080,
+          "bytes": 278864,
+          "gzipBytes": 57070,
           "contributors": [
             {
               "path": "addons/library-addon/src/library/service.js",
@@ -2929,7 +2929,7 @@
             },
             {
               "path": "addons/library-addon/src/ui/assets/manager.css",
-              "bytes": 19985
+              "bytes": 19970
             },
             {
               "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
@@ -2993,7 +2993,7 @@
             },
             {
               "path": "addons/library-addon/src/ui/entryEditor/editor.css",
-              "bytes": 3969
+              "bytes": 3957
             },
             {
               "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",

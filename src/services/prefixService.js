@@ -1,12 +1,7 @@
 import { config } from "../config.js";
 import { saveConfigKeys } from "./settingsService.js";
 import { runFrameBudgeted } from "../core/frameBudget.js";
-import { ensurePageBridge, requestPageBridge } from "../core/pageBridge.js";
 import { debugLog } from "../core/logger";
-
-const LATEST_PREFIXES_BRIDGE_REQUEST_EVENT = "f95ue:latest-prefixes-request";
-const LATEST_PREFIXES_BRIDGE_RESULT_EVENT = "f95ue:latest-prefixes-result";
-const LATEST_PREFIXES_BRIDGE_MARKER = "f95ue_latest_prefixes_bridge_installed";
 
 function normalizeText(value) {
   return String(value || "").trim();
@@ -64,7 +59,7 @@ export function normalizePrefixesFromLatestUpdates(rawPrefixes) {
   return { items, categories };
 }
 
-async function normalizePrefixesFromLatestUpdatesBudgeted(rawPrefixes) {
+export async function normalizePrefixesFromLatestUpdatesBudgeted(rawPrefixes) {
   if (!rawPrefixes || typeof rawPrefixes !== "object") return { items: [], categories: {} };
 
   const prefixById = new Map();
@@ -125,95 +120,7 @@ async function normalizePrefixesFromLatestUpdatesBudgeted(rawPrefixes) {
   return { items, categories };
 }
 
-function ensureLatestPrefixesPageBridge() {
-  return ensurePageBridge({
-    marker: LATEST_PREFIXES_BRIDGE_MARKER,
-    scriptContent: `
-    (() => {
-      if (window.__f95ueLatestPrefixesBridgeInstalled) return;
-      window.__f95ueLatestPrefixesBridgeInstalled = true;
-
-      window.addEventListener("${LATEST_PREFIXES_BRIDGE_REQUEST_EVENT}", () => {
-        let ok = false;
-        let reason = "";
-        let prefixes = null;
-
-        try {
-          const latest = window.latestUpdates;
-          const latestPrefixes = latest && latest.prefixes;
-          if (latestPrefixes) {
-            prefixes = latestPrefixes;
-            ok = true;
-          } else {
-            reason = "latest_updates_missing_prefixes";
-          }
-        } catch (error) {
-          reason = error?.message ? String(error.message) : "latest_updates_read_throw";
-        }
-
-        try {
-          window.dispatchEvent(
-            new CustomEvent("${LATEST_PREFIXES_BRIDGE_RESULT_EVENT}", {
-              detail: { ok, reason, prefixes },
-            }),
-          );
-        } catch {}
-      });
-    })();
-  `,
-  });
-}
-
-async function readLatestPrefixesFromWindow() {
-  const latest = typeof window !== "undefined" ? window.latestUpdates || null : null;
-  const prefixes = await normalizePrefixesFromLatestUpdatesBudgeted(latest?.prefixes);
-  return {
-    ok: prefixes.items.length > 0,
-    source: "window",
-    reason: prefixes.items.length ? "" : "window_empty",
-    prefixes,
-  };
-}
-
-function readLatestPrefixesViaPageBridge(timeoutMs = 1200) {
-  const bridgeReady = ensureLatestPrefixesPageBridge();
-  if (!bridgeReady) {
-    return Promise.resolve({
-      ok: false,
-      source: "pageBridge",
-      reason: "bridge_inject_failed",
-      prefixes: { items: [], categories: {} },
-    });
-  }
-
-  return requestPageBridge({
-    requestEvent: LATEST_PREFIXES_BRIDGE_REQUEST_EVENT,
-    resultEvent: LATEST_PREFIXES_BRIDGE_RESULT_EVENT,
-    timeoutMs,
-  }).then(async (result) => {
-    if (!result.received) {
-      return {
-        ok: false,
-        source: "pageBridge",
-        reason: result.reason || "bridge_timeout",
-        prefixes: { items: [], categories: {} },
-      };
-    }
-
-    const detail = result.detail || {};
-    const prefixes = await normalizePrefixesFromLatestUpdatesBudgeted(detail.prefixes);
-    return {
-      ok: Boolean(detail.ok) && prefixes.items.length > 0,
-      source: "pageBridge",
-      reason: typeof detail.reason === "string" ? detail.reason : "",
-      prefixes,
-    };
-  });
-}
-
-export async function updatePrefixes() {
-  const directResult = await readLatestPrefixesFromWindow();
-  const result = directResult.ok ? directResult : await readLatestPrefixesViaPageBridge();
+export async function updatePrefixes(result) {
   const newPrefixes = result.prefixes;
 
   if (newPrefixes.items.length === 0) {

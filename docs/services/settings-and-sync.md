@@ -29,10 +29,14 @@ atomic persistence.
   previous valid envelope as last-known-good, then writes the new envelope before updating live
   config.
 - `updateConfig(updater, options)` is the serialized mutation boundary for interactive updates.
-  The repository validates, persists, applies the shared config change, and resolves after the
-  commit/effects boundary completes.
+  The repository clones canonical settings while retaining the unchanged runtime tag/prefix
+  cache references, validates with empty catalog placeholders, persists, applies the shared
+  config change, and resolves after the commit/effects boundary completes. If an updater replaces
+  a catalog reference, complete strict validation remains the fallback.
 - Tag and prefix refreshes are cache-only writes to `f95ue:cache:tags` and
   `f95ue:cache:prefixes`; they never rotate the core envelope or backup.
+- Runtime result and rollback snapshots retain catalog references instead of cloning catalog
+  items. Catalog replacement remains atomic and owned by the cache-only write path.
 - On persistence failure, live config and the canonical envelope remain unchanged; the result and
   a structured `CONFIG_SAVE_FAILED` health event describe the failure.
 

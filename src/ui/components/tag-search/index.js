@@ -12,6 +12,20 @@ import {
   ensurePointerCleanupHooks,
 } from "./tagDrag";
 import { getShadowRoot } from "../../getShadowRoot.js";
+import { registerTeardownResetter } from "../../../core/teardown.js";
+
+export const TAG_SEARCH_RESULT_CHUNK_SIZE = 60;
+
+const TAG_ACTIONS = Object.freeze({
+  preferred: { listKey: "preferredTags", render: () => renderPreferred() },
+  excluded: { listKey: "excludedTags", render: () => renderExcluded() },
+  marked: { listKey: "markedTags", render: () => renderMarked() },
+});
+
+let resultGeneration = 0;
+let activeResultState = null;
+
+registerTeardownResetter(() => hideTagSearchResults());
 
 function getTagById(tagId) {
   return config.tags.find((tag) => tag.id === tagId);
@@ -42,25 +56,21 @@ function updateSearchClearButtonState(input, clearBtn) {
   clearBtn.disabled = !hasValue;
 }
 
-function createActionButton(text, title, typeClass, onClick, onActionComplete) {
+function createActionButton(text, title, typeClass, tagId) {
   const btn = document.createElement("button");
   btn.textContent = text;
   btn.title = title;
   btn.className = `tag-btn ${typeClass}`;
-
-  btn.addEventListener("click", async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    await onClick();
-    onActionComplete();
-  });
+  btn.dataset.tagAction = typeClass;
+  btn.dataset.tagId = String(tagId);
 
   return btn;
 }
 
-function createTagResultItem(tag, onActionComplete) {
+function createTagResultItem(tag) {
   const li = document.createElement("li");
   li.className = "search-result-item";
+  li.dataset.tagResultId = String(tag.id);
 
   const nameSpan = document.createElement("span");
   nameSpan.textContent = String(tag.name || "").trim();
@@ -73,8 +83,7 @@ function createTagResultItem(tag, onActionComplete) {
       "✓",
       "Add to preferred",
       "preferred",
-      () => addTagToList({ listKey: "preferredTags", tag, render: renderPreferred }),
-      onActionComplete,
+      tag.id,
     ),
   );
 
@@ -83,8 +92,7 @@ function createTagResultItem(tag, onActionComplete) {
       "✗",
       "Add to excluded",
       "excluded",
-      () => addTagToList({ listKey: "excludedTags", tag, render: renderExcluded }),
-      onActionComplete,
+      tag.id,
     ),
   );
 
@@ -93,14 +101,93 @@ function createTagResultItem(tag, onActionComplete) {
       "◈",
       "Add to marked",
       "marked",
-      () => addTagToList({ listKey: "markedTags", tag, render: renderMarked }),
-      onActionComplete,
+      tag.id,
     ),
   );
 
   li.appendChild(nameSpan);
   li.appendChild(actions);
   return li;
+}
+
+function createLoadMoreItem(remaining) {
+  const li = document.createElement("li");
+  li.className = "tag-search-load-more-row";
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "tag-search-load-more";
+  button.dataset.tagSearchAction = "load-more";
+  button.textContent = `Load more (${remaining})`;
+  li.appendChild(button);
+  return li;
+}
+
+function nextResultGeneration() {
+  resultGeneration += 1;
+  return resultGeneration;
+}
+
+export function hideTagSearchResults(results = getShadowRoot()?.getElementById("search-results")) {
+  nextResultGeneration();
+  activeResultState = null;
+  if (results) {
+    results.innerHTML = "";
+    results.style.display = "none";
+  }
+}
+
+function renderActiveResultState() {
+  const state = activeResultState;
+  if (!state || state.generation !== resultGeneration) return;
+  const { results, visibleTags, visibleCount } = state;
+  results.innerHTML = "";
+  if (visibleTags.length === 0) {
+    results.style.display = "none";
+    return;
+  }
+
+  const fragment = document.createDocumentFragment();
+  visibleTags.slice(0, visibleCount).forEach((tag) => {
+    fragment.appendChild(createTagResultItem(tag));
+  });
+  if (visibleCount < visibleTags.length) {
+    fragment.appendChild(createLoadMoreItem(visibleTags.length - visibleCount));
+  }
+  results.appendChild(fragment);
+  results.style.display = "block";
+}
+
+async function handleDelegatedResultClick(event, input, results) {
+  const target = event.target?.closest?.("button");
+  if (!target || !results.contains(target)) return;
+
+  if (target.dataset.tagSearchAction === "load-more") {
+    event.preventDefault();
+    event.stopPropagation();
+    if (!activeResultState || activeResultState.results !== results) return;
+    activeResultState.visibleCount = Math.min(
+      activeResultState.visibleTags.length,
+      activeResultState.visibleCount + TAG_SEARCH_RESULT_CHUNK_SIZE,
+    );
+    renderActiveResultState();
+    return;
+  }
+
+  const action = TAG_ACTIONS[target.dataset.tagAction];
+  const tagId = Number(target.dataset.tagId);
+  const tag = Number.isFinite(tagId) ? getTagById(tagId) : null;
+  if (!action || !tag || !isValidTag(String(tag.name || ""))) return;
+  if (!activeResultState?.visibleTags.some((candidate) => candidate.id === tagId)) return;
+
+  event.preventDefault();
+  event.stopPropagation();
+  const result = await addTagToList({
+    listKey: action.listKey,
+    tag,
+    render: action.render,
+  });
+  if (!result?.committed || !activeResultState || results.style.display === "none") return;
+  refreshSearchResultsAfterAction(input, results);
 }
 
 function getRenderFn(listKey) {
@@ -207,8 +294,6 @@ export function renderList(filteredTags) {
   const input = shadowRoot?.getElementById("tags-search");
   if (!results || !input) return;
 
-  results.innerHTML = "";
-
   const visibleTags = filteredTags
     .filter(
       (tag) =>
@@ -220,20 +305,13 @@ export function renderList(filteredTags) {
     )
     .filter((tag) => isValidTag(String(tag.name || "")));
 
-  if (visibleTags.length === 0) {
-    results.style.display = "none";
-    return;
-  }
-
-  const fragment = document.createDocumentFragment();
-  visibleTags.forEach((tag) => {
-    fragment.appendChild(
-      createTagResultItem(tag, () => refreshSearchResultsAfterAction(input, results)),
-    );
-  });
-
-  results.appendChild(fragment);
-  results.style.display = "block";
+  activeResultState = {
+    generation: nextResultGeneration(),
+    results,
+    visibleTags,
+    visibleCount: Math.min(TAG_SEARCH_RESULT_CHUNK_SIZE, visibleTags.length),
+  };
+  renderActiveResultState();
 }
 
 export function renderPreferred() {
@@ -271,6 +349,13 @@ export function initTagSearchListeners() {
   const results = shadowRoot?.getElementById("search-results");
   const clearBtn = shadowRoot?.getElementById("tags-search-clear");
 
+  if (input && results && !results.dataset.tagActionsBound) {
+    results.dataset.tagActionsBound = "1";
+    results.addEventListener("click", (event) => {
+      void handleDelegatedResultClick(event, input, results);
+    });
+  }
+
   if (input && clearBtn && !clearBtn.dataset.initBound) {
     clearBtn.dataset.initBound = "1";
 
@@ -282,14 +367,14 @@ export function initTagSearchListeners() {
       e.preventDefault();
       e.stopPropagation();
       input.value = "";
-      if (results) results.style.display = "none";
+      hideTagSearchResults(results);
       syncState();
       input.focus();
     });
 
     input.addEventListener("keydown", (e) => {
       if (e.key === "Escape") {
-        if (results) results.style.display = "none";
+        hideTagSearchResults(results);
         input.blur();
         syncState();
       }

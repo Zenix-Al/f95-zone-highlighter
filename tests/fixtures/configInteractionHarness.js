@@ -254,3 +254,50 @@ export async function measureCatalogPersistence() {
   }
   return measurements;
 }
+
+export async function measureUnrelatedCatalogCopies() {
+  await loadConfig();
+  const previousTags = config.tags;
+  const previousPrefixes = config.prefixes;
+  const originalTags = makeTags(400);
+  const originalPrefixes = makePrefixes(40);
+  const reads = { tagsToJson: 0, prefixesToJson: 0 };
+  const tags = new Proxy(originalTags, {
+    get(target, property, receiver) {
+      if (property === "toJSON") {
+        reads.tagsToJson += 1;
+        return undefined;
+      }
+      return Reflect.get(target, property, receiver);
+    },
+  });
+  const prefixes = new Proxy(originalPrefixes, {
+    get(target, property, receiver) {
+      if (property === "toJSON") {
+        reads.prefixesToJson += 1;
+        return undefined;
+      }
+      return Reflect.get(target, property, receiver);
+    },
+  });
+
+  config.tags = tags;
+  config.prefixes = prefixes;
+  try {
+    const result = await updateConfig((draft) => {
+      draft.globalSettings.configVisibility = !draft.globalSettings.configVisibility;
+    }, { origin: "CONFIG-CATALOG-COPY-01" });
+    return {
+      committed: result.committed,
+      reads,
+      resultRetainsTags: result.config.tags === tags,
+      resultRetainsPrefixes: result.config.prefixes === prefixes,
+      previousRetainsTags: result.previousConfig.tags === tags,
+      previousRetainsPrefixes: result.previousConfig.prefixes === prefixes,
+      changedPaths: result.changedPaths,
+    };
+  } finally {
+    config.tags = previousTags;
+    config.prefixes = previousPrefixes;
+  }
+}

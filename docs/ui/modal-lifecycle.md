@@ -2,6 +2,10 @@
 
 ## Static Skeleton (`assets/ui.html`)
 
+The authored skeleton remains formatted for maintenance. Core builds transform
+this specific asset into one line before bundling; the transform only collapses
+source line breaks and inter-tag indentation and does not run in the browser.
+
 The HTML asset provides the static modal skeleton and its primary navigation. The interface includes panels for:
 
 - General

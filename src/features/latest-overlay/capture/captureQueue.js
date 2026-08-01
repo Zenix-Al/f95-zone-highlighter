@@ -1,4 +1,4 @@
-import { nextFrame } from "../../core/frameBudget.js";
+import { nextFrame } from "../../../core/frameBudget.js";
 
 export function createCaptureQueue(processJob, { limit = 20, budgetMs = 4, shouldProcess = () => true, onDrop = () => {} } = {}) {
   const jobs = new Map();

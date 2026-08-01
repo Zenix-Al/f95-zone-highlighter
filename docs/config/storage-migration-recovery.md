@@ -100,3 +100,63 @@ The test harness records exact storage reads, writes, and deletes. Current expec
 - core/add-on setting update: canonical/backup writes only, with cache keys untouched.
 
 Serialized byte comparisons and migration bundle bytes are recorded with the core audit after implementation.
+
+## Compatibility audit — 2026-08-01
+
+`CORE-SIZE-STORAGE-COMPAT-AUDIT-01` reviewed the released version lineage and
+retains historical surface-key recovery.
+
+### Released upgrade window
+
+- v5.1.1 (`10a0e54`, 2026-07-11) is the last identified build before the
+  canonical-envelope transition and can leave configuration only in surface
+  keys.
+- v5.1.2 (`e51cf89`, 2026-07-13) introduced the canonical envelope and the
+  first recovery path.
+- v5.1.3 (`b1f737f`, 2026-07-14) removed that recovery path. An installation
+  crossing this build could retain historical keys while receiving a
+  default-heavy canonical envelope.
+- v5.1.4 (`cfe0105`, 2026-07-15) restored the bounded recovery contract; later
+  releases refined it. The current audited build is v5.2.2.
+
+The project has no release tag or runtime rule that forces an installation
+through v5.1.4 before reaching a current build. Userscript managers can resume
+an old disabled installation and update directly, and the project has no
+telemetry proving that all v5.1.1/v5.1.3 storage has already migrated. Direct
+upgrade from those layouts therefore remains reasonably possible.
+
+### Measured ownership
+
+The release audit attributes complete files exactly; it does not pretend that
+metafile attribution can split individual functions within `settingsService.js`.
+The measured boundaries are:
+
+| Boundary | Authored bytes | Readable release bytes | Uglified release bytes | Disposition |
+| --- | ---: | ---: | ---: | --- |
+| Historical transforms in `configMigrationService.js` | 7,917 | 7,381 | 3,209 | Historical-only; potentially removable after a cutoff |
+| Lock constants and acquire/release functions in `settingsService.js` | 1,020 | Included in the service's 23,396 | Included in the service's 10,438 | Historical orchestration |
+| Legacy cleanup function | 183 | Same contributor | Same contributor | Historical-only |
+| Legacy reads, plan, verification transaction, marker write, and migration result | 3,097 | Same contributor | Same contributor | Historical plus fresh-install initialization |
+| Marker-gated load dispatch and failure handling | 2,436 | Same contributor | Same contributor | Mixed historical/canonical control flow |
+| Canonical fast path and backup recovery | 1,853 | Same contributor | Same contributor | Retain |
+| Shared cache and canonical verification helpers | 1,800 | Same contributor | Same contributor | Retain |
+| Migration harness plus supplied real-world fixture | 88,843 | 0 | 0 | Test-only; remove only with an approved retirement |
+
+The authored `settingsService.js` regions are exact non-minified source
+measurements, but they are not summed as promised bundle savings: the migration
+transaction also initializes fresh installations, and marker dispatch shares
+the normal load function. A retirement implementation would need to retain a
+small fresh-install canonical initializer and normal backup recovery. The only
+exact independently removable release contributor measured today is therefore
+the 3,209-byte uglified migration-transform module; additional savings require a
+separate retirement prototype and must be reported net of the retained
+initializer.
+
+### Decision
+
+Retain compatibility. The potential size reduction does not justify silently
+discarding user-authored preferences from a still-reachable direct-upgrade
+path. `CORE-SIZE-STORAGE-COMPAT-RETIRE-01` remains blocked. A future cutoff must
+be an explicit compatibility-breaking release decision, document the affected
+v5.1.1/v5.1.3 layouts and manual export/recovery path, and measure a prototype
+that separates fresh-install initialization from historical migration.

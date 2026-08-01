@@ -111,7 +111,6 @@ runTest("CORE-CSS audit parses and inventories dynamic selectors deterministical
     ".settings-panel.active",
     "#search-results",
     ".tag-chip.dragging",
-    ".dark-color-popover.open",
     ".toast.show",
     ".config-dialog-backdrop",
     ".feature-health-box",
@@ -126,6 +125,10 @@ runTest("CORE-CSS audit parses and inventories dynamic selectors deterministical
     "src/ui/components/configButton.js",
     "src/ui/renderers/addonsRenderer.js",
   ]) assert.ok(first.dynamicEvidenceFiles.includes(file), file);
+
+  assert.ok(first.selectors.every((entry) => !entry.selector.includes(".dark-color-")));
+  assert.ok(!fs.existsSync(path.join(ROOT, "src/ui/components/darkColorPicker.js")));
+  assert.ok(!fs.readFileSync(path.join(ROOT, "src/ui/components/modal.js"), "utf8").includes("dark-color"));
 
   const window = new Window();
   window.document.body.innerHTML = fs.readFileSync(path.join(ROOT, "src/ui/assets/ui.html"), "utf8");

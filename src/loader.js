@@ -8,9 +8,10 @@ import {
 import { runFrameBudgeted } from "./core/frameBudget.js";
 import { getFeatureStatus, reportFeatureFailure } from "./core/featureHealth.js";
 import {
-  refreshFastCaptureFeatures,
-  registerFastCaptureFeatures,
-} from "./services/fastCapture/index.js";
+  refreshLatestCapture,
+  startLatestCapture,
+} from "./features/latest-overlay/capture/index.js";
+import { stateManager } from "./config.js";
 import { TIMINGS } from "./config/timings.js";
 import { contributeToSection } from "./ui/settingsRuntime/sectionsRegistry.js";
 import { generatedFeatures } from "./generated/features.generated.js";
@@ -78,11 +79,11 @@ async function runFeatureRegistry(features, routeContext = null) {
 export function loadFastBootstrapFeatures(routeContext = null) {
   const features = getFastBootstrapFeatures();
   debugLog("Loader", `Registering ${features.length} fast bootstrap feature(s)...`);
-  return registerFastCaptureFeatures(features, routeContext);
+  return startLatestCapture(routeContext, { active: Boolean(stateManager.get("isLatest")) });
 }
 
 export function refreshFastBootstrapFeatures(routeContext = null) {
-  return refreshFastCaptureFeatures(getFastBootstrapFeatures(), routeContext);
+  return refreshLatestCapture(routeContext, { active: Boolean(stateManager.get("isLatest")) });
 }
 
 export async function loadBodyBootstrapFeatures(routeContext = null) {

@@ -5,6 +5,7 @@ const path = require("path");
 
 const { stripCssComments } = require("./build/stripCssComments");
 const { stripDebugLogs } = require("./build/stripDebugLogs");
+const { compactCoreModalHtmlAsset } = require("./build/compactCoreModalHtml");
 const { checkFeatureManifest, generateFeatureManifest } = require("./scripts/featureManifest.cjs");
 let terser = null;
 try {
@@ -59,7 +60,9 @@ function resolveBuildVersion(currentVersion, args = []) {
 }
 
 function getPlugins(isRelease) {
-  return isRelease ? [stripCssComments, stripDebugLogs] : [stripCssComments];
+  return isRelease
+    ? [compactCoreModalHtmlAsset, stripCssComments, stripDebugLogs]
+    : [compactCoreModalHtmlAsset, stripCssComments];
 }
 
 function getBuildDefines(isRelease) {
