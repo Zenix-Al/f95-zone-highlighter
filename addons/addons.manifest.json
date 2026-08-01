@@ -256,6 +256,7 @@
       "pageScopes": [
         "thread"
       ],
+      "downloadUrl": "https://greasyfork.org/en/scripts/589439-f95ue-thread-utility-add-on",
       "capabilities": [
         "feature",
         "page",
