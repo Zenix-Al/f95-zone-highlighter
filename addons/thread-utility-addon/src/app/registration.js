@@ -43,12 +43,11 @@ export function createThreadUtilityRegistration({ core, runtime, isEnabled }) {
 
   function publishStatus() {
     const enabled = isEnabled();
-    updateAddonRuntimeStatus(
+    return updateAddonRuntimeStatus(
       core,
       enabled ? "installed" : "disabled",
       statusMessage(enabled),
     );
-    return register();
   }
 
   return { descriptor, register, publishStatus };

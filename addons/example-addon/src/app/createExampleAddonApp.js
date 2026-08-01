@@ -129,7 +129,6 @@ export function createExampleAddonApp({ core, runtime }) {
     core,
     state,
     syncPanel: (...args) => ui.syncPanel(...args),
-    getDialogContentElement: (...args) => ui.getDialogContentElement(...args),
     wait,
   });
 
@@ -285,10 +284,17 @@ export function createExampleAddonApp({ core, runtime }) {
     debugLog(runtime.addonId, "Application handshake phase started.", {
       data: { enabled: state.enabled, terminal },
     });
+    // Bind commands before registration. Core may immediately answer
+    // registration with an enable, disable, refresh, or teardown command.
     uiBindings.bindPanelClicks();
     commandController.bind();
+
+    // Register the runtime descriptor exactly once. Do not pass the app,
+    // lifecycle, adaptor, or registration controller itself here.
     registration.register();
 
+    // Core owns trust and persisted enable state. The add-on must not infer
+    // either from its local default or call feature.disable after registering.
     const access = await getAddonAccess(core);
     debugLog(
       runtime.addonId,

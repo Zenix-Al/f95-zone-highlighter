@@ -26,20 +26,9 @@ export function createExampleUiController({
 }) {
   let dockButtonsRequested = false;
 
-  function getDialogContentElement(dialogId) {
-    return document.getElementById(
-      `f95ue-addon-dialog-content-${runtime.addonId}-${String(dialogId || "").trim()}`,
-    );
-  }
-
   async function updateOpenDialogContent(dialogId, html) {
     const result = await updateDialog(core, dialogId, html);
-    if (result?.ok) return true;
-    if (result?.reason !== "unsupported_action") return false;
-    const contentEl = getDialogContentElement(dialogId);
-    if (!contentEl) return false;
-    contentEl.innerHTML = html;
-    return true;
+    return Boolean(result?.ok);
   }
 
   async function syncPanel() {
@@ -207,7 +196,6 @@ export function createExampleUiController({
     disable,
     enable,
     ensureDockButtons,
-    getDialogContentElement,
     openExamplePanel,
     removeExampleDockButtons,
     syncPanel,

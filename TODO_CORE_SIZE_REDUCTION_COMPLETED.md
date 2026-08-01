@@ -49,6 +49,11 @@ is not an execution queue.
 
 ### Wave 4 — Structural probes already decided
 
+- [x] `CORE-SIZE-DEABSTRACTION-PROBE-01` — **completed with zero candidates**
+  - Release attribution and exact references found no low-consumer helper with
+    enough removable generic machinery to plausibly pass the gain gate.
+  - Tag drag, Latest scoring, and feature-health presentation remain separated
+    domain modules; no production code or artifact size changed.
 - [x] `CORE-SIZE-OVERLAY-METADATA-PROBE-01` — **accepted by explicit exception**
   - The original prototype was reverted because it missed the package's gzip
     gate. The user later approved its roughly 1.4 KB release reduction despite

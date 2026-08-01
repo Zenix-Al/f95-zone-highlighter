@@ -3378,7 +3378,7 @@
           },
           {
             "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
-            "line": 80,
+            "line": 79,
             "text": "summaryTimer = setInterval(() => void refreshSummary(), 500);"
           },
           {
@@ -3587,17 +3587,17 @@
           },
           {
             "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
-            "line": 69,
+            "line": 68,
             "text": "root = document.getElementById(String(result.value?.contentId || \"\"));"
           },
           {
             "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
-            "line": 77,
+            "line": 76,
             "text": "const summaryElement = root.querySelector('[data-role=\"autoUpdateSummary\"]');"
           },
           {
             "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
-            "line": 102,
+            "line": 101,
             "text": "const summaryElement = root?.querySelector('[data-role=\"autoUpdateSummary\"]');"
           },
           {
@@ -4175,37 +4175,37 @@
           },
           {
             "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
-            "line": 68,
+            "line": 67,
             "text": "if (!result?.ok || openGeneration !== generation) return result;"
           },
           {
             "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
-            "line": 72,
+            "line": 71,
             "text": "const controller = new AbortController();"
           },
           {
             "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
-            "line": 74,
+            "line": 73,
             "text": "const refreshGeneration = generation;"
           },
           {
             "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
-            "line": 76,
+            "line": 75,
             "text": "if (refreshGeneration !== generation || !root) return;"
           },
           {
             "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
-            "line": 84,
+            "line": 83,
             "text": "clearInterval(summaryTimer);"
           },
           {
             "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
-            "line": 100,
+            "line": 99,
             "text": "if (action === \"cancel\") await close(\"cancel\");"
           },
           {
             "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
-            "line": 101,
+            "line": 100,
             "text": "if (action === \"retry\") {"
           },
           {
@@ -5301,16 +5301,6 @@
             "text": "document.body.appendChild(node);"
           },
           {
-            "path": "addons/example-addon/src/app/uiController.js",
-            "line": 30,
-            "text": "return document.getElementById("
-          },
-          {
-            "path": "addons/example-addon/src/app/uiController.js",
-            "line": 41,
-            "text": "contentEl.innerHTML = html;"
-          },
-          {
             "path": "addons/example-addon/src/ui/bulkImportProgressDialog.js",
             "line": 52,
             "text": "const bar = root.querySelector('[data-role=\"bulk-progress-bar\"]');"
@@ -5405,52 +5395,67 @@
           },
           {
             "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-            "line": 199,
+            "line": 198,
             "text": "onEnable: async ({ isCurrent }) => {"
           },
           {
             "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-            "line": 203,
+            "line": 202,
             "text": "if (!isCurrent()) return { ok: false, reason: \"enable_superseded\" };"
           },
           {
             "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-            "line": 210,
+            "line": 209,
             "text": "debugLog(runtime.addonId, \"Lifecycle disable started.\", { data: lifecycle?.getSnapshot?.() });"
           },
           {
             "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-            "line": 216,
+            "line": 215,
             "text": "await ui.disable(\"disable\");"
           },
           {
             "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-            "line": 218,
+            "line": 217,
             "text": "debugLog(runtime.addonId, \"Lifecycle disable completed.\", {"
           },
           {
             "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-            "line": 223,
+            "line": 222,
             "text": "onRefresh: async ({ isCurrent }) => {"
           },
           {
             "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-            "line": 226,
+            "line": 225,
             "text": "if (!isCurrent()) return { ok: false, reason: \"refresh_superseded\" };"
           },
           {
             "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-            "line": 241,
+            "line": 240,
             "text": "await ui.disable(reason);"
           },
           {
+            "path": "addons/example-addon/src/app/createExampleAddonApp.js",
+            "line": 288,
+            "text": "// registration with an enable, disable, refresh, or teardown command."
+          },
+          {
+            "path": "addons/example-addon/src/app/createExampleAddonApp.js",
+            "line": 297,
+            "text": "// either from its local default or call feature.disable after registering."
+          },
+          {
+            "path": "addons/example-addon/src/app/registration.js",
+            "line": 19,
+            "text": "// Re-registering after enable/disable can replace core's current projection"
+          },
+          {
             "path": "addons/example-addon/src/app/uiController.js",
-            "line": 165,
+            "line": 154,
             "text": "async function disable(reason = \"disable\") {"
           },
           {
             "path": "addons/example-addon/src/app/uiController.js",
-            "line": 207,
+            "line": 196,
             "text": "disable,"
           },
           {
@@ -9926,7 +9931,7 @@
         },
         {
           "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
-          "line": 80,
+          "line": 79,
           "text": "summaryTimer = setInterval(() => void refreshSummary(), 500);"
         },
         {
@@ -10116,7 +10121,7 @@
         },
         {
           "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
-          "line": 69,
+          "line": 68,
           "text": "root = document.getElementById(String(result.value?.contentId || \"\"));"
         },
         {
@@ -10208,11 +10213,6 @@
           "path": "addons/example-addon/src/api/ui/dialog.js",
           "line": 6,
           "text": "return core.invokeCoreAction(\"ui.dialog.close\", {"
-        },
-        {
-          "path": "addons/example-addon/src/app/uiController.js",
-          "line": 41,
-          "text": "contentEl.innerHTML = html;"
         },
         {
           "path": "addons/example-addon/src/ui/dialog.js",
@@ -10533,7 +10533,7 @@
         },
         {
           "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-          "line": 292,
+          "line": 298,
           "text": "const access = await getAddonAccess(core);"
         },
         {
@@ -10543,7 +10543,7 @@
         },
         {
           "path": "addons/example-addon/src/domain/bulkImport/controller.js",
-          "line": 160,
+          "line": 154,
           "text": "const throttleResult = await getCoreThrottle(core);"
         },
         {
@@ -11114,22 +11114,22 @@
         },
         {
           "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-          "line": 189,
+          "line": 188,
           "text": "bulkImport,"
         },
         {
           "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-          "line": 212,
+          "line": 211,
           "text": "bulkImport.requestCancellation();"
         },
         {
           "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-          "line": 237,
+          "line": 236,
           "text": "bulkImport.requestCancellation();"
         },
         {
           "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-          "line": 256,
+          "line": 255,
           "text": "bulkImport,"
         },
         {
@@ -11150,186 +11150,171 @@
         {
           "path": "addons/example-addon/src/domain/bulkImport/controller.js",
           "line": 13,
-          "text": "updateBulkImportProgressView,"
-        },
-        {
-          "path": "addons/example-addon/src/domain/bulkImport/controller.js",
-          "line": 14,
           "text": "} from \"../../ui/bulkImportProgressDialog.js\";"
         },
         {
           "path": "addons/example-addon/src/domain/bulkImport/controller.js",
-          "line": 23,
-          "text": "export function createBulkImportController({ core, state, syncPanel, getDialogContentElement, wait }) {"
+          "line": 22,
+          "text": "export function createBulkImportController({ core, state, syncPanel, wait }) {"
         },
         {
           "path": "addons/example-addon/src/domain/bulkImport/controller.js",
-          "line": 92,
+          "line": 91,
           "text": "function updateProgress(progress) {"
         },
         {
           "path": "addons/example-addon/src/domain/bulkImport/controller.js",
-          "line": 93,
+          "line": 92,
           "text": "state.idb.bulkImport = { ...state.idb.bulkImport, ...progress };"
         },
         {
           "path": "addons/example-addon/src/domain/bulkImport/controller.js",
-          "line": 95,
-          "text": "const root = getDialogContentElement(EXAMPLE_BULK_PROGRESS_DIALOG_ID);"
-        },
-        {
-          "path": "addons/example-addon/src/domain/bulkImport/controller.js",
-          "line": 96,
-          "text": "updateBulkImportProgressView(root, progress, active?.total || 0);"
-        },
-        {
-          "path": "addons/example-addon/src/domain/bulkImport/controller.js",
-          "line": 101,
+          "line": 98,
           "text": "EXAMPLE_BULK_PROGRESS_DIALOG_ID,"
         },
         {
           "path": "addons/example-addon/src/domain/bulkImport/controller.js",
-          "line": 102,
+          "line": 99,
           "text": "createBulkImportProgressMarkup({"
         },
         {
           "path": "addons/example-addon/src/domain/bulkImport/controller.js",
-          "line": 103,
+          "line": 100,
           "text": "total: active?.total || progress?.total || 0,"
         },
         {
           "path": "addons/example-addon/src/domain/bulkImport/controller.js",
-          "line": 104,
+          "line": 101,
           "text": "totalBatches: progress?.totalBatches || 0,"
         },
         {
           "path": "addons/example-addon/src/domain/bulkImport/controller.js",
-          "line": 106,
+          "line": 103,
           "text": "progress,"
         },
         {
           "path": "addons/example-addon/src/domain/bulkImport/controller.js",
-          "line": 114,
+          "line": 108,
           "text": "async function openProgress(progress, throttle) {"
         },
         {
           "path": "addons/example-addon/src/domain/bulkImport/controller.js",
-          "line": 116,
+          "line": 110,
           "text": "dialogId: EXAMPLE_BULK_PROGRESS_DIALOG_ID,"
         },
         {
           "path": "addons/example-addon/src/domain/bulkImport/controller.js",
-          "line": 118,
+          "line": 112,
           "text": "html: createBulkImportProgressMarkup({ total: progress.total, totalBatches: progress.totalBatches, throttle, progress }),"
         },
         {
           "path": "addons/example-addon/src/domain/bulkImport/controller.js",
-          "line": 123,
+          "line": 117,
           "text": "if (!result?.ok) throw new Error(`Progress dialog failed: ${result?.reason || \"unknown\"}`);"
         },
         {
           "path": "addons/example-addon/src/domain/bulkImport/controller.js",
-          "line": 124,
+          "line": 118,
           "text": "updateProgress(progress);"
         },
         {
           "path": "addons/example-addon/src/domain/bulkImport/controller.js",
-          "line": 127,
+          "line": 121,
           "text": "async function closeProgress(reason = \"bulk-import-finished\") {"
         },
         {
           "path": "addons/example-addon/src/domain/bulkImport/controller.js",
-          "line": 131,
+          "line": 125,
           "text": "await closeDialog(core, EXAMPLE_BULK_PROGRESS_DIALOG_ID, reason);"
         },
         {
           "path": "addons/example-addon/src/domain/bulkImport/controller.js",
-          "line": 137,
+          "line": 131,
           "text": "updateProgress({ status: \"cancelling\", cancelled: true });"
         },
         {
           "path": "addons/example-addon/src/domain/bulkImport/controller.js",
-          "line": 165,
+          "line": 159,
           "text": "const progress = { status: \"running\", processed: 0, total: records.length, completedBatches: 0, totalBatches: batches.length, failed: 0, cancelled: false };"
         },
         {
           "path": "addons/example-addon/src/domain/bulkImport/controller.js",
-          "line": 168,
+          "line": 162,
           "text": "updateProgress(progress);"
         },
         {
           "path": "addons/example-addon/src/domain/bulkImport/controller.js",
-          "line": 169,
+          "line": 163,
           "text": "await openProgress(progress, throttle);"
         },
         {
           "path": "addons/example-addon/src/domain/bulkImport/controller.js",
-          "line": 177,
+          "line": 171,
           "text": "progress.failed += batches[index].length;"
         },
         {
           "path": "addons/example-addon/src/domain/bulkImport/controller.js",
-          "line": 178,
+          "line": 172,
           "text": "progress.status = \"failed\";"
         },
         {
           "path": "addons/example-addon/src/domain/bulkImport/controller.js",
-          "line": 179,
+          "line": 173,
           "text": "updateProgress(progress);"
         },
         {
           "path": "addons/example-addon/src/domain/bulkImport/controller.js",
-          "line": 181,
+          "line": 175,
           "text": "await closeProgress(\"bulk-import-failed\");"
         },
         {
           "path": "addons/example-addon/src/domain/bulkImport/controller.js",
-          "line": 184,
+          "line": 178,
           "text": "progress.processed += batches[index].length;"
         },
         {
           "path": "addons/example-addon/src/domain/bulkImport/controller.js",
-          "line": 185,
+          "line": 179,
           "text": "progress.completedBatches += 1;"
         },
         {
           "path": "addons/example-addon/src/domain/bulkImport/controller.js",
-          "line": 186,
+          "line": 180,
           "text": "updateProgress(progress);"
         },
         {
           "path": "addons/example-addon/src/domain/bulkImport/controller.js",
-          "line": 191,
+          "line": 185,
           "text": "progress.status = active?.cancelled ? \"cancelled\" : \"completed\";"
         },
         {
           "path": "addons/example-addon/src/domain/bulkImport/controller.js",
-          "line": 192,
+          "line": 186,
           "text": "progress.cancelled = Boolean(active?.cancelled);"
         },
         {
           "path": "addons/example-addon/src/domain/bulkImport/controller.js",
-          "line": 193,
+          "line": 187,
           "text": "updateProgress(progress);"
         },
         {
           "path": "addons/example-addon/src/domain/bulkImport/controller.js",
-          "line": 194,
+          "line": 188,
           "text": "await wait(progress.cancelled ? 150 : 300);"
         },
         {
           "path": "addons/example-addon/src/domain/bulkImport/controller.js",
-          "line": 195,
+          "line": 189,
           "text": "await closeProgress(progress.cancelled ? \"bulk-import-cancelled\" : \"bulk-import-complete\");"
         },
         {
           "path": "addons/example-addon/src/domain/bulkImport/controller.js",
-          "line": 198,
+          "line": 192,
           "text": "state.idb.lastRecord = { dummyImported: progress.processed, totalRequested: progress.total, totalBatches: progress.totalBatches, cancelled: progress.cancelled };"
         },
         {
           "path": "addons/example-addon/src/domain/bulkImport/controller.js",
-          "line": 200,
+          "line": 194,
           "text": "return { ok: true, value: { processed: progress.processed, total: progress.total, totalBatches: progress.totalBatches, cancelled: progress.cancelled } };"
         },
         {
@@ -12178,37 +12163,37 @@
         },
         {
           "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
-          "line": 68,
+          "line": 67,
           "text": "if (!result?.ok || openGeneration !== generation) return result;"
         },
         {
           "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
-          "line": 72,
+          "line": 71,
           "text": "const controller = new AbortController();"
         },
         {
           "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
-          "line": 74,
+          "line": 73,
           "text": "const refreshGeneration = generation;"
         },
         {
           "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
-          "line": 76,
+          "line": 75,
           "text": "if (refreshGeneration !== generation || !root) return;"
         },
         {
           "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
-          "line": 80,
+          "line": 79,
           "text": "summaryTimer = setInterval(() => void refreshSummary(), 500);"
         },
         {
           "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
-          "line": 100,
+          "line": 99,
           "text": "if (action === \"cancel\") await close(\"cancel\");"
         },
         {
           "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
-          "line": 101,
+          "line": 100,
           "text": "if (action === \"retry\") {"
         },
         {

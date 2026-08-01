@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.1.1 - Dialog layout fix
+
+- Removed the unnecessary Saved Filters dialog scrollbar exposed by the updated core dialog host sizing.
+
 ## v1.1.0 - Filter tools
 
 - Added individual reset controls for included tags, excluded tags, and each visible prefix group.

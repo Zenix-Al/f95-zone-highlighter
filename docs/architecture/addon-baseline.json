@@ -126,7 +126,7 @@
         "id": "library-addon",
         "name": "F95UE Library Add-on",
         "description": "Quick-add threads to a personal library and manage entries with a dedicated add-on UI.",
-        "version": "1.2.0",
+        "version": "1.2.1",
         "author": "X Death",
         "entry": "addons/library-addon/src/main.js",
         "outfile": "addons/library-addon/dist/library-addon.user.js",
@@ -159,7 +159,7 @@
         "id": "example-addon",
         "name": "F95UE Example Add-on",
         "description": "Core API playground demonstrating every current addon-facing action through api modules.",
-        "version": "1.0.2",
+        "version": "1.0.3",
         "author": "X Death",
         "entry": "addons/example-addon/src/main.js",
         "outfile": "addons/example-addon/dist/example-addon.user.js",
@@ -193,7 +193,7 @@
         "id": "latest-filters-addon",
         "name": "F95UE Latest Filters Add-on",
         "description": "Adds one Saved Filters button on Latest Updates with a searchable preset list and active filter tracking.",
-        "version": "1.1.0",
+        "version": "1.1.1",
         "author": "X Death",
         "entry": "addons/latest-filters-addon/src/main.js",
         "outfile": "addons/latest-filters-addon/dist/latest-filters-addon.user.js",
@@ -252,7 +252,7 @@
         "id": "thread-utility-addon",
         "name": "F95UE Thread Utility Add-on",
         "description": "Provides a compact thread dashboard and extensible thread utilities.",
-        "version": "0.1.0",
+        "version": "1.0.0",
         "author": "X Death",
         "entry": "addons/thread-utility-addon/src/main.js",
         "outfile": "addons/thread-utility-addon/dist/thread-utility-addon.user.js",
@@ -283,13 +283,13 @@
     ]
   },
   "trustedCatalog": {
-    "source": "src/generated/trusted-addon-catalog.d2668b098916911e.json",
+    "source": "src/generated/trusted-addon-catalog.8525c0f628c39127.json",
     "projection": [
       {
         "id": "example-addon",
         "name": "F95UE Example Add-on",
         "description": "Core API playground demonstrating every current addon-facing action through api modules.",
-        "version": "1.0.2",
+        "version": "1.0.3",
         "pageScopes": [
           "f95zone"
         ],
@@ -319,7 +319,7 @@
         "id": "latest-filters-addon",
         "name": "F95UE Latest Filters Add-on",
         "description": "Adds one Saved Filters button on Latest Updates with a searchable preset list and active filter tracking.",
-        "version": "1.1.0",
+        "version": "1.1.1",
         "pageScopes": [
           "latest"
         ],
@@ -334,7 +334,7 @@
         "id": "library-addon",
         "name": "F95UE Library Add-on",
         "description": "Quick-add threads to a personal library and manage entries with a dedicated add-on UI.",
-        "version": "1.2.0",
+        "version": "1.2.1",
         "pageScopes": [
           "f95zone"
         ],
@@ -416,7 +416,7 @@
         "id": "thread-utility-addon",
         "name": "F95UE Thread Utility Add-on",
         "description": "Provides a compact thread dashboard and extensible thread utilities.",
-        "version": "0.1.0",
+        "version": "1.0.0",
         "pageScopes": [
           "thread"
         ],
@@ -1305,9 +1305,9 @@
       "id": "example-addon",
       "source": {
         "fileCount": 38,
-        "authoredBytes": 73405,
-        "physicalLines": 2274,
-        "nonblankLines": 2095,
+        "authoredBytes": 73522,
+        "physicalLines": 2265,
+        "nonblankLines": 2073,
         "files": [
           {
             "path": "addons/example-addon/src/api/bridge.js",
@@ -1425,9 +1425,9 @@
           },
           {
             "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-            "bytes": 10944,
-            "physicalLines": 320,
-            "nonblankLines": 297
+            "bytes": 11309,
+            "physicalLines": 326,
+            "nonblankLines": 296
           },
           {
             "path": "addons/example-addon/src/app/lifecycle.js",
@@ -1437,9 +1437,9 @@
           },
           {
             "path": "addons/example-addon/src/app/registration.js",
-            "bytes": 2517,
-            "physicalLines": 75,
-            "nonblankLines": 70
+            "bytes": 2820,
+            "physicalLines": 78,
+            "nonblankLines": 69
           },
           {
             "path": "addons/example-addon/src/app/settings.js",
@@ -1449,9 +1449,9 @@
           },
           {
             "path": "addons/example-addon/src/app/uiController.js",
-            "bytes": 6960,
-            "physicalLines": 216,
-            "nonblankLines": 199
+            "bytes": 6544,
+            "physicalLines": 204,
+            "nonblankLines": 188
           },
           {
             "path": "addons/example-addon/src/constants.js",
@@ -1467,9 +1467,9 @@
           },
           {
             "path": "addons/example-addon/src/domain/bulkImport/controller.js",
-            "bytes": 8580,
-            "physicalLines": 212,
-            "nonblankLines": 197
+            "bytes": 8445,
+            "physicalLines": 206,
+            "nonblankLines": 188
           },
           {
             "path": "addons/example-addon/src/domain/playgroundData.js",
@@ -1542,12 +1542,12 @@
       "builds": {
         "regular": {
           "mode": "regular",
-          "bytes": 87876,
-          "gzipBytes": 19578,
+          "bytes": 85536,
+          "gzipBytes": 19104,
           "contributors": [
             {
               "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-              "bytes": 10779
+              "bytes": 10698
             },
             {
               "path": "addons/shared/runtimeLifecycle.js",
@@ -1555,15 +1555,15 @@
             },
             {
               "path": "addons/example-addon/src/domain/bulkImport/controller.js",
-              "bytes": 8449
-            },
-            {
-              "path": "addons/example-addon/src/app/uiController.js",
-              "bytes": 6581
+              "bytes": 8091
             },
             {
               "path": "addons/example-addon/src/ui/panel.js",
               "bytes": 6512
+            },
+            {
+              "path": "addons/example-addon/src/app/uiController.js",
+              "bytes": 6144
             },
             {
               "path": "addons/example-addon/src/ui/example.css",
@@ -1572,10 +1572,6 @@
             {
               "path": "addons/shared/coreBridge.js",
               "bytes": 3803
-            },
-            {
-              "path": "addons/example-addon/src/ui/bulkImportProgressDialog.js",
-              "bytes": 3284
             },
             {
               "path": "addons/example-addon/src/app/actions/ui.js",
@@ -1595,11 +1591,15 @@
             },
             {
               "path": "addons/example-addon/src/app/registration.js",
-              "bytes": 2343
+              "bytes": 2325
             },
             {
               "path": "addons/example-addon/src/api/bridge.js",
               "bytes": 1983
+            },
+            {
+              "path": "addons/example-addon/src/ui/bulkImportProgressDialog.js",
+              "bytes": 1838
             },
             {
               "path": "addons/example-addon/src/main.js",
@@ -1629,12 +1629,12 @@
         },
         "release": {
           "mode": "release",
-          "bytes": 73817,
-          "gzipBytes": 16123,
+          "bytes": 71988,
+          "gzipBytes": 15720,
           "contributors": [
             {
               "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-              "bytes": 6850
+              "bytes": 6779
             },
             {
               "path": "addons/shared/runtimeLifecycle.js",
@@ -1642,23 +1642,19 @@
             },
             {
               "path": "addons/example-addon/src/domain/bulkImport/controller.js",
-              "bytes": 6236
+              "bytes": 5984
             },
             {
               "path": "addons/example-addon/src/ui/panel.js",
               "bytes": 5434
             },
             {
-              "path": "addons/example-addon/src/app/uiController.js",
-              "bytes": 4079
-            },
-            {
               "path": "addons/example-addon/src/ui/example.css",
               "bytes": 4067
             },
             {
-              "path": "addons/example-addon/src/ui/bulkImportProgressDialog.js",
-              "bytes": 2720
+              "path": "addons/example-addon/src/app/uiController.js",
+              "bytes": 3732
             },
             {
               "path": "addons/shared/coreBridge.js",
@@ -1673,6 +1669,10 @@
               "bytes": 1685
             },
             {
+              "path": "addons/example-addon/src/ui/bulkImportProgressDialog.js",
+              "bytes": 1642
+            },
+            {
               "path": "addons/example-addon/src/ui/bindings.js",
               "bytes": 1640
             },
@@ -1682,7 +1682,7 @@
             },
             {
               "path": "addons/example-addon/src/app/registration.js",
-              "bytes": 1322
+              "bytes": 1311
             },
             {
               "path": "addons/example-addon/src/domain/playgroundData.js",
@@ -2095,7 +2095,7 @@
         "regular": {
           "mode": "regular",
           "bytes": 87791,
-          "gzipBytes": 19845,
+          "gzipBytes": 19846,
           "contributors": [
             {
               "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
@@ -2182,7 +2182,7 @@
         "release": {
           "mode": "release",
           "bytes": 77915,
-          "gzipBytes": 17355,
+          "gzipBytes": 17356,
           "contributors": [
             {
               "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
@@ -2272,9 +2272,9 @@
       "id": "library-addon",
       "source": {
         "fileCount": 92,
-        "authoredBytes": 308420,
-        "physicalLines": 9780,
-        "nonblankLines": 8828,
+        "authoredBytes": 308411,
+        "physicalLines": 9779,
+        "nonblankLines": 8827,
         "files": [
           {
             "path": "addons/library-addon/src/api/bridge.js",
@@ -2416,9 +2416,9 @@
           },
           {
             "path": "addons/library-addon/src/app/registration.js",
-            "bytes": 2577,
-            "physicalLines": 81,
-            "nonblankLines": 75
+            "bytes": 2568,
+            "physicalLines": 80,
+            "nonblankLines": 74
           },
           {
             "path": "addons/library-addon/src/app/settings.js",
@@ -2833,7 +2833,7 @@
       "builds": {
         "regular": {
           "mode": "regular",
-          "bytes": 318945,
+          "bytes": 318934,
           "gzipBytes": 65894,
           "contributors": [
             {
@@ -2920,7 +2920,7 @@
         },
         "release": {
           "mode": "release",
-          "bytes": 278864,
+          "bytes": 278859,
           "gzipBytes": 57070,
           "contributors": [
             {
@@ -3799,9 +3799,9 @@
       "id": "thread-utility-addon",
       "source": {
         "fileCount": 38,
-        "authoredBytes": 95331,
-        "physicalLines": 3110,
-        "nonblankLines": 2866,
+        "authoredBytes": 95315,
+        "physicalLines": 3109,
+        "nonblankLines": 2865,
         "files": [
           {
             "path": "addons/thread-utility-addon/src/api/bridge.js",
@@ -3877,9 +3877,9 @@
           },
           {
             "path": "addons/thread-utility-addon/src/app/registration.js",
-            "bytes": 1719,
-            "physicalLines": 55,
-            "nonblankLines": 50
+            "bytes": 1703,
+            "physicalLines": 54,
+            "nonblankLines": 49
           },
           {
             "path": "addons/thread-utility-addon/src/app/settings.js",
@@ -4036,8 +4036,8 @@
       "builds": {
         "regular": {
           "mode": "regular",
-          "bytes": 110011,
-          "gzipBytes": 24419,
+          "bytes": 109993,
+          "gzipBytes": 24418,
           "contributors": [
             {
               "path": "addons/thread-utility-addon/src/app/createThreadUtilityApp.js",
@@ -4117,14 +4117,14 @@
             },
             {
               "path": "addons/thread-utility-addon/src/app/registration.js",
-              "bytes": 1563
+              "bytes": 1545
             }
           ]
         },
         "release": {
           "mode": "release",
-          "bytes": 99385,
-          "gzipBytes": 21800,
+          "bytes": 99360,
+          "gzipBytes": 21801,
           "contributors": [
             {
               "path": "addons/thread-utility-addon/src/ui/threadUtility.css",
@@ -4204,7 +4204,7 @@
             },
             {
               "path": "addons/thread-utility-addon/src/app/registration.js",
-              "bytes": 1205
+              "bytes": 1194
             }
           ]
         }

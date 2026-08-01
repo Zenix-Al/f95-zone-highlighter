@@ -1,5 +1,13 @@
 # Changelog
 
+## [5.3.0 - Runtime performance, core size reduction and part ways]
+
+- Improved startup and settings performance with deferred modal CSS, bounded tag search, and cheaper configuration catalog handling.
+- Reduced core size by simplifying health UI, using the native color input, compacting generated HTML/overlay metadata, and specializing Latest capture and catalog bridges.
+- Improved add-on dialog sizing and scrolling while preserving existing lifecycle, recovery, diagnostics, and user-facing behavior.
+
+Note : this is last update for this project, thanks for yourr patience and willing to give this userscript a try, this project now is in maintenance mode, i will only fix critical bugs and security issues, but no new features will be added. if you find any bug or issue, please report it to me so i can fix it as soon as possible.
+
 ## [5.2.1 - Add-on IndexedDB extended]
 
 - Added an opt-in keyset response mode to the add-on IndexedDB query action while preserving the existing array response for all legacy callers.

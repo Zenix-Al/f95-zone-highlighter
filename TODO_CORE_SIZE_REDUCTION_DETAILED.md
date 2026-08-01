@@ -552,7 +552,7 @@ separately.
 
 **Priority:** Low  
 **Risk:** Medium  
-**Production status:** Optional measurement-gated prototypes
+**Production status:** Completed with zero candidates; no production change
 
 This package investigates the inverse of ordinary DRY refactoring. Some existing
 helpers may increase the shipped bundle because a small number of call sites pay
@@ -563,57 +563,89 @@ the specialized call sites add back.
 
 ### Candidate selection
 
-- [ ] Start from build attribution and exact symbol references; do not inventory
+- [x] Start from build attribution and exact symbol references; do not inventory
       every function or search for cosmetic one-line wrappers.
-- [ ] Shortlist only helpers with few production consumers, preferably one to
+- [x] Shortlist only helpers with few production consumers, preferably one to
       three, and a measurable uglified contribution.
-- [ ] Require evidence of abstraction overhead such as unused modes, option
+- [x] Require evidence of abstraction overhead such as unused modes, option
       parsing, branch dispatch, generic callback plumbing, adapters, registries,
       or normalized result objects.
-- [ ] Record every production caller and the subset of behavior each caller uses.
-- [ ] Exclude public APIs, add-on contracts, persistence/schema boundaries, and
+- [x] Record every production caller and the subset of behavior each caller uses.
+- [x] Exclude public APIs, add-on contracts, persistence/schema boundaries, and
       core lifecycle or safety primitives unless a separate package explicitly
       authorizes their redesign.
-- [ ] Rank candidates by removable machinery and behavioral isolation, not by
+- [x] Rank candidates by removable machinery and behavioral isolation, not by
       authored line count or subjective dislike of a helper.
 
 ### Prototype procedure
 
-- [ ] Characterize the selected helper and all of its callers before editing.
-- [ ] Prototype only one helper at a time by specializing or directly inlining
+- [x] Characterize the selected helper and all of its callers before editing.
+- [x] Prototype only one helper at a time by specializing or directly inlining
       the exact behavior each caller needs.
-- [ ] Delete the helper only when no production caller remains; do not leave a
+- [x] Delete the helper only when no production caller remains; do not leave a
       compatibility wrapper that erases the expected saving.
-- [ ] Preserve ordering, cleanup, error propagation, return values, focus, and
+- [x] Preserve ordering, cleanup, error propagation, return values, focus, and
       lifecycle behavior relevant to the selected candidate.
-- [ ] Measure regular, uglified, regular-gzip, and uglified-gzip output immediately.
-- [ ] Revert that prototype cleanly before testing another candidate if it misses
+- [x] Measure regular, uglified, regular-gzip, and uglified-gzip output immediately.
+- [x] Revert that prototype cleanly before testing another candidate if it misses
       the gain gate or makes the call sites materially harder to verify.
-- [ ] Do not combine several weak prototypes to hide an individually poor result.
+- [x] Do not combine several weak prototypes to hide an individually poor result.
 
 ### Gain gate
 
-- [ ] Each retained de-abstraction must save at least **1,024 uglified bytes** or
+- [x] Each retained de-abstraction must save at least **1,024 uglified bytes** or
       **512 gzip bytes**, with no unexpected growth in another primary metric.
-- [ ] The report distinguishes helper bytes removed from direct-call-site bytes
+- [x] The report distinguishes helper bytes removed from direct-call-site bytes
       added and states the net shipped result.
-- [ ] A zero-candidate result is valid: record that no sufficiently promising
+- [x] A zero-candidate result is valid: record that no sufficiently promising
       abstraction was found and make no production change.
 
 ### Verification
 
-- [ ] Add or retain focused tests for every affected caller and shared edge case.
-- [ ] Run lint, focused tests, full tests, core audit/check, smoke build, CSS
+- [x] Add or retain focused tests for every affected caller and shared edge case.
+- [x] Run lint, focused tests, full tests, core audit/check, smoke build, CSS
       audit/check when UI code is affected, and `git diff --check`.
-- [ ] Confirm rejected prototypes leave no production or temporary-file residue.
+- [x] Confirm rejected prototypes leave no production or temporary-file residue.
 
 ### Acceptance criteria
 
-- [ ] The package ends with each tested candidate accepted or rejected by named
+- [x] The package ends with each tested candidate accepted or rejected by named
       artifact measurements.
-- [ ] No helper is removed merely to reduce source lines or make code less DRY.
-- [ ] Every retained specialization has the same externally observable behavior
+- [x] No helper is removed merely to reduce source lines or make code less DRY.
+- [x] Every retained specialization has the same externally observable behavior
       unless a behavior simplification was separately approved.
+
+### Decision record — zero-candidate completion
+
+The post-checkpoint release attribution and exact production references were
+reviewed without performing a repository-wide helper inventory. The strongest
+low-consumer possibilities were rejected before production editing:
+
+- `src/ui/components/tag-search/tagDrag.js` contributes 6,251 release bytes and
+  has one production consumer, `tag-search/index.js`. Its exported entry points
+  divide one specialized pointer/native-drag implementation; the caller uses
+  the cleanup, container-drop, and chip-construction paths. Inlining would move
+  the same machinery and erase only the module/import boundary.
+- `src/features/latest-overlay/scoreCalculator.js` contributes 3,988 release
+  bytes. `overlayEvaluator.js` consumes score calculation while
+  `tilePatcher.js` consumes score rendering/removal. Its branches encode the
+  active scoring product behavior rather than unused generic modes.
+- `src/ui/components/featureHealth/index.js` contributes 4,512 release bytes and
+  has one production entry caller from Global Settings. Its internal summary,
+  report, clipboard, and box paths are all consumed by that entry; most bytes
+  are user-visible diagnostic output and UI behavior. Removing its test
+  injection options cannot approach the 1,024-byte release gate and would make
+  the support report harder to verify.
+- The previously tested `dialog.js` shell still has the same consumer set and
+  remains rejected at only 641 release and 45 release-gzip bytes saved. The
+  small duplicate debounce helper is below the gain gate by construction and
+  is a lifecycle/cleanup concern, so it was excluded from this package.
+
+No candidate showed removable generic dispatch, unused modes, adapters, or
+result normalization large enough to plausibly pass the gain gate. Therefore
+no prototype was created, no helper or direct-call bytes changed, and the net
+artifact delta for this package is zero. Existing focused and full-suite tests
+remain the behavior evidence; validation confirmed the checkpoint unchanged.
 
 ---
 
@@ -1090,7 +1122,7 @@ individual files look large. Their failure cost exceeds likely gzip savings.
 - [x] `CORE-SIZE-HEALTH-UI-01`
 - [x] `CORE-SIZE-DIALOG-SHELL-01` rejected by evidence
 - [x] `CORE-SIZE-LATEST-CAPTURE-01` accepted by evidence
-- [ ] `CORE-SIZE-DEABSTRACTION-PROBE-01` accepted, rejected, or explicitly skipped
+- [x] `CORE-SIZE-DEABSTRACTION-PROBE-01` completed with zero candidates
 - [x] `CORE-SIZE-OVERLAY-METADATA-PROBE-01` accepted by explicit user exception
 - [x] `CORE-SIZE-STORAGE-COMPAT-AUDIT-01` retained compatibility
 - [x] storage compatibility retirement retained and blocked

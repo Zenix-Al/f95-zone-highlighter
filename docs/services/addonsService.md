@@ -74,18 +74,28 @@ Since userscripts run in isolated execution environments (or namespaces), direct
 
 ## Add-on Registration
 
-An add-on registers itself by broadcasting its runtime metadata to the core:
+An add-on registers itself through the shared bridge using a plain runtime
+descriptor. The old `window.__F95UE_ADDONS_DEV__.register(...)` shape is not the
+current browser-side API:
 
 ```javascript
-window.__F95UE_ADDONS_DEV__.register({
+const core = createCoreAdaptor(runtime.addonId);
+core.registerAddon({
   id: "my-custom-addon",
   name: "My Custom Add-on",
   version: "1.0.0",
   description: "Description of what it does.",
   capabilities: ["toast", "storage"], // Requested permissions
   pageScopes: ["thread", "latest"],   // Pages where this add-on should execute
+  requiresCore: true,
+  runtimeMode: "core-required",
+  matches: ["*://f95zone.to/*"],
 });
 ```
+
+Bind runtime commands before this one registration call, then request
+`addon.access`. Lifecycle status changes use `core.updateStatus()` rather than
+re-registering. See [Common Add-on Development Mistakes](addon-common-mistakes.md).
 
 ### Security & Trust Gating
 Registration, the known-add-on projection, and execution authorization all consume

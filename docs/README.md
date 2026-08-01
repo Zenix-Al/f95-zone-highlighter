@@ -18,6 +18,7 @@ Welcome to the documentation for the Latest Highlighter userscript. This directo
   - [Core](core/index.md) - The mini-framework (feature factory, observer, task queue).
   - [Features](features/index.md) - The individual functionalities and how to create them.
   - [Services](services/index.md) - Background services for state, tags, settings, and addons.
+  - [Common Add-on Mistakes](services/addon-common-mistakes.md) - Registration, lifecycle, authorization, UI ownership, and cleanup traps.
     - [Add-on Development](services/addon-development.md) - Detailed guide and API reference for building add-ons.
     - [Latest Overlay Capture](services/fastCapture.md) - Private early capture for the site's Latest response.
   - [UI](ui/index.md) - Rendering principles and Shadow DOM usage.

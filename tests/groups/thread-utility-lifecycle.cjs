@@ -113,6 +113,7 @@ module.exports = function registerThreadUtilityLifecycle(context) {
       await app.getLifecycle().enable("cycle-enable");
       clickLauncher(core);
       await flush();
+      assert.strictEqual(core.actions.filter(({ action }) => action === "register").length, 1);
       assert.strictEqual(core.actions.filter(({ action }) => action === "ui.dock.setButtons").length, 2);
       assert.strictEqual(core.actions.filter(({ action }) => action === "ui.dock.removeButtons").length, 1);
       assert.strictEqual(core.actions.filter(({ action }) => action === "ui.dialog.open").length, 1);

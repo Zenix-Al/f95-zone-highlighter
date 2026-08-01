@@ -218,11 +218,11 @@
     }
   ],
   "build": {
-    "authoredBytes": 308420,
+    "authoredBytes": 308411,
     "fileCount": 92,
     "regular": {
       "mode": "regular",
-      "bytes": 318945,
+      "bytes": 318934,
       "gzipBytes": 65894,
       "contributors": [
         {
@@ -309,7 +309,7 @@
     },
     "release": {
       "mode": "release",
-      "bytes": 278864,
+      "bytes": 278859,
       "gzipBytes": 57070,
       "contributors": [
         {

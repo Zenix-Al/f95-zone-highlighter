@@ -28,7 +28,8 @@ The immutable comparison baseline remains
 
 ### Wave 4A — Existing de-abstraction probe
 
-1. `CORE-SIZE-DEABSTRACTION-PROBE-01`
+1. [x] `CORE-SIZE-DEABSTRACTION-PROBE-01` — completed with zero candidates;
+   recorded in the completed checkpoint
 
 ### Wave 4B — Accepted structural probes
 
@@ -63,28 +64,34 @@ transfer decision is never mistaken for authorization to remove both formats.
 ## CORE-SIZE-DEABSTRACTION-PROBE-01 — Measure costly low-consumer helpers
 
 **Risk:** Medium  
-**Production status:** Probe only
+**Production status:** Completed with zero candidates; no production change
 
 ### Required investigation
 
-- [ ] Start from release attribution and exact production references.
-- [ ] Shortlist only private helpers with one or very few consumers and clear
+- [x] Start from release attribution and exact production references.
+- [x] Shortlist only private helpers with one or very few consumers and clear
       unused modes, options, callbacks, or generic result machinery.
-- [ ] Exclude public APIs, add-on contracts, persistence/schema boundaries,
+- [x] Exclude public APIs, add-on contracts, persistence/schema boundaries,
       lifecycle primitives, and helpers whose repetition gzip already handles.
-- [ ] Record all callers and the exact behavior each caller consumes.
-- [ ] A zero-candidate result is valid and should end the package.
+- [x] Record all callers and the exact behavior each caller consumes.
+- [x] A zero-candidate result is valid and should end the package.
 
 ### Prototype and gate
 
-- [ ] Prototype one helper at a time.
-- [ ] Preserve ordering, cleanup, cancellation, errors, and return values.
-- [ ] Measure regular, release, and both gzip outputs immediately.
-- [ ] Keep a prototype only if it saves at least 1,024 release bytes or 512
+- [x] Prototype one helper at a time; none qualified for a production prototype.
+- [x] Preserve ordering, cleanup, cancellation, errors, and return values.
+- [x] Measure regular, release, and both gzip outputs immediately.
+- [x] Keep a prototype only if it saves at least 1,024 release bytes or 512
       release-gzip bytes without increasing another primary metric.
-- [ ] Revert each rejected prototype before testing another candidate.
-- [ ] Run focused tests, full tests for lifecycle-sensitive changes, lint, core
+- [x] Revert each rejected prototype before testing another candidate.
+- [x] Run focused tests, full tests for lifecycle-sensitive changes, lint, core
       audit/check, smoke build, and `git diff --check`.
+
+The release-attribution review found no abstraction with both removable generic
+machinery and a plausible path to the gain gate. Tag drag, Latest scoring, and
+feature-health presentation are low-consumer but fully used domain modules;
+inlining them would preserve nearly all shipped machinery. Net package delta:
+zero bytes and no production source changes.
 
 ---
 
