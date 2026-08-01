@@ -63,11 +63,10 @@ export function createLibraryRegistration({
   }
 
   function publishStatus() {
-    core.updateStatus(
+    return core.updateStatus(
       getEnabled() ? "installed" : "disabled",
       statusMessage(),
     );
-    register();
   }
 
   function publishBroken(error) {

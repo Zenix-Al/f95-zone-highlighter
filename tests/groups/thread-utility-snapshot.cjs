@@ -55,7 +55,11 @@ module.exports = function registerThreadUtilitySnapshot(context) {
       assert.strictEqual(snapshot.version, "v2.18.0");
       assert.strictEqual(snapshot.developer, "AliceSoft");
       assert.deepStrictEqual(snapshot.prefixes, ["Others", "Completed"]);
-      assert.strictEqual(snapshot.rating, 0);
+      assert.strictEqual(
+        snapshot.rating,
+        null,
+        'F95 data-initial-rating="0" means no average rating',
+      );
       assert.deepStrictEqual(snapshot.tags, [
         "2dcg",
         "censored",

@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.2.1 - Dialog layout fixes
+
+- Fixed Library Manager horizontal/vertical overflow and removed the unusable blank area exposed by the updated core dialog host.
+- Fixed Full Edit and automatic-update settings sizing so each dialog owns its intended scroll area and action layout.
+
 ## v1.2.0 - Update inbox and bugfix
 
 - Added a durable Updates inbox with an exact manager count, bounded newest-first pages, per-entry Edit and Acknowledge actions, and bounded Acknowledge all.

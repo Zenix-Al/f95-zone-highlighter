@@ -14,6 +14,10 @@ function statusMessage(enabled) {
 }
 
 export function createExampleRegistration({ core, runtime, isEnabled }) {
+  // Registration describes this runtime to core. Send the complete descriptor
+  // once during bootstrap; lifecycle transitions publish only a status update.
+  // Re-registering after enable/disable can replace core's current projection
+  // with stale descriptor state and makes persisted enable state harder to own.
   function descriptor() {
     const enabled = isEnabled();
     return {
@@ -63,12 +67,11 @@ export function createExampleRegistration({ core, runtime, isEnabled }) {
     debugLog(runtime.addonId, "Publishing runtime status.", {
       data: { status: enabled ? "installed" : "disabled", enabled },
     });
-    updateAddonRuntimeStatus(
+    return updateAddonRuntimeStatus(
       core,
       enabled ? "installed" : "disabled",
       statusMessage(enabled),
     );
-    return register();
   }
 
   return { descriptor, register, publishStatus };

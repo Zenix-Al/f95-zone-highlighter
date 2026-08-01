@@ -177,20 +177,40 @@ module.exports = function registerThreadUtilityContent(context) {
     }
   });
 
-  runTest("THREAD-UTILITY-CONTENT-01 renders preview, expansion, copy, and accordion state", async () => {
+  runTest("THREAD-UTILITY-CONTENT-01 stops installation at sibling post sections", () => {
+    const fixture = contentRoot(`
+      <div class="bbWrapper">
+        <b>Description</b>:<br>Short description.
+        <b>Installation</b>:<br>1. Extract and run.
+        <b>Changelogs:</b><br>v0.1 initial release
+        <b>Developer Notes:</b><br>Features and other notes.
+      </div>
+    `);
+    try {
+      const sections = parser().parseContentSections(fixture.root);
+      assert.strictEqual(sections.description.text, "Short description.");
+      assert.strictEqual(sections.installation.text, "1. Extract and run.");
+      assert.doesNotMatch(sections.installation.text, /Changelog|Developer Notes|Features/i);
+      assert.doesNotMatch(sections.description.text, /^:/);
+      assert.doesNotMatch(sections.installation.text, /^:/);
+    } finally {
+      fixture.window.close();
+    }
+  });
+
+  runTest("THREAD-UTILITY-CONTENT-01 renders collapsed disclosures, copy, and accordion state", async () => {
     const { renderPalette } = loadModule(
       "addons/thread-utility-addon/src/ui/palette.js",
     );
     const state = renderState();
     const collapsed = renderPalette(state);
-    assert.match(collapsed, /thread-utility-content-preview--4/);
-    assert.match(collapsed, />Read more<\/button>/);
-    assert.match(collapsed, /Copy description/);
-    assert.match(collapsed, />Show installation<\/button>/);
+    assert.match(collapsed, />Description ><\/button>/);
+    assert.match(collapsed, />Installation ><\/button>/);
+    assert.doesNotMatch(collapsed, /Copy description/);
+    assert.doesNotMatch(collapsed, /id="thread-utility-description-content"/);
     assert.doesNotMatch(collapsed, /id="thread-utility-installation-content"/);
 
     const actions = [];
-    const copied = [];
     const { createThreadUtilityUiController } = loadModule(
       "addons/thread-utility-addon/src/app/uiController.js",
       { loader: { ".css": "text" } },
@@ -223,22 +243,17 @@ module.exports = function registerThreadUtilityContent(context) {
         unbindLauncherEvents() {},
       },
       isTerminal: () => false,
-      clipboardWriter: async (text) => {
-        copied.push(text);
-        return { ok: true };
-      },
     });
 
     await controller.toggleContentSection("description");
     assert.strictEqual(state.ui.openContentSection, "description");
-    assert.match(actions.at(-1).payload.html, />Show less<\/button>/);
+    assert.match(actions.at(-1).payload.html, />Description v<\/button>/);
+    assert.doesNotMatch(actions.at(-1).payload.html, /Copy description/);
     await controller.toggleContentSection("installation");
     assert.strictEqual(state.ui.openContentSection, "installation");
     assert.match(actions.at(-1).payload.html, /id="thread-utility-installation-content"/);
     assert.strictEqual(state.ui.tagsExpanded, true);
     assert.strictEqual(state.utilities, utilityReference);
-    assert.deepStrictEqual(await controller.copyDescription(), { ok: true });
-    assert.deepStrictEqual(copied, [state.content.description.text]);
 
     const shortState = renderState({
       content: {
@@ -246,6 +261,6 @@ module.exports = function registerThreadUtilityContent(context) {
         installation: { available: false },
       },
     });
-    assert.doesNotMatch(renderPalette(shortState), /Read more/);
+    assert.match(renderPalette(shortState), />Description ><\/button>/);
   });
 };

@@ -45,8 +45,21 @@ function loadModule(relativePath, options = {}) {
     relativePath.replace(/[\\/]/g, "_") + ".cjs",
   );
 
+  const source = options.sourceReplacements
+    ? Object.entries(options.sourceReplacements).reduce(
+        (current, [search, replacement]) => current.replace(search, replacement),
+        fs.readFileSync(entry, "utf8"),
+      )
+    : null;
+
   esbuild.buildSync({
-    entryPoints: [entry],
+    entryPoints: source === null ? [entry] : undefined,
+    stdin: source === null ? undefined : {
+      contents: source,
+      resolveDir: path.dirname(entry),
+      sourcefile: entry,
+      loader: "js",
+    },
     bundle: true,
     format: "cjs",
     platform: "node",
@@ -166,21 +179,39 @@ const {
   buildOrderedOverlayMatches,
 } = loadModule("src/features/latest-overlay/overlayOrder.js");
 const {
-  enqueueFastCaptureProcessing,
-  getFastCaptureData,
-  getFastCaptureDiagnostics,
-  getFastCaptureSnapshot,
-  hasFastCaptureData,
-  matchesFastCaptureUrl,
-  processCompletedFastCapture,
-  refreshFastCaptureFeatures,
-  registerFastCaptureFeatures,
-  resetFastCaptureAdapterForTests,
-  resetFastCaptureStoreForTests,
-  subscribeFastCapture,
-} = loadModule("src/services/fastCapture/index.js");
-const { normalizeFastCaptureConfig } = loadModule("src/services/fastCapture/rules.js");
-const { FAST_CAPTURE_LIMITS } = loadModule("src/services/fastCapture/limits.js");
+  enqueueLatestCaptureProcessing,
+  getLatestCaptureDiagnostics,
+  getLatestCaptureSnapshot,
+  processCompletedLatestCapture,
+  refreshLatestCapture,
+  resetLatestCaptureForTests,
+  resetLatestCaptureStoreForTests,
+  setLatestCaptureConsumer,
+  startLatestCapture,
+} = loadModule("src/features/latest-overlay/capture/index.js");
+const { FAST_CAPTURE_LIMITS } = loadModule("src/features/latest-overlay/capture/limits.js");
+// Transitional aliases keep unrelated group destructuring stable while the
+// production generic Fast Capture API is removed.
+const enqueueFastCaptureProcessing = enqueueLatestCaptureProcessing;
+const getFastCaptureDiagnostics = getLatestCaptureDiagnostics;
+const getFastCaptureSnapshot = getLatestCaptureSnapshot;
+const getFastCaptureData = () => {
+  const snapshot = getLatestCaptureSnapshot();
+  return snapshot.status === "captured" ? snapshot.data : undefined;
+};
+const hasFastCaptureData = () => getLatestCaptureSnapshot().status === "captured";
+const matchesFastCaptureUrl = (url) => String(url || "").includes("latest_data.php");
+const processCompletedFastCapture = processCompletedLatestCapture;
+const refreshFastCaptureFeatures = (_features, routeContext) => refreshLatestCapture(routeContext);
+const registerFastCaptureFeatures = (_features, routeContext) => startLatestCapture(routeContext);
+const resetFastCaptureAdapterForTests = resetLatestCaptureForTests;
+const resetFastCaptureStoreForTests = resetLatestCaptureStoreForTests;
+const subscribeFastCapture = (_key, callback) => {
+  const release = setLatestCaptureConsumer(callback);
+  callback(getLatestCaptureSnapshot());
+  return release;
+};
+const normalizeFastCaptureConfig = () => null;
 const {
   executeActionDescriptor,
   getActionSnapshot,

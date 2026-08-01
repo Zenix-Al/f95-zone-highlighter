@@ -204,7 +204,6 @@ module.exports = function registerThreadUtilityQuickSearch(context) {
     const copied = [];
     const navigation = [];
     let current = true;
-    let scrolled = 0;
     const currentSnapshot = snapshot();
     const controller = createUtilityController({
       core: { invokeCoreAction: async () => ({ ok: true }) },
@@ -217,13 +216,6 @@ module.exports = function registerThreadUtilityQuickSearch(context) {
       getActionContext: () => ({
         snapshot: currentSnapshot,
         isCurrent: () => current,
-        getSource: () => ({
-          closest: () => ({
-            scrollIntoView: () => {
-              scrolled += 1;
-            },
-          }),
-        }),
       }),
       navigatorObject: {
         clipboard: {
@@ -240,14 +232,10 @@ module.exports = function registerThreadUtilityQuickSearch(context) {
 
     assert.strictEqual((await controller.execute("copy-thread-link")).ok, true);
     assert.strictEqual((await controller.execute("copy-title")).ok, true);
-    assert.strictEqual((await controller.execute("copy-formatted")).ok, true);
-    assert.strictEqual((await controller.execute("opening-post")).ok, true);
     assert.deepStrictEqual(copied, [
       currentSnapshot.url,
       currentSnapshot.title,
-      `${currentSnapshot.title}\n${currentSnapshot.url}`,
     ]);
-    assert.strictEqual(scrolled, 1);
     assert.deepStrictEqual(navigation, []);
 
     current = false;
@@ -255,6 +243,6 @@ module.exports = function registerThreadUtilityQuickSearch(context) {
       await controller.execute("copy-title"),
       { ok: false, reason: "stale_generation" },
     );
-    assert.strictEqual(copied.length, 3);
+    assert.strictEqual(copied.length, 2);
   });
 };

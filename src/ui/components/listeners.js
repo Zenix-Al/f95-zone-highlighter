@@ -1,4 +1,5 @@
 import { stateManager } from "../../config.js";
+import { hideTagSearchResults } from "./tag-search";
 import { closeModal } from "./modal";
 import { resetColor } from "./settingsActions.js";
 
@@ -26,6 +27,6 @@ export function handleOutsideSearchClick(e) {
   // Use composedPath to correctly detect clicks inside/outside the shadow DOM
   const path = e.composedPath();
   if (!path.includes(input) && !path.includes(results)) {
-    results.style.display = "none";
+    hideTagSearchResults(results);
   }
 }

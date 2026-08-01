@@ -5,7 +5,6 @@ export function createDownloadController({
   core,
   getContext,
   refreshSources,
-  windowObject = globalThis.window,
   clipboardWriter = writeClipboard,
 }) {
   function current(id) {
@@ -15,10 +14,33 @@ export function createDownloadController({
     return item ? { context, item } : null;
   }
 
-  function open(id) {
+  function liveAnchor(match) {
+    if (!match?.item.anchorToken) return null;
+    const anchor = match.context.getSource(match.item.anchorToken);
+    return (
+      anchor?.isConnected
+      && anchor.matches?.("a[href]")
+      && anchor.href === match.item.originalUrl
+    ) ? anchor : null;
+  }
+
+  async function open(id) {
     const match = current(id);
     if (!match) return { ok: false, reason: "stale_generation" };
-    windowObject?.open?.(match.item.originalUrl, "_blank", "noopener");
+    let anchor = liveAnchor(match);
+    if (!anchor && refreshSources) {
+      await refreshSources();
+      anchor = liveAnchor(current(id));
+    }
+    if (!anchor) {
+      await showCoreToast(
+        core,
+        "Download link is no longer available. Refresh Thread Utility and try again.",
+        "error",
+      );
+      return { ok: false, reason: "stale_source" };
+    }
+    anchor.click();
     return { ok: true };
   }
 

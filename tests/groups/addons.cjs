@@ -829,7 +829,7 @@ runTest("ADDON-GOLDEN-01 boots normally on the declared F95Zone scope", async ()
       },
     });
     await app.bootstrap();
-    assert.strictEqual(registrations.length, 2);
+    assert.strictEqual(registrations.length, 1);
     assert.strictEqual(registrations[0].requiresCore, true);
     assert.deepStrictEqual(registrations[0].pageScopes, ["f95zone"]);
     assert.strictEqual(registrations[0].panelSettingsStorageKey, "settings");
@@ -839,6 +839,7 @@ runTest("ADDON-GOLDEN-01 boots normally on the declared F95Zone scope", async ()
     assert.ok(actions.some((entry) => entry.action === "ui.style.register"));
     assert.ok(actions.some((entry) => entry.action === "ui.mount"));
     assert.strictEqual(actions.filter((entry) => entry.action === "ui.dock.setButtons").length, 0);
+    assert.strictEqual(actions.filter((entry) => entry.action === "feature.disable").length, 0);
 
     const dockSetAction = document.createElement("button");
     dockSetAction.dataset.exampleAction = "dock-set";
@@ -851,6 +852,7 @@ runTest("ADDON-GOLDEN-01 boots normally on the declared F95Zone scope", async ()
     await new Promise((resolve) => setImmediate(resolve));
     commandHandler({ command: "enable", reason: "test-reenable" });
     await new Promise((resolve) => setImmediate(resolve));
+    assert.strictEqual(registrations.length, 1, "lifecycle status changes must not re-register");
     assert.strictEqual(actions.filter((entry) => entry.action === "ui.dock.setButtons").length, 2);
 
     const dock = document.createElement("div");
@@ -947,9 +949,24 @@ runTest("ADDON-GOLDEN-01 keeps owned cancellation and late-commit guards in the 
   assert.match(appSource, /commandController\.unbind\(\)/);
   assert.match(appSource, /notifyTeardownComplete/);
   assert.match(uiSource, /if \(!state\.enabled \|\| isTerminal\(\)\)/);
+  assert.doesNotMatch(uiSource, /getElementById|\.innerHTML\s*=/);
+  assert.doesNotMatch(bulkSource, /getDialogContentElement|\.innerHTML\s*=/);
   assert.match(bulkSource, /handleDialogClosed/);
   assert.match(bulkSource, /active\.closing = true/);
   assert.match(bulkSource, /finally \{\s*active = null;/s);
+});
+
+runTest("ADDON-GOLDEN-01 registers once and uses status-only lifecycle publication", () => {
+  for (const addonId of ["example-addon", "library-addon", "thread-utility-addon"]) {
+    const source = fs.readFileSync(
+      path.join(ROOT, "addons", addonId, "src", "app", "registration.js"),
+      "utf8",
+    );
+    const publishStatus = source.match(/function publishStatus\(\) \{[\s\S]*?\n  \}/)?.[0] || "";
+    assert.ok(publishStatus, `${addonId} publishStatus`);
+    assert.doesNotMatch(publishStatus, /\bregister\s*\(/, `${addonId} must not re-register on status changes`);
+    assert.match(publishStatus, /update(?:AddonRuntime)?Status\s*\(|core\.updateStatus\s*\(/);
+  }
 });
 
 runTest("ADDON-RUNTIME-CONTRACT-01 exposes serialized command context and lifecycle snapshots", async () => {

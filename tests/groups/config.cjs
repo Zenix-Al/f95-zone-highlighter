@@ -357,6 +357,25 @@ runTest("info metadata renders without input listeners and unsupported input typ
   }
 });
 
+runTest("native color settings retain their id, value, and styling hook", () => {
+  const previousDocument = global.document;
+  const window = new Window();
+  global.document = window.document;
+
+  try {
+    const input = createInput({ type: "color" }, "setting-preferredColor");
+    input.value = "#123456";
+
+    assert.strictEqual(input.type, "color");
+    assert.strictEqual(input.id, "setting-preferredColor");
+    assert.strictEqual(input.value, "#123456");
+    assert.ok(input.classList.contains("config-color-input"));
+  } finally {
+    global.document = previousDocument;
+    window.close();
+  }
+});
+
 runTest("resource owners release scoped resources and expose snapshots", () => {
   const owner = createResourceOwner("feature:test-owner");
   const cleanupCalls = [];
@@ -593,6 +612,62 @@ runTest("coerceSettingValue validates color values", () => {
   assert.strictEqual(coerceSettingValue(meta, "invalid", "#123456"), "#123456");
 });
 
+runTest("CORE-SIZE-OVERLAY-METADATA-PROBE-01 preserves generated metadata contracts", () => {
+  const previousWindow = global.window;
+  const previousDocument = global.document;
+  const testWindow = new Window({ url: "https://f95zone.to/sam/latest_updates" });
+  global.window = testWindow;
+  global.document = testWindow.document;
+  let metadata;
+  try {
+    metadata = loadModule("src/features/latest-overlay/settings.js", {
+      sourceReplacements: {
+        'import { reprocessLatestTilesAfterSettingsChange } from "../../ui/settingsRuntime/effectTasks.js";':
+          "const reprocessLatestTilesAfterSettingsChange = () => {};",
+      },
+    });
+  } finally {
+    global.window = previousWindow;
+    global.document = previousDocument;
+    testWindow.close();
+  }
+  assert.deepStrictEqual(Object.keys(metadata.overlaySettingsMeta), [
+    "_header_visibility",
+    "completed",
+    "onhold",
+    "abandoned",
+    "highVersion",
+    "invalidVersion",
+    "preferred",
+    "excluded",
+    "overlayText",
+    "_header_engagement",
+    "ratingHighlight",
+    "engagementHighlight",
+  ]);
+  assert.strictEqual(metadata.overlaySettingsMeta.completed.config, "overlaySettings.completed");
+  assert.strictEqual(metadata.overlaySettingsMeta.completed.effects.toast(true), "Completed enabled");
+  assert.strictEqual(metadata.overlaySettingsMeta.engagementHighlight.effects.toast(false), "Engagement Highlight disabled");
+
+  const numberSettings = [
+    [metadata.ratingWeightSetting, "latestSettings.priorityWeights.rating", "Rating weight set to 3"],
+    [metadata.engagementWeightSetting, "latestSettings.priorityWeights.engagement", "Engagement weight set to 3"],
+    [metadata.tagWeightSetting, "latestSettings.priorityWeights.tags", "Tags weight set to 3"],
+    [metadata.modifierPreferredSetting, "latestSettings.tagModifiers.preferred", "Preferred modifier: 3"],
+    [metadata.modifierCompletedSetting, "latestSettings.tagModifiers.completed", "Completed modifier: 3"],
+    [metadata.modifierHighVersionSetting, "latestSettings.tagModifiers.highVersion", "High version modifier: 3"],
+    [metadata.modifierOnholdSetting, "latestSettings.tagModifiers.onhold", "On-hold modifier: 3"],
+    [metadata.modifierAbandonedSetting, "latestSettings.tagModifiers.abandoned", "Abandoned modifier: 3"],
+    [metadata.modifierExcludedSetting, "latestSettings.tagModifiers.excluded", "Excluded modifier: 3"],
+    [metadata.modifierInvalidVersionSetting, "latestSettings.tagModifiers.invalidVersion", "Invalid version modifier: 3"],
+  ];
+  numberSettings.forEach(([setting, configPath, toast]) => {
+    assert.strictEqual(setting.config, configPath);
+    assert.strictEqual(setting.effects.toast(3), toast);
+    assert.strictEqual(typeof setting.effects.custom, "function");
+  });
+});
+
 runTest(
   "prefix normalization retains complete records inside category groups",
   () => {
@@ -617,6 +692,93 @@ runTest(
     ]);
   },
 );
+
+runTest("CORE-SIZE-LATEST-CATALOG-BRIDGE-PROBE-01 preserves partial catalog success", async () => {
+  const previous = {
+    window: global.window,
+    document: global.document,
+    CustomEvent: global.CustomEvent,
+    HTMLElement: global.HTMLElement,
+    GM: global.GM,
+  };
+  const testWindow = new Window({ url: "https://f95zone.to/sam/latest_updates" });
+  const gm = createFakeGM();
+  Object.assign(global, {
+    window: testWindow,
+    document: testWindow.document,
+    CustomEvent: testWindow.CustomEvent,
+    HTMLElement: testWindow.HTMLElement,
+    GM: gm,
+  });
+  try {
+    const fixture = loadModule("tests/fixtures/latestCatalogBridgeHarness.js");
+    await seedReadyConfig(gm, fixture, fixture.config);
+    await fixture.loadConfig();
+    fixture.stateManager.set("tagsUpdateStatus", "IDLE");
+    testWindow.latestUpdates = { tags: { 7: "Direct Tag" } };
+    let requests = 0;
+    testWindow.addEventListener("f95ue:latest-catalog-request", () => {
+      requests += 1;
+      testWindow.dispatchEvent(new testWindow.CustomEvent("f95ue:latest-catalog-result", {
+        detail: {
+          tags: { 8: "Bridge Tag" },
+          prefixes: {
+            games: [{ id: 1, name: "Engine", prefixes: [{ id: 9, name: "Ren'Py", class: "renpy" }] }],
+          },
+          reasons: {},
+        },
+      }));
+    });
+
+    await fixture.updateTags();
+
+    assert.strictEqual(requests, 1);
+    assert.deepStrictEqual(fixture.config.tags, [{ id: 7, name: "Direct Tag" }]);
+    assert.deepStrictEqual(fixture.config.prefixes.items, [{ id: 9, name: "Ren'Py", class: "renpy" }]);
+  } finally {
+    Object.assign(global, previous);
+    testWindow.close();
+  }
+});
+
+runTest("CORE-SIZE-LATEST-CATALOG-BRIDGE-PROBE-01 times out once without replacing catalogs", async () => {
+  const previous = {
+    window: global.window,
+    document: global.document,
+    CustomEvent: global.CustomEvent,
+    HTMLElement: global.HTMLElement,
+    GM: global.GM,
+  };
+  const testWindow = new Window({ url: "https://f95zone.to/sam/latest_updates" });
+  const gm = createFakeGM();
+  Object.assign(global, {
+    window: testWindow,
+    document: testWindow.document,
+    CustomEvent: testWindow.CustomEvent,
+    HTMLElement: testWindow.HTMLElement,
+    GM: gm,
+  });
+  try {
+    const fixture = loadModule("tests/fixtures/latestCatalogBridgeHarness.js");
+    fixture.config.tags = [{ id: 3, name: "Stored Tag" }];
+    fixture.config.prefixes = { items: [{ id: 4, name: "Stored Prefix", class: "stored" }], categories: {} };
+    await seedReadyConfig(gm, fixture, fixture.config);
+    await fixture.loadConfig();
+    fixture.stateManager.set("tagsUpdateStatus", "IDLE");
+    testWindow.latestUpdates = {};
+    let requests = 0;
+    testWindow.addEventListener("f95ue:latest-catalog-request", () => { requests += 1; });
+
+    await fixture.updateTags();
+
+    assert.strictEqual(requests, 1);
+    assert.deepStrictEqual(fixture.config.tags, [{ id: 3, name: "Stored Tag" }]);
+    assert.deepStrictEqual(fixture.config.prefixes.items, [{ id: 4, name: "Stored Prefix", class: "stored" }]);
+  } finally {
+    Object.assign(global, previous);
+    testWindow.close();
+  }
+});
 
 runTest(
   "latest records retain complete payload fields and index by thread id",
@@ -727,40 +889,15 @@ runTest("feature metadata defaults to waitForBody and stable slug id", () => {
   assert.strictEqual(feature.featureKey, "fancy-feature");
 });
 
-runTest(
-  "feature fast capture metadata normalizes urlIncludes and defaults",
-  () => {
-    const normalized = normalizeFastCaptureConfig({
-      urlIncludes: "latest_data.php",
-      dataPath: "msg.data",
-    });
-
-    assert.deepStrictEqual(normalized, {
-      urlIncludes: ["latest_data.php"],
-      dataPath: "msg.data",
-      transport: "any",
-      mode: "oncePerDocument",
-      ttlMs: FAST_CAPTURE_LIMITS.entryTtlMs,
-    });
-  },
-);
-
-runTest("feature fast capture accepts latest mode and ttl", () => {
-  assert.deepStrictEqual(
-    normalizeFastCaptureConfig({
-      urlIncludes: "latest_data.php",
-      dataPath: "msg.data",
-      mode: "latest",
-      ttlMs: 30000,
-    }),
-    {
-      urlIncludes: ["latest_data.php"],
-      dataPath: "msg.data",
-      transport: "any",
-      mode: "latest",
-      ttlMs: 30000,
-    },
-  );
+runTest("Latest capture is not configurable through feature metadata", () => {
+  const feature = createFeature("Latest Capture Contract", {
+    bootstrapMode: "fast",
+    fastCapture: { urlIncludes: "other.php" },
+    enable: () => null,
+    disable: () => null,
+  });
+  assert.strictEqual(Object.hasOwn(feature, "fastCapture"), false);
+  assert.strictEqual(FAST_CAPTURE_LIMITS.entryTtlMs, 30000);
 });
 
 runTest(
@@ -824,4 +961,3 @@ runTest("OBSERVE health events redact details, deduplicate, and cap retention", 
 });
 
 };
-

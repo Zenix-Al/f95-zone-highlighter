@@ -8,8 +8,6 @@ import {
 export const FIXED_UTILITY_DEFINITIONS = Object.freeze([
   Object.freeze({ id: "copy-thread-link", family: "fixed", label: "Copy thread link" }),
   Object.freeze({ id: "copy-title", family: "fixed", label: "Copy title" }),
-  Object.freeze({ id: "copy-formatted", family: "fixed", label: "Copy title + URL" }),
-  Object.freeze({ id: "opening-post", family: "fixed", label: "Go to opening post" }),
 ]);
 
 export function createUtilityController({
@@ -22,7 +20,8 @@ export function createUtilityController({
   documentObject = globalThis.document,
   windowObject = globalThis.window,
 }) {
-  async function notify(result, successMessage) {
+  async function notify(result, successMessage, isCurrent = () => true) {
+    if (!isCurrent()) return { ok: false, reason: "stale_generation" };
     if (result?.ok) {
       await showCoreToast(core, successMessage, "success");
     } else {
@@ -72,32 +71,17 @@ export function createUtilityController({
           return notify(
             await writeClipboard(snapshot.url, { navigatorObject, documentObject }),
             "Thread link copied.",
+            context.isCurrent,
           );
         }
         if (definition.id === "copy-title") {
           return notify(
             await writeClipboard(snapshot.title, { navigatorObject, documentObject }),
             "Thread title copied.",
+            context.isCurrent,
           );
         }
-        if (definition.id === "copy-formatted") {
-          return notify(
-            await writeClipboard(
-              `${snapshot.title}\n${snapshot.url}`,
-              { navigatorObject, documentObject },
-            ),
-            "Thread title and link copied.",
-          );
-        }
-        const source = context.getSource?.(snapshot.sectionSources?.contentRootToken);
-        const starter = source?.closest?.("article") || null;
-        if (typeof starter?.scrollIntoView === "function") {
-          starter.scrollIntoView({ behavior: "smooth", block: "start" });
-          return { ok: true, value: { scrolled: true } };
-        }
-        const url = new URL(snapshot.url);
-        if (snapshot.starter?.postId) url.hash = `post-${snapshot.starter.postId}`;
-        return navigate(url, false);
+        return { ok: false, reason: "unknown_utility" };
       },
     });
   }

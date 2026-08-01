@@ -55,8 +55,8 @@ __ROOT__.is-panel-only .f95ue-lf-content {
 }
 
 .f95ue-addon-dialog-content .f95ue-lf-dialog {
-  width: min(720px, calc(100vw - 24px));
-  max-height: calc(100vh - 96px);
+  width: 100%;
+  max-width: 100%;
   overflow: hidden;
   padding: 14px;
   box-sizing: border-box;
@@ -271,7 +271,6 @@ __ROOT__.is-panel-only .f95ue-lf-content {
 @media (max-width: 700px) {
   .f95ue-addon-dialog-content .f95ue-lf-dialog {
     width: 100%;
-    max-height: calc(100vh - 70px);
   }
 
   .f95ue-addon-dialog-content .f95ue-lf-save-row,

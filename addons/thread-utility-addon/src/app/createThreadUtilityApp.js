@@ -119,7 +119,6 @@ export function createThreadUtilityApp({ core, runtime }) {
         };
       });
     },
-    onCopyDescription: () => ui.copyDescription(),
     onDownloadAction: (action, id) => {
       if (action === "open") return downloadController?.open(id);
       if (action === "copy") return downloadController?.copy(id);
@@ -135,14 +134,23 @@ export function createThreadUtilityApp({ core, runtime }) {
       }
       state.ui.paletteStatus = "loading";
       state.ui.paletteMessage = "Refreshing thread details…";
-      await ui.updatePalette(generation);
+      const loadingResult = await ui.updatePalette(generation);
+      if (
+        !loadingResult?.ok
+        || terminal
+        || lifecycle.getGeneration() !== generation
+      ) {
+        return { ok: false, reason: "stale_generation" };
+      }
       try {
         capturePaletteData(generation);
       } catch {
         state.ui.paletteStatus = "failure";
         state.ui.paletteMessage = "Thread details could not be refreshed.";
       }
-      return ui.updatePalette(generation);
+      return lifecycle.getGeneration() === generation
+        ? ui.updatePalette(generation)
+        : { ok: false, reason: "stale_generation" };
     },
     onRunUtility: (utilityId) => utilityController?.execute(utilityId),
     onToggleContent: (sectionId) => ui.toggleContentSection(sectionId),
@@ -162,6 +170,9 @@ export function createThreadUtilityApp({ core, runtime }) {
   const commands = createThreadUtilityCommandController({
     core,
     getLifecycle: () => lifecycle,
+    onDockAction: (actionId) => {
+      if (actionId === "open-palette") void bindings.openPalette();
+    },
     onDialogClosed: () => {
       ui.handleDialogClosed();
       clearSnapshotSources();

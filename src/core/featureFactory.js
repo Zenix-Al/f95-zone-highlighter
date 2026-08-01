@@ -113,7 +113,6 @@ export function createFeature(name, {
   isApplicable,
   settingsUi = null,
   bootstrapMode = "waitForBody",
-  fastCapture = null,
   pageScopes = [],
 } = {}) {
   let lifecycleGeneration = 0;
@@ -204,7 +203,6 @@ export function createFeature(name, {
     name,
     bootstrapMode: normalizeFeatureBootstrapMode(bootstrapMode),
     _declaredBootstrapMode: bootstrapMode,
-    fastCapture,
     pageScopes: Array.isArray(pageScopes) ? pageScopes.map((scope) => String(scope || "").trim()).filter(Boolean) : pageScopes,
     settingsUi: settingsUi && typeof settingsUi === "object" ? settingsUi : null,
     enable(context = null) {

@@ -81,13 +81,18 @@ module.exports = function registerThreadUtilityDownloads(context) {
     const page = fixture();
     try {
       const { downloads, registry } = parse(page.root, page.window);
-      const opened = [];
       const copied = [];
       const toasts = [];
+      let anchorClicks = 0;
       let clicks = 0;
       let refreshes = 0;
       let contextDownloads = downloads;
       const button = registry.get(downloads[1].maskedDirectToken, 1);
+      const anchor = registry.get(downloads[0].anchorToken, 1);
+      anchor.addEventListener("click", (event) => {
+        event.preventDefault();
+        anchorClicks += 1;
+      });
       button.addEventListener("click", () => { clicks += 1; });
       const { createDownloadController } = loadModule(
         "addons/thread-utility-addon/src/domain/downloads/controller.js",
@@ -105,7 +110,6 @@ module.exports = function registerThreadUtilityDownloads(context) {
           isCurrent: () => current,
           getSource: (token) => registry.get(token, 1),
         }),
-        windowObject: { open: (...args) => opened.push(args) },
         clipboardWriter: async (value) => {
           copied.push(value);
           return { ok: true };
@@ -115,12 +119,12 @@ module.exports = function registerThreadUtilityDownloads(context) {
           return false;
         },
       });
-      assert.deepStrictEqual(controller.open("download-1"), { ok: true });
+      assert.deepStrictEqual(await controller.open("download-1"), { ok: true });
       assert.strictEqual((await controller.copy("download-1")).ok, true);
       assert.strictEqual((await controller.copyAll()).ok, true);
       assert.deepStrictEqual(await controller.delegate("download-2"), { ok: true });
       assert.strictEqual(clicks, 1);
-      assert.deepStrictEqual(opened[0].slice(1), ["_blank", "noopener"]);
+      assert.strictEqual(anchorClicks, 1);
       assert.strictEqual(copied[0], downloads[0].originalUrl);
       assert.strictEqual(copied[1].split("\n").length, 5);
 
@@ -143,7 +147,7 @@ module.exports = function registerThreadUtilityDownloads(context) {
       assert.strictEqual(clicks, 1);
       current = false;
       assert.deepStrictEqual(
-        controller.open("download-1"),
+        await controller.open("download-1"),
         { ok: false, reason: "stale_generation" },
       );
     } finally {
@@ -161,24 +165,78 @@ module.exports = function registerThreadUtilityDownloads(context) {
       content: null,
       downloads: [{
         id: "download-1",
-        label: "Host",
-        platform: "Other",
-        host: "example.com",
-        maskedDirectToken: "",
-        actionType: "",
+        label: "PIXELDRAIN",
+        platform: "Windows",
+        host: "pixeldrain.com",
+        maskedDirectToken: "token-1",
+        actionType: "direct",
+      }, {
+        id: "download-2",
+        label: "DATANODES",
+        platform: "Windows",
+        host: "datanodes.to",
+        maskedDirectToken: "token-2",
+        actionType: "masked",
       }],
       settings: { visibleTagLimit: 8, descriptionPreviewLines: 4 },
       ui: { tagsExpanded: false, openContentSection: null },
     };
     const collapsed = renderPalette(state);
-    assert.match(collapsed, /Downloads \(1\)/);
-    assert.match(collapsed, /Show downloads/);
+    assert.match(collapsed, /Downloads \(2\)/);
+    assert.match(collapsed, /Downloads \(2\) >/);
     assert.doesNotMatch(collapsed, /data-download-action="open"/);
     state.ui.openContentSection = "downloads";
     const open = renderPalette(state);
     assert.match(open, /data-download-action="open"/);
-    assert.match(open, /Copy All originals/);
-    assert.doesNotMatch(open, />Resolve<|>Direct DL</);
+    assert.match(open, /Downloads \(2\) v/);
+    assert.strictEqual((open.match(/<strong>Windows:<\/strong>/g) || []).length, 1);
+    assert.match(open, /PIXELDRAIN[\s\S]*Direct DL/);
+    assert.match(open, /DATANODES[\s\S]*Resolve/);
+    assert.doesNotMatch(open, /pixeldrain\.com|datanodes\.to|Copy/i);
+  });
+
+  runTest("THREAD-UTILITY-DOWNLOADS-01 routes modal download clicks through dialog bindings", () => {
+    const window = new Window();
+    const previousWindow = global.window;
+    const previousDocument = global.document;
+    global.window = window;
+    global.document = window.document;
+    try {
+      const calls = [];
+      const { createThreadUtilityBindings } = loadModule(
+        "addons/thread-utility-addon/src/ui/bindings.js",
+      );
+      const bindings = createThreadUtilityBindings({
+        addonId: "thread-utility-addon",
+        isEnabled: () => true,
+        onOpenPalette() {},
+        onRunUtility() {},
+        onDownloadAction: (action, id) => calls.push({ action, id }),
+        onOpenSettings() {},
+        onRefreshPalette() {},
+        onToggleContent() {},
+        onToggleTags() {},
+      });
+      document.body.innerHTML = `
+        <section data-role="threadUtilityPalette">
+          <button data-download-action="open" data-download-id="download-1">Open</button>
+          <button data-download-action="delegate" data-download-id="download-2">Resolve</button>
+        </section>
+      `;
+      bindings.bindDialogEvents();
+      for (const button of document.querySelectorAll("button")) {
+        button.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
+      }
+      assert.deepStrictEqual(calls, [
+        { action: "open", id: "download-1" },
+        { action: "delegate", id: "download-2" },
+      ]);
+      bindings.unbindDialogEvents();
+    } finally {
+      global.window = previousWindow;
+      global.document = previousDocument;
+      window.close();
+    }
   });
 
   runTest("THREAD-UTILITY-DOWNLOADS-01 does not own Masked Direct transport", () => {

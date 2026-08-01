@@ -12,7 +12,8 @@ To prevent XenForo’s global stylesheets from distorting our UI (and vice versa
 During the body bootstrap phase, `initUiPhaseIfApplicable()` is triggered. If the current site is detected as F95Zone:
 - It creates a shadow host element (`div#latest-highlighter-host`) on `document.body`.
 - It attaches an open shadow root to this host and stores it in the global `stateManager` under the key `"shadowRoot"`.
-- It injects global CSS assets and the configuration button.
+- It injects startup-critical Shadow/document CSS and the configuration button;
+  settings-modal CSS is deferred until core `openModal()`.
 
 ### 2. Accessing the Shadow Root
 Any feature or component that needs to mount elements must do so within this sandbox. To retrieve the root, import and invoke:
@@ -28,7 +29,8 @@ if (root) {
 ---
 
 ## CSS Injection
-Styles are loaded via `injectCSS()` inside `ui/helpers/cssInjector.js`. 
+Startup styles are loaded via `injectCSS()` and settings styles via the
+idempotent `ensureModalCss()` inside `ui/helpers/cssInjector.js`.
 - For core styles, custom CSS sheets are injected directly into the Shadow DOM root.
 - For features configured via `createStyledFeature()`, the CSS is managed automatically by `styleRegistry.js` which registers and unregisters styles inside the shadow root dynamically as features toggle.
 

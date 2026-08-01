@@ -2,7 +2,7 @@ __ROOT__ {
   box-sizing: border-box;
   display: grid;
   gap: 18px;
-  width: min(820px, 100%);
+  width: 100%;
   max-height: min(760px, calc(100vh - 120px));
   padding: 18px;
   overflow: auto;

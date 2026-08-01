@@ -3,9 +3,10 @@ __ROOT__ {
 }
 
 __ROOT__ .f95ue-library-manager-window {
-  width: min(1320px, calc(100vw - 24px));
+  box-sizing: border-box;
+  width: 100%;
   height: min(920px, calc(100vh - 32px));
-  max-height: calc(100vh - 32px);
+  max-height: 100%;
   background: #191b1e;
   border: 1px solid #3f4043;
   border-radius: 10px;

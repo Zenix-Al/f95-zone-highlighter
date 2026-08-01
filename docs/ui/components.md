@@ -13,20 +13,6 @@ The module exports a helper for ensuring the add-on dock slot exists, allowing a
 
 **Architectural significance:** The dock is a cross-boundary element — it is initiated by `src/ui`, can contain add-on UI, exists alongside host-page content, and its visibility depends on stored global settings. Changes to the dock should be tested with both core and add-on controls present.
 
-## Dark Color Picker (`components/darkColorPicker.js`)
-
-The custom color picker:
-
-- Supports HSL and hexadecimal editing.
-- Uses a single active picker instance.
-- Provides Apply and Cancel actions.
-- Commits when clicking outside under defined conditions.
-- Cancels with Escape.
-- Exposes dialog-oriented ARIA attributes.
-- Integrates with the listener-registration utilities.
-
-Only one picker should be active at a time.
-
 ## Dialogs (`components/dialog.js`)
 
 Provides reusable dialogs for:
@@ -77,5 +63,10 @@ It can:
 - Render a report inside the settings interface.
 - Copy the report to the clipboard.
 - Use a fallback copy mechanism when the modern clipboard API is unavailable.
+
+The complete plain-text report is generated once and assigned to a reusable
+`<pre>` through `textContent`. Copy reads that same displayed text, so the
+support payload cannot drift from the UI. Repeated checks reuse the existing
+box and its Copy and Close listeners.
 
 This is primarily a support and diagnostics surface. Maintainers should review it whenever new features, error stores, or add-on states are introduced.

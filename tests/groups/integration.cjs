@@ -2047,10 +2047,17 @@ module.exports = function registerGroup(context) {
         assert.strictEqual(
           host.openAddonDialog("addon-a", {
             dialogId: "dialog",
-            html: "<div>Dialog</div>",
+            html: '<div data-preserve-scroll="main">Dialog</div>',
           }).ok,
           true,
         );
+        const dialogSurface = document.querySelector(".f95ue-addon-dialog-surface");
+        assert.ok(
+          ["#1f2329", "rgb(31, 35, 41)"].includes(dialogSurface.style.background),
+        );
+        assert.strictEqual(dialogSurface.style.borderRadius, "10px");
+        const scrollRegion = document.querySelector('[data-preserve-scroll="main"]');
+        scrollRegion.scrollTop = 73;
         assert.strictEqual(
           host.updateAddonDialog("addon-b", {
             dialogId: "dialog",
@@ -2061,9 +2068,13 @@ module.exports = function registerGroup(context) {
         assert.strictEqual(
           host.updateAddonDialog("addon-a", {
             dialogId: "dialog",
-            html: "<p>Updated safely</p>",
+            html: '<div data-preserve-scroll="main">Updated safely</div>',
           }).ok,
           true,
+        );
+        assert.strictEqual(
+          document.querySelector('[data-preserve-scroll="main"]').scrollTop,
+          73,
         );
         host.cleanupAddonUi("addon-a");
         assert.strictEqual(

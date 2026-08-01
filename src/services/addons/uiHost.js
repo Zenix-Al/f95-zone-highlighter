@@ -480,7 +480,19 @@ export function updateAddonDialog(addonId, payload = {}) {
     return { ok: false, reason: "dialog_owner_mismatch" };
   }
 
+  const preservedScroll = new Map(
+    [...entry.contentEl.querySelectorAll("[data-preserve-scroll]")].map((element) => [
+      String(element.dataset.preserveScroll || ""),
+      { left: element.scrollLeft, top: element.scrollTop },
+    ]),
+  );
   entry.contentEl.innerHTML = html;
+  entry.contentEl.querySelectorAll("[data-preserve-scroll]").forEach((element) => {
+    const position = preservedScroll.get(String(element.dataset.preserveScroll || ""));
+    if (!position) return;
+    element.scrollLeft = position.left;
+    element.scrollTop = position.top;
+  });
   return {
     ok: true,
     value: { dialogId, contentId: entry.contentEl.id },

@@ -61,7 +61,6 @@ export function createAutoUpdateController({ core, addonId, library, scheduler, 
       dialogId,
       title: "Library Auto Update",
       html: renderAutoUpdateDialog(config, summary),
-      size: "lg",
       closeOnEsc: true,
       closeOnBackdrop: true,
     });

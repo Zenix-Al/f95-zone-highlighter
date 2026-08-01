@@ -43,15 +43,23 @@ if (root) {
 
 ### `helpers/cssInjector.js`
 
-Loads two stylesheets:
-- `assets/css.css` → injected into the **Shadow DOM** scope.
-- `assets/document.css` → injected into the **document** scope.
+Loads the startup stylesheets immediately and the settings stylesheet on first
+modal demand:
+
+- `assets/startup.css` → injected into the **Shadow DOM** scope at UI startup;
+- `assets/document.css` → injected into the **document** scope at UI startup;
+- `assets/css.css` → injected into the **Shadow DOM** once, synchronously at
+  the start of core `openModal()`.
 
 Style acquisition is delegated to the shared style registry, which provides feature-scoped ownership and reference counting.
 
-### `assets/css.css`
+### `assets/startup.css` and `assets/css.css`
 
-The main UI stylesheet covering: modal layout, navigation, settings rows, toggles and form controls, color picker, tag lists and drag states, add-on cards and panels, dock behavior, toast notifications, and responsive/mobile layout.
+The startup layer owns universal Shadow DOM defaults, dock/settings-launcher
+styles, and toast styles. The deferred layer owns modal layout, navigation,
+settings rows, controls, color picker, tag lists and drag states, add-on cards
+and panels, and modal responsive layout. `ensureModalCss()` is idempotent and
+uses the existing style registry rather than a separate lifecycle owner.
 
 The deterministic selector and cascade audit is documented in [`css-audit.md`](css-audit.md); unresolved or dynamically assembled selectors remain protected.
 

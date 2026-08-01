@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
-  "identifier": "cffd6990b52353a6a27c2bca48ec1ac49321a9fb0e33e7aae458091d71d7485f",
+  "identifier": "8525c0f628c391277e826f954d53d7da087ae2523c050fcdf49bc3514b5836e9",
   "catalog": [
     {
       "id": "example-addon",
       "name": "F95UE Example Add-on",
       "description": "Core API playground demonstrating every current addon-facing action through api modules.",
-      "version": "1.0.2",
+      "version": "1.0.3",
       "pageScopes": [
         "f95zone"
       ],
@@ -64,7 +64,7 @@
       "id": "latest-filters-addon",
       "name": "F95UE Latest Filters Add-on",
       "description": "Adds one Saved Filters button on Latest Updates with a searchable preset list and active filter tracking.",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "pageScopes": [
         "latest"
       ],
@@ -96,7 +96,7 @@
       "id": "library-addon",
       "name": "F95UE Library Add-on",
       "description": "Quick-add threads to a personal library and manage entries with a dedicated add-on UI.",
-      "version": "1.2.0",
+      "version": "1.2.1",
       "pageScopes": [
         "f95zone"
       ],
@@ -229,7 +229,7 @@
       "id": "thread-utility-addon",
       "name": "F95UE Thread Utility Add-on",
       "description": "Provides a compact thread dashboard and extensible thread utilities.",
-      "version": "0.1.1",
+      "version": "1.0.0",
       "pageScopes": [
         "thread"
       ],
@@ -243,11 +243,13 @@
       "runAt": "document-idle",
       "requiresCore": true,
       "capabilities": [
+        "feature",
         "page",
         "storage",
         "toast",
         "ui.style",
         "ui.mount",
+        "ui.dock",
         "ui.dialog"
       ],
       "downloadUrl": "",

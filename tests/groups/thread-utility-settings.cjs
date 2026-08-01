@@ -7,6 +7,26 @@ module.exports = function registerThreadUtilitySettings(context) {
     return loadModule("addons/thread-utility-addon/src/app/settings.js");
   }
 
+  runTest("THREAD-UTILITY-SETTINGS-01 sends an owned opaque dialog shell", () => {
+    const { renderSettingsDialog } = loadModule(
+      "addons/thread-utility-addon/src/ui/settingsDialog.js",
+    );
+    const html = renderSettingsDialog({
+      searchScope: "thread",
+      excludedTagMode: "muted",
+      quickSearches: [],
+    });
+    const window = new Window();
+    window.document.body.innerHTML = html;
+    const root = window.document.querySelector(".thread-utility-settings-root");
+    const shell = root?.querySelector(".thread-utility-settings-window");
+    assert.ok(root);
+    assert.ok(shell);
+    assert.strictEqual(shell.getAttribute("role"), "document");
+    assert.ok(shell.querySelector('[data-role="threadUtilitySettings"]'));
+    window.close();
+  });
+
   runTest("THREAD-UTILITY-SETTINGS-01 normalizes defaults and valid siblings", () => {
     const {
       THREAD_UTILITY_PANEL_SETTINGS,

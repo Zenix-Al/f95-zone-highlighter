@@ -64,9 +64,6 @@ export function renderSetting(key, meta) {
     input.checked = Boolean(value);
   } else {
     input.value = value;
-    if (meta.type === "color") {
-      input.dispatchEvent(new Event("input", { bubbles: true }));
-    }
   }
 
   input.addEventListener("change", async () => {

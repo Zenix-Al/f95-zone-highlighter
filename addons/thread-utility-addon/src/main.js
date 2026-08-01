@@ -23,9 +23,8 @@ async function bootstrap() {
   if (!ping?.ok && runtime.runtimeMode === "core-required") return;
   try {
     await app.bootstrap();
-  } catch (error) {
-    const message = error?.message ? String(error.message) : "Unknown error";
-    core.updateStatus("broken", `Failed to initialize: ${message}`);
+  } catch {
+    core.updateStatus("broken", "Failed to initialize Thread Utility.");
   }
 }
 

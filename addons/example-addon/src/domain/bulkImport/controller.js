@@ -10,7 +10,6 @@ import { getCoreThrottle } from "../../api/meta.js";
 import { closeDialog, openDialog, updateDialog } from "../../api/ui/dialog.js";
 import {
   createBulkImportProgressMarkup,
-  updateBulkImportProgressView,
 } from "../../ui/bulkImportProgressDialog.js";
 import { buildIdbPayload } from "../playgroundData.js";
 
@@ -20,7 +19,7 @@ const DEFAULT_CORE_ACTION_INTERVAL_MS = 80;
 const RETRYABLE_REASONS = new Set(["rate_limited", "too_many_concurrent_requests"]);
 const PAYLOAD_SIZE_ENCODER = typeof TextEncoder !== "undefined" ? new TextEncoder() : null;
 
-export function createBulkImportController({ core, state, syncPanel, getDialogContentElement, wait }) {
+export function createBulkImportController({ core, state, syncPanel, wait }) {
   let active = null;
 
   function measurePayloadBytes(payload) {
@@ -91,11 +90,9 @@ export function createBulkImportController({ core, state, syncPanel, getDialogCo
 
   function updateProgress(progress) {
     state.idb.bulkImport = { ...state.idb.bulkImport, ...progress };
-    const fallback = () => {
-      const root = getDialogContentElement(EXAMPLE_BULK_PROGRESS_DIALOG_ID);
-      updateBulkImportProgressView(root, progress, active?.total || 0);
-      return { ok: false, reason: "unsupported_action" };
-    };
+    // The dialog belongs to core. Update it through the API instead of looking
+    // up core-generated element IDs or mutating its DOM across the ownership
+    // boundary. A failed update is non-fatal; the import state remains current.
     void updateDialog(
       core,
       EXAMPLE_BULK_PROGRESS_DIALOG_ID,
@@ -105,10 +102,7 @@ export function createBulkImportController({ core, state, syncPanel, getDialogCo
         throttle: active?.throttle || {},
         progress,
       }),
-    ).then((result) => {
-      if (result?.ok) return;
-      fallback();
-    });
+    );
   }
 
   async function openProgress(progress, throttle) {

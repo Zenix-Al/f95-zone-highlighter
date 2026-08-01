@@ -218,12 +218,12 @@
     }
   ],
   "build": {
-    "authoredBytes": 308477,
+    "authoredBytes": 308411,
     "fileCount": 92,
     "regular": {
       "mode": "regular",
-      "bytes": 319003,
-      "gzipBytes": 65904,
+      "bytes": 318934,
+      "gzipBytes": 65894,
       "contributors": [
         {
           "path": "addons/library-addon/src/library/service.js",
@@ -231,7 +231,7 @@
         },
         {
           "path": "addons/library-addon/src/ui/assets/manager.css",
-          "bytes": 20951
+          "bytes": 20937
         },
         {
           "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
@@ -309,8 +309,8 @@
     },
     "release": {
       "mode": "release",
-      "bytes": 278930,
-      "gzipBytes": 57080,
+      "bytes": 278859,
+      "gzipBytes": 57070,
       "contributors": [
         {
           "path": "addons/library-addon/src/library/service.js",
@@ -318,7 +318,7 @@
         },
         {
           "path": "addons/library-addon/src/ui/assets/manager.css",
-          "bytes": 19985
+          "bytes": 19970
         },
         {
           "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
@@ -382,7 +382,7 @@
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editor.css",
-          "bytes": 3969
+          "bytes": 3957
         },
         {
           "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",

@@ -40,13 +40,21 @@ surface-key installations; storage I/O and the transaction remain in `settingsSe
 not a schema migration step or a general future migration framework.
 
 ### `tagsService.js`
-Responsible for asynchronous operations related to thread tags. It fetches, parses, and caches tag data so that features (like `latest-overlay`) can quickly look up whether a thread is "Completed", "On Hold", etc.
+Responsible for asynchronous operations related to thread tags. Its private
+Latest-catalog bridge reads tags and prefixes together through one bounded
+page-world request when direct sandbox access is unavailable, then normalizes
+and persists each catalog independently. A missing or malformed catalog does
+not prevent the other valid catalog from updating.
+
+### `prefixService.js`
+Normalizes and persists the prefix catalog supplied by `tagsService.js`. It no
+longer owns a second page bridge or independently reads `window.latestUpdates`.
 
 ### [addonsService.js](addonsService.md)
 Provides an integration bridge for external userscripts (third-party addons). It exposes an API on the `window` object (or a safe proxy) allowing other scripts to register their own rules or modify Latest Highlighter's behavior safely.
 
-### [fastCapture](fastCapture.md)
-Intercepts and caches XHR/Fetch network responses early in the page load lifecycle before features are fully enabled, reducing redundant network requests.
+### [Latest Overlay capture](fastCapture.md)
+Private Latest Overlay infrastructure that captures the first bounded Latest XHR/fetch response before normal feature enable.
 
 ### `safetyService.js`
 Validates configuration thresholds and sanitizes data to prevent malicious injections or corrupt state from crashing the script.

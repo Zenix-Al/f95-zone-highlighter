@@ -1,3 +1,9 @@
+## [1.0.3] - Correct registration and UI ownership examples
+
+- register the runtime descriptor once during bootstrap and publish lifecycle changes through status updates only
+- remove direct fallback mutation of core-owned dialog DOM and use `ui.dialog.update` as the canonical update path
+- document command-binding order, persisted enable ownership, and the difference between registration and authorization
+
 ## [1.0.0] - Canonical add-on template
 
 - keep `main.js` limited to injected runtime construction, core ping, composition, and fatal error reporting

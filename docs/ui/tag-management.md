@@ -20,12 +20,14 @@ This module:
 
 - Initializes search behavior.
 - Excludes tags already assigned to a configured group.
-- Renders search results.
-- Adds action buttons for each destination group.
+- Renders search results in stable 60-tag chunks with a `Load more` action.
+- Keeps every matching tag reachable without mounting the full catalog at once.
+- Handles all result actions through one delegated result-container listener.
+- Validates delegated tag/action identities against the active result set and catalog.
 - Renders configured tag lists.
 - Handles empty states.
 - Coordinates drops and cross-list moves.
-- Clears or closes search results when appropriate.
+- Discards active result state when results close, clear, change, or the runtime tears down.
 
 ## Tag Settings Bridge (`settings/tagsSettings.js`)
 

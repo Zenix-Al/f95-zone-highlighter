@@ -1,4 +1,3 @@
-import { attachDarkColorPicker } from "../components/darkColorPicker.js";
 import { createEl } from "../../utils/dom.js";
 
 export function createInput(meta, id) {
@@ -15,7 +14,8 @@ export function createInput(meta, id) {
       break;
 
     case "color":
-      attachDarkColorPicker(input);
+      input.type = "color";
+      input.classList.add("config-color-input");
       break;
 
     case "select": {

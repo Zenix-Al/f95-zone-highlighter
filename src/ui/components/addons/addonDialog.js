@@ -139,6 +139,11 @@ export function createAddonDialogElements({
       width: surfaceMetrics.width,
       maxHeight: surfaceMetrics.maxHeight,
       overflow: "auto",
+      border: "1px solid #454b55",
+      borderRadius: "10px",
+      background: "#1f2329",
+      color: "#d8dbe0",
+      boxShadow: "0 18px 48px rgba(0, 0, 0, 0.42)",
     },
   });
 

@@ -28,30 +28,35 @@ export function renderSettingsDialog(draft, error = "") {
     </fieldset>
   `).join("");
   return `
-    <form class="thread-utility-settings" data-role="threadUtilitySettings">
-      ${error ? `<div class="thread-utility-settings-error" role="alert">${escapeHtml(error)}</div>` : ""}
-      <div class="thread-utility-settings-options">
-        <label>Search scope
-          <select name="searchScope">
-            <option value="thread"${draft.searchScope === "thread" ? " selected" : ""}>Current thread</option>
-            <option value="global"${draft.searchScope === "global" ? " selected" : ""}>All forums</option>
-          </select>
-        </label>
-        <label>Excluded tags
-          <select name="excludedTagMode">
-            <option value="muted"${draft.excludedTagMode === "muted" ? " selected" : ""}>Show muted</option>
-            <option value="hidden"${draft.excludedTagMode === "hidden" ? " selected" : ""}>Hide</option>
-          </select>
-        </label>
+    <div class="thread-utility-settings-root">
+      <div class="thread-utility-settings-window" role="document"
+        aria-label="Thread Utility Settings" tabindex="-1">
+        <form class="thread-utility-settings" data-role="threadUtilitySettings">
+          ${error ? `<div class="thread-utility-settings-error" role="alert">${escapeHtml(error)}</div>` : ""}
+          <div class="thread-utility-settings-options">
+            <label>Search scope
+              <select name="searchScope">
+                <option value="thread"${draft.searchScope === "thread" ? " selected" : ""}>Current thread</option>
+                <option value="global"${draft.searchScope === "global" ? " selected" : ""}>All forums</option>
+              </select>
+            </label>
+            <label>Excluded tags
+              <select name="excludedTagMode">
+                <option value="muted"${draft.excludedTagMode === "muted" ? " selected" : ""}>Show muted</option>
+                <option value="hidden"${draft.excludedTagMode === "hidden" ? " selected" : ""}>Hide</option>
+              </select>
+            </label>
+          </div>
+          <div class="thread-utility-settings-list">${rows || "<p>No quick utilities.</p>"}</div>
+          <div class="thread-utility-settings-actions">
+            <button type="button" data-settings-action="add">Add utility</button>
+            <button type="button" data-settings-action="reset">Reset defaults</button>
+            <span></span>
+            <button type="button" data-settings-action="cancel">Cancel</button>
+            <button type="submit" data-settings-action="save">Save</button>
+          </div>
+        </form>
       </div>
-      <div class="thread-utility-settings-list">${rows || "<p>No quick utilities.</p>"}</div>
-      <div class="thread-utility-settings-actions">
-        <button type="button" data-settings-action="add">Add utility</button>
-        <button type="button" data-settings-action="reset">Reset defaults</button>
-        <span></span>
-        <button type="button" data-settings-action="cancel">Cancel</button>
-        <button type="submit" data-settings-action="save">Save</button>
-      </div>
-    </form>
+    </div>
   `;
 }

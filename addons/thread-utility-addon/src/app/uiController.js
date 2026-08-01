@@ -1,14 +1,11 @@
 import { closeDialog, openDialog, updateDialog } from "../api/ui/dialog.js";
-import { mountUi, unmountUi } from "../api/ui/mount.js";
+import { removeDockButtons, setDockButtons } from "../api/ui/dock.js";
 import { registerStyle, unregisterStyle } from "../api/ui/style.js";
 import {
   THREAD_UTILITY_DIALOG_ID,
-  THREAD_UTILITY_MOUNT_ID,
   THREAD_UTILITY_STYLE_ID,
 } from "../constants.js";
-import { renderLauncher } from "../ui/launcher.js";
 import { renderPalette } from "../ui/palette.js";
-import { writeClipboard } from "../domain/utilities/clipboard.js";
 import threadUtilityCss from "../ui/threadUtility.css";
 
 export function createThreadUtilityUiController({
@@ -16,7 +13,6 @@ export function createThreadUtilityUiController({
   state,
   bindings,
   isTerminal,
-  clipboardWriter = writeClipboard,
 }) {
   async function ensureStyle() {
     if (state.ui.styleRegistered) return { ok: true };
@@ -28,14 +24,13 @@ export function createThreadUtilityUiController({
 
   async function mountLauncher() {
     if (state.ui.launcherMounted) return { ok: true };
-    const result = await mountUi(core, {
-      mountId: THREAD_UTILITY_MOUNT_ID,
-      slot: "page.dock",
-      html: renderLauncher(),
-    });
+    const result = await setDockButtons(core, [{
+      id: "open-palette",
+      label: "Thread Utility",
+      title: "Open compact thread information and utilities",
+    }]);
     if (!result?.ok) throw new Error(`Launcher mount failed: ${result?.reason || "unknown"}`);
     state.ui.launcherMounted = true;
-    bindings.bindLauncherEvents();
     return result;
   }
 
@@ -102,8 +97,7 @@ export function createThreadUtilityUiController({
       if (state.settings.showLauncher && !state.ui.launcherMounted) {
         await mountLauncher();
       } else if (!state.settings.showLauncher && state.ui.launcherMounted) {
-        bindings.unbindLauncherEvents();
-        await unmountUi(core, THREAD_UTILITY_MOUNT_ID);
+        await removeDockButtons(core);
         state.ui.launcherMounted = false;
       }
       if (!isCurrent()) {
@@ -127,9 +121,8 @@ export function createThreadUtilityUiController({
     state.ui.tagsExpanded = false;
     state.ui.openContentSection = null;
     bindings.unbindDialogEvents();
-    bindings.unbindLauncherEvents();
     if (state.ui.launcherMounted) {
-      await unmountUi(core, THREAD_UTILITY_MOUNT_ID);
+      await removeDockButtons(core);
       state.ui.launcherMounted = false;
     }
     if (state.ui.styleRegistered) {
@@ -185,16 +178,8 @@ export function createThreadUtilityUiController({
     return result;
   }
 
-  function copyDescription() {
-    if (!state.ui.dialogOpen || !state.content?.description?.available) {
-      return Promise.resolve({ ok: false, reason: "unavailable" });
-    }
-    return clipboardWriter(state.content.description.text);
-  }
-
   return {
     closePalette,
-    copyDescription,
     disable,
     enable,
     handleDialogClosed,

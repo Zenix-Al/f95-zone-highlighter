@@ -15,7 +15,9 @@ Current features (automatically discovered):
 <!-- GENERATED:FEATURE-INVENTORY:START -->
 - `dismissNotificationFeature` — `src/features/dismiss-notification/index.js`
 - `latestControlFeature` — `src/features/latest-control/index.js`
-- `latestOverlayFeature` — `src/features/latest-overlay/index.js`
+- `latestOverlayFeature` — `src/features/latest-overlay/index.js`; its private
+  early-response capture implementation lives under
+  `src/features/latest-overlay/capture/` and is started explicitly by the loader.
 - `signatureCollapseFeature` — `src/features/signature-collapse/index.js`
 - `threadOverlayFeature` — `src/features/thread-overlay/index.js`
 - `wideLatestPageFeature` — `src/features/wide-latest/index.js`

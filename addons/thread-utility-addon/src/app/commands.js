@@ -10,6 +10,7 @@ export function createThreadUtilityCommandController({
   onDialogClosed,
   onSettingsDialogClosed = () => {},
   onBeforePageChange,
+  onDockAction = () => {},
   onError = () => {},
 }) {
   let unbind = () => {};
@@ -47,6 +48,9 @@ export function createThreadUtilityCommandController({
           } else if (String(detail.dialogId || "").trim() === THREAD_UTILITY_DIALOG_ID) {
             onDialogClosed(detail);
           }
+          break;
+        case "dock-action":
+          onDockAction(String(detail.actionId || "").trim(), detail);
           break;
         case "teardown":
           run("teardown", lifecycle.teardown(context));

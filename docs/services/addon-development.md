@@ -30,6 +30,11 @@ the add-on patch.
 
 Follow the canonical `example-addon`. The folders describe ownership, not mandatory ceremony; a tiny add-on may combine small modules while preserving the same dependency direction.
 
+Before implementing a runtime, read [Common Add-on Development Mistakes](addon-common-mistakes.md).
+It documents failures that look harmless during initial testing—re-registering
+on every status change, disabling immediately after registration, sending a
+controller instead of a descriptor, and reaching through core-owned UI.
+
 ```text
 addons/<your-addon-id>/
 |-- CHANGELOG.md

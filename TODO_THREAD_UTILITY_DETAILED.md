@@ -127,22 +127,22 @@ The new add-on must preserve these contracts:
 
 A package is complete only when all applicable items pass:
 
-- [ ] Every package-specific implementation item is complete.
-- [ ] Every package-specific test is present and passing.
-- [ ] Every package-specific acceptance criterion passes.
-- [ ] No unrelated user change is overwritten.
-- [ ] Raw core action names remain inside `api/**` or `core/adaptor.js`.
-- [ ] No sibling add-on or core-internal source is imported.
-- [ ] No raw `MutationObserver` is introduced.
-- [ ] Every listener, timer, dialog, mount, style, and transient DOM node has an
+- [x] Every package-specific implementation item is complete.
+- [x] Every package-specific test is present and passing.
+- [x] Every package-specific acceptance criterion passes.
+- [x] No unrelated user change is overwritten.
+- [x] Raw core action names remain inside `api/**` or `core/adaptor.js`.
+- [x] No sibling add-on or core-internal source is imported.
+- [x] No raw `MutationObserver` is introduced.
+- [x] Every listener, timer, dialog, mount, style, and transient DOM node has an
       explicit owner and cleanup.
-- [ ] Disable remains reversible.
-- [ ] Route invalidation and teardown suppress late commits.
-- [ ] Teardown acknowledgment occurs exactly once.
-- [ ] No masked URL, opening-post body, or copied content is written to logs.
-- [ ] Add-on lint has zero warnings.
-- [ ] Applicable focused tests pass.
-- [ ] `git diff --check` passes.
+- [x] Disable remains reversible.
+- [x] Route invalidation and teardown suppress late commits.
+- [x] Teardown acknowledgment occurs exactly once.
+- [x] No masked URL, opening-post body, or copied content is written to logs.
+- [x] Add-on lint has zero warnings.
+- [x] Applicable focused tests pass.
+- [x] `git diff --check` passes.
 
 ---
 
@@ -896,7 +896,7 @@ threadUtility.settings.v1
 
 ### Required implementation
 
-- [ ] Define explicit limits for:
+- [x] Define explicit limits for:
   - source nodes;
   - normalized nodes;
   - section text;
@@ -906,33 +906,33 @@ threadUtility.settings.v1
   - clipboard output;
   - dialog HTML;
   - stylesheet size.
-- [ ] Parse heavy starter content only when palette/section demand requires it.
-- [ ] No bootstrap-time full opening-post normalization.
-- [ ] No background observer or polling.
-- [ ] Manual Refresh handles changed opening posts.
-- [ ] Escape all rendered text/attributes.
-- [ ] Keep sanitized HTML within core payload limits.
-- [ ] Redact URLs/query strings/content from diagnostics.
-- [ ] Verify focus, keyboard, touch, and narrow-screen behavior.
-- [ ] Verify route races and stale DOM tokens.
-- [ ] Verify style/dialog/storage failures roll back cleanly.
-- [ ] Document known parser limits and graceful fallback.
+- [x] Parse heavy starter content only when palette/section demand requires it.
+- [x] No bootstrap-time full opening-post normalization.
+- [x] No background observer or polling.
+- [x] Manual Refresh handles changed opening posts.
+- [x] Escape all rendered text/attributes.
+- [x] Keep sanitized HTML within core payload limits.
+- [x] Redact URLs/query strings/content from diagnostics.
+- [x] Verify focus, keyboard, touch, and narrow-screen behavior.
+- [x] Verify route races and stale DOM tokens.
+- [x] Verify style/dialog/storage failures roll back cleanly.
+- [x] Document known parser limits and graceful fallback.
 
 ### Required tests
 
-- [ ] Oversized fixture truncates deterministically.
-- [ ] Malformed section/link markup is safe.
-- [ ] Rapid open/refresh/close/route sequence.
-- [ ] Disable during parsing/copy/delegation.
-- [ ] No late UI/state commit.
-- [ ] No listener/style/mount/dialog/transient-node leak.
-- [ ] Logs contain no sensitive content.
-- [ ] Accessibility assertions pass.
+- [x] Oversized fixture truncates deterministically.
+- [x] Malformed section/link markup is safe.
+- [x] Rapid open/refresh/close/route sequence.
+- [x] Disable during parsing/copy/delegation.
+- [x] No late UI/state commit.
+- [x] No listener/style/mount/dialog/transient-node leak.
+- [x] Logs contain no sensitive content.
+- [x] Accessibility assertions pass.
 
 ### Acceptance criteria
 
-- [ ] Failure of one feature family does not disable summary or other utilities.
-- [ ] Support burden remains bounded and observable.
+- [x] Failure of one feature family does not disable summary or other utilities.
+- [x] Support burden remains bounded and observable.
 
 ---
 
@@ -949,51 +949,51 @@ threadUtility.settings.v1
 
 ### Required verification
 
-- [ ] Add-on lint passes with zero warnings.
-- [ ] Full lint passes.
-- [ ] Focused Thread Utility tests pass.
-- [ ] Full test suite passes.
-- [ ] Manifest validation passes.
-- [ ] Trusted catalog check passes.
-- [ ] Add-on structure check passes.
-- [ ] Regular add-on smoke build passes without mutation.
-- [ ] Release-mode smoke build passes without mutation.
-- [ ] Core CSS sanitizer accepts Thread Utility CSS.
-- [ ] No version bump beyond the declared initial version.
-- [ ] No build-cache mutation.
-- [ ] No tracked `dist/` mutation.
-- [ ] `git diff --check` passes.
-- [ ] Catalog and audit evidence are refreshed through official commands.
-- [ ] Audit writers were run sequentially.
+- [x] Add-on lint passes with zero warnings.
+- [x] Full lint passes.
+- [x] Focused Thread Utility tests pass.
+- [x] Full test suite passes.
+- [x] Manifest validation passes.
+- [x] Trusted catalog check passes.
+- [x] Add-on structure check passes.
+- [x] Regular add-on smoke build passes without mutation.
+- [x] Release-mode smoke build passes without mutation.
+- [x] Core CSS sanitizer accepts Thread Utility CSS.
+- [x] No version bump beyond the declared initial version.
+- [x] No build-cache mutation.
+- [x] No tracked `dist/` mutation.
+- [x] `git diff --check` passes.
+- [x] Catalog and audit evidence are refreshed through official commands.
+- [x] Audit writers were run sequentially.
 
 ### Route/lifecycle matrix
 
-- [ ] ordinary thread route;
-- [ ] thread route with canonical fixture structure;
-- [ ] thread route with missing starter content;
-- [ ] non-thread F95 route;
-- [ ] repeated enable/disable;
-- [ ] refresh while closed;
-- [ ] refresh while open;
-- [ ] before-page-change while parsing;
-- [ ] dialog Escape/backdrop/API close;
-- [ ] terminal teardown.
+- [x] ordinary thread route;
+- [x] thread route with canonical fixture structure;
+- [x] thread route with missing starter content;
+- [x] non-thread F95 route;
+- [x] repeated enable/disable;
+- [x] refresh while closed;
+- [x] refresh while open;
+- [x] before-page-change while parsing;
+- [x] dialog Escape/backdrop/API close;
+- [x] terminal teardown.
 
 ### Integration matrix
 
-- [ ] Core tag preferences available.
-- [ ] Core tag preferences unavailable.
-- [ ] Masked Direct present with live buttons.
-- [ ] Masked Direct absent.
-- [ ] Masked Direct button stale after refresh.
-- [ ] Clipboard primary path succeeds.
-- [ ] Clipboard fallback/failure is bounded.
+- [x] Core tag preferences available.
+- [x] Core tag preferences unavailable.
+- [x] Masked Direct present with live buttons.
+- [x] Masked Direct absent.
+- [x] Masked Direct button stale after refresh.
+- [x] Clipboard primary path succeeds.
+- [x] Clipboard fallback/failure is bounded.
 
 ### Acceptance criteria
 
-- [ ] No existing add-on behavior regresses.
-- [ ] No new core public API is required.
-- [ ] Every global definition-of-done item passes.
+- [x] No existing add-on behavior regresses.
+- [x] No new core public API is required.
+- [x] Every global definition-of-done item passes.
 
 ---
 
@@ -1012,10 +1012,10 @@ documentation
 
 ### Required work
 
-- [ ] Run API audit sequentially.
-- [ ] Run add-on service-size audit sequentially.
-- [ ] Run add-on baseline audit sequentially.
-- [ ] Record Thread Utility:
+- [x] Run API audit sequentially.
+- [x] Run add-on service-size audit sequentially.
+- [x] Run add-on baseline audit sequentially.
+- [x] Record Thread Utility:
   - file count;
   - authored bytes;
   - physical/nonblank lines;
@@ -1025,23 +1025,23 @@ documentation
   - largest contributors;
   - capabilities;
   - public core actions consumed.
-- [ ] Confirm no unnecessary IDB/observer/hybrid capability.
-- [ ] Confirm no sibling add-on imports.
-- [ ] Confirm utility registry did not become a service locator.
-- [ ] Confirm parser/UI/domain ownership is named in docs.
+- [x] Confirm no unnecessary IDB/observer/hybrid capability.
+- [x] Confirm no sibling add-on imports.
+- [x] Confirm utility registry did not become a service locator.
+- [x] Confirm parser/UI/domain ownership is named in docs.
 
 ### Required tests
 
-- [ ] Repeated audit output is byte-identical.
-- [ ] Baseline check passes.
-- [ ] API audit check passes.
-- [ ] Audit excludes tests/reference fixtures from authored production totals.
-- [ ] Smoke build leaves repository state unchanged.
+- [x] Repeated audit output is byte-identical.
+- [x] Baseline check passes.
+- [x] API audit check passes.
+- [x] Audit excludes tests/reference fixtures from authored production totals.
+- [x] Smoke build leaves repository state unchanged.
 
 ### Acceptance criteria
 
-- [ ] Final maintenance and bundle cost is explicit.
-- [ ] No cleanup/refactor is hidden inside measurement.
+- [x] Final maintenance and bundle cost is explicit.
+- [x] No cleanup/refactor is hidden inside measurement.
 
 ---
 
@@ -1058,34 +1058,34 @@ documentation
 - [x] `THREAD-UTILITY-DOWNLOADS-01`
 - [x] `THREAD-UTILITY-PALETTE-01`
 - [x] `THREAD-UTILITY-SETTINGS-01`
-- [ ] `THREAD-UTILITY-HARDENING-01`
-- [ ] `THREAD-UTILITY-VERIFY-01`
-- [ ] `THREAD-UTILITY-SIZE-AUDIT-01`
-- [ ] `npm run lint`
-- [ ] `npm run lint:addons`
-- [ ] zero lint warnings
-- [ ] `npm test`
-- [ ] manifest validation
-- [ ] trusted-catalog check
-- [ ] add-on structure validation
-- [ ] regular smoke build
-- [ ] release smoke build
-- [ ] no build-cache change
-- [ ] no tracked `dist/` change
-- [ ] no unrelated version bump
-- [ ] `git diff --check`
-- [ ] no raw core action outside adaptor/API wrappers
-- [ ] no sibling add-on/core-internal import
-- [ ] no duplicate lifecycle/UI owner
-- [ ] no stale commit after invalidation
-- [ ] teardown acknowledgment exactly once
-- [ ] no raw observer or polling
-- [ ] exact tag `+N`
-- [ ] explicit Description expansion
-- [ ] conservative download extraction
-- [ ] Masked Direct remains sole resolver owner
-- [ ] reference attribution present
-- [ ] final deterministic audit evidence generated
+- [x] `THREAD-UTILITY-HARDENING-01`
+- [x] `THREAD-UTILITY-VERIFY-01`
+- [x] `THREAD-UTILITY-SIZE-AUDIT-01`
+- [x] `npm run lint`
+- [x] `npm run lint:addons`
+- [x] zero lint warnings
+- [x] `npm test`
+- [x] manifest validation
+- [x] trusted-catalog check
+- [x] add-on structure validation
+- [x] regular smoke build
+- [x] release smoke build
+- [x] no build-cache change
+- [x] no tracked `dist/` change
+- [x] no unrelated version bump
+- [x] `git diff --check`
+- [x] no raw core action outside adaptor/API wrappers
+- [x] no sibling add-on/core-internal import
+- [x] no duplicate lifecycle/UI owner
+- [x] no stale commit after invalidation
+- [x] teardown acknowledgment exactly once
+- [x] no raw observer or polling
+- [x] exact tag `+N`
+- [x] explicit Description expansion
+- [x] conservative download extraction
+- [x] Masked Direct remains sole resolver owner
+- [x] reference attribution present
+- [x] final deterministic audit evidence generated
 
 ---
 
