@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "identifier": "8525c0f628c391277e826f954d53d7da087ae2523c050fcdf49bc3514b5836e9",
+  "identifier": "2c905c4ada477e9550f78cefd7ae0209bf0a235cf2856d1b932cb9d210683909",
   "catalog": [
     {
       "id": "example-addon",
@@ -252,7 +252,7 @@
         "ui.dock",
         "ui.dialog"
       ],
-      "downloadUrl": "",
+      "downloadUrl": "https://greasyfork.org/en/scripts/589439-f95ue-thread-utility-add-on",
       "trusted": true
     }
   ]

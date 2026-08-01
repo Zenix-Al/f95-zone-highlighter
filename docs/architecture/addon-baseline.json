@@ -268,7 +268,7 @@
         "pageScopes": [
           "thread"
         ],
-        "downloadUrl": "",
+        "downloadUrl": "https://greasyfork.org/en/scripts/589439-f95ue-thread-utility-add-on",
         "capabilities": [
           "feature",
           "page",
@@ -283,7 +283,7 @@
     ]
   },
   "trustedCatalog": {
-    "source": "src/generated/trusted-addon-catalog.8525c0f628c39127.json",
+    "source": "src/generated/trusted-addon-catalog.2c905c4ada477e95.json",
     "projection": [
       {
         "id": "example-addon",
@@ -424,7 +424,7 @@
         "matches": [
           "*://f95zone.to/threads/*"
         ],
-        "downloadUrl": "",
+        "downloadUrl": "https://greasyfork.org/en/scripts/589439-f95ue-thread-utility-add-on",
         "trusted": true
       }
     ],
@@ -4228,7 +4228,7 @@
     },
     "servicesAddons": {
       "fileCount": 34,
-      "authoredBytes": 183748,
+      "authoredBytes": 183816,
       "physicalLines": 5039,
       "nonblankLines": 4402,
       "files": [
@@ -4420,7 +4420,7 @@
         },
         {
           "path": "src/services/addons/trusted-catalog.json",
-          "bytes": 6376,
+          "bytes": 6444,
           "physicalLines": 255,
           "nonblankLines": 255
         },
