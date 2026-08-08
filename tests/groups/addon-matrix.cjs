@@ -504,17 +504,17 @@ module.exports = function registerAddonMatrixTests(context) {
           },
         );
       }
-      for (const [url, route, usesCore] of [
-        ["https://f95zone.to/threads/example.1/", "thread", true],
-        ["https://f95zone.to/masked/example/", "masked", true],
-        ["https://f95zone.to/", "unsupported", false],
-        ["https://example.com/file/example", "unsupported", false],
+      for (const [url, route, kind, usesCore] of [
+        ["https://f95zone.to/threads/example.1/", "thread", "f95-core", true],
+        ["https://f95zone.to/masked/example/", "masked", "f95-optional-core", true],
+        ["https://f95zone.to/", "unsupported", "unsupported", false],
+        ["https://example.com/file/example", "unsupported", "unsupported", false],
       ]) {
         const result = classifyMaskedDirectContext(new URL(url), {
           isSupportedExternalHost: isExternalHost,
         });
         assert.deepStrictEqual(result, {
-          kind: usesCore ? "f95-core" : "unsupported",
+          kind,
           route,
           usesCore,
         });

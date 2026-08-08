@@ -1,14 +1,22 @@
 # F95UE Masked + Direct Download Add-on
 
-Masked + Direct is a hybrid userscript:
+Masked + Direct is a hybrid userscript with a deliberately limited standalone
+fallback:
 
 - On F95Zone it registers with core, resolves masked links, opens managed
   download tabs, and receives targeted results.
-- On supported external hosts it runs without core, but it automates a download
-  only when the page can prove that a fresh request was created by an F95 tab.
+- On F95Zone `/masked/*`, confirmed missing core may resolve once and navigate
+  directly. Standalone mode does not recreate thread observers or Resolve
+  buttons; those remain core-owned.
+- On supported external hosts, exact managed requests always win. Otherwise,
+  only approved routes may automate when standalone policy permits it.
 - On narrowly matched Google and recaptcha.net `/recaptcha/*` frames it runs
   only the existing masked-link checkbox fallback, without core registration.
-- On unsupported or manually opened external pages it performs no automation.
+- On unsupported routes it performs no automation.
+
+Standalone execution never publishes an origin result, schedules managed tab
+closing, or writes a managed request. A short-lived probing lease prevents an
+external tab from consuming stale missing-core policy during the F95 handshake.
 
 The detailed storage and redirect guarantees are documented in
 [`docs/architecture/masked-direct-reliability.md`](../../docs/architecture/masked-direct-reliability.md).

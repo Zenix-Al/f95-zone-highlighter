@@ -1,5 +1,17 @@
 # Changelog
 
+## v1.1.2 - Limited standalone automation
+
+- Allow approved download-host routes to automate when standalone policy
+  permits it, while keeping exact managed requests authoritative.
+- Keep standalone outcomes local: no origin signal, managed close, or managed
+  request mutation.
+- Let `/masked/*` resolve without core through bare navigation; thread Resolve
+  buttons remain core-owned.
+- Guard masked resolution as one abortable operation with bounded captcha
+  readiness, one retry, validation, and late-commit cleanup.
+- Preserve both saved preferences through probing, recovery, and expiry.
+
 ## v1.1.1 - vik1ngfile bugfix
 
 - Fixed vik1ngfile direct-download flow.

@@ -1,0 +1,23 @@
+{
+  "success": {
+    "status": 200,
+    "body": "{\"status\":\"ok\",\"msg\":\"https://pixeldrain.com/u/example\"}"
+  },
+  "serverFailure": {
+    "status": 503,
+    "body": "Service unavailable"
+  },
+  "malformedJson": {
+    "status": 200,
+    "body": "{not-json"
+  },
+  "captcha": {
+    "status": 200,
+    "body": "{\"status\":\"captcha\"}"
+  },
+  "invalidDestination": {
+    "status": 200,
+    "body": "{\"status\":\"ok\",\"msg\":\"not a valid destination\"}"
+  },
+  "continuePageSelector": ".host_link"
+}

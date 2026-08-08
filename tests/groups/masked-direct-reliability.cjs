@@ -35,7 +35,12 @@ module.exports = function registerMaskedDirectReliability(context) {
           "f95-core",
           "thread",
         ],
-        ["/masked/", "https://f95zone.to/masked/abc", "f95-core", "masked"],
+        [
+          "/masked/",
+          "https://f95zone.to/masked/abc",
+          "f95-optional-core",
+          "masked",
+        ],
         [
           "external standalone",
           "https://gofile.io/d/a",

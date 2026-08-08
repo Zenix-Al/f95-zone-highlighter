@@ -12,12 +12,13 @@ import {
 } from "../../ports/processingDownloadRepository.js";
 import { normalizeDirectDownloadHost } from "../../hosts/metadata.js";
 import {
-  getRouteRequestId,
   readRouteContext,
   writeRouteContext,
 } from "../../ports/routeContextRepository.js";
 import { sleep } from "../../shared/utils.js";
 import { createCloudflareChallengeMonitor } from "../../hosts/shared/cloudflareChallenge.js";
+import { classifyStandaloneHostRoute } from "../../hosts/standaloneEligibility.js";
+import { createStandaloneRunGuard } from "../../ports/standaloneRunGuard.js";
 
 const DATANODES_IDENTIFIER_WAIT_MS = 15 * 1000;
 const DATANODES_IDENTIFIER_POLL_MS = 250;
@@ -29,16 +30,20 @@ export function createDownloadPageController({
   getIsBlockedByCore,
   getIsEnabled,
   handlers,
-  notifyChallenge,
   originTabQueryKey,
   onManagedRequestResolved,
+  getStandalonePolicy,
+  createHostExecutionContext,
+  createChallengeMonitor = createCloudflareChallengeMonitor,
 }) {
   function getDownloadHost() {
     return normalizeDirectDownloadHost(location.hostname);
   }
 
-  async function shouldRunHostAutomation(host) {
-    if (!host || !getIsEnabled() || getIsBlockedByCore()) return false;
+  async function decideHostAutomation(host) {
+    if (!host) return blockedDecision(host, "unsupported_host");
+    if (!getIsEnabled()) return blockedDecision(host, "addon_disabled");
+    if (getIsBlockedByCore()) return blockedDecision(host, "blocked_by_core");
     let marker = "";
     let originTabId = "";
     let requestId = "";
@@ -121,11 +126,36 @@ export function createDownloadPageController({
       ) {
         restoreRouteMarkersFromTrigger(trigger, originTabQueryKey);
         onManagedRequestResolved?.(trigger);
-        return true;
+        return {
+          mode: "managed",
+          host,
+          reason: "validated_managed_request",
+          request: trigger,
+        };
       }
     }
 
-    return false;
+    let policy = null;
+    try {
+      policy = await getStandalonePolicy?.();
+    } catch {
+      policy = null;
+    }
+    if (!policy?.effectiveAutomateRegardless) {
+      return blockedDecision(host, "standalone_policy_disabled");
+    }
+    const route = classifyStandaloneHostRoute(host, location.href);
+    if (!route.eligible) return blockedDecision(host, route.reason);
+    return {
+      mode: "standalone",
+      host,
+      reason: route.reason,
+      request: null,
+    };
+  }
+
+  async function shouldRunHostAutomation(host) {
+    return (await decideHostAutomation(host)).mode === "managed";
   }
 
   async function runDownloadPageHooks() {
@@ -135,9 +165,10 @@ export function createDownloadPageController({
       return;
     }
 
-    if (!(await shouldRunHostAutomation(host))) {
+    const decision = await decideHostAutomation(host);
+    if (decision.mode === "blocked") {
       console.info(
-        `[${addonId}] Download hooks blocked by automation gate. host=${host} href=${location.href}`,
+        `[${addonId}] Download hooks blocked by automation gate. host=${host} reason=${decision.reason} href=${location.href}`,
       );
       debugLog("DownloadHooks", "Automation gate blocked host run.", {
         host,
@@ -155,14 +186,38 @@ export function createDownloadPageController({
       return;
     }
 
+    const standaloneGuard =
+      decision.mode === "standalone" ? createStandaloneRunGuard() : null;
+    const standaloneRoute = location.href;
+    if (standaloneGuard && !standaloneGuard.claim(host, standaloneRoute)) {
+      console.info(
+        `[${addonId}] Standalone host automation skipped by one-shot guard. host=${host}`,
+      );
+      return;
+    }
+
     console.info(`[${addonId}] Download hooks running for host=${host}.`);
 
-    const challengeMonitor = createCloudflareChallengeMonitor({
+    const executionContext =
+      typeof createHostExecutionContext === "function"
+        ? createHostExecutionContext(decision, {
+            onStandaloneFailure: () =>
+              standaloneGuard?.release(host, standaloneRoute),
+            onStandaloneSuccess: () =>
+              standaloneGuard?.complete(host, standaloneRoute),
+          })
+        : {
+            mode: decision.mode,
+            request: decision.request,
+            notifyChallenge: async () => {},
+          };
+    const challengeMonitor = createChallengeMonitor({
       debugLog,
       host,
-      notifyChallenge,
+      notifyChallenge: executionContext.notifyChallenge,
       preserveRequest: async () => {
-        const requestId = getRouteRequestId();
+        if (decision.mode !== "managed") return;
+        const requestId = String(decision.request?.requestId || "").trim();
         if (!requestId) return;
         await updateProcessingDownloadTrigger(GMApi, requestId, {
           expiresAt: Date.now() + DIRECT_DOWNLOAD_ROUTE_TTL_MS,
@@ -173,9 +228,22 @@ export function createDownloadPageController({
     window.addEventListener("pagehide", challengeMonitor.dispose, {
       once: true,
     });
-    if (!(await challengeMonitor.waitUntilClear())) return;
+    if (!(await challengeMonitor.waitUntilClear())) {
+      standaloneGuard?.release(host, standaloneRoute);
+      return;
+    }
 
-    const exec = () => handler(challengeMonitor);
+    const exec = async () => {
+      try {
+        await handler(challengeMonitor, decision, executionContext);
+      } catch (error) {
+        await executionContext.notifyMainFailure?.(
+          host,
+          error?.message || String(error),
+          "host_handler_failed",
+        );
+      }
+    };
 
     if (document.readyState === "loading") {
       document.addEventListener(
@@ -193,8 +261,18 @@ export function createDownloadPageController({
 
   return {
     getDownloadHost,
+    decideHostAutomation,
     runDownloadPageHooks,
     shouldRunHostAutomation,
+  };
+}
+
+function blockedDecision(host, reason) {
+  return {
+    mode: "blocked",
+    host: String(host || ""),
+    reason,
+    request: null,
   };
 }
 

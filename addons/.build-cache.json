@@ -1,7 +1,7 @@
 {
   "addons": {
     "library-addon": {
-      "regular": "3eba47d258104459afe1337e741589ce2f5a67ce400cb17e13b78cd3698d9a95",
+      "regular": "acbe85cc41e0cbbe41c301205f8066ce894a1129070beeebfd64d0e5833d519a",
       "release": "83e774c3606b514bec7d111cb530b27a5f2f26e86fd85e35df81b77bef0ffc76"
     },
     "image-repair-addon": {
@@ -9,19 +9,19 @@
       "regular": "caacd5214f6f63a95e6bed0cbe8ab2e21cce9758edd76f9a13d8df5f85d82f2b"
     },
     "masked-direct-addon": {
-      "release": "0613e1f95ef7513b139343a42b8578028ab0fb070f3484bee6b50f34f7e6a88f",
-      "regular": "da7aad86e1c5bb8841fc3ff47743fa8dfaeaffa0136c2d2e74b4bda93870a0c8"
+      "release": "def4180bacfe6d8b720a45cdf4665c039a0d4ccca87a95e8675c53d3678357d7",
+      "regular": "0cbfced585e5c3134dd53deabbb9001db1d14b91ccf2768237dc1f049a61a6ab"
     },
     "latest-filters-addon": {
       "release": "4f710e18bac0fbf71d9b0003384b4f2f866a7e616a31d939f9379d77d24d64c1",
-      "regular": "486b368d421e3d4d700dd98bbc8caae0dfed2c77e89ace3471dd37d2851c60a8"
+      "regular": "e1cd1031ff3f28a8ec5746ca0a9b06e0503b91487043e52d4ffc2123972506b4"
     },
     "halloween-theme-addon": {
       "release": "7f0ea5a0fd93cb562a00e6c2d093ec53ba8972d13cb8f9c2e34cdc434014e3d9",
       "regular": "b4c5f96a0069239be083ac3561f9319431f9f142355fe742fb766d5d44ce7abf"
     },
     "example-addon": {
-      "regular": "77c3ec54c4ba3f5b6891c79af1c5bee1f644a8595d333fe28e634bc86b61c634",
+      "regular": "7fff543063794fe1bd66c1225985e7f694b7d81aa4b257a9faf11002560f19d2",
       "release": "32618a43e3ff3694bcbe502cf520fb9385fba2606104b0d23a64157e841e501d"
     },
     "site-repair-addon": {
@@ -29,7 +29,8 @@
       "release": "ca5c15ff4b103d81abec821bff5f01f0865cd4e987dbec568eb7fd93477a7534"
     },
     "thread-utility-addon": {
-      "release": "4ccb1bdea7fca63e72e55969c1af9fcef66503d052d74158ed6df59588bf4479"
+      "release": "4ccb1bdea7fca63e72e55969c1af9fcef66503d052d74158ed6df59588bf4479",
+      "regular": "0b20c8f0f73e1a40d92d9aba73f81b25d8566f039980cf3fc82af89b5e454266"
     }
   }
 }

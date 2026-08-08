@@ -508,6 +508,7 @@ Run commands from the repository root:
 ```bash
 # Every changed add-on
 npm run build:addons
+npm run build:addons:no-bump
 npm run build:addons:release
 
 # One add-on

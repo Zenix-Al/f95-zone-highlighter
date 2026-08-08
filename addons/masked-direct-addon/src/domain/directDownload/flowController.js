@@ -291,7 +291,38 @@ export function createDirectDownloadFlowController({
     }
   }
 
+  function createHostExecutionContext(decision, healthOptions = {}) {
+    const mode = decision?.mode === "managed" ? "managed" : "standalone";
+    const host = String(decision?.host || getDownloadHost() || "unknown");
+    if (mode === "managed") {
+      return {
+        mode,
+        request: decision?.request || null,
+        notifyMainFailure,
+        notifyChallenge: notifyMainChallenge,
+        reportAddonHealthy: () => reportAddonHealthy(healthOptions),
+      };
+    }
+
+    return {
+      mode,
+      request: null,
+      async notifyMainFailure(_hostLabel, _message, errorCode = "") {
+        diagnostics.warn(errorCode || "standalone_download_failed", { host });
+        healthOptions.onStandaloneFailure?.();
+      },
+      async notifyChallenge() {
+        diagnostics.warn("standalone_challenge", { host });
+      },
+      reportAddonHealthy() {
+        healthOptions.onStandaloneSuccess?.();
+        console.info(`[${addonId}] standalone_download_triggered`, { host });
+      },
+    };
+  }
+
   return {
+    createHostExecutionContext,
     notifyMainChallenge,
     notifyMainFailure,
     openLinkNormally,

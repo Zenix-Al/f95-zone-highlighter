@@ -60,7 +60,9 @@ export function createMaskedDirectLifecycle({
   function refresh() {
     if (terminal) return;
     settings.invalidate();
-    void pageBehavior.apply();
+    const reread =
+      typeof settings.read === "function" ? settings.read(true) : Promise.resolve();
+    void Promise.resolve(reread).finally(() => pageBehavior.apply());
   }
 
   function bindCommands() {

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "identifier": "2c905c4ada477e9550f78cefd7ae0209bf0a235cf2856d1b932cb9d210683909",
+  "identifier": "9f1ce3c4f1866ddcc5e75e28e5681044b0dab3e71e4a40222ace144c440b8f55",
   "catalog": [
     {
       "id": "example-addon",
@@ -127,7 +127,7 @@
       "id": "masked-direct-addon",
       "name": "F95UE Masked + Direct Download Add-on",
       "description": "Combines masked-link skipper and direct-download flows into one trusted add-on.",
-      "version": "1.1.1",
+      "version": "1.1.2",
       "pageScopes": [
         "f95zone"
       ],

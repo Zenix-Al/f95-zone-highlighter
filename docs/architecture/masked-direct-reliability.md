@@ -4,13 +4,39 @@ The step-by-step host integration and review checklist lives in
 [`addons/masked-direct-addon/README.md`](../../addons/masked-direct-addon/README.md).
 This document records the architecture and retained compatibility contracts.
 
-Masked + Direct is a hybrid add-on. F95 thread and `/masked/` routes use the
-core registration contract. Supported download hosts run standalone and become
-managed only when an exact, fresh request identity is present in the URL or the
-tab's session route context. Unsupported pages perform no bridge or host work.
+Masked + Direct is a hybrid add-on. F95 thread routes require the core
+registration contract. `/masked/` routes prefer that contract, but after the
+bounded ping and access probes confirm core is missing they may run one local
+resolver operation and navigate directly. This limited fallback does not
+recreate thread observers or Resolve buttons.
+
+Supported download hosts run without the core bridge. Exact managed requests
+remain authoritative; requestless automation is restricted to approved routes
+and requires standalone policy. Standalone outcomes do not publish origin
+events, mutate managed requests, or schedule managed closing. Unsupported pages
+perform no bridge or host work.
 Narrow Google and recaptcha.net `/recaptcha/*` iframe matches form a separate
 standalone context used only by the masked-link checkbox fallback; they do not
 register with core or enter download-host automation.
+
+## Standalone policy recovery
+
+The saved `automateRegardless` and `skipMaskedLink` preferences and the
+temporary missing-core override are independent values in one versioned policy
+snapshot. The F95 branch publishes the override only after
+all bounded core ping attempts and the access probe fail. A later F95 page load
+that detects core clears the override before normal registration and mirrors
+the saved preferences again when settings are read.
+
+External hosts never probe core. If core is installed or enabled after a failed
+F95 bootstrap has already returned, restoration waits until Masked Direct next
+runs on an F95 route. The missing-core observation expires after seven days;
+expiry removes only the forced behavior and preserves both mirrored
+preferences. Policy writes compare observation times, and a same-time confirmed
+core observation takes precedence over a missing-core observation. No
+heartbeat, background core polling, or cross-origin core bridge is installed.
+A short-lived `probing` lease blocks requestless host automation until F95
+ownership settles; an abandoned lease expires fail-closed.
 
 Each live handoff is stored independently at
 `f95ue.addon.maskedDirect.request.<requestId>`. Completion, failure, timeout,
