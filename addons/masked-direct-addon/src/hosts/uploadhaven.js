@@ -6,7 +6,7 @@ import {
   isElementVisible,
   waitForCandidate,
 } from "./shared/dom.js";
-import { classifyFilePageUrl } from "./shared/filePage.js";
+import { matchesDirectDownloadHostPath } from "./shared/filePage.js";
 
 const HOST_LABEL = "uploadhaven.com";
 const DOWNLOAD_PATH_PATTERN = /^\/download\/[^/]+\/?$/i;
@@ -14,9 +14,10 @@ const RECENT_RUN_TTL_MS = 30000;
 export const UPLOADHAVEN_POST_CLICK_GRACE_MS = 10000;
 
 export function isUploadHavenDownloadPage(url = location.href) {
-  return (
-    classifyFilePageUrl(url, { pathPattern: DOWNLOAD_PATH_PATTERN }) === "file"
-  );
+  return matchesDirectDownloadHostPath(url, {
+    hostId: "uploadhaven",
+    pathPattern: DOWNLOAD_PATH_PATTERN,
+  });
 }
 
 function findReadyFreeDownloadButton() {

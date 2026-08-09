@@ -4,16 +4,18 @@ import {
   isElementDisabled,
   isElementVisible,
 } from "./shared/dom.js";
-import { classifyFilePageUrl } from "./shared/filePage.js";
+import { matchesDirectDownloadHostPath } from "./shared/filePage.js";
 
 const HOST_LABEL = "uploadnow.io";
-const SHARE_PATH_PATTERN = /^\/[^/]+\/share\/?$/i;
+const SHARE_PATH_PATTERN = /^\/[a-z]{2}(?:-[a-z]{2})?\/share\/?$/i;
 const DOWNLOAD_ICON_SELECTOR = 'svg[data-icon="arrow-down-to-line"]';
 
 export function isUploadNowSharePage(url = location.href) {
-  return (
-    classifyFilePageUrl(url, { pathPattern: SHARE_PATH_PATTERN }) === "file"
-  );
+  return matchesDirectDownloadHostPath(url, {
+    hostId: "uploadnow",
+    pathPattern: SHARE_PATH_PATTERN,
+    baseUrl: "https://uploadnow.io/",
+  });
 }
 
 function findDownloadButtons() {

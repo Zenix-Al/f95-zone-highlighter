@@ -57,6 +57,8 @@ until they gain sufficiently narrow standalone route classification.
 
 This is deliberately a limited standalone baseline: a compiled-in host is not
 automatically standalone-safe merely because managed automation supports it.
+The maintained examples and route-shape caveats are recorded in the
+"Observed host route catalog" section of `masked-direct-reliability.md`.
 
 ## Retained regression evidence
 

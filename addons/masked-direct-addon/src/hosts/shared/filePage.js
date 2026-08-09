@@ -1,3 +1,21 @@
+import { isExactDirectDownloadHost } from "../metadata.js";
+
+export function matchesDirectDownloadHostPath(
+  url,
+  { hostId, pathPattern, baseUrl = location.href },
+) {
+  try {
+    const parsed = new URL(url, baseUrl);
+    return (
+      isExactDirectDownloadHost(hostId, parsed.hostname) &&
+      pathPattern instanceof RegExp &&
+      pathPattern.test(parsed.pathname)
+    );
+  } catch {
+    return false;
+  }
+}
+
 export function classifyFilePageUrl(
   url,
   {

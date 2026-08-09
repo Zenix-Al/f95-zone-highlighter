@@ -23,6 +23,15 @@ module.exports = function registerMaskedDirectStandaloneHostGuards(context) {
         "download.gg",
         "uploadhaven.com",
         "pixeldrain.com",
+        "buzzheavier.com",
+        "gofile.io",
+        "mediafire.com",
+        "workupload.com",
+        "drive.google.com",
+        "miiiixdrop.net",
+        "uploadnow.io",
+        "datanodes.to",
+        "vik1ngfile.site",
       ]);
       for (const [host, url] of cases) {
         const sandbox = createDomSandbox(url);

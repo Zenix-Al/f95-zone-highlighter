@@ -8,10 +8,14 @@ import {
   isElementVisible,
   waitForCandidate,
 } from "./shared/dom.js";
-import { classifyFilePageUrl } from "./shared/filePage.js";
+import { matchesDirectDownloadHostPath } from "./shared/filePage.js";
+import { getDirectDownloadHostAliases } from "./metadata.js";
 
 const HOST_LABEL = "MixDrop";
 const FILE_PATH_PATTERN = /^\/f\/[^/]+\/?$/i;
+export const MIXDROP_HOST_ALIASES = Object.freeze([
+  ...getDirectDownloadHostAliases("mixdrop"),
+]);
 export const MIXDROP_POST_CLICK_GRACE_MS = 10000;
 const DOWNLOAD_BUTTON_SELECTORS = [
   "a.download-btn",
@@ -19,9 +23,11 @@ const DOWNLOAD_BUTTON_SELECTORS = [
 ];
 
 export function isMixdropFilePage(url = location.href) {
-  return (
-    classifyFilePageUrl(url, { pathPattern: FILE_PATH_PATTERN }) === "file"
-  );
+  return matchesDirectDownloadHostPath(url, {
+    hostId: "mixdrop",
+    pathPattern: FILE_PATH_PATTERN,
+    baseUrl: "https://mixdrop.ag/",
+  });
 }
 
 function isMixdropButton(anchor) {

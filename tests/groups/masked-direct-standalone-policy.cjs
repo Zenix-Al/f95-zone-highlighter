@@ -24,6 +24,30 @@ module.exports = function registerMaskedDirectStandalonePolicy(context) {
   });
 
   runTest(
+    "MASKED-DIRECT-STANDALONE-POLICY-01 waits for an initial missing-core decision",
+    async () => {
+      let timestamp = 1000;
+      const gm = createGM();
+      const { createStandaloneAutomationPolicyRepository } = loadModule(
+        "addons/masked-direct-addon/src/ports/standaloneAutomationPolicyRepository.js",
+      );
+      const repository = createStandaloneAutomationPolicyRepository({
+        GMApi: gm,
+        now: () => timestamp,
+      });
+      const policy = await repository.getEffectivePolicy({
+        waitForUnknown: true,
+        async sleep() {
+          timestamp += 100;
+          await repository.recordMissingCore();
+        },
+      });
+      assert.strictEqual(policy.coreState, "confirmed-missing");
+      assert.strictEqual(policy.effectiveAutomateRegardless, true);
+    },
+  );
+
+  runTest(
     "MASKED-DIRECT-STANDALONE-POLICY-01 separates user intent from missing-core force",
     async () => {
       let timestamp = 1000;

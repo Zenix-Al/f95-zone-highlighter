@@ -1,11 +1,12 @@
 import { normalizeDirectDownloadHost } from "../hosts/metadata.js";
+import { getSafeSessionStorage } from "./safeSessionStorage.js";
 
 export const STANDALONE_RUN_GUARD_PREFIX =
   "f95ue.addon.maskedDirect.standaloneRun.";
 export const STANDALONE_RUN_CLAIM_TTL_MS = 2 * 60 * 1000;
 
 export function createStandaloneRunGuard({
-  storage = sessionStorage,
+  storage = getSafeSessionStorage(),
   now = Date.now,
 } = {}) {
   function getKey(host, url = location.href) {

@@ -66,6 +66,7 @@ export function createMaskedDirectPageBehavior({
     }
 
     void downloadPageController.runDownloadPageHooks().catch((error) => {
+      console.error(`[${runtime.addonId}] Download page hook error:`, error);
       void directDownloadFlowController.notifyMainFailure(
         downloadPageController.getDownloadHost() || "unknown",
         error?.message || String(error),

@@ -162,7 +162,7 @@ module.exports = function registerMaskedDirectStandaloneEngine(context) {
         run: async ({ controller }) => {
           const decision = await controller.decideHostAutomation("datanodes.to");
           assert.strictEqual(decision.mode, "blocked");
-          assert.strictEqual(decision.reason, "host_not_standalone_approved");
+          assert.strictEqual(decision.reason, "unsafe_or_unsupported_route");
         },
       });
     },

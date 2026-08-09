@@ -145,7 +145,7 @@ downloadPageController = createDownloadPageController({
   onManagedRequestResolved:
     directDownloadFlowController.setActiveManagedRequest,
   getStandalonePolicy: () =>
-    standaloneAutomationPolicy.getEffectivePolicy(),
+    standaloneAutomationPolicy.getEffectivePolicy({ waitForUnknown: true }),
   createHostExecutionContext,
   handlers: createDirectDownloadHostHandlers({
     debugLog,

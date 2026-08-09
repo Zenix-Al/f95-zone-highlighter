@@ -1,9 +1,19 @@
 import { TIMINGS, SELECTORS } from "../constants.js";
 import { sleep } from "../shared/utils.js";
+import { matchesDirectDownloadHostPath } from "./shared/filePage.js";
 
 const GOFILE_BRIDGE_REQUEST_EVENT = "f95ue:gofile-download-request";
 const GOFILE_BRIDGE_RESULT_EVENT = "f95ue:gofile-download-result";
 const GOFILE_BRIDGE_MARKER = "__f95ue_gofile_bridge_installed";
+const GOFILE_CONTENT_PATH = /^\/d\/[a-z0-9_-]{5,64}\/?$/i;
+
+export function isGofileContentPage(url = location.href) {
+  return matchesDirectDownloadHostPath(url, {
+    hostId: "gofile",
+    pathPattern: GOFILE_CONTENT_PATH,
+    baseUrl: "https://gofile.io/",
+  });
+}
 
 function ensureGofilePageBridge() {
   try {
@@ -125,8 +135,11 @@ export async function processGofileDownload({
   challengeGate,
   notifyMainFailure,
   reportAddonHealthy,
+  contentReadyTimeoutMs = 20000,
+  pollIntervalMs = TIMINGS.POLL_INTERVAL,
+  postReadyWaitMs = TIMINGS.GOFILE_POST_READY_WAIT,
 }) {
-  const waitForContentReady = (timeout = 20000) =>
+  const waitForContentReady = (timeout = contentReadyTimeoutMs) =>
     new Promise((resolve, reject) => {
       const start = Date.now();
 
@@ -146,11 +159,11 @@ export async function processGofileDownload({
           resolve(true);
           return;
         }
-        if (Date.now() - start > timeout) {
+        if (Date.now() - start >= timeout) {
           reject(new Error("Timeout waiting for gofile content"));
           return;
         }
-        setTimeout(check, TIMINGS.POLL_INTERVAL);
+        setTimeout(check, pollIntervalMs);
       };
 
       check();
@@ -167,7 +180,7 @@ export async function processGofileDownload({
     return;
   }
 
-  await sleep(TIMINGS.GOFILE_POST_READY_WAIT);
+  await sleep(postReadyWaitMs);
   if (challengeGate && !(await challengeGate.waitUntilClear())) return;
 
   const alertEl = document.querySelector(SELECTORS.GOFILE.ALERT);

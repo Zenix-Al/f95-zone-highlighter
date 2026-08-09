@@ -6,7 +6,12 @@
 
 This add-on combines masked-link resolving and supported download-host
 automation into one trusted package for F95UE. It can also run without core
-with deliberately limited standalone capabilities.
+with deliberately limited but automatic standalone capabilities.
+
+**Standalone warning:** when F95UE core is unavailable, installing and enabling
+this userscript allows it to run automation automatically on every approved
+host route you open. There is no origin-tab request or core control in that
+mode; opening a supported download page directly can trigger its automation.
 
 Core remains recommended for thread-page controls, managed downloads,
 notifications, and the complete settings experience.
@@ -47,12 +52,18 @@ notifications, and the complete settings experience.
 
 ### Limited standalone mode
 
-Without F95UE core, the add-on can:
+Without F95UE core, approved standalone automation is forced on temporarily;
+the saved core-managed preference is not changed. The add-on can:
 
 - skip supported `/masked/*` intermediary pages using normal navigation;
-- automate only narrowly approved download-host routes when standalone policy
-  permits it; and
+- automate narrowly approved routes on Buzzheavier/Bzzhr, Gofile, Google
+  Drive, KrakenFiles, MixDrop, UploadHaven, UploadNow, Pixeldrain, Datanodes,
+  DelaFil, download.gg, Vik1ngFile/VikingFile, MediaFire, and Workupload; and
 - preserve safe host checks and duplicate-action guards.
+
+This means standalone automation is not controlled by an F95 origin tab. If
+the userscript is enabled and you manually open one of those approved routes,
+the host-specific automation may run immediately.
 
 Standalone mode does **not** add Resolve buttons to thread pages, recreate the
 core observer, send notifications to an origin tab, create managed download

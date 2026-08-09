@@ -4,6 +4,7 @@ export const STANDALONE_AUTOMATION_POLICY_VERSION = 1;
 export const MISSING_CORE_OVERRIDE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 export const CORE_PROBE_LEASE_TTL_MS = 20 * 1000;
 const CORE_PROBE_POLL_MS = 100;
+const UNKNOWN_POLICY_WAIT_MS = 3000;
 
 const EMPTY_POLICY = Object.freeze({
   version: STANDALONE_AUTOMATION_POLICY_VERSION,
@@ -110,9 +111,21 @@ export function createStandaloneAutomationPolicyRepository({
 
   async function getEffectivePolicy({
     waitForProbe = true,
+    waitForUnknown = false,
     sleep = defaultSleep,
   } = {}) {
     let policy = await read();
+    const unknownDeadline = now() + UNKNOWN_POLICY_WAIT_MS;
+    while (
+      waitForUnknown &&
+      !policy.userPreference &&
+      !policy.forcedByMissingCore &&
+      ["unknown", "available"].includes(policy.coreState) &&
+      now() < unknownDeadline
+    ) {
+      await sleep(Math.min(CORE_PROBE_POLL_MS, unknownDeadline - now()));
+      policy = await read();
+    }
     while (
       waitForProbe &&
       policy.coreState === "probing" &&

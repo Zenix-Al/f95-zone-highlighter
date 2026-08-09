@@ -17,8 +17,13 @@ import {
 } from "../../ports/routeContextRepository.js";
 import { sleep } from "../../shared/utils.js";
 import { createCloudflareChallengeMonitor } from "../../hosts/shared/cloudflareChallenge.js";
-import { classifyStandaloneHostRoute } from "../../hosts/standaloneEligibility.js";
+import {
+  classifyStandaloneHostRoute,
+  describeStandaloneContinuation,
+  describeStandaloneEntry,
+} from "../../hosts/standaloneEligibility.js";
 import { createStandaloneRunGuard } from "../../ports/standaloneRunGuard.js";
+import { createStandaloneContinuationStore } from "../../ports/standaloneContinuation.js";
 
 const DATANODES_IDENTIFIER_WAIT_MS = 15 * 1000;
 const DATANODES_IDENTIFIER_POLL_MS = 250;
@@ -35,7 +40,15 @@ export function createDownloadPageController({
   getStandalonePolicy,
   createHostExecutionContext,
   createChallengeMonitor = createCloudflareChallengeMonitor,
+  createContinuationStore = createStandaloneContinuationStore,
 }) {
+  let continuationStore = null;
+  let activeRun = null;
+
+  function getContinuationStore() {
+    continuationStore ||= createContinuationStore();
+    return continuationStore;
+  }
   function getDownloadHost() {
     return normalizeDirectDownloadHost(location.hostname);
   }
@@ -145,12 +158,49 @@ export function createDownloadPageController({
       return blockedDecision(host, "standalone_policy_disabled");
     }
     const route = classifyStandaloneHostRoute(host, location.href);
-    if (!route.eligible) return blockedDecision(host, route.reason);
+    if (!route.eligible) {
+      const continuation = describeStandaloneContinuation(host, location.href);
+      if (!continuation) return blockedDecision(host, route.reason);
+      const operation = getContinuationStore().inspect({
+        host,
+        identity: continuation.identity,
+        stage: continuation.nextStage,
+      });
+      if (!operation)
+        return blockedDecision(host, "standalone_continuation_not_owned");
+      return {
+        mode: "standalone",
+        host,
+        reason: "standalone_owned_continuation",
+        request: null,
+        standaloneContinuation: continuation,
+        standaloneOperation: operation,
+      };
+    }
+    const entry = describeStandaloneEntry(host, location.href);
+    if (entry?.consumeExisting) {
+      const operation = getContinuationStore().inspect({
+        host,
+        identity: entry.identity,
+        stage: entry.nextStage,
+      });
+      if (operation) {
+        return {
+          mode: "standalone",
+          host,
+          reason: "standalone_owned_continuation",
+          request: null,
+          standaloneContinuation: entry,
+          standaloneOperation: operation,
+        };
+      }
+    }
     return {
       mode: "standalone",
       host,
       reason: route.reason,
       request: null,
+      standaloneEntry: entry,
     };
   }
 
@@ -158,7 +208,20 @@ export function createDownloadPageController({
     return (await decideHostAutomation(host)).mode === "managed";
   }
 
-  async function runDownloadPageHooks() {
+  function runDownloadPageHooks() {
+    if (activeRun) return activeRun;
+    activeRun = executeDownloadPageHooks().finally(() => {
+      activeRun = null;
+    });
+    return activeRun;
+  }
+
+  async function executeDownloadPageHooks() {
+    if (document.readyState === "loading") {
+      await new Promise((resolve) => {
+        document.addEventListener("DOMContentLoaded", resolve, { once: true });
+      });
+    }
     const host = getDownloadHost();
     if (!host) {
       console.info(`[${addonId}] Download hooks skipped: no supported host.`);
@@ -191,9 +254,28 @@ export function createDownloadPageController({
     const standaloneRoute = location.href;
     if (standaloneGuard && !standaloneGuard.claim(host, standaloneRoute)) {
       console.info(
-        `[${addonId}] Standalone host automation skipped by one-shot guard. host=${host}`,
+        `[${addonId}] Standalone host automation skipped by one-shot guard. host=${host} href=${standaloneRoute}`,
       );
       return;
+    }
+    const releaseIncompleteRun = () => {
+      standaloneGuard?.release(host, standaloneRoute);
+    };
+    window.addEventListener("pagehide", releaseIncompleteRun, { once: true });
+    if (decision.mode === "standalone" && decision.standaloneEntry) {
+      const operation = getContinuationStore().claim({
+        host,
+        identity: decision.standaloneEntry.identity,
+        nextStage: decision.standaloneEntry.nextStage,
+      });
+      if (!operation) {
+        standaloneGuard?.release(host, standaloneRoute);
+        console.info(
+          `[${addonId}] Standalone continuation claim failed. host=${host}`,
+        );
+        return;
+      }
+      decision.standaloneOperation = operation;
     }
 
     console.info(`[${addonId}] Download hooks running for host=${host}.`);
@@ -201,10 +283,14 @@ export function createDownloadPageController({
     const executionContext =
       typeof createHostExecutionContext === "function"
         ? createHostExecutionContext(decision, {
-            onStandaloneFailure: () =>
-              standaloneGuard?.release(host, standaloneRoute),
-            onStandaloneSuccess: () =>
-              standaloneGuard?.complete(host, standaloneRoute),
+            onStandaloneFailure: () => {
+              getContinuationStore().clear(host);
+              standaloneGuard?.release(host, standaloneRoute);
+            },
+            onStandaloneSuccess: () => {
+              getContinuationStore().clear(host);
+              standaloneGuard?.complete(host, standaloneRoute);
+            },
           })
         : {
             mode: decision.mode,
@@ -232,11 +318,31 @@ export function createDownloadPageController({
       standaloneGuard?.release(host, standaloneRoute);
       return;
     }
+    if (decision.mode === "standalone" && decision.standaloneContinuation) {
+      const operation = getContinuationStore().consume({
+        host,
+        identity: decision.standaloneContinuation.identity,
+        stage: decision.standaloneContinuation.nextStage,
+      });
+      if (!operation) {
+        standaloneGuard?.release(host, standaloneRoute);
+        console.info(
+          `[${addonId}] Standalone continuation was no longer owned after challenge handling. host=${host} href=${standaloneRoute}`,
+        );
+        return;
+      }
+      decision.standaloneOperation = operation;
+    }
 
     const exec = async () => {
       try {
         await handler(challengeMonitor, decision, executionContext);
       } catch (error) {
+        console.error(`[${addonId}] Host handler failed.`, {
+          host,
+          mode: decision.mode,
+          error,
+        });
         await executionContext.notifyMainFailure?.(
           host,
           error?.message || String(error),
@@ -244,17 +350,6 @@ export function createDownloadPageController({
         );
       }
     };
-
-    if (document.readyState === "loading") {
-      document.addEventListener(
-        "DOMContentLoaded",
-        () => {
-          void exec();
-        },
-        { once: true },
-      );
-      return;
-    }
 
     await exec();
   }

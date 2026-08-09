@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "identifier": "9f1ce3c4f1866ddcc5e75e28e5681044b0dab3e71e4a40222ace144c440b8f55",
+  "identifier": "814bd3d359c6a2e6d2b542066bfbadc585a3702bb8c88fef37fa4c6e828bcbc4",
   "catalog": [
     {
       "id": "example-addon",
@@ -127,7 +127,7 @@
       "id": "masked-direct-addon",
       "name": "F95UE Masked + Direct Download Add-on",
       "description": "Combines masked-link skipper and direct-download flows into one trusted add-on.",
-      "version": "1.1.2",
+      "version": "1.2.0",
       "pageScopes": [
         "f95zone"
       ],
@@ -149,6 +149,7 @@
         "https://krakenfiles.com/view/*/file.html*",
         "https://www.krakenfiles.com/view/*/file.html*",
         "https://mixdrop.ag/f/*",
+        "https://miixdrop.com/f/*",
         "https://miiixdrop.net/f/*",
         "https://miiiixdrop.net/f/*",
         "https://uploadhaven.com/download/*",
@@ -167,6 +168,8 @@
         "*://*.vikingfile.com/f/*",
         "*://www.mediafire.com/file/*",
         "*://mediafire.com/file/*",
+        "*://www.mediafire.com/file_premium/*",
+        "*://mediafire.com/file_premium/*",
         "*://workupload.com/file/*",
         "*://workupload.com/start/*",
         "*://*.workupload.com/file/*",

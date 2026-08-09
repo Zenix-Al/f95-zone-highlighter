@@ -38,6 +38,29 @@ heartbeat, background core polling, or cross-origin core bridge is installed.
 A short-lived `probing` lease blocks requestless host automation until F95
 ownership settles; an abandoned lease expires fail-closed.
 
+## Observed host route catalog
+
+These examples record live route shapes for maintenance and future standalone
+eligibility reviews. An observed route is not automatically approved for
+requestless automation; approval also requires an exact classifier and safe
+one-shot behavior.
+
+| Host | Observed route shape | Standalone note |
+|---|---|---|
+| Buzzheavier / Bzzhr | `https://bzzhr.to/<file-id>` | Narrow candidate; current primary action is a dynamically rendered `.download-row a.download-btn` with a signed same-origin `/<file-id>/download?t=...` endpoint. |
+| Gofile | `https://gofile.io/d/<content-id>` | Narrow candidate. Confirm single-file and multi-file behavior before approval. |
+| Google Drive | `https://drive.google.com/file/d/<file-id>`, `/open?...`, `/uc?...` | Managed file routes are known. `/drive/u/<n>/folders/<folder-id>` is a user folder route and must not be treated as a direct file route. |
+| Datanodes | `https://datanodes.to/<token>/<filename>` | Narrow candidate, but its multi-stage action flow still needs standalone review. |
+| MediaFire | `https://www.mediafire.com/file_premium/<file-id>/<filename>/file` | Narrow candidate; retain premium/regular route and final-link validation. |
+| MixDrop | `https://miixdrop.com/f/<file-id>` | Reported live route. `miixdrop.com` is not currently in add-on metadata; current aliases are `mixdrop.ag`, `miiixdrop.net`, and `miiiixdrop.net`. Verify the domain before changing matches. |
+| UploadNow | `https://uploadnow.io/en/share` | Broad share page without an ID in the path; keep managed-only unless page state proves exactly one file. |
+| Vik1ngFile / VikingFile | `https://vikingfile.com/f/<file-id>` | Narrow initial route, but cross-origin/marker-stripping recovery remains relevant. |
+| Workupload | `https://workupload.com/file/<file-id>` | Narrow candidate; retain final-action and `/start/*` handoff checks. |
+
+The userscript match patterns for Google Drive are broader than standalone
+authorization. A manifest match determines where code may load; it is not by
+itself permission to automate that route.
+
 Each live handoff is stored independently at
 `f95ue.addon.maskedDirect.request.<requestId>`. Completion, failure, timeout,
 close timing, result delivery, and cleanup always carry that request ID. A

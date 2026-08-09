@@ -7,16 +7,17 @@ import {
   isElementVisible,
   waitForCandidate,
 } from "./shared/dom.js";
-import { classifyFilePageUrl } from "./shared/filePage.js";
+import { matchesDirectDownloadHostPath } from "./shared/filePage.js";
 
 const HOST_LABEL = "krakenfiles.com";
 const FILE_PATH_PATTERN = /^\/view\/[^/]+\/file\.html\/?$/i;
 const DOWNLOAD_BUTTON_SELECTOR = "button[type='submit'].btn.btn-primary";
 
 export function isKrakenFilesFilePage(url = location.href) {
-  return (
-    classifyFilePageUrl(url, { pathPattern: FILE_PATH_PATTERN }) === "file"
-  );
+  return matchesDirectDownloadHostPath(url, {
+    hostId: "krakenfiles",
+    pathPattern: FILE_PATH_PATTERN,
+  });
 }
 
 function findDownloadButton() {

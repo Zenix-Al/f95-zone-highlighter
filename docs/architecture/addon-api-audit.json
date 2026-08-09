@@ -592,6 +592,7 @@
             "https://krakenfiles.com/view/*/file.html*",
             "https://www.krakenfiles.com/view/*/file.html*",
             "https://mixdrop.ag/f/*",
+            "https://miixdrop.com/f/*",
             "https://miiixdrop.net/f/*",
             "https://miiiixdrop.net/f/*",
             "https://uploadhaven.com/download/*",
@@ -610,6 +611,8 @@
             "*://*.vikingfile.com/f/*",
             "*://www.mediafire.com/file/*",
             "*://mediafire.com/file/*",
+            "*://www.mediafire.com/file_premium/*",
+            "*://mediafire.com/file_premium/*",
             "*://workupload.com/file/*",
             "*://workupload.com/start/*",
             "*://*.workupload.com/file/*",
@@ -688,7 +691,9 @@
           "addons/masked-direct-addon/src/ports/downloadSettingsRepository.js",
           "addons/masked-direct-addon/src/ports/processingDownloadRepository.js",
           "addons/masked-direct-addon/src/ports/routeContextRepository.js",
+          "addons/masked-direct-addon/src/ports/safeSessionStorage.js",
           "addons/masked-direct-addon/src/ports/standaloneAutomationPolicyRepository.js",
+          "addons/masked-direct-addon/src/ports/standaloneContinuation.js",
           "addons/masked-direct-addon/src/ports/standaloneRunGuard.js",
           "addons/masked-direct-addon/src/shared/diagnostics.js",
           "addons/masked-direct-addon/src/shared/downloadCloseDelay.js",
@@ -790,13 +795,18 @@
         "globalEventListeners": [
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 228,
-            "text": "window.addEventListener(\"pagehide\", challengeMonitor.dispose, {"
+            "line": 222,
+            "text": "document.addEventListener(\"DOMContentLoaded\", resolve, { once: true });"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 249,
-            "text": "document.addEventListener("
+            "line": 264,
+            "text": "window.addEventListener(\"pagehide\", releaseIncompleteRun, { once: true });"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
+            "line": 314,
+            "text": "window.addEventListener(\"pagehide\", challengeMonitor.dispose, {"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/threadPageController.js",
@@ -810,12 +820,12 @@
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-            "line": 17,
+            "line": 27,
             "text": "window.addEventListener(${JSON.stringify(GOFILE_BRIDGE_REQUEST_EVENT)}, (event) => {"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-            "line": 113,
+            "line": 123,
             "text": "window.addEventListener(GOFILE_BRIDGE_RESULT_EVENT, onReply, {"
           }
         ],
@@ -864,25 +874,25 @@
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-            "line": 4,
-            "text": "const GOFILE_BRIDGE_REQUEST_EVENT = \"f95ue:gofile-download-request\";",
-            "eventName": "f95ue:gofile-download-request"
-          },
-          {
-            "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-            "line": 4,
+            "line": 5,
             "text": "const GOFILE_BRIDGE_REQUEST_EVENT = \"f95ue:gofile-download-request\";",
             "eventName": "f95ue:gofile-download-request"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/gofile.js",
             "line": 5,
+            "text": "const GOFILE_BRIDGE_REQUEST_EVENT = \"f95ue:gofile-download-request\";",
+            "eventName": "f95ue:gofile-download-request"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/gofile.js",
+            "line": 6,
             "text": "const GOFILE_BRIDGE_RESULT_EVENT = \"f95ue:gofile-download-result\";",
             "eventName": "f95ue:gofile-download-result"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-            "line": 5,
+            "line": 6,
             "text": "const GOFILE_BRIDGE_RESULT_EVENT = \"f95ue:gofile-download-result\";",
             "eventName": "f95ue:gofile-download-result"
           },
@@ -1014,38 +1024,38 @@
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-            "line": 155,
+            "line": 184,
             "text": "setTimeout(resolve, 16);"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-            "line": 278,
+            "line": 310,
             "text": "timeoutTimer = setTimeout(() => {"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-            "line": 288,
+            "line": 320,
             "text": "observer = new MutationObserver(scheduleScan);"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-            "line": 298,
+            "line": 330,
             "text": "pollTimer = setInterval("
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-            "line": 303,
+            "line": 335,
             "text": "setTimeout(scheduleScan, 500);"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-            "line": 107,
+            "line": 117,
             "text": "const timer = setTimeout("
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-            "line": 153,
-            "text": "setTimeout(check, TIMINGS.POLL_INTERVAL);"
+            "line": 166,
+            "text": "setTimeout(check, pollIntervalMs);"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/shared/cloudflareChallenge.js",
@@ -1074,7 +1084,7 @@
           },
           {
             "path": "addons/masked-direct-addon/src/ports/standaloneAutomationPolicyRepository.js",
-            "line": 226,
+            "line": 239,
             "text": "return new Promise((resolve) => setTimeout(resolve, delay));"
           },
           {
@@ -1126,187 +1136,197 @@
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 40,
+            "line": 53,
             "text": "return normalizeDirectDownloadHost(location.hostname);"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 52,
+            "line": 65,
             "text": "const parsed = new URL(location.href);"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 54,
+            "line": 67,
             "text": "parsed.searchParams.get(AUTOMATION_MARKER_KEY) || \"\","
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 57,
+            "line": 70,
             "text": "parsed.searchParams.get(originTabQueryKey) || \"\","
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 60,
+            "line": 73,
             "text": "parsed.searchParams.get(DIRECT_DOWNLOAD_ROUTE_REQUEST_ID_KEY) || \"\","
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 63,
+            "line": 76,
             "text": "parsed.searchParams.get(DIRECT_DOWNLOAD_ROUTE_TS_KEY) || 0,"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 147,
+            "line": 160,
             "text": "const route = classifyStandaloneHostRoute(host, location.href);"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 171,
+            "line": 162,
+            "text": "const continuation = describeStandaloneContinuation(host, location.href);"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
+            "line": 180,
+            "text": "const entry = describeStandaloneEntry(host, location.href);"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
+            "line": 234,
             "text": "`[${addonId}] Download hooks blocked by automation gate. host=${host} reason=${decision.reason} href=${location.href}`,"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 175,
+            "line": 238,
             "text": "href: location.href,"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 191,
+            "line": 254,
             "text": "const standaloneRoute = location.href;"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 280,
+            "line": 375,
             "text": "return host === \"datanodes.to\" && location.pathname.startsWith(\"/download\");"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 287,
+            "line": 382,
             "text": "/^\\/(?:[a-z]{2}(?:-[a-z]{2})?\\/)?file-/i.test(location.pathname)) ||"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 288,
+            "line": 383,
             "text": "(host === \"vik1ngfile.site\" && location.pathname.startsWith(\"/f/\")) ||"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 290,
+            "line": 385,
             "text": "((location.hostname === \"drive.usercontent.google.com\" &&"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 291,
+            "line": 386,
             "text": "location.pathname.startsWith(\"/download\")) ||"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 292,
+            "line": 387,
             "text": "(location.hostname === \"drive.google.com\" &&"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 293,
+            "line": 388,
             "text": "(location.pathname.startsWith(\"/file/d/\") ||"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 294,
+            "line": 389,
             "text": "location.pathname === \"/open\" ||"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 295,
+            "line": 390,
             "text": "location.pathname === \"/uc\"))))"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 300,
+            "line": 395,
             "text": "const sourceIdentifier = location.pathname.split(\"/\").filter(Boolean).at(-1);"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 311,
+            "line": 406,
             "text": "sourceIdentifier: location.pathname.replace(/\\/+$/, \"\"),"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 326,
+            "line": 421,
             "text": "const parsed = new URL(location.href);"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 327,
+            "line": 422,
             "text": "const pathMatch = parsed.pathname.match(/^\\/file\\/d\\/([^/]+)/);"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 329,
+            "line": 424,
             "text": "pathMatch?.[1] || parsed.searchParams.get(\"id\") || \"\","
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 409,
+            "line": 504,
             "text": "const parsed = new URL(location.href);"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 410,
+            "line": 505,
             "text": "if (!parsed.searchParams.get(AUTOMATION_MARKER_KEY)) {"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 411,
+            "line": 506,
             "text": "parsed.searchParams.set(AUTOMATION_MARKER_KEY, \"1\");"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 413,
+            "line": 508,
             "text": "if (trigger.ownerTabId && !parsed.searchParams.get(originTabQueryKey)) {"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 414,
+            "line": 509,
             "text": "parsed.searchParams.set(originTabQueryKey, trigger.ownerTabId);"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 418,
+            "line": 513,
             "text": "!parsed.searchParams.get(DIRECT_DOWNLOAD_ROUTE_REQUEST_ID_KEY)"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 420,
+            "line": 515,
             "text": "parsed.searchParams.set("
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 427,
+            "line": 522,
             "text": "!parsed.searchParams.get(DIRECT_DOWNLOAD_ROUTE_TS_KEY)"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 429,
+            "line": 524,
             "text": "parsed.searchParams.set("
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 446,
+            "line": 541,
             "text": "const host = normalizeDirectDownloadHost(location.hostname);"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 448,
+            "line": 543,
             "text": "(host === \"datanodes.to\" && location.pathname.startsWith(\"/download\")) ||"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 450,
+            "line": 545,
             "text": "/^\\/(?:[a-z]{2}(?:-[a-z]{2})?\\/)?file-/i.test(location.pathname)) ||"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 451,
+            "line": 546,
             "text": "(host === \"vik1ngfile.site\" && location.pathname.startsWith(\"/f/\")) ||"
           },
           {
@@ -1531,18 +1551,68 @@
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/buzzheavier.js",
-            "line": 10,
+            "line": 12,
+            "text": "export function isBuzzheavierFilePage(url = location.href) {"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/buzzheavier.js",
+            "line": 25,
             "text": "window.location.origin,"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/buzzheavier.js",
-            "line": 20,
+            "line": 37,
             "text": "const hostLabel = location.hostname.includes(\"bzzhr.to\")"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/buzzheavier.js",
-            "line": 43,
-            "text": "\"HX-Current-URL\": window.location.href,"
+            "line": 55,
+            "text": "const parsed = new URL(endpoint);"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/buzzheavier.js",
+            "line": 57,
+            "text": "parsed.origin === window.location.origin &&"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/buzzheavier.js",
+            "line": 58,
+            "text": "parsed.pathname.endsWith(\"/download\");"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
+            "line": 12,
+            "text": "export function classifyDatanodesStandaloneEntry(url = location.href) {"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
+            "line": 14,
+            "text": "const parsed = new URL(url, \"https://datanodes.to/\");"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
+            "line": 15,
+            "text": "if (parsed.hostname !== HOST_LABEL) return null;"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
+            "line": 16,
+            "text": "const match = parsed.pathname.match(DATANODES_ENTRY_PATH);"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
+            "line": 31,
+            "text": "export function isDatanodesStandaloneDownloadPage(url = location.href) {"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
+            "line": 33,
+            "text": "const parsed = new URL(url, \"https://datanodes.to/\");"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
+            "line": 34,
+            "text": "return parsed.hostname === HOST_LABEL && parsed.pathname === \"/download\";"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/delafil.js",
@@ -1580,103 +1650,153 @@
             "text": "export function isDownloadGgFilePage(url = location.href) {"
           },
           {
+            "path": "addons/masked-direct-addon/src/hosts/gofile.js",
+            "line": 10,
+            "text": "export function isGofileContentPage(url = location.href) {"
+          },
+          {
             "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
-            "line": 21,
+            "line": 22,
             "text": "export function getGoogleDriveFileId(url = location.href) {"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
-            "line": 23,
-            "text": "const parsed = new URL(url, location.href);"
-          },
-          {
-            "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
             "line": 24,
-            "text": "const pathMatch = parsed.pathname.match(/^\\/file\\/d\\/([^/]+)/);"
+            "text": "const parsed = new URL(url, location.href);"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
             "line": 25,
+            "text": "const pathMatch = parsed.pathname.match(/^\\/file\\/d\\/([^/]+)/);"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
+            "line": 26,
             "text": "return pathMatch?.[1] || parsed.searchParams.get(\"id\") || \"\";"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
-            "line": 31,
-            "text": "export function classifyGoogleDrivePage(url = location.href) {"
+            "line": 32,
+            "text": "export function isGoogleDriveStandaloneEntryPage(url = location.href) {"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
-            "line": 33,
-            "text": "const parsed = new URL(url, location.href);"
+            "line": 34,
+            "text": "const parsed = new URL(url, \"https://drive.google.com/\");"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
             "line": 36,
-            "text": "parsed.hostname === \"drive.google.com\" &&"
+            "text": "parsed.hostname === \"drive.usercontent.google.com\" &&"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
-            "line": 38,
-            "text": "(parsed.pathname.startsWith(\"/file/d/\") || parsed.pathname === \"/open\")"
+            "line": 37,
+            "text": "parsed.pathname === \"/download\""
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
-            "line": 43,
-            "text": "(parsed.hostname === \"drive.google.com\" && parsed.pathname === \"/uc\") ||"
+            "line": 39,
+            "text": "return DRIVE_FILE_ID_PATTERN.test(parsed.searchParams.get(\"id\") || \"\");"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
-            "line": 44,
-            "text": "(parsed.hostname === \"drive.usercontent.google.com\" &&"
+            "line": 41,
+            "text": "if (parsed.hostname !== \"drive.google.com\") return false;"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
-            "line": 45,
-            "text": "parsed.pathname.startsWith(\"/download\"))"
+            "line": 42,
+            "text": "const pathMatch = parsed.pathname.match("
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
-            "line": 55,
-            "text": "export function buildGoogleDriveDownloadUrl(url = location.href) {"
+            "line": 46,
+            "text": "if (![\"/open\", \"/uc\"].includes(parsed.pathname)) return false;"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
-            "line": 58,
-            "text": "const target = new URL(\"https://drive.google.com/uc\");"
+            "line": 47,
+            "text": "const fileId = parsed.searchParams.get(\"id\") || \"\";"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
+            "line": 54,
+            "text": "export function classifyGoogleDrivePage(url = location.href) {"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
+            "line": 56,
+            "text": "const parsed = new URL(url, location.href);"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
             "line": 59,
+            "text": "parsed.hostname === \"drive.google.com\" &&"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
+            "line": 61,
+            "text": "(parsed.pathname.startsWith(\"/file/d/\") || parsed.pathname === \"/open\")"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
+            "line": 66,
+            "text": "(parsed.hostname === \"drive.google.com\" && parsed.pathname === \"/uc\") ||"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
+            "line": 67,
+            "text": "(parsed.hostname === \"drive.usercontent.google.com\" &&"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
+            "line": 68,
+            "text": "parsed.pathname.startsWith(\"/download\"))"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
+            "line": 78,
+            "text": "export function buildGoogleDriveDownloadUrl(url = location.href) {"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
+            "line": 81,
+            "text": "const target = new URL(\"https://drive.google.com/uc\");"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
+            "line": 82,
             "text": "target.searchParams.set(\"export\", \"download\");"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
-            "line": 60,
+            "line": 83,
             "text": "target.searchParams.set(\"id\", fileId);"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
-            "line": 70,
+            "line": 93,
             "text": "const parsed = new URL(href);"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
-            "line": 72,
+            "line": 95,
             "text": "parsed.hostname === \"drive.usercontent.google.com\" ||"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
-            "line": 73,
+            "line": 96,
             "text": "(parsed.hostname === \"drive.google.com\" && parsed.pathname === \"/uc\");"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
-            "line": 77,
+            "line": 100,
             "text": "(parsed.searchParams.has(\"confirm\") || text.includes(\"download\"))"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
-            "line": 118,
+            "line": 141,
             "text": "location.replace(target);"
           },
           {
@@ -1686,77 +1806,97 @@
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/mediafire.js",
-            "line": 14,
+            "line": 9,
+            "text": "export function isMediafireFilePage(url = location.href) {"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/mediafire.js",
+            "line": 19,
+            "text": "return [\"http:\", \"https:\"].includes(new URL(href).protocol);"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/mediafire.js",
+            "line": 34,
             "text": "const href = getAnchorHref(button, window.location.href);"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/mediafire.js",
-            "line": 43,
+            "line": 68,
             "text": "window.location.assign(href);"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/metadata.js",
-            "line": 106,
+            "line": 111,
             "text": "host.hostIncludes.map((hostname) => [hostname, host]),"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/metadata.js",
-            "line": 110,
+            "line": 115,
             "text": "function normalizeHostname(hostname) {"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/metadata.js",
-            "line": 111,
+            "line": 116,
             "text": "return String(hostname || \"\").toLowerCase();"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/metadata.js",
-            "line": 114,
+            "line": 119,
             "text": "export function findDirectDownloadHost(hostname) {"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/metadata.js",
-            "line": 115,
+            "line": 120,
             "text": "let normalized = normalizeHostname(hostname);"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/metadata.js",
-            "line": 127,
+            "line": 132,
             "text": "export function normalizeDirectDownloadHost(hostname) {"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/metadata.js",
-            "line": 128,
+            "line": 133,
             "text": "return findDirectDownloadHost(hostname)?.canonicalHost || \"\";"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/metadata.js",
-            "line": 131,
+            "line": 143,
+            "text": "export function isExactDirectDownloadHost(id, hostname) {"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/metadata.js",
+            "line": 144,
+            "text": "return getDirectDownloadHostAliases(id).includes(normalizeHostname(hostname));"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/metadata.js",
+            "line": 147,
             "text": "export function isSupportedDirectDownloadHost(hostname) {"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/metadata.js",
-            "line": 132,
+            "line": 148,
             "text": "return Boolean(findDirectDownloadHost(hostname));"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/metadata.js",
-            "line": 157,
+            "line": 173,
             "text": "export function isDirectDownloadHostEnabled(hostname, packages) {"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/metadata.js",
-            "line": 158,
+            "line": 174,
             "text": "const host = findDirectDownloadHost(hostname);"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/mixdrop.js",
-            "line": 21,
+            "line": 25,
             "text": "export function isMixdropFilePage(url = location.href) {"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/mixdrop.js",
-            "line": 40,
+            "line": 46,
             "text": "const protocol = new URL(href).protocol;"
           },
           {
@@ -1816,22 +1956,42 @@
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/shared/filePage.js",
-            "line": 6,
-            "text": "baseUrl = location.href,"
+            "line": 5,
+            "text": "{ hostId, pathPattern, baseUrl = location.href },"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/shared/filePage.js",
-            "line": 10,
+            "line": 8,
             "text": "const parsed = new URL(url, baseUrl);"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/shared/filePage.js",
-            "line": 11,
+            "line": 10,
+            "text": "isExactDirectDownloadHost(hostId, parsed.hostname) &&"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/shared/filePage.js",
+            "line": 12,
+            "text": "pathPattern.test(parsed.pathname)"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/shared/filePage.js",
+            "line": 24,
+            "text": "baseUrl = location.href,"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/shared/filePage.js",
+            "line": 28,
+            "text": "const parsed = new URL(url, baseUrl);"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/shared/filePage.js",
+            "line": 29,
             "text": "if (!(pathPattern instanceof RegExp) || !pathPattern.test(parsed.pathname)) {"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/shared/filePage.js",
-            "line": 14,
+            "line": 32,
             "text": "if (terminalQueryKeys.some((key) => parsed.searchParams.has(key))) {"
           },
           {
@@ -1866,8 +2026,73 @@
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/standaloneEligibility.js",
-            "line": 16,
+            "line": 57,
             "text": "export function classifyStandaloneHostRoute(host, url = location.href) {"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/standaloneEligibility.js",
+            "line": 75,
+            "text": "export function describeStandaloneEntry(host, url = location.href) {"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/standaloneEligibility.js",
+            "line": 83,
+            "text": "export function describeStandaloneContinuation(host, url = location.href) {"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/standaloneEligibility.js",
+            "line": 96,
+            "text": "const parsed = new URL(url, \"https://drive.google.com/\");"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/standaloneEligibility.js",
+            "line": 97,
+            "text": "const pathMatch = parsed.pathname.match(/^\\/file\\/d\\/([^/]+)/i);"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/standaloneEligibility.js",
+            "line": 98,
+            "text": "const identity = pathMatch?.[1] || parsed.searchParams.get(\"id\") || \"\";"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/standaloneEligibility.js",
+            "line": 104,
+            "text": "parsed.pathname === \"/uc\" ||"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/standaloneEligibility.js",
+            "line": 105,
+            "text": "parsed.hostname === \"drive.usercontent.google.com\","
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/standaloneEligibility.js",
+            "line": 115,
+            "text": "const parsed = new URL(url, \"https://drive.usercontent.google.com/\");"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/standaloneEligibility.js",
+            "line": 117,
+            "text": "parsed.hostname !== \"drive.usercontent.google.com\" ||"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/standaloneEligibility.js",
+            "line": 118,
+            "text": "parsed.pathname !== \"/download\" ||"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/standaloneEligibility.js",
+            "line": 119,
+            "text": "parsed.searchParams.get(\"id\")"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/standaloneEligibility.js",
+            "line": 129,
+            "text": "const parsed = new URL(url, \"https://datanodes.to/\");"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/standaloneEligibility.js",
+            "line": 130,
+            "text": "return parsed.hostname === \"datanodes.to\" && parsed.pathname.startsWith(\"/download\")"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/uploadhaven.js",
@@ -1876,7 +2101,7 @@
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/uploadhaven.js",
-            "line": 30,
+            "line": 31,
             "text": "return `f95ue-uploadhaven-download:${location.pathname}`;"
           },
           {
@@ -1885,48 +2110,93 @@
             "text": "export function isUploadNowSharePage(url = location.href) {"
           },
           {
-            "path": "addons/masked-direct-addon/src/hosts/workupload.js",
-            "line": 16,
-            "text": "location.hostname.toLowerCase().includes(HOST_LABEL) &&"
+            "path": "addons/masked-direct-addon/src/hosts/vik1ngfile.js",
+            "line": 22,
+            "text": "export function classifyVikingStandaloneEntry(url = location.href) {"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/vik1ngfile.js",
+            "line": 29,
+            "text": "export function classifyVikingStandaloneContinuation(url = location.href) {"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/vik1ngfile.js",
+            "line": 33,
+            "text": "function classifyVikingRoute(url, hostname, nextStage) {"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/vik1ngfile.js",
+            "line": 35,
+            "text": "const parsed = new URL(url, `https://${hostname}/`);"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/vik1ngfile.js",
+            "line": 36,
+            "text": "const match = parsed.pathname.match(VIKING_FILE_PATH);"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/vik1ngfile.js",
+            "line": 37,
+            "text": "return parsed.hostname === hostname && match"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/workupload.js",
             "line": 17,
-            "text": "location.pathname.startsWith(\"/file/\")"
+            "text": "export function isWorkuploadFilePage(url = location.href) {"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/workupload.js",
-            "line": 23,
-            "text": "location.hostname.toLowerCase().includes(HOST_LABEL) &&"
+            "line": 25,
+            "text": "export function isWorkuploadStartPage(url = location.href) {"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/workupload.js",
-            "line": 24,
-            "text": "location.pathname.startsWith(\"/start/\")"
+            "line": 33,
+            "text": "export function getWorkuploadStandaloneEntry(url = location.href) {"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/workupload.js",
-            "line": 29,
-            "text": "return getAnchorHref(anchor, location.href);"
+            "line": 37,
+            "text": "export function getWorkuploadStandaloneContinuation(url = location.href) {"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/workupload.js",
             "line": 43,
-            "text": "const parsed = new URL(href);"
+            "text": "const parsed = new URL(url, \"https://workupload.com/\");"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/workupload.js",
             "line": 44,
+            "text": "if (parsed.hostname !== HOST_LABEL || !pattern.test(parsed.pathname)) return null;"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/workupload.js",
+            "line": 46,
+            "text": "identity: parsed.pathname.split(\"/\").filter(Boolean).at(-1),"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/workupload.js",
+            "line": 55,
+            "text": "return getAnchorHref(anchor, location.href);"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/workupload.js",
+            "line": 69,
+            "text": "const parsed = new URL(href);"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/hosts/workupload.js",
+            "line": 70,
             "text": "if (!parsed.hostname.toLowerCase().includes(HOST_LABEL)) return false;"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/workupload.js",
-            "line": 45,
+            "line": 71,
             "text": "if (!parsed.pathname.startsWith(\"/start/\")) return false;"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/workupload.js",
-            "line": 103,
+            "line": 129,
             "text": "location.assign(preserveManagedRouteMarkers(startHref));"
           },
           {
@@ -1961,52 +2231,52 @@
           },
           {
             "path": "addons/masked-direct-addon/src/ports/standaloneRunGuard.js",
-            "line": 11,
+            "line": 12,
             "text": "function getKey(host, url = location.href) {"
           },
           {
             "path": "addons/masked-direct-addon/src/ports/standaloneRunGuard.js",
-            "line": 15,
+            "line": 16,
             "text": "function claim(host, url = location.href) {"
           },
           {
             "path": "addons/masked-direct-addon/src/ports/standaloneRunGuard.js",
-            "line": 30,
+            "line": 31,
             "text": "function complete(host, url = location.href) {"
           },
           {
             "path": "addons/masked-direct-addon/src/ports/standaloneRunGuard.js",
-            "line": 37,
+            "line": 38,
             "text": "function release(host, url = location.href) {"
           },
           {
             "path": "addons/masked-direct-addon/src/ports/standaloneRunGuard.js",
-            "line": 53,
+            "line": 54,
             "text": "export function getStandaloneRunGuardKey(host, url = location.href) {"
           },
           {
             "path": "addons/masked-direct-addon/src/ports/standaloneRunGuard.js",
-            "line": 55,
+            "line": 56,
             "text": "const parsed = new URL(url);"
           },
           {
             "path": "addons/masked-direct-addon/src/ports/standaloneRunGuard.js",
-            "line": 57,
+            "line": 58,
             "text": "normalizeDirectDownloadHost(host || parsed.hostname) ||"
           },
           {
             "path": "addons/masked-direct-addon/src/ports/standaloneRunGuard.js",
-            "line": 58,
+            "line": 59,
             "text": "normalizeDirectDownloadHost(parsed.hostname);"
           },
           {
             "path": "addons/masked-direct-addon/src/ports/standaloneRunGuard.js",
-            "line": 60,
+            "line": 61,
             "text": "const pathname = parsed.pathname.replace(/\\/+$/, \"\") || \"/\";"
           },
           {
             "path": "addons/masked-direct-addon/src/ports/standaloneRunGuard.js",
-            "line": 62,
+            "line": 63,
             "text": "`${canonical}:${pathname}`,"
           },
           {
@@ -2033,12 +2303,12 @@
         "coreDomAssumptions": [
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 353,
+            "line": 448,
             "text": "const headings = Array.from(document.querySelectorAll(\"h4\"));"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 370,
+            "line": 465,
             "text": "for (const element of root.querySelectorAll(\"div,span,h1,h2,h3\")) {"
           },
           {
@@ -2103,67 +2373,67 @@
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-            "line": 160,
+            "line": 189,
             "text": "const controls = Array.from(document.querySelectorAll(\"a, button, input\"));"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-            "line": 289,
+            "line": 321,
             "text": "if (document.body) {"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-            "line": 290,
+            "line": 322,
             "text": "observer.observe(document.body, {"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/downloadgg.js",
-            "line": 36,
+            "line": 37,
             "text": "Boolean(button.querySelector(\".fa-download, .fas.fa-download\"))"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-            "line": 12,
+            "line": 22,
             "text": "const script = document.createElement(\"script\");"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-            "line": 45,
+            "line": 55,
             "text": "(document.head || document.documentElement || document.body).appendChild("
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-            "line": 138,
+            "line": 151,
             "text": "const loading = document.querySelector(SELECTORS.GOFILE.LOADING);"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-            "line": 139,
+            "line": 152,
             "text": "const itemsList = document.querySelector(SELECTORS.GOFILE.ITEMS_LIST);"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-            "line": 173,
+            "line": 186,
             "text": "const alertEl = document.querySelector(SELECTORS.GOFILE.ALERT);"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-            "line": 180,
+            "line": 193,
             "text": "const itemsList = document.querySelector(SELECTORS.GOFILE.ITEMS_LIST);"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-            "line": 187,
+            "line": 200,
             "text": "const itemElements = itemsList.querySelectorAll(\"[data-item-id]\");"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
-            "line": 94,
+            "line": 117,
             "text": "const submitter = form.querySelector("
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/mediafire.js",
-            "line": 18,
+            "line": 38,
             "text": "if (typeof window.initDownload === \"function\") window.initDownload();"
           },
           {
@@ -2173,22 +2443,22 @@
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/uploadhaven.js",
-            "line": 23,
+            "line": 24,
             "text": "const button = document.querySelector(\"button#submitFree.uh-dl-btn-free.ready\");"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/uploadnow.js",
-            "line": 21,
+            "line": 23,
             "text": "document.querySelectorAll('button[class*=\"file_browser_alt_options__\"]'),"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/uploadnow.js",
-            "line": 26,
+            "line": 28,
             "text": ": Array.from(document.querySelectorAll(\"button\"));"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/uploadnow.js",
-            "line": 30,
+            "line": 32,
             "text": "button.querySelector(DOWNLOAD_ICON_SELECTOR) &&"
           },
           {
@@ -2215,77 +2485,77 @@
         "directGmAccess": [
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 29,
+            "line": 34,
             "text": "GMApi,"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 80,
+            "line": 93,
             "text": "? await recoverMarkerlessDatanodesRequest(GMApi)"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 82,
+            "line": 95,
             "text": "? await recoverMarkerlessDownloadGgRequest(GMApi)"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 84,
+            "line": 97,
             "text": "? await recoverMarkerlessVik1ngfileRequest(GMApi)"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 85,
+            "line": 98,
             "text": ": await recoverMarkerlessGoogleDriveRequest(GMApi);"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 101,
+            "line": 114,
             "text": "? await readProcessingDownloadTrigger(GMApi, {"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 222,
+            "line": 308,
             "text": "await updateProcessingDownloadTrigger(GMApi, requestId, {"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 299,
+            "line": 394,
             "text": "async function recoverMarkerlessVik1ngfileRequest(GMApi) {"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 302,
+            "line": 397,
             "text": "return readProcessingDownloadTriggerBySource(GMApi, {"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 308,
+            "line": 403,
             "text": "async function recoverMarkerlessDownloadGgRequest(GMApi) {"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 309,
+            "line": 404,
             "text": "return readProcessingDownloadTriggerBySource(GMApi, {"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 315,
+            "line": 410,
             "text": "async function recoverMarkerlessGoogleDriveRequest(GMApi) {"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 318,
+            "line": 413,
             "text": "return readProcessingDownloadTriggerBySource(GMApi, {"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 336,
+            "line": 431,
             "text": "async function recoverMarkerlessDatanodesRequest(GMApi) {"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-            "line": 341,
+            "line": 436,
             "text": "return readProcessingDownloadTriggerBySource(GMApi, {"
           },
           {
@@ -2730,47 +3000,47 @@
           },
           {
             "path": "addons/masked-direct-addon/src/ports/standaloneAutomationPolicyRepository.js",
-            "line": 21,
+            "line": 22,
             "text": "GMApi,"
           },
           {
             "path": "addons/masked-direct-addon/src/ports/standaloneAutomationPolicyRepository.js",
-            "line": 25,
+            "line": 26,
             "text": "if (typeof GMApi?.getValue !== \"function\") return { ...EMPTY_POLICY };"
           },
           {
             "path": "addons/masked-direct-addon/src/ports/standaloneAutomationPolicyRepository.js",
-            "line": 27,
+            "line": 28,
             "text": "const raw = await GMApi.getValue(STANDALONE_AUTOMATION_POLICY_KEY, null);"
           },
           {
             "path": "addons/masked-direct-addon/src/ports/standaloneAutomationPolicyRepository.js",
-            "line": 38,
+            "line": 39,
             "text": "const current = await readRawPolicy(GMApi, timestamp);"
           },
           {
             "path": "addons/masked-direct-addon/src/ports/standaloneAutomationPolicyRepository.js",
-            "line": 47,
+            "line": 48,
             "text": "if (typeof GMApi?.setValue !== \"function\") return normalized;"
           },
           {
             "path": "addons/masked-direct-addon/src/ports/standaloneAutomationPolicyRepository.js",
-            "line": 49,
+            "line": 50,
             "text": "await GMApi.setValue(STANDALONE_AUTOMATION_POLICY_KEY, normalized);"
           },
           {
             "path": "addons/masked-direct-addon/src/ports/standaloneAutomationPolicyRepository.js",
-            "line": 229,
+            "line": 242,
             "text": "async function readRawPolicy(GMApi, timestamp) {"
           },
           {
             "path": "addons/masked-direct-addon/src/ports/standaloneAutomationPolicyRepository.js",
-            "line": 230,
+            "line": 243,
             "text": "if (typeof GMApi?.getValue !== \"function\") return { ...EMPTY_POLICY };"
           },
           {
             "path": "addons/masked-direct-addon/src/ports/standaloneAutomationPolicyRepository.js",
-            "line": 232,
+            "line": 245,
             "text": "const raw = await GMApi.getValue(STANDALONE_AUTOMATION_POLICY_KEY, null);"
           }
         ],
@@ -2882,17 +3152,17 @@
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-            "line": 205,
+            "line": 237,
             "text": "clearInterval(pollTimer);"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-            "line": 206,
+            "line": 238,
             "text": "clearTimeout(timeoutTimer);"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-            "line": 93,
+            "line": 103,
             "text": "clearTimeout(timer);"
           },
           {
@@ -7464,12 +7734,12 @@
         "callSites": [
           {
             "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-            "line": 4,
+            "line": 5,
             "text": "const GOFILE_BRIDGE_REQUEST_EVENT = \"f95ue:gofile-download-request\";"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-            "line": 4,
+            "line": 5,
             "text": "const GOFILE_BRIDGE_REQUEST_EVENT = \"f95ue:gofile-download-request\";"
           }
         ]
@@ -7479,12 +7749,12 @@
         "callSites": [
           {
             "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-            "line": 5,
+            "line": 6,
             "text": "const GOFILE_BRIDGE_RESULT_EVENT = \"f95ue:gofile-download-result\";"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-            "line": 5,
+            "line": 6,
             "text": "const GOFILE_BRIDGE_RESULT_EVENT = \"f95ue:gofile-download-result\";"
           }
         ]
@@ -8757,187 +9027,197 @@
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 40,
+          "line": 53,
           "text": "return normalizeDirectDownloadHost(location.hostname);"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 52,
+          "line": 65,
           "text": "const parsed = new URL(location.href);"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 54,
+          "line": 67,
           "text": "parsed.searchParams.get(AUTOMATION_MARKER_KEY) || \"\","
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 57,
+          "line": 70,
           "text": "parsed.searchParams.get(originTabQueryKey) || \"\","
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 60,
+          "line": 73,
           "text": "parsed.searchParams.get(DIRECT_DOWNLOAD_ROUTE_REQUEST_ID_KEY) || \"\","
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 63,
+          "line": 76,
           "text": "parsed.searchParams.get(DIRECT_DOWNLOAD_ROUTE_TS_KEY) || 0,"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 147,
+          "line": 160,
           "text": "const route = classifyStandaloneHostRoute(host, location.href);"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 171,
+          "line": 162,
+          "text": "const continuation = describeStandaloneContinuation(host, location.href);"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
+          "line": 180,
+          "text": "const entry = describeStandaloneEntry(host, location.href);"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
+          "line": 234,
           "text": "`[${addonId}] Download hooks blocked by automation gate. host=${host} reason=${decision.reason} href=${location.href}`,"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 175,
+          "line": 238,
           "text": "href: location.href,"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 191,
+          "line": 254,
           "text": "const standaloneRoute = location.href;"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 280,
+          "line": 375,
           "text": "return host === \"datanodes.to\" && location.pathname.startsWith(\"/download\");"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 287,
+          "line": 382,
           "text": "/^\\/(?:[a-z]{2}(?:-[a-z]{2})?\\/)?file-/i.test(location.pathname)) ||"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 288,
+          "line": 383,
           "text": "(host === \"vik1ngfile.site\" && location.pathname.startsWith(\"/f/\")) ||"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 290,
+          "line": 385,
           "text": "((location.hostname === \"drive.usercontent.google.com\" &&"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 291,
+          "line": 386,
           "text": "location.pathname.startsWith(\"/download\")) ||"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 292,
+          "line": 387,
           "text": "(location.hostname === \"drive.google.com\" &&"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 293,
+          "line": 388,
           "text": "(location.pathname.startsWith(\"/file/d/\") ||"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 294,
+          "line": 389,
           "text": "location.pathname === \"/open\" ||"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 295,
+          "line": 390,
           "text": "location.pathname === \"/uc\"))))"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 300,
+          "line": 395,
           "text": "const sourceIdentifier = location.pathname.split(\"/\").filter(Boolean).at(-1);"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 311,
+          "line": 406,
           "text": "sourceIdentifier: location.pathname.replace(/\\/+$/, \"\"),"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 326,
+          "line": 421,
           "text": "const parsed = new URL(location.href);"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 327,
+          "line": 422,
           "text": "const pathMatch = parsed.pathname.match(/^\\/file\\/d\\/([^/]+)/);"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 329,
+          "line": 424,
           "text": "pathMatch?.[1] || parsed.searchParams.get(\"id\") || \"\","
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 409,
+          "line": 504,
           "text": "const parsed = new URL(location.href);"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 410,
+          "line": 505,
           "text": "if (!parsed.searchParams.get(AUTOMATION_MARKER_KEY)) {"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 411,
+          "line": 506,
           "text": "parsed.searchParams.set(AUTOMATION_MARKER_KEY, \"1\");"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 413,
+          "line": 508,
           "text": "if (trigger.ownerTabId && !parsed.searchParams.get(originTabQueryKey)) {"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 414,
+          "line": 509,
           "text": "parsed.searchParams.set(originTabQueryKey, trigger.ownerTabId);"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 418,
+          "line": 513,
           "text": "!parsed.searchParams.get(DIRECT_DOWNLOAD_ROUTE_REQUEST_ID_KEY)"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 420,
+          "line": 515,
           "text": "parsed.searchParams.set("
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 427,
+          "line": 522,
           "text": "!parsed.searchParams.get(DIRECT_DOWNLOAD_ROUTE_TS_KEY)"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 429,
+          "line": 524,
           "text": "parsed.searchParams.set("
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 446,
+          "line": 541,
           "text": "const host = normalizeDirectDownloadHost(location.hostname);"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 448,
+          "line": 543,
           "text": "(host === \"datanodes.to\" && location.pathname.startsWith(\"/download\")) ||"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 450,
+          "line": 545,
           "text": "/^\\/(?:[a-z]{2}(?:-[a-z]{2})?\\/)?file-/i.test(location.pathname)) ||"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          "line": 451,
+          "line": 546,
           "text": "(host === \"vik1ngfile.site\" && location.pathname.startsWith(\"/f/\")) ||"
         },
         {
@@ -9162,18 +9442,68 @@
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/buzzheavier.js",
-          "line": 10,
+          "line": 12,
+          "text": "export function isBuzzheavierFilePage(url = location.href) {"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/hosts/buzzheavier.js",
+          "line": 25,
           "text": "window.location.origin,"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/buzzheavier.js",
-          "line": 20,
+          "line": 37,
           "text": "const hostLabel = location.hostname.includes(\"bzzhr.to\")"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/buzzheavier.js",
-          "line": 43,
-          "text": "\"HX-Current-URL\": window.location.href,"
+          "line": 55,
+          "text": "const parsed = new URL(endpoint);"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/hosts/buzzheavier.js",
+          "line": 57,
+          "text": "parsed.origin === window.location.origin &&"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/hosts/buzzheavier.js",
+          "line": 58,
+          "text": "parsed.pathname.endsWith(\"/download\");"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
+          "line": 12,
+          "text": "export function classifyDatanodesStandaloneEntry(url = location.href) {"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
+          "line": 14,
+          "text": "const parsed = new URL(url, \"https://datanodes.to/\");"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
+          "line": 15,
+          "text": "if (parsed.hostname !== HOST_LABEL) return null;"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
+          "line": 16,
+          "text": "const match = parsed.pathname.match(DATANODES_ENTRY_PATH);"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
+          "line": 31,
+          "text": "export function isDatanodesStandaloneDownloadPage(url = location.href) {"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
+          "line": 33,
+          "text": "const parsed = new URL(url, \"https://datanodes.to/\");"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
+          "line": 34,
+          "text": "return parsed.hostname === HOST_LABEL && parsed.pathname === \"/download\";"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/delafil.js",
@@ -9211,103 +9541,153 @@
           "text": "export function isDownloadGgFilePage(url = location.href) {"
         },
         {
+          "path": "addons/masked-direct-addon/src/hosts/gofile.js",
+          "line": 10,
+          "text": "export function isGofileContentPage(url = location.href) {"
+        },
+        {
           "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
-          "line": 21,
+          "line": 22,
           "text": "export function getGoogleDriveFileId(url = location.href) {"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
-          "line": 23,
-          "text": "const parsed = new URL(url, location.href);"
-        },
-        {
-          "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
           "line": 24,
-          "text": "const pathMatch = parsed.pathname.match(/^\\/file\\/d\\/([^/]+)/);"
+          "text": "const parsed = new URL(url, location.href);"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
           "line": 25,
+          "text": "const pathMatch = parsed.pathname.match(/^\\/file\\/d\\/([^/]+)/);"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
+          "line": 26,
           "text": "return pathMatch?.[1] || parsed.searchParams.get(\"id\") || \"\";"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
-          "line": 31,
-          "text": "export function classifyGoogleDrivePage(url = location.href) {"
+          "line": 32,
+          "text": "export function isGoogleDriveStandaloneEntryPage(url = location.href) {"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
-          "line": 33,
-          "text": "const parsed = new URL(url, location.href);"
+          "line": 34,
+          "text": "const parsed = new URL(url, \"https://drive.google.com/\");"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
           "line": 36,
-          "text": "parsed.hostname === \"drive.google.com\" &&"
+          "text": "parsed.hostname === \"drive.usercontent.google.com\" &&"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
-          "line": 38,
-          "text": "(parsed.pathname.startsWith(\"/file/d/\") || parsed.pathname === \"/open\")"
+          "line": 37,
+          "text": "parsed.pathname === \"/download\""
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
-          "line": 43,
-          "text": "(parsed.hostname === \"drive.google.com\" && parsed.pathname === \"/uc\") ||"
+          "line": 39,
+          "text": "return DRIVE_FILE_ID_PATTERN.test(parsed.searchParams.get(\"id\") || \"\");"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
-          "line": 44,
-          "text": "(parsed.hostname === \"drive.usercontent.google.com\" &&"
+          "line": 41,
+          "text": "if (parsed.hostname !== \"drive.google.com\") return false;"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
-          "line": 45,
-          "text": "parsed.pathname.startsWith(\"/download\"))"
+          "line": 42,
+          "text": "const pathMatch = parsed.pathname.match("
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
-          "line": 55,
-          "text": "export function buildGoogleDriveDownloadUrl(url = location.href) {"
+          "line": 46,
+          "text": "if (![\"/open\", \"/uc\"].includes(parsed.pathname)) return false;"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
-          "line": 58,
-          "text": "const target = new URL(\"https://drive.google.com/uc\");"
+          "line": 47,
+          "text": "const fileId = parsed.searchParams.get(\"id\") || \"\";"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
+          "line": 54,
+          "text": "export function classifyGoogleDrivePage(url = location.href) {"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
+          "line": 56,
+          "text": "const parsed = new URL(url, location.href);"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
           "line": 59,
+          "text": "parsed.hostname === \"drive.google.com\" &&"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
+          "line": 61,
+          "text": "(parsed.pathname.startsWith(\"/file/d/\") || parsed.pathname === \"/open\")"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
+          "line": 66,
+          "text": "(parsed.hostname === \"drive.google.com\" && parsed.pathname === \"/uc\") ||"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
+          "line": 67,
+          "text": "(parsed.hostname === \"drive.usercontent.google.com\" &&"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
+          "line": 68,
+          "text": "parsed.pathname.startsWith(\"/download\"))"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
+          "line": 78,
+          "text": "export function buildGoogleDriveDownloadUrl(url = location.href) {"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
+          "line": 81,
+          "text": "const target = new URL(\"https://drive.google.com/uc\");"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
+          "line": 82,
           "text": "target.searchParams.set(\"export\", \"download\");"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
-          "line": 60,
+          "line": 83,
           "text": "target.searchParams.set(\"id\", fileId);"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
-          "line": 70,
+          "line": 93,
           "text": "const parsed = new URL(href);"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
-          "line": 72,
+          "line": 95,
           "text": "parsed.hostname === \"drive.usercontent.google.com\" ||"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
-          "line": 73,
+          "line": 96,
           "text": "(parsed.hostname === \"drive.google.com\" && parsed.pathname === \"/uc\");"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
-          "line": 77,
+          "line": 100,
           "text": "(parsed.searchParams.has(\"confirm\") || text.includes(\"download\"))"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
-          "line": 118,
+          "line": 141,
           "text": "location.replace(target);"
         },
         {
@@ -9317,77 +9697,97 @@
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/mediafire.js",
-          "line": 14,
+          "line": 9,
+          "text": "export function isMediafireFilePage(url = location.href) {"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/hosts/mediafire.js",
+          "line": 19,
+          "text": "return [\"http:\", \"https:\"].includes(new URL(href).protocol);"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/hosts/mediafire.js",
+          "line": 34,
           "text": "const href = getAnchorHref(button, window.location.href);"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/mediafire.js",
-          "line": 43,
+          "line": 68,
           "text": "window.location.assign(href);"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/metadata.js",
-          "line": 106,
+          "line": 111,
           "text": "host.hostIncludes.map((hostname) => [hostname, host]),"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/metadata.js",
-          "line": 110,
+          "line": 115,
           "text": "function normalizeHostname(hostname) {"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/metadata.js",
-          "line": 111,
+          "line": 116,
           "text": "return String(hostname || \"\").toLowerCase();"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/metadata.js",
-          "line": 114,
+          "line": 119,
           "text": "export function findDirectDownloadHost(hostname) {"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/metadata.js",
-          "line": 115,
+          "line": 120,
           "text": "let normalized = normalizeHostname(hostname);"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/metadata.js",
-          "line": 127,
+          "line": 132,
           "text": "export function normalizeDirectDownloadHost(hostname) {"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/metadata.js",
-          "line": 128,
+          "line": 133,
           "text": "return findDirectDownloadHost(hostname)?.canonicalHost || \"\";"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/metadata.js",
-          "line": 131,
+          "line": 143,
+          "text": "export function isExactDirectDownloadHost(id, hostname) {"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/hosts/metadata.js",
+          "line": 144,
+          "text": "return getDirectDownloadHostAliases(id).includes(normalizeHostname(hostname));"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/hosts/metadata.js",
+          "line": 147,
           "text": "export function isSupportedDirectDownloadHost(hostname) {"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/metadata.js",
-          "line": 132,
+          "line": 148,
           "text": "return Boolean(findDirectDownloadHost(hostname));"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/metadata.js",
-          "line": 157,
+          "line": 173,
           "text": "export function isDirectDownloadHostEnabled(hostname, packages) {"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/metadata.js",
-          "line": 158,
+          "line": 174,
           "text": "const host = findDirectDownloadHost(hostname);"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/mixdrop.js",
-          "line": 21,
+          "line": 25,
           "text": "export function isMixdropFilePage(url = location.href) {"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/mixdrop.js",
-          "line": 40,
+          "line": 46,
           "text": "const protocol = new URL(href).protocol;"
         },
         {
@@ -9447,22 +9847,42 @@
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/shared/filePage.js",
-          "line": 6,
-          "text": "baseUrl = location.href,"
+          "line": 5,
+          "text": "{ hostId, pathPattern, baseUrl = location.href },"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/shared/filePage.js",
-          "line": 10,
+          "line": 8,
           "text": "const parsed = new URL(url, baseUrl);"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/shared/filePage.js",
-          "line": 11,
+          "line": 10,
+          "text": "isExactDirectDownloadHost(hostId, parsed.hostname) &&"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/hosts/shared/filePage.js",
+          "line": 12,
+          "text": "pathPattern.test(parsed.pathname)"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/hosts/shared/filePage.js",
+          "line": 24,
+          "text": "baseUrl = location.href,"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/hosts/shared/filePage.js",
+          "line": 28,
+          "text": "const parsed = new URL(url, baseUrl);"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/hosts/shared/filePage.js",
+          "line": 29,
           "text": "if (!(pathPattern instanceof RegExp) || !pathPattern.test(parsed.pathname)) {"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/shared/filePage.js",
-          "line": 14,
+          "line": 32,
           "text": "if (terminalQueryKeys.some((key) => parsed.searchParams.has(key))) {"
         },
         {
@@ -9497,8 +9917,73 @@
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/standaloneEligibility.js",
-          "line": 16,
+          "line": 57,
           "text": "export function classifyStandaloneHostRoute(host, url = location.href) {"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/hosts/standaloneEligibility.js",
+          "line": 75,
+          "text": "export function describeStandaloneEntry(host, url = location.href) {"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/hosts/standaloneEligibility.js",
+          "line": 83,
+          "text": "export function describeStandaloneContinuation(host, url = location.href) {"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/hosts/standaloneEligibility.js",
+          "line": 96,
+          "text": "const parsed = new URL(url, \"https://drive.google.com/\");"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/hosts/standaloneEligibility.js",
+          "line": 97,
+          "text": "const pathMatch = parsed.pathname.match(/^\\/file\\/d\\/([^/]+)/i);"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/hosts/standaloneEligibility.js",
+          "line": 98,
+          "text": "const identity = pathMatch?.[1] || parsed.searchParams.get(\"id\") || \"\";"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/hosts/standaloneEligibility.js",
+          "line": 104,
+          "text": "parsed.pathname === \"/uc\" ||"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/hosts/standaloneEligibility.js",
+          "line": 105,
+          "text": "parsed.hostname === \"drive.usercontent.google.com\","
+        },
+        {
+          "path": "addons/masked-direct-addon/src/hosts/standaloneEligibility.js",
+          "line": 115,
+          "text": "const parsed = new URL(url, \"https://drive.usercontent.google.com/\");"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/hosts/standaloneEligibility.js",
+          "line": 117,
+          "text": "parsed.hostname !== \"drive.usercontent.google.com\" ||"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/hosts/standaloneEligibility.js",
+          "line": 118,
+          "text": "parsed.pathname !== \"/download\" ||"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/hosts/standaloneEligibility.js",
+          "line": 119,
+          "text": "parsed.searchParams.get(\"id\")"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/hosts/standaloneEligibility.js",
+          "line": 129,
+          "text": "const parsed = new URL(url, \"https://datanodes.to/\");"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/hosts/standaloneEligibility.js",
+          "line": 130,
+          "text": "return parsed.hostname === \"datanodes.to\" && parsed.pathname.startsWith(\"/download\")"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/uploadhaven.js",
@@ -9507,7 +9992,7 @@
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/uploadhaven.js",
-          "line": 30,
+          "line": 31,
           "text": "return `f95ue-uploadhaven-download:${location.pathname}`;"
         },
         {
@@ -9516,48 +10001,93 @@
           "text": "export function isUploadNowSharePage(url = location.href) {"
         },
         {
-          "path": "addons/masked-direct-addon/src/hosts/workupload.js",
-          "line": 16,
-          "text": "location.hostname.toLowerCase().includes(HOST_LABEL) &&"
+          "path": "addons/masked-direct-addon/src/hosts/vik1ngfile.js",
+          "line": 22,
+          "text": "export function classifyVikingStandaloneEntry(url = location.href) {"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/hosts/vik1ngfile.js",
+          "line": 29,
+          "text": "export function classifyVikingStandaloneContinuation(url = location.href) {"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/hosts/vik1ngfile.js",
+          "line": 33,
+          "text": "function classifyVikingRoute(url, hostname, nextStage) {"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/hosts/vik1ngfile.js",
+          "line": 35,
+          "text": "const parsed = new URL(url, `https://${hostname}/`);"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/hosts/vik1ngfile.js",
+          "line": 36,
+          "text": "const match = parsed.pathname.match(VIKING_FILE_PATH);"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/hosts/vik1ngfile.js",
+          "line": 37,
+          "text": "return parsed.hostname === hostname && match"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/workupload.js",
           "line": 17,
-          "text": "location.pathname.startsWith(\"/file/\")"
+          "text": "export function isWorkuploadFilePage(url = location.href) {"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/workupload.js",
-          "line": 23,
-          "text": "location.hostname.toLowerCase().includes(HOST_LABEL) &&"
+          "line": 25,
+          "text": "export function isWorkuploadStartPage(url = location.href) {"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/workupload.js",
-          "line": 24,
-          "text": "location.pathname.startsWith(\"/start/\")"
+          "line": 33,
+          "text": "export function getWorkuploadStandaloneEntry(url = location.href) {"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/workupload.js",
-          "line": 29,
-          "text": "return getAnchorHref(anchor, location.href);"
+          "line": 37,
+          "text": "export function getWorkuploadStandaloneContinuation(url = location.href) {"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/workupload.js",
           "line": 43,
-          "text": "const parsed = new URL(href);"
+          "text": "const parsed = new URL(url, \"https://workupload.com/\");"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/workupload.js",
           "line": 44,
+          "text": "if (parsed.hostname !== HOST_LABEL || !pattern.test(parsed.pathname)) return null;"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/hosts/workupload.js",
+          "line": 46,
+          "text": "identity: parsed.pathname.split(\"/\").filter(Boolean).at(-1),"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/hosts/workupload.js",
+          "line": 55,
+          "text": "return getAnchorHref(anchor, location.href);"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/hosts/workupload.js",
+          "line": 69,
+          "text": "const parsed = new URL(href);"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/hosts/workupload.js",
+          "line": 70,
           "text": "if (!parsed.hostname.toLowerCase().includes(HOST_LABEL)) return false;"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/workupload.js",
-          "line": 45,
+          "line": 71,
           "text": "if (!parsed.pathname.startsWith(\"/start/\")) return false;"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/workupload.js",
-          "line": 103,
+          "line": 129,
           "text": "location.assign(preserveManagedRouteMarkers(startHref));"
         },
         {
@@ -9592,52 +10122,52 @@
         },
         {
           "path": "addons/masked-direct-addon/src/ports/standaloneRunGuard.js",
-          "line": 11,
+          "line": 12,
           "text": "function getKey(host, url = location.href) {"
         },
         {
           "path": "addons/masked-direct-addon/src/ports/standaloneRunGuard.js",
-          "line": 15,
+          "line": 16,
           "text": "function claim(host, url = location.href) {"
         },
         {
           "path": "addons/masked-direct-addon/src/ports/standaloneRunGuard.js",
-          "line": 30,
+          "line": 31,
           "text": "function complete(host, url = location.href) {"
         },
         {
           "path": "addons/masked-direct-addon/src/ports/standaloneRunGuard.js",
-          "line": 37,
+          "line": 38,
           "text": "function release(host, url = location.href) {"
         },
         {
           "path": "addons/masked-direct-addon/src/ports/standaloneRunGuard.js",
-          "line": 53,
+          "line": 54,
           "text": "export function getStandaloneRunGuardKey(host, url = location.href) {"
         },
         {
           "path": "addons/masked-direct-addon/src/ports/standaloneRunGuard.js",
-          "line": 55,
+          "line": 56,
           "text": "const parsed = new URL(url);"
         },
         {
           "path": "addons/masked-direct-addon/src/ports/standaloneRunGuard.js",
-          "line": 57,
+          "line": 58,
           "text": "normalizeDirectDownloadHost(host || parsed.hostname) ||"
         },
         {
           "path": "addons/masked-direct-addon/src/ports/standaloneRunGuard.js",
-          "line": 58,
+          "line": 59,
           "text": "normalizeDirectDownloadHost(parsed.hostname);"
         },
         {
           "path": "addons/masked-direct-addon/src/ports/standaloneRunGuard.js",
-          "line": 60,
+          "line": 61,
           "text": "const pathname = parsed.pathname.replace(/\\/+$/, \"\") || \"/\";"
         },
         {
           "path": "addons/masked-direct-addon/src/ports/standaloneRunGuard.js",
-          "line": 62,
+          "line": 63,
           "text": "`${canonical}:${pathname}`,"
         },
         {
@@ -10032,48 +10562,48 @@
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-          "line": 155,
+          "line": 184,
           "text": "setTimeout(resolve, 16);"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-          "line": 198,
+          "line": 230,
           "text": "let pollTimer = null;"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-          "line": 205,
+          "line": 237,
           "text": "clearInterval(pollTimer);"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-          "line": 278,
+          "line": 310,
           "text": "timeoutTimer = setTimeout(() => {"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-          "line": 288,
+          "line": 320,
           "text": "observer = new MutationObserver(scheduleScan);"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-          "line": 298,
+          "line": 330,
           "text": "pollTimer = setInterval("
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-          "line": 303,
+          "line": 335,
           "text": "setTimeout(scheduleScan, 500);"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-          "line": 107,
+          "line": 117,
           "text": "const timer = setTimeout("
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-          "line": 153,
-          "text": "setTimeout(check, TIMINGS.POLL_INTERVAL);"
+          "line": 166,
+          "text": "setTimeout(check, pollIntervalMs);"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/shared/cloudflareChallenge.js",
@@ -10122,7 +10652,7 @@
         },
         {
           "path": "addons/masked-direct-addon/src/ports/standaloneAutomationPolicyRepository.js",
-          "line": 226,
+          "line": 239,
           "text": "return new Promise((resolve) => setTimeout(resolve, delay));"
         },
         {
@@ -12054,43 +12584,43 @@
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-          "line": 44,
+          "line": 73,
           "text": "const originalSetInterval = window.setInterval;"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-          "line": 45,
+          "line": 74,
           "text": "window.setInterval = function f95ueDatanodesSetInterval("
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-          "line": 155,
+          "line": 184,
           "text": "setTimeout(resolve, 16);"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-          "line": 278,
+          "line": 310,
           "text": "timeoutTimer = setTimeout(() => {"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-          "line": 298,
+          "line": 330,
           "text": "pollTimer = setInterval("
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-          "line": 303,
+          "line": 335,
           "text": "setTimeout(scheduleScan, 500);"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-          "line": 107,
+          "line": 117,
           "text": "const timer = setTimeout("
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-          "line": 153,
-          "text": "setTimeout(check, TIMINGS.POLL_INTERVAL);"
+          "line": 166,
+          "text": "setTimeout(check, pollIntervalMs);"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/shared/cloudflareChallenge.js",
@@ -12114,7 +12644,7 @@
         },
         {
           "path": "addons/masked-direct-addon/src/ports/standaloneAutomationPolicyRepository.js",
-          "line": 226,
+          "line": 239,
           "text": "return new Promise((resolve) => setTimeout(resolve, delay));"
         },
         {

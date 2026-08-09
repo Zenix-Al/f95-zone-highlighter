@@ -26,6 +26,7 @@ export function createDirectDownloadHostHandlers({
       notifyMainFailure: context.notifyMainFailure,
       reportAddonHealthy: context.reportAddonHealthy,
       getDownloadCloseDelay,
+      automationDecision: decision,
       ...extra,
     });
   };
