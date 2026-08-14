@@ -54,7 +54,7 @@
         "id": "masked-direct-addon",
         "name": "F95UE Masked + Direct Download Add-on",
         "description": "Combines masked-link skipper and direct-download flows into one trusted add-on.",
-        "version": "1.2.0",
+        "version": "1.2.1",
         "author": "X Death",
         "entry": "addons/masked-direct-addon/src/main.js",
         "outfile": "addons/masked-direct-addon/dist/masked-direct-addon.user.js",
@@ -286,7 +286,7 @@
     ]
   },
   "trustedCatalog": {
-    "source": "src/generated/trusted-addon-catalog.814bd3d359c6a2e6.json",
+    "source": "src/generated/trusted-addon-catalog.05e14f0d6ec4c1aa.json",
     "projection": [
       {
         "id": "example-addon",
@@ -352,7 +352,7 @@
         "id": "masked-direct-addon",
         "name": "F95UE Masked + Direct Download Add-on",
         "description": "Combines masked-link skipper and direct-download flows into one trusted add-on.",
-        "version": "1.2.0",
+        "version": "1.2.1",
         "pageScopes": [
           "f95zone"
         ],
@@ -3370,7 +3370,7 @@
         "regular": {
           "mode": "regular",
           "bytes": 198109,
-          "gzipBytes": 40479,
+          "gzipBytes": 40480,
           "contributors": [
             {
               "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
