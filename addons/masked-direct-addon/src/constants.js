@@ -37,6 +37,7 @@ export const TIMINGS = Object.freeze({
   DATANODES_CONFIRM_AFTER_CLICK_DELAY: 1000,
   DATANODES_SKIPPED_STEP_SETTLE_DELAY: 1500,
   DOWNLOAD_PAGE_CLOSE_DELAY: 3500,
+  BUZZHEAVIER_DOWNLOAD_BUTTON_WAIT_TIMEOUT: 20000,
   WORKUPLOAD_DOWNLOAD_BUTTON_WAIT_TIMEOUT: 15000,
   WORKUPLOAD_DOWNLOAD_START_SETTLE_DELAY: 1500,
 });
@@ -44,15 +45,15 @@ export const TIMINGS = Object.freeze({
 export const SELECTORS = Object.freeze({
   BUZZHEAVIER: {
     DOWNLOAD_BUTTON_CANDIDATES: [
+      'a.download-btn.gay-button[hx-get*="/download"]',
       'a.link-button.gay-button.htmx-request[hx-get*="/download"]',
-      'a[hx-get*="/download"]',
+      'a.download-btn[hx-get*="/download"]',
       'a[href*="/download"]',
     ],
   },
   GOFILE: {
-    LOADING: "#filemanager_loading",
-    ITEMS_LIST: "#filemanager_itemslist",
-    ALERT: "#filemanager_alert",
+    DOWNLOAD_BUTTON: 'button[data-action="download"]',
+    ITEM_ROW: ".fm-row[data-id]",
   },
   DATANODES: {
     METHOD_FREE_BUTTON_ID: "method_free",

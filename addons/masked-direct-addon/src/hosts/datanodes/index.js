@@ -7,6 +7,35 @@ const CLICK_MARKER = "data-f95ue-datanodes-clicked";
 const CLICK_COOLDOWN_MS = 900;
 const SCAN_FRAME_BUDGET_MS = 5;
 const SCAN_POLL_INTERVAL_MS = 500;
+const DATANODES_ENTRY_PATH = /^\/([a-z0-9_-]{8,64})\/([^/]+)\/?$/i;
+
+export function classifyDatanodesStandaloneEntry(url = location.href) {
+  try {
+    const parsed = new URL(url, "https://datanodes.to/");
+    if (parsed.hostname !== HOST_LABEL) return null;
+    const match = parsed.pathname.match(DATANODES_ENTRY_PATH);
+    if (
+      !match ||
+      ["download", "downloads"].includes(match[1].toLowerCase()) ||
+      !decodeURIComponent(match[2]).trim()
+    ) return null;
+    return {
+      identity: `${match[1]}:${decodeURIComponent(match[2]).trim()}`,
+      nextStage: "datanodes-download",
+    };
+  } catch {
+    return null;
+  }
+}
+
+export function isDatanodesStandaloneDownloadPage(url = location.href) {
+  try {
+    const parsed = new URL(url, "https://datanodes.to/");
+    return parsed.hostname === HOST_LABEL && parsed.pathname === "/download";
+  } catch {
+    return false;
+  }
+}
 
 function getDatanodesTiming(settings = {}) {
   const datanodes =
@@ -156,9 +185,10 @@ function nextFrame() {
   });
 }
 
-async function findBestDatanodesAction({ frameBudgetMs, isDone }) {
+export async function findBestDatanodesAction({ frameBudgetMs, isDone }) {
   const controls = Array.from(document.querySelectorAll("a, button, input"));
   let best = null;
+  let bestCount = 0;
   let frameStartedAt = performance.now();
 
   for (const control of controls) {
@@ -167,7 +197,9 @@ async function findBestDatanodesAction({ frameBudgetMs, isDone }) {
     const action = classifyDatanodesControl(control);
     if (action && (!best || action.priority < best.priority)) {
       best = action;
-      if (best.priority === 1) break;
+      bestCount = 1;
+    } else if (action && action.priority === best?.priority) {
+      bestCount += 1;
     }
 
     if (performance.now() - frameStartedAt >= frameBudgetMs) {
@@ -176,7 +208,7 @@ async function findBestDatanodesAction({ frameBudgetMs, isDone }) {
     }
   }
 
-  return best;
+  return bestCount === 1 ? best : null;
 }
 
 export async function processDatanodesDownload({

@@ -359,6 +359,25 @@ async function beautifyFromCode(code, header, outPath) {
   fs.writeFileSync(outPath, header + result.code);
 }
 
+async function refreshAddonBaseline({
+  outputPath = path.join(
+    ROOT,
+    "docs",
+    "architecture",
+    "addon-baseline.json",
+  ),
+  baselineTool = null,
+} = {}) {
+  const tool = baselineTool || require("../scripts/addon-baseline.cjs");
+  const report = await tool.createBaseline();
+  fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+  fs.writeFileSync(outputPath, tool.stableJson(report));
+  console.log(
+    `Refreshed add-on baseline -> ${path.relative(ROOT, outputPath)}`,
+  );
+  return report;
+}
+
 async function main() {
   const args = process.argv.slice(2);
   const isRelease = args.includes("--release");
@@ -438,6 +457,8 @@ async function main() {
   }
   writeBuildCache(cache);
 
+  if (isRelease) await refreshAddonBaseline();
+
   console.log(
     `\nAdd-on build complete (${isRelease ? "release" : "regular"} mode). Built ${changedTargets.length}/${targets.length}.`,
   );
@@ -456,4 +477,5 @@ module.exports = {
   computeAddonHash,
   headerForAddon,
   readManifest,
+  refreshAddonBaseline,
 };

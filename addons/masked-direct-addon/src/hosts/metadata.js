@@ -31,7 +31,7 @@ export const DIRECT_DOWNLOAD_HOSTS = Object.freeze([
   {
     id: "krakenfiles",
     canonicalHost: "krakenfiles.com",
-    hostIncludes: ["krakenfiles.com"],
+    hostIncludes: ["krakenfiles.com", "www.krakenfiles.com"],
     text: "KrakenFiles",
     tooltip: "Enable direct download automation for krakenfiles.com",
   },
@@ -52,7 +52,7 @@ export const DIRECT_DOWNLOAD_HOSTS = Object.freeze([
   {
     id: "downloadgg",
     canonicalHost: "download.gg",
-    hostIncludes: ["download.gg"],
+    hostIncludes: ["download.gg", "www.download.gg"],
     text: "download.gg",
     tooltip: "Enable direct download automation for download.gg",
   },
@@ -67,28 +67,33 @@ export const DIRECT_DOWNLOAD_HOSTS = Object.freeze([
   {
     id: "mediafire",
     canonicalHost: "mediafire.com",
-    hostIncludes: ["mediafire.com"],
+    hostIncludes: ["mediafire.com", "www.mediafire.com"],
     text: "MediaFire",
     tooltip: "Enable direct download automation for mediafire.com",
   },
   {
     id: "mixdrop",
     canonicalHost: "miiiixdrop.net",
-    hostIncludes: ["mixdrop.ag", "miiixdrop.net", "miiiixdrop.net"],
+    hostIncludes: [
+      "mixdrop.ag",
+      "miixdrop.com",
+      "miiixdrop.net",
+      "miiiixdrop.net",
+    ],
     text: "MixDrop",
     tooltip: "Enable two-stage direct download automation for MixDrop",
   },
   {
     id: "uploadhaven",
     canonicalHost: "uploadhaven.com",
-    hostIncludes: ["uploadhaven.com"],
+    hostIncludes: ["uploadhaven.com", "www.uploadhaven.com"],
     text: "UploadHaven",
     tooltip: "Enable direct download automation for uploadhaven.com",
   },
   {
     id: "uploadnow",
     canonicalHost: "uploadnow.io",
-    hostIncludes: ["uploadnow.io"],
+    hostIncludes: ["uploadnow.io", "www.uploadnow.io"],
     text: "UploadNow",
     tooltip: "Enable single-file direct download automation for uploadnow.io",
   },
@@ -126,6 +131,17 @@ export function findDirectDownloadHost(hostname) {
 
 export function normalizeDirectDownloadHost(hostname) {
   return findDirectDownloadHost(hostname)?.canonicalHost || "";
+}
+
+export function getDirectDownloadHostAliases(id) {
+  return (
+    DIRECT_DOWNLOAD_HOSTS.find((host) => host.id === String(id || ""))
+      ?.hostIncludes || []
+  );
+}
+
+export function isExactDirectDownloadHost(id, hostname) {
+  return getDirectDownloadHostAliases(id).includes(normalizeHostname(hostname));
 }
 
 export function isSupportedDirectDownloadHost(hostname) {

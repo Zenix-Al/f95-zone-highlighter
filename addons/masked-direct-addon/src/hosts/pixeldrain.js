@@ -1,5 +1,14 @@
 import { clickElement } from "./shared/dom.js";
 
+export function isPixeldrainFilePage(url = location.href) {
+  try {
+    const parsed = new URL(url, location.href);
+    return /^\/(?:u|d|f)\/[A-Za-z0-9_-]+\/?$/.test(parsed.pathname);
+  } catch {
+    return false;
+  }
+}
+
 export async function processPixeldrainDownload({
   challengeGate,
   debugLog,
@@ -7,7 +16,7 @@ export async function processPixeldrainDownload({
   reportAddonHealthy,
 }) {
   const fileIdMatch = window.location.pathname.match(
-    /\/(?:u|d|f)\/([A-Za-z0-9_-]+)/,
+    /^\/(?:u|d|f)\/([A-Za-z0-9_-]+)\/?$/,
   );
   const fileId = fileIdMatch?.[1] || "";
 

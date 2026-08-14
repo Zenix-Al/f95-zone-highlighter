@@ -64,15 +64,20 @@ export function getAnchorHref(anchor, baseUrl = location.href) {
 export function clickElement(element) {
   if (!element || !element.isConnected) return false;
   try {
-    HTMLElement.prototype.click.call(element);
+    if (typeof element.click === "function") {
+      element.click();
+      return true;
+    }
+  } catch {
+    // Fall through to the element's owner-document realm.
+  }
+  try {
+    const ElementClass = element.ownerDocument?.defaultView?.HTMLElement;
+    if (typeof ElementClass?.prototype?.click !== "function") return false;
+    ElementClass.prototype.click.call(element);
     return true;
   } catch {
-    try {
-      element.click?.();
-      return true;
-    } catch {
-      return false;
-    }
+    return false;
   }
 }
 

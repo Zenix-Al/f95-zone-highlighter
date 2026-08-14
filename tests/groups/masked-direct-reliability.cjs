@@ -35,7 +35,12 @@ module.exports = function registerMaskedDirectReliability(context) {
           "f95-core",
           "thread",
         ],
-        ["/masked/", "https://f95zone.to/masked/abc", "f95-core", "masked"],
+        [
+          "/masked/",
+          "https://f95zone.to/masked/abc",
+          "f95-optional-core",
+          "masked",
+        ],
         [
           "external standalone",
           "https://gofile.io/d/a",
@@ -112,6 +117,7 @@ module.exports = function registerMaskedDirectReliability(context) {
         "mixdrop",
       );
       assert.strictEqual(findDirectDownloadHost("mixdrop.ag")?.id, "mixdrop");
+      assert.strictEqual(findDirectDownloadHost("miixdrop.com")?.id, "mixdrop");
       assert.strictEqual(
         findDirectDownloadHost("miiixdrop.net")?.id,
         "mixdrop",
@@ -283,7 +289,7 @@ module.exports = function registerMaskedDirectReliability(context) {
         "?f95ue_dd=1&f95ue_tab=tab-1&f95ue_dd_req=req-1&f95ue_dd_ts=123";
       const sandbox = createDomSandbox(
         "https://drive.usercontent.google.com/download" +
-          "?id=file_ABC-123&f95ue_dd=1&f95ue_tab=tab-1" +
+          "?confirm=yes&f95ue_dd=1&f95ue_tab=tab-1" +
           "&f95ue_dd_req=req-1&f95ue_dd_ts=123",
       );
       const previousAnchor = global.HTMLAnchorElement;
@@ -310,6 +316,12 @@ module.exports = function registerMaskedDirectReliability(context) {
         assert.strictEqual(classifyGoogleDrivePage(preview), "preview");
         assert.strictEqual(
           classifyGoogleDrivePage(sandbox.window.location.href),
+          "confirmation",
+        );
+        assert.strictEqual(
+          classifyGoogleDrivePage(
+            "https://drive.usercontent.google.com/download?id=file_ABC-123&export=download",
+          ),
           "confirmation",
         );
 
@@ -345,6 +357,134 @@ module.exports = function registerMaskedDirectReliability(context) {
         global.HTMLFormElement = previousForm;
         global.getComputedStyle = previousGetComputedStyle;
         sandbox.restore();
+      }
+    },
+  );
+
+  runTest(
+    "Masked Direct shared click helper prefers the element realm and safely falls back",
+    () => {
+      const { clickElement } = loadModule(
+        "addons/masked-direct-addon/src/hosts/shared/dom.js",
+      );
+      const calls = [];
+      const direct = {
+        isConnected: true,
+        click() {
+          calls.push("direct");
+        },
+      };
+      assert.strictEqual(clickElement(direct), true);
+
+      const fallback = {
+        isConnected: true,
+        click() {
+          calls.push("throw");
+          throw new Error("wrapped_click_failed");
+        },
+        ownerDocument: {
+          defaultView: {
+            HTMLElement: {
+              prototype: {
+                click() {
+                  calls.push("owner-realm");
+                },
+              },
+            },
+          },
+        },
+      };
+      assert.strictEqual(clickElement(fallback), true);
+      assert.deepStrictEqual(calls, ["direct", "throw", "owner-realm"]);
+    },
+  );
+
+  runTest(
+    "Masked Direct waits for the dynamically rendered Buzzheavier download row",
+    async () => {
+      const sandbox = createDomSandbox("https://buzzheavier.com/f/file-123");
+      const previousAnchor = global.HTMLAnchorElement;
+      const previousHTMLElement = global.HTMLElement;
+      try {
+        global.HTMLAnchorElement = sandbox.window.HTMLAnchorElement;
+        global.HTMLElement = sandbox.window.HTMLElement;
+        let clicks = 0;
+        setTimeout(() => {
+          const row = sandbox.document.createElement("div");
+          row.className = "download-row";
+          row.innerHTML =
+            '<a class="download-btn gay-button" hx-get="/s3x3/download?t=signed">Download File</a>' +
+            '<a class="link-button gay-button" hx-get="/s3x3/download?t=signed&amp;alt=true">Slow? Try mirror 2</a>';
+          row.firstElementChild.addEventListener("click", (event) => {
+            event.preventDefault();
+            clicks += 1;
+          });
+          sandbox.document.body.append(row);
+        }, 10);
+        const failures = [];
+        const { processBuzzheavierDownload } = loadModule(
+          "addons/masked-direct-addon/src/hosts/buzzheavier.js",
+        );
+        await processBuzzheavierDownload({
+          challengeGate: { waitUntilClear: async () => true },
+          notifyMainFailure: async (...args) => failures.push(args),
+          reportAddonHealthy() {},
+          buttonWaitTimeoutMs: 100,
+          pollIntervalMs: 5,
+        });
+        assert.strictEqual(clicks, 1);
+        assert.deepStrictEqual(failures, []);
+      } finally {
+        global.HTMLAnchorElement = previousAnchor;
+        global.HTMLElement = previousHTMLElement;
+        sandbox.restore();
+      }
+    },
+  );
+
+  runTest(
+    "Masked Direct clicks the signed Buzzheavier HTMX download action once",
+    async () => {
+      for (const hostname of ["buzzheavier.com", "bzzhr.to"]) {
+        const sandbox = createDomSandbox(`https://${hostname}/f/file-123`);
+        const previousAnchor = global.HTMLAnchorElement;
+        const previousHTMLElement = global.HTMLElement;
+        try {
+          global.HTMLAnchorElement = sandbox.window.HTMLAnchorElement;
+          global.HTMLElement = sandbox.window.HTMLElement;
+          const button = sandbox.document.createElement("a");
+          button.className = "download-btn gay-button";
+          button.setAttribute(
+            "hx-get",
+            "/s3xk3ngyzkx6/download?t=signed-token",
+          );
+          button.textContent = "Download File";
+          sandbox.document.body.append(button);
+          let clicks = 0;
+          button.addEventListener("click", (event) => {
+            event.preventDefault();
+            clicks += 1;
+          });
+          const failures = [];
+          let healthy = 0;
+          const { processBuzzheavierDownload } = loadModule(
+            "addons/masked-direct-addon/src/hosts/buzzheavier.js",
+          );
+          await processBuzzheavierDownload({
+            challengeGate: { waitUntilClear: async () => true },
+            notifyMainFailure: async (...args) => failures.push(args),
+            reportAddonHealthy: () => {
+              healthy += 1;
+            },
+          });
+          assert.strictEqual(clicks, 1, hostname);
+          assert.deepStrictEqual(failures, []);
+          assert.strictEqual(healthy, 1);
+        } finally {
+          global.HTMLAnchorElement = previousAnchor;
+          global.HTMLElement = previousHTMLElement;
+          sandbox.restore();
+        }
       }
     },
   );
@@ -607,7 +747,7 @@ module.exports = function registerMaskedDirectReliability(context) {
     "Masked Direct clicks one UploadNow file and refuses multi-file shares",
     async () => {
       const sandbox = createDomSandbox(
-        "https://uploadnow.io/share-123/share",
+        "https://uploadnow.io/en/share",
       );
       const previousButton = global.HTMLButtonElement;
       const previousGetComputedStyle = global.getComputedStyle;
@@ -619,7 +759,7 @@ module.exports = function registerMaskedDirectReliability(context) {
           "addons/masked-direct-addon/src/hosts/uploadnow.js",
         );
         assert.strictEqual(
-          isUploadNowSharePage("https://www.uploadnow.io/share-123/share?x=1"),
+          isUploadNowSharePage("https://www.uploadnow.io/en/share?x=1"),
           true,
         );
         assert.strictEqual(

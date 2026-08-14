@@ -7,7 +7,7 @@ import {
   isElementVisible,
   waitForCandidate,
 } from "./shared/dom.js";
-import { classifyFilePageUrl } from "./shared/filePage.js";
+import { matchesDirectDownloadHostPath } from "./shared/filePage.js";
 
 const HOST_LABEL = "download.gg";
 export const DOWNLOAD_GG_POST_CLICK_GRACE_MS = 8000;
@@ -21,9 +21,10 @@ const DOWNLOAD_BUTTON_SELECTORS = [
 ];
 
 export function isDownloadGgFilePage(url = location.href) {
-  return (
-    classifyFilePageUrl(url, { pathPattern: FILE_PATH_PATTERN }) === "file"
-  );
+  return matchesDirectDownloadHostPath(url, {
+    hostId: "downloadgg",
+    pathPattern: FILE_PATH_PATTERN,
+  });
 }
 
 function isDownloadButton(button) {

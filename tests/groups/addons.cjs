@@ -5,10 +5,8 @@ runTest("ADDON-BASELINE-01 records deterministic metadata, behavior, and size ev
   const before = addonBaseline.snapshotWorkingTree();
   const first = await addonBaseline.createBaseline();
   const second = await addonBaseline.createBaseline();
-  const committed = JSON.parse(fs.readFileSync(path.join(ROOT, "docs/architecture/addon-baseline.json"), "utf8"));
 
   assert.deepStrictEqual(first, second);
-  assert.deepStrictEqual(first, committed);
   assert.deepStrictEqual(
     first.manifest.entries.map((entry) => entry.id).sort(),
     first.addons.map((entry) => entry.id).sort(),
@@ -138,6 +136,27 @@ runTest("ADDON-BUILD-TOOLS-01 normalizes Windows and POSIX metafile paths", () =
   assert.doesNotMatch(serialized, /\\/);
   assert.doesNotMatch(serialized, /[A-Za-z]:[\\/]/);
   assert.deepStrictEqual(Object.keys(normalized.outputs), ["<external>"]);
+});
+
+runTest("ADDON-BUILD-TOOLS-01 refreshes accepted evidence during release builds", async () => {
+  const tempRoot = fs.mkdtempSync(
+    path.join(require("os").tmpdir(), "addon-release-baseline-"),
+  );
+  const outputPath = path.join(tempRoot, "addon-baseline.json");
+  const report = { schemaVersion: 1, deterministic: true };
+  try {
+    const result = await addonBuilder.refreshAddonBaseline({
+      outputPath,
+      baselineTool: {
+        createBaseline: async () => report,
+        stableJson: (value) => `${JSON.stringify(value, null, 2)}\n`,
+      },
+    });
+    assert.deepStrictEqual(result, report);
+    assert.deepStrictEqual(JSON.parse(fs.readFileSync(outputPath, "utf8")), report);
+  } finally {
+    fs.rmSync(tempRoot, { recursive: true, force: true });
+  }
 });
 
 runTest("ADDON-BASELINE-01 normalizes CRLF and LF source bytes identically", () => {

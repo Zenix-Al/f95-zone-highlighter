@@ -10,6 +10,7 @@ import {
 } from "./shared/dom.js";
 
 const HOST_LABEL = "drive.google.com";
+const DRIVE_FILE_ID_PATTERN = /^[a-z0-9_-]+$/i;
 const CONFIRMATION_FORM_SELECTORS = [
   "form#download-form",
   'form[action*="drive.usercontent.google.com/download"]',
@@ -25,6 +26,28 @@ export function getGoogleDriveFileId(url = location.href) {
     return pathMatch?.[1] || parsed.searchParams.get("id") || "";
   } catch {
     return "";
+  }
+}
+
+export function isGoogleDriveStandaloneEntryPage(url = location.href) {
+  try {
+    const parsed = new URL(url, "https://drive.google.com/");
+    if (
+      parsed.hostname === "drive.usercontent.google.com" &&
+      parsed.pathname === "/download"
+    ) {
+      return DRIVE_FILE_ID_PATTERN.test(parsed.searchParams.get("id") || "");
+    }
+    if (parsed.hostname !== "drive.google.com") return false;
+    const pathMatch = parsed.pathname.match(
+      /^\/file\/d\/([^/]+)(?:\/(?:view|preview))?\/?$/i,
+    );
+    if (pathMatch) return DRIVE_FILE_ID_PATTERN.test(pathMatch[1]);
+    if (!["/open", "/uc"].includes(parsed.pathname)) return false;
+    const fileId = parsed.searchParams.get("id") || "";
+    return DRIVE_FILE_ID_PATTERN.test(fileId);
+  } catch {
+    return false;
   }
 }
 

@@ -2779,7 +2779,7 @@ module.exports = function registerGroup(context) {
         usesCore: true,
       });
       assert.deepStrictEqual(classify("https://f95zone.to/masked/abc"), {
-        kind: "f95-core",
+        kind: "f95-optional-core",
         route: "masked",
         usesCore: true,
       });

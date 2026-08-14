@@ -1,0 +1,69 @@
+{
+  "buzzheavier.com": {
+    "entry": [
+      "https://buzzheavier.com/s3xk3ngyzkx6",
+      "https://bzzhr.to/s3xk3ngyzkx6"
+    ],
+    "unsafe": [
+      "https://buzzheavier.com/",
+      "https://bzzhr.to/s3xk3ngyzkx6/preview"
+    ]
+  },
+  "gofile.io": {
+    "entry": ["https://gofile.io/d/r6RPqz"],
+    "unsafe": ["https://gofile.io/", "https://gofile.io/d/"]
+  },
+  "drive.google.com": {
+    "entry": [
+      "https://drive.google.com/file/d/file-id/view",
+      "https://drive.google.com/open?id=file-id",
+      "https://drive.google.com/uc?export=download&id=file-id"
+    ],
+    "continuation": [
+      "https://drive.usercontent.google.com/download?id=file-id&confirm=token"
+    ],
+    "unsafe": [
+      "https://drive.google.com/drive/u/0/folders/folder-id",
+      "https://drive.google.com/open",
+      "https://drive.google.com/uc?export=download"
+    ]
+  },
+  "datanodes.to": {
+    "entry": [
+      "https://datanodes.to/82wqqwwmstb7/Dating_Sim-0.2-pc.zip"
+    ],
+    "unsafe": ["https://datanodes.to/", "https://datanodes.to/82wqqwwmstb7"]
+  },
+  "mediafire.com": {
+    "entry": [
+      "https://www.mediafire.com/file/file-id/example.zip/file",
+      "https://www.mediafire.com/file_premium/uwgw7k9rcqg9kvj/Eternum-0.9.5-pc.zip/file"
+    ],
+    "unsafe": ["https://www.mediafire.com/", "https://www.mediafire.com/folder/folder-id"]
+  },
+  "miiiixdrop.net": {
+    "entry": [
+      "https://mixdrop.ag/f/file-id",
+      "https://miiixdrop.net/f/file-id",
+      "https://miiiixdrop.net/f/file-id"
+    ],
+    "observedUnmatched": ["https://miixdrop.com/f/k0mpjgvgt31r9zv"],
+    "unsafe": ["https://mixdrop.ag/e/file-id", "https://mixdrop.ag/"]
+  },
+  "uploadnow.io": {
+    "entry": ["https://uploadnow.io/en/share"],
+    "unsafe": ["https://uploadnow.io/en/", "https://uploadnow.io/share"]
+  },
+  "vik1ngfile.site": {
+    "entry": [
+      "https://vikingfile.com/f/swBmSwbeK2",
+      "https://vik1ngfile.site/f/swBmSwbeK2"
+    ],
+    "unsafe": ["https://vikingfile.com/", "https://vikingfile.com/f/"]
+  },
+  "workupload.com": {
+    "entry": ["https://workupload.com/file/JVuuyQMKU3p"],
+    "continuation": ["https://workupload.com/start/JVuuyQMKU3p"],
+    "unsafe": ["https://workupload.com/", "https://workupload.com/start/JVuuyQMKU3p"]
+  }
+}

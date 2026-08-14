@@ -1,5 +1,46 @@
 # Changelog
 
+# v1.2.1 - Gofile update
+
+- Update Gofile automation with its new ui.
+
+## v1.2.0 - Expanded standalone host automation
+
+- Run approved download-host automation automatically when F95UE core is not
+  available, without changing the user's saved core-managed preference.
+- Expand standalone automation across Buzzheavier/Bzzhr, Gofile, Google Drive,
+  KrakenFiles, MixDrop, UploadHaven, UploadNow, Pixeldrain, Datanodes, DelaFil,
+  download.gg, Vik1ngFile/VikingFile, MediaFire, and Workupload.
+- Preserve exact route checks, one-shot guards, challenge recovery, and staged
+  continuation ownership while keeping standalone outcomes local.
+- Improve Google Drive confirmation handling and continuation recovery for
+  Datanodes, VikingFile, and Workupload.
+- Centralize exact host aliases and shared host/path classification without
+  changing host-specific automation behavior.
+
+## v1.1.3 - Buzzheavier download button fix
+
+- Support the new signed `download-btn gay-button` HTMX action used by
+  Buzzheavier and Bzzhr.
+- Wait for the dynamically rendered `.download-row` primary action and exclude
+  alternate mirror and preview HTMX links.
+- Trigger the host-owned action exactly once instead of prefetching its signed
+  endpoint before the click.
+- Make the shared click helper prefer each element's own `click()` method so
+  page-owned behavior runs correctly across userscript realm boundaries.
+
+## v1.1.2 - Limited standalone automation
+
+- Allow approved download-host routes to automate when standalone policy
+  permits it, while keeping exact managed requests authoritative.
+- Keep standalone outcomes local: no origin signal, managed close, or managed
+  request mutation.
+- Let `/masked/*` resolve without core through bare navigation; thread Resolve
+  buttons remain core-owned.
+- Guard masked resolution as one abortable operation with bounded captcha
+  readiness, one retry, validation, and late-commit cleanup.
+- Preserve both saved preferences through probing, recovery, and expiry.
+
 ## v1.1.1 - vik1ngfile bugfix
 
 - Fixed vik1ngfile direct-download flow.

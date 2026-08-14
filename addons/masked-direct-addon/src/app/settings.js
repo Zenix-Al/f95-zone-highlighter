@@ -14,6 +14,7 @@ export const ADDON_SETTINGS_KEY = "settings";
 export const ADDON_SETTINGS_DEFAULT = Object.freeze({
   skipMaskedLink: true,
   directDownloadLinks: true,
+  automateRegardless: false,
   downloadPageCloseDelayMs: DEFAULT_DOWNLOAD_CLOSE_DELAY_MS,
   directDownloadPackages: createDirectDownloadPackageDefaults(),
 });
@@ -33,6 +34,13 @@ export const ADDON_PANEL_SETTINGS = Object.freeze([
       "Enable direct download links for supported file hosts. Works independently outside of masked links.",
   },
   {
+    id: "automateRegardless",
+    path: "automateRegardless",
+    text: "Automate supported hosts regardless of F95 request",
+    tooltip:
+      "Automatically trigger downloads on approved direct host file pages even when they were opened manually. Manually opened tabs remain open. This saved preference stays off by default; a confirmed missing core may temporarily force the effective behavior without changing it.",
+  },
+  {
     id: "downloadPageCloseDelayMs",
     path: "downloadPageCloseDelayMs",
     text: "Managed download tab close delay (ms)",
@@ -44,7 +52,7 @@ export const ADDON_PANEL_SETTINGS = Object.freeze([
   ...createDirectDownloadPanelSettings(),
 ]);
 
-export function createMaskedDirectSettings({ bridge, GMApi }) {
+export function createMaskedDirectSettings({ bridge, GMApi, onSettingsRead }) {
   let cache = null;
   let cacheTimestamp = 0;
 
@@ -71,6 +79,7 @@ export function createMaskedDirectSettings({ bridge, GMApi }) {
     cache = {
       skipMaskedLink: parsed.skipMaskedLink !== false,
       directDownloadLinks: parsed.directDownloadLinks !== false,
+      automateRegardless: parsed.automateRegardless === true,
       downloadPageCloseDelayMs: normalizeDownloadCloseDelay(
         parsed.downloadPageCloseDelayMs,
         ADDON_SETTINGS_DEFAULT.downloadPageCloseDelayMs,
@@ -80,6 +89,7 @@ export function createMaskedDirectSettings({ bridge, GMApi }) {
       ),
     };
     cacheTimestamp = now;
+    if (typeof onSettingsRead === "function") await onSettingsRead(cache);
     return cache;
   }
 

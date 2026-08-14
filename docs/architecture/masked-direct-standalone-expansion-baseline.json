@@ -1,0 +1,62 @@
+{
+  "package": "MASKED-DIRECT-STANDALONE-EXPANSION-BASELINE-01",
+  "productionChanges": false,
+  "managedPrecedence": "Exact fresh managed identity is selected before standalone policy and route eligibility.",
+  "currentExpansionEligibility": "All expansion hosts remain blocked without managed identity.",
+  "hosts": {
+    "buzzheavier.com": {
+      "operation": "single-page",
+      "sideEffects": ["bounded polling", "primary anchor click"],
+      "guards": ["exact primary selector", "same-origin signed /download endpoint", "challenge gate"],
+      "continuationRequired": false
+    },
+    "gofile.io": {
+      "operation": "single-page",
+      "sideEffects": ["bounded polling", "page-realm bridge injection", "custom request/result events", "downloadContent(contentId)"],
+      "guards": ["content ready", "host alert absent", "exactly one data-item-id", "challenge gate"],
+      "continuationRequired": false
+    },
+    "drive.google.com": {
+      "operation": "cross-origin staged",
+      "sideEffects": ["location.replace to clean /uc URL", "bounded confirmation polling", "form requestSubmit or link click"],
+      "guards": ["exact file ID", "known preview or confirmation route", "validated Drive confirmation target", "challenge gate"],
+      "continuationRequired": true
+    },
+    "datanodes.to": {
+      "operation": "multi-stage opportunistic",
+      "sideEffects": ["host timer patch", "MutationObserver", "poll interval", "operation timeout", "multiple candidate clicks"],
+      "guards": ["action scoring", "click cooldown", "final click marker", "challenge gate"],
+      "continuationRequired": true
+    },
+    "mediafire.com": {
+      "operation": "single-page with final navigation",
+      "sideEffects": ["bounded polling", "optional initDownload", "location.assign or anchor click"],
+      "guards": ["download anchor candidate", "non-placeholder HTTP(S) href", "challenge gate"],
+      "continuationRequired": false
+    },
+    "miiiixdrop.net": {
+      "operation": "two-stage single-page",
+      "sideEffects": ["bounded polling", "initial generation click", "delay", "final link click", "post-click grace"],
+      "guards": ["exact /f/<id> route", "visible enabled download text", "HTTP(S) final href", "challenge gate"],
+      "continuationRequired": false
+    },
+    "uploadnow.io": {
+      "operation": "single-page DOM-qualified",
+      "sideEffects": ["stable-count polling", "scroll", "focus", "single button click"],
+      "guards": ["locale /share route", "exactly one stable visible enabled download action", "challenge gate"],
+      "continuationRequired": false
+    },
+    "vik1ngfile.site": {
+      "operation": "two-stage cross-origin-sensitive",
+      "sideEffects": ["bounded polling", "up to two generic download-action clicks", "stage delay"],
+      "guards": ["download text filters", "visible enabled action", "challenge gate"],
+      "continuationRequired": true
+    },
+    "workupload.com": {
+      "operation": "navigation staged",
+      "sideEffects": ["bounded polling", "location.assign to /start/*", "settle delay"],
+      "guards": ["/file/<id> entry", "same-host /start/* target", "download text", "challenge gate"],
+      "continuationRequired": true
+    }
+  }
+}

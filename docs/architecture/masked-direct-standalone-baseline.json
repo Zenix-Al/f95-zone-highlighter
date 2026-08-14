@@ -1,0 +1,64 @@
+{
+  "package": "MASKED-DIRECT-STANDALONE-BASELINE-01",
+  "currentAuthorization": {
+    "f95": [
+      "bounded core ping retries",
+      "addon.access probe fallback",
+      "registration",
+      "blocked and enabled access checks",
+      "persisted enabled state"
+    ],
+    "external": [
+      "supported canonical host",
+      "addon locally enabled and not blocked",
+      "fresh exact URL request or matching session request",
+      "explicit unambiguous source recovery for selected markerless redirects"
+    ]
+  },
+  "managedSideEffects": [
+    {
+      "effect": "request creation and source lookup",
+      "owner": "domain/directDownload/processingTrigger.js"
+    },
+    {
+      "effect": "active request assignment, result publication, cleanup and close scheduling",
+      "owner": "domain/directDownload/flowController.js"
+    },
+    {
+      "effect": "cross-tab success, failure, challenge and close transport",
+      "owner": "domain/directDownload/attention.js"
+    },
+    {
+      "effect": "same-tab redirect identity",
+      "owner": "ports/routeContextRepository.js"
+    },
+    {
+      "effect": "request lease renewal during challenge",
+      "owner": "app/contexts/downloadPageController.js"
+    },
+    {
+      "effect": "origin close request and local window.close fallback",
+      "owner": "domain/directDownload/managedClose.js"
+    },
+    {
+      "effect": "origin-owned GM_openInTab handle closure",
+      "owner": "app/managedTabs.js"
+    }
+  ],
+  "hosts": [
+    { "host": "buzzheavier.com", "routes": "not explicitly classified; relies on button and endpoint", "standaloneEligibility": "defer", "reason": "requires a route classifier before request-independent execution" },
+    { "host": "gofile.io", "routes": "/d/<content> content page", "standaloneEligibility": "conditional", "reason": "single content flow, but collection and multi-file behavior must remain refused" },
+    { "host": "drive.google.com", "routes": "/file/d/<id>, /open, /uc and drive.usercontent /download", "standaloneEligibility": "conditional", "reason": "exact file ID exists; multi-origin redirect continuity needs a standalone guard" },
+    { "host": "pixeldrain.com", "routes": "/u/<id>, /d/<id>, /f/<id>; broad fallback otherwise", "standaloneEligibility": "exact-routes-only", "reason": "ID routes are standalone-safe; fallback and collection routes remain managed-only" },
+    { "host": "krakenfiles.com", "routes": "/view/<id>/file.html", "standaloneEligibility": "yes", "reason": "exact file route and narrow visible enabled control" },
+    { "host": "datanodes.to", "routes": "file/intermediate pages and markerless /download", "standaloneEligibility": "defer", "reason": "timer patch and multi-stage controls need a standalone route identity design" },
+    { "host": "delafil.se", "routes": "/<hex-id>/<filename> and same-file tokenized terminal", "standaloneEligibility": "yes", "reason": "exact same-file route and token validation" },
+    { "host": "download.gg", "routes": "localized or plain /file-<id>", "standaloneEligibility": "yes", "reason": "exact file route and one enabled form control" },
+    { "host": "vik1ngfile.site", "routes": "/f/<id> on both aliases", "standaloneEligibility": "conditional", "reason": "exact route is recoverable but two-stage clicking needs a one-shot guard" },
+    { "host": "mediafire.com", "routes": "not explicitly classified; relies on download anchor", "standaloneEligibility": "defer", "reason": "requires a route classifier before request-independent execution" },
+    { "host": "miiiixdrop.net", "routes": "/f/<id> on all aliases", "standaloneEligibility": "conditional", "reason": "exact route but two-stage generation and post-click grace require one-shot state" },
+    { "host": "uploadhaven.com", "routes": "/download/<id>", "standaloneEligibility": "yes", "reason": "exact route with an existing session one-shot guard" },
+    { "host": "uploadnow.io", "routes": "/<id>/share", "standaloneEligibility": "conditional", "reason": "safe only when exactly one stable file action exists" },
+    { "host": "workupload.com", "routes": "/file/<id> then /start/<id>", "standaloneEligibility": "conditional", "reason": "exact stages, but current marker-preserving navigation must gain standalone handling" }
+  ]
+}

@@ -14,7 +14,12 @@ export function classifyMaskedDirectContext(
         ? "masked"
         : "unsupported";
     return {
-      kind: route === "unsupported" ? "unsupported" : "f95-core",
+      kind:
+        route === "unsupported"
+          ? "unsupported"
+          : route === "masked"
+            ? "f95-optional-core"
+            : "f95-core",
       route,
       usesCore: route !== "unsupported",
     };

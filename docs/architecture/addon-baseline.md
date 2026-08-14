@@ -13,6 +13,18 @@ npm run build:addons:smoke
 npm run check:addons:catalog
 ```
 
+`npm test` verifies that baseline generation is deterministic, complete, and
+side-effect free. It deliberately does not require the tracked JSON to match
+every current source byte, because normal add-on edits necessarily change the
+recorded source and bundle sizes. Use `npm run check:addons:baseline` only when
+snapshot freshness is an intentional gate, and use `npm run audit:addons` to
+accept the current measurements.
+
+A successful tracked add-on release build also refreshes the accepted baseline
+automatically after its manifest, trusted catalog, distribution, and build
+cache updates complete. Regular builds and temporary smoke builds do not write
+baseline evidence.
+
 The audit reads the manifest and trusted catalog, inventories public actions and service exports,
 captures lifecycle behavior snapshots, measures each add-on userscript separately, and measures
 `src/services/addonsService.js`, `src/services/addons/**`, and add-on UI integration separately.

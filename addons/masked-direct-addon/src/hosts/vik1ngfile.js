@@ -9,12 +9,38 @@ import {
 } from "./shared/dom.js";
 
 const HOST_LABEL = "vik1ngfile.site";
+const VIKING_ENTRY_HOST = "vikingfile.com";
+const VIKING_CONTINUATION_HOST = "vik1ngfile.site";
+const VIKING_FILE_PATH = /^\/f\/([a-z0-9_-]{5,64})\/?$/i;
 const DOWNLOAD_BUTTON_CANDIDATES = [
   "a[href]",
   "button",
   'input[type="button"]',
   ".btn",
 ];
+
+export function classifyVikingStandaloneEntry(url = location.href) {
+  return (
+    classifyVikingRoute(url, VIKING_ENTRY_HOST, "vik1ngfile-page") ||
+    classifyVikingRoute(url, VIKING_CONTINUATION_HOST, "vik1ngfile-page")
+  );
+}
+
+export function classifyVikingStandaloneContinuation(url = location.href) {
+  return classifyVikingRoute(url, VIKING_CONTINUATION_HOST, "vik1ngfile-page");
+}
+
+function classifyVikingRoute(url, hostname, nextStage) {
+  try {
+    const parsed = new URL(url, `https://${hostname}/`);
+    const match = parsed.pathname.match(VIKING_FILE_PATH);
+    return parsed.hostname === hostname && match
+      ? { identity: match[1], nextStage }
+      : null;
+  } catch {
+    return null;
+  }
+}
 
 function isVik1ngDownloadButton(element) {
   const text = getElementText(element);
@@ -49,10 +75,13 @@ export async function processVik1ngfileDownload({
   challengeGate,
   notifyMainFailure,
   reportAddonHealthy,
+  automationDecision,
+  stepDelayMs = 1200,
 }) {
   let firstClickDone = false;
+  const stepCount = automationDecision?.mode === "standalone" ? 1 : 2;
 
-  for (let step = 0; step < 2; step += 1) {
+  for (let step = 0; step < stepCount; step += 1) {
     if (challengeGate && !(await challengeGate.waitUntilClear())) return;
     const button = await waitForVik1ngDownloadButton(
       firstClickDone ? 30000 : 20000,
@@ -73,8 +102,12 @@ export async function processVik1ngfileDownload({
       return;
     }
     firstClickDone = true;
-    await sleep(1200);
+    await sleep(Math.max(0, Number(stepDelayMs) || 0));
   }
 
+  if (
+    automationDecision?.mode === "standalone" &&
+    automationDecision.standaloneEntry
+  ) return;
   reportAddonHealthy();
 }

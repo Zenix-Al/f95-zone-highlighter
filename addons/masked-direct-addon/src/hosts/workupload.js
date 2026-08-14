@@ -8,21 +8,47 @@ import {
   waitForCandidate,
 } from "./shared/dom.js";
 import { preserveManagedRouteMarkers } from "./shared/managedNavigation.js";
+import { matchesDirectDownloadHostPath } from "./shared/filePage.js";
 
 const HOST_LABEL = "workupload.com";
+const WORKUPLOAD_FILE_PATH = /^\/file\/[a-z0-9_-]+\/?$/i;
+const WORKUPLOAD_START_PATH = /^\/start\/[a-z0-9_-]+\/?$/i;
 
-function isWorkuploadFilePage() {
-  return (
-    location.hostname.toLowerCase().includes(HOST_LABEL) &&
-    location.pathname.startsWith("/file/")
-  );
+export function isWorkuploadFilePage(url = location.href) {
+  return matchesDirectDownloadHostPath(url, {
+    hostId: "workupload",
+    pathPattern: WORKUPLOAD_FILE_PATH,
+    baseUrl: "https://workupload.com/",
+  });
 }
 
-function isWorkuploadStartPage() {
-  return (
-    location.hostname.toLowerCase().includes(HOST_LABEL) &&
-    location.pathname.startsWith("/start/")
-  );
+export function isWorkuploadStartPage(url = location.href) {
+  return matchesDirectDownloadHostPath(url, {
+    hostId: "workupload",
+    pathPattern: WORKUPLOAD_START_PATH,
+    baseUrl: "https://workupload.com/",
+  });
+}
+
+export function getWorkuploadStandaloneEntry(url = location.href) {
+  return getWorkuploadRouteIdentity(url, WORKUPLOAD_FILE_PATH, "workupload-start");
+}
+
+export function getWorkuploadStandaloneContinuation(url = location.href) {
+  return getWorkuploadRouteIdentity(url, WORKUPLOAD_START_PATH, "workupload-start");
+}
+
+function getWorkuploadRouteIdentity(url, pattern, nextStage) {
+  try {
+    const parsed = new URL(url, "https://workupload.com/");
+    if (parsed.hostname !== HOST_LABEL || !pattern.test(parsed.pathname)) return null;
+    return {
+      identity: parsed.pathname.split("/").filter(Boolean).at(-1),
+      nextStage,
+    };
+  } catch {
+    return null;
+  }
 }
 
 function getWorkuploadDownloadHref(anchor) {
