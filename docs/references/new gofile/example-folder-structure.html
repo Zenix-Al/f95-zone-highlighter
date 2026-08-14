@@ -1,0 +1,135 @@
+<div id="fm-root">
+    <div class="mx-auto w-full max-w-6xl space-y-3 animate-fade-up">
+      
+      <div id="fm-header">
+    <section class="panel p-4 sm:p-5">
+      <div class="flex items-start gap-2 sm:gap-3">
+        
+        <span class="mt-0.5 flex size-11 shrink-0 items-center justify-center rounded-xl bg-white/5 ring-1 ring-white/10">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="folder-open" class="lucide lucide-folder-open size-6 text-amber-400" aria-hidden="true"><path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2"></path></svg>
+        </span>
+        <div class="min-w-0 flex-1">
+          <h1 class="truncate text-base font-bold text-white sm:text-lg" title="test">test</h1>
+          <p class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-400"><span class="inline-flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="calendar" class="lucide lucide-calendar size-3" aria-hidden="true"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M3 10h18"></path></svg> Aug 15, 2026, 12:08 AM</span><span class="inline-flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="files" class="lucide lucide-files size-3" aria-hidden="true"><path d="M20 7h-3a2 2 0 0 1-2-2V2"></path><path d="M9 18a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h7l4 4v10a2 2 0 0 1-2 2Z"></path><path d="M3 7.6v12.8A1.6 1.6 0 0 0 4.6 22h9.8"></path></svg> 2 items</span></p>
+          
+            <div class="mt-2 flex flex-wrap items-center gap-1.5">
+              
+              <span class="inline-flex items-center gap-1 rounded-md bg-white/5 px-1.5 py-0.5 text-[10px] font-medium text-slate-300 ring-1 ring-white/10 text-emerald-300"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="globe" class="lucide lucide-globe size-3 shrink-0" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg><span class="max-w-40 truncate">public</span></span>
+              
+            </div>
+        </div>
+        
+        
+          <!-- Foreign folders: Import as the header's key action (premium-gated at click time). -->
+          <button type="button" data-action="import" class="btn-secondary shrink-0 !px-2.5 !py-1.5 text-xs" aria-label="Import this folder to my files" title="Import to my files">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="import" class="lucide lucide-import size-4" aria-hidden="true"><path d="M12 3v12"></path><path d="m8 11 4 4 4-4"></path><path d="M8 5H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-4"></path></svg> <span class="hidden sm:inline">Import</span>
+          </button>
+        <button type="button" data-action="folder-menu" class="icon-btn shrink-0" aria-label="Folder actions" aria-haspopup="menu">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="ellipsis-vertical" class="lucide lucide-ellipsis-vertical size-5" aria-hidden="true"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
+        </button>
+      </div>
+    </section>
+  </div>
+      <div class="sticky top-16 z-20">
+        <div id="fm-toolbar" class="panel px-2 py-1.5 shadow-lg shadow-black/20">
+    <div class="flex items-center gap-1 sm:gap-1.5">
+      <button type="button" data-action="select-all" class="icon-btn" aria-label="Select all items" title="Select all (Ctrl+A)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="square-check-big" class="lucide lucide-square-check-big size-5" aria-hidden="true"><path d="M21 10.656V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h12.344"></path><path d="m9 11 3 3L22 4"></path></svg>
+      </button>
+
+      
+
+      <span class="flex-1"></span>
+      
+      <button type="button" data-action="search" class="icon-btn" aria-label="Search in this folder" title="Search"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="search" class="lucide lucide-search size-5" aria-hidden="true"><path d="m21 21-4.34-4.34"></path><circle cx="11" cy="11" r="8"></circle></svg></button>
+      <button type="button" data-action="toggle-filter" class="icon-btn relative " aria-label="Filter items" title="Filter"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="list-filter" class="lucide lucide-list-filter size-5" aria-hidden="true"><path d="M3 6h18"></path><path d="M7 12h10"></path><path d="M10 18h4"></path></svg></button>
+      <button type="button" data-action="sort-menu" class="icon-btn" aria-label="Sort items" aria-haspopup="menu" title="Sort: Created"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="arrow-up-down" class="lucide lucide-arrow-up-down size-5" aria-hidden="true"><path d="m21 16-4 4-4-4"></path><path d="M17 20V4"></path><path d="m3 8 4-4 4 4"></path><path d="M7 4v16"></path></svg></button>
+      <button type="button" data-action="display-menu" class="icon-btn" aria-label="Display options" aria-haspopup="menu" title="Display options"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="settings-2" class="lucide lucide-settings-2 size-5" aria-hidden="true"><path d="M14 17H5"></path><path d="M19 7h-9"></path><circle cx="17" cy="17" r="3"></circle><circle cx="7" cy="7" r="3"></circle></svg></button>
+      <button type="button" data-action="refresh" class="icon-btn" aria-label="Refresh" title="Refresh"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="refresh-cw" class="lucide lucide-refresh-cw size-5" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M8 16H3v5"></path></svg></button>
+    </div>
+  </div>
+        <div id="fm-filterbar" class="mt-2 hidden"></div>
+        
+      </div>
+      <div id="fm-notices" class="space-y-2"></div>
+      <div id="fm-list">
+    <div class="panel divide-y divide-white/5 py-1" role="list" aria-label="Folder contents">
+      
+    <div class="fm-row group/row relative flex items-start gap-0.5 px-1.5 transition-colors duration-100 select-none touch-callout-none sm:gap-2 sm:px-3 hover:bg-white/[0.03]" data-id="549e1870-d0da-406b-9f45-dc0c959cb0ad" data-selected="false" data-type="file">
+      <button type="button" data-action="toggle-select" aria-pressed="false" aria-label="Select whitelist.ini" class="mt-1 flex h-10 w-8 shrink-0 items-center justify-center rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-brand-400 sm:w-10">
+        
+    <span class="flex size-4.5 items-center justify-center rounded-md border-2 transition-colors duration-100 sm:size-5 border-slate-500 group-hover/row:border-slate-400 group-hover/row:bg-white/5">
+      
+    </span>
+  
+      </button>
+      <button type="button" data-action="open-file" class="flex min-w-0 flex-1 cursor-pointer items-start gap-0.5 py-1 text-left outline-none focus-visible:rounded-lg focus-visible:ring-2 focus-visible:ring-brand-400 sm:gap-2">
+    <span class="flex size-10 shrink-0 items-center justify-center" aria-hidden="true">
+    <span class="relative inline-flex">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="file-text" class="lucide lucide-file-text size-6 text-sky-400" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M10 9H8"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg>
+      
+    </span>
+  </span>
+    <div class="min-w-0 flex-1">
+      <p class="truncate text-sm font-medium text-white">whitelist.ini</p>
+      <p class="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-slate-400"><span class="inline-flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="calendar" class="lucide lucide-calendar size-3" aria-hidden="true"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M3 10h18"></path></svg> Aug 15, 2026, 12:08 AM</span><span>39.0 B</span></p>
+      
+      
+    </div>
+  </button>
+      <div class="flex shrink-0 items-center gap-1 pt-1">
+        <button type="button" data-action="download" title="Download" class="btn-secondary hidden !px-2.5 !py-1 text-xs lg:inline-flex"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="download" class="lucide lucide-download size-3.5" aria-hidden="true"><path d="M12 15V3"></path><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="m7 10 5 5 5-5"></path></svg> Download</button>
+        <button type="button" data-action="item-menu" class="icon-btn !size-9" aria-label="Actions for whitelist.ini" aria-haspopup="menu">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="ellipsis-vertical" class="lucide lucide-ellipsis-vertical size-5" aria-hidden="true"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
+        </button>
+      </div>
+    </div>
+  
+    <div class="fm-row group/row relative flex items-start gap-0.5 px-1.5 transition-colors duration-100 select-none touch-callout-none sm:gap-2 sm:px-3 hover:bg-white/[0.03]" data-id="ce3bc617-79a2-45c0-bfb2-fcf6971d75c2" data-selected="false" data-type="file">
+      <button type="button" data-action="toggle-select" aria-pressed="false" aria-label="Select format.ini" class="mt-1 flex h-10 w-8 shrink-0 items-center justify-center rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-brand-400 sm:w-10">
+        
+    <span class="flex size-4.5 items-center justify-center rounded-md border-2 transition-colors duration-100 sm:size-5 border-slate-500 group-hover/row:border-slate-400 group-hover/row:bg-white/5">
+      
+    </span>
+  
+      </button>
+      <button type="button" data-action="open-file" class="flex min-w-0 flex-1 cursor-pointer items-start gap-0.5 py-1 text-left outline-none focus-visible:rounded-lg focus-visible:ring-2 focus-visible:ring-brand-400 sm:gap-2">
+    <span class="flex size-10 shrink-0 items-center justify-center" aria-hidden="true">
+    <span class="relative inline-flex">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="file-text" class="lucide lucide-file-text size-6 text-sky-400" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M10 9H8"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg>
+      
+    </span>
+  </span>
+    <div class="min-w-0 flex-1">
+      <p class="truncate text-sm font-medium text-white">format.ini</p>
+      <p class="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-slate-400"><span class="inline-flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="calendar" class="lucide lucide-calendar size-3" aria-hidden="true"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M3 10h18"></path></svg> Aug 15, 2026, 12:08 AM</span><span>503 B</span></p>
+      
+      
+    </div>
+  </button>
+      <div class="flex shrink-0 items-center gap-1 pt-1">
+        <button type="button" data-action="download" title="Download" class="btn-secondary hidden !px-2.5 !py-1 text-xs lg:inline-flex"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="download" class="lucide lucide-download size-3.5" aria-hidden="true"><path d="M12 15V3"></path><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="m7 10 5 5 5-5"></path></svg> Download</button>
+        <button type="button" data-action="item-menu" class="icon-btn !size-9" aria-label="Actions for format.ini" aria-haspopup="menu">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="ellipsis-vertical" class="lucide lucide-ellipsis-vertical size-5" aria-hidden="true"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
+        </button>
+      </div>
+    </div>
+  
+    </div>
+  </div>
+      <div id="fm-pagination"></div>
+      
+    <div class="flex justify-center pt-1">
+      <button type="button" data-action="report-abuse" class="btn-ghost !px-3 !py-1.5 text-xs text-slate-500 hover:text-slate-300">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="flag" class="lucide lucide-flag size-3.5" aria-hidden="true"><path d="M4 22V4a1 1 0 0 1 .4-.8A6 6 0 0 1 8 2c3 0 5 2 7.333 2q2 0 3.067-.8A1 1 0 0 1 20 4v10a1 1 0 0 1-.4.8A6 6 0 0 1 16 16c-3 0-5-2-8-2a6 6 0 0 0-4 1.528"></path></svg> Report abuse
+      </button>
+    </div>
+  
+      <div id="fm-dropzone" class="pointer-events-none fixed inset-4 z-40 hidden flex items-center justify-center rounded-3xl border-2 border-dashed border-brand-400/60 bg-surface-base/80 backdrop-blur-sm">
+        <div class="flex flex-col items-center gap-3 text-center">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="cloud-upload" class="lucide lucide-cloud-upload size-10 text-brand-400" aria-hidden="true"><path d="M12 13v8"></path><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path><path d="m8 17 4-4 4 4"></path></svg>
+          <p class="text-sm font-semibold text-white">Drop files to upload them here</p>
+        </div>
+      </div>
+    </div>
+  </div>

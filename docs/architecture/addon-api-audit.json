@@ -817,16 +817,6 @@
             "path": "addons/masked-direct-addon/src/app/lifecycle.js",
             "line": 84,
             "text": "window.addEventListener(ADDON_COMMAND_EVENT, commandHandler);"
-          },
-          {
-            "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-            "line": 27,
-            "text": "window.addEventListener(${JSON.stringify(GOFILE_BRIDGE_REQUEST_EVENT)}, (event) => {"
-          },
-          {
-            "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-            "line": 123,
-            "text": "window.addEventListener(GOFILE_BRIDGE_RESULT_EVENT, onReply, {"
           }
         ],
         "bridgeEvents": [
@@ -871,30 +861,6 @@
             "line": 1,
             "text": "export const ADDON_COMMAND_EVENT = \"f95ue:addon-command\";",
             "eventName": "f95ue:addon-command"
-          },
-          {
-            "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-            "line": 5,
-            "text": "const GOFILE_BRIDGE_REQUEST_EVENT = \"f95ue:gofile-download-request\";",
-            "eventName": "f95ue:gofile-download-request"
-          },
-          {
-            "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-            "line": 5,
-            "text": "const GOFILE_BRIDGE_REQUEST_EVENT = \"f95ue:gofile-download-request\";",
-            "eventName": "f95ue:gofile-download-request"
-          },
-          {
-            "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-            "line": 6,
-            "text": "const GOFILE_BRIDGE_RESULT_EVENT = \"f95ue:gofile-download-result\";",
-            "eventName": "f95ue:gofile-download-result"
-          },
-          {
-            "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-            "line": 6,
-            "text": "const GOFILE_BRIDGE_RESULT_EVENT = \"f95ue:gofile-download-result\";",
-            "eventName": "f95ue:gofile-download-result"
           },
           {
             "path": "addons/masked-direct-addon/src/domain/directDownload/attention.js",
@@ -1046,16 +1012,6 @@
             "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
             "line": 335,
             "text": "setTimeout(scheduleScan, 500);"
-          },
-          {
-            "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-            "line": 117,
-            "text": "const timer = setTimeout("
-          },
-          {
-            "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-            "line": 166,
-            "text": "setTimeout(check, pollIntervalMs);"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/shared/cloudflareChallenge.js",
@@ -1651,7 +1607,7 @@
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-            "line": 10,
+            "line": 8,
             "text": "export function isGofileContentPage(url = location.href) {"
           },
           {
@@ -2393,38 +2349,18 @@
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-            "line": 22,
-            "text": "const script = document.createElement(\"script\");"
+            "line": 18,
+            "text": "...document.querySelectorAll(SELECTORS.GOFILE.DOWNLOAD_BUTTON),"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-            "line": 55,
-            "text": "(document.head || document.documentElement || document.body).appendChild("
+            "line": 28,
+            "text": "...document.querySelectorAll(SELECTORS.GOFILE.ITEM_ROW),"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-            "line": 151,
-            "text": "const loading = document.querySelector(SELECTORS.GOFILE.LOADING);"
-          },
-          {
-            "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-            "line": 152,
-            "text": "const itemsList = document.querySelector(SELECTORS.GOFILE.ITEMS_LIST);"
-          },
-          {
-            "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-            "line": 186,
-            "text": "const alertEl = document.querySelector(SELECTORS.GOFILE.ALERT);"
-          },
-          {
-            "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-            "line": 193,
-            "text": "const itemsList = document.querySelector(SELECTORS.GOFILE.ITEMS_LIST);"
-          },
-          {
-            "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-            "line": 200,
-            "text": "const itemElements = itemsList.querySelectorAll(\"[data-item-id]\");"
+            "line": 38,
+            "text": "const button = rows[0].querySelector(SELECTORS.GOFILE.DOWNLOAD_BUTTON);"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
@@ -3159,11 +3095,6 @@
             "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
             "line": 238,
             "text": "clearTimeout(timeoutTimer);"
-          },
-          {
-            "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-            "line": 103,
-            "text": "clearTimeout(timer);"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/shared/cloudflareChallenge.js",
@@ -7730,36 +7661,6 @@
         ]
       },
       {
-        "eventName": "f95ue:gofile-download-request",
-        "callSites": [
-          {
-            "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-            "line": 5,
-            "text": "const GOFILE_BRIDGE_REQUEST_EVENT = \"f95ue:gofile-download-request\";"
-          },
-          {
-            "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-            "line": 5,
-            "text": "const GOFILE_BRIDGE_REQUEST_EVENT = \"f95ue:gofile-download-request\";"
-          }
-        ]
-      },
-      {
-        "eventName": "f95ue:gofile-download-result",
-        "callSites": [
-          {
-            "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-            "line": 6,
-            "text": "const GOFILE_BRIDGE_RESULT_EVENT = \"f95ue:gofile-download-result\";"
-          },
-          {
-            "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-            "line": 6,
-            "text": "const GOFILE_BRIDGE_RESULT_EVENT = \"f95ue:gofile-download-result\";"
-          }
-        ]
-      },
-      {
         "eventName": "f95ue:site-repair:latest-ajax-command",
         "callSites": [
           {
@@ -9542,7 +9443,7 @@
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-          "line": 10,
+          "line": 8,
           "text": "export function isGofileContentPage(url = location.href) {"
         },
         {
@@ -10594,16 +10495,6 @@
           "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
           "line": 335,
           "text": "setTimeout(scheduleScan, 500);"
-        },
-        {
-          "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-          "line": 117,
-          "text": "const timer = setTimeout("
-        },
-        {
-          "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-          "line": 166,
-          "text": "setTimeout(check, pollIntervalMs);"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/shared/cloudflareChallenge.js",
@@ -12611,16 +12502,6 @@
           "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
           "line": 335,
           "text": "setTimeout(scheduleScan, 500);"
-        },
-        {
-          "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-          "line": 117,
-          "text": "const timer = setTimeout("
-        },
-        {
-          "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-          "line": 166,
-          "text": "setTimeout(check, pollIntervalMs);"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/shared/cloudflareChallenge.js",

@@ -1,5 +1,9 @@
 # Changelog
 
+# v1.2.1 - Gofile update
+
+- Update Gofile automation with its new ui.
+
 ## v1.2.0 - Expanded standalone host automation
 
 - Run approved download-host automation automatically when F95UE core is not

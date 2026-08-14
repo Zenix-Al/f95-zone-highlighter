@@ -166,14 +166,66 @@ module.exports = function registerMaskedDirectStandaloneExpansionSimple(context)
   );
 
   runTest(
+    "MASKED-DIRECT-STANDALONE-EXPANSION-SIMPLE-01 Gofile triggers the single-file page action",
+    async () => {
+      const sandbox = createDomSandbox("https://gofile.io/d/5krbciLL");
+      try {
+        sandbox.document.body.innerHTML =
+          '<button type="button" data-action="download">Download</button>';
+        const button = sandbox.document.querySelector('[data-action="download"]');
+        let clicks = 0;
+        let healthy = 0;
+        button.addEventListener("click", () => { clicks += 1; });
+        const { processGofileDownload } = loadModule(
+          "addons/masked-direct-addon/src/hosts/gofile.js",
+        );
+        await processGofileDownload({
+          challengeGate: { waitUntilClear: async () => true },
+          notifyMainFailure: async (host, reason) => assert.fail(`${host}: ${reason}`),
+          reportAddonHealthy: () => { healthy += 1; },
+          postReadyWaitMs: 0,
+        });
+        assert.strictEqual(clicks, 1);
+        assert.strictEqual(healthy, 1);
+      } finally {
+        sandbox.restore();
+      }
+    },
+  );
+
+  runTest(
+    "MASKED-DIRECT-STANDALONE-EXPANSION-SIMPLE-01 Gofile triggers one file inside a folder",
+    async () => {
+      const sandbox = createDomSandbox("https://gofile.io/d/5krbciLL");
+      try {
+        sandbox.document.body.innerHTML =
+          '<div class="fm-row" data-id="file-a" data-type="file"><button type="button" data-action="download">Download</button></div>';
+        const button = sandbox.document.querySelector('[data-action="download"]');
+        let clicks = 0;
+        button.addEventListener("click", () => { clicks += 1; });
+        const { processGofileDownload } = loadModule(
+          "addons/masked-direct-addon/src/hosts/gofile.js",
+        );
+        await processGofileDownload({
+          challengeGate: { waitUntilClear: async () => true },
+          notifyMainFailure: async (host, reason) => assert.fail(`${host}: ${reason}`),
+          reportAddonHealthy() {},
+          postReadyWaitMs: 0,
+        });
+        assert.strictEqual(clicks, 1);
+      } finally {
+        sandbox.restore();
+      }
+    },
+  );
+
+  runTest(
     "MASKED-DIRECT-STANDALONE-EXPANSION-SIMPLE-01 Gofile refuses multiple items",
     async () => {
       const sandbox = createDomSandbox("https://gofile.io/d/r6RPqz");
-      const previousGetComputedStyle = global.getComputedStyle;
       try {
-        global.getComputedStyle = sandbox.window.getComputedStyle.bind(sandbox.window);
         sandbox.document.body.innerHTML =
-          '<div id="filemanager_itemslist"><div data-item-id="a"></div><div data-item-id="b"></div></div>';
+          '<div id="fm-list"><div class="fm-row" data-id="a" data-type="file"></div><div class="fm-row" data-id="b" data-type="file"></div></div>';
         const failures = [];
         let healthy = 0;
         const { processGofileDownload } = loadModule(
@@ -188,7 +240,6 @@ module.exports = function registerMaskedDirectStandaloneExpansionSimple(context)
         assert.strictEqual(healthy, 0);
         assert.match(failures[0][1], /exactly one file/i);
       } finally {
-        global.getComputedStyle = previousGetComputedStyle;
         sandbox.restore();
       }
     },
@@ -198,10 +249,8 @@ module.exports = function registerMaskedDirectStandaloneExpansionSimple(context)
     "MASKED-DIRECT-STANDALONE-EXPANSION-SIMPLE-01 Gofile refuses an empty page",
     async () => {
       const sandbox = createDomSandbox("https://gofile.io/d/r6RPqz");
-      const previousGetComputedStyle = global.getComputedStyle;
       try {
-        global.getComputedStyle = sandbox.window.getComputedStyle.bind(sandbox.window);
-        sandbox.document.body.innerHTML = '<div id="filemanager_itemslist"></div>';
+        sandbox.document.body.innerHTML = '<div id="fm-list"></div>';
         const failures = [];
         const { processGofileDownload } = loadModule(
           "addons/masked-direct-addon/src/hosts/gofile.js",
@@ -216,9 +265,8 @@ module.exports = function registerMaskedDirectStandaloneExpansionSimple(context)
           pollIntervalMs: 2,
           postReadyWaitMs: 0,
         });
-        assert.match(failures[0][1], /failed to load file list/i);
+        assert.match(failures[0][1], /failed to load a download action/i);
       } finally {
-        global.getComputedStyle = previousGetComputedStyle;
         sandbox.restore();
       }
     },

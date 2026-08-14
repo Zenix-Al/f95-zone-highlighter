@@ -52,9 +52,8 @@ export const SELECTORS = Object.freeze({
     ],
   },
   GOFILE: {
-    LOADING: "#filemanager_loading",
-    ITEMS_LIST: "#filemanager_itemslist",
-    ALERT: "#filemanager_alert",
+    DOWNLOAD_BUTTON: 'button[data-action="download"]',
+    ITEM_ROW: ".fm-row[data-id]",
   },
   DATANODES: {
     METHOD_FREE_BUTTON_ID: "method_free",

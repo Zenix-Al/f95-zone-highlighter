@@ -1139,21 +1139,6 @@
         "value": "f95ue.addon.maskedDirect.source."
       },
       {
-        "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-        "name": "GOFILE_BRIDGE_MARKER",
-        "value": "__f95ue_gofile_bridge_installed"
-      },
-      {
-        "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-        "name": "GOFILE_BRIDGE_REQUEST_EVENT",
-        "value": "f95ue:gofile-download-request"
-      },
-      {
-        "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-        "name": "GOFILE_BRIDGE_RESULT_EVENT",
-        "value": "f95ue:gofile-download-result"
-      },
-      {
         "path": "addons/masked-direct-addon/src/infrastructure/gmStorageAdapter.js",
         "name": "GM_STORAGE_DELAY_KEY",
         "value": "downloadPageCloseDelayMs"
@@ -3027,9 +3012,9 @@
       "id": "masked-direct-addon",
       "source": {
         "fileCount": 58,
-        "authoredBytes": 203804,
-        "physicalLines": 6838,
-        "nonblankLines": 6221,
+        "authoredBytes": 199616,
+        "physicalLines": 6699,
+        "nonblankLines": 6100,
         "files": [
           {
             "path": "addons/masked-direct-addon/src/api/observer.js",
@@ -3141,9 +3126,9 @@
           },
           {
             "path": "addons/masked-direct-addon/src/constants.js",
-            "bytes": 3575,
-            "physicalLines": 109,
-            "nonblankLines": 107
+            "bytes": 3552,
+            "physicalLines": 108,
+            "nonblankLines": 106
           },
           {
             "path": "addons/masked-direct-addon/src/core/adaptor.js",
@@ -3201,9 +3186,9 @@
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-            "bytes": 6955,
-            "physicalLines": 236,
-            "nonblankLines": 209
+            "bytes": 2790,
+            "physicalLines": 98,
+            "nonblankLines": 89
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/googleDrive.js",
@@ -3384,8 +3369,8 @@
       "builds": {
         "regular": {
           "mode": "regular",
-          "bytes": 202402,
-          "gzipBytes": 41505,
+          "bytes": 198109,
+          "gzipBytes": 40479,
           "contributors": [
             {
               "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
@@ -3418,10 +3403,6 @@
             {
               "path": "addons/masked-direct-addon/src/app/contexts/threadPageController.js",
               "bytes": 7115
-            },
-            {
-              "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-              "bytes": 6962
             },
             {
               "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
@@ -3465,14 +3446,18 @@
             },
             {
               "path": "addons/masked-direct-addon/src/constants.js",
-              "bytes": 3645
+              "bytes": 3620
+            },
+            {
+              "path": "addons/masked-direct-addon/src/hosts/workupload.js",
+              "bytes": 3619
             }
           ]
         },
         "release": {
           "mode": "release",
-          "bytes": 172754,
-          "gzipBytes": 35454,
+          "bytes": 169081,
+          "gzipBytes": 34547,
           "contributors": [
             {
               "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
@@ -3497,10 +3482,6 @@
             {
               "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
               "bytes": 5839
-            },
-            {
-              "path": "addons/masked-direct-addon/src/hosts/gofile.js",
-              "bytes": 5401
             },
             {
               "path": "addons/masked-direct-addon/src/app/contexts/threadPageController.js",
@@ -3540,7 +3521,7 @@
             },
             {
               "path": "addons/masked-direct-addon/src/constants.js",
-              "bytes": 2829
+              "bytes": 2812
             },
             {
               "path": "addons/masked-direct-addon/src/ports/routeContextRepository.js",
@@ -3553,6 +3534,10 @@
             {
               "path": "addons/masked-direct-addon/src/hosts/pixeldrain.js",
               "bytes": 2724
+            },
+            {
+              "path": "addons/masked-direct-addon/src/hosts/shared/cloudflareChallenge.js",
+              "bytes": 2686
             }
           ]
         }
