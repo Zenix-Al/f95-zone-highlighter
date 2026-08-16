@@ -2417,6 +2417,15 @@ module.exports = function registerGroup(context) {
           if (action === "observer.waitFor")
             return { ok: false, reason: "unsupported_action" };
           if (action === "ui.mount") {
+            const mountAttemptCount = actions.filter(
+              (entry) => entry.action === "ui.mount",
+            ).length;
+            if (mountAttemptCount < 3) {
+              return {
+                ok: true,
+                value: { pending: true, mountId: payload.mountId },
+              };
+            }
             const mount = document.createElement("div");
             mount.id = payload.mountId;
             mount.innerHTML = payload.html;
@@ -2495,7 +2504,7 @@ module.exports = function registerGroup(context) {
         assert.ok(commandHandler);
         assert.strictEqual(
           actions.filter((entry) => entry.action === "ui.mount").length,
-          1,
+          3,
         );
         assert.match(
           actions.find((entry) => entry.action === "ui.mount").payload.html,

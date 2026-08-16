@@ -255,4 +255,20 @@ module.exports = function registerLibraryActivityGroup(context) {
     assert.strictEqual(query.direction, "prev");
     assert.strictEqual(query.limit, 1);
   });
+
+  runTest("LIBRARY-ACTIVITY-01 retains only 20 activity events per thread", async () => {
+    const { createLibraryService } = loadModule("addons/library-addon/src/library/service.js");
+    const memory = createMemoryBridge();
+    const library = createLibraryService(memory.bridge, {});
+    for (let index = 1; index <= 25; index += 1) {
+      await library.applyPersonalActivity(
+        "42",
+        { status: index % 2 ? "playing" : "saved" },
+        { commandId: `status-${index}`, occurredAt: 100 + index },
+      );
+    }
+    const events = memory.snapshot().activity;
+    assert.strictEqual(events.length, 20);
+    assert.strictEqual(Math.min(...events.map((event) => event.occurredAt)), 106);
+  });
 };

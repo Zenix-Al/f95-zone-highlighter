@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.2.2 - Update-check and dock reliability
+
+- Improved dock mounting reliability when many tabs initialize at once by retrying until the core confirms the mount.
+- Unified live and fetched thread-title parsing so automatic checks use the thread heading and exclude prefix, version, and developer labels.
+- Fixed Retry failed now incorrectly moving the next scheduled automatic-update time.
+- Limited update and activity history to the newest 20 entries per thread, including imported history, to prevent false detections from bloating the database.
+
 ## v1.2.1 - Dialog layout fixes
 
 - Fixed Library Manager horizontal/vertical overflow and removed the unusable blank area exposed by the updated core dialog host.

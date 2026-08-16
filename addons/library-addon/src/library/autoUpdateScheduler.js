@@ -98,11 +98,15 @@ export function createAutoUpdateScheduler({
       return { ok: false, reason: "lease_owned" };
     }
     const startedAt = now();
+    const previousSummary = options.failedOnly
+      ? await repository.getSummary()
+      : null;
     const summary = {
       status: "running",
       startedAt,
       finishedAt: null,
-      nextRunAt: startedAt + config.intervalMs,
+      nextRunAt:
+        Number(previousSummary?.nextRunAt) || startedAt + config.intervalMs,
       total: 0,
       activeThreadId: "",
       checked: 0,

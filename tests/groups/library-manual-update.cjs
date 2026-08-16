@@ -85,6 +85,46 @@ module.exports = function registerLibraryManualUpdateGroup(context) {
       html({ title: "Log in", body: 'Version: v1 <a href="https://f95zone.to/login">Login</a>' }),
     );
     assert.strictEqual(loginInterfaceMarkupAlone.ok, true);
+
+    const fetchedThreadTitle = parseLibraryThreadHtml(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Others - Corruption of Champions II [v0.9.4] [Savin/Salamander Studios] | F95zone | Adult Games | Comics | Mods | Cheats</title>
+          <meta property="og:title" content="Others - Corruption of Champions II [v0.9.4] [Savin/Salamander Studios]" />
+        </head>
+        <body>
+          <h1 class="p-title-value"><a href="/forums/games.2/?prefix_id=14" class="labelLink" rel="nofollow"><span class="label label--lightGreen" dir="auto">Others</span></a><span class="label-append">&nbsp;</span>Corruption of Champions II [v0.9.4] [Savin/Salamander Studios]</h1>
+          <article class="message-threadStarterPost">Version: v0.9.4</article>
+        </body>
+      </html>
+    `);
+    assert.strictEqual(fetchedThreadTitle.ok, true);
+    assert.strictEqual(fetchedThreadTitle.value.title, "Corruption of Champions II");
+    assert.strictEqual(fetchedThreadTitle.value.currentVersion, "v0.9.4");
+  });
+
+  runTest("LIBRARY-MANUAL-UPDATE-CHECK-01 shares live and fetched title normalization", () => {
+    const { decodeHtmlText, normalizeThreadTitleText } = loadModule(
+      "addons/library-addon/src/thread/title.js",
+    );
+    assert.strictEqual(
+      decodeHtmlText("VRSQ2: Succubus &#039; Flesh Prison"),
+      "VRSQ2: Succubus ' Flesh Prison",
+    );
+    assert.strictEqual(
+      decodeHtmlText("A &#39; B &apos; C &amp;#039; D &#x27; E &amp; F"),
+      "A ' B ' C ' D ' E & F",
+    );
+    assert.deepStrictEqual(
+      normalizeThreadTitleText("Shared Game [v1.2] [Developer]"),
+      {
+        source: "Shared Game [v1.2] [Developer]",
+        title: "Shared Game",
+        gameVersion: "v1.2",
+        developer: "Developer",
+      },
+    );
   });
 
   runTest("LIBRARY-MANUAL-UPDATE-CHECK-01 request adapter is bounded and authenticated", async () => {
@@ -170,7 +210,7 @@ module.exports = function registerLibraryManualUpdateGroup(context) {
       threadId: "42",
       thread: {
         url: "https://f95zone.to/threads/game.42/",
-        title: "Game [v1]",
+        title: "Game",
         canonicalTitle: "Game",
         titleNormalized: "game",
         currentVersion: "v1",
