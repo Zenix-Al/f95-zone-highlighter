@@ -3183,6 +3183,7 @@
           "addons/library-addon/src/main.js",
           "addons/library-addon/src/thread/detector.js",
           "addons/library-addon/src/thread/quickActions.js",
+          "addons/library-addon/src/thread/title.js",
           "addons/library-addon/src/ui/application/importExportWorkflow.js",
           "addons/library-addon/src/ui/application/importProgressController.js",
           "addons/library-addon/src/ui/assets/dock.css",
@@ -3585,7 +3586,7 @@
           },
           {
             "path": "addons/library-addon/src/app/dockController.js",
-            "line": 79,
+            "line": 85,
             "text": "window.addEventListener(\"click\", clickHandler, true);"
           }
         ],
@@ -3707,6 +3708,11 @@
             "path": "addons/library-addon/src/api/threadHtml.js",
             "line": 23,
             "text": "const timer = setTimeout(() => controller.abort(\"timeout\"), timeoutMs);"
+          },
+          {
+            "path": "addons/library-addon/src/app/dockController.js",
+            "line": 16,
+            "text": "return new Promise((resolve) => window.setTimeout(resolve, milliseconds));"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
@@ -3837,54 +3843,54 @@
           },
           {
             "path": "addons/library-addon/src/thread/detector.js",
-            "line": 1,
+            "line": 6,
             "text": "function parseThreadIdFromPath(pathname) {"
           },
           {
             "path": "addons/library-addon/src/thread/detector.js",
-            "line": 2,
+            "line": 7,
             "text": "const fromDot = String(pathname || \"\").match(/\\.(\\d+)(?:\\/?|$)/);"
           },
           {
             "path": "addons/library-addon/src/thread/detector.js",
-            "line": 5,
+            "line": 10,
             "text": "const fromThreads = String(pathname || \"\").match(/\\/threads\\/(\\d+)(?:\\/?|$)/);"
           },
           {
             "path": "addons/library-addon/src/thread/detector.js",
-            "line": 89,
+            "line": 66,
             "text": "return location.hostname.includes(\"f95zone.to\") && location.pathname.startsWith(\"/threads/\");"
           },
           {
             "path": "addons/library-addon/src/thread/detector.js",
-            "line": 95,
+            "line": 72,
             "text": "const threadId = parseThreadIdFromPath(location.pathname);"
           },
           {
             "path": "addons/library-addon/src/thread/detector.js",
-            "line": 115,
+            "line": 86,
             "text": "url: `${location.origin}${location.pathname}`,"
           }
         ],
         "coreDomAssumptions": [
           {
             "path": "addons/library-addon/src/thread/detector.js",
-            "line": 45,
+            "line": 22,
             "text": "titleNode.querySelectorAll(\"a.labelLink span\").forEach((node) => {"
           },
           {
             "path": "addons/library-addon/src/thread/detector.js",
-            "line": 70,
+            "line": 47,
             "text": "document.querySelectorAll(selector).forEach((node) => {"
           },
           {
             "path": "addons/library-addon/src/thread/detector.js",
-            "line": 81,
+            "line": 58,
             "text": "const node = document.querySelector('select[name=\"rating\"][data-initial-rating]');"
           },
           {
             "path": "addons/library-addon/src/thread/detector.js",
-            "line": 98,
+            "line": 75,
             "text": "const titleNode = document.querySelector(\"h1.p-title-value\");"
           },
           {
@@ -4297,52 +4303,52 @@
           },
           {
             "path": "addons/library-addon/src/app/dockController.js",
-            "line": 31,
+            "line": 37,
             "text": "function isCurrent(context) {"
           },
           {
             "path": "addons/library-addon/src/app/dockController.js",
-            "line": 34,
+            "line": 40,
             "text": "typeof context.isCurrent !== \"function\" ||"
           },
           {
             "path": "addons/library-addon/src/app/dockController.js",
-            "line": 35,
+            "line": 41,
             "text": "context.isCurrent()"
           },
           {
             "path": "addons/library-addon/src/app/dockController.js",
-            "line": 94,
+            "line": 100,
             "text": "if (!state.enabled || !isCurrent(context)) {"
           },
           {
             "path": "addons/library-addon/src/app/dockController.js",
-            "line": 107,
+            "line": 118,
             "text": "if (!state.enabled || !isCurrent(context) || token !== mountToken) {"
           },
           {
             "path": "addons/library-addon/src/app/dockController.js",
-            "line": 119,
+            "line": 139,
             "text": "if (!isCurrent(context)) return { ok: false, reason: \"stale_mount\" };"
           },
           {
             "path": "addons/library-addon/src/app/dockController.js",
-            "line": 129,
+            "line": 149,
             "text": "if (!state.enabled || !isCurrent(context)) {"
           },
           {
             "path": "addons/library-addon/src/app/dockController.js",
-            "line": 141,
+            "line": 161,
             "text": "if (!state.enabled || !isCurrent(context)) {"
           },
           {
             "path": "addons/library-addon/src/app/dockController.js",
-            "line": 162,
+            "line": 182,
             "text": "if (!state.enabled || !isCurrent(context) || observation?.reason === \"cancelled\") {"
           },
           {
             "path": "addons/library-addon/src/app/dockController.js",
-            "line": 175,
+            "line": 195,
             "text": "if (!state.enabled || !isCurrent(context)) {"
           },
           {
@@ -10163,32 +10169,32 @@
         },
         {
           "path": "addons/library-addon/src/thread/detector.js",
-          "line": 1,
+          "line": 6,
           "text": "function parseThreadIdFromPath(pathname) {"
         },
         {
           "path": "addons/library-addon/src/thread/detector.js",
-          "line": 2,
+          "line": 7,
           "text": "const fromDot = String(pathname || \"\").match(/\\.(\\d+)(?:\\/?|$)/);"
         },
         {
           "path": "addons/library-addon/src/thread/detector.js",
-          "line": 5,
+          "line": 10,
           "text": "const fromThreads = String(pathname || \"\").match(/\\/threads\\/(\\d+)(?:\\/?|$)/);"
         },
         {
           "path": "addons/library-addon/src/thread/detector.js",
-          "line": 89,
+          "line": 66,
           "text": "return location.hostname.includes(\"f95zone.to\") && location.pathname.startsWith(\"/threads/\");"
         },
         {
           "path": "addons/library-addon/src/thread/detector.js",
-          "line": 95,
+          "line": 72,
           "text": "const threadId = parseThreadIdFromPath(location.pathname);"
         },
         {
           "path": "addons/library-addon/src/thread/detector.js",
-          "line": 115,
+          "line": 86,
           "text": "url: `${location.origin}${location.pathname}`,"
         },
         {
@@ -10560,6 +10566,11 @@
           "path": "addons/library-addon/src/api/threadHtml.js",
           "line": 23,
           "text": "const timer = setTimeout(() => controller.abort(\"timeout\"), timeoutMs);"
+        },
+        {
+          "path": "addons/library-addon/src/app/dockController.js",
+          "line": 16,
+          "text": "return new Promise((resolve) => window.setTimeout(resolve, milliseconds));"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
@@ -10975,7 +10986,7 @@
         },
         {
           "path": "addons/library-addon/src/app/dockController.js",
-          "line": 79,
+          "line": 85,
           "text": "window.addEventListener(\"click\", clickHandler, true);"
         }
       ],
@@ -12610,52 +12621,57 @@
         },
         {
           "path": "addons/library-addon/src/app/dockController.js",
-          "line": 31,
+          "line": 16,
+          "text": "return new Promise((resolve) => window.setTimeout(resolve, milliseconds));"
+        },
+        {
+          "path": "addons/library-addon/src/app/dockController.js",
+          "line": 37,
           "text": "function isCurrent(context) {"
         },
         {
           "path": "addons/library-addon/src/app/dockController.js",
-          "line": 34,
+          "line": 40,
           "text": "typeof context.isCurrent !== \"function\" ||"
         },
         {
           "path": "addons/library-addon/src/app/dockController.js",
-          "line": 35,
+          "line": 41,
           "text": "context.isCurrent()"
         },
         {
           "path": "addons/library-addon/src/app/dockController.js",
-          "line": 94,
+          "line": 100,
           "text": "if (!state.enabled || !isCurrent(context)) {"
         },
         {
           "path": "addons/library-addon/src/app/dockController.js",
-          "line": 107,
+          "line": 118,
           "text": "if (!state.enabled || !isCurrent(context) || token !== mountToken) {"
         },
         {
           "path": "addons/library-addon/src/app/dockController.js",
-          "line": 119,
+          "line": 139,
           "text": "if (!isCurrent(context)) return { ok: false, reason: \"stale_mount\" };"
         },
         {
           "path": "addons/library-addon/src/app/dockController.js",
-          "line": 129,
+          "line": 149,
           "text": "if (!state.enabled || !isCurrent(context)) {"
         },
         {
           "path": "addons/library-addon/src/app/dockController.js",
-          "line": 141,
+          "line": 161,
           "text": "if (!state.enabled || !isCurrent(context)) {"
         },
         {
           "path": "addons/library-addon/src/app/dockController.js",
-          "line": 162,
+          "line": 182,
           "text": "if (!state.enabled || !isCurrent(context) || observation?.reason === \"cancelled\") {"
         },
         {
           "path": "addons/library-addon/src/app/dockController.js",
-          "line": 175,
+          "line": 195,
           "text": "if (!state.enabled || !isCurrent(context)) {"
         },
         {

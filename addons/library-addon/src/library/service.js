@@ -34,6 +34,8 @@ import { checkLibraryRecords } from "./manualUpdateChecker.js";
 import { createAutoUpdateRepository } from "./autoUpdateRepository.js";
 import { getFailureDelay, selectDueRecords } from "./autoUpdatePolicy.js";
 
+const HISTORY_LIMIT_PER_THREAD = 20;
+
 export function createLibraryService(bridge, storage, dependencies = {}) {
   const api = createLibraryApiClient(bridge);
   const updates = createUpdateRepository(api);
@@ -56,6 +58,23 @@ export function createLibraryService(bridge, storage, dependencies = {}) {
     typeof dependencies.notifyFirstChanged === "function"
       ? dependencies.notifyFirstChanged
       : () => {};
+
+  async function pruneThreadHistory(repository, threadId) {
+    const id = String(threadId || "").trim();
+    if (!id) return;
+    for (;;) {
+      const events = await repository.listByThread(
+        id,
+        HISTORY_LIMIT_PER_THREAD + 1,
+      );
+      const overflow = events.slice(HISTORY_LIMIT_PER_THREAD);
+      if (!overflow.length) return;
+      const results = await Promise.all(
+        overflow.map((event) => repository.remove(event.id)),
+      );
+      if (results.some((result) => !result?.ok)) return;
+    }
+  }
 
   async function getImportThrottleInfo() {
     return resolveImportThrottleInfo(await api.getCoreThrottleInfo());
@@ -392,6 +411,17 @@ export function createLibraryService(bridge, storage, dependencies = {}) {
         }
         historyImported += batch.length;
       }
+      if (section.writeCount > 0) {
+        const repository = sectionName === "updates" ? updates : activity;
+        const threadIds = new Set(
+          section.operations.map((operation) =>
+            String(operation?.value?.threadId || "").trim(),
+          ),
+        );
+        for (const threadId of threadIds) {
+          if (threadId) await pruneThreadHistory(repository, threadId);
+        }
+      }
       if (section.writeCount > 0) committedSections.push(sectionName);
     }
     return {
@@ -472,6 +502,9 @@ export function createLibraryService(bridge, storage, dependencies = {}) {
     }
     const recordResult = await putEntry(next);
     if (!recordResult?.ok && event && !priorEvent) await updates.remove(event.id);
+    if (recordResult?.ok && event && !priorEvent) {
+      await pruneThreadHistory(updates, existing.threadId);
+    }
     if (
       recordResult?.ok &&
       diff.versionChanged &&
@@ -838,6 +871,9 @@ export function createLibraryService(bridge, storage, dependencies = {}) {
 
     const result = await putEntry(next);
     if (!result?.ok) await Promise.all(inserted.map((event) => activity.remove(event.id)));
+    if (result?.ok && inserted.length) {
+      await pruneThreadHistory(activity, id);
+    }
     return result?.ok
       ? { ...result, value: next, events: existingEvents.map((event, index) => event || events[index]) }
       : result;

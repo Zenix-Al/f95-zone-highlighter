@@ -1,3 +1,8 @@
+import {
+  getPlainTitleTextFromTitleNode,
+  normalizeThreadTitleText,
+} from "./title.js";
+
 function parseThreadIdFromPath(pathname) {
   const fromDot = String(pathname || "").match(/\.(\d+)(?:\/?|$)/);
   if (fromDot?.[1]) return fromDot[1];
@@ -6,34 +11,6 @@ function parseThreadIdFromPath(pathname) {
   if (fromThreads?.[1]) return fromThreads[1];
 
   return "";
-}
-
-function getPlainTitleTextFromTitleNode(titleNode) {
-  if (!titleNode) return "";
-
-  const textParts = [];
-  titleNode.childNodes.forEach((node) => {
-    if (node.nodeType === Node.TEXT_NODE) {
-      const text = String(node.textContent || "").trim();
-      if (text) textParts.push(text);
-    }
-  });
-
-  return textParts.join(" ").replace(/\s+/g, " ").trim();
-}
-
-function parseBracketSuffixParts(text, { limit = 3 } = {}) {
-  const parts = [];
-  let remaining = String(text || "").trim();
-
-  while (parts.length < limit) {
-    const match = remaining.match(/\[([^\]]+)\]\s*$/);
-    if (!match?.[1]) break;
-    parts.push(String(match[1]).trim());
-    remaining = remaining.slice(0, match.index).trim();
-  }
-
-  return { parts, remaining };
 }
 
 function parseTitlePrefixes(titleNode) {
@@ -100,14 +77,8 @@ export function getThreadSnapshot() {
     getPlainTitleTextFromTitleNode(titleNode) ||
     document.title.replace(/\s*\|\s*F95zone.*$/i, "").trim();
   const prefixes = parseTitlePrefixes(titleNode);
-  const { parts: bracketParts } = parseBracketSuffixParts(titleText, { limit: 2 });
-  const developer = bracketParts[0] || "";
-  const gameVersion = bracketParts[1] || "";
-
-  const title = titleText
-    .replace(/\s*\[(v[\d.]+\|?.*?)\]/gi, "") // remove version brackets
-    .replace(/\s*\[([^\]]+)\]\s*$/gi, "") // remove last bracket (usually dev)
-    .trim();
+  const { title, gameVersion, developer } =
+    normalizeThreadTitleText(titleText);
   const prefix = prefixes[0]?.label ? String(prefixes[0].label).trim() : "";
 
   return {

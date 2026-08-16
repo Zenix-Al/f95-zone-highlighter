@@ -295,4 +295,31 @@ module.exports = function registerLibraryAutoUpdateGroup(context) {
     assert.strictEqual((await scheduler.run({ force: true, failedOnly: true })).ok, true);
     assert.strictEqual(requests, 1);
   });
+
+  runTest("LIBRARY-AUTO-UPDATE-01 failed-only retry preserves the automatic run time", async () => {
+    const { createAutoUpdateScheduler } = loadModule(
+      "addons/library-addon/src/library/autoUpdateScheduler.js",
+    );
+    const repository = createRepository();
+    await repository.putSummary({
+      status: "idle",
+      nextRunAt: 500000,
+    });
+    const scheduler = createAutoUpdateScheduler({
+      repository,
+      owner: "retry-schedule",
+      now: () => 100000,
+      random: () => 0,
+      getDueRecords: async () => [{ threadId: "failed" }],
+      checkRecords: async () => ({
+        results: [{ threadId: "failed", ok: true, attempts: 1 }],
+      }),
+      commitResults: async () => ({ checked: 1, current: 1 }),
+    });
+
+    const result = await scheduler.run({ force: true, failedOnly: true });
+    assert.strictEqual(result.ok, true);
+    assert.strictEqual(result.nextRunAt, 500000);
+    assert.strictEqual(repository.snapshot().summary.nextRunAt, 500000);
+  });
 };

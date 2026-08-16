@@ -1,20 +1,16 @@
 import { debugLog } from "../../../shared/debugLog.js";
+import {
+  decodeHtmlText,
+  getPlainTitleTextFromHtml,
+  normalizeThreadTitleText,
+} from "../thread/title.js";
 
 const MAX_HTML_CHARS = 1_000_000;
 const MAX_TEXT_CHARS = 120_000;
 const DEBUG_OWNER = "library-addon:auto-update";
 
-function decode(value) {
-  return String(value || "")
-    .replace(/&quot;/gi, '"')
-    .replace(/&#39;|&apos;/gi, "'")
-    .replace(/&amp;/gi, "&")
-    .replace(/&lt;/gi, "<")
-    .replace(/&gt;/gi, ">");
-}
-
 function readableText(html) {
-  return decode(
+  return decodeHtmlText(
     String(html || "")
       .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, " ")
       .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, " ")
@@ -45,7 +41,9 @@ function meta(html, property) {
   const tag = String(html).match(
     new RegExp(`<meta\\b[^>]*(?:property|name)=["']${property}["'][^>]*>`, "i"),
   )?.[0];
-  return decode(tag?.match(/\bcontent=["']([^"']*)["']/i)?.[1] || "").trim();
+  return decodeHtmlText(
+    tag?.match(/\bcontent=["']([^"']*)["']/i)?.[1] || "",
+  ).trim();
 }
 
 function isAuthenticationPage(source) {
@@ -82,9 +80,13 @@ export function parseLibraryThreadHtml(html, { finalUrl = "", requestedUrl = "" 
     return { ok: false, reason: "challenge_page" };
   }
 
-  const title =
+  const pageTitle =
+    getPlainTitleTextFromHtml(source) ||
     meta(source, "og:title") ||
-    decode(source.match(/<title\b[^>]*>([\s\S]*?)<\/title>/i)?.[1] || "").trim();
+    decodeHtmlText(
+      source.match(/<title\b[^>]*>([\s\S]*?)<\/title>/i)?.[1] || "",
+    ).trim();
+  const { title } = normalizeThreadTitleText(pageTitle);
   const starterHtml =
     source.match(
       /<(?:article|div)\b[^>]*class=["'][^"']*message-threadStarterPost[^"']*["'][^>]*>([\s\S]*?)<\/(?:article|div)>/i,
@@ -93,10 +95,10 @@ export function parseLibraryThreadHtml(html, { finalUrl = "", requestedUrl = "" 
   const bodyText = readableText(source);
   const version =
     field(starterText, "Version") ||
-    bracketVersion(title) ||
+    bracketVersion(pageTitle) ||
     field(bodyText, "Version") ||
     bracketVersion(bodyText);
-  const statusMatch = `${title}\n${starterText}`.match(
+  const statusMatch = `${pageTitle}\n${starterText}`.match(
     /\b(Completed|On[\s-]?Hold|Abandoned|Active)\b/i,
   );
   const status = statusMatch
@@ -104,7 +106,9 @@ export function parseLibraryThreadHtml(html, { finalUrl = "", requestedUrl = "" 
     : "active";
   const canonicalUrl =
     meta(source, "og:url") ||
-    decode(source.match(/<link\b[^>]*rel=["']canonical["'][^>]*href=["']([^"']+)/i)?.[1]) ||
+    decodeHtmlText(
+      source.match(/<link\b[^>]*rel=["']canonical["'][^>]*href=["']([^"']+)/i)?.[1],
+    ) ||
     finalUrl ||
     requestedUrl;
 
@@ -133,7 +137,7 @@ export function parseLibraryThreadHtml(html, { finalUrl = "", requestedUrl = "" 
   return {
     ok: true,
     value: {
-      title: title.replace(/\s*\|\s*F95zone.*$/i, "").trim(),
+      title,
       currentVersion: version,
       status,
       url: canonicalUrl,

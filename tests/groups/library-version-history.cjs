@@ -129,6 +129,23 @@ module.exports = function registerLibraryVersionHistoryGroup(context) {
     assert.strictEqual(memory.snapshot().eventWrites, 0);
   });
 
+  runTest("LIBRARY-VERSION-HISTORY-01 retains only 20 update events per thread", async () => {
+    const { createLibraryService } = loadModule("addons/library-addon/src/library/service.js");
+    const memory = createMemoryBridge();
+    const library = createLibraryService(memory.bridge, {});
+    for (let index = 1; index <= 25; index += 1) {
+      const existing = await library.getEntry("42");
+      await library.observeThreadFacts(
+        existing,
+        threadPatch("0.7", { title: `False title ${index}` }),
+        { now: 100 + index },
+      );
+    }
+    const events = memory.snapshot().events;
+    assert.strictEqual(events.length, 20);
+    assert.strictEqual(Math.min(...events.map((event) => event.observedAt)), 106);
+  });
+
   runTest("LIBRARY-VERSION-HISTORY-01 ignores empty versions but records other facts", async () => {
     const { createLibraryService } = loadModule("addons/library-addon/src/library/service.js");
     const memory = createMemoryBridge(createRecord(""));
@@ -166,7 +183,7 @@ module.exports = function registerLibraryVersionHistoryGroup(context) {
     const library = createLibraryService(memory.bridge, {});
     await library.patchEntry("42", threadPatch("0.8"));
     const events = await library.listUpdateEvents("42", 20);
-    const query = memory.snapshot().queries[0];
+    const query = memory.snapshot().queries.find((entry) => entry.limit === 20);
     assert.strictEqual(events.length, 1);
     assert.strictEqual(query.index, "threadObservedAt");
     assert.strictEqual(query.direction, "prev");

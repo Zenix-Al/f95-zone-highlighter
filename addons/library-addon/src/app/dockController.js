@@ -9,6 +9,12 @@ import { createOpportunisticObserver } from "./opportunisticObserver.js";
 import { createThreadTitleController } from "../ui/threadTitle/threadTitleController.js";
 
 const LIBRARY_DOCK_MOUNT_ID = "library-dock-widget";
+const DOCK_MOUNT_MAX_ATTEMPTS = 20;
+const DOCK_MOUNT_RETRY_DELAY_MS = 250;
+
+function wait(milliseconds) {
+  return new Promise((resolve) => window.setTimeout(resolve, milliseconds));
+}
 
 export function createLibraryDockController({
   core,
@@ -98,20 +104,34 @@ export function createLibraryDockController({
     debugLog(runtime.addonId, "Dock mount requested.", {
       data: { showPrimaryButton, isSaved },
     });
-    const result = await mountUi(core, {
+    const payload = {
       mountId: LIBRARY_DOCK_MOUNT_ID,
       slot: "page.dock",
       html: renderDockMarkup({ showPrimaryButton, isSaved }),
-    });
-    debugLog(runtime.addonId, "Dock mount settled.", { data: result });
-    if (!state.enabled || !isCurrent(context) || token !== mountToken) {
-      if (token === mountToken) {
-        await unmountUi(core, LIBRARY_DOCK_MOUNT_ID);
+    };
+    let result = null;
+    for (let attempt = 1; attempt <= DOCK_MOUNT_MAX_ATTEMPTS; attempt += 1) {
+      result = await mountUi(core, payload);
+      debugLog(runtime.addonId, "Dock mount attempt settled.", {
+        data: { attempt, result },
+      });
+      if (!state.enabled || !isCurrent(context) || token !== mountToken) {
+        if (token === mountToken) {
+          await unmountUi(core, LIBRARY_DOCK_MOUNT_ID);
+        }
+        return { ok: false, reason: "stale_mount" };
       }
-      return { ok: false, reason: "stale_mount" };
+      if (result?.ok) bindEvents();
+      if (result?.ok && result.value?.pending !== true) return result;
+      if (attempt < DOCK_MOUNT_MAX_ATTEMPTS) {
+        await wait(DOCK_MOUNT_RETRY_DELAY_MS);
+      }
     }
-    if (!result?.ok) return result;
-    bindEvents();
+
+    debugLog(runtime.addonId, "Dock mount did not receive applied confirmation.", {
+      level: "warn",
+      data: result,
+    });
     return result;
   }
 
