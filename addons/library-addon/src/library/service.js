@@ -1,8 +1,4 @@
-import {
-  LIBRARY_LEGACY_KEY,
-  LIBRARY_MIGRATION_MARKER_KEY,
-  LIBRARY_PIN_BACKFILL_MARKER_KEY,
-} from "../constants.js";
+import { LIBRARY_PIN_BACKFILL_MARKER_KEY } from "../constants.js";
 import { createLibraryApiClient, resolveImportThrottleInfo } from "../api/library/index.js";
 import { executeLibraryImport, previewLibraryImport } from "./importWorkflow.js";
 import {
@@ -32,11 +28,14 @@ import { buildImportBatches } from "./importWorkflow.js";
 import { createThreadHtmlRequest } from "../api/threadHtml.js";
 import { checkLibraryRecords } from "./manualUpdateChecker.js";
 import { createAutoUpdateRepository } from "./autoUpdateRepository.js";
-import { getFailureDelay, selectDueRecords } from "./autoUpdatePolicy.js";
+import { createAutoUpdateQueueRepository } from "./autoUpdateQueueRepository.js";
+import { createAutoUpdateQueueSnapshotBuilder } from "./autoUpdateQueueSnapshot.js";
+import { createAutoUpdateQueueWorker } from "./autoUpdateQueueWorker.js";
+import { getFailureDelay } from "./autoUpdatePolicy.js";
 
 const HISTORY_LIMIT_PER_THREAD = 20;
 
-export function createLibraryService(bridge, storage, dependencies = {}) {
+export function createLibraryService(bridge, _storage, dependencies = {}) {
   const api = createLibraryApiClient(bridge);
   const updates = createUpdateRepository(api);
   const activity = createActivityRepository(api);
@@ -54,6 +53,17 @@ export function createLibraryService(bridge, storage, dependencies = {}) {
   const requestThreadHtml =
     dependencies.requestThreadHtml || createThreadHtmlRequest(dependencies.fetch);
   const autoUpdate = createAutoUpdateRepository(api);
+  const autoUpdateQueue = createAutoUpdateQueueRepository(api);
+  const autoUpdateSnapshot = createAutoUpdateQueueSnapshotBuilder({
+    repository: autoUpdateQueue,
+    queryRecordsPage: (options) => queryAutoUpdateSnapshotPage(options),
+  });
+  const autoUpdateWorker = createAutoUpdateQueueWorker({
+    repository: autoUpdateQueue,
+    getRecord: (threadId) => getEntry(threadId),
+    checkRecords: (ids, options) => previewManualUpdateCheck(ids, options),
+    commitResults: (preview, options) => commitManualUpdateCheck(preview, options),
+  });
   const notifyFirstChanged =
     typeof dependencies.notifyFirstChanged === "function"
       ? dependencies.notifyFirstChanged
@@ -205,7 +215,10 @@ export function createLibraryService(bridge, storage, dependencies = {}) {
 
     const normalized = result.value
       .map((entry) => rememberEntry(entry))
-      .filter((entry) => matchesLibraryFilters(entry, options));
+      .filter((entry) => matchesLibraryFilters(entry, options))
+      .filter((entry) =>
+        typeof options.matchesRecord === "function" ? options.matchesRecord(entry) : true,
+      );
     return sortLibraryRecords(normalized, options.sortBy, options.sortDir).slice(
       offset,
       offset + limit,
@@ -668,20 +681,23 @@ export function createLibraryService(bridge, storage, dependencies = {}) {
       const now = Date.now();
       if (!item.ok) {
         const failureCount = Number(existing.updateCheck?.consecutiveFailures || 0) + 1;
+        const nextCheckAt = options.scheduleIntervalMs
+          ? now + getFailureDelay(options.scheduleIntervalMs, failureCount)
+          : Object.hasOwn(options, "nextCheckAt")
+          ? options.nextCheckAt
+          : existing.updateCheck?.nextCheckAt ?? null;
         const failed = {
           ...existing,
           updateCheck: {
             ...existing.updateCheck,
             status: "failed",
             lastAttemptAt: now,
-            nextCheckAt: options.scheduleIntervalMs
-              ? now + getFailureDelay(options.scheduleIntervalMs, failureCount)
-              : options.nextCheckAt ?? null,
+            nextCheckAt,
             consecutiveFailures: failureCount,
             lastErrorCode: item.reason,
           },
           lastCheckedAt: now,
-          recordModifiedAt: now,
+          recordModifiedAt: existing.recordModifiedAt,
         };
         if (shouldCancel()) {
           summary.cancelled = true;
@@ -710,6 +726,11 @@ export function createLibraryService(bridge, storage, dependencies = {}) {
         continue;
       }
       const latest = observation.value || existing;
+      const nextCheckAt = Object.hasOwn(options, "nextCheckAt")
+        ? options.nextCheckAt
+        : options.scheduleIntervalMs
+        ? now + options.scheduleIntervalMs
+        : existing.updateCheck?.nextCheckAt ?? null;
       const checked = {
         ...latest,
         updateCheck: {
@@ -717,14 +738,12 @@ export function createLibraryService(bridge, storage, dependencies = {}) {
           status: "current",
           lastAttemptAt: now,
           lastSuccessAt: now,
-          nextCheckAt: options.scheduleIntervalMs
-            ? now + options.scheduleIntervalMs
-            : options.nextCheckAt ?? null,
+          nextCheckAt,
           consecutiveFailures: 0,
           lastErrorCode: "",
         },
         lastCheckedAt: now,
-        recordModifiedAt: now,
+        recordModifiedAt: latest.recordModifiedAt,
       };
       if (shouldCancel()) {
         summary.cancelled = true;
@@ -763,18 +782,29 @@ export function createLibraryService(bridge, storage, dependencies = {}) {
     return { ok: true, updated, skipped };
   }
 
-  async function getDueAutoUpdateRecords({
-    now = Date.now(),
-    limit = 10,
-    failedOnly = false,
-    ignoreSchedule = false,
+  async function queryAutoUpdateSnapshotPage({
+    cursor = null,
+    limit = 200,
+    modifiedAtCutoff = Date.now(),
   } = {}) {
-    return selectDueRecords(await getAllEntries("updatedAt", "asc"), {
-      now,
-      limit,
-      failedOnly,
-      ignoreSchedule,
+    const result = await api.queryEntriesPage({
+      index: "recordModifiedAt",
+      direction: "next",
+      limit: Math.min(500, Math.max(1, Number(limit) || 200)),
+      cursor,
+      query: {
+        kind: "upperBound",
+        upper: Math.max(0, Number(modifiedAtCutoff) || 0),
+      },
     });
+    if (!result?.ok) return { ok: false, reason: result?.reason || "query_failed" };
+    const page = result.value || {};
+    return {
+      ok: true,
+      items: Array.isArray(page.items) ? page.items : [],
+      nextCursor: page.nextCursor || null,
+      hasMore: Boolean(page.hasMore),
+    };
   }
 
   async function listActivityEvents(threadId, limit = 50) {
@@ -1018,29 +1048,6 @@ export function createLibraryService(bridge, storage, dependencies = {}) {
     return { ok: true, removed, skipped };
   }
 
-  async function runLegacyMigration() {
-    const markerValue = await storage.get(LIBRARY_MIGRATION_MARKER_KEY, false);
-    if (markerValue === true) {
-      return { ok: true, migrated: 0, skipped: true };
-    }
-    const rawLegacy = await storage.get(LIBRARY_LEGACY_KEY, null);
-
-    let migrated = 0;
-    if (Array.isArray(rawLegacy)) {
-      const imported = await importEntries(rawLegacy, { conflictPolicy: "newer" });
-      migrated = Number(imported?.imported || 0);
-    } else if (rawLegacy && typeof rawLegacy === "object") {
-      const imported = await importEntries(Object.values(rawLegacy), {
-        conflictPolicy: "newer",
-      });
-      migrated = Number(imported?.imported || 0);
-    }
-    await storage.set(LIBRARY_LEGACY_KEY, null);
-    await storage.set(LIBRARY_MIGRATION_MARKER_KEY, true);
-
-    return { ok: true, migrated, skipped: false };
-  }
-
   async function runPinnedIndexMigration() {
     const marker = await api.getMeta(LIBRARY_PIN_BACKFILL_MARKER_KEY);
     if (marker?.complete === true) {
@@ -1094,14 +1101,18 @@ export function createLibraryService(bridge, storage, dependencies = {}) {
     previewManualUpdateCheck,
     commitManualUpdateCheck,
     setAutoUpdateEnabled,
-    getDueAutoUpdateRecords,
+    queryAutoUpdateSnapshotPage,
     autoUpdate,
+    autoUpdateQueue: {
+      ...autoUpdateQueue,
+      buildSnapshot: autoUpdateSnapshot.build,
+      runWorker: autoUpdateWorker.run,
+    },
     listActivityEvents,
     applyPersonalActivity,
     bulkUpdateStatus,
     bulkRemoveEntries,
     runPinnedIndexMigration,
-    runLegacyMigration,
     clearEntryCache,
     getEntryCacheSnapshot: () => ({
       limit: entryCacheLimit,

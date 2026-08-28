@@ -1,8 +1,8 @@
 {
   "addons": {
     "library-addon": {
-      "regular": "acbe85cc41e0cbbe41c301205f8066ce894a1129070beeebfd64d0e5833d519a",
-      "release": "6858e0551ae308a9c2ac2f297f4b4c04b1edfd49c218e54c652a2daabdc90ff7"
+      "regular": "34fea104658b4d392c80d00964ece4bf6335c9ed80931fce86a573063b2ca0be",
+      "release": "0c511507e4226f5a39eccb026b7c881696713654a7984a3c2f351bcd7002d9c5"
     },
     "image-repair-addon": {
       "release": "599180b41d1edaf69497c5acbf83bdcee2b3417604595341691dd6eac64a4450",
@@ -10,7 +10,7 @@
     },
     "masked-direct-addon": {
       "release": "3cb36dff269e6a1b76472476c6d5c0f4c32641492a22c757f337bea8e2eb2304",
-      "regular": "4e601a7620a0ce4e3705fd2e7b07342c3366e0d0fd53c59f64de9a7907068994"
+      "regular": "7e23dbd5b0649477979e416cc7a92a27844f0f48431d23cd88f9449b38d25b47"
     },
     "latest-filters-addon": {
       "release": "4f710e18bac0fbf71d9b0003384b4f2f866a7e616a31d939f9379d77d24d64c1",

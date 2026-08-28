@@ -2,7 +2,13 @@ import { renderSetting } from "../renderers/renderSetting.js";
 import { createEl } from "../../utils/dom.js";
 import { createRegistrar } from "../../core/listenerRegistry.js";
 import { getShadowRoot } from "../getShadowRoot.js";
+import { ensureModalCss } from "../helpers/cssInjector.js";
 const ACTIVE_DIALOG_ID = "latest-config-dialog";
+
+function getDialogRoot() {
+  ensureModalCss();
+  return getShadowRoot();
+}
 
 function removeDialogIfExists() {
   const shadowRoot = getShadowRoot();
@@ -20,7 +26,7 @@ export function openConfirmDialog({
   confirmLabel = "Confirm",
   cancelLabel = "Cancel",
 } = {}) {
-  const shadowRoot = getShadowRoot();
+  const shadowRoot = getDialogRoot();
   if (!shadowRoot) return Promise.resolve(false);
 
   removeDialogIfExists();
@@ -96,7 +102,7 @@ export function openTextPrompt({
   multiline = false,
   readOnly = false,
 } = {}) {
-  const shadowRoot = getShadowRoot();
+  const shadowRoot = getDialogRoot();
   if (!shadowRoot) return Promise.resolve(null);
 
   removeDialogIfExists();
@@ -209,7 +215,7 @@ export function openReorderDialog({
   submitLabel = "Save",
   cancelLabel = "Cancel",
 } = {}) {
-  const shadowRoot = getShadowRoot();
+  const shadowRoot = getDialogRoot();
   if (!shadowRoot) return Promise.resolve(null);
 
   removeDialogIfExists();
@@ -327,7 +333,7 @@ export function openSettingsDialog({
   closeLabel = "Close",
   onClose = null,
 } = {}) {
-  const shadowRoot = getShadowRoot();
+  const shadowRoot = getDialogRoot();
   if (!shadowRoot) return null;
 
   removeDialogIfExists();

@@ -1,5 +1,9 @@
 # Changelog
 
+## [5.3.1] - bugfix
+
+- ui.confirm style race condition causing it rendered without the proper style, now it should be fixed.
+
 ## [5.3.0 - Runtime performance, core size reduction and part ways]
 
 - Improved startup and settings performance with deferred modal CSS, bounded tag search, and cheaper configuration catalog handling.

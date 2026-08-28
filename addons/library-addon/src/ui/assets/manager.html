@@ -12,17 +12,20 @@
 
     <div class="f95ue-library-toolbar">
       <div class="f95ue-library-search-wrap">
-        <input type="search" placeholder="Search title, id, tags..." data-field="search" />
+        <input type="search" placeholder="Search title, developer, version, tags..." data-field="search" />
         <span
           class="f95ue-library-search-help"
-          title="Advanced search: tag:ntr status:playing score>=8 pinned has:note id:123"
-          >?</span
+          tabindex="0"
+          aria-describedby="f95ue-library-search-help-text"
+          >?<span id="f95ue-library-search-help-text" role="tooltip">Filters: tag:&quot;male protagonist&quot; status:playing rating&gt;=4 public-rating&gt;=4 developer:&quot;name&quot; version:v1 prefix:completed update:changed check:failed pinned has:note has:progress id:123</span></span
         >
       </div>
       <select data-field="status">
         <option value="all">All Status</option>
         <option value="saved">saved</option>
+        <option value="backlog">backlog</option>
         <option value="playing">playing</option>
+        <option value="paused">paused</option>
         <option value="completed">completed</option>
         <option value="dropped">dropped</option>
       </select>

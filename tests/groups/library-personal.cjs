@@ -49,20 +49,13 @@ module.exports = function registerLibraryPersonalGroup(context) {
         report.source.database.physicalName,
         "f95ue-addon:library-addon:library",
       );
-      assert.strictEqual(report.source.database.version, 1);
-      assert.deepStrictEqual(report.source.database.stores, [
-        {
-          name: "records",
-          keyPath: "threadId",
-          indexes: [
-            { name: "updatedAt", keyPath: "updatedAt" },
-            { name: "userStatus", keyPath: "userStatus" },
-            { name: "titleNormalized", keyPath: "titleNormalized" },
-            { name: "prefix", keyPath: "prefix" },
-            { name: "tags", keyPath: "tags", multiEntry: true },
-          ],
-        },
-      ]);
+      const constants = loadModule("addons/library-addon/src/constants.js");
+      assert.strictEqual(report.source.database.version, 4);
+      assert.deepStrictEqual(report.source.database.stores, constants.LIBRARY_DB_STORES);
+      assert.deepStrictEqual(
+        report.source.database.stores.map(({ name }) => name),
+        ["records", "updates", "activity", "meta", "update-cycles", "update-queue"],
+      );
       for (const field of [
         "threadRating",
         "userScore",

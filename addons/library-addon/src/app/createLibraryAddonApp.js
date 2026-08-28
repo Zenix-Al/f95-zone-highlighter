@@ -1,13 +1,8 @@
 import { debugLog } from "../../../shared/debugLog.js";
 import { getAddonAccess } from "../api/meta.js";
 import { createLibraryService } from "../library/service.js";
-import { ensureLibrarySchema } from "../api/library/index.js";
 import { getThreadSnapshot } from "../thread/detector.js";
-import {
-  cancelActiveImport,
-  configureImportProgress,
-  handleImportProgressDialogClosed,
-} from "../ui/application/importProgressController.js";
+import { cancelActiveImport, configureImportProgress, handleImportProgressDialogClosed } from "../ui/application/importProgressController.js";
 import { handleLibraryManagerDialogClosed } from "../ui/manager/managerLauncher.js";
 import { configureToast, showToast } from "../ui/utils/showToast.js";
 import { createLibraryCommandBinding } from "./commands.js";
@@ -19,6 +14,7 @@ import { createLibraryRegistration } from "./registration.js";
 import { createLibrarySettings } from "./settings.js";
 import { createAutoUpdateScheduler } from "../library/autoUpdateScheduler.js";
 import { createUpdateNotificationCoordinator } from "../library/updateNotificationCoordinator.js";
+import { getLegacyUpgradeMessage, prepareLibraryStorage } from "./legacyUpgradeGuard.js";
 
 export function createLibraryAddonApp({ core, runtime }) {
   configureToast(core);
@@ -29,6 +25,7 @@ export function createLibraryAddonApp({ core, runtime }) {
     showPageButtons: true,
     openManager: () => {},
     refreshRuntime: async () => ({ ok: false, reason: "not_ready" }),
+    upgradeRequired: false,
   };
   const settings = createLibrarySettings(core);
   const updateNotifications = createUpdateNotificationCoordinator({
@@ -40,11 +37,7 @@ export function createLibraryAddonApp({ core, runtime }) {
   });
   const autoUpdateScheduler = createAutoUpdateScheduler({
     repository: library.autoUpdate,
-    getDueRecords: (options) => library.getDueAutoUpdateRecords(options),
-    checkRecords: (ids, options) => library.previewManualUpdateCheck(ids, options),
-    commitResults: (preview, options) => library.commitManualUpdateCheck(preview, options),
-    isRecordEligible: async (threadId) =>
-      (await library.getEntry(threadId))?.updateCheck?.enabled !== false,
+    queueRuntime: library.autoUpdateQueue,
   });
   const registration = createLibraryRegistration({
     core,
@@ -70,6 +63,7 @@ export function createLibraryAddonApp({ core, runtime }) {
   }
 
   async function setEnabled(nextEnabled, context = null) {
+    if (state.upgradeRequired) return { ok: false, reason: "upgrade_required" };
     state.enabled = Boolean(nextEnabled);
     await settings.save({ enabled: state.enabled });
     if (state.enabled) {
@@ -89,6 +83,7 @@ export function createLibraryAddonApp({ core, runtime }) {
   }
 
   async function refreshRuntimeState(context = null) {
+    if (state.upgradeRequired) return { ok: false, reason: "upgrade_required" };
     const loaded = await settings.load();
     if (!isCurrent(context)) {
       return { ok: false, reason: "refresh_superseded" };
@@ -181,12 +176,13 @@ export function createLibraryAddonApp({ core, runtime }) {
         String(detail.reason || "page-change"),
         detail.routeContext || null,
       );
-    } else if (command === "toast") {
+    } else if (command === "toast" && !state.upgradeRequired) {
       manager.open();
     } else if (command === "dialog-closed") {
       handleLibraryManagerDialogClosed(detail);
       handleImportProgressDialogClosed(detail);
     } else if (command === "panel-action") {
+      if (state.upgradeRequired) return;
       const actionId = String(detail.actionId || "").trim();
       if (actionId === "open-library" && state.enabled) manager.open();
       else if (actionId === "save-current-thread") {
@@ -211,21 +207,22 @@ export function createLibraryAddonApp({ core, runtime }) {
     registration.register();
     try {
       const access = await getAddonAccess(core);
-      if (
-        !access?.ok ||
-        access.value?.blocked ||
-        access.value?.enabled === false
-      ) {
+      if (!access?.ok || access.value?.blocked || access.value?.enabled === false) {
         state.enabled = false;
         registration.publishStatus();
         return;
       }
-      await ensureLibrarySchema(core);
-      const pinnedMigration = await library.runPinnedIndexMigration();
-      if (!pinnedMigration?.ok) {
-        throw new Error(pinnedMigration?.reason || "pin_index_migration_failed");
+      const legacyState = await prepareLibraryStorage({
+        core,
+        storage: settings.storage,
+        runPinnedIndexMigration: () => library.runPinnedIndexMigration(),
+      });
+      if (!legacyState.ok) {
+        state.enabled = false;
+        state.upgradeRequired = true;
+        registration.publishUpgradeRequired(getLegacyUpgradeMessage());
+        return;
       }
-      await library.runLegacyMigration();
       const loaded = await settings.load();
       state.enabled = loaded.enabled !== false;
       state.showPageButtons = loaded.showPageButtons !== false;
@@ -245,6 +242,7 @@ export function createLibraryAddonApp({ core, runtime }) {
     getRuntimeSnapshot: () => ({
       enabled: state.enabled,
       showPageButtons: state.showPageButtons,
+      upgradeRequired: state.upgradeRequired,
     }),
     getResourceSnapshot: () => lifecycle.getResourceSnapshot(),
     getPendingOperationSnapshot: () => lifecycle.getPendingOperationSnapshot(),

@@ -13,9 +13,12 @@ export function parseSearchQuery(rawValue) {
   const raw = String(rawValue || "").trim();
   if (!raw) return { text: "", tokens: [] };
 
-  const parts = raw.split(/\s+/).filter(Boolean);
+  const parts = raw.match(/\S+:"[^"]*"|\S+:'[^']*'|"[^"]*"|'[^']*'|\S+/g) || [];
   const textParts = [];
   const tokens = [];
+  const valueAfter = (part, offset) => safeText(part.slice(offset))
+    .replace(/^(?:"([\s\S]*)"|'([\s\S]*)')$/, "$1$2")
+    .toLowerCase();
 
   const tokenActions = {
     pinned: () => tokens.push({ type: "pinned", value: true }),
@@ -26,6 +29,8 @@ export function parseSearchQuery(rawValue) {
     note: () => tokens.push({ type: "hasNote", value: true }),
     "has:no-note": () => tokens.push({ type: "hasNote", value: false }),
     nonote: () => tokens.push({ type: "hasNote", value: false }),
+    "has:progress": () => tokens.push({ type: "hasProgress", value: true }),
+    "has:no-progress": () => tokens.push({ type: "hasProgress", value: false }),
   };
 
   for (const part of parts) {
@@ -37,34 +42,46 @@ export function parseSearchQuery(rawValue) {
     }
 
     if (token.startsWith("status:")) {
-      const value = safeText(token.slice(7));
+      const value = valueAfter(part, 7);
       if (value) tokens.push({ type: "status", value });
       continue;
     }
 
     if (token.startsWith("tag:")) {
-      const value = safeText(token.slice(4));
+      const value = valueAfter(part, 4);
       if (value) tokens.push({ type: "tag", value });
       continue;
     }
 
     if (token.startsWith("id:")) {
-      const value = safeText(token.slice(3));
+      const value = valueAfter(part, 3);
       if (value) tokens.push({ type: "id", value });
       continue;
     }
 
-    const scoreMatch = token.match(/^score(<=|>=|=|<|>)(\d+(?:\.\d+)?)$/);
-    if (scoreMatch) {
+    for (const [prefix, type] of [["rating", "rating"], ["score", "rating"], ["public-rating", "publicRating"]]) {
+      const match = token.match(new RegExp(`^${prefix}(<=|>=|=|<|>)(\\d+(?:\\.\\d+)?)$`));
+      if (!match) continue;
       tokens.push({
-        type: "score",
-        operator: scoreMatch[1],
-        value: Number(scoreMatch[2]),
+        type,
+        operator: match[1],
+        value: Number(match[2]),
       });
+      break;
+    }
+    if (["rating", "score", "public-rating"].some((prefix) => token.startsWith(prefix) && /[<>=]/.test(token))) {
       continue;
     }
 
-    textParts.push(part);
+    for (const [prefix, type] of [["developer:", "developer"], ["version:", "version"], ["prefix:", "prefix"], ["update:", "updateState"], ["check:", "checkStatus"]]) {
+      if (!token.startsWith(prefix)) continue;
+      const value = valueAfter(part, prefix.length);
+      if (value) tokens.push({ type, value });
+      break;
+    }
+    if (["developer:", "version:", "prefix:", "update:", "check:"].some((prefix) => token.startsWith(prefix))) continue;
+
+    textParts.push(valueAfter(part, 0));
   }
 
   return {
@@ -82,7 +99,16 @@ export function matchesSearchTokens(entry, tokens = []) {
   const status = safeText(entry?.personal?.status).toLowerCase();
   const threadId = safeText(entry?.threadId).toLowerCase();
   const note = safeText(entry?.personal?.note);
-  const score = Number(entry?.personal?.rating);
+  const progress = safeText(entry?.personal?.progressNote);
+  const rating = Number(entry?.personal?.rating);
+  const publicRating = Number(entry?.thread?.threadRating);
+  const developer = safeText(entry?.thread?.developer).toLowerCase();
+  const version = safeText(entry?.thread?.currentVersion).toLowerCase();
+  const prefixes = Array.isArray(entry?.thread?.prefixes)
+    ? entry.thread.prefixes.map((item) => safeText(item?.label).toLowerCase())
+    : [];
+  const updateState = safeText(entry?.updateState).toLowerCase();
+  const checkStatus = safeText(entry?.updateCheck?.status).toLowerCase();
 
   for (const token of tokens) {
     switch (token.type) {
@@ -94,6 +120,9 @@ export function matchesSearchTokens(entry, tokens = []) {
         if (hasNote !== Boolean(token.value)) return false;
         break;
       }
+      case "hasProgress":
+        if (Boolean(progress) !== Boolean(token.value)) return false;
+        break;
       case "status":
         if (status !== token.value) return false;
         break;
@@ -103,8 +132,26 @@ export function matchesSearchTokens(entry, tokens = []) {
       case "id":
         if (!threadId.includes(token.value)) return false;
         break;
-      case "score":
-        if (!compareNumber(score, token.operator, token.value)) return false;
+      case "rating":
+        if (!compareNumber(rating, token.operator, token.value)) return false;
+        break;
+      case "publicRating":
+        if (!compareNumber(publicRating, token.operator, token.value)) return false;
+        break;
+      case "developer":
+        if (!developer.includes(token.value)) return false;
+        break;
+      case "version":
+        if (!version.includes(token.value)) return false;
+        break;
+      case "prefix":
+        if (!prefixes.some((prefix) => prefix.includes(token.value))) return false;
+        break;
+      case "updateState":
+        if (updateState !== token.value) return false;
+        break;
+      case "checkStatus":
+        if (checkStatus !== token.value) return false;
         break;
       default:
         break;

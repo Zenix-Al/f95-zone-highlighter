@@ -76,5 +76,9 @@ export function createLibraryRegistration({
     core.updateStatus("broken", `Failed to initialize: ${message}`);
   }
 
-  return { register, publishStatus, publishBroken };
+  function publishUpgradeRequired(message) {
+    return core.updateStatus("broken", message);
+  }
+
+  return { register, publishStatus, publishBroken, publishUpgradeRequired };
 }

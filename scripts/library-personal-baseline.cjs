@@ -19,6 +19,9 @@ function extractQuotedValues(source, expression) {
 
 function characterizeSource() {
   const constants = read("addons/library-addon/src/constants.js");
+  const declaredDatabase = Function(
+    `"use strict";${constants.replace(/^export\s+/gm, "")}return { LIBRARY_DB_VERSION, LIBRARY_DB_STORES };`,
+  )();
   const managerHtml = read("addons/library-addon/src/ui/assets/manager.html");
   const renderer = read(
     "addons/library-addon/src/ui/components/manager/tableRenderer.js",
@@ -49,23 +52,13 @@ function characterizeSource() {
     database: {
       logicalName: "library",
       physicalName: "f95ue-addon:library-addon:library",
-      version: 1,
-      stores: [
-        {
-          name: "records",
-          keyPath: "threadId",
-          indexes: [
-            { name: "updatedAt", keyPath: "updatedAt" },
-            { name: "userStatus", keyPath: "userStatus" },
-            { name: "titleNormalized", keyPath: "titleNormalized" },
-            { name: "prefix", keyPath: "prefix" },
-            { name: "tags", keyPath: "tags", multiEntry: true },
-          ],
-        },
-      ],
+      version: declaredDatabase.LIBRARY_DB_VERSION,
+      stores: declaredDatabase.LIBRARY_DB_STORES,
       evidence: {
         dbName: /LIBRARY_DB_NAME\s*=\s*"library"/.test(constants),
         storeName: /LIBRARY_STORE_NAME\s*=\s*"records"/.test(constants),
+        version: /LIBRARY_DB_VERSION\s*=\s*4/.test(constants),
+        completeStores: declaredDatabase.LIBRARY_DB_STORES.length === 6,
       },
     },
     recordShape: Object.keys(createFixtures().version3),

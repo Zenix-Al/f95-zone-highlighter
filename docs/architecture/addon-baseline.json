@@ -54,7 +54,7 @@
         "id": "masked-direct-addon",
         "name": "F95UE Masked + Direct Download Add-on",
         "description": "Combines masked-link skipper and direct-download flows into one trusted add-on.",
-        "version": "1.2.1",
+        "version": "1.2.2",
         "author": "X Death",
         "entry": "addons/masked-direct-addon/src/main.js",
         "outfile": "addons/masked-direct-addon/dist/masked-direct-addon.user.js",
@@ -129,7 +129,7 @@
         "id": "library-addon",
         "name": "F95UE Library Add-on",
         "description": "Quick-add threads to a personal library and manage entries with a dedicated add-on UI.",
-        "version": "1.2.2",
+        "version": "1.3.0",
         "author": "X Death",
         "entry": "addons/library-addon/src/main.js",
         "outfile": "addons/library-addon/dist/library-addon.user.js",
@@ -286,7 +286,7 @@
     ]
   },
   "trustedCatalog": {
-    "source": "src/generated/trusted-addon-catalog.0a4b258dc2edf660.json",
+    "source": "src/generated/trusted-addon-catalog.37d9c2e05e249906.json",
     "projection": [
       {
         "id": "example-addon",
@@ -337,7 +337,7 @@
         "id": "library-addon",
         "name": "F95UE Library Add-on",
         "description": "Quick-add threads to a personal library and manage entries with a dedicated add-on UI.",
-        "version": "1.2.2",
+        "version": "1.3.0",
         "pageScopes": [
           "f95zone"
         ],
@@ -352,7 +352,7 @@
         "id": "masked-direct-addon",
         "name": "F95UE Masked + Direct Download Add-on",
         "description": "Combines masked-link skipper and direct-download flows into one trusted add-on.",
-        "version": "1.2.1",
+        "version": "1.2.2",
         "pageScopes": [
           "f95zone"
         ],
@@ -995,13 +995,18 @@
       },
       {
         "path": "addons/library-addon/src/constants.js",
+        "name": "LIBRARY_MINIMUM_BRIDGE_VERSION",
+        "value": "1.2.2"
+      },
+      {
+        "path": "addons/library-addon/src/constants.js",
         "name": "LIBRARY_PIN_BACKFILL_MARKER_KEY",
         "value": "pin-sort-v3-complete"
       },
       {
         "path": "addons/library-addon/src/constants.js",
         "name": "LIBRARY_SCHEMA_MARKER_KEY",
-        "value": "schema-v3-complete"
+        "value": "schema-v4-complete"
       },
       {
         "path": "addons/library-addon/src/constants.js",
@@ -1014,6 +1019,21 @@
         "value": "records"
       },
       {
+        "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
+        "name": "ACTIVE_AUTO_UPDATE_CYCLE_ID",
+        "value": "active"
+      },
+      {
+        "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
+        "name": "AUTO_UPDATE_CYCLE_STORE",
+        "value": "update-cycles"
+      },
+      {
+        "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
+        "name": "AUTO_UPDATE_QUEUE_STORE",
+        "value": "update-queue"
+      },
+      {
         "path": "addons/library-addon/src/library/autoUpdateRepository.js",
         "name": "CONFIG_KEY",
         "value": "auto-update:config"
@@ -1022,6 +1042,11 @@
         "path": "addons/library-addon/src/library/autoUpdateRepository.js",
         "name": "LEASE_KEY",
         "value": "auto-update:lease"
+      },
+      {
+        "path": "addons/library-addon/src/library/autoUpdateRepository.js",
+        "name": "QUEUE_COMPAT_KEY",
+        "value": "auto-update:queue-compat-v1"
       },
       {
         "path": "addons/library-addon/src/library/autoUpdateRepository.js",
@@ -2272,10 +2297,10 @@
     {
       "id": "library-addon",
       "source": {
-        "fileCount": 93,
-        "authoredBytes": 312356,
-        "physicalLines": 9909,
-        "nonblankLines": 8956,
+        "fileCount": 97,
+        "authoredBytes": 367465,
+        "physicalLines": 11365,
+        "nonblankLines": 10315,
         "files": [
           {
             "path": "addons/library-addon/src/api/bridge.js",
@@ -2285,9 +2310,9 @@
           },
           {
             "path": "addons/library-addon/src/api/library/client.js",
-            "bytes": 7299,
-            "physicalLines": 257,
-            "nonblankLines": 231
+            "bytes": 8931,
+            "physicalLines": 312,
+            "nonblankLines": 279
           },
           {
             "path": "addons/library-addon/src/api/library/index.js",
@@ -2351,15 +2376,15 @@
           },
           {
             "path": "addons/library-addon/src/api/ui/dialog.js",
-            "bytes": 487,
-            "physicalLines": 13,
-            "nonblankLines": 10
+            "bytes": 592,
+            "physicalLines": 17,
+            "nonblankLines": 13
           },
           {
             "path": "addons/library-addon/src/api/ui/manager.js",
-            "bytes": 4938,
-            "physicalLines": 165,
-            "nonblankLines": 141
+            "bytes": 4825,
+            "physicalLines": 163,
+            "nonblankLines": 139
           },
           {
             "path": "addons/library-addon/src/api/ui/mount.js",
@@ -2381,15 +2406,21 @@
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "bytes": 8629,
-            "physicalLines": 254,
-            "nonblankLines": 242
+            "bytes": 8704,
+            "physicalLines": 252,
+            "nonblankLines": 240
           },
           {
             "path": "addons/library-addon/src/app/dockController.js",
-            "bytes": 9884,
-            "physicalLines": 304,
-            "nonblankLines": 285
+            "bytes": 11578,
+            "physicalLines": 350,
+            "nonblankLines": 328
+          },
+          {
+            "path": "addons/library-addon/src/app/legacyUpgradeGuard.js",
+            "bytes": 1656,
+            "physicalLines": 49,
+            "nonblankLines": 45
           },
           {
             "path": "addons/library-addon/src/app/lifecycle.js",
@@ -2417,9 +2448,9 @@
           },
           {
             "path": "addons/library-addon/src/app/registration.js",
-            "bytes": 2568,
-            "physicalLines": 80,
-            "nonblankLines": 74
+            "bytes": 2691,
+            "physicalLines": 84,
+            "nonblankLines": 77
           },
           {
             "path": "addons/library-addon/src/app/settings.js",
@@ -2429,9 +2460,9 @@
           },
           {
             "path": "addons/library-addon/src/constants.js",
-            "bytes": 2668,
-            "physicalLines": 79,
-            "nonblankLines": 75
+            "bytes": 3384,
+            "physicalLines": 108,
+            "nonblankLines": 104
           },
           {
             "path": "addons/library-addon/src/core/adaptor.js",
@@ -2459,21 +2490,39 @@
           },
           {
             "path": "addons/library-addon/src/library/autoUpdatePolicy.js",
-            "bytes": 1050,
-            "physicalLines": 29,
-            "nonblankLines": 27
+            "bytes": 1498,
+            "physicalLines": 37,
+            "nonblankLines": 33
+          },
+          {
+            "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
+            "bytes": 18860,
+            "physicalLines": 547,
+            "nonblankLines": 512
+          },
+          {
+            "path": "addons/library-addon/src/library/autoUpdateQueueSnapshot.js",
+            "bytes": 4190,
+            "physicalLines": 143,
+            "nonblankLines": 133
+          },
+          {
+            "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
+            "bytes": 11124,
+            "physicalLines": 304,
+            "nonblankLines": 287
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateRepository.js",
-            "bytes": 2252,
-            "physicalLines": 66,
-            "nonblankLines": 62
+            "bytes": 3021,
+            "physicalLines": 86,
+            "nonblankLines": 81
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-            "bytes": 8335,
-            "physicalLines": 243,
-            "nonblankLines": 233
+            "bytes": 10442,
+            "physicalLines": 315,
+            "nonblankLines": 294
           },
           {
             "path": "addons/library-addon/src/library/importWorkflow.js",
@@ -2507,9 +2556,9 @@
           },
           {
             "path": "addons/library-addon/src/library/service.js",
-            "bytes": 37588,
-            "physicalLines": 1112,
-            "nonblankLines": 1038
+            "bytes": 38390,
+            "physicalLines": 1123,
+            "nonblankLines": 1052
           },
           {
             "path": "addons/library-addon/src/library/threadUpdateParser.js",
@@ -2585,33 +2634,33 @@
           },
           {
             "path": "addons/library-addon/src/ui/assets/manager.css",
-            "bytes": 19947,
-            "physicalLines": 962,
-            "nonblankLines": 835
+            "bytes": 20597,
+            "physicalLines": 988,
+            "nonblankLines": 859
           },
           {
             "path": "addons/library-addon/src/ui/assets/manager.html",
-            "bytes": 5816,
-            "physicalLines": 143,
-            "nonblankLines": 140
+            "bytes": 6193,
+            "physicalLines": 146,
+            "nonblankLines": 143
           },
           {
             "path": "addons/library-addon/src/ui/autoUpdate/autoUpdate.css",
-            "bytes": 1320,
-            "physicalLines": 76,
-            "nonblankLines": 67
+            "bytes": 1943,
+            "physicalLines": 89,
+            "nonblankLines": 78
           },
           {
             "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
-            "bytes": 4470,
-            "physicalLines": 123,
-            "nonblankLines": 115
+            "bytes": 6148,
+            "physicalLines": 166,
+            "nonblankLines": 156
           },
           {
             "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
-            "bytes": 2750,
-            "physicalLines": 57,
-            "nonblankLines": 52
+            "bytes": 7716,
+            "physicalLines": 86,
+            "nonblankLines": 80
           },
           {
             "path": "addons/library-addon/src/ui/components/dock/dockRenderer.js",
@@ -2729,9 +2778,9 @@
           },
           {
             "path": "addons/library-addon/src/ui/manager/handlers/updateCheckHandlers.js",
-            "bytes": 2251,
-            "physicalLines": 56,
-            "nonblankLines": 53
+            "bytes": 2542,
+            "physicalLines": 63,
+            "nonblankLines": 60
           },
           {
             "path": "addons/library-addon/src/ui/manager/handlers/workflowHandlers.js",
@@ -2813,9 +2862,9 @@
           },
           {
             "path": "addons/library-addon/src/ui/utils/searchTokens.js",
-            "bytes": 3382,
-            "physicalLines": 115,
-            "nonblankLines": 99
+            "bytes": 5718,
+            "physicalLines": 162,
+            "nonblankLines": 145
           },
           {
             "path": "addons/library-addon/src/ui/utils/showToast.js",
@@ -2840,32 +2889,44 @@
       "builds": {
         "regular": {
           "mode": "regular",
-          "bytes": 322821,
-          "gzipBytes": 66823,
+          "bytes": 379858,
+          "gzipBytes": 78829,
           "contributors": [
             {
               "path": "addons/library-addon/src/library/service.js",
-              "bytes": 37363
+              "bytes": 38004
             },
             {
               "path": "addons/library-addon/src/ui/assets/manager.css",
-              "bytes": 20937
+              "bytes": 21613
+            },
+            {
+              "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
+              "bytes": 19466
             },
             {
               "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
               "bytes": 12520
             },
             {
-              "path": "addons/library-addon/src/library/recordModel.js",
-              "bytes": 10345
-            },
-            {
-              "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
-              "bytes": 9728
+              "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
+              "bytes": 11452
             },
             {
               "path": "addons/library-addon/src/app/dockController.js",
-              "bytes": 9534
+              "bytes": 11034
+            },
+            {
+              "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
+              "bytes": 10835
+            },
+            {
+              "path": "addons/library-addon/src/library/recordModel.js",
+              "bytes": 10348
+            },
+            {
+              "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
+              "bytes": 9731
             },
             {
               "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
@@ -2877,11 +2938,11 @@
             },
             {
               "path": "addons/library-addon/src/library/importWorkflow.js",
-              "bytes": 9181
+              "bytes": 9193
             },
             {
-              "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-              "bytes": 8548
+              "path": "addons/library-addon/src/api/library/client.js",
+              "bytes": 9183
             },
             {
               "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
@@ -2889,54 +2950,46 @@
             },
             {
               "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-              "bytes": 7792
+              "bytes": 7904
             },
             {
-              "path": "addons/library-addon/src/api/library/client.js",
-              "bytes": 7470
+              "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
+              "bytes": 7831
             },
             {
               "path": "addons/library-addon/src/ui/manager/managerApp.js",
               "bytes": 7383
             },
             {
-              "path": "addons/library-addon/src/ui/application/importExportWorkflow.js",
-              "bytes": 6254
-            },
-            {
               "path": "addons/library-addon/src/ui/assets/manager.html",
-              "bytes": 5988
+              "bytes": 6368
             },
             {
-              "path": "addons/library-addon/src/ui/entryEditor/editorRenderer.js",
-              "bytes": 5168
+              "path": "addons/library-addon/src/ui/application/importExportWorkflow.js",
+              "bytes": 6256
             },
             {
-              "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
-              "bytes": 4898
-            },
-            {
-              "path": "addons/library-addon/src/api/ui/manager.js",
-              "bytes": 4849
-            },
-            {
-              "path": "addons/library-addon/src/api/threadHtml.js",
-              "bytes": 4371
+              "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
+              "bytes": 6191
             }
           ]
         },
         "release": {
           "mode": "release",
-          "bytes": 281361,
-          "gzipBytes": 57714,
+          "bytes": 339163,
+          "gzipBytes": 68547,
           "contributors": [
             {
               "path": "addons/library-addon/src/library/service.js",
-              "bytes": 25702
+              "bytes": 26246
             },
             {
               "path": "addons/library-addon/src/ui/assets/manager.css",
-              "bytes": 19970
+              "bytes": 20620
+            },
+            {
+              "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
+              "bytes": 14323
             },
             {
               "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
@@ -2944,11 +2997,23 @@
             },
             {
               "path": "addons/library-addon/src/library/recordModel.js",
-              "bytes": 7939
+              "bytes": 7942
+            },
+            {
+              "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
+              "bytes": 7716
+            },
+            {
+              "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
+              "bytes": 7392
+            },
+            {
+              "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
+              "bytes": 6864
             },
             {
               "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
-              "bytes": 6773
+              "bytes": 6776
             },
             {
               "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
@@ -2963,52 +3028,36 @@
               "bytes": 6406
             },
             {
-              "path": "addons/library-addon/src/library/importWorkflow.js",
-              "bytes": 6216
+              "path": "addons/library-addon/src/app/dockController.js",
+              "bytes": 6246
             },
             {
-              "path": "addons/library-addon/src/app/dockController.js",
-              "bytes": 6186
+              "path": "addons/library-addon/src/library/importWorkflow.js",
+              "bytes": 6227
             },
             {
               "path": "addons/library-addon/src/ui/assets/manager.html",
-              "bytes": 5840
+              "bytes": 6217
+            },
+            {
+              "path": "addons/library-addon/src/api/library/client.js",
+              "bytes": 6011
             },
             {
               "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-              "bytes": 5481
+              "bytes": 5467
             },
             {
               "path": "addons/library-addon/src/ui/manager/managerApp.js",
               "bytes": 5407
             },
             {
-              "path": "addons/library-addon/src/api/library/client.js",
-              "bytes": 4844
-            },
-            {
               "path": "addons/library-addon/src/ui/application/importExportWorkflow.js",
-              "bytes": 4828
+              "bytes": 4830
             },
             {
               "path": "addons/library-addon/src/ui/entryEditor/editorRenderer.js",
               "bytes": 4803
-            },
-            {
-              "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-              "bytes": 4519
-            },
-            {
-              "path": "addons/library-addon/src/ui/entryEditor/editor.css",
-              "bytes": 3957
-            },
-            {
-              "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
-              "bytes": 3252
-            },
-            {
-              "path": "addons/library-addon/src/ui/application/importProgressController.js",
-              "bytes": 3220
             }
           ]
         }
@@ -3376,7 +3425,7 @@
         "regular": {
           "mode": "regular",
           "bytes": 198109,
-          "gzipBytes": 40480,
+          "gzipBytes": 40478,
           "contributors": [
             {
               "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",

@@ -135,11 +135,9 @@ export function createManagerApi(bridge, library) {
         spacingMs: 10000,
         timeoutMs: 30000,
         retryLimit: 2,
-        sessionCap: 25,
-        dailyCap: 100,
+        checksPerDay: 100,
       }),
     putAutoUpdateConfig: (config) => library.autoUpdate.putConfig(config),
-    getAutoUpdateSummary: () => library.autoUpdate?.getSummary?.() || Promise.resolve(null),
     setAutoUpdateEnabled: (ids, enabled) => library.setAutoUpdateEnabled(ids, enabled),
 
     applyPersonalActivity: async (threadId, patch, options) => {
