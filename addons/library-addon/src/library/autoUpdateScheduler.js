@@ -1,4 +1,4 @@
-import { getClaimJitter } from "./autoUpdatePolicy.js";
+import { getClaimJitter, getLocalDayKey, getNextScheduledAt } from "./autoUpdatePolicy.js";
 import { debugLog } from "../../../shared/debugLog.js";
 
 const DEBUG_OWNER = "library-addon:auto-update";
@@ -6,10 +6,7 @@ const DEBUG_OWNER = "library-addon:auto-update";
 function wait(ms, signal) {
   return new Promise((resolve) => {
     const timer = setTimeout(resolve, Math.max(0, ms));
-    signal?.addEventListener("abort", () => {
-      clearTimeout(timer);
-      resolve();
-    }, { once: true });
+    signal?.addEventListener("abort", () => { clearTimeout(timer); resolve(); }, { once: true });
   });
 }
 
@@ -17,12 +14,41 @@ function owned(value, owner, generation, now) {
   return value?.owner === owner && value?.generation === generation && Number(value.expiresAt) > now;
 }
 
+export function getStartupDelay({ cycle, lease, currentTime, intervalMs }) {
+  const regularDelay = Math.min(Math.max(0, Number(intervalMs) || 0), 60_000);
+  if (!cycle || !["running", "recovering"].includes(cycle.status)) return regularDelay;
+  const leaseExpiry = Number(lease?.expiresAt || 0);
+  return leaseExpiry > currentTime ? leaseExpiry - currentTime + 250 : 0;
+}
+
+function completedCycle(summary, dailyAttempted, timestamp, config, nextRunAt = 0) {
+  return {
+    id: "active",
+    cycleId: `legacy-summary-${timestamp}`,
+    status: "completed",
+    scheduledFor: Number(summary?.startedAt || timestamp),
+    createdAt: Number(summary?.startedAt || timestamp),
+    startedAt: Number(summary?.startedAt || timestamp),
+    completedAt: Number(summary?.finishedAt || timestamp),
+    updatedAt: timestamp,
+    total: Number(summary?.total || 0),
+    attempted: Number(summary?.checked || 0),
+    completed: Number(summary?.checked || 0),
+    failed: Number(summary?.failed || 0),
+    current: Number(summary?.current || 0),
+    changed: Number(summary?.changed || 0),
+    skipped: Number(summary?.skipped || 0),
+    networkRetries: Number(summary?.retries || 0),
+    dailyKey: getLocalDayKey(timestamp),
+    dailyAttempted,
+    checksPerDay: config.checksPerDay,
+    nextRunAt: Number(nextRunAt || summary?.nextRunAt || 0),
+  };
+}
+
 export function createAutoUpdateScheduler({
   repository,
-  getDueRecords,
-  checkRecords,
-  commitResults,
-  isRecordEligible = async () => true,
+  queueRuntime,
   now = Date.now,
   random = Math.random,
   owner = `tab:${Math.random().toString(36).slice(2)}`,
@@ -30,17 +56,19 @@ export function createAutoUpdateScheduler({
   let controller = null;
   let generation = 0;
   let timer = null;
-  let sessionCount = 0;
+  let recoveryAt = 0;
+  const listeners = new Set();
 
-  async function claim(kind, id, config, signal) {
+  function notify(cycle) {
+    listeners.forEach((listener) => {
+      try { listener(cycle); } catch { /* UI listeners are isolated. */ }
+    });
+  }
+
+  async function claimLease(config, signal) {
     const currentTime = now();
-    const read = kind === "lease" ? repository.getLease : () => repository.getClaim(id);
-    const write = kind === "lease" ? repository.putLease : (value) => repository.putClaim(id, value);
-    const existing = await read();
+    const existing = await repository.getLease();
     if (existing && Number(existing.expiresAt) > currentTime && existing.owner !== owner) {
-      debugLog(DEBUG_OWNER, "Automatic-update claim blocked.", {
-        data: { kind, id, owner, heldBy: existing.owner, expiresAt: existing.expiresAt },
-      });
       return null;
     }
     const value = {
@@ -49,195 +77,239 @@ export function createAutoUpdateScheduler({
       claimedAt: currentTime,
       expiresAt: currentTime + config.leaseTtlMs,
     };
-    await write(value);
+    await repository.putLease(value);
     await wait(getClaimJitter(config.jitterMs, random), signal);
-    const verified = await read();
-    const accepted = owned(verified, owner, generation, now());
-    debugLog(DEBUG_OWNER, "Automatic-update claim verified.", {
-      data: { kind, id, owner, generation, accepted, expiresAt: verified?.expiresAt || 0 },
-    });
-    return accepted ? verified : null;
+    const verified = await repository.getLease();
+    return owned(verified, owner, generation, now()) ? verified : null;
   }
 
-  async function stillOwn(threadId = "") {
-    const lease = await repository.getLease();
-    if (!owned(lease, owner, generation, now())) return false;
-    if (!threadId) return true;
-    return owned(await repository.getClaim(threadId), owner, generation, now());
+  async function stillOwn() {
+    return owned(await repository.getLease(), owner, generation, now());
+  }
+
+  async function releaseLease() {
+    if (await stillOwn()) await repository.deleteLease();
+  }
+
+  async function migrateLegacyMetadata(config) {
+    const cycle = await queueRuntime.getCycle();
+    const legacy = await repository.getLegacyQueueMetadata(now());
+    if (legacy?.complete) return { ok: true, cycle, legacy: null };
+    if (cycle) {
+      const cleared = await repository.clearLegacyQueueMetadata(legacy?.days);
+      return cleared?.ok ? { ok: true, cycle, legacy: null } : cleared;
+    }
+    const summary = legacy?.summary || null;
+    if (summary && Number(summary.nextRunAt || 0) > now()) {
+      const written = await queueRuntime.putCycle(
+        completedCycle(summary, legacy.dailyAttempted, now(), config),
+      );
+      if (!written?.ok) return written;
+      const cleared = await repository.clearLegacyQueueMetadata(legacy.days);
+      return cleared?.ok ? { ok: true, cycle: written.value, legacy: null } : cleared;
+    }
+    return { ok: true, cycle: null, legacy };
   }
 
   async function run(options = {}) {
-    if (controller) {
-      debugLog(DEBUG_OWNER, "Automatic update skipped.", {
-        data: { reason: "already_running" },
-      });
-      return { ok: false, reason: "already_running" };
-    }
+    if (controller) return { ok: false, reason: "already_running" };
+    if (!queueRuntime) return { ok: false, reason: "queue_unavailable" };
     controller = new AbortController();
     const signal = controller.signal;
     generation += 1;
     const config = await repository.getConfig();
-    debugLog(DEBUG_OWNER, "Automatic-update run requested.", {
-      data: {
-        owner,
-        generation,
-        enabled: config.enabled,
-        force: Boolean(options.force),
-        failedOnly: Boolean(options.failedOnly),
-        sessionCount,
-      },
-    });
     if (!config.enabled && !options.force) {
       controller = null;
-      debugLog(DEBUG_OWNER, "Automatic update skipped.", { data: { reason: "paused" } });
       return { ok: false, reason: "paused" };
     }
-    if (!(await claim("lease", "", config, signal))) {
+    if (!(await claimLease(config, signal))) {
       controller = null;
-      debugLog(DEBUG_OWNER, "Automatic update skipped.", { data: { reason: "lease_owned" } });
       return { ok: false, reason: "lease_owned" };
     }
-    const startedAt = now();
-    const previousSummary = options.failedOnly
-      ? await repository.getSummary()
-      : null;
-    const summary = {
-      status: "running",
-      startedAt,
-      finishedAt: null,
-      nextRunAt:
-        Number(previousSummary?.nextRunAt) || startedAt + config.intervalMs,
-      total: 0,
-      activeThreadId: "",
-      checked: 0,
-      current: 0,
-      changed: 0,
-      failed: 0,
-      skipped: 0,
-      retries: 0,
-    };
-    await repository.putSummary(summary);
-    const day = new Date(startedAt).toISOString().slice(0, 10);
-    const dailyUsage = await repository.getDailyUsage(day);
-    let dailyCount = Math.max(0, Number(dailyUsage?.count || 0));
-    const remaining = options.force
-      ? 100
-      : Math.max(
-          0,
-          Math.min(config.sessionCap - sessionCount, config.dailyCap - dailyCount),
-        );
-    const due = await getDueRecords({
-      now: startedAt,
-      limit: remaining,
-      failedOnly: Boolean(options.failedOnly),
-      ignoreSchedule: Boolean(options.failedOnly && options.force),
-    });
-    summary.total = due.length;
-    await repository.putSummary({ ...summary });
-    debugLog(DEBUG_OWNER, "Automatic-update due records selected.", {
-      data: {
-        dueCount: due.length,
-        remaining,
-        sessionCount,
-        dailyCount,
-        sessionCap: config.sessionCap,
-        dailyCap: config.dailyCap,
-      },
-    });
-    for (const record of due) {
-      if (signal.aborted || !(await stillOwn())) break;
-      if (!(await claim("thread", record.threadId, config, signal))) {
-        summary.skipped += 1;
-        await repository.putSummary({ ...summary });
-        continue;
-      }
-      summary.activeThreadId = record.threadId;
-      await repository.putSummary({ ...summary });
-      debugLog(DEBUG_OWNER, "Automatic-update record claimed.", {
-        data: { threadId: record.threadId },
-      });
-      if (!(await stillOwn(record.threadId)) || !(await isRecordEligible(record.threadId))) break;
-      const preview = await checkRecords([record.threadId], {
-        signal,
-        spacingMs: config.spacingMs,
-        jitterMs: config.jitterMs,
-        timeoutMs: config.timeoutMs,
-        retryLimit: config.retryLimit,
-        maxRecords: 1,
-      });
-      summary.retries += Math.max(0, Number(preview.results?.[0]?.attempts || 1) - 1);
-      if (
-        signal.aborted ||
-        !(await stillOwn(record.threadId)) ||
-        !(await isRecordEligible(record.threadId))
-      ) break;
-      const result = await commitResults(preview, {
-        shouldCancel: () => signal.aborted,
-        scheduleIntervalMs: config.intervalMs,
-      });
-      debugLog(DEBUG_OWNER, "Automatic-update record commit settled.", {
-        data: {
-          threadId: record.threadId,
-          checked: Number(result.checked || 0),
-          current: Number(result.current || 0),
-          changed: Number(result.changed || 0),
-          failed: Number(result.failed || 0),
-        },
-      });
-      summary.checked += Number(result.checked || 0);
-      summary.current += Number(result.current || 0);
-      summary.changed += Number(result.changed || 0);
-      summary.failed += Number(result.failed || 0);
-      summary.activeThreadId = "";
-      sessionCount += Number(result.checked || 0);
-      dailyCount += Number(result.checked || 0);
-      await repository.putDailyUsage(day, dailyCount);
-      await repository.deleteClaim(record.threadId);
-      await repository.putLease({
-        owner,
-        generation,
-        expiresAt: now() + config.leaseTtlMs,
-      });
-      await repository.putSummary({ ...summary });
+
+    const migrated = await migrateLegacyMetadata(config);
+    if (!migrated?.ok) {
+      await releaseLease();
+      controller = null;
+      return migrated;
     }
-    summary.status = signal.aborted ? "paused" : "idle";
-    summary.activeThreadId = "";
-    summary.finishedAt = now();
-    await repository.putSummary(summary);
-    if (await stillOwn()) await repository.deleteLease();
+    const startedAt = now();
+    const nextRunAt = getNextScheduledAt(startedAt, config.intervalMs, config.runHour);
+    let cycle = migrated.cycle;
+    if (cycle?.status === "completed" && !options.force && !options.runNow && cycle.nextRunAt > startedAt) {
+      await releaseLease();
+      controller = null;
+      return { ok: false, reason: "not_due", nextRunAt: cycle.nextRunAt, cycle };
+    }
+    if (!cycle || cycle.status === "completed" || cycle.status === "preparing") {
+      const snapshot = await queueRuntime.buildSnapshot({
+        checksPerDay: config.checksPerDay,
+        scheduledFor: startedAt,
+        signal,
+      });
+      if (!snapshot?.ok) {
+        await releaseLease();
+        controller = null;
+        return snapshot;
+      }
+      cycle = snapshot.cycle;
+      if (migrated.legacy) {
+        const carried = await queueRuntime.putCycle({
+          ...cycle,
+          dailyKey: getLocalDayKey(startedAt),
+          dailyAttempted: migrated.legacy.dailyAttempted,
+        });
+        if (!carried?.ok) {
+          await releaseLease();
+          controller = null;
+          return carried;
+        }
+        cycle = carried.value;
+        const cleared = await repository.clearLegacyQueueMetadata(migrated.legacy.days);
+        if (!cleared?.ok) {
+          await releaseLease();
+          controller = null;
+          return cleared;
+        }
+      }
+    }
+    if (cycle.status === "paused") {
+      const resumed = await queueRuntime.putCycle({ ...cycle, status: "running" });
+      if (!resumed?.ok) {
+        await releaseLease();
+        controller = null;
+        return resumed;
+      }
+      cycle = resumed.value;
+    }
+    if (!cycle.nextRunAt) {
+      const scheduled = await queueRuntime.putCycle({ ...cycle, nextRunAt });
+      if (!scheduled?.ok) {
+        await releaseLease();
+        controller = null;
+        return scheduled;
+      }
+    }
+    const renewOwnership = async () => {
+      if (!(await stillOwn())) return false;
+      await repository.putLease({ owner, generation, expiresAt: now() + config.leaseTtlMs });
+      return true;
+    };
+    const worked = await queueRuntime.runWorker({
+      owner,
+      config,
+      signal,
+      stillOwn,
+      renewOwnership,
+      onCycleChange: notify,
+    });
+    const settledCycle = worked?.cycle || await queueRuntime.getCycle();
+    await releaseLease();
     controller = null;
-    debugLog(DEBUG_OWNER, "Automatic-update run completed.", { data: summary });
-    return { ok: !signal.aborted, ...summary };
+    debugLog(DEBUG_OWNER, "Durable automatic-update cycle settled.", {
+      data: { cycleId: settledCycle?.cycleId || "", status: settledCycle?.status || "" },
+    });
+    return { ok: Boolean(worked?.ok), cycle: settledCycle, reason: worked?.reason };
   }
 
-  async function start() {
+  async function start(options = {}) {
     const config = await repository.getConfig();
+    if (options.reschedule) {
+      const cycle = await queueRuntime.getCycle();
+      const nextRunAt = getNextScheduledAt(now(), config.intervalMs, config.runHour);
+      await queueRuntime.putCycle(
+        cycle ? { ...cycle, nextRunAt } : completedCycle(null, 0, now(), config, nextRunAt),
+      );
+    }
+    const [cycle, lease] = await Promise.all([
+      queueRuntime.getCycle(),
+      repository.getLease(),
+    ]);
+    const delayMs = getStartupDelay({
+      cycle,
+      lease,
+      currentTime: now(),
+      intervalMs: config.intervalMs,
+    });
+    recoveryAt = ["running", "recovering"].includes(cycle?.status) &&
+      Number(lease?.expiresAt || 0) > now()
+      ? Number(lease.expiresAt) + 250
+      : 0;
+    notify(cycle);
     clearTimeout(timer);
     timer = setTimeout(async () => {
+      recoveryAt = 0;
+      notify(await queueRuntime.getCycle());
       await run();
       if (timer) await start();
-    }, Math.min(config.intervalMs, 60_000));
+    }, delayMs);
     timer?.unref?.();
     debugLog(DEBUG_OWNER, "Automatic-update scheduler armed.", {
-      data: {
-        enabled: config.enabled,
-        delayMs: Math.min(config.intervalMs, 60_000),
-        intervalMs: config.intervalMs,
-      },
+      data: { delayMs, cycleStatus: cycle?.status || "idle", leaseExpiresAt: lease?.expiresAt || 0 },
     });
   }
 
   async function stop() {
     clearTimeout(timer);
     timer = null;
+    recoveryAt = 0;
     controller?.abort();
     controller = null;
     const lease = await repository.getLease();
     if (lease?.owner === owner) await repository.deleteLease();
-    debugLog(DEBUG_OWNER, "Automatic-update scheduler stopped.", {
-      data: { owner, generation },
-    });
   }
 
-  return { run, start, stop, snapshot: () => ({ running: Boolean(controller), sessionCount }) };
+  async function getDurableState() {
+    return queueRuntime?.getCycle() || null;
+  }
+
+  async function pause() {
+    await stop();
+    const cycle = await getDurableState();
+    if (!cycle || cycle.status === "completed") return { ok: false, reason: "cycle_inactive" };
+    const result = await queueRuntime.putCycle({ ...cycle, status: "paused", currentThreadId: "" });
+    if (result?.ok) notify(result.value);
+    return result;
+  }
+
+  async function grantNextBatch() {
+    const cycle = await getDurableState();
+    if (!cycle || cycle.status === "completed") return { ok: false, reason: "cycle_inactive" };
+    const granted = await queueRuntime.grantDailyBonus(cycle, cycle.checksPerDay);
+    if (!granted?.ok) return granted;
+    notify(granted.value);
+    return run({ runNow: true });
+  }
+
+  async function restartCycle() {
+    await stop();
+    const cycle = await getDurableState();
+    if (cycle) {
+      const discarded = await queueRuntime.discardCycle(cycle.cycleId);
+      if (!discarded?.ok) return discarded;
+    }
+    notify(null);
+    return run({ runNow: true, force: true });
+  }
+
+  function subscribe(listener) {
+    listeners.add(listener);
+    return () => listeners.delete(listener);
+  }
+
+  return {
+    run,
+    start,
+    stop,
+    pause,
+    grantNextBatch,
+    restartCycle,
+    getDurableState,
+    subscribe,
+    snapshot: () => ({
+      running: Boolean(controller),
+      recoveryPending: recoveryAt > now(),
+      recoveryAt,
+    }),
+  };
 }

@@ -171,6 +171,32 @@ __ROOT__ .f95ue-library-bulkbar select {
   padding: 7px 9px;
 }
 
+__ROOT__ .f95ue-library-search-help [role="tooltip"] {
+  display: none;
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 8px);
+  right: -8px;
+  width: min(560px, calc(100vw - 72px));
+  padding: 8px 10px;
+  border: 1px solid #4b5059;
+  border-radius: 5px;
+  background: #17191d;
+  color: #d9dce1;
+  box-shadow: 0 6px 20px #000a;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.45;
+  text-align: left;
+  white-space: normal;
+}
+
+__ROOT__ .f95ue-library-search-help:hover [role="tooltip"],
+__ROOT__ .f95ue-library-search-help:focus [role="tooltip"],
+__ROOT__ .f95ue-library-search-help:focus-within [role="tooltip"] {
+  display: block;
+}
+
 __ROOT__ .f95ue-library-actions [data-role="selectedInfo"] {
   color: #adb9c7;
   font-size: 12px;

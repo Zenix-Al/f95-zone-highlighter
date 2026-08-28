@@ -11,13 +11,24 @@ __ROOT__ {
   border-radius: 10px;
 }
 
-__ROOT__ .f95ue-library-auto-summary {
+__ROOT__ section,
+__ROOT__ details {
   padding: 12px 14px;
   color: #c7ccd4;
   background: #202329;
   border: 1px solid #3f4043;
   border-radius: 8px;
 }
+
+__ROOT__ summary { cursor: pointer; font-weight: 700; }
+__ROOT__ .f95ue-library-auto-heading,
+__ROOT__ .f95ue-library-auto-stats,
+__ROOT__ .f95ue-library-auto-meta,
+__ROOT__ .f95ue-library-auto-details { display: flex; flex-wrap: wrap; gap: 10px 18px; }
+__ROOT__ .f95ue-library-auto-heading { justify-content: space-between; }
+__ROOT__ .f95ue-library-auto-state { padding: 2px 8px; border: 1px solid #59616d; border-radius: 999px; }
+__ROOT__ progress { width: 100%; margin: 10px 0; }
+__ROOT__ .f95ue-library-auto-details { margin-top: 12px; align-items: center; }
 
 __ROOT__ .f95ue-library-auto-grid {
   display: grid;
@@ -68,6 +79,8 @@ __ROOT__ button.primary {
   background: #8e3c3e;
   border-color: #a54a4d;
 }
+
+__ROOT__ button:disabled { cursor: default; opacity: .6; }
 
 @media (max-width: 620px) {
   __ROOT__ .f95ue-library-auto-grid {

@@ -11,6 +11,15 @@ Welcome to the documentation for the Latest Highlighter userscript. This directo
 
 - [Core Architecture](architecture.md) - High-level overview of how the app boots and runs.
 - [Library Update Inbox](architecture/library-update-inbox.md) - Durable update acknowledgement, bounded inbox queries, and page-session notification behavior.
+- [Library Update Queue Baseline](architecture/library-update-queue-baseline.md) - Current scheduler entry points, interruption boundaries, database capability, and pre-queue size evidence.
+- [Library Update Queue Schema](architecture/library-update-queue-schema.md) - Version-4 cycle/queue stores, recoverable publication, and repository contracts.
+- [Library Update Queue Snapshot](architecture/library-update-queue-snapshot.md) - Bounded eligible-record snapshots, deterministic ordering, and cancellation cleanup.
+- [Library Update Queue Worker](architecture/library-update-queue-worker.md) - One-item claims, canonical commit ordering, retry fairness, heartbeat ownership, and scheduler cutover.
+- [Library Update Queue Recovery](architecture/library-update-queue-recovery.md) - Restart recovery, local-day rollover, durable allowance, and cross-tab ownership.
+- [Library Update Queue Settings and UI](architecture/library-update-queue-settings-ui.md) - Migrated controls, stable live progress, and state-derived queue actions.
+- [Library Update Queue Compatibility](architecture/library-update-queue-compatibility.md) - One-time legacy metadata carry-forward, retired fallback paths, and identity-bounded cleanup.
+- [Library Update Queue Verification](architecture/library-update-queue-verification.md) - Automated release evidence and the remaining browser smoke gate.
+- [Library Legacy Upgrade Guard](architecture/library-legacy-upgrade-guard.md) - Retired schema-v1 conversion, the v1.2.2 bridge, and fail-closed direct-upgrade handling.
 - [Thread Utility Baseline](architecture/thread-utility-baseline.md) - Reference quick-search behavior and the canonical opening-post fixture contract.
 - [Thread Utility Golden Contract](architecture/thread-utility-golden-contract.md) - Bounded Example Add-on bootstrap, API, lifecycle, UI ownership, and teardown requirements.
 - [AI Guidelines](agent.md) - Strict rules for AI agents modifying this codebase.

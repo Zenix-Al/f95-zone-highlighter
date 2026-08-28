@@ -3,41 +3,50 @@
 module.exports = function registerLibraryAutoUpdateGroup(context) {
   const { assert, fs, loadModule, path, ROOT, runTest } = context;
 
-  function createRepository(clock, initialLease = null) {
-    let lease = initialLease;
-    const claims = new Map();
+  function createRepository(overrides = {}) {
+    let lease = null;
     let config = {
       enabled: true,
       intervalMs: 60000,
-      spacingMs: 250,
+      runHour: 0,
+      spacingMs: 5000,
       jitterMs: 0,
       timeoutMs: 1000,
       retryLimit: 1,
-      sessionCap: 2,
-      dailyCap: 2,
+      checksPerDay: 100,
       leaseTtlMs: 30000,
     };
-    let summary = null;
-    const summaryWrites = [];
-    const daily = new Map();
     return {
       getConfig: async () => config,
-      putConfig: async (next) => { config = next; return { ok: true }; },
-      getSummary: async () => summary,
-      putSummary: async (next) => {
-        summary = next;
-        summaryWrites.push({ ...next });
-        return { ok: true };
-      },
+      putConfig: async (value) => { config = value; return { ok: true }; },
       getLease: async () => lease,
-      putLease: async (next) => { lease = next; return { ok: true }; },
+      putLease: async (value) => { lease = value; return { ok: true }; },
       deleteLease: async () => { lease = null; return { ok: true }; },
-      getClaim: async (id) => claims.get(id) || null,
-      putClaim: async (id, value) => { claims.set(id, value); return { ok: true }; },
-      deleteClaim: async (id) => { claims.delete(id); return { ok: true }; },
-      getDailyUsage: async (day) => daily.get(day) || null,
-      putDailyUsage: async (day, count) => { daily.set(day, { count }); return { ok: true }; },
-      snapshot: () => ({ lease, claims, summary, summaryWrites, daily, clock }),
+      getLegacyQueueMetadata: async () => ({ complete: true, days: [] }),
+      clearLegacyQueueMetadata: async () => ({ ok: true }),
+      snapshot: () => ({ lease, config }),
+      ...overrides,
+    };
+  }
+
+  function createQueue(initialCycle = null) {
+    let cycle = initialCycle;
+    let snapshots = 0;
+    let workerRuns = 0;
+    return {
+      async getCycle() { return cycle; },
+      async putCycle(value) { cycle = value; return { ok: true, value }; },
+      async buildSnapshot() {
+        snapshots += 1;
+        cycle = { cycleId: "queue-cycle", status: "running", total: 2, checksPerDay: 100 };
+        return { ok: true, cycle };
+      },
+      async runWorker() {
+        workerRuns += 1;
+        cycle = { ...cycle, status: "completed", attempted: 2, completed: 2 };
+        return { ok: true, cycle };
+      },
+      snapshot: () => ({ cycle, snapshots, workerRuns }),
     };
   }
 
@@ -54,272 +63,219 @@ module.exports = function registerLibraryAutoUpdateGroup(context) {
     assert.strictEqual(disabled.updateCheck.status, "disabled");
   });
 
+  runTest("LIBRARY-UPDATE-QUEUE-SETTINGS-01 migrates daily cap and omits session cap", () => {
+    const { normalizeAutoUpdateConfig } = loadModule(
+      "addons/library-addon/src/library/autoUpdateRepository.js",
+    );
+    const config = normalizeAutoUpdateConfig({ dailyCap: 77, sessionCap: 25 });
+    assert.strictEqual(config.checksPerDay, 77);
+    assert.strictEqual(Object.hasOwn(config, "dailyCap"), false);
+    assert.strictEqual(Object.hasOwn(config, "sessionCap"), false);
+  });
+
+  runTest("LIBRARY-UPDATE-QUEUE-SETTINGS-01 derives and patches primary button state", () => {
+    const { derivePrimaryUpdateAction, patchAutoUpdateView } = loadModule(
+      "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
+    );
+    const cycle = { total: 200, completed: 50, failed: 0, checksPerDay: 100 };
+    assert.strictEqual(derivePrimaryUpdateAction(null).label, "Update now");
+    assert.strictEqual(derivePrimaryUpdateAction({ ...cycle, status: "paused" }).label, "Resume updates");
+    assert.strictEqual(derivePrimaryUpdateAction({ ...cycle, status: "waiting", dailyAttempted: 100 }).label, "Continue another batch...");
+    assert.strictEqual(derivePrimaryUpdateAction({ ...cycle, status: "running" }).disabled, true);
+    assert.strictEqual(derivePrimaryUpdateAction({ ...cycle, status: "completed" }).label, "Check again...");
+    assert.deepStrictEqual(
+      derivePrimaryUpdateAction({ ...cycle, status: "running" }, { recoveryPending: true }),
+      { action: "", label: "Waiting for previous process...", disabled: true },
+    );
+    const primary = { dataset: {}, disabled: false, textContent: "", setAttribute() {} };
+    patchAutoUpdateView({
+      querySelector: (selector) => selector === '[data-role="primaryAction"]' ? primary : null,
+    }, { ...cycle, status: "waiting", dailyAttempted: 100 });
+    assert.strictEqual(primary.dataset.autoAction, "continue-batch");
+  });
+
   runTest("LIBRARY-AUTO-UPDATE-01 bounds jitter and exponential failure backoff", () => {
-    const { getClaimJitter, getFailureDelay, selectDueRecords } = loadModule(
+    const { getClaimJitter, getFailureDelay } = loadModule(
       "addons/library-addon/src/library/autoUpdatePolicy.js",
     );
     assert.strictEqual(getClaimJitter(500, () => 0), 0);
     assert.strictEqual(getClaimJitter(500, () => 1), 500);
     assert.strictEqual(getFailureDelay(60000, 1), 120000);
     assert.strictEqual(getFailureDelay(60000, 99), 1920000);
-    assert.deepStrictEqual(
-      selectDueRecords([
-        { threadId: "late", updateCheck: { enabled: true, nextCheckAt: 20 } },
-        { threadId: "disabled", updateCheck: { enabled: false, nextCheckAt: 1 } },
-        { threadId: "early", updateCheck: { enabled: true, nextCheckAt: 10 } },
-      ], { now: 20, limit: 2 }).map((record) => record.threadId),
-      ["early", "late"],
+  });
+
+  runTest("LIBRARY-UPDATE-QUEUE-RECOVERY-01 schedules refresh recovery at lease expiry", () => {
+    const { getStartupDelay } = loadModule(
+      "addons/library-addon/src/library/autoUpdateScheduler.js",
     );
+    assert.strictEqual(getStartupDelay({
+      cycle: { status: "running" },
+      lease: { expiresAt: 90_000 },
+      currentTime: 10_000,
+      intervalMs: 86_400_000,
+    }), 80_250);
+    assert.strictEqual(getStartupDelay({
+      cycle: { status: "running" },
+      lease: { expiresAt: 9_000 },
+      currentTime: 10_000,
+      intervalMs: 86_400_000,
+    }), 0);
+    assert.strictEqual(getStartupDelay({
+      cycle: { status: "completed" },
+      lease: null,
+      currentTime: 10_000,
+      intervalMs: 86_400_000,
+    }), 60_000);
   });
 
   runTest("LIBRARY-AUTO-UPDATE-01 exposes bounded controls without new transport grants", () => {
     const { renderAutoUpdateDialog } = loadModule(
       "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
     );
-    const markup = renderAutoUpdateDialog({
-      enabled: true,
-      intervalMs: 86_400_000,
-      spacingMs: 10_000,
-      timeoutMs: 30_000,
-      retryLimit: 2,
-      sessionCap: 25,
-      dailyCap: 100,
-    }, null);
-    for (const field of [
-      "enabled",
-      "intervalHours",
-      "spacingMs",
-      "timeoutMs",
-      "retryLimit",
-      "sessionCap",
-      "dailyCap",
-    ]) assert.match(markup, new RegExp(`name="${field}"`));
-    assert.match(markup, /data-auto-action="retry"/);
-    const managerMarkup = fs.readFileSync(
-      path.join(ROOT, "addons/library-addon/src/ui/assets/manager.html"),
-      "utf8",
-    );
-    assert.match(managerMarkup, /data-action="open-auto-update"/);
-    assert.match(managerMarkup, /value="auto-enable"/);
-    assert.match(managerMarkup, /value="auto-disable"/);
-    const manifest = JSON.parse(
-      fs.readFileSync(path.join(ROOT, "addons/addons.manifest.json"), "utf8"),
-    );
+    const markup = renderAutoUpdateDialog({ enabled: true, checksPerDay: 100 }, null);
+    for (const field of ["enabled", "runHour", "spacingMs", "timeoutMs", "retryLimit", "checksPerDay"]) {
+      assert.match(markup, new RegExp(`name="${field}"`));
+    }
+    const manifest = JSON.parse(fs.readFileSync(path.join(ROOT, "addons/addons.manifest.json"), "utf8"));
     const library = manifest.addons.find((addon) => addon.id === "library-addon");
-    assert.ok(library);
     assert.doesNotMatch(JSON.stringify(library.grants || []), /ValueChangeListener|navigator\.locks/);
   });
 
-  runTest("LIBRARY-AUTO-UPDATE-01 forced failed retry ignores scheduled backoff", () => {
-    const { selectDueRecords } = loadModule(
-      "addons/library-addon/src/library/autoUpdatePolicy.js",
-    );
-    const failed = {
-      threadId: "failed",
-      updateCheck: { enabled: true, status: "failed", nextCheckAt: 999_999 },
+  runTest("LIBRARY-UPDATE-QUEUE-COMPAT-01 reads legacy metadata once and records completion", async () => {
+    const values = new Map([
+      ["auto-update:last-run", { nextRunAt: 500 }],
+      ["auto-update:daily:2026-08-28", { count: 40 }],
+    ]);
+    const calls = [];
+    const api = {
+      async getMeta(key) { calls.push(["get", key]); return values.get(key) || null; },
+      async putMeta(value) { calls.push(["put", value.key]); values.set(value.key, value); return { ok: true }; },
+      async deleteMeta(key) { calls.push(["delete", key]); values.delete(key); return { ok: true }; },
     };
-    assert.deepStrictEqual(
-      selectDueRecords([failed], {
-        now: 1,
-        limit: 1,
-        failedOnly: true,
-        ignoreSchedule: true,
-      }).map((record) => record.threadId),
-      ["failed"],
+    const { createAutoUpdateRepository } = loadModule(
+      "addons/library-addon/src/library/autoUpdateRepository.js",
     );
+    const repository = createAutoUpdateRepository(api);
+    const timestamp = Date.parse("2026-08-28T12:00:00Z");
+    const legacy = await repository.getLegacyQueueMetadata(timestamp);
+    assert.strictEqual(legacy.dailyAttempted, 40);
+    assert.strictEqual(legacy.summary.nextRunAt, 500);
+    assert.strictEqual((await repository.clearLegacyQueueMetadata(legacy.days)).ok, true);
+    const readsBefore = calls.length;
+    assert.strictEqual((await repository.getLegacyQueueMetadata(timestamp)).complete, true);
+    assert.deepStrictEqual(calls.slice(readsBefore), [["get", "auto-update:queue-compat-v1"]]);
   });
 
-  runTest("LIBRARY-AUTO-UPDATE-01 lease, due order, and budgets bound a run", async () => {
-    const { createAutoUpdateScheduler } = loadModule(
-      "addons/library-addon/src/library/autoUpdateScheduler.js",
-    );
-    let clock = Date.parse("2026-07-25T00:00:00Z");
-    const repository = createRepository(() => clock);
-    const checked = [];
-    const scheduler = createAutoUpdateScheduler({
-      repository,
-      owner: "one",
-      now: () => clock,
-      random: () => 0,
-      getDueRecords: async ({ limit }) =>
-        [{ threadId: "old" }, { threadId: "new" }, { threadId: "overflow" }].slice(0, limit),
-      checkRecords: async ([id]) => {
-        checked.push(id);
-        return { results: [{ threadId: id, ok: true, changed: false, attempts: 1 }] };
-      },
-      commitResults: async () => ({ checked: 1, current: 1, changed: 0, failed: 0 }),
-    });
-    const result = await scheduler.run();
-    assert.strictEqual(result.ok, true);
-    assert.deepStrictEqual(checked, ["old", "new"]);
-    assert.strictEqual(result.checked, 2);
-    assert.strictEqual(repository.snapshot().lease, null);
-    assert.ok(
-      repository.snapshot().summaryWrites.some(
-        (summary) =>
-          summary.status === "running" &&
-          summary.total === 2 &&
-          summary.activeThreadId === "old",
-      ),
-    );
-    assert.ok(
-      repository.snapshot().summaryWrites.some(
-        (summary) => summary.status === "running" && summary.checked === 1,
-      ),
-    );
-  });
-
-  runTest("LIBRARY-AUTO-UPDATE-01 formats live per-record progress", () => {
-    const { formatAutoUpdateSummary } = loadModule(
-      "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
-    );
-    const text = formatAutoUpdateSummary({
-      status: "running",
-      total: 25,
-      activeThreadId: "297902",
-      checked: 4,
-      current: 3,
-      changed: 1,
-      failed: 0,
-      skipped: 0,
-      retries: 1,
-      nextRunAt: 1,
-    });
-    assert.match(text, /progress 4 \/ 25/);
-    assert.match(text, /checking thread 297902/);
-  });
-
-  runTest("LIBRARY-AUTO-UPDATE-01 expired lease is reclaimed and live lease blocks", async () => {
-    const { createAutoUpdateScheduler } = loadModule(
-      "addons/library-addon/src/library/autoUpdateScheduler.js",
-    );
-    const now = 100000;
-    let requests = 0;
-    const live = createRepository(null, { owner: "other", generation: 1, expiresAt: now + 1000 });
-    const blocked = createAutoUpdateScheduler({
-      repository: live,
-      owner: "new",
-      now: () => now,
-      random: () => 0,
-      getDueRecords: async () => [{ threadId: "1" }],
-      checkRecords: async () => { requests += 1; return { results: [] }; },
-      commitResults: async () => ({}),
-    });
-    assert.strictEqual((await blocked.run()).reason, "lease_owned");
-    assert.strictEqual(requests, 0);
-
-    const expired = createRepository(null, { owner: "old", generation: 1, expiresAt: now - 1 });
-    const takeover = createAutoUpdateScheduler({
-      repository: expired,
-      owner: "new",
-      now: () => now,
-      random: () => 0,
-      getDueRecords: async () => [],
-      checkRecords: async () => ({ results: [] }),
-      commitResults: async () => ({}),
-    });
-    assert.strictEqual((await takeover.run()).ok, true);
-  });
-
-  runTest("LIBRARY-AUTO-UPDATE-01 simultaneous lease contenders produce one requester", async () => {
-    const { createAutoUpdateScheduler } = loadModule(
-      "addons/library-addon/src/library/autoUpdateScheduler.js",
-    );
-    const repository = createRepository();
-    let requests = 0;
-    const make = (owner) =>
-      createAutoUpdateScheduler({
-        repository,
-        owner,
-        now: () => 100000,
-        random: () => 0,
-        getDueRecords: async () => [{ threadId: "1" }],
-        checkRecords: async () => {
-          requests += 1;
-          return { results: [{ threadId: "1", ok: true, attempts: 1 }] };
-        },
-        commitResults: async () => ({ checked: 1, current: 1 }),
-      });
-    await Promise.all([make("a").run(), make("b").run()]);
-    assert.strictEqual(requests, 1);
-  });
-
-  runTest("LIBRARY-AUTO-UPDATE-01 teardown cancellation prevents late commit", async () => {
-    const { createAutoUpdateScheduler } = loadModule(
-      "addons/library-addon/src/library/autoUpdateScheduler.js",
-    );
-    const repository = createRepository();
-    let release;
-    let commits = 0;
-    const scheduler = createAutoUpdateScheduler({
-      repository,
-      owner: "cancel",
-      now: () => Date.now(),
-      random: () => 0,
-      getDueRecords: async () => [{ threadId: "1" }],
-      checkRecords: async () => new Promise((resolve) => {
-        release = () => resolve({ results: [{ threadId: "1", ok: true, attempts: 1 }] });
+  runTest("LIBRARY-UPDATE-QUEUE-COMPAT-01 preserves a future legacy schedule without requests", async () => {
+    let cleared = 0;
+    const repository = createRepository({
+      getLegacyQueueMetadata: async () => ({
+        summary: { status: "idle", nextRunAt: 500, checked: 25 },
+        dailyAttempted: 25,
+        days: ["1970-01-01"],
       }),
-      commitResults: async () => { commits += 1; return { checked: 1 }; },
+      clearLegacyQueueMetadata: async () => { cleared += 1; return { ok: true }; },
     });
-    const running = scheduler.run();
-    while (!release) await new Promise((resolve) => setTimeout(resolve, 0));
-    await scheduler.stop();
-    release();
-    await running;
-    assert.strictEqual(commits, 0);
-  });
-
-  runTest("LIBRARY-AUTO-UPDATE-01 pause and explicit retry re-enable are deterministic", async () => {
+    const queue = createQueue();
     const { createAutoUpdateScheduler } = loadModule(
       "addons/library-addon/src/library/autoUpdateScheduler.js",
     );
-    const repository = createRepository();
-    const config = await repository.getConfig();
-    await repository.putConfig({ ...config, enabled: false });
-    let requests = 0;
-    const scheduler = createAutoUpdateScheduler({
+    const result = await createAutoUpdateScheduler({
       repository,
-      owner: "paused",
-      now: () => 100000,
+      queueRuntime: queue,
+      owner: "compat-future",
+      now: () => 100,
       random: () => 0,
-      getDueRecords: async () => [{ threadId: "failed" }],
-      checkRecords: async () => {
-        requests += 1;
-        return { results: [{ threadId: "failed", ok: true, attempts: 1 }] };
-      },
-      commitResults: async () => ({ checked: 1, current: 1 }),
-    });
-    assert.strictEqual((await scheduler.run()).reason, "paused");
-    assert.strictEqual(requests, 0);
-    assert.strictEqual((await scheduler.run({ force: true, failedOnly: true })).ok, true);
-    assert.strictEqual(requests, 1);
+    }).run();
+    assert.strictEqual(result.reason, "not_due");
+    assert.strictEqual(queue.snapshot().workerRuns, 0);
+    assert.strictEqual(queue.snapshot().cycle.dailyAttempted, 25);
+    assert.strictEqual(cleared, 1);
   });
 
-  runTest("LIBRARY-AUTO-UPDATE-01 failed-only retry preserves the automatic run time", async () => {
-    const { createAutoUpdateScheduler } = loadModule(
-      "addons/library-addon/src/library/autoUpdateScheduler.js",
-    );
-    const repository = createRepository();
-    await repository.putSummary({
-      status: "idle",
-      nextRunAt: 500000,
-    });
-    const scheduler = createAutoUpdateScheduler({
-      repository,
-      owner: "retry-schedule",
-      now: () => 100000,
-      random: () => 0,
-      getDueRecords: async () => [{ threadId: "failed" }],
-      checkRecords: async () => ({
-        results: [{ threadId: "failed", ok: true, attempts: 1 }],
+  runTest("LIBRARY-UPDATE-QUEUE-COMPAT-01 carries current-day usage into a due snapshot", async () => {
+    let cleared = 0;
+    const repository = createRepository({
+      getLegacyQueueMetadata: async () => ({
+        summary: { status: "idle", nextRunAt: 50 },
+        dailyAttempted: 65,
+        days: ["1970-01-01"],
       }),
-      commitResults: async () => ({ checked: 1, current: 1 }),
+      clearLegacyQueueMetadata: async () => { cleared += 1; return { ok: true }; },
     });
-
-    const result = await scheduler.run({ force: true, failedOnly: true });
+    const queue = createQueue();
+    const { createAutoUpdateScheduler } = loadModule(
+      "addons/library-addon/src/library/autoUpdateScheduler.js",
+    );
+    const result = await createAutoUpdateScheduler({
+      repository,
+      queueRuntime: queue,
+      owner: "compat-due",
+      now: () => 100,
+      random: () => 0,
+    }).run();
     assert.strictEqual(result.ok, true);
-    assert.strictEqual(result.nextRunAt, 500000);
-    assert.strictEqual(repository.snapshot().summary.nextRunAt, 500000);
+    assert.strictEqual(queue.snapshot().workerRuns, 1);
+    assert.strictEqual(queue.snapshot().cycle.dailyAttempted, 65);
+    assert.strictEqual(cleared, 1);
+  });
+
+  runTest("LIBRARY-UPDATE-QUEUE-RECOVERY-01 elects one durable worker across ten tabs", async () => {
+    const repository = createRepository();
+    const queue = createQueue({ cycleId: "shared", status: "running", total: 1, nextRunAt: 1 });
+    const { createAutoUpdateScheduler } = loadModule(
+      "addons/library-addon/src/library/autoUpdateScheduler.js",
+    );
+    const schedulers = Array.from({ length: 10 }, (_, index) => createAutoUpdateScheduler({
+      repository,
+      queueRuntime: queue,
+      owner: `tab-${index}`,
+      now: () => 100,
+      random: () => 0,
+    }));
+    const results = await Promise.all(schedulers.map((scheduler) => scheduler.run()));
+    assert.strictEqual(queue.snapshot().workerRuns, 1);
+    assert.strictEqual(results.filter((result) => result.ok).length, 1);
+    assert.strictEqual(results.filter((result) => result.reason === "lease_owned").length, 9);
+  });
+
+  runTest("LIBRARY-UPDATE-QUEUE-COMPAT-01 durable master is authoritative over legacy metadata", async () => {
+    let cleared = 0;
+    const repository = createRepository({
+      getLegacyQueueMetadata: async () => ({ summary: { nextRunAt: 1 }, days: ["old"] }),
+      clearLegacyQueueMetadata: async () => { cleared += 1; return { ok: true }; },
+    });
+    const queue = createQueue({ cycleId: "current", status: "completed", nextRunAt: 500 });
+    const { createAutoUpdateScheduler } = loadModule(
+      "addons/library-addon/src/library/autoUpdateScheduler.js",
+    );
+    const result = await createAutoUpdateScheduler({
+      repository,
+      queueRuntime: queue,
+      owner: "authoritative",
+      now: () => 100,
+      random: () => 0,
+    }).run();
+    assert.strictEqual(result.reason, "not_due");
+    assert.strictEqual(result.nextRunAt, 500);
+    assert.strictEqual(cleared, 1);
+  });
+
+  runTest("LIBRARY-UPDATE-QUEUE-COMPAT-01 removes the duplicate due runner but retains record backoff metadata", () => {
+    const scheduler = fs.readFileSync(
+      path.join(ROOT, "addons/library-addon/src/library/autoUpdateScheduler.js"),
+      "utf8",
+    );
+    const service = fs.readFileSync(
+      path.join(ROOT, "addons/library-addon/src/library/service.js"),
+      "utf8",
+    );
+    const model = fs.readFileSync(
+      path.join(ROOT, "addons/library-addon/src/library/recordModel.js"),
+      "utf8",
+    );
+    assert.doesNotMatch(scheduler, /getDueRecords|sessionCount|failedOnly|getDailyUsage|putDailyUsage/);
+    assert.doesNotMatch(service, /getDueAutoUpdateRecords|selectDueRecords/);
+    assert.match(model, /nextCheckAt/);
   });
 };

@@ -1,4 +1,5 @@
 import { showToast } from "../../utils/showToast.js";
+import { resetPagination } from "../state.js";
 
 export function createUpdateCheckHandlers(context) {
   const { api, deps, getRoot, notifyMutated, reloadRows, state } = context;
@@ -18,8 +19,13 @@ export function createUpdateCheckHandlers(context) {
       "success",
     );
     if (status) status.textContent = `Checking 0 / ${ids.length}…`;
+    const pacing = await api.getAutoUpdateConfig();
     const preview = await api.previewManualUpdateCheck(ids, {
       signal: controller.signal,
+      spacingMs: pacing.spacingMs,
+      jitterMs: pacing.jitterMs,
+      timeoutMs: pacing.timeoutMs,
+      retryLimit: pacing.retryLimit,
       onProgress: ({ completed, total }) => {
         if (status) status.textContent = `Checking ${completed} / ${total}…`;
       },
@@ -37,6 +43,7 @@ export function createUpdateCheckHandlers(context) {
       `Update check: ${result.changed} changed, ${result.current} current, ${result.failed} failed.`,
       result.failed ? "error" : "success",
     );
+    if (result.changed > 0) resetPagination(state);
     await reloadRows();
     notifyMutated();
   }

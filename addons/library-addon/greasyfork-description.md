@@ -16,10 +16,10 @@ Save the current thread with one click, then organize everything through the bui
 - **Thread Status Chips** — See personal status, new-version, and disabled-update indicators beside saved thread titles.
 - **Automatic Update Checks** — Check saved threads quietly in the background with configurable intervals, pacing, retry limits, and per-entry controls.
 - **Manual Update Checks** — Check individual or selected entries and see whether each record is current, changed, unchecked, or failed.
-- **Advanced Search** — Use filters such as `tag:ntr`, `status:playing`, `score>=8`, `pinned`, `has:note`, and `id:123456`.
+- **Advanced Search** — Search current thread fields and combine filters such as `tag:"male protagonist"`, `status:playing`, `rating>=4`, `public-rating>=4`, `update:changed`, `pinned`, `has:note`, and `id:123456`.
 - **Import and Export** — Back up and restore canonical Library data while retaining compatibility with older supported exports.
 - **Core Tag Integration** — Display preferred, excluded, and marked tags using the colors configured in the core settings.
-- **Legacy Data Import** — Safely carry existing Library records forward from earlier versions.
+- **Guarded Legacy Upgrades** — Very old Library data must first be opened once with v1.2.2 from the Greasy Fork version history; unsupported direct upgrades stop without modifying stored records.
 
 Library records, personal activity, and update history are stored locally in IndexedDB. No Library data is uploaded anywhere.
 

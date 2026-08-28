@@ -11,3 +11,7 @@ export function openDialog(core, payload) {
 export function closeDialog(core, dialogId, reason = "addon-close") {
   return core.invokeCoreAction("ui.dialog.close", { dialogId, reason });
 }
+
+export function confirmDialog(core, payload) {
+  return core.invokeCoreAction("ui.confirm", payload);
+}

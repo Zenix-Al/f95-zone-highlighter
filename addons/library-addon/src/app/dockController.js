@@ -9,8 +9,11 @@ import { createOpportunisticObserver } from "./opportunisticObserver.js";
 import { createThreadTitleController } from "../ui/threadTitle/threadTitleController.js";
 
 const LIBRARY_DOCK_MOUNT_ID = "library-dock-widget";
-const DOCK_MOUNT_MAX_ATTEMPTS = 20;
-const DOCK_MOUNT_RETRY_DELAY_MS = 250;
+// Core already polls a queued page.dock mount every 250 ms for roughly 10 seconds.
+// Probe less frequently here so a slow core/UI startup gets additional recovery
+// windows instead of exhausting every add-on retry inside the first core window.
+const DOCK_MOUNT_MAX_ATTEMPTS = 30;
+const DOCK_MOUNT_RETRY_DELAY_MS = 1_000;
 
 function wait(milliseconds) {
   return new Promise((resolve) => window.setTimeout(resolve, milliseconds));
@@ -102,7 +105,13 @@ export function createLibraryDockController({
     }
     const token = ++mountToken;
     debugLog(runtime.addonId, "Dock mount requested.", {
-      data: { showPrimaryButton, isSaved },
+      data: {
+        token,
+        mountId: LIBRARY_DOCK_MOUNT_ID,
+        slot: "page.dock",
+        showPrimaryButton,
+        isSaved,
+      },
     });
     const payload = {
       mountId: LIBRARY_DOCK_MOUNT_ID,
@@ -111,9 +120,29 @@ export function createLibraryDockController({
     };
     let result = null;
     for (let attempt = 1; attempt <= DOCK_MOUNT_MAX_ATTEMPTS; attempt += 1) {
+      const attemptStartedAt = Date.now();
+      debugLog(runtime.addonId, "Dispatching dock mount request to core.", {
+        data: {
+          token,
+          attempt,
+          maxAttempts: DOCK_MOUNT_MAX_ATTEMPTS,
+          mountId: payload.mountId,
+          slot: payload.slot,
+        },
+      });
       result = await mountUi(core, payload);
-      debugLog(runtime.addonId, "Dock mount attempt settled.", {
-        data: { attempt, result },
+      debugLog(runtime.addonId, "Core dock mount response received.", {
+        level: result?.ok ? "log" : "warn",
+        data: {
+          token,
+          attempt,
+          elapsedMs: Date.now() - attemptStartedAt,
+          coreResponse: result,
+          pending: result?.value?.pending === true,
+          willRetry:
+            attempt < DOCK_MOUNT_MAX_ATTEMPTS &&
+            (!result?.ok || result?.value?.pending === true),
+        },
       });
       if (!state.enabled || !isCurrent(context) || token !== mountToken) {
         if (token === mountToken) {
@@ -122,7 +151,12 @@ export function createLibraryDockController({
         return { ok: false, reason: "stale_mount" };
       }
       if (result?.ok) bindEvents();
-      if (result?.ok && result.value?.pending !== true) return result;
+      if (result?.ok && result.value?.pending !== true) {
+        debugLog(runtime.addonId, "Dock mount confirmed applied by core.", {
+          data: { token, attempt, coreResponse: result },
+        });
+        return result;
+      }
       if (attempt < DOCK_MOUNT_MAX_ATTEMPTS) {
         await wait(DOCK_MOUNT_RETRY_DELAY_MS);
       }
@@ -146,18 +180,25 @@ export function createLibraryDockController({
     if (!state.enabled) return unmount();
 
     const pageContext = await getPageContext(core, getLocalPageContext);
+    debugLog(runtime.addonId, "Dock load page-context response received.", {
+      data: { pageContext },
+    });
     if (!state.enabled || !isCurrent(context)) {
       return { ok: false, reason: "stale_mount" };
     }
     const threadPage = pageContext?.pageScopes?.includes("thread") || false;
     if (threadPage) {
-      await waitForElement(
+      const titleWaitResult = await waitForElement(
         core,
         "library-thread-title",
         "h1.p-title-value",
         2500,
         () => ({ ok: false, reason: "unsupported_action" }),
       );
+      debugLog(runtime.addonId, "Dock load title wait response received.", {
+        level: titleWaitResult?.ok ? "log" : "warn",
+        data: { coreResponse: titleWaitResult },
+      });
       if (!state.enabled || !isCurrent(context)) {
         return { ok: false, reason: "stale_mount" };
       }
@@ -207,7 +248,12 @@ export function createLibraryDockController({
   async function unmountDock() {
     mountToken += 1;
     unbindEvents();
-    await unmountUi(core, LIBRARY_DOCK_MOUNT_ID);
+    const result = await unmountUi(core, LIBRARY_DOCK_MOUNT_ID);
+    debugLog(runtime.addonId, "Core dock unmount response received.", {
+      level: result?.ok ? "log" : "warn",
+      data: { coreResponse: result },
+    });
+    return result;
   }
 
   async function unmount() {

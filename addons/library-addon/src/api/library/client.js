@@ -88,7 +88,61 @@ export function createLibraryApiClient(bridge) {
       );
     },
 
-    queryEntriesPage({ index, direction, limit, cursor } = {}) {
+    async getStoreValue(storeName, key, keyPath = "id") {
+      const result = await bridge.invokeCoreAction(
+        "idb.get",
+        createLibraryStorePayload({ storeName, keyPath, key }),
+      );
+      return result?.ok ? { ...result, value: result.value || null } : result;
+    },
+
+    putStoreValue(storeName, value, keyPath = "id") {
+      return bridge.invokeCoreAction(
+        "idb.put",
+        createLibraryStorePayload({ storeName, keyPath, value }),
+      );
+    },
+
+    deleteStoreValue(storeName, key, keyPath = "id") {
+      return bridge.invokeCoreAction(
+        "idb.delete",
+        createLibraryStorePayload({ storeName, keyPath, key }),
+      );
+    },
+
+    bulkPutStoreValues(storeName, values, keyPath = "id") {
+      return bridge.invokeCoreAction(
+        "idb.bulkPut",
+        createLibraryStorePayload({
+          storeName,
+          keyPath,
+          entries: (Array.isArray(values) ? values : []).map((value) => ({ value })),
+        }),
+      );
+    },
+
+    bulkDeleteStoreValues(storeName, keys, keyPath = "id") {
+      return bridge.invokeCoreAction(
+        "idb.bulkDelete",
+        createLibraryStorePayload({ storeName, keyPath, keys }),
+      );
+    },
+
+    queryStore(storeName, options = {}, keyPath = "id") {
+      return bridge.invokeCoreAction(
+        "idb.query",
+        createLibraryStorePayload({ storeName, keyPath, ...options }),
+      );
+    },
+
+    countStore(storeName, options = {}, keyPath = "id") {
+      return bridge.invokeCoreAction(
+        "idb.count",
+        createLibraryStorePayload({ storeName, keyPath, ...options }),
+      );
+    },
+
+    queryEntriesPage({ index, direction, limit, cursor, query } = {}) {
       return bridge.invokeCoreAction(
         "idb.query",
         createLibraryStorePayload({
@@ -96,6 +150,7 @@ export function createLibraryApiClient(bridge) {
           direction,
           limit,
           cursor,
+          query,
           pagination: "keyset",
           includeCursor: true,
         }),

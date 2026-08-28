@@ -184,6 +184,29 @@ module.exports = function registerLibraryManualUpdateGroup(context) {
     assert.strictEqual(result.results[1].reason, "http_429");
   });
 
+  runTest("LIBRARY-UPDATE-QUEUE-VERIFY-01 retries timeout and spaces manual records", async () => {
+    const { checkLibraryRecords } = loadModule(
+      "addons/library-addon/src/library/manualUpdateChecker.js",
+    );
+    const records = ["1", "2"].map((threadId) => ({
+      threadId,
+      thread: { url: `https://f95zone.to/threads/${threadId}/`, title: "Game", currentVersion: "v1" },
+    }));
+    const calls = [];
+    let firstAttempts = 0;
+    const result = await checkLibraryRecords(records, async (url) => {
+      calls.push({ url, at: Date.now() });
+      if (url.includes("/1/") && firstAttempts++ === 0) {
+        return { ok: false, reason: "timeout" };
+      }
+      return { ok: true, html: html({ title: "Game [v1]", body: "Version: v1" }) };
+    }, { spacingMs: 10, jitterMs: 0, retryLimit: 1 });
+    assert.strictEqual(result.results[0].attempts, 2);
+    assert.strictEqual(result.results.every(({ ok }) => ok), true);
+    assert.ok(calls[1].at - calls[0].at >= 7, "retry spacing must be observable");
+    assert.ok(calls[2].at - calls[1].at >= 7, "record spacing must be observable");
+  });
+
   runTest("LIBRARY-MANUAL-UPDATE-CHECK-01 cancellation suppresses remaining work", async () => {
     const { checkLibraryRecords } = loadModule(
       "addons/library-addon/src/library/manualUpdateChecker.js",
@@ -237,7 +260,12 @@ module.exports = function registerLibraryManualUpdateGroup(context) {
         lastActivityAt: 3,
       },
       updateState: "current",
-      updateCheck: { enabled: true, status: "pending", consecutiveFailures: 0 },
+      updateCheck: {
+        enabled: true,
+        status: "pending",
+        nextCheckAt: 987654,
+        consecutiveFailures: 0,
+      },
       recordModifiedAt: 3,
       schemaVersion: 4,
     };
@@ -278,6 +306,8 @@ module.exports = function registerLibraryManualUpdateGroup(context) {
     assert.deepStrictEqual(record.thread.prefixes, [{ label: "Completed", color: "green" }]);
     assert.deepStrictEqual(record.thread.tags, ["animated", "female protagonist"]);
     assert.strictEqual(record.updateCheck.status, "current");
+    assert.strictEqual(record.updateCheck.nextCheckAt, 987654);
+    assert.strictEqual(record.recordModifiedAt, 3);
     assert.strictEqual(record.updateCheck.lastErrorCode, "");
     assert.strictEqual(recordWrites, 1);
     assert.strictEqual(updates.size, 0);

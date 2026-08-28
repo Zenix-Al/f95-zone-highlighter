@@ -9,21 +9,29 @@ export function getFailureDelay(intervalMs, consecutiveFailures) {
   return interval * 2 ** Math.min(5, failures);
 }
 
-export function selectDueRecords(
-  records,
-  { now, limit, failedOnly = false, ignoreSchedule = false },
-) {
-  return (Array.isArray(records) ? records : [])
-    .filter((record) => record.updateCheck?.enabled !== false)
-    .filter((record) => !failedOnly || record.updateCheck?.status === "failed")
-    .filter(
-      (record) =>
-        ignoreSchedule || Number(record.updateCheck?.nextCheckAt || 0) <= now,
-    )
-    .sort(
-      (left, right) =>
-        Number(left.updateCheck?.nextCheckAt || 0) -
-        Number(right.updateCheck?.nextCheckAt || 0),
-    )
-    .slice(0, Math.max(0, Number(limit || 0)));
+export function getLocalDayKey(timestamp = Date.now()) {
+  const date = new Date(Number(timestamp));
+  if (Number.isNaN(date.getTime())) return "";
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+export function getNextLocalDayAt(timestamp = Date.now()) {
+  const date = new Date(Number(timestamp));
+  if (Number.isNaN(date.getTime())) return 0;
+  date.setHours(24, 0, 0, 0);
+  return date.getTime();
+}
+
+export function getNextScheduledAt(now, intervalMs, runHour = 0) {
+  const current = new Date(Number(now));
+  const interval = Math.max(60_000, Number(intervalMs || 0));
+  const hour = Math.min(23, Math.max(0, Math.trunc(Number(runHour) || 0)));
+  const anchor = new Date(current);
+  anchor.setHours(hour, 0, 0, 0);
+  if (anchor.getTime() > current.getTime()) return anchor.getTime();
+  const slots = Math.floor((current.getTime() - anchor.getTime()) / interval) + 1;
+  return anchor.getTime() + slots * interval;
 }

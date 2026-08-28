@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.3.0 - Durable automatic updates and search fixes
+
+- Replaced capped one-session updates with a durable IndexedDB queue that resumes after refresh, survives daily rollover, coordinates one worker across tabs, and recovers interrupted or retryable work.
+- Added configurable checks per day, local scheduling, pause/resume, controlled extra batches, restart confirmation, live progress, bounded diagnostics, and safe legacy metadata/upgrade handling.
+- Fixed advanced Library filters under every sort mode, including Title and Rating; added `rating>=4`, `public-rating>=4`, quoted values, `version:`, `prefix:`, `update:`, `check:`, and `has:progress` while retaining `score` as a personal-rating alias.
+- Added `backlog` and `paused` status options and replaced the native search title tooltip with a visible hover/focus help panel.
+- Improved dock mounting by retrying with a longer delay while waiting for slow core responses, so page controls mount reliably on slow connections.
+
 ## v1.2.2 - Update-check and dock reliability
 
 - Improved dock mounting reliability when many tabs initialize at once by retrying until the core confirms the mount.

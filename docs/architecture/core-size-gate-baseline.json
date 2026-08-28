@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "sourceReport": "docs/architecture/core-size-baseline.json",
-  "sourceReportSha256": "f0e1a7cb8b3f1d2dabda4c0601ad09720da04f22d8cd11ddaf3433328c1e5acb",
+  "sourceReportSha256": "6df34d0c6543a2b31f0ce2fca70310880a88692beec4672ffa835e68afa86809",
   "thresholds": {
     "authoredArea": {
       "absoluteBytes": 1024,
@@ -21,7 +21,8 @@
     }
   },
   "rationale": {
-    "type": "commit-note",
-    "text": "remove-help-message-feature"
+    "type": "file",
+    "path": "docs/architecture/core-size-baseline.md",
+    "sha256": "46de54c477796dfdbe700f3dd6db0d097131fab4cc5a24fc6e8736779daa48ac"
   }
 }

@@ -192,7 +192,30 @@ module.exports = function registerLibraryRatingUiGroup(context) {
       sortLibraryRecords(rows, "rating", "desc").map(({ threadId }) => threadId),
       ["b", "a"],
     );
-    assert.strictEqual(matchesSearchTokens(rows[1], parseSearchQuery("score>=4").tokens), true);
+    assert.strictEqual(matchesSearchTokens(rows[1], parseSearchQuery("rating>=4").tokens), true);
     assert.strictEqual(matchesSearchTokens(rows[0], parseSearchQuery("score>=4").tokens), false);
+  });
+
+  runTest("LIBRARY-SEARCH-01 matches schema-v5 advanced fields and quoted values", () => {
+    const { matchesSearchTokens, parseSearchQuery } = loadModule(
+      "addons/library-addon/src/ui/utils/searchTokens.js",
+    );
+    const record = {
+      threadId: "123",
+      thread: {
+        developer: "Example Studio",
+        currentVersion: "v1.2",
+        threadRating: 4.6,
+        tags: ["male protagonist"],
+        prefixes: [{ label: "Completed" }],
+      },
+      personal: { status: "paused", rating: 4.5, note: "remember", progressNote: "chapter 2", pinned: true },
+      updateState: "changed",
+      updateCheck: { status: "failed" },
+    };
+    const query = 'tag:"male protagonist" status:paused rating>=4 public-rating>4 developer:"example studio" version:v1 prefix:complete update:changed check:failed pinned has:note has:progress id:12';
+    assert.strictEqual(matchesSearchTokens(record, parseSearchQuery(query).tokens), true);
+    assert.strictEqual(matchesSearchTokens(record, parseSearchQuery("rating>4.5").tokens), false);
+    assert.strictEqual(parseSearchQuery('"Example Game"').text, "example game");
   });
 };

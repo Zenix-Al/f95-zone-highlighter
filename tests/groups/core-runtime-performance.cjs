@@ -145,6 +145,18 @@ module.exports = function registerGroup(context) {
     assert.ok(initializeIndex < visibleIndex);
   });
 
+  runTest("MODAL-CSS-SPLIT-01 shared dialogs acquire modal CSS before mounting", () => {
+    const dialogSource = fs.readFileSync(
+      path.join(ROOT, "src/ui/components/dialog.js"),
+      "utf8",
+    );
+    assert.match(dialogSource, /function getDialogRoot\(\)[\s\S]*ensureModalCss\(\)/);
+    assert.strictEqual(
+      [...dialogSource.matchAll(/const shadowRoot = getDialogRoot\(\);/g)].length,
+      4,
+    );
+  });
+
   runTest("MODAL-CSS-VERIFY-01 records deterministic integrated CSS evidence", () => {
     const report = performanceAudit.auditCoreRuntimePerformance(ROOT);
     const { baseline } = report.verification;

@@ -154,6 +154,32 @@ module.exports = function registerLibraryKeysetPaginationGroup(context) {
     assert.notStrictEqual(first.rows[0].threadId, second.rows[0].threadId);
   });
 
+  runTest("LIBRARY-SEARCH-01 applies advanced predicates in offset fallback", async () => {
+    const { createLibraryService } = loadModule(
+      "addons/library-addon/src/library/service.js",
+    );
+    const records = [
+      { threadId: "a", personal: { rating: 2 }, recordModifiedAt: 1 },
+      { threadId: "b", personal: { rating: 4.5 }, recordModifiedAt: 2 },
+    ];
+    const bridge = {
+      async invokeCoreAction(action, payload) {
+        if (action === "idb.query") return { ok: true, value: records };
+        if (action === "idb.count") return { ok: true, value: records.length };
+        return { ok: true, value: null };
+      },
+    };
+    const library = createLibraryService(bridge, {});
+    const result = await library.queryEntriesPage({
+      sortBy: "rating",
+      sortDir: "desc",
+      limit: 50,
+      matchesRecord: (entry) => Number(entry.personal.rating) >= 4,
+    });
+    assert.strictEqual(result.mode, "offset-fallback");
+    assert.deepStrictEqual(result.rows.map(({ threadId }) => threadId), ["b"]);
+  });
+
   runTest("Library keyset navigation resets and maintains cursor history", async () => {
     const { createNavigationHandlers } = loadModule(
       "addons/library-addon/src/ui/manager/handlers/navigationHandlers.js",

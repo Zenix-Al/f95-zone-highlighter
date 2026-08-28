@@ -3,20 +3,120 @@
 module.exports = function registerLibraryIdbSchemaGroup(context) {
   const { assert, fs, loadModule, path, ROOT, runTest } = context;
 
-  runTest("LIBRARY-IDB-SCHEMA-02 declares the complete bounded version-3 schema", () => {
+  function createQueueBridge({ failBulkAt = 0 } = {}) {
+    const stores = {
+      "update-cycles": new Map(),
+      "update-queue": new Map(),
+    };
+    const calls = [];
+    let bulkWrites = 0;
+    const matches = (value, payload) => {
+      if (payload.index === "cycleId") return value.cycleId === payload.query?.value;
+      if (payload.index === "cycleStatusPosition") {
+        return value.cycleId === payload.query?.lower?.[0] &&
+          value.status === payload.query?.lower?.[1];
+      }
+      if (payload.index === "cycleStatusNextAttempt") {
+        return value.cycleId === payload.query?.lower?.[0] &&
+          value.status === payload.query?.lower?.[1] &&
+          value.nextAttemptAt >= payload.query?.lower?.[2] &&
+          value.nextAttemptAt <= payload.query?.upper?.[2];
+      }
+      return true;
+    };
+    const sort = (values, index) => [...values].sort((left, right) => {
+      if (index === "cycleStatusPosition") return left.position - right.position;
+      if (index === "cycleNextAttempt") return left.nextAttemptAt - right.nextAttemptAt;
+      if (index === "cycleStatusNextAttempt") return left.nextAttemptAt - right.nextAttemptAt;
+      return String(left.id).localeCompare(String(right.id));
+    });
+    return {
+      async invokeCoreAction(action, payload) {
+        calls.push({ action, payload });
+        const store = stores[payload.storeName];
+        if (!store) return { ok: false, reason: "unknown_store" };
+        if (action === "idb.get") return { ok: true, value: store.get(payload.key) || null };
+        if (action === "idb.put") {
+          store.set(payload.value.id, structuredClone(payload.value));
+          return { ok: true, value: payload.value };
+        }
+        if (action === "idb.delete") {
+          store.delete(payload.key);
+          return { ok: true };
+        }
+        if (action === "idb.bulkPut") {
+          bulkWrites += 1;
+          if (failBulkAt && bulkWrites === failBulkAt) {
+            return { ok: false, reason: "storage_error" };
+          }
+          payload.entries.forEach(({ value }) => store.set(value.id, structuredClone(value)));
+          return { ok: true, value: payload.entries.length };
+        }
+        if (action === "idb.bulkDelete") {
+          payload.keys.forEach((key) => store.delete(key));
+          return { ok: true, value: payload.keys.length };
+        }
+        const values = sort([...store.values()].filter((value) => matches(value, payload)), payload.index);
+        if (action === "idb.count") return { ok: true, value: values.length };
+        if (action === "idb.query") {
+          const page = values.slice(0, payload.limit);
+          if (payload.pagination !== "keyset") {
+            return { ok: true, value: page.map((value) => structuredClone(value)) };
+          }
+          return {
+            ok: true,
+            value: {
+              items: page.map((value) => ({
+                cursor: { key: value.id, primaryKey: value.id },
+                value: structuredClone(value),
+              })),
+              nextCursor: page.length
+                ? { key: page.at(-1).id, primaryKey: page.at(-1).id }
+                : null,
+              hasMore: values.length > page.length,
+            },
+          };
+        }
+        return { ok: false, reason: "unsupported_action" };
+      },
+      snapshot: () => ({ stores, calls, bulkWrites }),
+    };
+  }
+
+  function createQueueRepository(bridge, options = {}) {
+    const { createLibraryApiClient } = loadModule(
+      "addons/library-addon/src/api/library/client.js",
+    );
+    const { createAutoUpdateQueueRepository } = loadModule(
+      "addons/library-addon/src/library/autoUpdateQueueRepository.js",
+    );
+    return createAutoUpdateQueueRepository(createLibraryApiClient(bridge), options);
+  }
+
+  runTest("LIBRARY-UPDATE-QUEUE-SCHEMA-01 declares the complete bounded version-4 schema", () => {
     const constants = loadModule("addons/library-addon/src/constants.js");
     const { normalizeDatabaseSchema } = loadModule("src/services/addons/idbStore.js");
     const schema = normalizeDatabaseSchema({ stores: constants.LIBRARY_DB_STORES });
-    assert.strictEqual(constants.LIBRARY_DB_VERSION, 3);
+    assert.strictEqual(constants.LIBRARY_DB_VERSION, 4);
     assert.deepStrictEqual(schema.map(({ name }) => name), [
       "records",
       "updates",
       "activity",
       "meta",
+      "update-cycles",
+      "update-queue",
     ]);
     assert.deepStrictEqual(
       schema.find(({ name }) => name === "updates").indexes.map(({ name }) => name),
       ["threadId", "observedAt", "version", "threadObservedAt"],
+    );
+    assert.deepStrictEqual(
+      schema.find(({ name }) => name === "update-cycles").indexes.map(({ name }) => name),
+      ["cycleId", "status", "updatedAt"],
+    );
+    assert.deepStrictEqual(
+      schema.find(({ name }) => name === "update-queue").indexes.map(({ name }) => name),
+      ["cycleId", "cycleStatusPosition", "cycleNextAttempt", "cycleStatusNextAttempt"],
     );
     assert.deepStrictEqual(
       schema.find(({ name }) => name === "activity").indexes.map(({ name }) => name),
@@ -81,13 +181,16 @@ module.exports = function registerLibraryIdbSchemaGroup(context) {
       transaction,
       normalizeDatabaseSchema({ stores: constants.LIBRARY_DB_STORES }),
     );
-    assert.strictEqual(stores.size, 4);
+    assert.strictEqual(stores.size, 6);
     assert.strictEqual(stores.get("records").options.keyPath, "threadId");
     assert.ok(stores.get("records").indexes.has("personalRating"));
     assert.ok(stores.get("records").indexes.has("pinnedUpdatedDesc"));
     assert.ok(stores.get("records").indexes.has("pinnedUpdatedAsc"));
     assert.ok(stores.get("updates").indexes.has("threadObservedAt"));
     assert.ok(stores.get("activity").indexes.has("threadOccurredAt"));
+    assert.ok(stores.get("update-queue").indexes.has("cycleStatusPosition"));
+    assert.ok(stores.get("update-queue").indexes.has("cycleNextAttempt"));
+    assert.ok(stores.get("update-queue").indexes.has("cycleStatusNextAttempt"));
     assert.strictEqual(JSON.stringify(stores.get("records").records[0]), before);
   });
 
@@ -138,7 +241,7 @@ module.exports = function registerLibraryIdbSchemaGroup(context) {
     await ensureLibrarySchema(bridge);
     assert.strictEqual(firstWrites, 1);
     assert.strictEqual(calls.filter(({ action }) => action === "idb.put").length, 1);
-    assert.ok(calls.slice(0, -2).every(({ payload }) => payload.version === 3));
+    assert.ok(calls.slice(0, -2).every(({ payload }) => payload.version === 4));
     assert.ok(calls[0].payload.stores.some(({ name }) => name === "meta"));
   });
 
@@ -281,15 +384,259 @@ module.exports = function registerLibraryIdbSchemaGroup(context) {
       path.join(ROOT, "addons/library-addon/src/api/library/schema.js"),
       "utf8",
     );
-    const appSource = fs.readFileSync(
-      path.join(ROOT, "addons/library-addon/src/app/createLibraryAddonApp.js"),
+    const guardSource = fs.readFileSync(
+      path.join(ROOT, "addons/library-addon/src/app/legacyUpgradeGuard.js"),
       "utf8",
     );
     assert.doesNotMatch(source, /deleteDatabase|deleteObjectStore/);
     assert.doesNotMatch(schemaSource, /bulkPut|idb\.delete/);
     assert.ok(
-      appSource.indexOf("ensureLibrarySchema(core)") <
-        appSource.indexOf("library.runLegacyMigration()"),
+      guardSource.indexOf("detectLegacyUpgradeState(storage)") <
+        guardSource.indexOf("ensureLibrarySchema(core)"),
     );
+    assert.doesNotMatch(guardSource, /runLegacyMigration/);
+  });
+
+  runTest("LIBRARY-UPDATE-QUEUE-SCHEMA-01 bounds cycle and queue persistence shapes", () => {
+    const {
+      createAutoUpdateQueueItem,
+      normalizeAutoUpdateCycle,
+      normalizeAutoUpdateQueueItem,
+    } = loadModule("addons/library-addon/src/library/autoUpdateQueueRepository.js");
+    const cycle = normalizeAutoUpdateCycle({
+      cycleId: "x".repeat(500),
+      status: "invented",
+      total: -4,
+      checksPerDay: 999999,
+      dailyAttempted: Infinity,
+    });
+    assert.strictEqual(cycle.cycleId.length, 128);
+    assert.strictEqual(cycle.status, "preparing");
+    assert.strictEqual(cycle.total, 0);
+    assert.strictEqual(cycle.checksPerDay, 100000);
+    assert.strictEqual(cycle.dailyAttempted, 0);
+
+    const item = normalizeAutoUpdateQueueItem({
+      cycleId: "cycle",
+      threadId: "thread",
+      position: -1,
+      status: "unknown",
+      attempts: 999,
+      lastErrorCode: "e".repeat(500),
+    });
+    assert.strictEqual(item.position, 1);
+    assert.strictEqual(item.status, "pending");
+    assert.strictEqual(item.attempts, 100);
+    assert.strictEqual(item.lastErrorCode.length, 120);
+    assert.strictEqual(
+      createAutoUpdateQueueItem("cycle", "42", 7).id,
+      "cycle:42",
+    );
+  });
+
+  runTest("LIBRARY-UPDATE-QUEUE-SCHEMA-01 publishes only a completely written queue", async () => {
+    const bridge = createQueueBridge();
+    const repository = createQueueRepository(bridge, { now: () => 200 });
+    const result = await repository.prepareCycle({
+      cycle: { cycleId: "cycle-complete", createdAt: 100, checksPerDay: 100 },
+      items: Array.from({ length: 501 }, (_, index) => ({ threadId: String(index + 1) })),
+      batchSize: 200,
+    });
+    assert.strictEqual(result.ok, true);
+    assert.strictEqual(result.written, 501);
+    assert.strictEqual(result.cycle.status, "running");
+    assert.strictEqual(result.cycle.startedAt, 200);
+    assert.strictEqual(await repository.countCycleItems("cycle-complete"), 501);
+    assert.strictEqual(bridge.snapshot().bulkWrites, 3);
+    const masterWrites = bridge.snapshot().calls.filter(
+      ({ action, payload }) => action === "idb.put" && payload.storeName === "update-cycles",
+    );
+    assert.deepStrictEqual(masterWrites.map(({ payload }) => payload.value.status), [
+      "preparing",
+      "preparing",
+      "running",
+    ]);
+  });
+
+  runTest("LIBRARY-UPDATE-QUEUE-SCHEMA-01 leaves a partial preparation recoverable", async () => {
+    const bridge = createQueueBridge({ failBulkAt: 2 });
+    const repository = createQueueRepository(bridge, { now: () => 200 });
+    const result = await repository.prepareCycle({
+      cycle: { cycleId: "cycle-partial" },
+      items: Array.from({ length: 450 }, (_, index) => ({ threadId: String(index + 1) })),
+      batchSize: 200,
+    });
+    assert.strictEqual(result.ok, false);
+    assert.strictEqual(result.reason, "storage_error");
+    assert.strictEqual(result.written, 200);
+    assert.strictEqual((await repository.getCycle()).status, "preparing");
+    assert.deepStrictEqual(
+      await repository.verifyPreparedCycle("cycle-partial", 450),
+      { ok: false, reason: "queue_prepare_incomplete", count: 200, expected: 450 },
+    );
+    assert.deepStrictEqual(await repository.discardCycle("cycle-partial"), {
+      ok: true,
+      removed: 200,
+    });
+    assert.strictEqual(await repository.getCycle(), null);
+  });
+
+  runTest("LIBRARY-UPDATE-QUEUE-COMPAT-01 refuses cleanup outside the active cycle", async () => {
+    const bridge = createQueueBridge();
+    const repository = createQueueRepository(bridge, { now: () => 200 });
+    await repository.prepareCycle({
+      cycle: { cycleId: "owned-cycle" },
+      items: [{ threadId: "1" }],
+    });
+    assert.deepStrictEqual(await repository.discardCycle("unowned-cycle"), {
+      ok: false,
+      reason: "cycle_identity_mismatch",
+      removed: 0,
+    });
+    assert.strictEqual(await repository.countCycleItems("owned-cycle"), 1);
+    assert.strictEqual((await repository.getCycle()).cycleId, "owned-cycle");
+  });
+
+  runTest("LIBRARY-UPDATE-QUEUE-SCHEMA-01 reopens and queries a published cycle", async () => {
+    const bridge = createQueueBridge();
+    const first = createQueueRepository(bridge, { now: () => 10 });
+    await first.prepareCycle({
+      cycle: { cycleId: "cycle-reopen" },
+      items: [{ threadId: "b" }, { threadId: "a" }],
+    });
+    const reopened = createQueueRepository(bridge, { now: () => 20 });
+    assert.strictEqual((await reopened.getCycle()).cycleId, "cycle-reopen");
+    const page = await reopened.queryCycleItems({
+      cycleId: "cycle-reopen",
+      queueStatus: "pending",
+      limit: 10,
+    });
+    assert.strictEqual(page.ok, true);
+    assert.deepStrictEqual(page.items.map(({ value }) => value.threadId), ["b", "a"]);
+  });
+
+  runTest("LIBRARY-UPDATE-QUEUE-VERIFY-01 reopens every persisted cycle transition", async () => {
+    const bridge = createQueueBridge();
+    const repository = createQueueRepository(bridge, { now: () => 20 });
+    for (const status of ["preparing", "running", "recovering", "waiting", "paused", "completed"]) {
+      const written = await repository.putCycle({ cycleId: `state-${status}`, status });
+      assert.strictEqual(written.ok, true, status);
+      const reopened = createQueueRepository(bridge, { now: () => 30 });
+      assert.strictEqual((await reopened.getCycle()).status, status);
+      assert.strictEqual((await reopened.getCycle()).cycleId, `state-${status}`);
+    }
+  });
+
+  runTest("LIBRARY-UPDATE-QUEUE-SCHEMA-01 rolls days and recovers stale item ownership", async () => {
+    const bridge = createQueueBridge();
+    const repository = createQueueRepository(bridge, { now: () => 500 });
+    await repository.prepareCycle({
+      cycle: {
+        cycleId: "cycle-recovery",
+        dailyKey: "2026-08-28",
+        dailyAttempted: 100,
+        dailyBonusAllowance: 100,
+      },
+      items: [{ threadId: "stale" }, { threadId: "complete" }],
+    });
+    const cycle = await repository.getCycle();
+    const rolled = await repository.rolloverDailyAllowance(cycle, "2026-08-29");
+    assert.strictEqual(rolled.ok, true);
+    assert.strictEqual(rolled.value.dailyAttempted, 0);
+    assert.strictEqual(rolled.value.dailyBonusAllowance, 0);
+    assert.strictEqual(rolled.value.dailyKey, "2026-08-29");
+    const granted = await repository.grantDailyBonus(rolled.value, 100);
+    assert.strictEqual(granted.value.dailyBonusAllowance, 100);
+
+    const stale = await repository.getQueueItem("cycle-recovery:stale");
+    const claimed = await repository.claimQueueItem(stale, {
+      owner: "old-tab",
+      expiresAt: 400,
+      dailyKey: "2026-08-29",
+    });
+    assert.strictEqual(claimed.value.status, "processing");
+    assert.strictEqual(claimed.value.attempts, 1);
+    assert.strictEqual((await repository.recoverStaleProcessing("cycle-recovery", 500)).recovered, 1);
+    assert.strictEqual(
+      (await repository.getQueueItem("cycle-recovery:stale")).status,
+      "retry",
+    );
+
+    const complete = await repository.getQueueItem("cycle-recovery:complete");
+    const completeClaim = await repository.claimQueueItem(complete, {
+      owner: "new-tab",
+      expiresAt: 1000,
+      dailyKey: "2026-08-29",
+    });
+    assert.strictEqual(
+      (await repository.settleQueueItem(completeClaim.value, {
+        owner: "old-tab",
+        status: "completed",
+      })).reason,
+      "queue_claim_lost",
+    );
+    assert.strictEqual(
+      await repository.ownsQueueItem(completeClaim.value.id, "new-tab", 500),
+      true,
+    );
+    const renewed = await repository.renewQueueItemClaim(
+      completeClaim.value.id,
+      "new-tab",
+      1200,
+    );
+    assert.strictEqual(renewed.value.claimExpiresAt, 1200);
+    const settled = await repository.settleQueueItem(completeClaim.value, {
+      owner: "new-tab",
+      status: "completed",
+      completedAt: 500,
+    });
+    assert.strictEqual(settled.value.status, "completed");
+    assert.strictEqual(settled.value.claimedBy, "");
+    const counts = await repository.getCycleStatusCounts("cycle-recovery");
+    assert.deepStrictEqual(counts.counts, {
+      pending: 0,
+      processing: 0,
+      retry: 1,
+      completed: 1,
+      failed: 0,
+    });
+  });
+
+  runTest("LIBRARY-UPDATE-QUEUE-WORKER-01 selects due retry without blocking pending work", async () => {
+    const bridge = createQueueBridge();
+    const repository = createQueueRepository(bridge, { now: () => 500 });
+    await repository.prepareCycle({
+      cycle: { cycleId: "cycle-selection" },
+      items: [{ threadId: "future" }, { threadId: "due" }, { threadId: "pending" }],
+    });
+    const future = await repository.getQueueItem("cycle-selection:future");
+    const due = await repository.getQueueItem("cycle-selection:due");
+    await repository.putQueueItem({ ...future, status: "retry", nextAttemptAt: 900 });
+    await repository.putQueueItem({ ...due, status: "retry", nextAttemptAt: 400 });
+    assert.strictEqual(
+      (await repository.getNextActionableItem("cycle-selection", 500)).item.threadId,
+      "due",
+    );
+    await repository.putQueueItem({ ...due, status: "completed", nextAttemptAt: 0 });
+    assert.strictEqual(
+      (await repository.getNextActionableItem("cycle-selection", 500)).item.threadId,
+      "pending",
+    );
+  });
+
+  runTest("LIBRARY-UPDATE-QUEUE-SCHEMA-01 writes a 10000-row queue in bounded batches", async () => {
+    const bridge = createQueueBridge();
+    const repository = createQueueRepository(bridge, { now: () => 10 });
+    const result = await repository.prepareCycle({
+      cycle: { cycleId: "cycle-large" },
+      items: Array.from({ length: 10_000 }, (_, index) => ({
+        threadId: String(index + 1),
+      })),
+      batchSize: 200,
+    });
+    assert.strictEqual(result.ok, true);
+    assert.strictEqual(result.written, 10_000);
+    assert.strictEqual(bridge.snapshot().bulkWrites, 50);
+    assert.strictEqual(await repository.countCycleItems("cycle-large"), 10_000);
   });
 };
