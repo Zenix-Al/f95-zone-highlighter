@@ -1,382 +1,138 @@
 # F95Zone Ultimate Enhancer
 
-All-in-one userscript for F95Zone with a lean core and official add-on support. 
+A userscript that improves F95Zone's Latest Updates and thread pages through a
+small configurable core and optional add-ons.
 
-- Install: https://greasyfork.org/en/scripts/546518-f95zone-ultimate-enhancer
-- Built output: `dist/f95zone-ultimate-enhancer.user.js`
+- [Install from Greasy Fork](https://greasyfork.org/en/scripts/546518-f95zone-ultimate-enhancer)
+- [Documentation](docs/README.md)
+- Generated core script: `dist/f95zone-ultimate-enhancer.user.js`
 
-## What The Core Script Does
+The project is in maintenance mode. Critical bugs, compatibility problems, and
+security issues are still maintained, but major new features are expected to
+live in add-ons.
 
-### Global features
+## Core features
 
-- Notification dismissal
-- Shadow DOM config UI (isolated styling)
-- Tag management (search, preferred/excluded/marked lists, drag reorder)
-- Color customization
-- Optional add-on integrations with isolated manager transport
-- Feature health diagnostics
+- Latest Updates overlays, scoring, layouts, refresh controls, and recovery
+- Thread overlays, wide layout, and collapsible signatures
+- Preferred, excluded, and marked tag management with custom colors
+- Isolated settings UI, configuration transfer, and Feature Health diagnostics
+- Capability-gated add-on runtime with owned storage, UI, lifecycle, and cleanup
+- Verified configuration bootstrap, schema migration, backup recovery, and
+  read-only failure handling
 
-### Latest Updates page features
+The generated feature inventory is maintained in
+[docs/features/index.md](docs/features/index.md).
 
-- Auto-refresh sync
-- Web notifications sync
-- Latest Ajax Recovery (invalid response guard + one safe retry)
-- Wide Latest page
-- Dense Latest Grid
-- Latest overlay (status/tag/version)
-- Intelligent overlay scoring
-- Hover tag coloring from preferred/excluded rules
-- Overlay color order editor
+## Optional add-ons
 
-### Thread page features
+Official add-ons currently include:
 
-- Wide thread
-- Collapsible signatures
-- Thread overlay
+- **Library** — personal thread library, ratings, notes, history, and durable
+  update checking
+- **Masked + Direct Download** — masked-link handling and automation for
+  supported download hosts, with limited standalone behavior
+- **Latest Filters** — saved Latest-page filters and search utilities
+- **Thread Utility** — compact thread information and thread-page tools
+- **Site Repair** — independently controlled F95Zone compatibility repairs
+- **Halloween Theme** — optional seasonal presentation
 
-### Official add-ons
+Add-ons are separate userscripts with independent versions. See
+[addons/README.md](addons/README.md) for the current architecture and
+[addons/example-addon](addons/example-addon) for the canonical API example.
 
-Specialized features are handled by optional add-ons:
+## Development
 
-- **Site Repair Add-on** - hosts independently controlled F95Zone repairs, currently including attachment-image retries.
-- **Library Add-on** - saves threads to a personal library with notes, ratings, status tracking, search, pinning, and import/export.
-- **Masked + Direct Download Add-on** - resolves masked links and automates supported download hosts.
-
-Direct download support is handled by the Masked + Direct Download Add-on for Buzzheavier, Gofile, Pixeldrain, Datanodes, MediaFire, and Workupload.
-
-## Framework Architecture
-
-### Startup flow
-
-1. `src/main.js`
-2. Load persisted config (`loadData`)
-3. Detect page type from `src/config/pageDefinitions.js`
-4. Init UI (F95 pages)
-5. Load generated, page-scoped feature set (`src/loader.js`)
-
-### Core framework primitives
-
-- `src/core/featureFactory.js`
-  - Standardized feature lifecycle: `enable`, `disable`, `toggle`, `isEnabled`
-  - Operation serialization and timeout protection
-- `src/core/styleRegistry.js`
-  - Feature-scoped CSS with ref-counting (`acquireStyle` / `removeStyle`)
-- `src/core/observer.js`
-  - Shared `MutationObserver` with per-feature callback filters
-- `src/core/listenerRegistry.js`
-  - Named listener registration/cleanup
-- `src/core/resourceManager.js`
-  - Generic cleanup registry for non-listener/non-observer resources
-- `src/core/teardown.js`
-  - Global pagehide/beforeunload cleanup
-- `src/core/StateManager.js`
-  - Runtime state container with optional unknown-path warnings
-- `src/core/pageDetection.js`
-  - Generic page rule evaluation from config-defined page definitions
-- `src/core/featureCatalog.js`
-  - Feature registration and bootstrap-mode buckets
-- `src/core/featureScope.js`
-  - Page-scope gating for feature execution
-- `scripts/featureManifest.cjs`
-  - Build-time discovery of `*Feature` exports in `src/features/*/index.js`
-
-### Configuration model
-
-- Persistent user config: `config` in `src/config/state.js`
-- Default config values: `src/config/defaults.js`
-- Schema and export/sync metadata: `src/config/schema.js`
-- Persistence keys and schema version policy: `src/config/persistence.js`
-- Page definitions: `src/config/pageDefinitions.js`
-- Runtime state (non-persistent): state manager in `src/config/state.js`
-- Persistence API: `src/services/settingsService.js`
-- Config Transfer domain: `src/services/configTransfer/`; browser/dialog adapter: `src/ui/configTransfer/`
-- Public config barrel: `src/config.js`
-
-### UI/settings system
-
-- Settings metadata lives in `src/ui/settings/*.js`
-- Generic renderer reads metadata and binds config writes:
-  - `src/ui/renderers/renderSetting.js`
-  - `src/ui/renderers/applyEffects.js`
-- Modal bootstrap: `src/ui/settings/index.js`
-
-## Repo Map
-
-- `src/main.js`: app bootstrap
-- `src/loader.js`: generated feature loading by bootstrap mode and page scope
-- `src/generated/features.generated.js`: generated feature manifest; do not edit by hand
-- `src/features/*`: individual features
-- `src/config/*`: default config, runtime state, page definitions, selectors, timings
-- `src/core/*`: framework internals
-- `src/services/*`: persistence, sync, safety, tags, configuration transfer, and bounded storage recovery
-- `src/ui/*`: modal UI, settings renderers, components, CSS
-- `build.js`: bundle + userscript header generation + version bump
-- `tests/run.cjs`: lightweight Node test suite
-
-Core and add-on ownership are separate: core cleanup covers `src/config/**`, `src/core/**`,
-non-add-on services/features, core UI, tests, and core tooling. Add-on runtime, catalog, bridge,
-trust, and add-on UI work remains in `addons/**` and its separate plan.
-
-## Development Setup
-
-### Requirements
-
-- Node.js (LTS)
-- npm
-- A userscript manager (Tampermonkey/Violentmonkey)
-
-### Install
+Requirements: an LTS Node.js release and npm.
 
 ```bash
 npm install
+npm run lint
+npm test
 ```
 
-### Commands
+Useful non-release checks:
 
 ```bash
-npm run build
-npm run build:no-bump
-npm run build:release
-npm run build:release:no-bump
-npm run build:addons
-npm run build:addons:release
-npm run lint
-npm run lint:fix
-npm run test
+npm run check:manifest
+npm run check:docs
+npm run check:inventory
 npm run audit:core
 npm run check:core
-npm run check:core:size
 npm run build:core:smoke
 npm run audit:css
 npm run check:css
 ```
 
-The core audit and smoke commands are non-version-bumping checks. A no-bump build retains
-the current `version.json` value but still regenerates the feature manifest and writes tracked
-`dist/` artifacts. The regular release build regenerates distributions and updates `version.json`;
-use it only when a release artifact is
-requested.
-
-### Build behavior
-
-- `npm run build` bundles `src/main.js` with esbuild.
-- Before bundling, it regenerates `src/generated/features.generated.js` from feature exports.
-- Generates:
-  - `dist/f95zone-ultimate-enhancer.user.js`
-  - `dist/f95zone-ultimate-enhancer.uglified.user.js`
-- Auto-bumps the version from `version.json` unless `--no-bump` is supplied.
-  - Default bump: patch
-  - Optional: `npm run build -- --minor` or `npm run build -- --major`
-
-### Add-on build behavior
-
-- `npm run build:addons` builds add-ons in regular mode.
-- `npm run build:addons:release` builds add-ons in release mode (minified output).
-- Add-on builds now use change detection and skip unchanged add-ons automatically.
-- Add-on versioning is independent from the main script and stored in `addons/version.json`.
-- Add-on build cache is stored in `addons/.build-cache.json`.
-
-Optional add-on build flags:
+Core builds:
 
 ```bash
-# bump level (default: patch)
-npm run build:addons -- --minor
-npm run build:addons:release -- --major
-
-# force rebuild even if unchanged
-npm run build:addons -- --force
-
-# build one add-on by id
-node addons/build-addon.js library-addon
-node addons/build-addon.js library-addon --release
+npm run build:no-bump
+npm run build:release:no-bump
 ```
 
-## Add-on System
+Release builds may update generated distributions and versions. Do not run
+`npm run build` merely to validate source changes. Add-on builds and versions
+are independent; their commands are documented in [addons/README.md](addons/README.md).
 
-Add-ons are declared in `addons/addons.manifest.json` and built by `addons/build-addon.js`.
+## Repository layout
 
-Each add-on manifest entry defines:
+- `src/main.js` — bootstrap orchestration
+- `src/loader.js` — generated, page-scoped feature loading
+- `src/features/` — core feature implementations
+- `src/config/` — defaults, schema, persistence policy, and page definitions
+- `src/core/` — lifecycle and resource-management primitives
+- `src/services/` — storage, configuration, tags, and add-on services
+- `src/ui/` — Shadow DOM settings UI and reusable components
+- `addons/` — independently built add-ons
+- `docs/` — architecture, development, API, and verification documentation
+- `tests/` — deterministic core and add-on regression coverage
+- `dist/` — generated artifacts; never edit these directly
 
-- `id`, `name`, `description`, `author`
-- `entry`, `outfile`
-- `matches`, `grants`, `runAt`
-- `requiresCore`
-- `capabilities`
+Start with [docs/README.md](docs/README.md) for the complete documentation map.
 
-Capability-gated core actions are exposed through the add-on bridge (for example: `toast`, `storage`, `idb`, `ui`).
+## Adding a core feature
 
-## Library Add-on Guide
+The full guide is [docs/features/creating-features.md](docs/features/creating-features.md).
+The current short workflow is:
 
-### What it does
-
-- Saves thread snapshots into personal IndexedDB-backed records.
-- Adds page dock controls on thread pages (`Save/Remove`, `Open Library`).
-- Provides a dedicated Library Manager modal for bulk operations.
-
-### Library Manager features
-
-- Search, status filter, sort, paging, multi-select.
-- Bulk actions: set status, remove selected, clear selection.
-- Import/export with preview confirmation before import.
-- In-modal toasts and confirmation dialog (non-blocking, no native alert/confirm).
-- Details Editor with editable note/status/score/pin and read-only identity fields.
-- Thread-aware refresh: `Update from This Thread` appears only when active row matches the current thread page.
-- Version tracking column (`Version`) and user rating column (`Rating`) in the table.
-
-### Advanced search tokens (Library Manager)
-
-You can mix plain text with tokens:
-
-- `tag:ntr`
-- `status:playing`
-- `score>=8` (also supports `>`, `<`, `<=`, `=`)
-- `pinned` / `unpinned`
-- `has:note` / `has:no-note`
-- `id:12345`
-
-## Versioning Policy
-
-This repo follows semantic versioning for the main script.
-
-- Use **patch** for bug fixes and internal improvements with no behavior breaks.
-- Use **minor** for backward-compatible new features and UX additions.
-- Use **major** only for breaking changes (config schema breaks, removed behavior users rely on, incompatible public add-on/runtime contracts).
-
-Generated manifests, refactors, and additive settings/features usually stay in **patch** or **minor** territory unless they break saved config, generated artifacts, or public add-on/runtime contracts.
-
-## How To Add A New Feature
-
-Use this checklist for consistency with the current framework.
-
-1. Create feature folder
-
-- Example: `src/features/my-feature/`
-- Typical files:
-  - `index.js` (feature wrapper)
-  - `handler.js` (core logic)
-  - `style.css` (optional, feature-only CSS)
-
-2. Export a `*Feature` const from `index.js`
-
-- The build script discovers exported const names ending in `Feature`.
-- Do not manually import the feature in `src/loader.js`.
-- Generated imports land in `src/generated/features.generated.js`.
-
-```js
-import { createFeature } from "../../core/featureFactory.js";
-import { enableMyFeature, disableMyFeature } from "./handler.js";
-
-export const myFeature = createFeature("My Feature", {
-  configPath: "latestSettings.myFeature",
-  pageScopes: ["isLatest"],
-  enable: enableMyFeature,
-  disable: disableMyFeature,
-});
-```
-
-For CSS-backed features, prefer `createStyledFeature`:
-
-```js
-import { createStyledFeature } from "../../core/createStyledFeature.js";
-import styleText from "./style.css";
-import { enableMyFeature, disableMyFeature } from "./handler.js";
-
-export const myStyledFeature = createStyledFeature("My Styled Feature", {
-  configPath: "threadSettings.myStyledFeature",
-  pageScopes: ["isThread"],
-  styleCss: styleText,
-  enable: enableMyFeature,
-  disable: disableMyFeature,
-});
-```
-
-3. Implement logic with registries
-
-- Use `addListener` / `removeListener` for event handlers.
-- Use `addObserverCallback` / `removeObserverCallback` for mutations.
-- Register custom cleanup in `resourceManager` when needed.
-
-4. Add config defaults when needed
-
-- Add persistent defaults in `src/config/defaults.js`:
-  - `latestSettings` for Latest page features
-  - `threadSettings` for thread page features
-  - `globalSettings` for global features
-- `settingsService` merges saved config with defaults automatically.
-- Mark import/export eligibility in `src/config/schema.js`; the transfer service reads the shared schema metadata.
-
-5. Add page definitions when needed
-
-- Add new runtime page flags in `src/config/pageDefinitions.js`.
-- Runtime state paths are created automatically from the keys in that object.
-- Features reference those keys through `pageScopes`.
-
-```js
-export const pageDefinitions = {
-  isMyPage: {
-    hostIncludes: ["f95zone.to"],
-    pathStartsWith: ["/my/path"],
-  },
-};
-```
-
-6. Add setting UI metadata
-
-- Preferred: contribute settings from the feature itself through `settingsUi`.
-- Set `sectionId` to `latest`, `thread`, `global`, etc.
-- Use `createToggleSetting` and call `feature.sync()` in custom effects.
-
-```js
-settingsUi: {
-  id: "my-feature",
-  sectionId: "latest",
-  metaMaps: [
-    {
-      myFeature: createToggleSetting({
-        text: "My feature",
-        tooltip: "What this feature does",
-        config: "latestSettings.myFeature",
-        custom: () => myFeature.sync(),
-        toast: createEnabledDisabledToast("My feature"),
-      }),
-    },
-  ],
-}
-```
-
-Base settings that are not owned by a feature can still live in `src/ui/settings/*.js`.
-
-7. Handle persistence/sync needs
-
-- If config shape changes, ensure `loadData` merge/sanitize still works.
-- Core configuration is not synchronized across tabs. Keep any add-on transport and observed
-  storage keys inside the owning add-on.
-- If a setting is exportable/importable, update its `exportable` metadata in `src/config/schema.js`.
-
-8. Validate
-
-- Run:
-  - `npm run lint`
-  - `npm run test`
-- Avoid `npm run build` unless you want to bump `version.json`.
-- To refresh the generated feature manifest without a version bump:
+1. Create `src/features/<feature>/index.js`.
+2. Export a const whose name ends in `Feature`, created with `createFeature()` or
+   `createStyledFeature()`.
+3. Declare `configPath`, `pageScopes`, applicability, lifecycle handlers, and
+   optional feature-owned `settingsUi` metadata.
+4. Put persisted defaults in `src/config/defaults.js` and metadata/validation in
+   `src/config/schema.js`.
+5. Add page rules only through `src/config/pageDefinitions.js`.
+6. Use core listener, observer, task, style, and resource ownership APIs so
+   `disable()` fully reverses the feature.
+7. Regenerate the feature manifest and run lint/tests.
 
 ```bash
 node -e "require('./scripts/featureManifest.cjs').generateFeatureManifest({ rootDir: process.cwd() })"
+npm run lint
+npm test
 ```
 
-- Verify enable/disable behavior and cleanup on navigation/reload.
+Do not manually import features into `src/loader.js`, register them in
+`src/core/featureCatalog.js`, edit `src/generated/features.generated.js`, or
+create raw `MutationObserver` instances.
 
-## Implementation Rules Used In This Project
+## Documentation
 
-- Keep feature CSS isolated and loaded through style registry.
-- Do not attach raw listeners/observers without registry wrappers.
-- Ensure every feature can cleanly disable and re-enable.
-- Prefer process-first/apply-later patterns for heavy DOM work.
-- Guard long-running async flows with generation/state checks.
+- [Architecture overview](docs/architecture.md)
+- [Creating core features](docs/features/creating-features.md)
+- [Core framework](docs/core/index.md)
+- [Configuration](docs/config/index.md)
+- [Storage bootstrap](docs/config/storage-bootstrap.md)
+- [UI system](docs/ui/index.md)
+- [Add-on development](docs/services/addon-development.md)
+- [Common add-on mistakes](docs/services/addon-common-mistakes.md)
+- [Changelog](changelog.md)
 
-## Notes For Contributors
+## Contributing
 
-- Edit source in `src/`, never in `dist/`.
-- `dist/` files are generated artifacts.
-- Keep changelog updates in `changelog.md` when shipping user-visible changes.
+Edit source rather than generated userscripts, preserve feature cleanup and
+page-scope behavior, and add focused regression coverage for changed contracts.
+Repository-specific agent and contributor rules are recorded in `AGENTS.md`,
+`.rules.md`, and [docs/agent.md](docs/agent.md).

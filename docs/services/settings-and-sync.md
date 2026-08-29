@@ -22,7 +22,7 @@ atomic persistence.
 
 - `src/config/persistence.js` owns the canonical storage keys and schema version `1`.
 - `CONFIG_MIGRATIONS` is intentionally empty (`CONFIG_MIGRATION_COUNT === 0`); the active
-  `configMigrationService` is only the bounded historical surface-key recovery path.
+  `configMigrationService` is only the bounded read-only detector for historical surface-key storage and the proven v5.1.2 bridge boundary.
 - `storageAdapter` performs raw storage I/O only. It does not know config defaults, schema,
   migrations, revisions, or effects.
 - `settingsService.commitConfig()` reads the latest envelope, increments its revision, stores the

@@ -197,7 +197,7 @@ export async function persistAddonsState(addons = config.addons) {
   pendingAddonConfig = null;
   return result.committed
     ? { ok: true, result }
-    : { ok: false, reason: "storage_error", result };
+    : { ok: false, reason: result.failed?.[0]?.code || "storage_write_failed", result };
 }
 
 /** Persist all legacy buckets under their canonical identity in one commit. */
@@ -229,7 +229,7 @@ export async function setAddonStateValue(addonId, key, value) {
   const addons = ensureAddonsConfigBucket(clone(config.addons));
   ensureAddonStateBucketInRoot(addons, normalizedId)[normalizedKey] = value;
   const persisted = await persistAddonsState(addons);
-  if (!persisted.ok) return { ok: false, reason: "storage_error" };
+  if (!persisted.ok) return persisted;
   return { ok: true };
 }
 
@@ -242,7 +242,7 @@ export async function upsertInstalledAddonMeta(addonId, partial = {}) {
     canonicalizeAddonIdentityRoot(addons);
     savedBucket = { ...applyInstalledAddonMeta(addons, normalizedId, partial) };
   }, { origin: `addons:meta:${normalizedId}` });
-  if (!result.committed) return { ok: false, reason: "storage_error", result };
+  if (!result.committed) return { ok: false, reason: result.failed?.[0]?.code || "storage_write_failed", result };
   return { ok: true, value: savedBucket };
 }
 
@@ -258,7 +258,7 @@ export async function setAddonEnabledState(addonId, enabled, partialMeta = {}) {
     ensureAddonStateBucketInRoot(addons, normalizedId).enabled = desiredEnabled;
     savedMeta = { ...applyInstalledAddonMeta(addons, normalizedId, partialMeta) };
   }, { origin: `addons:${desiredEnabled ? "enable" : "disable"}:${normalizedId}` });
-  if (!result.committed) return { ok: false, reason: "storage_error", result };
+  if (!result.committed) return { ok: false, reason: result.failed?.[0]?.code || "storage_write_failed", result };
   return { ok: true, value: { enabled: desiredEnabled, meta: savedMeta }, result };
 }
 
@@ -271,7 +271,7 @@ export async function clearAddonState(addonId) {
   if (!addons.byAddon[normalizedId]) return { ok: true };
   delete addons.byAddon[normalizedId];
   const persisted = await persistAddonsState(addons);
-  return persisted.ok ? { ok: true } : { ok: false, reason: "storage_error" };
+  return persisted.ok ? { ok: true } : persisted;
 }
 
 export async function removeInstalledAddonMeta(addonId) {
@@ -283,7 +283,7 @@ export async function removeInstalledAddonMeta(addonId) {
   if (!addons.installedMeta[normalizedId]) return { ok: true };
   delete addons.installedMeta[normalizedId];
   const persisted = await persistAddonsState(addons);
-  return persisted.ok ? { ok: true } : { ok: false, reason: "storage_error" };
+  return persisted.ok ? { ok: true } : persisted;
 }
 
 /** Remove installation metadata and per-add-on state in one revisioned commit. */
@@ -298,5 +298,7 @@ export async function removeAddonInstallationTrace(addonId) {
     delete addons.byAddon[normalizedId];
   }, { origin: `addons:remove-trace:${normalizedId}` });
 
-  return result.committed ? { ok: true } : { ok: false, reason: "storage_error", result };
+  return result.committed
+    ? { ok: true }
+    : { ok: false, reason: result.failed?.[0]?.code || "storage_write_failed", result };
 }

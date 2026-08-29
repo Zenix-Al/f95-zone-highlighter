@@ -64,7 +64,13 @@ It can:
 - Copy the report to the clipboard.
 - Use a fallback copy mechanism when the modern clipboard API is unavailable.
 
-The complete plain-text report is generated once and assigned to a reusable
+  The report includes the bounded Storage bootstrap snapshot and updates while
+  the diagnostic remains open. Its existing action row exposes `Retry storage`
+  only for a settled `unavailable` state; deterministic upgrade, future-schema,
+  and corrupt-storage states do not offer retry. Storage values and keys are
+  never included.
+
+  The complete plain-text report is generated once and assigned to a reusable
 `<pre>` through `textContent`. Copy reads that same displayed text, so the
 support payload cannot drift from the UI. Repeated checks reuse the existing
 box and its Copy and Close listeners.

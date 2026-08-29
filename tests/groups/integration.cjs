@@ -604,7 +604,7 @@ module.exports = function registerGroup(context) {
           latestSettings: { ...config.latestSettings, minVersion: 0.9 },
         });
         assert.strictEqual(result.committed, false);
-        assert.strictEqual(result.issues[0].code, "config_not_ready");
+        assert.strictEqual(result.issues[0].code, "storage_not_ready");
         assert.deepStrictEqual(gm.snapshot(), {});
         assert.strictEqual(JSON.stringify(config), before);
       } finally {
@@ -620,9 +620,10 @@ module.exports = function registerGroup(context) {
       const gm = createFakeGM();
       global.GM = gm;
       try {
-        const settings = loadModule("src/services/settingsService.js");
-        const { config } = loadModule("src/config.js");
+        const settings = loadModule("tests/fixtures/settingsReadyHarness.js");
+        const { config } = settings;
         await seedReadyConfig(gm, settings, config);
+        await settings.bootstrapStorage();
         const result = await settings.commitConfig(config, {
           origin: "TEST-01",
         });
@@ -677,9 +678,10 @@ module.exports = function registerGroup(context) {
       const gm = createFakeGM();
       global.GM = gm;
       try {
-        const settings = loadModule("src/services/settingsService.js");
-        const { config } = loadModule("src/config.js");
+        const settings = loadModule("tests/fixtures/settingsReadyHarness.js");
+        const { config } = settings;
         await seedReadyConfig(gm, settings, config);
+        await settings.authorizeStorageForTest();
         const first = await settings.commitConfig(config, {
           origin: "PERSIST-01",
         });
@@ -722,8 +724,9 @@ module.exports = function registerGroup(context) {
       const previousGM = global.GM;
       const seedGM = createFakeGM();
       global.GM = seedGM;
-      let settings = loadModule("src/services/settingsService.js");
-      const { config } = loadModule("src/config.js");
+      let settings = loadModule("tests/fixtures/settingsReadyHarness.js");
+      const { config } = settings;
+      await settings.authorizeStorageForTest();
       const seed = await settings.commitConfig(config, {
         origin: "PERSIST-01",
       });
@@ -740,7 +743,8 @@ module.exports = function registerGroup(context) {
       );
       global.GM = failingGM;
       try {
-        settings = loadModule("src/services/settingsService.js");
+        settings = loadModule("tests/fixtures/settingsReadyHarness.js");
+        await settings.authorizeStorageForTest();
         const result = await settings.commitConfig(
           {
             ...config,
@@ -749,7 +753,7 @@ module.exports = function registerGroup(context) {
           { origin: "PERSIST-01" },
         );
         assert.strictEqual(result.committed, false);
-        assert.strictEqual(result.failed[0].code, "storage_error");
+        assert.strictEqual(result.failed[0].code, "storage_write_failed");
         assert.deepStrictEqual(
           failingGM.snapshot()[settings.CONFIG_ENVELOPE_KEY],
           previousEnvelope,
@@ -762,7 +766,7 @@ module.exports = function registerGroup(context) {
   );
 
   runTest(
-    "CORE-CONFIG-STORAGE-01 version-zero canonical data recovers from a valid backup without migration",
+    "CORE-CONFIG-STORAGE-01 version-zero canonical data recovers from a supported backup",
     async () => {
       const previousGM = global.GM;
       const gm = createFakeGM();
@@ -798,7 +802,7 @@ module.exports = function registerGroup(context) {
         assert.strictEqual(loaded.source, "backup");
         assert.strictEqual(
           gm.snapshot()[settings.CONFIG_ENVELOPE_KEY].schemaVersion,
-          1,
+          2,
         );
         assert.strictEqual(
           gm.snapshot()[settings.CONFIG_ENVELOPE_KEY].revision,
@@ -859,7 +863,7 @@ module.exports = function registerGroup(context) {
   );
 
   runTest(
-    "PERSIST-01 corrupt canonical and backup load defaults with a recovery marker",
+    "CORE-STORAGE-LEGACY-GUARD-01 unknown corrupt envelopes fail closed without writes",
     async () => {
       const previousGM = global.GM;
       const gm = createFakeGM();
@@ -881,13 +885,10 @@ module.exports = function registerGroup(context) {
           data: null,
         });
         const loaded = await settings.loadConfig();
-        assert.strictEqual(loaded.source, "defaults");
-        assert.strictEqual(loaded.status, "migration-failed");
+        assert.strictEqual(loaded.source, "unknown-storage");
+        assert.strictEqual(loaded.status, "unrecoverable");
         assert.strictEqual(loaded.degraded, true);
-        assert.strictEqual(
-          gm.snapshot()[settings.CONFIG_RECOVERY_MARKER_KEY].kind,
-          "migration-failed",
-        );
+        assert.strictEqual(gm.snapshot()[settings.CONFIG_RECOVERY_MARKER_KEY], undefined);
         assert.strictEqual(
           gm.snapshot()[settings.CONFIG_MIGRATION_VERSION_KEY],
           undefined,
@@ -899,7 +900,7 @@ module.exports = function registerGroup(context) {
   );
 
   runTest(
-    "CORE-CONFIG-STORAGE-01 missing canonical data ignores obsolete standalone keys",
+    "CORE-STORAGE-LEGACY-GUARD-01 surface keys require the bridge without mutation",
     async () => {
       const previousGM = global.GM;
       const gm = createFakeGM({
@@ -912,17 +913,13 @@ module.exports = function registerGroup(context) {
         const settings = loadModule("src/services/settingsService.js");
         const loaded = await settings.loadConfig();
         const snapshot = gm.snapshot();
-        assert.strictEqual(loaded.status, "migrated");
-        assert.strictEqual(loaded.source, "legacy-migration");
-        assert.strictEqual(loaded.data.latestSettings.minVersion, 0.7);
-        assert.strictEqual(loaded.data.threadSettings.marked, true);
-        assert.deepStrictEqual(snapshot[settings.CONFIG_TAGS_CACHE_KEY], [
-          { id: 1, name: "Legacy" },
-        ]);
-        assert.strictEqual(snapshot[settings.CONFIG_MIGRATION_VERSION_KEY], 1);
-        assert.strictEqual(snapshot.tags, undefined);
-        assert.strictEqual(snapshot.minVersion, undefined);
-        assert.strictEqual(snapshot.threadSettings, undefined);
+        assert.strictEqual(loaded.status, "upgrade-required");
+        assert.strictEqual(loaded.source, "legacy-surface");
+        assert.deepStrictEqual(snapshot.tags, [{ id: 1, name: "Legacy" }]);
+        assert.strictEqual(snapshot.minVersion, 0.7);
+        assert.deepStrictEqual(snapshot.threadSettings, { marked: true, skipMaskedLink: true });
+        assert.strictEqual(snapshot[settings.CONFIG_ENVELOPE_KEY], undefined);
+        assert.strictEqual(snapshot[settings.CONFIG_MIGRATION_VERSION_KEY], undefined);
       } finally {
         global.GM = previousGM;
       }
@@ -930,7 +927,7 @@ module.exports = function registerGroup(context) {
   );
 
   runTest(
-    "CORE-CONFIG-MIGRATION-RECOVERY-01 migrates a legacy complete config stored at the canonical key",
+    "CORE-STORAGE-LEGACY-GUARD-01 blocks a legacy complete config at the canonical key",
     async () => {
       const previousGM = global.GM;
       const fixture = loadModule("tests/fixtures/configMigrationHarness.js");
@@ -941,17 +938,10 @@ module.exports = function registerGroup(context) {
         const settings = loadModule("src/services/settingsService.js");
         const loaded = await settings.loadConfig();
         const snapshot = gm.snapshot();
-        const canonical = snapshot[settings.CONFIG_ENVELOPE_KEY];
-        assert.strictEqual(loaded.status, "migrated");
-        assert.strictEqual(loaded.source, "legacy-migration");
-        assert.strictEqual(settings.isConfigReady(), true);
-        assert.strictEqual(canonical.schemaVersion, 1);
-        assert.strictEqual(
-          canonical.data.addons.byAddon["example-addon"].state.enabled,
-          true,
-        );
-        assert.strictEqual(Object.hasOwn(canonical.data, "metrics"), false);
-        assert.strictEqual(snapshot[settings.CONFIG_MIGRATION_VERSION_KEY], 1);
+        assert.strictEqual(loaded.status, "upgrade-required");
+        assert.strictEqual(loaded.source, "legacy-surface");
+        assert.deepStrictEqual(snapshot[settings.CONFIG_ENVELOPE_KEY], reference);
+        assert.strictEqual(snapshot[settings.CONFIG_MIGRATION_VERSION_KEY], undefined);
       } finally {
         global.GM = previousGM;
       }
@@ -959,7 +949,7 @@ module.exports = function registerGroup(context) {
   );
 
   runTest(
-    "CORE-CONFIG-STORAGE-01 sanitized version-one data preserves valid siblings without writing",
+    "CORE-CONFIG-STORAGE-01 sanitized version-one data migrates and preserves valid siblings",
     async () => {
       const previousGM = global.GM;
       const gm = createFakeGM();
@@ -994,11 +984,11 @@ module.exports = function registerGroup(context) {
           items: [],
           categories: {},
         });
-        const before = JSON.stringify(gm.snapshot());
         const result = await loadModule(
           "tests/fixtures/configStorageHarness.js",
         ).loadWithHealth();
-        assert.strictEqual(result.loaded.status, "sanitized");
+        assert.strictEqual(result.loaded.status, "migrated");
+        assert.strictEqual(result.loaded.migrated, true);
         assert.strictEqual(
           result.loaded.data.latestSettings.minVersion,
           config.latestSettings.minVersion,
@@ -1023,7 +1013,9 @@ module.exports = function registerGroup(context) {
           Object.hasOwn(result.loaded.data.threadSettings, "skipMaskedLink"),
           false,
         );
-        assert.strictEqual(JSON.stringify(gm.snapshot()), before);
+        assert.strictEqual(gm.snapshot()[settings.CONFIG_ENVELOPE_KEY].schemaVersion, 2);
+        assert.strictEqual(gm.snapshot()[settings.CONFIG_ENVELOPE_KEY].revision, 4);
+        assert.strictEqual(gm.snapshot()[settings.CONFIG_BACKUP_KEY].schemaVersion, 1);
         assert.strictEqual(
           result.events.filter((event) => event.code === "CONFIG_SANITIZED")
             .length,
@@ -1036,19 +1028,97 @@ module.exports = function registerGroup(context) {
   );
 
   runTest(
-    "CORE-CONFIG-STORAGE-01 persistence contract has version one and zero migrations",
+    "CORE-CONFIG-STORAGE-01 persistence contract has version two and one migration",
     () => {
       const persistence = loadModule("src/config/persistence.js");
-      assert.strictEqual(persistence.CONFIG_SCHEMA_VERSION, 1);
-      assert.strictEqual(persistence.CONFIG_MIGRATION_COUNT, 0);
-      assert.deepStrictEqual(persistence.CONFIG_MIGRATIONS, []);
-      assert.strictEqual(persistence.isCurrentConfigVersion(1), true);
+      assert.strictEqual(persistence.CONFIG_SCHEMA_VERSION, 2);
+      assert.strictEqual(persistence.CONFIG_MIGRATION_COUNT, 1);
+      assert.strictEqual(persistence.CONFIG_MIGRATIONS[0].fromVersion, 1);
+      assert.strictEqual(persistence.CONFIG_MIGRATIONS[0].toVersion, 2);
+      assert.strictEqual(persistence.isCurrentConfigVersion(2), true);
+      assert.strictEqual(persistence.isCurrentConfigVersion(1), false);
+      assert.strictEqual(persistence.isSupportedConfigVersion(1), true);
       assert.strictEqual(persistence.isSupportedConfigVersion(0), false);
     },
   );
 
   runTest(
-    "CORE-CONFIG-MIGRATION-RECOVERY-01 recovers the supplied real-world surface layout",
+    "CORE-STORAGE-LEGACY-GUARD-01 records the proven bridge and bounded detector",
+    () => {
+      const migration = loadModule("src/services/configMigrationService.js");
+      assert.strictEqual(migration.CONFIG_LEGACY_BRIDGE_VERSION, "5.1.2");
+      assert.deepStrictEqual(
+        migration.classifyLegacyUpgrade({
+          canonical: { preferredTags: [1] },
+          backup: { latestSettings: {} },
+          surfaceValues: { minVersion: 0.7 },
+        }).sources,
+        ["canonical-root", "backup-root", "surface-keys"],
+      );
+      assert.match(migration.getLegacyUpgradeMessage(), /v5\.1\.2/);
+      assert.match(migration.getLegacyUpgradeMessage(), /No stored configuration was changed/);
+    },
+  );
+
+  runTest(
+    "CORE-STORAGE-LEGACY-GUARD-01 presents the blocking bridge notice once",
+    () => {
+      const previousWindow = global.window;
+      const messages = [];
+      global.window = { alert: (message) => messages.push(message) };
+      try {
+        const notice = loadModule("src/ui/storageUpgradeNotice.js");
+        const error = { code: "upgrade_required" };
+        assert.strictEqual(notice.showStorageUpgradeNotice(error), true);
+        assert.strictEqual(notice.showStorageUpgradeNotice(error), false);
+        assert.strictEqual(messages.length, 1);
+        assert.match(messages[0], /core v5\.1\.2/);
+      } finally { global.window = previousWindow; }
+    },
+  );
+
+  runTest(
+    "CORE-STORAGE-SCHEMA-2-01 keeps a future canonical envelope read-only and untouched",
+    async () => {
+      const previousGM = global.GM;
+      const futureEnvelope = { schemaVersion: 3, revision: 9, writerId: "future-writer", updatedAt: 9, data: getDefaultConfig() };
+      const gm = createFakeGM({ ["f95ue:config:migration-version"]: 1, ["f95ue:config"]: futureEnvelope });
+      global.GM = gm;
+      try {
+        const settings = loadModule("src/services/settingsService.js");
+        const before = gm.logs();
+        const loaded = await settings.loadConfig();
+        assert.strictEqual(loaded.status, "unsupported-newer");
+        assert.strictEqual(loaded.persisted, false);
+        assert.deepStrictEqual(gm.snapshot()[settings.CONFIG_ENVELOPE_KEY], futureEnvelope);
+        assert.deepStrictEqual(gm.logs().writes, before.writes);
+        assert.deepStrictEqual(gm.logs().deletes, before.deletes);
+      } finally { global.GM = previousGM; }
+    },
+  );
+
+  runTest(
+    "CORE-STORAGE-SCHEMA-2-01 interrupted canonical write retains schema one and its backup",
+    async () => {
+      const previousGM = global.GM;
+      const oldEnvelope = { schemaVersion: 1, revision: 6, writerId: "schema-one-writer", updatedAt: 6, data: getDefaultConfig() };
+      const gm = createFakeGM({ ["f95ue:config:migration-version"]: 1, ["f95ue:config"]: oldEnvelope }, { failSetKey: "f95ue:config" });
+      global.GM = gm;
+      try {
+        const settings = loadModule("src/services/settingsService.js");
+        const loaded = await settings.loadConfig();
+        const snapshot = gm.snapshot();
+        assert.strictEqual(loaded.status, "migration-failed");
+        assert.strictEqual(loaded.persisted, false);
+        assert.deepStrictEqual(snapshot[settings.CONFIG_ENVELOPE_KEY], oldEnvelope);
+        assert.deepStrictEqual(snapshot[settings.CONFIG_BACKUP_KEY], oldEnvelope);
+        assert.strictEqual(snapshot[settings.CONFIG_RECOVERY_MARKER_KEY].kind, "schema-migration-failed");
+      } finally { global.GM = previousGM; }
+    },
+  );
+
+  runTest(
+    "CORE-STORAGE-LEGACY-GUARD-01 preserves the supplied real-world surface layout",
     async () => {
       const previousGM = global.GM;
       const fixture = loadModule("tests/fixtures/configMigrationHarness.js");
@@ -1059,52 +1129,9 @@ module.exports = function registerGroup(context) {
         const settings = loadModule("src/services/settingsService.js");
         const loaded = await settings.loadConfig();
         const snapshot = gm.snapshot();
-        const canonical = snapshot[settings.CONFIG_ENVELOPE_KEY];
-        assert.strictEqual(loaded.status, "migrated");
-        assert.strictEqual(
-          Object.hasOwn(loaded.data.globalSettings, "disableHelpMessage"),
-          false,
-        );
-        assert.strictEqual(loaded.data.latestSettings.autoRefresh, true);
-        assert.strictEqual(loaded.data.latestSettings.webNotif, true);
-        assert.deepStrictEqual(
-          loaded.data.preferredTags,
-          reference.preferredTags,
-        );
-        assert.deepStrictEqual(
-          loaded.data.excludedTags,
-          reference.excludedTags,
-        );
-        assert.deepStrictEqual(loaded.data.markedTags, reference.markedTags);
-        assert.strictEqual(loaded.data.threadSettings.preferredShadow, false);
-        assert.strictEqual(
-          loaded.data.addons.byAddon["latest-filters-addon"].state.enabled,
-          true,
-        );
-        assert.ok(
-          Array.isArray(
-            loaded.data.addons.byAddon["latest-filters-addon"].state.presets,
-          ),
-        );
-        assert.strictEqual(Object.hasOwn(canonical.data, "metrics"), false);
-        assert.strictEqual(canonical.data.tags.length, 0);
-        assert.deepStrictEqual(canonical.data.prefixes, {
-          items: [],
-          categories: {},
-        });
-        assert.deepStrictEqual(
-          snapshot[settings.CONFIG_TAGS_CACHE_KEY],
-          reference.tags,
-        );
-        assert.deepStrictEqual(
-          snapshot[settings.CONFIG_PREFIXES_CACHE_KEY],
-          reference.prefixes,
-        );
-        assert.strictEqual(snapshot.tags, undefined);
-        assert.strictEqual(snapshot.prefixes, undefined);
-        assert.strictEqual(snapshot.globalSettings, undefined);
-        assert.strictEqual(snapshot.metrics, undefined);
-        assert.strictEqual(snapshot[settings.CONFIG_MIGRATION_VERSION_KEY], 1);
+        assert.strictEqual(loaded.status, "upgrade-required");
+        assert.deepStrictEqual(snapshot, reference);
+        assert.strictEqual(snapshot[settings.CONFIG_MIGRATION_VERSION_KEY], undefined);
       } finally {
         global.GM = previousGM;
       }
@@ -1118,7 +1145,7 @@ module.exports = function registerGroup(context) {
       const gm = createFakeGM({
         ["f95ue:config:migration-version"]: 1,
         ["f95ue:config"]: {
-          schemaVersion: 1,
+          schemaVersion: 2,
           revision: 7,
           writerId: "ready",
           updatedAt: 7,
@@ -1152,7 +1179,7 @@ module.exports = function registerGroup(context) {
   );
 
   runTest(
-    "CORE-CONFIG-MIGRATION-RECOVERY-01 invalid historical leaves preserve valid siblings",
+    "CORE-STORAGE-LEGACY-GUARD-01 does not sanitize invalid historical leaves",
     async () => {
       const previousGM = global.GM;
       const gm = createFakeGM({
@@ -1170,25 +1197,12 @@ module.exports = function registerGroup(context) {
       try {
         const settings = loadModule("src/services/settingsService.js");
         const loaded = await settings.loadConfig();
-        assert.strictEqual(loaded.status, "migrated");
-        assert.strictEqual(
-          Object.hasOwn(loaded.data.globalSettings, "disableHelpMessage"),
-          false,
-        );
-        assert.strictEqual(
-          Object.hasOwn(loaded.data.globalSettings, "enableCrossTabSync"),
-          false,
-        );
-        assert.strictEqual(loaded.data.globalSettings.configVisibility, true);
-        assert.strictEqual(loaded.data.latestSettings.autoRefresh, true);
-        assert.strictEqual(
-          loaded.data.latestSettings.priorityWeights.rating,
-          4,
-        );
-        assert.strictEqual(
-          loaded.data.latestSettings.priorityWeights.engagement,
-          1.5,
-        );
+        assert.strictEqual(loaded.status, "upgrade-required");
+        assert.deepStrictEqual(gm.snapshot().globalSettings, {
+          configVisibility: "bad",
+          disableHelpMessage: true,
+          enableCrossTabSync: true,
+        });
       } finally {
         global.GM = previousGM;
       }
@@ -1204,7 +1218,10 @@ module.exports = function registerGroup(context) {
       try {
         let settings = loadModule("src/services/settingsService.js");
         const first = await settings.loadConfig();
-        assert.strictEqual(first.status, "migrated");
+        assert.strictEqual(first.status, "initialized");
+        assert.strictEqual(first.source, "fresh");
+        assert.strictEqual(gm.snapshot()[settings.CONFIG_BACKUP_KEY], undefined);
+        assert.strictEqual(gm.snapshot()[settings.CONFIG_INITIALIZATION_LOCK_KEY], undefined);
         const firstRevision =
           gm.snapshot()[settings.CONFIG_ENVELOPE_KEY].revision;
         const writesBefore = gm.logs().writes.length;
@@ -1231,10 +1248,10 @@ module.exports = function registerGroup(context) {
       const gm = createFakeGM();
       global.GM = gm;
       try {
-        const settings = loadModule("src/services/settingsService.js");
-        const { config } = loadModule("src/config.js");
+        const settings = loadModule("tests/fixtures/settingsReadyHarness.js");
+        const { config } = settings;
         await seedReadyConfig(gm, settings, config);
-        await settings.loadConfig();
+        await settings.bootstrapStorage();
         const before = gm.logs();
         const tags = Array.from({ length: 10 }, (_, index) => ({
           id: index + 1,
@@ -1256,16 +1273,245 @@ module.exports = function registerGroup(context) {
   );
 
   runTest(
+    "CORE-STORAGE-FRESH-INIT-01 initializes canonical storage without legacy migration or backup",
+    async () => {
+      const previousGM = global.GM;
+      const gm = createFakeGM();
+      global.GM = gm;
+      try {
+        const settings = loadModule("tests/fixtures/settingsReadyHarness.js");
+        const loaded = await settings.loadConfig();
+        await settings.bootstrapStorage();
+        const snapshot = gm.snapshot();
+        assert.strictEqual(loaded.status, "initialized");
+        assert.strictEqual(loaded.source, "fresh");
+        assert.strictEqual(loaded.persisted, true);
+        assert.strictEqual(snapshot[settings.CONFIG_ENVELOPE_KEY].schemaVersion, 2);
+        assert.strictEqual(snapshot[settings.CONFIG_ENVELOPE_KEY].revision, 1);
+        assert.strictEqual(snapshot[settings.CONFIG_MIGRATION_VERSION_KEY], 1);
+        assert.strictEqual(snapshot[settings.CONFIG_BACKUP_KEY], undefined);
+        assert.strictEqual(snapshot[settings.CONFIG_MIGRATION_LOCK_KEY], undefined);
+        assert.strictEqual(snapshot[settings.CONFIG_INITIALIZATION_LOCK_KEY], undefined);
+        assert.strictEqual(snapshot[settings.CONFIG_RECOVERY_MARKER_KEY], undefined);
+        assert.strictEqual(gm.logs().reads.includes("preferredTags"), true);
+        assert.strictEqual(gm.logs().writes.includes(settings.CONFIG_BACKUP_KEY), false);
+      } finally {
+        global.GM = previousGM;
+      }
+    },
+  );
+
+  runTest(
+    "CORE-STORAGE-FRESH-INIT-01 accepts ScriptCat property-order normalization",
+    async () => {
+      const previousGM = global.GM;
+      const reorder = (value) => {
+        if (Array.isArray(value)) return value.map(reorder);
+        if (!value || typeof value !== "object") return value;
+        return Object.fromEntries(Object.keys(value).sort().map((key) => [key, reorder(value[key])]));
+      };
+      const gm = createFakeGM({}, {
+        afterSet(key, values) { values.set(key, reorder(values.get(key))); },
+      });
+      global.GM = gm;
+      try {
+        const settings = loadModule("src/services/settingsService.js");
+        const loaded = await settings.loadConfig();
+        assert.strictEqual(loaded.status, "initialized");
+        assert.strictEqual(loaded.persisted, true);
+        assert.strictEqual(gm.snapshot()[settings.CONFIG_ENVELOPE_KEY].schemaVersion, 2);
+        assert.strictEqual(gm.snapshot()[settings.CONFIG_MIGRATION_VERSION_KEY], 1);
+        assert.strictEqual(gm.snapshot()[settings.CONFIG_RECOVERY_MARKER_KEY], undefined);
+      } finally {
+        global.GM = previousGM;
+      }
+    },
+  );
+
+  runTest(
+    "CORE-STORAGE-FRESH-INIT-01 persists the first setting change after initialization",
+    async () => {
+      const previousGM = global.GM;
+      const gm = createFakeGM();
+      global.GM = gm;
+      try {
+        const settings = loadModule("tests/fixtures/settingsReadyHarness.js");
+        const loaded = await settings.loadConfig();
+        await settings.bootstrapStorage();
+        const nextValue = !loaded.data.globalSettings.closeNotifOnClick;
+        const saved = await settings.saveConfigKeys({
+          globalSettings: { ...loaded.data.globalSettings, closeNotifOnClick: nextValue },
+        });
+        assert.strictEqual(saved.committed, true);
+        assert.strictEqual(gm.snapshot()[settings.CONFIG_ENVELOPE_KEY].data.globalSettings.closeNotifOnClick, nextValue);
+        assert.strictEqual(gm.snapshot()[settings.CONFIG_BACKUP_KEY].revision, 1);
+        const reloaded = await loadModule("src/services/settingsService.js").loadConfig();
+        assert.strictEqual(reloaded.data.globalSettings.closeNotifOnClick, nextValue);
+      } finally {
+        global.GM = previousGM;
+      }
+    },
+  );
+
+  runTest(
+    "CORE-STORAGE-COMPAT-CLEANUP-01 independent storage does not impersonate canonical history",
+    async () => {
+      const previousGM = global.GM;
+      const cachedTags = [{ id: 17, name: "Cached tag" }];
+      const cachedPrefixes = { items: [], categories: {} };
+      const gm = createFakeGM({
+        "f95ue:cache:tags": cachedTags,
+        "f95ue:cache:prefixes": cachedPrefixes,
+        settingsUiActivePanel: "addons",
+        settingsUiPinnedAddonIds: ["library-addon"],
+        "library-addon:runtime": { independentlyOwned: true },
+      });
+      global.GM = gm;
+      try {
+        const settings = loadModule("src/services/settingsService.js");
+        const loaded = await settings.loadConfig();
+        const snapshot = gm.snapshot();
+        assert.strictEqual(loaded.status, "initialized");
+        assert.deepStrictEqual(loaded.data.tags, cachedTags);
+        assert.deepStrictEqual(snapshot[settings.CONFIG_TAGS_CACHE_KEY], cachedTags);
+        assert.strictEqual(snapshot.settingsUiActivePanel, "addons");
+        assert.deepStrictEqual(snapshot.settingsUiPinnedAddonIds, ["library-addon"]);
+        assert.deepStrictEqual(snapshot["library-addon:runtime"], { independentlyOwned: true });
+      } finally {
+        global.GM = previousGM;
+      }
+    },
+  );
+
+  runTest(
+    "CORE-STORAGE-LEGACY-GUARD-01 preserves historical evidence for the bridge path",
+    async () => {
+      const previousGM = global.GM;
+      const gm = createFakeGM({ preferredTags: [17] });
+      global.GM = gm;
+      try {
+        const settings = loadModule("src/services/settingsService.js");
+        const loaded = await settings.loadConfig();
+        assert.strictEqual(loaded.status, "upgrade-required");
+        assert.strictEqual(loaded.source, "legacy-surface");
+        assert.deepStrictEqual(gm.snapshot().preferredTags, [17]);
+        assert.strictEqual(gm.snapshot()[settings.CONFIG_BACKUP_KEY], undefined);
+      } finally {
+        global.GM = previousGM;
+      }
+    },
+  );
+
+  runTest(
+    "CORE-STORAGE-FRESH-INIT-01 elects one initializer across competing tabs",
+    async () => {
+      const previousGM = global.GM;
+      const gm = createFakeGM();
+      global.GM = gm;
+      try {
+        const firstSettings = loadModule("src/services/settingsService.js");
+        const secondSettings = loadModule("src/services/settingsService.js");
+        const [first, second] = await Promise.all([firstSettings.loadConfig(), secondSettings.loadConfig()]);
+        assert.deepStrictEqual(new Set([first.status, second.status]), new Set(["initialized", "loaded"]));
+        assert.strictEqual(gm.snapshot()[firstSettings.CONFIG_ENVELOPE_KEY].revision, 1);
+        assert.strictEqual(gm.logs().writes.filter((key) => key === firstSettings.CONFIG_ENVELOPE_KEY).length, 1);
+        assert.strictEqual(gm.snapshot()[firstSettings.CONFIG_INITIALIZATION_LOCK_KEY], undefined);
+      } finally {
+        global.GM = previousGM;
+      }
+    },
+  );
+
+  runTest(
+    "CORE-STORAGE-WRITE-GATE-01 waits for a transitional bootstrap before committing",
+    async () => {
+      const previousGM = global.GM;
+      const gm = createFakeGM();
+      global.GM = gm;
+      try {
+        const harness = loadModule("tests/fixtures/storageWriteGateHarness.js");
+        await harness.loadForWriteGate();
+        harness.publishGateState("loading");
+        let settled = false;
+        const saving = harness.saveCoreToggle().then((result) => { settled = true; return result; });
+        await Promise.resolve();
+        assert.strictEqual(settled, false);
+        harness.publishGateState("ready");
+        const result = await saving;
+        assert.strictEqual(result.committed, true);
+      } finally {
+        global.GM = previousGM;
+      }
+    },
+  );
+
+  runTest(
+    "CORE-STORAGE-WRITE-GATE-01 blocks terminal states with stable core and add-on reasons",
+    async () => {
+      const cases = [
+        ["degraded-readonly", "migration-failed", "storage_read_only"],
+        ["unavailable", "delete_unsupported", "storage_unavailable"],
+        ["upgrade-required", "legacy_surface", "upgrade_required"],
+      ];
+      for (const [state, detail, expected] of cases) {
+        const previousGM = global.GM;
+        const gm = createFakeGM();
+        global.GM = gm;
+        try {
+          const harness = loadModule("tests/fixtures/storageWriteGateHarness.js");
+          await harness.loadForWriteGate();
+          harness.publishGateState(state, detail);
+          const writesBefore = gm.logs().writes.length;
+          const core = await harness.saveCoreToggle();
+          const addon = await harness.saveAddonValue();
+          assert.strictEqual(core.committed, false);
+          assert.strictEqual(core.failed[0].code, expected);
+          assert.strictEqual(addon.ok, false);
+          assert.strictEqual(addon.reason, expected);
+          assert.strictEqual(gm.logs().writes.length, writesBefore);
+        } finally {
+          global.GM = previousGM;
+        }
+      }
+    },
+  );
+
+  runTest(
+    "CORE-STORAGE-WRITE-GATE-01 classifies an actual commit rejection separately",
+    async () => {
+      const previousGM = global.GM;
+      const gm = createFakeGM();
+      global.GM = gm;
+      try {
+        const harness = loadModule("tests/fixtures/storageWriteGateHarness.js");
+        await harness.loadForWriteGate();
+        harness.publishGateState("ready");
+        gm.setValue = async () => { throw new Error("manager_commit_rejected"); };
+        const result = await harness.saveCoreToggle();
+        assert.strictEqual(result.committed, false);
+        assert.strictEqual(result.failed[0].code, "storage_write_failed");
+        assert.match(result.failed[0].message, /rejected/i);
+        gm.setValue = () => false;
+        const falseResult = await harness.saveCoreToggle();
+        assert.strictEqual(falseResult.committed, false);
+        assert.strictEqual(falseResult.failed[0].code, "storage_write_failed");
+      } finally {
+        global.GM = previousGM;
+      }
+    },
+  );
+
+  runTest(
     "CORE-CONFIG-MIGRATION-RECOVERY-01 prefix and add-on updates stay in their ownership boundaries",
     async () => {
       const previousGM = global.GM;
       const gm = createFakeGM();
       global.GM = gm;
       try {
-        const settings = loadModule("src/services/settingsService.js");
-        const { config } = loadModule("src/config.js");
+        const settings = loadModule("tests/fixtures/settingsReadyHarness.js");
+        const { config } = settings;
         await seedReadyConfig(gm, settings, config);
-        await settings.loadConfig();
+        await settings.authorizeStorageForTest();
         const beforePrefix = gm.logs();
         const prefixResult = await settings.saveConfigKeys({
           prefixes: {
@@ -1308,7 +1554,7 @@ module.exports = function registerGroup(context) {
   );
 
   runTest(
-    "CORE-CONFIG-MIGRATION-RECOVERY-01 migration failures keep source data and marker unset",
+    "CORE-STORAGE-LEGACY-GUARD-01 ignores write failures because detection is read-only",
     async () => {
       const previousGM = global.GM;
       const source = {
@@ -1320,7 +1566,7 @@ module.exports = function registerGroup(context) {
       try {
         const settings = loadModule("src/services/settingsService.js");
         const loaded = await settings.loadConfig();
-        assert.strictEqual(loaded.status, "migration-failed");
+        assert.strictEqual(loaded.status, "upgrade-required");
         assert.deepStrictEqual(gm.snapshot().preferredTags, [9]);
         assert.strictEqual(
           gm.snapshot()[settings.CONFIG_MIGRATION_VERSION_KEY],
@@ -1337,7 +1583,243 @@ module.exports = function registerGroup(context) {
   );
 
   runTest(
-    "CORE-CONFIG-MIGRATION-RECOVERY-01 marker and read-back failures never complete migration",
+    "CORE-STORAGE-LEGACY-GUARD-01 ScriptCat-shaped historical data is read-only",
+    async () => {
+      const previousGM = global.GM;
+      const gm = createFakeGM({ preferredTags: [] }, { failSetKey: "f95ue:config:last-known-good" });
+      global.GM = gm;
+      try {
+        const settings = loadModule("src/services/settingsService.js");
+        const fixture = loadModule("tests/fixtures/configStorageHarness.js");
+        const { loaded, events } = await fixture.loadWithHealth();
+        const snapshot = gm.snapshot();
+        assert.strictEqual(loaded.status, "upgrade-required");
+        assert.deepStrictEqual(snapshot.preferredTags, []);
+        assert.strictEqual(snapshot[settings.CONFIG_ENVELOPE_KEY], undefined);
+        assert.strictEqual(snapshot[settings.CONFIG_BACKUP_KEY], undefined);
+        assert.strictEqual(snapshot[settings.CONFIG_MIGRATION_VERSION_KEY], undefined);
+        assert.strictEqual(snapshot[settings.CONFIG_MIGRATION_LOCK_KEY], undefined);
+        assert.strictEqual(snapshot[settings.CONFIG_RECOVERY_MARKER_KEY], undefined);
+        assert.strictEqual(events.some((event) => event.code === "CONFIG_MIGRATION_FAILED"), false);
+      } finally {
+        global.GM = previousGM;
+      }
+    },
+  );
+
+  runTest(
+    "CORE-STORAGE-LEGACY-GUARD-01 manager shape does not bypass the upgrade guard",
+    async () => {
+      const previousGM = global.GM;
+      const gm = createFakeGM({ preferredTags: [] });
+      global.GM = gm;
+      try {
+        const settings = loadModule("src/services/settingsService.js");
+        const loaded = await settings.loadConfig();
+        const snapshot = gm.snapshot();
+
+        assert.strictEqual(loaded.status, "upgrade-required");
+        assert.strictEqual(snapshot[settings.CONFIG_ENVELOPE_KEY], undefined);
+        assert.strictEqual(snapshot[settings.CONFIG_BACKUP_KEY], undefined);
+        assert.strictEqual(snapshot[settings.CONFIG_MIGRATION_VERSION_KEY], undefined);
+        assert.strictEqual(snapshot[settings.CONFIG_MIGRATION_LOCK_KEY], undefined);
+        assert.strictEqual(snapshot[settings.CONFIG_RECOVERY_MARKER_KEY], undefined);
+      } finally {
+        global.GM = previousGM;
+      }
+    },
+  );
+
+  runTest(
+    "CORE-STORAGE-CAPABILITY-PROBE-01 verifies and cleans a sync or async storage API",
+    async () => {
+      const { probeStorageCapabilities } = loadModule("src/services/storageAdapter.js");
+      for (const asynchronous of [false, true]) {
+        const values = new Map();
+        const settle = (value) => asynchronous ? Promise.resolve(value) : value;
+        const api = {
+          info: { scriptHandler: asynchronous ? "ScriptCat" : "Tampermonkey" },
+          getValue: (key, fallback) => settle(values.has(key) ? values.get(key) : fallback),
+          setValue: (key, value) => settle(values.set(key, value) && undefined),
+          deleteValue: (key) => settle(values.delete(key) && undefined),
+        };
+        const result = await probeStorageCapabilities(api, { probeId: asynchronous ? "async" : "sync" });
+        assert.strictEqual(result.ok, true);
+        assert.strictEqual(result.canRead, true);
+        assert.strictEqual(result.canWrite, true);
+        assert.strictEqual(result.canDelete, true);
+        assert.strictEqual(result.manager, asynchronous ? "ScriptCat" : "Tampermonkey");
+        assert.strictEqual(values.size, 0);
+      }
+    },
+  );
+
+  runTest(
+    "CORE-STORAGE-CAPABILITY-PROBE-01 classifies unsupported rejected false and mismatched operations",
+    async () => {
+      const { probeStorageCapabilities } = loadModule("src/services/storageAdapter.js");
+      const unsupported = await probeStorageCapabilities({ getValue() {}, setValue() {} });
+      assert.strictEqual(unsupported.reason, "delete_unsupported");
+
+      const rejected = await probeStorageCapabilities({
+        getValue: async (_key, fallback) => fallback,
+        setValue: async () => { throw new Error("manager_write_rejected"); },
+        deleteValue: async () => undefined,
+      });
+      assert.strictEqual(rejected.failedStep, "write");
+      assert.strictEqual(rejected.reason, "manager_write_rejected");
+
+      const falseWrite = await probeStorageCapabilities({
+        getValue: (_key, fallback) => fallback,
+        setValue: () => false,
+        deleteValue: () => undefined,
+      });
+      assert.strictEqual(falseWrite.reason, "write_returned_false");
+
+      const mismatched = await probeStorageCapabilities({
+        getValue: (_key, fallback) => fallback,
+        setValue: () => undefined,
+        deleteValue: () => undefined,
+      });
+      assert.strictEqual(mismatched.failedStep, "readback");
+      assert.strictEqual(mismatched.reason, "readback_mismatch");
+    },
+  );
+
+  runTest(
+    "CORE-STORAGE-CAPABILITY-PROBE-01 reports cleanup failure and preserves the primary reason",
+    async () => {
+      const { probeStorageCapabilities } = loadModule("src/services/storageAdapter.js");
+      const values = new Map();
+      const result = await probeStorageCapabilities({
+        getValue: (key, fallback) => values.has(key) ? values.get(key) : fallback,
+        setValue: (key, value) => { values.set(key, value); },
+        deleteValue: () => { throw new Error("manager_delete_rejected"); },
+      }, { probeId: "cleanup" });
+      assert.strictEqual(result.ok, false);
+      assert.strictEqual(result.failedStep, "delete");
+      assert.strictEqual(result.reason, "cleanup_failed");
+      assert.strictEqual(result.cleanupReason, "manager_delete_rejected");
+      assert.strictEqual(values.size, 1);
+    },
+  );
+
+  runTest(
+    "CORE-STORAGE-CAPABILITY-PROBE-01 concurrent probes own distinct cleanup keys",
+    async () => {
+      const { probeStorageCapabilities } = loadModule("src/services/storageAdapter.js");
+      const values = new Map();
+      const written = [];
+      const deleted = [];
+      const api = {
+        getValue: async (key, fallback) => values.has(key) ? values.get(key) : fallback,
+        setValue: async (key, value) => { written.push(key); values.set(key, value); },
+        deleteValue: async (key) => { deleted.push(key); values.delete(key); },
+      };
+      const results = await Promise.all([
+        probeStorageCapabilities(api, { probeId: "tab-a" }),
+        probeStorageCapabilities(api, { probeId: "tab-b" }),
+      ]);
+      assert.deepStrictEqual(results.map((result) => result.ok), [true, true]);
+      assert.strictEqual(new Set(written).size, 2);
+      assert.deepStrictEqual(new Set(deleted), new Set(written));
+      assert.strictEqual(values.size, 0);
+    },
+  );
+
+  runTest(
+    "CORE-STORAGE-BOOTSTRAP-01 publishes one healthy snapshot for concurrent callers",
+    async () => {
+      const previousGM = global.GM;
+      const gm = createFakeGM();
+      let probeWrites = 0;
+      const originalSet = gm.setValue;
+      gm.setValue = async (key, value) => {
+        if (String(key).startsWith("f95ue:storage:probe:")) probeWrites += 1;
+        return originalSet(key, value);
+      };
+      global.GM = gm;
+      try {
+        const harness = loadModule("tests/fixtures/storageBootstrapHarness.js");
+        const result = await harness.startStorageScenario({ concurrent: 10 });
+        assert.strictEqual(probeWrites, 1);
+        assert.strictEqual(result.results.length, 10);
+        assert.ok(result.results.every((entry) => entry === result.results[0]));
+        assert.strictEqual(result.snapshot.state, "ready");
+        assert.strictEqual(result.snapshot.canRead, true);
+        assert.strictEqual(result.snapshot.canWrite, true);
+        assert.strictEqual(result.snapshot.canDelete, true);
+        assert.strictEqual(result.snapshot.attempt, 1);
+        assert.strictEqual(result.status.status, "running");
+        assert.strictEqual(result.diagnostics.snapshots.storage.state, "ready");
+        assert.strictEqual(Object.keys(gm.snapshot()).some((key) => key.startsWith("f95ue:storage:probe:")), false);
+      } finally {
+        global.GM = previousGM;
+      }
+    },
+  );
+
+  runTest(
+    "CORE-STORAGE-LEGACY-GUARD-01 exposes upgrade-required health and blocks bootstrap",
+    async () => {
+      const previousGM = global.GM;
+      global.GM = createFakeGM({ preferredTags: [] }, { failSetKey: "f95ue:config:last-known-good" });
+      try {
+        const result = await loadModule("tests/fixtures/storageBootstrapHarness.js").startStorageUpgradeScenario();
+        assert.strictEqual(result.error.code, "upgrade_required");
+        assert.strictEqual(result.snapshot.state, "upgrade-required");
+        assert.strictEqual(result.snapshot.canWrite, true);
+        assert.strictEqual(result.snapshot.usingFallback, true);
+        assert.strictEqual(result.snapshot.reason, "legacy_surface");
+        assert.strictEqual(result.status.status, "failing");
+        assert.ok(result.events.some((event) => event.code === "CONFIG_STORAGE_UPGRADE_REQUIRED"));
+      } finally {
+        global.GM = previousGM;
+      }
+    },
+  );
+
+  runTest(
+    "CORE-STORAGE-BOOTSTRAP-01 fails unavailable capability and permits explicit retry",
+    async () => {
+      const previousGM = global.GM;
+      const values = new Map();
+      const api = {
+        getValue: async (key, fallback) => values.has(key) ? values.get(key) : fallback,
+        setValue: async (key, value) => { values.set(key, value); },
+      };
+      global.GM = api;
+      try {
+        const harness = loadModule("tests/fixtures/storageBootstrapHarness.js");
+        await assert.rejects(() => harness.startStorageScenario(), /delete_unsupported/);
+        api.deleteValue = async (key) => { values.delete(key); };
+        const retried = await harness.retryStorageScenario();
+        assert.strictEqual(retried.snapshot.state, "ready");
+        assert.strictEqual(retried.snapshot.attempt, 2);
+        assert.strictEqual(retried.status.status, "running");
+        assert.strictEqual(retried.diagnostics.snapshots.storage.state, "ready");
+        assert.ok(retried.events.some((event) => event.code === "CONFIG_STORAGE_UNAVAILABLE"));
+      } finally {
+        global.GM = previousGM;
+      }
+    },
+  );
+
+  runTest(
+    "CORE-STORAGE-BOOTSTRAP-01 gates fast and body features behind shared storage bootstrap",
+    () => {
+      const source = fs.readFileSync(path.join(ROOT, "src/main.js"), "utf8");
+      const fast = source.slice(source.indexOf("async function runFastBootstrap"), source.indexOf("async function runBodyBootstrap"));
+      const body = source.slice(source.indexOf("async function runBodyBootstrap"), source.indexOf("export function startRuntime"));
+      assert.ok(fast.indexOf('id: "storageBootstrap"') < fast.indexOf('id: "loadFastBootstrapFeatures"'));
+      assert.ok(fast.indexOf('id: "storageBootstrap"') < fast.indexOf('id: "initAddonsConsoleBridge"'));
+      assert.ok(body.indexOf('id: "storageBootstrap"') < body.indexOf('id: "loadBodyBootstrapFeatures"'));
+      assert.match(source, /showStorageUpgradeNotice\(error\)/);
+    },
+  );
+
+  runTest(
+    "CORE-STORAGE-LEGACY-GUARD-01 historical detection never reaches retired writes",
     async () => {
       for (const option of [
         { failSetKey: "f95ue:config:migration-version" },
@@ -1360,7 +1842,7 @@ module.exports = function registerGroup(context) {
         try {
           const settings = loadModule("src/services/settingsService.js");
           const loaded = await settings.loadConfig();
-          assert.strictEqual(loaded.status, "migration-failed");
+          assert.strictEqual(loaded.status, "upgrade-required");
           assert.strictEqual(
             gm.snapshot()[settings.CONFIG_MIGRATION_VERSION_KEY],
             undefined,
@@ -1374,7 +1856,7 @@ module.exports = function registerGroup(context) {
   );
 
   runTest(
-    "CORE-CONFIG-MIGRATION-RECOVERY-01 cleanup failure leaves verified data and marker intact",
+    "CORE-STORAGE-LEGACY-GUARD-01 never cleans historical data",
     async () => {
       const previousGM = global.GM;
       const gm = createFakeGM({ preferredTags: [8] }, { failDelete: true });
@@ -1382,13 +1864,13 @@ module.exports = function registerGroup(context) {
       try {
         const settings = loadModule("src/services/settingsService.js");
         const loaded = await settings.loadConfig();
-        assert.strictEqual(loaded.status, "migrated");
+        assert.strictEqual(loaded.status, "upgrade-required");
         assert.strictEqual(
           gm.snapshot()[settings.CONFIG_MIGRATION_VERSION_KEY],
-          1,
+          undefined,
         );
         assert.deepStrictEqual(gm.snapshot().preferredTags, [8]);
-        assert.ok(gm.snapshot()[settings.CONFIG_ENVELOPE_KEY]);
+        assert.strictEqual(gm.snapshot()[settings.CONFIG_ENVELOPE_KEY], undefined);
       } finally {
         global.GM = previousGM;
       }
@@ -1396,7 +1878,7 @@ module.exports = function registerGroup(context) {
   );
 
   runTest(
-    "CORE-CONFIG-MIGRATION-RECOVERY-01 concurrent startup has one migration winner",
+    "CORE-STORAGE-LEGACY-GUARD-01 concurrent startup remains read-only",
     async () => {
       const previousGM = global.GM;
       const gm = createFakeGM({ preferredTags: [11] });
@@ -1408,13 +1890,12 @@ module.exports = function registerGroup(context) {
           firstSettings.loadConfig(),
           secondSettings.loadConfig(),
         ]);
-        assert.ok([first.status, second.status].includes("migrated"));
+        assert.strictEqual(first.status, "upgrade-required");
+        assert.strictEqual(second.status, "upgrade-required");
         assert.strictEqual(
           gm.snapshot()[firstSettings.CONFIG_MIGRATION_VERSION_KEY],
-          1,
+          undefined,
         );
-        assert.ok([first.status, second.status].includes("loaded"));
-        assert.notStrictEqual(first.status, second.status);
       } finally {
         global.GM = previousGM;
       }
@@ -1422,7 +1903,7 @@ module.exports = function registerGroup(context) {
   );
 
   runTest(
-    "CORE-CONFIG-MIGRATION-RECOVERY-01 save waits for migration readiness",
+    "CORE-STORAGE-LEGACY-GUARD-01 save is rejected behind the upgrade guard",
     async () => {
       const previousGM = global.GM;
       const gm = createFakeGM({
@@ -1437,10 +1918,10 @@ module.exports = function registerGroup(context) {
           globalSettings: { configVisibility: false },
         });
         const [loaded, saved] = await Promise.all([loadPromise, savePromise]);
-        assert.strictEqual(loaded.status, "migrated");
-        assert.strictEqual(saved.committed, true);
-        assert.deepStrictEqual(saved.config.preferredTags, [13]);
-        assert.strictEqual(saved.config.globalSettings.configVisibility, false);
+        assert.strictEqual(loaded.status, "upgrade-required");
+        assert.strictEqual(saved.committed, false);
+        assert.strictEqual(saved.failed[0].code, "storage_not_ready");
+        assert.deepStrictEqual(gm.snapshot().preferredTags, [13]);
       } finally {
         global.GM = previousGM;
       }
@@ -1448,7 +1929,7 @@ module.exports = function registerGroup(context) {
   );
 
   runTest(
-    "CORE-CONFIG-MIGRATION-RECOVERY-01 canonical size is isolated from tag and prefix catalog size",
+    "CORE-STORAGE-LEGACY-GUARD-01 detector cost is independent of catalog contents",
     () => {
       const migration = loadModule("src/services/configMigrationService.js");
       const makeTags = (count) =>
@@ -1475,24 +1956,10 @@ module.exports = function registerGroup(context) {
           ],
         },
       });
-      const small = migration.buildMigrationPlan({
-        surfaceValues: { tags: makeTags(10), prefixes: makePrefixes(10) },
-      });
-      const large = migration.buildMigrationPlan({
-        surfaceValues: { tags: makeTags(10000), prefixes: makePrefixes(300) },
-      });
-      assert.strictEqual(
-        JSON.stringify(migration.getCanonicalData(small.data)).length,
-        JSON.stringify(migration.getCanonicalData(large.data)).length,
-      );
-      assert.ok(
-        JSON.stringify(large.caches.tags).length >
-          JSON.stringify(small.caches.tags).length,
-      );
-      assert.ok(
-        JSON.stringify(large.caches.prefixes).length >
-          JSON.stringify(small.caches.prefixes).length,
-      );
+      const small = migration.classifyLegacyUpgrade({ surfaceValues: { tags: makeTags(10), prefixes: makePrefixes(10) } });
+      const large = migration.classifyLegacyUpgrade({ surfaceValues: { tags: makeTags(10000), prefixes: makePrefixes(300) } });
+      assert.deepStrictEqual(small, large);
+      assert.deepStrictEqual(small.sources, ["surface-keys"]);
     },
   );
 
@@ -1741,7 +2208,7 @@ module.exports = function registerGroup(context) {
         getExportableConfigKeys().sort(),
       );
       assert.strictEqual(exported.formatVersion, 1);
-      assert.strictEqual(exported.schemaVersion, 1);
+      assert.strictEqual(exported.schemaVersion, 2);
       assert.strictEqual(exported.exportedAt, "2026-01-01T00:00:00.000Z");
       assert.strictEqual(Object.hasOwn(exported.settings, "addons"), false);
       assert.strictEqual(typeof exported.applicationVersion, "string");
@@ -1832,7 +2299,8 @@ module.exports = function registerGroup(context) {
       const gm = createFakeGM();
       global.GM = gm;
       try {
-        const service = loadModule("src/services/configTransfer/index.js");
+        const service = loadModule("tests/fixtures/configTransferReadyHarness.js");
+        await service.authorizeStorageForTest();
         const result = await service.commitConfigImport({
           formatVersion: 1,
           schemaVersion: 1,
@@ -3558,14 +4026,15 @@ module.exports = function registerGroup(context) {
       const gm = createFakeGM();
       global.GM = gm;
       try {
-        const settings = loadModule("src/services/settingsService.js");
-        const { config } = loadModule("src/config.js");
+        const settings = loadModule("tests/fixtures/settingsReadyHarness.js");
+        const { config } = settings;
         await seedReadyConfig(gm, settings, config);
         const envelope = gm.snapshot()[settings.CONFIG_ENVELOPE_KEY];
         envelope.data.latestSettings.latestAjaxErrorRecovery = false;
         await gm.setValue(settings.CONFIG_ENVELOPE_KEY, envelope);
         const writes = gm.logs().writes.length;
         const loaded = await settings.loadConfig();
+        await settings.authorizeStorageForTest();
         assert.strictEqual(
           Object.hasOwn(loaded.data.latestSettings, "latestAjaxErrorRecovery"),
           false,

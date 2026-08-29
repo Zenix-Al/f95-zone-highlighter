@@ -23,9 +23,22 @@ import {
   registerSettingsMetadata,
 } from "../../src/ui/settings/metaRegistry.js";
 import { applyConfigChange } from "../../src/services/configChangeApplication.js";
+import { publishStorageReadiness } from "../../src/services/storageReadiness.js";
+
+async function loadReadyConfig() {
+  const loaded = await loadConfig();
+  publishStorageReadiness({
+    state: loaded.persisted === false ? "degraded-readonly" : "ready",
+    source: loaded.source,
+    canRead: true,
+    canWrite: loaded.persisted !== false,
+    canDelete: true,
+  });
+  return loaded;
+}
 
 export async function reproduceStaleTagRender() {
-  await loadConfig();
+  await loadReadyConfig();
   config.tags = [{ id: 7, name: "Regression Tag" }];
   config.preferredTags = [1];
   config.excludedTags = [];
@@ -45,7 +58,7 @@ export async function reproduceStaleTagRender() {
 }
 
 export async function runSerializedTagMutationSequence() {
-  await loadConfig();
+  await loadReadyConfig();
   config.tags = [
     { id: 1, name: "One" },
     { id: 2, name: "Two" },
@@ -91,7 +104,7 @@ export async function runSerializedTagMutationSequence() {
 }
 
 export async function runLatestOverlayToggleSequence() {
-  await loadConfig();
+  await loadReadyConfig();
   stateManager.set("isLatest", true);
   config.latestSettings.latestOverlayToggle = true;
   await latestOverlayFeature.sync(true);
@@ -159,7 +172,7 @@ export async function runSettingsLoadNotificationContract() {
   const seeded = getDefaultConfig();
   seeded.latestSettings.latestOverlayToggle = false;
   await globalThis.GM.setValue(CONFIG_ENVELOPE_KEY, {
-    schemaVersion: 1,
+    schemaVersion: 2,
     revision: 1,
     writerId: "load-notification-fixture",
     updatedAt: 1,
@@ -197,7 +210,7 @@ function makePrefixes(count) {
 }
 
 export async function measureCatalogPersistence() {
-  await loadConfig();
+  await loadReadyConfig();
   const measurements = [];
   config.preferredTags = [];
   const coreBefore = globalThis.GM.logs();
@@ -256,7 +269,7 @@ export async function measureCatalogPersistence() {
 }
 
 export async function measureUnrelatedCatalogCopies() {
-  await loadConfig();
+  await loadReadyConfig();
   const previousTags = config.tags;
   const previousPrefixes = config.prefixes;
   const originalTags = makeTags(400);

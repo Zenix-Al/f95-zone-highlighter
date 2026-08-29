@@ -241,7 +241,14 @@ module.exports = function registerGroup(context) {
         );
         assert.ok(button);
         button.click();
-        for (let index = 0; index < 12; index += 1) await Promise.resolve();
+        for (let index = 0; index < 100; index += 1) {
+          if (harness.selectedLists()[action].includes(tagId)) {
+            for (let settle = 0; settle < 20; settle += 1) await Promise.resolve();
+            return;
+          }
+          await Promise.resolve();
+        }
+        assert.fail(`Timed out waiting for ${action} tag ${tagId} to commit`);
       };
 
       harness.renderTags(setup.tags);

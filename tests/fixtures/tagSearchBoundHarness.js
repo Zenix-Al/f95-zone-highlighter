@@ -1,5 +1,6 @@
 import { config, stateManager } from "../../src/config.js";
 import { loadConfig } from "../../src/services/settingsService.js";
+import { publishStorageReadiness } from "../../src/services/storageReadiness.js";
 import {
   hideTagSearchResults,
   initTagSearchListeners,
@@ -15,7 +16,14 @@ function makeTags(count) {
 }
 
 export async function setupTagSearchHarness(count = 130) {
-  await loadConfig();
+  const loaded = await loadConfig();
+  publishStorageReadiness({
+    state: loaded.persisted === false ? "degraded-readonly" : "ready",
+    source: loaded.source,
+    canRead: true,
+    canWrite: loaded.persisted !== false,
+    canDelete: true,
+  });
   const tags = makeTags(count);
   config.tags = tags;
   config.preferredTags = [];

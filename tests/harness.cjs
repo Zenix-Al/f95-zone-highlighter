@@ -110,7 +110,7 @@ async function seedReadyConfig(gm, settings, config) {
   data.tags = [];
   data.prefixes = { items: [], categories: {} };
   await gm.setValue(settings.CONFIG_ENVELOPE_KEY, {
-    schemaVersion: 1,
+    schemaVersion: settings.CONFIG_SCHEMA_VERSION,
     revision: 1,
     writerId: "ready-fixture",
     updatedAt: 1,

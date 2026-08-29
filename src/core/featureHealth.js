@@ -3,6 +3,7 @@ const errorLogs = new Map();
 const runtimeErrors = [];
 const healthEvents = new Map();
 const diagnosticProviders = new Map();
+const healthSubscribers = new Set();
 
 const MAX_PER_FEATURE_ERRORS = 10;
 const MAX_RUNTIME_ERRORS = 20;
@@ -34,6 +35,17 @@ function normalizeMessage(value) {
 }
 
 function safeEventCopy(event) { return { ...event, details: event.details ? { ...event.details } : null }; }
+function notifyHealthSubscribers() {
+  for (const subscriber of [...healthSubscribers]) {
+    try { subscriber(); } catch { /* diagnostics must not affect runtime health */ }
+  }
+}
+
+export function subscribeFeatureHealth(subscriber) {
+  if (typeof subscriber !== "function") return () => {};
+  healthSubscribers.add(subscriber);
+  return () => healthSubscribers.delete(subscriber);
+}
 
 export function recordHealthEvent({
   code = "FEATURE_UNKNOWN",
@@ -71,6 +83,7 @@ export function recordHealthEvent({
   healthEvents.delete(signature);
   healthEvents.set(signature, event);
   while (healthEvents.size > MAX_HEALTH_EVENTS) healthEvents.delete(healthEvents.keys().next().value);
+  notifyHealthSubscribers();
   return safeEventCopy(event);
 }
 
@@ -114,6 +127,7 @@ export function setFeatureStatus(id, status, details = null) {
   const safeDetails = details ? redactDiagnosticValue(details) : null;
   statuses.set(id, { status: normalizeStatus(status), details: safeDetails, lastUpdated: now() });
   if ((status === "failing" || status === "degraded") && safeDetails) pushFeatureError(id, safeDetails);
+  notifyHealthSubscribers();
 }
 
 export function reportFeatureFailure(id, error, phase = "runtime", context = {}) {

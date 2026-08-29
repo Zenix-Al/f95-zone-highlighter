@@ -19,16 +19,16 @@ To add a persistent field:
 Keep storage I/O, migrations, cross-tab transport, UI effects, and import/export document parsing outside this module.
 
 ### `persistence.js`
-The narrow persisted-envelope contract. It owns `CONFIG_STORAGE_KEYS`, `CONFIG_SCHEMA_VERSION` (`1`),
-the immutable empty `CONFIG_MIGRATIONS` registry, its `CONFIG_MIGRATION_COUNT` (`0`), and pure
-version checks. It does not perform storage I/O, mutate live config, run effects, or access the DOM.
+The narrow persisted-envelope contract. It owns `CONFIG_STORAGE_KEYS`, `CONFIG_SCHEMA_VERSION` (`2`),
+the single immutable schema-1-to-2 migration, and pure version checks. The migration records the
+new storage-bootstrap boundary without changing the configuration data shape. Storage I/O and
+transaction ownership remain in the settings service.
 
-Schema migration steps are therefore currently zero. The separate
-`src/services/configMigrationService.js` is retained only for the marker-gated, one-time recovery
-of the released historical surface-key layout; it is not a general schema-migration framework.
+The separate `src/services/configMigrationService.js` remains responsible for marker-gated recovery
+of the released historical surface-key layout; it is not part of the schema-step registry.
 
-Tolerant storage sanitization preserves valid known siblings, reports bounded issues, drops unknown
-or invalid leaves from the in-memory candidate, and performs no load-time storage rewrite.
+Tolerant storage sanitization preserves valid known siblings and reports bounded issues. A current
+schema-2 load is write-free; a supported schema-1 envelope is sanitized and transactionally migrated.
 
 ### Transfer ownership
 
@@ -44,7 +44,16 @@ Defines the initial structure of the global state (used by `StateManager.js`). T
 Stores static mappings of URL routes to page types and CSS selectors used across the application. Keeping selectors in a central file makes it easier to update them if the target website updates its DOM structure.
 
 ### [Storage migration and recovery](storage-migration-recovery.md)
-Records the evidence-backed surface-key migration, canonical/cache ownership, marker semantics, recovery procedure, and the compatibility boundary for eventually removing the migration code.
+Records the historical surface-key incident, canonical/cache ownership, marker semantics, and the retired migration boundary.
+
+### [ScriptCat storage baseline](storage-scriptcat-baseline.md)
+Records the fresh-install structural difference, narrowed transaction failure window, and bounded diagnostic step names without retaining user configuration values.
+
+### [Storage bootstrap](storage-bootstrap.md)
+Documents the shared capability/load sequence, immutable health snapshot, bootstrap ordering, and explicit retry boundary.
+
+### [Legacy upgrade guard](storage-legacy-upgrade-guard.md)
+Records the proven core v5.1.2 bridge boundary and the current release's read-only handling of recognized pre-schema storage.
 
 ### [Interaction regression recovery](interaction-regression.md)
 Records the serialized config-update contract, tag-edit rendering/effect ownership, deterministic overlay lifecycle, and measured storage activity.

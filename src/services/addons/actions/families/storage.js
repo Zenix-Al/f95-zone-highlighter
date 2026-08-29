@@ -14,12 +14,12 @@ export async function actionStorageGet(addonId, payload, ensureAddonStateBucket,
       if (revoked) return { ok: false, reason: revoked };
       stateBucket[key] = legacyValue;
       const persisted = await persistAddonsState();
-      if (!persisted.ok) return { ok: false, reason: "storage_error" };
+      if (!persisted.ok) return { ok: false, reason: persisted.reason || "storage_write_failed" };
       return { ok: true, value: legacyValue };
     }
     return { ok: true, value: payload?.defaultValue ?? null };
   } catch {
-    return { ok: false, reason: "storage_error" };
+    return { ok: false, reason: "storage_unavailable" };
   }
 }
 
@@ -44,7 +44,7 @@ export async function actionStorageSet(
   if (!persisted.ok) {
     if (hadKey) stateBucket[key] = previousValue;
     else delete stateBucket[key];
-    return { ok: false, reason: "storage_error" };
+    return { ok: false, reason: persisted.reason || "storage_write_failed" };
   }
   return { ok: true };
 }
@@ -73,7 +73,7 @@ export async function actionConfigGetTagPrefs(measurePayloadBytes, maxPayloadByt
       ? { ok: false, reason: "payload_too_large" }
       : { ok: true, value };
   } catch {
-    return { ok: false, reason: "storage_error" };
+    return { ok: false, reason: "storage_unavailable" };
   }
 }
 

@@ -1,5 +1,5 @@
-import { loadData } from "./services/settingsService";
 import { initAddonsConsoleBridge, refreshAddonSecurityPolicies } from "./services/addonsService.js";
+import { startStorageBootstrap } from "./services/storageBootstrapService.js";
 import { waitForBodyReady } from "./utils/dom";
 import { detectPage } from "./core/pageDetection.js";
 import { createBootstrapFailureHandler, runBootstrapPipeline } from "./core/bootstrap.js";
@@ -16,20 +16,28 @@ import {
   markRuntimeRunning,
   markRuntimeStarting,
   registerTeardownResetter,
-  getRuntimeState,
   resumeRuntime,
   suspendRuntime,
   teardownAll,
 } from "./core/teardown.js";
 import { initGlobalErrorListeners } from "./core/featureFactory.js";
 import { flushQueuedToasts } from "./ui/components/toast.js";
+import { showStorageUpgradeNotice } from "./ui/storageUpgradeNotice.js";
 import { initRouteObserver } from "./core/routeObserver.js";
 import { beginRoute, getRouteContext } from "./core/routeState.js";
 import { createPageLifecycleHandlers } from "./core/pageLifecycle.js";
 
 let globalTeardownHooksRegistered = false;
-let configLoadPromise = null;
 let startupPromise = null;
+
+async function startRequiredStorageBootstrap() {
+  try {
+    return await startStorageBootstrap();
+  } catch (error) {
+    showStorageUpgradeNotice(error);
+    throw error;
+  }
+}
 
 const { handlePageHide, handlePageShow } = createPageLifecycleHandlers({
   suspendRuntime, teardownAll, resumeRuntime, beginRoute, detectPage,
@@ -38,7 +46,6 @@ const { handlePageHide, handlePageShow } = createPageLifecycleHandlers({
 
 registerTeardownResetter(() => {
   globalTeardownHooksRegistered = false;
-  configLoadPromise = null;
   startupPromise = null;
 });
 
@@ -49,25 +56,17 @@ function registerGlobalTeardownHooks() {
   addListener("global-pageshow", window, "pageshow", handlePageShow);
 }
 
-async function ensureConfigLoaded() {
-  if (!configLoadPromise) {
-    configLoadPromise = loadData().catch((error) => {
-      configLoadPromise = null;
-      throw error;
-    });
-  }
-
-  const loadedConfig = await configLoadPromise;
-  if (["suspended", "stopping", "stopped"].includes(getRuntimeState())) return loadedConfig;
-  return loadedConfig;
-}
-
 async function runFastBootstrap() {
   // Classification rationale: route/config prerequisites are required;
   // diagnostics and the add-on console bridge are optional; feature capture
   // and route observation have explicit degraded fallbacks.
-  const configReady = ensureConfigLoaded();
   return runBootstrapPipeline([
+    {
+      id: "storageBootstrap",
+      classification: "required",
+      timeoutMs: 15000,
+      run: () => startRequiredStorageBootstrap(),
+    },
     {
       id: "beginRoute",
       classification: "required",
@@ -112,12 +111,6 @@ async function runFastBootstrap() {
       fallback: () => null,
     },
     {
-      id: "loadData",
-      classification: "required",
-      timeoutMs: 15000,
-      run: () => configReady,
-    },
-    {
       id: "initAddonsConsoleBridge",
       classification: "optional",
       timeoutMs: 5000,
@@ -132,10 +125,10 @@ async function runBodyBootstrap() {
   // independently diagnosable and retryable.
   const summary = await runBootstrapPipeline([
     {
-      id: "loadData",
+      id: "storageBootstrap",
       classification: "required",
       timeoutMs: 15000,
-      run: ensureConfigLoaded,
+      run: () => startRequiredStorageBootstrap(),
     },
     {
       id: "detectPage",

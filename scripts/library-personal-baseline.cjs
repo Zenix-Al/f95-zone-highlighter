@@ -111,6 +111,12 @@ function characterizeSource() {
   };
 }
 
+function portableBuildEvidence(build) {
+  const portable = { ...build };
+  delete portable.gzipBytes;
+  return portable;
+}
+
 async function createLibraryPersonalBaseline() {
   const addonReport = await createBaseline();
   const library = addonReport.addons.find(
@@ -144,8 +150,8 @@ async function createLibraryPersonalBaseline() {
     build: {
       authoredBytes: library.source.authoredBytes,
       fileCount: library.source.fileCount,
-      regular: library.builds.regular,
-      release: library.builds.release,
+      regular: portableBuildEvidence(library.builds.regular),
+      release: portableBuildEvidence(library.builds.release),
     },
     deterministic: {
       timestamps: false,

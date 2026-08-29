@@ -128,7 +128,7 @@ runTest("CONFIG-01 strict mode covers nested constraints and feature validators"
   assert.ok(invalid.issues.every((entry) => typeof entry.receivedType === "string" && typeof entry.receivedSummary === "string"));
 });
 
-runTest("CORE-METRICS-REMOVE-01 drops persisted metrics while preserving valid siblings without a write", async () => {
+runTest("CORE-METRICS-REMOVE-01 drops persisted metrics from a current envelope without a write", async () => {
   const previousGM = global.GM;
   const gm = createFakeGM();
   global.GM = gm;
@@ -139,7 +139,7 @@ runTest("CORE-METRICS-REMOVE-01 drops persisted metrics while preserving valid s
     data.latestSettings.minVersion = 0.9;
     data.metrics = { failed: 22, succeeded: 100 };
     await gm.setValue(settings.CONFIG_ENVELOPE_KEY, {
-      schemaVersion: 1,
+      schemaVersion: settings.CONFIG_SCHEMA_VERSION,
       revision: 4,
       writerId: "metrics-fixture",
       updatedAt: 4,
@@ -332,6 +332,19 @@ runTest("settings metadata registry indexes ownership and releases dynamic entri
   assert.strictEqual(cleanup(), 0);
   assert.strictEqual(getMetadataByConfigPath("latestSettings.autoRefresh"), null);
   resetSettingsMetadataForTests();
+});
+
+runTest("settings metadata rejects legacy top-level effect callbacks", () => {
+  assert.throws(
+    () => registerSettingsMetadata("global", {
+      legacyToggle: {
+        type: "toggle",
+        config: "globalSettings.configVisibility",
+        custom: () => {},
+      },
+    }, "test:legacy-effects"),
+    /must place custom and toast callbacks under 'effects'/i,
+  );
 });
 
 runTest("info metadata renders without input listeners and unsupported input types fail clearly", () => {

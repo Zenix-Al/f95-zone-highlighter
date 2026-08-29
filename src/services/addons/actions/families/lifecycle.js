@@ -31,7 +31,7 @@ export async function actionFeatureEnableDisable(
     debugLog("addonsService", `Add-on lifecycle toggle persistence failed (id=${addonId}, enabled=${enabled}).`, {
       level: "error", data: { persisted, persistedMeta },
     });
-    return { ok: false, reason: "storage_error" };
+    return { ok: false, reason: persisted.reason || persistedMeta.reason || "storage_write_failed" };
   }
   updateAddonStatus(addonId, nextStatus, nextMessage);
   if (!enabled) {

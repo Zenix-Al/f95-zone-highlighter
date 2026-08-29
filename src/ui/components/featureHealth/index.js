@@ -4,9 +4,30 @@ import {
   getHealthDiagnostics,
   getRuntimeErrors,
   getAllFeatureStatuses,
+  subscribeFeatureHealth,
 } from "../../../core/featureHealth.js";
 import { stateManager } from "../../../config.js";
 import { listKnownAddons } from "../../../services/addonsService.js";
+import { retryStorageBootstrap } from "../../../services/storageBootstrapService.js";
+import { subscribeStorageReadiness } from "../../../services/storageReadiness.js";
+
+function formatStorageHealth(snapshot = {}) {
+  const rawTimestamp = Number(snapshot.settledAt || snapshot.startedAt);
+  const timestamp = Number.isFinite(rawTimestamp) && rawTimestamp > 0 ? rawTimestamp : 0;
+  return [
+    `state=${String(snapshot.state || "unknown")}`,
+    `source=${String(snapshot.source || "none")}`,
+    `schema=${Number.isInteger(snapshot.schemaVersion) ? snapshot.schemaVersion : "-"}`,
+    `read=${Boolean(snapshot.canRead)}`,
+    `write=${Boolean(snapshot.canWrite)}`,
+    `delete=${Boolean(snapshot.canDelete)}`,
+    `manager=${String(snapshot.manager || "unknown")}`,
+    `reason=${String(snapshot.reason || "-")}`,
+    `failed-step=${String(snapshot.failedStep || "-")}`,
+    `attempt=${Number(snapshot.attempt) || 0}`,
+    `last-attempt=${timestamp ? new Date(timestamp).toISOString() : "-"}`,
+  ].join(", ");
+}
 
 async function copyTextToClipboard(text) {
   if (!text) return false;
@@ -104,6 +125,7 @@ export function formatFeatureHealthReport(
 ) {
   const resources = diagnostics.snapshots?.resources || {};
   const queues = diagnostics.snapshots?.queues || {};
+  const storage = diagnostics.snapshots?.storage || {};
   const lines = [
     "Feature Health Diagnostic",
     `Timestamp: ${timestamp}`,
@@ -111,6 +133,7 @@ export function formatFeatureHealthReport(
     `Summary: running=${counts.running}, disabled=${counts.disabled}, degraded=${counts.degraded}, failing=${counts.failing}, unknown=${counts.unknown}`,
     `Add-ons (installed): total=${addonCounts.totalInstalled}, healthy=${addonCounts.healthy}, failing=${addonCounts.failing}, degraded=${addonCounts.degraded}, scoped-to-page=${addonCounts.scopeMatchesPage}, active-here=${addonCounts.activeOnPage}`,
     `Resources: total=${resources.totalResources || 0}, owners=${resources.ownerCount || 0}; Queues: total=${queues.queueCount || 0}, pending=${queues.pendingCount || 0}, running=${queues.runningCount || 0}`,
+    `Storage: ${formatStorageHealth(storage)}`,
     "",
   ];
 
@@ -154,12 +177,16 @@ function ensureBox(root, container) {
   const copyBtn = createEl("button", { className: "feature-health-close", text: "Copy" });
   copyBtn.type = "button";
   copyBtn.title = "Copy diagnostic as plain text";
+  const retryBtn = createEl("button", { className: "feature-health-close", text: "Retry storage" });
+  retryBtn.type = "button";
+  retryBtn.title = "Retry a settled transient storage failure";
+  retryBtn.hidden = true;
   const closeBtn = createEl("button", { className: "feature-health-close", text: "Close" });
   closeBtn.type = "button";
   closeBtn.title = "Dismiss diagnostic";
   const actions = createEl("div", {
     className: "feature-health-actions",
-    children: [copyBtn, closeBtn],
+    children: [retryBtn, copyBtn, closeBtn],
   });
   const header = createEl("div", {
     className: "feature-health-header",
@@ -181,11 +208,47 @@ function ensureBox(root, container) {
     const copied = await copyTextToClipboard(payload);
     showToast(copied ? "Feature health copied." : "Copy failed.");
   });
+  retryBtn.addEventListener("click", async () => {
+    retryBtn.disabled = true;
+    try {
+      await retryStorageBootstrap();
+      showToast("Storage retry completed.");
+    } catch (error) {
+      showToast(`Storage retry failed: ${String(error?.message || "unknown")}`);
+    } finally {
+      retryBtn.disabled = false;
+    }
+  });
   closeBtn.addEventListener("click", () => {
     box.style.display = "none";
   });
   container.appendChild(box);
+  const refresh = () => {
+    if (!box.isConnected) {
+      unsubscribeHealth();
+      unsubscribeStorage();
+      return;
+    }
+    updateFeatureHealthBox(box);
+  };
+  const unsubscribeHealth = subscribeFeatureHealth(refresh);
+  const unsubscribeStorage = subscribeStorageReadiness(refresh);
   return box;
+}
+
+function updateFeatureHealthBox(box, providedStatuses, providedReportText) {
+  const statuses = providedStatuses || getAllFeatureStatuses();
+  const addonEntries = getInstalledAddonHealthEntries();
+  const counts = summarizeFeatureStatuses(statuses);
+  const addonCounts = summarizeAddons(addonEntries);
+  const diagnostics = getHealthDiagnostics();
+  const reportText = providedReportText
+    || formatFeatureHealthReport(statuses, counts, addonEntries, addonCounts, { diagnostics });
+  box.querySelector(".feature-health-content").textContent = reportText;
+  const retryBtn = [...box.querySelectorAll("button")]
+    .find((button) => button.textContent === "Retry storage");
+  if (retryBtn) retryBtn.hidden = diagnostics.snapshots?.storage?.state !== "unavailable";
+  return { counts, addonCounts };
 }
 
 export function showFeatureHealthBox(providedStatuses, providedReportText) {
@@ -194,8 +257,6 @@ export function showFeatureHealthBox(providedStatuses, providedReportText) {
     const addonEntries = getInstalledAddonHealthEntries();
     const counts = summarizeFeatureStatuses(statuses);
     const addonCounts = summarizeAddons(addonEntries);
-    const reportText = providedReportText
-      || formatFeatureHealthReport(statuses, counts, addonEntries, addonCounts);
 
     showToast(
       `Feature health - running: ${counts.running}, disabled: ${counts.disabled}, degraded: ${counts.degraded}, failing: ${counts.failing}, unknown: ${counts.unknown} | add-ons installed: ${addonCounts.totalInstalled}, healthy: ${addonCounts.healthy}, failing: ${addonCounts.failing}, degraded: ${addonCounts.degraded}`,
@@ -207,7 +268,7 @@ export function showFeatureHealthBox(providedStatuses, providedReportText) {
     if (!container) return;
 
     const box = ensureBox(root, container);
-    box.querySelector(".feature-health-content").textContent = reportText;
+    updateFeatureHealthBox(box, statuses, providedReportText);
     box.style.display = "block";
     return box;
   } catch (err) {
