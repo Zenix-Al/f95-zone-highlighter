@@ -1,78 +1,107 @@
-# Creating a New Feature
+# Creating a Core Feature
 
-Adding a new feature to the Latest Highlighter userscript is straightforward thanks to the core framework. Do **not** write standalone functions that attach directly to `window.onload`.
+Core features are generated, page-scoped lifecycle descriptors. Do not attach
+feature work directly to `window.onload`, manually register it in the loader,
+or edit the generated manifest.
 
-## Step-by-Step Guide
+## 1. Create the feature module
 
-### 1. Create the Feature Directory
-Create a new folder in `src/features/` (e.g., `src/features/my-new-feature`).
-Inside, create an `index.js` file, and optionally a `style.css` if it modifies the UI.
+Create `src/features/<feature>/index.js`. Larger features may keep DOM or domain
+logic in neighboring modules, and CSS-backed features may include `style.css`.
 
-### 2. Define the Feature Logic
-Define your `enable` and `disable` functions.
+Export a const whose name ends in `Feature`:
 
-```javascript
-// src/features/my-new-feature/handler.js
-import { addObserverCallback, removeObserverCallback } from "../../core/observer.js";
-
-export function enableMyFeature() {
-    addObserverCallback("my-feature-id", (mutations) => {
-        // Do something when the DOM changes
-    });
-}
-
-export function disableMyFeature() {
-    // Teardown is usually handled automatically, 
-    // but you can do manual cleanup here.
-}
-```
-
-### 3. Register with `createFeature` or `createStyledFeature`
-In `index.js`, use the factory to wrap your logic. Use `createStyledFeature` if you have CSS.
-
-```javascript
-// src/features/my-new-feature/index.js
+```js
 import { createStyledFeature } from "../../core/createStyledFeature.js";
-import { enableMyFeature, disableMyFeature } from "./handler.js";
+import { createEnabledDisabledToast, createToggleSetting } from "../../ui/settings/metaFactory.js";
 import featureCss from "./style.css";
 
-export const myFeature = createStyledFeature("My Cool Feature", {
-    id: "my-unique-feature",
-    configPath: "mySettings.featureToggle", // Path in the config tree
-    pageScopes: ["isLatest"], // Only run on specific pages (check stateManager)
-    isApplicable: ({ stateManager }) => stateManager.get("isLatest"),
-    bootstrapMode: "waitForBody", // When to init
-    styleCss: featureCss,
-    enable: enableMyFeature,
-    disable: disableMyFeature,
-    settingsUi: { // Optional: automatically binds this feature to the settings dialog
-        id: "my-feature-settings",
-        sectionId: "general",
-        metaMaps: [
-            // Standard settings UI definition
-        ]
-    }
+function enableExample() {
+  document.documentElement.classList.add("example-enabled");
+}
+
+function disableExample() {
+  document.documentElement.classList.remove("example-enabled");
+}
+
+export const exampleFeature = createStyledFeature("Example", {
+  configPath: "latestSettings.example",
+  pageScopes: ["isLatest"],
+  isApplicable: ({ stateManager }) => stateManager.get("isLatest"),
+  bootstrapMode: "waitForBody",
+  styleCss: featureCss,
+  enable: enableExample,
+  disable: disableExample,
+  settingsUi: {
+    id: "example",
+    sectionId: "latest",
+    metaMaps: [{
+      exampleToggle: createToggleSetting({
+        text: "Example feature",
+        tooltip: "Enable the example on Latest Updates.",
+        config: "latestSettings.example",
+        custom: () => exampleFeature.sync(),
+        toast: createEnabledDisabledToast("Example feature"),
+      }),
+    }],
+  },
 });
 ```
 
-### 4. Feature discovery and manifest generation
+Use `createFeature()` when no feature-owned CSS is needed. Use
+`createStyledFeature()` to let the style registry acquire and release CSS with
+the lifecycle.
 
-Do not manually import or register features in `src/loader.js` or `src/core/featureCatalog.js`, and do not edit `src/generated/features.generated.js`. Features are discovered automatically from `src/features/*/index.js` by the manifest generator.
+## 2. Declare configuration and scope
 
-Correct workflow:
+- Add persisted defaults to `src/config/defaults.js`.
+- Add validation and transfer metadata to `src/config/schema.js`.
+- Use an existing key from `src/config/pageDefinitions.js` in `pageScopes`.
+- Add a page definition only when the repository does not already describe the
+  route. Runtime page-state paths are derived from those definitions.
+- Use `fast` bootstrap only for work that must begin before body readiness;
+  ordinary DOM features should use `waitForBody`.
 
-1. Export your feature from the feature module using a `*Feature` export name (for example `export const myFeature = createFeature(...)`).
-2. Refresh the manifest without a version bump with `node -e "require('./scripts/featureManifest.cjs').generateFeatureManifest({ rootDir: process.cwd() })"`; it discovers `*Feature` exports and writes `src/generated/features.generated.js`.
-3. The generated manifest is imported by the loader at runtime, and the feature catalog stores the runtime registrations.
+Settings sections currently owned by core are `global`, `latest`, `thread`, and
+`color`. Feature toggles should use `createToggleSetting()` so lifecycle and
+toast callbacks are placed under the required `effects` metadata.
 
-This avoids brittle manual edits and reduces merge conflicts. See `scripts/featureManifest.cjs` for the discovery rules and naming conventions.
+## 3. Own and reverse resources
 
-### 5. Define Default Config
-If your feature uses a `configPath`, ensure that configuration is defined in `src/config/defaults.js`.
+Every resource created by `enable()` must be absent after `disable()`:
 
----
+- use `src/core/listenerRegistry.js` for event listeners;
+- use `src/core/observer.js` instead of constructing `MutationObserver`;
+- use `src/core/resourceManager.js` for other owned cleanup;
+- use task/frame-budget utilities for substantial collections or repeated work;
+- honor lifecycle cancellation for asynchronous work before committing results.
 
-## Important Rules for AI Agents
-1. **Never use `MutationObserver` directly.** Always use `addObserverCallback` from `src/core/observer.js`.
-2. **Never inject `<style>` tags manually.** Always use `createStyledFeature` and pass `styleCss`, which safely injects styles into the custom Shadow DOM.
-3. **Always handle cleanup.** If your feature attaches event listeners outside of `listenerRegistry.js`, ensure they are removed in the `disable` function.
+Feature CSS belongs in the feature style registry. Core settings and dialogs
+use Shadow DOM, while page features and add-on mounts may live in different DOM
+roots; choose selectors for the actual owner rather than assuming one root.
+
+## 4. Generate the manifest
+
+The generator discovers `*Feature` exports under `src/features/*/index.js`:
+
+```bash
+node -e "require('./scripts/featureManifest.cjs').generateFeatureManifest({ rootDir: process.cwd() })"
+```
+
+Do not manually import the feature into `src/loader.js`, call
+`registerFeature()`, or edit `src/generated/features.generated.js`.
+
+## 5. Verify
+
+Add focused tests for configuration, scope, lifecycle, route changes, cleanup,
+and any substantial processing behavior. Then run:
+
+```bash
+npm run lint
+npm test
+git diff --check
+```
+
+Do not run a release build merely to validate source. Use the manifest command
+above or the non-version-bumping smoke/audit commands documented in the root
+README and `AGENTS.md`.

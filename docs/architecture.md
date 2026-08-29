@@ -95,9 +95,11 @@ If manifest validation fails (duplicate IDs, invalid bootstrapMode), bootstrap s
 Config loading happens very early (fast bootstrap) but some features require the full config to be validated before they run. The contract is:
 
 - `ensureConfigLoaded()` must complete before features that depend on validated/persisted config are enabled.
-- The persisted envelope remains schema version `1`; `src/config/persistence.js` exposes zero schema migration steps. The separate migration service only handles the released historical surface-key layout and is marker-gated.
+- Storage bootstrap is the sole readiness owner. Configuration and core-mediated add-on writes use its one terminal write gate; loading config alone does not authorize writes.
+- The persisted envelope is schema version `2`; `src/config/persistence.js` exposes the single schema-1-to-2 step. The legacy service only detects released surface-key layouts and directs them to the proven core v5.1.2 bridge without writes.
 - Tolerant sanitization preserves valid siblings, reports bounded issues, and does not rewrite storage during load.
 - Config Transfer keeps document construction and normalization in its service and browser file/dialog behavior in its UI adapter.
+- Config Transfer format compatibility is independent of the persisted-envelope schema and never acts as a storage migration path.
 - Features that can run without full config should opt into `fastBootstrap` to improve perceived startup time.
 
 Core cleanup does not include add-on runtime, catalog, bridge, trust, or add-on UI work. Those paths

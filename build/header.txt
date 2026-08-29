@@ -8,6 +8,7 @@
 // @icon         https://f95zone.to/data/avatars/l/1963/1963870.jpg
 // @grant        GM.setValue
 // @grant        GM.getValue
+// @grant        GM.deleteValue
 // @run-at       document-start
 // @license      GPL-3.0-or-later
 // @homepageURL  https://f95zone.to/threads/f95zone-latest.250836/

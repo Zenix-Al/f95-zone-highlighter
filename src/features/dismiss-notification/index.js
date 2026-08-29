@@ -1,5 +1,5 @@
 import { createStyledFeature } from "../../core/createStyledFeature.js";
-import { createEnabledDisabledToast } from "../../ui/settings/metaFactory.js";
+import { createEnabledDisabledToast, createToggleSetting } from "../../ui/settings/metaFactory.js";
 import { enableNoticeDismissal, disableNoticeDismissal } from "./handler.js";
 import featureCss from "./style.css";
 
@@ -22,8 +22,7 @@ export const dismissNotificationFeature = createStyledFeature("Dismiss Notificat
     sectionId: "global",
     metaMaps: [
       {
-        dismissNotificationToggle: {
-          type: "toggle",
+        dismissNotificationToggle: createToggleSetting({
           text: "Dismiss notifications on click",
           tooltip:
             "Clicking on a notification will dismiss it instead of navigating to the linked content.",
@@ -32,7 +31,7 @@ export const dismissNotificationFeature = createStyledFeature("Dismiss Notificat
             toggleNoticeDismissal();
           },
           toast: createEnabledDisabledToast("Notification dismissal"),
-        },
+        }),
       },
     ],
   },

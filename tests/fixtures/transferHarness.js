@@ -1,8 +1,12 @@
 import { config } from "../../src/config.js";
 import { commitConfigImport } from "../../src/services/configTransfer/index.js";
 import { registerSettingsMetadata, resetSettingsMetadataForTests } from "../../src/ui/settings/metaRegistry.js";
+import { publishStorageReadiness } from "../../src/services/storageReadiness.js";
+import { loadConfig } from "../../src/services/settingsService.js";
 
 export async function runTransferEffectScenario() {
+  const loaded = await loadConfig();
+  publishStorageReadiness({ state: "ready", source: loaded.source, canRead: true, canWrite: true, canDelete: true });
   resetSettingsMetadataForTests();
   const seen = [];
   registerSettingsMetadata("transfer", {

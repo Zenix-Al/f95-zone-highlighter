@@ -5,6 +5,7 @@ import { createLabel } from "./createLabel";
 import { coerceSettingValue } from "./coerceSettingValue.js";
 import { getByPath, setByPath } from "../../utils/objectPath.js";
 import { createEl } from "../../utils/dom.js";
+import { showToast } from "../components/toast.js";
 
 export function renderSetting(key, meta) {
   if (meta.type === "header") {
@@ -110,6 +111,8 @@ export function renderSetting(key, meta) {
         const rollbackValue = getByPath(result.previousConfig || config, meta.config);
         if (meta.type === "toggle") input.checked = Boolean(rollbackValue);
         else input.value = String(rollbackValue ?? "");
+        const failure = result.failed?.[0];
+        showToast(failure?.message || `Failed to save setting: ${failure?.code || "unknown"}`);
       }
     });
   });

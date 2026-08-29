@@ -1,5 +1,14 @@
 # Changelog
 
+## [5.4.0 - Storage reliability overhaul]
+
+- Rebuilt core configuration startup around one verified storage bootstrap, readiness state, and write gate, with storage status and recovery available through Feature Health.
+- Added configuration schema 2 with one supported schema-1 migration, safe fresh-install initialization, backup recovery, and a guarded upgrade path for unsupported older storage without overwriting user data.
+- Improved userscript-manager compatibility with capability checks, verified writes, deterministic stored-value comparison, and clearer read-only or failed-storage behavior.
+- Fixed affected core feature toggles not applying their lifecycle changes until the page was refreshed.
+
+This maintenance update was prompted by a user report that settings storage was broken in ScriptCat. The report exposed broader weaknesses in the core storage service, so the fix strengthens configuration reliability across userscript managers rather than applying a ScriptCat-only workaround.
+
 ## [5.3.1] - bugfix
 
 - ui.confirm style race condition causing it rendered without the proper style, now it should be fixed.

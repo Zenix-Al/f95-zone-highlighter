@@ -41,6 +41,9 @@ function validateRegistration(sectionId, metaMap, ownerId) {
     if (!meta || typeof meta !== "object") {
       throw new Error(`Settings metadata '${id}' must be an object.`);
     }
+    if (Object.hasOwn(meta, "custom") || Object.hasOwn(meta, "toast")) {
+      throw new Error(`Settings metadata '${id}' must place custom and toast callbacks under 'effects'.`);
+    }
     if (entriesById.has(id) || incomingIds.has(id)) {
       throw new Error(`Duplicate settings metadata ID '${id}'.`);
     }

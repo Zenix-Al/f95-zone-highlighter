@@ -165,6 +165,12 @@ Core actions are requested by sending `type: "core-action"` with the specific ac
 | **`ui.dialog`**| `ui.dialog.open`<br>`ui.dialog.close`<br>`ui.dialog.update`<br>`ui.confirm` | Opens/closes modals, updates an already add-on-owned dialog, or triggers confirm dialogs. |
 | **`ui.dock`**  | `ui.dock.setButtons`<br>`ui.dock.removeButtons` | Mounts up to 4 custom action buttons to the core dock. |
 
+Core-mediated add-on writes share the core storage bootstrap gate. Stable
+write failures are `storage_not_ready`, `storage_read_only`,
+`storage_unavailable`, `upgrade_required`, and `storage_write_failed`; callers
+must not collapse them into a generic `storage_error`. Add-on scoped state and
+Library IndexedDB remain owned stores and are not canonical core configuration.
+
 ---
 
 ## Rate-Limiting & API Logging

@@ -1222,11 +1222,11 @@ runTest("ADDON-IDENTITY-01 merges state atomically with deterministic precedence
   const seedGM = createFakeGM();
   global.GM = seedGM;
   try {
-    const settings = loadModule("src/services/settingsService.js");
-    const { config } = loadModule("src/config.js");
+    const state = loadModule("tests/fixtures/addonStateReadyHarness.js");
+    const settings = state;
+    const { config } = state;
     await seedReadyConfig(seedGM, settings, config);
-
-    const state = loadModule("src/services/addons/state.js");
+    await state.authorizeStorageForTest();
     const committed = await state.persistAddonsState({
       byAddon: {
         "example-addon-legacy": { state: { enabled: false, legacyOnly: true, shared: "old" } },
@@ -1258,7 +1258,8 @@ runTest("ADDON-IDENTITY-01 merges state atomically with deterministic precedence
     await failingSeed.setValue(seedSettings.CONFIG_ENVELOPE_KEY, seededEnvelope);
     const failingGM = createFakeGM(failingSeed.snapshot(), { failSet: true });
     global.GM = failingGM;
-    const retryState = loadModule("src/services/addons/state.js");
+    const retryState = loadModule("tests/fixtures/addonStateReadyHarness.js");
+    await retryState.authorizeStorageForTest();
     const failed = await retryState.persistAddonsState({
       byAddon: { "example-addon-legacy": { state: { enabled: false } } },
       installedMeta: {},
@@ -1637,10 +1638,11 @@ runTest("ADDON lifecycle keeps persisted disable authoritative and permits clean
   const fakeGM = createFakeGM();
   global.GM = fakeGM;
   try {
-    const settings = loadModule("src/services/settingsService.js");
-    const { config } = loadModule("src/config.js");
+    const service = loadModule("tests/fixtures/addonServiceReadyHarness.js");
+    const settings = service;
+    const { config } = service;
     await seedReadyConfig(fakeGM, settings, config);
-    const service = loadModule("src/services/addonsService.js");
+    await service.authorizeStorageForTest();
 
     assert.strictEqual((await service.setAddonStateValue("example-addon", "enabled", false)).ok, true);
     service.replaceRegisteredAddons([]);
@@ -1671,10 +1673,11 @@ runTest("ADDON lifecycle persists desired state and status metadata in one commi
   const fakeGM = createFakeGM();
   global.GM = fakeGM;
   try {
-    const settings = loadModule("src/services/settingsService.js");
-    const { config } = loadModule("src/config.js");
+    const state = loadModule("tests/fixtures/addonStateReadyHarness.js");
+    const settings = state;
+    const { config } = state;
     await seedReadyConfig(fakeGM, settings, config);
-    const state = loadModule("src/services/addons/state.js");
+    await state.authorizeStorageForTest();
     const beforeWrites = fakeGM.logs().writes.length;
     const result = await state.setAddonEnabledState("example-addon", false, {
       statusMessage: "Disabled from core.",

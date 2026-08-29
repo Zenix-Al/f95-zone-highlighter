@@ -2,7 +2,7 @@ import { createStyledFeature } from "../../core/createStyledFeature.js";
 import { threadPageScroll } from "../../utils/headerScrollHandler.js";
 import { SELECTORS } from "../../config/selectors.js";
 import featureCss from "./style.css";
-import { createEnabledDisabledToast } from "../../ui/settings/metaFactory.js";
+import { createEnabledDisabledToast, createToggleSetting } from "../../ui/settings/metaFactory.js";
 
 function enableWideForum() {
   const root = document.documentElement;
@@ -36,14 +36,13 @@ export const wideForumFeature = createStyledFeature("Wide Forum", {
     sectionId: "thread",
     metaMaps: [
       {
-        wideForumToggle: {
-          type: "toggle",
+        wideForumToggle: createToggleSetting({
           text: "Wide thread (full width)",
           tooltip: "Remove max-width restriction - makes thread use full screen width",
           config: "threadSettings.isWide",
           custom: () => wideForumFeature.toggle(wideForumFeature.isEnabled()),
           toast: createEnabledDisabledToast("Wide forum"),
-        },
+        }),
       },
     ],
   },

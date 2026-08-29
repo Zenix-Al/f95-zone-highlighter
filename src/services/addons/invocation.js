@@ -138,7 +138,7 @@ async function processDeferredManagementAction(addonId, action, installedMeta) {
   });
   return persisted.ok
     ? { ok: true, value: { deferred: true, enabled } }
-    : { ok: false, reason: "storage_error" };
+    : { ok: false, reason: persisted.reason || "storage_write_failed" };
 }
 
 export async function invokeAddonCoreAction(addonId, action, payload = {}) {

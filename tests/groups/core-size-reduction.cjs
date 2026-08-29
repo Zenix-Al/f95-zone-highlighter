@@ -234,6 +234,17 @@ module.exports = function registerGroup(context) {
       assert.strictEqual(content.textContent, "updated support payload");
       assert.strictEqual(content.children.length, 0);
 
+      const retryButton = [...second.querySelectorAll("button")]
+        .find((button) => button.textContent === "Retry storage");
+      assert.strictEqual(retryButton.hidden, true);
+      harness.publishStorageState("unavailable", { reason: "probe_failed", failedStep: "readback" });
+      assert.strictEqual(retryButton.hidden, false);
+      assert.match(content.textContent, /Storage: state=unavailable/);
+      assert.match(content.textContent, /failed-step=readback/);
+      harness.publishStorageState("upgrade-required", { reason: "legacy_surface" });
+      assert.strictEqual(retryButton.hidden, true);
+      assert.match(content.textContent, /Storage: state=upgrade-required/);
+
       const buttons = [...second.querySelectorAll("button")];
       buttons.find((button) => button.textContent === "Copy").click();
       await Promise.resolve();
@@ -255,6 +266,40 @@ module.exports = function registerGroup(context) {
       else delete global.navigator;
       global.requestAnimationFrame = previous.requestAnimationFrame;
       global.cancelAnimationFrame = previous.cancelAnimationFrame;
+      window.close();
+    }
+  });
+
+  runTest("CORE-STORAGE-HEALTH-INTEGRATION-01 marks core settings read-only and restores them live", () => {
+    const previous = { window: global.window, document: global.document };
+    const window = new Window({ url: "https://f95zone.to/threads/sample.1/" });
+    global.window = window;
+    global.document = window.document;
+    try {
+      const harness = loadModule("tests/fixtures/featureHealthHarness.js");
+      const host = window.document.createElement("div");
+      window.document.body.appendChild(host);
+      const shadow = host.attachShadow({ mode: "open" });
+      const panel = window.document.createElement("div");
+      panel.className = "settings-panel";
+      const row = window.document.createElement("div");
+      row.className = "config-row";
+      const input = window.document.createElement("input");
+      row.appendChild(input);
+      panel.appendChild(row);
+      const general = window.document.createElement("div");
+      general.id = "global-settings-container";
+      shadow.append(panel, general);
+
+      harness.syncStorageReadOnlyState(shadow, harness.publishStorageState("degraded-readonly"));
+      assert.strictEqual(input.disabled, true);
+      assert.match(general.textContent, /Open Feature Health/);
+      harness.syncStorageReadOnlyState(shadow, harness.publishStorageState("ready"));
+      assert.strictEqual(input.disabled, false);
+      assert.strictEqual(general.querySelector("[data-storage-readonly-note]").hidden, true);
+    } finally {
+      global.window = previous.window;
+      global.document = previous.document;
       window.close();
     }
   });

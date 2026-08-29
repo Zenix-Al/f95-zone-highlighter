@@ -1,6 +1,6 @@
 # Configuration Storage Migration and Recovery
 
-This document records the release-blocking recovery work for the transition from surface-level configuration keys to the canonical envelope. The migration is evidence-backed, one-time, and marker-gated. It is not a general future migration framework.
+This document records the historical transition from surface-level configuration keys to the canonical envelope. The transforming bridge is retired from current source. Core v5.1.2 (`e51cf89`) is the permanent pre-schema bridge; current releases detect that data read-only and stop with `upgrade-required`. This is separate from the one supported persisted-envelope migration from schema 1 to schema 2.
 
 ## Root cause
 
@@ -23,14 +23,14 @@ The second source of bloat was that tags and prefixes were reference catalogs re
 | Experimental | `metrics` | Experimental metrics service | Removed by `CORE-METRICS-REMOVE-01` | No current reader | Removed metrics service | Counter object | Drop; never reject siblings | No |
 | UI preference | `settingsUiActivePanel` | Settings UI persistence | Current UI prefs service | Settings UI | `settingsRuntime/prefs.js` | String | Remains outside config migration | No |
 | UI preference | `settingsUiPinnedAddonIds` | Settings UI persistence | Current UI prefs service | Settings UI | `settingsRuntime/prefs.js` | Array | Remains outside config migration | No |
-| Canonical v1 | `f95ue:config` | `e51cf89` | Current | `settingsService`, sync | `settingsService.commitConfig` | Versioned envelope | Core preferences; empty catalog placeholders only | Current |
-| Canonical backup v1 | `f95ue:config:last-known-good` | `e51cf89` | Current | Recovery in `settingsService` | `settingsService` commits | Previous verified core envelope | Core preferences only | Current |
+| Canonical v2 | `f95ue:config` | storage bootstrap | Current | `settingsService` | `settingsService.commitConfig` | Versioned envelope | Core preferences; empty catalog placeholders only | Current; v1 is the sole supported migration source |
+| Canonical backup | `f95ue:config:last-known-good` | `e51cf89` | Current | Recovery in `settingsService` | `settingsService` commits | Previous verified core envelope | Core preferences only | May retain schema 1 during migration |
 | Cache v1 | `f95ue:cache:tags` | This recovery package | Current | `settingsService`, runtime config | `tagsService` through cache-aware save | Tag catalog | Regenerable cache | Historical tags |
 | Cache v1 | `f95ue:cache:prefixes` | This recovery package | Current | `settingsService`, runtime config | `prefixService` through cache-aware save | Prefix catalog | Regenerable cache | Historical prefixes |
 | Marker v1 | `f95ue:config:migration-version` | This recovery package | Current | `settingsService` | Verified migration/fresh install | Small integer | Migration complete at generation 1 | N/A |
 | Temporary lock | `f95ue:config:migration-lock` | This recovery package | Temporary | Migration only | Migration lock owner | Owner/expiry object | Stale bounded lock; never user data | N/A |
 
-The repository history was checked at `10a0e54`, `e51cf89`, and `b1f737f`, as well as earlier surface-storage commits. The current source tree retains the bounded migration service because released installations can still require this recovery path.
+The repository history was checked at `10a0e54`, `e51cf89`, and `b1f737f`, as well as earlier surface-storage commits. Core v5.1.2 (`e51cf89`) is the supported bridge; current source retains only bounded read-only detection.
 
 ## Ownership and disposition
 
@@ -52,29 +52,35 @@ The repository history was checked at `10a0e54`, `e51cf89`, and `b1f737f`, as we
 
 When the marker is current, startup reads the marker, canonical envelope, and cache keys. It does not read surface keys or run migration transforms. A healthy or sanitized fast load performs no config/cache write.
 
-The persisted schema contract remains version `1` with zero schema migration steps in
+The persisted schema contract is version `2` with one identity data migration from schema 1 in
 `src/config/persistence.js`. The marker-gated service described here is historical storage-layout
-recovery, not a replacement migration framework.
+recovery, not another schema migration step.
 
-When the marker is absent or old, the repository reads only the explicit bounded list in `configMigrationService.js`, plus canonical, backup, and the two cache keys. Historical surface sections take precedence for fields they explicitly contain. A valid canonical or backup source fills fields absent from the historical layout; defaults fill the remainder. Revisions are not compared across generations.
+When the marker is absent or old, the repository reads only the explicit bounded list in `configMigrationService.js` plus canonical and backup. Recognized historical roots or surface keys return `upgrade-required` without writes. The user must run core v5.1.2 once before returning to the current release.
 
 Some pre-envelope builds stored the complete raw configuration object at the eventual
-`f95ue:config` or backup key. The same bounded recovery path recognizes that shape as a
-historical source, validates it with the shared schema, and writes a verified v1 envelope
-before the add-on bridge or settings commits depend on configuration readiness. This does
-not change the schema version or add a schema migration step.
+`f95ue:config` or backup key. The bounded detector recognizes that shape but never validates,
+normalizes, or rewrites it. Bootstrap stops before features and the add-on bridge initialize.
 
-Core candidates are built from detached defaults and validated tolerantly, then strictly validated before commit. Invalid leaves fall back independently while valid siblings survive. Add-on state is merged by add-on and timestamps use earliest meaningful installation time and latest meaningful last-seen time. Metrics, runtime events, UI preferences, and unknown keys do not enter canonical config.
-
-Tags and prefixes are validated separately and written to their cache keys. The canonical envelope and backup contain empty catalog placeholders, so their serialized size does not scale with catalog size.
+Current source does not build a migration candidate from pre-schema data. Metrics,
+runtime events, UI preferences, Library IndexedDB, unrelated add-on stores, and
+unknown keys do not enter canonical config. Tags and prefixes remain separate,
+regenerable cache keys; their presence alone does not prevent fresh canonical
+initialization.
 
 ## Marker and transaction semantics
 
-`f95ue:config:migration-version = 1` is written only after cache writes, canonical write, canonical read-back verification, cache verification, and backup verification succeed. Fresh installations follow the same verified path with detached defaults. A marker-write or cleanup failure cannot turn an unverified result into a completed migration; cleanup is bounded and post-commit.
+`f95ue:config:migration-version = 1` records a verified canonical generation.
+Fresh installations write and read back schema 2 before writing this marker.
+Schema-1 envelopes migrate transactionally to schema 2 under the migration
+lock, preserving the exact old envelope as backup.
 
 The temporary lock has an expiry. A second tab that loses ownership reloads the marker and committed canonical result; stale ownership can be recovered after the bounded TTL. Historical sources are not deleted before the verified canonical write.
 
-All complete configuration writes remain in `settingsService`. `saveConfigKeys()` waits for config readiness, writes tag/prefix-only updates only to cache keys, and uses the canonical commit path for core or add-on changes. No current writer recreates the obsolete surface keys.
+All complete configuration writes remain in `settingsService`. `saveConfigKeys()`
+waits for the authoritative bootstrap readiness snapshot, writes tag/prefix-only
+updates only to cache keys, and uses the canonical commit path for core or
+core-mediated add-on changes. No current writer recreates obsolete surface keys.
 
 ## Recovery procedure
 
@@ -87,7 +93,7 @@ use the exported configuration or the still-retained historical values for manua
 
 ## Removal boundary
 
-The migration service and bounded key list may be removed only after released installations can no longer exist in the surface-key layout, or after an explicit compatibility-breaking release decision. Removal must include the marker check, cleanup list, migration fixtures, and this document’s historical compatibility section together. The normal post-migration startup path is intentionally kept independent of the migration transform.
+The historical transform and cleanup list are retired. The bounded detector and marker check remain so released surface-key installations fail closed and can be directed to core v5.1.2 without losing data.
 
 ## Measurements
 

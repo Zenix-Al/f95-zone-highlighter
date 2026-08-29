@@ -256,8 +256,8 @@ module.exports = function registerLibraryPersonalGroup(context) {
       assert.ok(report.build.authoredBytes > 0);
       assert.ok(report.build.regular.bytes > 0);
       assert.ok(report.build.release.bytes > 0);
-      assert.ok(report.build.regular.gzipBytes > 0);
-      assert.ok(report.build.release.gzipBytes > 0);
+      assert.strictEqual(Object.hasOwn(report.build.regular, "gzipBytes"), false);
+      assert.strictEqual(Object.hasOwn(report.build.release, "gzipBytes"), false);
       assert.ok(report.build.regular.contributors.length > 0);
       assert.ok(report.build.release.contributors.length > 0);
     },

@@ -6,8 +6,8 @@ historical storage recovery, and recommended practices for safe, testable upgrad
 ## Goals
 
 - Provide a single source of schema truth and versioning for configuration.
-- Keep persisted configuration at schema version `1`; unsupported older versions recover from backup or defaults.
-- Keep schema migration steps at zero; historical surface-key recovery is a separate bounded compatibility service.
+- Keep persisted configuration at schema version `2` and support exactly one schema-1-to-2 migration.
+- Keep historical surface-key detection as a separate read-only compatibility guard.
 - Ensure config updates are atomic and recoverable on failure.
 - Keep revision metadata available for atomic persistence and recovery.
 
@@ -20,12 +20,12 @@ historical storage recovery, and recommended practices for safe, testable upgrad
 
 ```json
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "globalSettings": { ... }
 }
 ```
 
-- Keep schema changes additive when possible. The current release has one evidence-backed, marker-gated migration for the historical surface-key layout; transfer-document normalization remains separate from persisted-envelope loading.
+- Keep schema changes additive when possible. The current release supports only persisted schema 1 to 2. Transfer-document normalization remains separate from persisted-envelope loading.
 
 ### Adding a persistent field
 
@@ -37,26 +37,26 @@ historical storage recovery, and recommended practices for safe, testable upgrad
 ## Persisted version policy
 
 1. `src/config/persistence.js` owns `CONFIG_STORAGE_KEYS`, `CONFIG_SCHEMA_VERSION`, version checks, and the migration registry.
-2. `CONFIG_SCHEMA_VERSION` remains `1`; `CONFIG_MIGRATIONS` remains an immutable empty schema-step registry and `CONFIG_MIGRATION_COUNT` remains `0`.
-3. `f95ue:config:migration-version = 1` gates the one-time surface-key recovery. Current-marker startups do not inspect legacy keys or execute transforms.
-4. Version `0` and other mismatches are unsupported persisted envelopes; the settings repository uses last-known-good recovery or the bounded historical source path when the marker is absent.
-5. Tolerant sanitization preserves valid siblings and does not rewrite the canonical envelope during a marked fast load.
+2. `CONFIG_SCHEMA_VERSION` is `2`; `CONFIG_MIGRATIONS` contains only the identity data migration from schema 1 to 2 and `CONFIG_MIGRATION_COUNT` is `1`.
+3. `f95ue:config:migration-version = 1` proves that the retired core v5.1.2 surface-key bridge completed. Current-marker startups do not inspect legacy keys.
+4. Schema 1 is the only supported older envelope. Version 0 is unsupported, while versions newer than 2 remain read-only and untouched.
+5. Current schema-2 fast loads remain write-free; schema-1 loads rotate the exact old envelope into backup and verify the schema-2 canonical write.
 
 ## Load and recovery pattern
 
 1. Read the migration marker.
-2. With the current marker, read the canonical version-1 envelope and the separate tag/prefix caches; sanitize clones and apply through the shared config-change boundary.
-3. With an absent or old marker, read only the bounded historical key list, build a detached candidate, validate caches separately, persist and verify the canonical/backup/cache result, then set the marker.
+2. With the current marker, load schema 2 directly or transactionally migrate schema 1 under the migration lock, then read the separate tag/prefix caches.
+3. With an absent or old marker, read only the bounded historical key list. Recognized pre-schema data returns `upgrade-required` without mutation; otherwise initialize a fresh schema-2 envelope.
 4. For an unsupported or corrupt canonical envelope on the marked fast path, validate the last-known-good envelope and recover it atomically, or load defaults without scanning legacy keys.
 5. Explicit commits use the canonical path; tag/prefix refreshes use cache keys and do not rotate the canonical backup.
 
 Notes:
-- Storage I/O remains in `storageAdapter`; persistence policy and recovery remain in `settingsService`.
+- Storage I/O remains in `storageAdapter`; persistence policy and recovery remain in `settingsService`, while `storageBootstrapService` alone publishes write readiness.
 
 ## Validation and test strategy
 
-- Test the current version, unsupported versions, backup recovery, tolerant sibling preservation,
-  and zero schema-migration calls on the marked fast path. The absent/old-marker path is separately
+- Test schema 2, the supported schema-1 migration, future read-only versions, backup recovery,
+  interruption boundaries, ownership, and tolerant sibling preservation. The absent/old-marker path is separately
   covered for the bounded historical surface-key recovery service.
 - Tests should assert both structural correctness and that no user-visible semantics regress (e.g., a toggle remains true/false where intended).
 - Run persistence tests in CI on every PR that modifies defaults or the persistence contract.
@@ -75,7 +75,7 @@ Notes:
 
 - Keep a `lastKnownGood` snapshot in storage after successful commits and use it for bounded recovery from corrupt canonical data.
 
-`src/services/configMigrationService.js` is intentionally temporary compatibility code for released surface-key storage. Remove it, the marker/cleanup path, and its fixtures only after those installations can no longer require recovery or after an explicit compatibility-breaking release decision. It must not grow into a speculative migration framework.
+`src/services/configMigrationService.js` now contains only the bounded legacy detector, bridge evidence, completion-marker check, and canonical catalog compaction helper. Historical transforms and cleanup writes are retired. Recognized older layouts fail with `upgrade-required` and remain untouched until core v5.1.2 has been run once.
 
 ## Monitoring and observability
 

@@ -3,6 +3,7 @@ import {
   CONFIG_SCHEMA_VERSION,
   CONFIG_STORAGE_KEYS,
   isSupportedConfigVersion,
+  migrateConfigSchema,
 } from "../config/persistence.js";
 import {
   getDefaultConfig,
@@ -13,24 +14,28 @@ import {
 import { recordHealthEvent } from "../core/featureHealth.js";
 import { applyConfigChange } from "./configChangeApplication.js";
 import {
-  buildMigrationPlan,
+  classifyLegacyUpgrade,
   CONFIG_MIGRATION_VERSION,
   getCanonicalData,
-  LEGACY_CLEANUP_KEYS,
   LEGACY_SURFACE_KEYS,
   hasRecognizedHistoricalData,
-  isLegacyConfigRoot,
   isCurrentMigrationMarker,
 } from "./configMigrationService.js";
 import { storageAdapter } from "./storageAdapter.js";
+import {
+  getStorageFailureMessage,
+  waitForStorageWriteAccess,
+} from "./storageReadiness.js";
 
 export const CONFIG_ENVELOPE_KEY = CONFIG_STORAGE_KEYS.current;
 export const CONFIG_BACKUP_KEY = CONFIG_STORAGE_KEYS.backup;
 export const CONFIG_RECOVERY_MARKER_KEY = CONFIG_STORAGE_KEYS.recovery;
 export const CONFIG_MIGRATION_VERSION_KEY = CONFIG_STORAGE_KEYS.migrationVersion;
 export const CONFIG_MIGRATION_LOCK_KEY = CONFIG_STORAGE_KEYS.migrationLock;
+export const CONFIG_INITIALIZATION_LOCK_KEY = CONFIG_STORAGE_KEYS.initializationLock;
 export const CONFIG_TAGS_CACHE_KEY = CONFIG_STORAGE_KEYS.tagsCache;
 export const CONFIG_PREFIXES_CACHE_KEY = CONFIG_STORAGE_KEYS.prefixesCache;
+export { CONFIG_SCHEMA_VERSION };
 export const CONFIG_WRITER_ID = `tab:${Date.now()}:${Math.random().toString(16).slice(2)}`;
 
 const CACHE_CONFIG_KEYS = Object.freeze({
@@ -38,12 +43,29 @@ const CACHE_CONFIG_KEYS = Object.freeze({
   prefixes: CONFIG_PREFIXES_CACHE_KEY,
 });
 const MIGRATION_LOCK_TTL_MS = 15000;
+const INITIALIZATION_WAIT_MS = 15000;
 let configLoadPromise = null;
-let configReady = false;
 let configUpdateQueue = Promise.resolve();
 
 function cloneConfig(value) {
   return JSON.parse(JSON.stringify(value));
+}
+
+function storageValuesEqual(left, right) {
+  const normalize = (value) => {
+    if (Array.isArray(value)) return value.map(normalize);
+    if (!isRecord(value)) return value;
+    return Object.fromEntries(
+      Object.keys(value).sort().map((key) => [key, normalize(value[key])]),
+    );
+  };
+  return JSON.stringify(normalize(left)) === JSON.stringify(normalize(right));
+}
+
+async function writeStorageValue(key, value) {
+  const result = await storageAdapter.set(key, value);
+  if (result === false) throw new Error("storage_write_returned_false");
+  return result;
 }
 
 function cloneRuntimeSnapshot(value) {
@@ -138,17 +160,17 @@ function buildEnvelope(data, revision) {
 
 async function persistEnvelope(envelope, previousEnvelope = null) {
   if (previousEnvelope) {
-    await storageAdapter.set(CONFIG_BACKUP_KEY, {
+    await writeStorageValue(CONFIG_BACKUP_KEY, {
       ...cloneConfig(previousEnvelope),
       data: cloneConfig(getCanonicalData(previousEnvelope.data)),
     });
   }
-  await storageAdapter.set(CONFIG_ENVELOPE_KEY, cloneConfig(envelope));
+  await writeStorageValue(CONFIG_ENVELOPE_KEY, cloneConfig(envelope));
 }
 
 async function markRecovery(marker) {
   try {
-    await storageAdapter.set(CONFIG_RECOVERY_MARKER_KEY, {
+    await writeStorageValue(CONFIG_RECOVERY_MARKER_KEY, {
       kind: String(marker.kind || "unknown"),
       source: String(marker.source || "unknown"),
       at: Date.now(),
@@ -172,7 +194,7 @@ function makeLoadResult(data, details = {}) {
     source: details.source || "canonical",
     recovered: Boolean(details.recovered),
     degraded: Boolean(details.degraded),
-    migrated: false,
+    migrated: Boolean(details.migrated),
     persisted: details.persisted !== false,
     issues: safeIssueSummary(details.issues),
     envelope: details.envelope ? cloneConfig(details.envelope) : null,
@@ -215,7 +237,7 @@ async function acquireMigrationLock() {
   const existing = await storageAdapter.get(CONFIG_MIGRATION_LOCK_KEY, null);
   const expiresAt = Number(existing?.expiresAt) || 0;
   if (existing && existing.owner !== CONFIG_WRITER_ID && expiresAt > Date.now()) return false;
-  await storageAdapter.set(CONFIG_MIGRATION_LOCK_KEY, {
+  await writeStorageValue(CONFIG_MIGRATION_LOCK_KEY, {
     owner: CONFIG_WRITER_ID,
     expiresAt: Date.now() + MIGRATION_LOCK_TTL_MS,
   });
@@ -229,126 +251,227 @@ async function releaseMigrationLock() {
   try { await storageAdapter.delete(CONFIG_MIGRATION_LOCK_KEY); } catch { /* stale lock expiry is the fallback */ }
 }
 
-async function writeCachePayloads(caches) {
-  for (const [section, key] of Object.entries(CACHE_CONFIG_KEYS)) {
-    const validation = validateCachePayload(section, caches?.[section]);
-    if (!validation.valid) throw new Error(`invalid_cache_${section}`);
-    await storageAdapter.set(key, cloneConfig(validation.data[section]));
-  }
+async function acquireInitializationLock() {
+  const existing = await storageAdapter.get(CONFIG_INITIALIZATION_LOCK_KEY, null);
+  const expiresAt = Number(existing?.expiresAt) || 0;
+  if (existing && existing.owner !== CONFIG_WRITER_ID && expiresAt > Date.now()) return false;
+  await writeStorageValue(CONFIG_INITIALIZATION_LOCK_KEY, {
+    owner: CONFIG_WRITER_ID,
+    expiresAt: Date.now() + INITIALIZATION_WAIT_MS,
+  });
+  const confirmed = await storageAdapter.get(CONFIG_INITIALIZATION_LOCK_KEY, null);
+  return confirmed?.owner === CONFIG_WRITER_ID;
 }
 
-async function verifyCachePayloads(caches) {
-  const stored = await readCachePayloads();
-  for (const [section, expected] of Object.entries(caches || {})) {
-    const validation = validateCachePayload(section, stored[section]);
-    if (!validation.valid || JSON.stringify(validation.data[section]) !== JSON.stringify(expected)) {
-      throw new Error(`cache_verification_failed_${section}`);
-    }
+async function releaseInitializationLock() {
+  const current = await storageAdapter.get(CONFIG_INITIALIZATION_LOCK_KEY, null);
+  if (current?.owner !== CONFIG_WRITER_ID) return;
+  try { await storageAdapter.delete(CONFIG_INITIALIZATION_LOCK_KEY); } catch { /* stale lock expiry is the fallback */ }
+}
+
+async function hasFreshInstallEvidence(canonicalRaw) {
+  if (canonicalRaw !== null && canonicalRaw !== undefined) return false;
+  const [backupRaw, historicalRaw] = await Promise.all([
+    storageAdapter.get(CONFIG_BACKUP_KEY, null),
+    storageAdapter.getMany([...LEGACY_SURFACE_KEYS, "configVisibility"]),
+  ]);
+  const hasBackup = backupRaw !== null && backupRaw !== undefined;
+  return !hasBackup && !hasRecognizedHistoricalData(historicalRaw);
+}
+
+async function readLegacyUpgradeEvidence(canonicalRaw) {
+  const [backupRaw, surfaceValues] = await Promise.all([
+    storageAdapter.get(CONFIG_BACKUP_KEY, null),
+    storageAdapter.getMany([...LEGACY_SURFACE_KEYS, "configVisibility"]),
+  ]);
+  return {
+    backupRaw,
+    classification: classifyLegacyUpgrade({
+      canonical: canonicalRaw,
+      backup: backupRaw,
+      surfaceValues,
+    }),
+  };
+}
+
+async function waitForFreshInitialization() {
+  const deadline = Date.now() + INITIALIZATION_WAIT_MS;
+  do {
+    const marker = await storageAdapter.get(CONFIG_MIGRATION_VERSION_KEY, null);
+    const canonicalRaw = await storageAdapter.get(CONFIG_ENVELOPE_KEY, null);
+    if (isCurrentMigrationMarker(marker)) return loadFastPath(canonicalRaw);
+    await new Promise((resolve) => setTimeout(resolve, 25));
+  } while (Date.now() < deadline);
+  return null;
+}
+
+async function initializeFreshStorage() {
+  const acquired = await acquireInitializationLock();
+  if (!acquired) return waitForFreshInitialization();
+  try {
+    const settledMarker = await storageAdapter.get(CONFIG_MIGRATION_VERSION_KEY, null);
+    const settledCanonical = await storageAdapter.get(CONFIG_ENVELOPE_KEY, null);
+    if (isCurrentMigrationMarker(settledMarker)) return loadFastPath(settledCanonical);
+    if (settledCanonical !== null && settledCanonical !== undefined) return null;
+
+    const defaults = getDefaultConfig();
+    const validation = validateConfig(defaults, { mode: "strict" });
+    if (!validation.valid) throw new Error("fresh_defaults_invalid");
+    const envelope = buildEnvelope(validation.data, 1);
+    await runMigrationStorageStep("fresh-canonical-write", () => persistEnvelope(envelope));
+    const verified = await runMigrationStorageStep("fresh-canonical-verify", () => verifyCanonicalEnvelope(envelope));
+    await runMigrationStorageStep("fresh-completion-marker-write", () => (
+      writeStorageValue(CONFIG_MIGRATION_VERSION_KEY, CONFIG_MIGRATION_VERSION)
+    ));
+    const marker = await storageAdapter.get(CONFIG_MIGRATION_VERSION_KEY, null);
+    if (!isCurrentMigrationMarker(marker)) throw new Error("fresh_completion_marker_verification_failed");
+    await clearRecoveryMarker();
+    const caches = await readCachePayloads();
+    return applyLoadedConfig(makeLoadResult(mergeRuntimeCaches(validation.data, caches), {
+      source: "fresh",
+      status: "initialized",
+      persisted: true,
+      envelope: verified,
+    }));
+  } finally {
+    await releaseInitializationLock();
   }
-  return stored;
 }
 
 async function verifyCanonicalEnvelope(expected) {
   const stored = await storageAdapter.get(CONFIG_ENVELOPE_KEY, null);
   const validation = validateConfigEnvelope(stored);
-  if (!validation.valid || JSON.stringify(stored) !== JSON.stringify(expected)) {
+  if (!validation.valid || !storageValuesEqual(stored, expected)) {
     throw new Error("canonical_verification_failed");
   }
   return stored;
 }
 
-async function cleanupLegacyKeys() {
-  for (const key of LEGACY_CLEANUP_KEYS) {
-    try { await storageAdapter.delete(key); } catch { /* cleanup is post-commit best effort */ }
+async function runMigrationStorageStep(step, operation) {
+  try {
+    return await operation();
+  } catch (error) {
+    if (error && typeof error === "object") error.storageStep = String(step || "unknown");
+    throw error;
   }
 }
 
-async function migrateStorage({ canonicalRaw, backupRaw }) {
-  const historicalRaw = await storageAdapter.getMany([
-    ...LEGACY_SURFACE_KEYS,
-    "configVisibility",
-  ]);
-  const [cacheRaw, canonical, backup] = await Promise.all([
-    readCachePayloads(),
-    validateStoredEnvelope(canonicalRaw),
-    validateStoredEnvelope(backupRaw),
-  ]);
-  const canonicalLegacy = !canonical.valid && isLegacyConfigRoot(canonicalRaw) ? canonicalRaw : null;
-  const backupLegacy = !backup.valid && isLegacyConfigRoot(backupRaw) ? backupRaw : null;
-  const plan = buildMigrationPlan({
-    canonicalData: canonical.valid ? canonicalRaw.data : canonicalLegacy,
-    backupData: backup.valid ? backupRaw.data : backupLegacy,
-    surfaceValues: historicalRaw,
-    tagsCache: cacheRaw.tags,
-    prefixesCache: cacheRaw.prefixes,
-  });
-  const hasCanonicalOrBackup = canonicalRaw !== null && canonicalRaw !== undefined
-    || backupRaw !== null && backupRaw !== undefined;
-  const hasCacheSource = cacheRaw.tags !== null && cacheRaw.tags !== undefined
-    || cacheRaw.prefixes !== null && cacheRaw.prefixes !== undefined;
-  if (!canonical.valid && !backup.valid && !canonicalLegacy && !backupLegacy
-    && !hasRecognizedHistoricalData(historicalRaw)
-    && !hasCacheSource && hasCanonicalOrBackup) {
-    throw new Error("no_recoverable_source");
+async function waitForSchemaMigration() {
+  const deadline = Date.now() + MIGRATION_LOCK_TTL_MS;
+  do {
+    const settledRaw = await storageAdapter.get(CONFIG_ENVELOPE_KEY, null);
+    if (settledRaw?.schemaVersion === CONFIG_SCHEMA_VERSION) return loadFastPath(settledRaw);
+    await new Promise((resolve) => setTimeout(resolve, 25));
+  } while (Date.now() < deadline);
+  return null;
+}
+
+async function migrateSupportedSchema(canonicalRaw, canonical) {
+  const acquired = await acquireMigrationLock();
+  if (!acquired) {
+    const settled = await waitForSchemaMigration();
+    if (settled) return settled;
+    return applyLoadedConfig(makeLoadResult(canonical.data, {
+      source: "schema-migration-busy",
+      status: "migration-busy",
+      recovered: true,
+      degraded: true,
+      persisted: false,
+      issues: canonical.issues,
+    }));
   }
-  const strict = validateConfig(plan.data, { mode: "strict" });
-  if (!strict.valid) throw new Error("migration_candidate_invalid");
 
-  const cacheValidation = {
-    tags: validateCachePayload("tags", plan.caches.tags),
-    prefixes: validateCachePayload("prefixes", plan.caches.prefixes),
-  };
-  if (!cacheValidation.tags.valid || !cacheValidation.prefixes.valid) throw new Error("migration_cache_invalid");
-
-  const previousEnvelope = canonical.valid ? canonicalRaw : null;
-  const revisionHint = Math.max(
-    Number(canonicalRaw?.revision) || 0,
-    Number(backupRaw?.revision) || 0,
-  );
-  const envelope = buildEnvelope(strict.data, revisionHint + 1);
-  let verified;
   try {
-    await writeCachePayloads({
-      tags: cacheValidation.tags.data.tags,
-      prefixes: cacheValidation.prefixes.data.prefixes,
-    });
-    await persistEnvelope(envelope, previousEnvelope);
-    await verifyCachePayloads({
-      tags: cacheValidation.tags.data.tags,
-      prefixes: cacheValidation.prefixes.data.prefixes,
-    });
-    verified = await verifyCanonicalEnvelope(envelope);
-    if (!previousEnvelope) await storageAdapter.set(CONFIG_BACKUP_KEY, cloneConfig(verified));
-    await verifyCanonicalEnvelope(verified);
-    await storageAdapter.set(CONFIG_MIGRATION_VERSION_KEY, CONFIG_MIGRATION_VERSION);
-    if (plan.source !== "defaults" || plan.usedHistorical) await cleanupLegacyKeys();
-  } catch (error) {
-    error.migrationPlan = plan;
-    throw error;
-  }
+    const settledRaw = await storageAdapter.get(CONFIG_ENVELOPE_KEY, null);
+    const settled = validateStoredEnvelope(settledRaw);
+    if (settled.valid && settled.envelope.schemaVersion === CONFIG_SCHEMA_VERSION) {
+      return loadFastPath(settledRaw);
+    }
+    if (!settled.valid || settled.envelope.schemaVersion !== 1) throw new Error("unsupported_config_schema");
 
-  return makeLoadResult(mergeRuntimeCaches(strict.data, cacheValidation), {
-    source: plan.source === "defaults" ? "fresh" : "legacy-migration",
-    status: "migrated",
-    migrated: true,
-    persisted: true,
-    degraded: plan.issues.length > 0,
-    issues: plan.issues,
-    envelope: verified,
-  });
+    const migratedData = migrateConfigSchema(settled.data, settled.envelope.schemaVersion);
+    const strict = validateConfig(migratedData, { mode: "strict" });
+    if (!strict.valid) throw new Error("schema_migration_candidate_invalid");
+    const envelope = buildEnvelope(strict.data, settled.envelope.revision + 1);
+    if (settled.sanitized) {
+      reportPersistenceHealth("SANITIZED", "Configuration migrated after dropping invalid or unknown fields.", {
+        source: "schema-migration",
+        issues: safeIssueSummary(settled.issues),
+      });
+    }
+    await runMigrationStorageStep("schema-backup-write", () => (
+      writeStorageValue(CONFIG_BACKUP_KEY, cloneConfig(settled.envelope))
+    ));
+    await runMigrationStorageStep("schema-canonical-write", () => (
+      writeStorageValue(CONFIG_ENVELOPE_KEY, cloneConfig(envelope))
+    ));
+    const verified = await runMigrationStorageStep("schema-canonical-verify", () => verifyCanonicalEnvelope(envelope));
+    await runMigrationStorageStep("schema-backup-verify", async () => {
+      const backup = await storageAdapter.get(CONFIG_BACKUP_KEY, null);
+      if (!storageValuesEqual(backup, settled.envelope)) throw new Error("schema_backup_verification_failed");
+    });
+    await clearRecoveryMarker();
+    const caches = await readCachePayloads();
+    return applyLoadedConfig(makeLoadResult(mergeRuntimeCaches(strict.data, caches), {
+      source: "schema-migration",
+      status: "migrated",
+      migrated: true,
+      persisted: true,
+      degraded: settled.sanitized,
+      issues: settled.issues,
+      envelope: verified,
+    }));
+  } catch (error) {
+    reportPersistenceHealth("SCHEMA_MIGRATION_FAILED", "Configuration schema migration could not be verified.", {
+      source: "schema-migration",
+      reason: error?.message || "schema_migration_failed",
+      storageStep: error?.storageStep || "schema-migration",
+    });
+    await markRecovery({
+      kind: "schema-migration-failed",
+      source: "schema-migration",
+      issues: error?.storageStep ? [{ path: "storage", code: error.storageStep }] : [],
+    });
+    const caches = await readCachePayloads();
+    return applyLoadedConfig(makeLoadResult(mergeRuntimeCaches(canonical.data, caches), {
+      source: "schema-migration",
+      status: "migration-failed",
+      recovered: true,
+      degraded: true,
+      persisted: false,
+      issues: canonical.issues,
+      envelope: canonicalRaw,
+    }));
+  } finally {
+    await releaseMigrationLock();
+  }
 }
 
 async function loadFastPath(canonicalRaw) {
+  if (Number.isInteger(canonicalRaw?.schemaVersion) && canonicalRaw.schemaVersion > CONFIG_SCHEMA_VERSION) {
+    const future = sanitizeConfig(canonicalRaw.data, { mode: "tolerant" });
+    const caches = await readCachePayloads();
+    return applyLoadedConfig(makeLoadResult(mergeRuntimeCaches(future.data, caches), {
+      source: "canonical",
+      status: "unsupported-newer",
+      recovered: true,
+      degraded: true,
+      persisted: false,
+      issues: [{ path: "schemaVersion", code: "unsupported" }],
+      envelope: canonicalRaw,
+    }));
+  }
   const canonical = validateStoredEnvelope(canonicalRaw);
   if (!canonical.valid) {
     const backupRaw = await storageAdapter.get(CONFIG_BACKUP_KEY, null);
     const backup = validateStoredEnvelope(backupRaw);
     if (backup.valid) {
-      const recoveredEnvelope = buildEnvelope(backup.data, Math.max(Number(canonicalRaw?.revision) || 0, backup.envelope.revision) + 1);
+      const recoveredData = migrateConfigSchema(backup.data, backup.envelope.schemaVersion);
+      const recoveredEnvelope = buildEnvelope(recoveredData, Math.max(Number(canonicalRaw?.revision) || 0, backup.envelope.revision) + 1);
       await persistEnvelope(recoveredEnvelope);
       await verifyCanonicalEnvelope(recoveredEnvelope);
       const caches = await readCachePayloads();
-      return applyLoadedConfig(makeLoadResult(mergeRuntimeCaches(backup.data, caches), {
+      return applyLoadedConfig(makeLoadResult(mergeRuntimeCaches(recoveredData, caches), {
         source: "backup",
         status: "recovered",
         recovered: true,
@@ -368,6 +491,10 @@ async function loadFastPath(canonicalRaw) {
       persisted: false,
       issues: canonical.issues,
     }));
+  }
+
+  if (canonical.envelope.schemaVersion < CONFIG_SCHEMA_VERSION) {
+    return migrateSupportedSchema(canonicalRaw, canonical);
   }
 
   const caches = await readCachePayloads();
@@ -394,58 +521,53 @@ async function loadConfigInternal() {
   try {
     const marker = await storageAdapter.get(CONFIG_MIGRATION_VERSION_KEY, null);
     canonicalRaw = await storageAdapter.get(CONFIG_ENVELOPE_KEY, null);
+    if (Number.isInteger(canonicalRaw?.schemaVersion) && canonicalRaw.schemaVersion > CONFIG_SCHEMA_VERSION) {
+      return loadFastPath(canonicalRaw);
+    }
     if (isCurrentMigrationMarker(marker)) return loadFastPath(canonicalRaw);
 
-    const acquired = await acquireMigrationLock();
-    if (!acquired) {
-      await new Promise((resolve) => setTimeout(resolve, 0));
-      const settledMarker = await storageAdapter.get(CONFIG_MIGRATION_VERSION_KEY, null);
-      const settledCanonical = await storageAdapter.get(CONFIG_ENVELOPE_KEY, null);
-      if (isCurrentMigrationMarker(settledMarker)) return loadFastPath(settledCanonical);
+    const legacyEvidence = await readLegacyUpgradeEvidence(canonicalRaw);
+    if (legacyEvidence.classification.required) {
       return applyLoadedConfig(makeLoadResult(defaults, {
-        source: "migration-busy",
-        status: "migration-busy",
+        source: "legacy-surface",
+        status: "upgrade-required",
         recovered: true,
         degraded: true,
         persisted: false,
+        issues: legacyEvidence.classification.sources.map((source) => ({
+          path: "storage",
+          code: source,
+        })),
       }));
     }
 
-    try {
-      const settledMarker = await storageAdapter.get(CONFIG_MIGRATION_VERSION_KEY, null);
-      if (isCurrentMigrationMarker(settledMarker)) {
-        const settledCanonical = await storageAdapter.get(CONFIG_ENVELOPE_KEY, null);
-        return loadFastPath(settledCanonical);
-      }
-      const backupRaw = await storageAdapter.get(CONFIG_BACKUP_KEY, null);
-      const migrated = await migrateStorage({ canonicalRaw, backupRaw });
-      await clearRecoveryMarker();
-      return applyLoadedConfig(migrated);
-    } catch (error) {
-      const canonical = validateStoredEnvelope(canonicalRaw);
-      const fallback = canonical.valid ? canonical.data : defaults;
-      reportPersistenceHealth("MIGRATION_FAILED", "Historical configuration migration could not be verified.", {
-        source: "migration",
-        reason: error?.message || "migration_failed",
-      });
-      await markRecovery({ kind: "migration-failed", source: "migration" });
-      const migrationPlan = error?.migrationPlan;
-      const fallbackData = migrationPlan?.data
-        ? mergeRuntimeCaches(migrationPlan.data, migrationPlan.caches)
-        : fallback;
-      return applyLoadedConfig(makeLoadResult(fallbackData, {
-        source: migrationPlan ? "legacy-migration" : canonical.valid ? "canonical" : "defaults",
-        status: "migration-failed",
-        recovered: true,
-        degraded: true,
-        persisted: false,
-      }));
-    } finally {
-      await releaseMigrationLock();
+    const canonical = validateStoredEnvelope(canonicalRaw);
+    const backup = validateStoredEnvelope(legacyEvidence.backupRaw);
+    if (canonical.valid || backup.valid) return loadFastPath(canonicalRaw);
+
+    if (await hasFreshInstallEvidence(canonicalRaw)) {
+      const initialized = await initializeFreshStorage();
+      if (initialized) return initialized;
     }
-  } catch {
-    reportPersistenceHealth("LOAD_FAILED", "Configuration loading failed; sanitized defaults were loaded.", { source: "defaults" });
-    await markRecovery({ kind: "load-failed", source: "defaults" });
+
+    return applyLoadedConfig(makeLoadResult(defaults, {
+      source: "unknown-storage",
+      status: "unrecoverable",
+      recovered: true,
+      degraded: true,
+      persisted: false,
+    }));
+  } catch (error) {
+    reportPersistenceHealth("LOAD_FAILED", "Configuration loading failed; sanitized defaults were loaded.", {
+      source: "defaults",
+      reason: error?.message || "load_failed",
+      storageStep: error?.storageStep || "load",
+    });
+    await markRecovery({
+      kind: "load-failed",
+      source: "defaults",
+      issues: error?.storageStep ? [{ path: "storage", code: error.storageStep }] : [],
+    });
     return applyLoadedConfig(makeLoadResult(defaults, {
       source: "defaults",
       status: "defaults",
@@ -457,22 +579,13 @@ async function loadConfigInternal() {
 }
 
 export async function loadConfig() {
-  if (!configLoadPromise) {
-    configLoadPromise = loadConfigInternal().then((result) => {
-      configReady = !["migration-failed", "migration-busy", "defaults"].includes(result?.status);
-      return result;
-    });
-  }
+  if (!configLoadPromise) configLoadPromise = loadConfigInternal();
   return configLoadPromise;
 }
 
-export function isConfigReady() {
-  return configReady;
-}
-
 async function ensureConfigReady() {
-  if (!configReady) await loadConfig();
-  return configReady;
+  await loadConfig();
+  return waitForStorageWriteAccess();
 }
 
 function enqueueConfigUpdate(operation) {
@@ -481,13 +594,16 @@ function enqueueConfigUpdate(operation) {
   return queued;
 }
 
-function notReadyResult(origin) {
+function notReadyResult(origin, access = {}) {
+  const code = String(access.reason || "storage_not_ready");
   return {
     committed: false,
     saved: [],
-    failed: [{ code: "config_not_ready" }],
-    issues: [{ path: "", code: "config_not_ready", expected: "settled configuration migration" }],
+    failed: [{ code, message: getStorageFailureMessage(code) }],
+    issues: [{ path: "", code, expected: "writable verified storage" }],
     origin,
+    previousConfig: cloneRuntimeSnapshot(config),
+    config: cloneRuntimeSnapshot(config),
   };
 }
 
@@ -495,9 +611,8 @@ async function commitConfigNow(candidate, {
   origin = "local",
   preserveRuntimeCatalogs = false,
 } = {}) {
-  if (!(await ensureConfigReady())) {
-    return notReadyResult(origin);
-  }
+  const storageAccess = await ensureConfigReady();
+  if (!storageAccess.ok) return notReadyResult(origin, storageAccess);
   const validationInput = preserveRuntimeCatalogs
     ? {
         ...candidate,
@@ -547,13 +662,16 @@ async function commitConfigNow(candidate, {
       config: cloneRuntimeSnapshot(applied.config),
       changedPaths: applied.changedPaths,
     };
-  } catch {
-    reportPersistenceHealth("SAVE_FAILED", "Configuration commit failed before the live state was updated.", { origin });
+  } catch (error) {
+    reportPersistenceHealth("SAVE_FAILED", "Configuration commit failed before the live state was updated.", {
+      origin,
+      reason: error?.message || "storage_write_failed",
+    });
     return {
       committed: false,
       saved: [],
-      failed: [{ code: "storage_error", message: "configuration storage write failed" }],
-      issues: [{ path: "", code: "storage_error", expected: "persisted config", received: "storage_error" }],
+      failed: [{ code: "storage_write_failed", message: getStorageFailureMessage("storage_write_failed") }],
+      issues: [{ path: "", code: "storage_write_failed", expected: "persisted config", received: "storage_write_failed" }],
       origin,
       previousConfig: previousLiveConfig,
       config: previousLiveConfig,
@@ -576,7 +694,8 @@ export function updateConfig(updater, { origin = "local" } = {}) {
         origin,
       };
     }
-    if (!(await ensureConfigReady())) return notReadyResult(origin);
+    const storageAccess = await ensureConfigReady();
+    if (!storageAccess.ok) return notReadyResult(origin, storageAccess);
 
     const previousConfig = cloneRuntimeSnapshot(config);
     const draft = cloneRuntimeSnapshot(config);
@@ -603,9 +722,8 @@ export function updateConfig(updater, { origin = "local" } = {}) {
 }
 
 async function saveConfigKeysNow(updates, { origin = "local" } = {}) {
-  if (!(await ensureConfigReady())) {
-    return notReadyResult(origin);
-  }
+  const storageAccess = await ensureConfigReady();
+  if (!storageAccess.ok) return notReadyResult(origin, storageAccess);
   const patch = isRecord(updates) ? cloneConfig(updates) : {};
   const cachePatch = {};
   const corePatch = {};
@@ -626,7 +744,24 @@ async function saveConfigKeysNow(updates, { origin = "local" } = {}) {
           origin,
         };
       }
-      await storageAdapter.set(CACHE_CONFIG_KEYS[section], cloneConfig(validation.data[section]));
+      try {
+        await writeStorageValue(CACHE_CONFIG_KEYS[section], cloneConfig(validation.data[section]));
+      } catch (error) {
+        reportPersistenceHealth("SAVE_FAILED", "Configuration cache write failed.", {
+          origin,
+          section,
+          reason: error?.message || "storage_write_failed",
+        });
+        return {
+          committed: false,
+          saved: [],
+          failed: [{ code: "storage_write_failed", message: getStorageFailureMessage("storage_write_failed") }],
+          issues: [{ path: section, code: "storage_write_failed", expected: "persisted cache" }],
+          origin,
+          previousConfig: cloneRuntimeSnapshot(config),
+          config: cloneRuntimeSnapshot(config),
+        };
+      }
     }
     const next = { ...cloneRuntimeSnapshot(config), ...Object.fromEntries(Object.entries(cachePatch).map(([section, value]) => [section, validateCachePayload(section, value).data[section]])) };
     const applied = applyConfigChange(next, { origin });
@@ -656,4 +791,10 @@ export function saveConfigKeys(updates, { origin = "local" } = {}) {
 export async function loadData() {
   const result = await loadConfig();
   return result.data;
+}
+
+export async function retryLoadData() {
+  configLoadPromise = null;
+  const result = await loadConfig();
+  return result;
 }

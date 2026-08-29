@@ -16,6 +16,10 @@ import {
   setActivePanel,
   syncActiveSettingsPanel,
 } from "./panelNavigation.js";
+import {
+  bindStorageReadOnlyState,
+  syncStorageReadOnlyState,
+} from "./storageReadOnly.js";
 
 export function ensureModalSkeletonInjected() {
   if (stateManager.get("modalInjected")) return stateManager.get("shadowRoot");
@@ -44,6 +48,7 @@ export function bindModalUiOnce(shadowRoot) {
   });
 
   initTagsPanelUi(shadowRoot);
+  bindStorageReadOnlyState(shadowRoot);
 
   const modal = shadowRoot.getElementById("tag-config-modal");
   if (modal) {
@@ -65,5 +70,6 @@ export function refreshModalDynamicSections(shadowRoot) {
   if (!shadowRoot) return;
   updateRegisteredAddons(null, { refreshAddonsUi: () => refreshModalAddonsUi(shadowRoot) });
   renderAllSettingsSections();
+  syncStorageReadOnlyState(shadowRoot);
   ensureTagsPanelDataLoaded();
 }

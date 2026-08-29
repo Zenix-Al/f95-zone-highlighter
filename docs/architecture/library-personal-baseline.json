@@ -369,7 +369,6 @@
     "regular": {
       "mode": "regular",
       "bytes": 379858,
-      "gzipBytes": 78827,
       "contributors": [
         {
           "path": "addons/library-addon/src/library/service.js",
@@ -456,7 +455,6 @@
     "release": {
       "mode": "release",
       "bytes": 339163,
-      "gzipBytes": 68546,
       "contributors": [
         {
           "path": "addons/library-addon/src/library/service.js",

@@ -34,10 +34,12 @@ Applies committed and imported config changes through one shared metadata-driven
 Owns the configuration transfer document format, schema-backed import validation, supported legacy-format normalization, read-only preview, and transactional import commits. Browser file selection, downloads, dialog rendering, and user-facing messages live in `src/ui/configTransfer/`.
 
 ### `configMigrationService.js`
-Contains only the evidence-backed surface-key recovery list, transformations, source precedence,
-and cache/core planning for migration generation 1. It is temporary compatibility code for released
-surface-key installations; storage I/O and the transaction remain in `settingsService.js`. This is
-not a schema migration step or a general future migration framework.
+
+Contains the bounded read-only detector for pre-envelope configuration, the
+core v5.1.2 bridge evidence, and completion-marker helpers. It performs no
+historical transform or cleanup writes.
+Recognized pre-schema storage is left untouched and directed to that bridge;
+the only current persisted-schema migration is schema 1 to schema 2.
 
 ### `tagsService.js`
 Responsible for asynchronous operations related to thread tags. Its private
