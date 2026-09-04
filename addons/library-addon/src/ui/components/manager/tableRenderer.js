@@ -4,6 +4,7 @@
  */
 
 import { escapeHtml } from "../../../../../shared/htmlUtils.js";
+import { normalizeF95ThreadId, normalizeF95ThreadUrl } from "../../../library/threadIdentity.js";
 import { fmtDate, fmtDateOnly, safeText } from "../../utils/formatters.js";
 
 const NOTE_MAX_LEN = 20000;
@@ -89,6 +90,7 @@ function renderInlineStatusCell(entry, state) {
   const isOpen = Boolean(state?.openStatusMenuId && state.openStatusMenuId === entry.threadId);
 
   const statusChip = `<span class="f95ue-chip f95ue-chip--status" data-status="${escapeHtml(statusKey)}">${escapeHtml(statusValue)}</span>`;
+  if (!normalizeF95ThreadId(entry.threadId)) return statusChip;
   return `
     <div class="f95ue-status-field ${isOpen ? "is-open" : ""}" data-thread-id="${threadId}">
       <button type="button" class="f95ue-status-trigger" data-action="status-menu-toggle" data-thread-id="${threadId}" title="Change status" aria-label="Change status">
@@ -120,7 +122,7 @@ function renderDeveloperCell(entry) {
 function renderInlineNoteCell(entry, state) {
   const threadId = safeText(entry.threadId);
   const isEditing = state?.editingNoteId && state.editingNoteId === threadId;
-  if (!threadId) return "-";
+  if (!normalizeF95ThreadId(threadId)) return renderHoverText(entry.personal?.note, { limit: 46 });
 
   if (isEditing) {
     const draft =
@@ -154,6 +156,7 @@ function renderInlineNoteCell(entry, state) {
 function renderRatingCell(entry, state) {
   const id = safeText(entry.threadId);
   const committed = entry.personal?.rating ?? null;
+  if (!normalizeF95ThreadId(id)) return escapeHtml(committed ?? "-");
   if (!state.ratingCommittedById.has(id)) state.ratingCommittedById.set(id, committed);
   if (!state.ratingDraftById.has(id)) state.ratingDraftById.set(id, committed ?? "");
   const draft = state.ratingDraftById.get(id);
@@ -169,6 +172,8 @@ export function renderRows(
 ) {
   tbody.innerHTML = rows
     .map((entry) => {
+      const actionThreadId = normalizeF95ThreadId(entry.threadId);
+      const threadIdAttr = escapeHtml(actionThreadId);
       const tagItems =
         typeof tagItemsForEntry === "function"
           ? tagItemsForEntry(entry)
@@ -180,7 +185,8 @@ export function renderRows(
       const pin = entry.personal?.pinned
         ? '<span class="f95ue-library-pin" title="Pinned" aria-label="Pinned">★</span> '
         : "";
-      const titleHtml = `${pin}<a class="f95ue-table-link" href="${safeText(entry.thread?.url) || "#"}" target="_blank" rel="noopener noreferrer">${escapeHtml(title)}</a>`;
+      const threadUrl = normalizeF95ThreadUrl(entry.thread?.url, actionThreadId);
+      const titleHtml = `${pin}<a class="f95ue-table-link" href="${escapeHtml(threadUrl || "#")}" target="_blank" rel="noopener noreferrer">${escapeHtml(title)}</a>`;
       const gameVersion = safeText(entry.thread?.currentVersion) || "-";
       const prefixesHtml = renderChipList(entry.thread?.prefixes, {
         limit: 5,
@@ -206,9 +212,9 @@ export function renderRows(
         state?.openRowMenuId && String(state.openRowMenuId) === String(entry.threadId);
       const canUpdate = Boolean(state?.liveThreadId && state.liveThreadId === entry.threadId);
       return `
-        <tr data-thread-id="${entry.threadId}">
+        <tr data-thread-id="${threadIdAttr}">
           <td>
-            <input type="checkbox" data-action="toggle-select" data-thread-id="${entry.threadId}" ${checked} />
+            <input type="checkbox" data-action="toggle-select" data-thread-id="${threadIdAttr}" ${actionThreadId ? checked : "disabled"} />
           </td>
           <td>${titleHtml}</td>
           <td>${statusCell}</td>
@@ -221,12 +227,12 @@ export function renderRows(
           <td>${noteHtml}</td>
           <td>
             <div class="f95ue-row-menu ${rowMenuOpen ? "is-open" : ""}">
-              <button type="button" class="ghost f95ue-row-menu-trigger" data-action="row-menu-toggle" data-thread-id="${entry.threadId}" title="Actions" aria-label="Actions">⋮</button>
+              <button type="button" class="ghost f95ue-row-menu-trigger" data-action="row-menu-toggle" data-thread-id="${threadIdAttr}" title="Actions" aria-label="Actions" ${actionThreadId ? "" : "disabled"}>⋮</button>
               <div class="f95ue-row-menu-panel" role="menu" aria-label="Row actions">
-                <button type="button" class="f95ue-row-menu-item" data-action="full-edit" data-thread-id="${entry.threadId}">Full edit</button>
-                <button type="button" class="f95ue-row-menu-item" data-action="check-row-update" data-thread-id="${entry.threadId}">Check for updates</button>
-                <button type="button" class="f95ue-row-menu-item" data-action="row-update-thread" data-thread-id="${entry.threadId}" ${canUpdate ? "" : "disabled"}>Update</button>
-                <button type="button" class="f95ue-row-menu-item danger" data-action="remove" data-thread-id="${entry.threadId}">Remove</button>
+                <button type="button" class="f95ue-row-menu-item" data-action="full-edit" data-thread-id="${threadIdAttr}" ${actionThreadId ? "" : "disabled"}>Full edit</button>
+                <button type="button" class="f95ue-row-menu-item" data-action="check-row-update" data-thread-id="${threadIdAttr}" ${actionThreadId ? "" : "disabled"}>Check for updates</button>
+                <button type="button" class="f95ue-row-menu-item" data-action="row-update-thread" data-thread-id="${threadIdAttr}" ${canUpdate && actionThreadId ? "" : "disabled"}>Update</button>
+                <button type="button" class="f95ue-row-menu-item danger" data-action="remove" data-thread-id="${threadIdAttr}" ${actionThreadId ? "" : "disabled"}>Remove</button>
               </div>
             </div>
           </td>

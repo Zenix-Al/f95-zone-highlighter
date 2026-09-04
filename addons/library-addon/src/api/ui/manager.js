@@ -156,8 +156,8 @@ export function createManagerApi(bridge, library) {
       return await library.importEntries(records, options);
     },
 
-    exportEntries: async () => {
-      return await library.exportEntries();
+    exportEntries: async (options) => {
+      return await library.exportEntries(options);
     },
   };
 }

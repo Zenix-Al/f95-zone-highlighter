@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.3.1 - Import identity hardening
+
+- Validated imported thread IDs and F95Zone thread URLs, rejecting malformed or mismatched identities before database writes.
+- Kept malformed legacy rows visible but made their identity-bound links and actions inert instead of rendering unsafe attributes.
+- Forwarded selected and filtered export scopes consistently through the manager API.
+
 ## v1.3.0 - Durable automatic updates and search fixes
 
 - Replaced capped one-session updates with a durable IndexedDB queue that resumes after refresh, survives daily rollover, coordinates one worker across tabs, and recovers interrupted or retryable work.

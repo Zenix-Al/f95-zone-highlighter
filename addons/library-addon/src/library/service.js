@@ -13,6 +13,7 @@ import {
   normalizeRecord,
   validateRecord,
 } from "./recordModel.js";
+import { validateImportedThreadIdentity } from "./threadIdentity.js";
 import { createUpdateEvent, diffThreadFacts } from "./updateEventModel.js";
 import { createUpdateRepository } from "./updateRepository.js";
 import { createActivityEvent } from "./activityEventModel.js";
@@ -282,6 +283,7 @@ export function createLibraryService(bridge, _storage, dependencies = {}) {
       existingEntries,
       throttleInfo,
       normalizeRecord,
+      validateIdentity: validateImportedThreadIdentity,
       createEntriesPayload: (entries) => api.createEntriesPayload(entries),
     });
     const existingUpdates = await updates.listAll();

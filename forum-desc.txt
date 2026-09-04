@@ -1,0 +1,17 @@
+[CENTER][SIZE=7][B]F95Zone Ultimate Enhancer[/B][/SIZE]
+
+[SIZE=4]A configurable userscript that improves F95Zone's Latest Updates and thread pages, with optional add-ons for specialized tools.[/SIZE][/CENTER]
+
+[SIZE=5][B]Features[/B][/SIZE]
+
+[LIST]
+[*]Latest Updates overlays, scoring, layouts, refresh controls, and recovery
+[*]Thread overlays, wide layouts, and collapsible signatures
+[*]Preferred, excluded, and marked tag management with custom colors
+[*]Isolated settings, configuration transfer, and Feature Health diagnostics
+[*]Optional Library, Latest Filters, Thread Utility, Site Repair, and Masked + Direct Download add-ons
+[/LIST]
+
+[CENTER][SIZE=5][B][URL='https://greasyfork.org/en/scripts/546518-f95zone-ultimate-enhancer']Install and read more on Greasy Fork[/URL][/B][/SIZE]
+
+[URL='https://github.com/Zenix-Al/f95-zone-highlighter']Source code and issue tracker on GitHub[/URL][/CENTER]

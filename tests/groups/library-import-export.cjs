@@ -195,4 +195,38 @@ module.exports = function registerLibraryImportExportGroup(context) {
     );
     assert.deepStrictEqual(batches.map((batch) => batch.length), [2, 2, 1]);
   });
+
+  runTest("LIBRARY-IMPORT-EXPORT-02 rejects unsafe imported thread identities", async () => {
+    const { createLibraryService } = loadModule("addons/library-addon/src/library/service.js");
+    const memory = createBridge();
+    const service = createLibraryService(memory.bridge, { get: async () => true });
+    const preview = await service.previewImport({
+      version: 1,
+      records: [
+        legacyRecord('42\" onclick=\"alert(1)'),
+        { ...legacyRecord("43"), url: "javascript:alert(1)" },
+        { ...legacyRecord("44"), url: "https://f95zone.to/threads/example.45/" },
+      ],
+    });
+
+    assert.strictEqual(preview.skippedInvalid, 3);
+    assert.strictEqual(preview.writeCount, 0);
+    const result = await service.importEntries(preview.document, { plan: preview });
+    assert.strictEqual(result.imported, 0);
+    assert.deepStrictEqual(memory.snapshot().records, []);
+  });
+
+  runTest("Library manager API forwards scoped export options", async () => {
+    const { createManagerApi } = loadModule("addons/library-addon/src/api/ui/manager.js");
+    let received = null;
+    const api = createManagerApi({}, {
+      exportEntries: async (options) => {
+        received = options;
+        return { records: [] };
+      },
+    });
+    const options = { threadIds: ["42"] };
+    await api.exportEntries(options);
+    assert.strictEqual(received, options);
+  });
 };

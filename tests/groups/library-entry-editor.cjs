@@ -130,6 +130,35 @@ module.exports = function registerLibraryEntryEditorGroup(context) {
     assert.ok(tbody.querySelector('[data-action="remove"]'));
   });
 
+  runTest("Library table renders malformed stored identities inertly", () => {
+    const { renderRows } = loadModule(
+      "addons/library-addon/src/ui/components/manager/tableRenderer.js",
+    );
+    const window = new Window();
+    const tbody = window.document.createElement("tbody");
+    const record = createRecord({
+      threadId: '42\" onclick=\"alert(1)',
+      thread: {
+        ...createRecord().thread,
+        url: "javascript:alert(1)",
+      },
+    });
+    renderRows(tbody, [record], new Set(), {
+      openStatusMenuId: "",
+      openRowMenuId: "",
+      ratingCommittedById: new Map(),
+      ratingDraftById: new Map(),
+    });
+
+    assert.strictEqual(tbody.querySelector("a")?.getAttribute("href"), "#");
+    assert.strictEqual(tbody.querySelector("tr")?.dataset.threadId, "");
+    assert.strictEqual(tbody.querySelector("[onclick]"), null);
+    assert.ok(
+      [...tbody.querySelectorAll("button[data-thread-id], input[data-thread-id]")]
+        .every((element) => element.disabled),
+    );
+  });
+
   runTest("LIBRARY-ENTRY-EDITOR-01 payload stays below the UI dialog limit", () => {
     const { createEditorDraft } = loadModule(
       "addons/library-addon/src/ui/entryEditor/editorValidation.js",
