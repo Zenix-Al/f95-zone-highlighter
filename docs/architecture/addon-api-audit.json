@@ -3180,6 +3180,7 @@
           "addons/library-addon/src/library/querying.js",
           "addons/library-addon/src/library/recordModel.js",
           "addons/library-addon/src/library/service.js",
+          "addons/library-addon/src/library/threadIdentity.js",
           "addons/library-addon/src/library/threadUpdateParser.js",
           "addons/library-addon/src/library/updateEventModel.js",
           "addons/library-addon/src/library/updateNotificationCoordinator.js",
@@ -3901,6 +3902,21 @@
             "text": "url: String(location.href || \"\"),"
           },
           {
+            "path": "addons/library-addon/src/library/threadIdentity.js",
+            "line": 13,
+            "text": "const url = new URL(raw, \"https://f95zone.to/\");"
+          },
+          {
+            "path": "addons/library-addon/src/library/threadIdentity.js",
+            "line": 14,
+            "text": "const host = url.hostname.toLowerCase();"
+          },
+          {
+            "path": "addons/library-addon/src/library/threadIdentity.js",
+            "line": 17,
+            "text": "const urlThreadId = normalizeF95ThreadId(url.pathname.match(THREAD_PATH_PATTERN)?.[1]);"
+          },
+          {
             "path": "addons/library-addon/src/thread/detector.js",
             "line": 6,
             "text": "function parseThreadIdFromPath(pathname) {"
@@ -4054,37 +4070,37 @@
           },
           {
             "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
-            "line": 170,
+            "line": 173,
             "text": "tbody.innerHTML = rows"
           },
           {
             "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
-            "line": 240,
+            "line": 246,
             "text": "const pageInfo = root.querySelector('[data-role=\"pageInfo\"]');"
           },
           {
             "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
-            "line": 241,
+            "line": 247,
             "text": "const selectedInfo = root.querySelector('[data-role=\"selectedInfo\"]');"
           },
           {
             "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
-            "line": 242,
+            "line": 248,
             "text": "const toggleAll = root.querySelector('[data-action=\"toggle-all\"]');"
           },
           {
             "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
-            "line": 264,
+            "line": 270,
             "text": "const prev = root.querySelector('[data-action=\"prev\"]');"
           },
           {
             "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
-            "line": 265,
+            "line": 271,
             "text": "const next = root.querySelector('[data-action=\"next\"]');"
           },
           {
             "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
-            "line": 271,
+            "line": 277,
             "text": "const statusLine = root.querySelector(`#${ROWS_STATUS_ID}`);"
           },
           {
@@ -10323,6 +10339,21 @@
           "text": "url: String(location.href || \"\"),"
         },
         {
+          "path": "addons/library-addon/src/library/threadIdentity.js",
+          "line": 13,
+          "text": "const url = new URL(raw, \"https://f95zone.to/\");"
+        },
+        {
+          "path": "addons/library-addon/src/library/threadIdentity.js",
+          "line": 14,
+          "text": "const host = url.hostname.toLowerCase();"
+        },
+        {
+          "path": "addons/library-addon/src/library/threadIdentity.js",
+          "line": 17,
+          "text": "const urlThreadId = normalizeF95ThreadId(url.pathname.match(THREAD_PATH_PATTERN)?.[1]);"
+        },
+        {
           "path": "addons/library-addon/src/thread/detector.js",
           "line": 6,
           "text": "function parseThreadIdFromPath(pathname) {"
@@ -10954,7 +10985,7 @@
         },
         {
           "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
-          "line": 170,
+          "line": 173,
           "text": "tbody.innerHTML = rows"
         },
         {
@@ -11306,7 +11337,7 @@
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 90,
+          "line": 91,
           "text": "return resolveImportThrottleInfo(await api.getCoreThrottleInfo());"
         },
         {
@@ -11497,32 +11528,32 @@
         },
         {
           "path": "addons/library-addon/src/library/importWorkflow.js",
-          "line": 209,
+          "line": 210,
           "text": "onProgress,"
         },
         {
           "path": "addons/library-addon/src/library/importWorkflow.js",
-          "line": 238,
+          "line": 239,
           "text": "function reportProgress(status = \"running\") {"
         },
         {
           "path": "addons/library-addon/src/library/importWorkflow.js",
-          "line": 239,
+          "line": 240,
           "text": "onProgress({"
         },
         {
           "path": "addons/library-addon/src/library/importWorkflow.js",
-          "line": 257,
+          "line": 258,
           "text": "reportProgress();"
         },
         {
           "path": "addons/library-addon/src/library/importWorkflow.js",
-          "line": 311,
+          "line": 312,
           "text": "reportProgress();"
         },
         {
           "path": "addons/library-addon/src/library/importWorkflow.js",
-          "line": 320,
+          "line": 321,
           "text": "reportProgress(cancelled ? \"cancelled\" : \"completed\");"
         },
         {
@@ -11537,17 +11568,17 @@
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 358,
+          "line": 360,
           "text": "const onProgress = typeof options.onProgress === \"function\" ? options.onProgress : () => {};"
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 376,
+          "line": 378,
           "text": "onProgress,"
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 470,
+          "line": 472,
           "text": "\"progressNote\","
         },
         {

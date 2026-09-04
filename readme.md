@@ -1,7 +1,6 @@
 # F95Zone Ultimate Enhancer
 
-A userscript that improves F95Zone's Latest Updates and thread pages through a
-small configurable core and optional add-ons.
+A userscript that improves F95Zone's Latest Updates and thread pages through a configurable core and optional add-ons.
 
 - [Install from Greasy Fork](https://greasyfork.org/en/scripts/546518-f95zone-ultimate-enhancer)
 - [Documentation](docs/README.md)

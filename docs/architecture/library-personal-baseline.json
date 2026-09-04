@@ -364,15 +364,15 @@
     }
   ],
   "build": {
-    "authoredBytes": 367465,
-    "fileCount": 97,
+    "authoredBytes": 369795,
+    "fileCount": 98,
     "regular": {
       "mode": "regular",
-      "bytes": 379858,
+      "bytes": 382066,
       "contributors": [
         {
           "path": "addons/library-addon/src/library/service.js",
-          "bytes": 38004
+          "bytes": 38062
         },
         {
           "path": "addons/library-addon/src/ui/assets/manager.css",
@@ -384,7 +384,7 @@
         },
         {
           "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
-          "bytes": 12520
+          "bytes": 13108
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
@@ -411,12 +411,12 @@
           "bytes": 9465
         },
         {
-          "path": "addons/shared/runtimeLifecycle.js",
-          "bytes": 9221
+          "path": "addons/library-addon/src/library/importWorkflow.js",
+          "bytes": 9263
         },
         {
-          "path": "addons/library-addon/src/library/importWorkflow.js",
-          "bytes": 9193
+          "path": "addons/shared/runtimeLifecycle.js",
+          "bytes": 9221
         },
         {
           "path": "addons/library-addon/src/api/library/client.js",
@@ -444,7 +444,7 @@
         },
         {
           "path": "addons/library-addon/src/ui/application/importExportWorkflow.js",
-          "bytes": 6256
+          "bytes": 6247
         },
         {
           "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
@@ -454,11 +454,11 @@
     },
     "release": {
       "mode": "release",
-      "bytes": 339163,
+      "bytes": 340869,
       "contributors": [
         {
           "path": "addons/library-addon/src/library/service.js",
-          "bytes": 26246
+          "bytes": 26294
         },
         {
           "path": "addons/library-addon/src/ui/assets/manager.css",
@@ -470,7 +470,7 @@
         },
         {
           "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
-          "bytes": 10638
+          "bytes": 11137
         },
         {
           "path": "addons/library-addon/src/library/recordModel.js",
@@ -505,12 +505,12 @@
           "bytes": 6406
         },
         {
-          "path": "addons/library-addon/src/app/dockController.js",
-          "bytes": 6246
+          "path": "addons/library-addon/src/library/importWorkflow.js",
+          "bytes": 6284
         },
         {
-          "path": "addons/library-addon/src/library/importWorkflow.js",
-          "bytes": 6227
+          "path": "addons/library-addon/src/app/dockController.js",
+          "bytes": 6246
         },
         {
           "path": "addons/library-addon/src/ui/assets/manager.html",
@@ -530,7 +530,7 @@
         },
         {
           "path": "addons/library-addon/src/ui/application/importExportWorkflow.js",
-          "bytes": 4830
+          "bytes": 4821
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorRenderer.js",

@@ -1,4 +1,5 @@
 import { getActivityTypes } from "./activityEventModel.js";
+import { normalizeF95ThreadId } from "./threadIdentity.js";
 
 export const LIBRARY_DOCUMENT_VERSION = 2;
 
@@ -31,7 +32,7 @@ export function validateUpdateEvent(event, index = 0) {
   const path = `updates[${index}]`;
   if (!isObject(event)) return [`${path}: expected object`];
   if (!String(event.id || "").trim()) issues.push(`${path}.id: required`);
-  if (!String(event.threadId || "").trim()) issues.push(`${path}.threadId: required`);
+  if (!normalizeF95ThreadId(event.threadId)) issues.push(`${path}.threadId: invalid F95 thread ID`);
   if (!["version", "thread-facts"].includes(String(event.type || ""))) {
     issues.push(`${path}.type: invalid`);
   }
@@ -47,7 +48,7 @@ export function validateActivityEvent(event, index = 0) {
   const path = `activity[${index}]`;
   if (!isObject(event)) return [`${path}: expected object`];
   if (!String(event.id || "").trim()) issues.push(`${path}.id: required`);
-  if (!String(event.threadId || "").trim()) issues.push(`${path}.threadId: required`);
+  if (!normalizeF95ThreadId(event.threadId)) issues.push(`${path}.threadId: invalid F95 thread ID`);
   if (!String(event.commandId || "").trim()) issues.push(`${path}.commandId: required`);
   if (!getActivityTypes().includes(String(event.type || ""))) issues.push(`${path}.type: invalid`);
   if (!validTime(event.occurredAt)) issues.push(`${path}.occurredAt: invalid`);

@@ -54,6 +54,7 @@ export function previewLibraryImport({
   existingEntries,
   throttleInfo,
   normalizeRecord,
+  validateIdentity = () => [],
   createEntriesPayload,
 }) {
   const list = Array.isArray(records) ? records : [];
@@ -76,7 +77,7 @@ export function previewLibraryImport({
 
   for (const raw of list) {
     const next = normalizeRecord(raw);
-    if (!next.threadId) {
+    if (!next.threadId || validateIdentity(next).length > 0) {
       skipped += 1;
       skippedInvalid += 1;
       continue;

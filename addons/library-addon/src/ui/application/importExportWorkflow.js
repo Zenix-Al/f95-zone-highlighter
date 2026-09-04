@@ -90,7 +90,7 @@ export async function handleImportFile(
       `- New records: ${preview.added}`,
       `- Existing records to update: ${preview.updated}`,
       `- Existing records skipped by policy: ${preview.skippedExisting + preview.skippedNotNewer}`,
-      `- Invalid records (missing threadId): ${preview.skippedInvalid}`,
+      `- Invalid record identities: ${preview.skippedInvalid}`,
       `- Duplicate IDs inside file: ${preview.skippedDuplicateInFile}`,
       `- Update history events: ${preview.sections.updates.total} (${preview.sections.updates.writeCount} new)`,
       `- Activity events: ${preview.sections.activity.total} (${preview.sections.activity.writeCount} new)`,
