@@ -23,7 +23,7 @@ function renderContentSection(state, id, title) {
           data-section-id="${id}"
           aria-controls="thread-utility-${id}-content"
           aria-expanded="${open ? "true" : "false"}"
-        >${escapeHtml(title)} ${open ? "v" : ">"}</button>
+        >${escapeHtml(title)}</button>
       </div>
       ${open
         ? `<div id="thread-utility-${id}-content" class="thread-utility-content">${section.html}</div>`
@@ -67,7 +67,7 @@ function renderDownloads(state) {
         <button type="button" class="thread-utility-content-disclosure"
           data-thread-utility-action="toggle-content" data-section-id="downloads"
           aria-controls="thread-utility-downloads-content" aria-expanded="${open ? "true" : "false"}"
-        >Downloads (${items.length}) ${open ? "v" : ">"}</button>
+        >Downloads (${items.length})</button>
       </div>
       ${open ? `<div id="thread-utility-downloads-content">${rows}</div>` : ""}
     </section>

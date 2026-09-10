@@ -2524,6 +2524,7 @@ module.exports = function registerGroup(context) {
           ["#1f2329", "rgb(31, 35, 41)"].includes(dialogSurface.style.background),
         );
         assert.strictEqual(dialogSurface.style.borderRadius, "10px");
+        assert.strictEqual(dialogSurface.style.overflow, "auto");
         const scrollRegion = document.querySelector('[data-preserve-scroll="main"]');
         scrollRegion.scrollTop = 73;
         assert.strictEqual(
@@ -2544,6 +2545,23 @@ module.exports = function registerGroup(context) {
           document.querySelector('[data-preserve-scroll="main"]').scrollTop,
           73,
         );
+        assert.strictEqual(
+          host.openAddonDialog("addon-a", {
+            dialogId: "self-scrolling-dialog",
+            html: '<div class="self-scroller">Self scrolling</div>',
+            scrollMode: "addon",
+          }).ok,
+          true,
+        );
+        const selfScrollingSurface = document.querySelector(
+          '[data-dialog-id="self-scrolling-dialog"].f95ue-addon-dialog-surface',
+        );
+        const selfScrollingContent = document.querySelector(
+          '#f95ue-addon-dialog-content-addon-a-self-scrolling-dialog',
+        );
+        assert.strictEqual(selfScrollingSurface.style.overflow, "hidden");
+        assert.strictEqual(selfScrollingContent.style.overflow, "hidden");
+        assert.strictEqual(selfScrollingContent.style.minHeight, "0");
         host.cleanupAddonUi("addon-a");
         assert.strictEqual(
           host.updateAddonDialog("addon-a", {

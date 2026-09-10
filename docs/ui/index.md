@@ -63,6 +63,8 @@ Focused documentation for subsystems has been split into smaller files. See:
 - [High-Level Architecture](architecture.md)
 - [Directory Map](directory-map.md)
 - [Shadow DOM and Styling](shadow-dom.md)
+- [Core UI Visual Style Reference](visual-style-reference.md)
+- [Visual Browser Tests](visual-testing.md)
 - [Modal & Lifecycle](modal-lifecycle.md)
 - [Settings Renderer](settings-renderer.md)
 - [Components](components.md)

@@ -2298,9 +2298,9 @@
       "id": "library-addon",
       "source": {
         "fileCount": 98,
-        "authoredBytes": 369795,
-        "physicalLines": 11411,
-        "nonblankLines": 10358,
+        "authoredBytes": 369824,
+        "physicalLines": 11412,
+        "nonblankLines": 10359,
         "files": [
           {
             "path": "addons/library-addon/src/api/bridge.js",
@@ -2382,9 +2382,9 @@
           },
           {
             "path": "addons/library-addon/src/api/ui/manager.js",
-            "bytes": 4839,
-            "physicalLines": 163,
-            "nonblankLines": 139
+            "bytes": 4868,
+            "physicalLines": 164,
+            "nonblankLines": 140
           },
           {
             "path": "addons/library-addon/src/api/ui/mount.js",
@@ -2895,8 +2895,8 @@
       "builds": {
         "regular": {
           "mode": "regular",
-          "bytes": 382066,
-          "gzipBytes": 79383,
+          "bytes": 382097,
+          "gzipBytes": 79392,
           "contributors": [
             {
               "path": "addons/library-addon/src/library/service.js",
@@ -2982,8 +2982,8 @@
         },
         "release": {
           "mode": "release",
-          "bytes": 340869,
-          "gzipBytes": 68960,
+          "bytes": 340906,
+          "gzipBytes": 68969,
           "contributors": [
             {
               "path": "addons/library-addon/src/library/service.js",
@@ -3909,9 +3909,9 @@
       "id": "thread-utility-addon",
       "source": {
         "fileCount": 38,
-        "authoredBytes": 95315,
-        "physicalLines": 3109,
-        "nonblankLines": 2865,
+        "authoredBytes": 97772,
+        "physicalLines": 3219,
+        "nonblankLines": 2961,
         "files": [
           {
             "path": "addons/thread-utility-addon/src/api/bridge.js",
@@ -3999,15 +3999,15 @@
           },
           {
             "path": "addons/thread-utility-addon/src/app/settingsEditor.js",
-            "bytes": 5006,
-            "physicalLines": 152,
-            "nonblankLines": 142
+            "bytes": 5033,
+            "physicalLines": 153,
+            "nonblankLines": 143
           },
           {
             "path": "addons/thread-utility-addon/src/app/uiController.js",
-            "bytes": 6128,
-            "physicalLines": 191,
-            "nonblankLines": 180
+            "bytes": 6157,
+            "physicalLines": 192,
+            "nonblankLines": 181
           },
           {
             "path": "addons/thread-utility-addon/src/constants.js",
@@ -4125,37 +4125,37 @@
           },
           {
             "path": "addons/thread-utility-addon/src/ui/palette.js",
-            "bytes": 8062,
+            "bytes": 8022,
             "physicalLines": 194,
             "nonblankLines": 188
           },
           {
             "path": "addons/thread-utility-addon/src/ui/settingsDialog.js",
-            "bytes": 3213,
+            "bytes": 3291,
             "physicalLines": 62,
             "nonblankLines": 61
           },
           {
             "path": "addons/thread-utility-addon/src/ui/threadUtility.css",
-            "bytes": 8752,
-            "physicalLines": 489,
-            "nonblankLines": 416
+            "bytes": 11115,
+            "physicalLines": 597,
+            "nonblankLines": 510
           }
         ]
       },
       "builds": {
         "regular": {
           "mode": "regular",
-          "bytes": 109993,
-          "gzipBytes": 24418,
+          "bytes": 112562,
+          "gzipBytes": 24731,
           "contributors": [
+            {
+              "path": "addons/thread-utility-addon/src/ui/threadUtility.css",
+              "bytes": 11746
+            },
             {
               "path": "addons/thread-utility-addon/src/app/createThreadUtilityApp.js",
               "bytes": 11093
-            },
-            {
-              "path": "addons/thread-utility-addon/src/ui/threadUtility.css",
-              "bytes": 9275
             },
             {
               "path": "addons/shared/runtimeLifecycle.js",
@@ -4163,7 +4163,7 @@
             },
             {
               "path": "addons/thread-utility-addon/src/ui/palette.js",
-              "bytes": 8030
+              "bytes": 7990
             },
             {
               "path": "addons/thread-utility-addon/src/domain/content/parser.js",
@@ -4171,7 +4171,7 @@
             },
             {
               "path": "addons/thread-utility-addon/src/app/uiController.js",
-              "bytes": 5960
+              "bytes": 5991
             },
             {
               "path": "addons/thread-utility-addon/src/domain/snapshot/parser.js",
@@ -4179,7 +4179,7 @@
             },
             {
               "path": "addons/thread-utility-addon/src/app/settingsEditor.js",
-              "bytes": 4724
+              "bytes": 4753
             },
             {
               "path": "addons/thread-utility-addon/src/ui/bindings.js",
@@ -4198,12 +4198,12 @@
               "bytes": 3803
             },
             {
-              "path": "addons/thread-utility-addon/src/domain/downloads/parser.js",
-              "bytes": 3225
+              "path": "addons/thread-utility-addon/src/ui/settingsDialog.js",
+              "bytes": 3277
             },
             {
-              "path": "addons/thread-utility-addon/src/ui/settingsDialog.js",
-              "bytes": 3199
+              "path": "addons/thread-utility-addon/src/domain/downloads/parser.js",
+              "bytes": 3225
             },
             {
               "path": "addons/thread-utility-addon/src/domain/utilities/controller.js",
@@ -4233,12 +4233,12 @@
         },
         "release": {
           "mode": "release",
-          "bytes": 99360,
-          "gzipBytes": 21801,
+          "bytes": 101953,
+          "gzipBytes": 22125,
           "contributors": [
             {
               "path": "addons/thread-utility-addon/src/ui/threadUtility.css",
-              "bytes": 8781
+              "bytes": 11144
             },
             {
               "path": "addons/thread-utility-addon/src/app/createThreadUtilityApp.js",
@@ -4246,7 +4246,7 @@
             },
             {
               "path": "addons/thread-utility-addon/src/ui/palette.js",
-              "bytes": 7383
+              "bytes": 7351
             },
             {
               "path": "addons/shared/runtimeLifecycle.js",
@@ -4262,15 +4262,15 @@
             },
             {
               "path": "addons/thread-utility-addon/src/app/uiController.js",
-              "bytes": 4266
+              "bytes": 4285
             },
             {
               "path": "addons/thread-utility-addon/src/app/settingsEditor.js",
-              "bytes": 3377
+              "bytes": 3396
             },
             {
               "path": "addons/thread-utility-addon/src/ui/settingsDialog.js",
-              "bytes": 3096
+              "bytes": 3174
             },
             {
               "path": "addons/thread-utility-addon/src/domain/utilities/quickSearch.js",
@@ -4550,9 +4550,9 @@
     },
     "uiIntegration": {
       "fileCount": 16,
-      "authoredBytes": 44119,
-      "physicalLines": 1420,
-      "nonblankLines": 1236,
+      "authoredBytes": 44346,
+      "physicalLines": 1428,
+      "nonblankLines": 1244,
       "files": [
         {
           "path": "src/ui/components/addons/actionButton.js",
@@ -4568,9 +4568,9 @@
         },
         {
           "path": "src/ui/components/addons/addonDialog.js",
-          "bytes": 4115,
-          "physicalLines": 164,
-          "nonblankLines": 145
+          "bytes": 4342,
+          "physicalLines": 172,
+          "nonblankLines": 153
         },
         {
           "path": "src/ui/components/addons/addonDockGroup.js",

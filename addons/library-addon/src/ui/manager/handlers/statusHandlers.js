@@ -11,7 +11,13 @@ const ALLOWED_STATUSES = new Set([
 ]);
 
 export function createStatusHandlers(context) {
-  const { api, notifyMutated, reloadRows, state } = context;
+  const { api, getRoot, notifyMutated, reloadRows, state } = context;
+
+  function restoreTriggerFocus(threadId) {
+    const trigger = [...(getRoot()?.querySelectorAll?.('button[data-action="status-menu-toggle"]') || [])]
+      .find((candidate) => String(candidate.dataset.threadId || "") === String(threadId || ""));
+    trigger?.focus?.();
+  }
 
   return {
     "set-status": async (threadId, nextStatusRaw) => {
@@ -40,6 +46,7 @@ export function createStatusHandlers(context) {
       state.openStatusMenuId = state.openStatusMenuId === id ? "" : id;
       if (state.openStatusMenuId) state.openRowMenuId = "";
       await reloadRows();
+      restoreTriggerFocus(id);
     },
     "status-menu-close": async () => {
       if (!state.openStatusMenuId) return;

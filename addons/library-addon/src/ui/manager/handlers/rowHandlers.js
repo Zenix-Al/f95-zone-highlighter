@@ -43,6 +43,12 @@ export function createRowHandlers(context) {
   const { api, deps, getRoot, notifyMutated, reloadRows, state } = context;
   const { askConfirmFn, getLiveThreadSnapshotFn } = deps;
 
+  function restoreActionFocus(action, threadId) {
+    const button = [...(getRoot()?.querySelectorAll?.(`button[data-action="${action}"]`) || [])]
+      .find((candidate) => String(candidate.dataset.threadId || "") === String(threadId || ""));
+    button?.focus?.();
+  }
+
   return {
     "full-edit": async (threadId) => {
       state.openRowMenuId = "";
@@ -80,6 +86,7 @@ export function createRowHandlers(context) {
       state.openRowMenuId = state.openRowMenuId === id ? "" : id;
       if (state.openRowMenuId) state.openStatusMenuId = "";
       await reloadRows();
+      restoreActionFocus("row-menu-toggle", id);
     },
     "row-menu-close": async () => {
       if (!state.openRowMenuId) return;

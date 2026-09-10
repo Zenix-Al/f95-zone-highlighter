@@ -7,6 +7,29 @@ import { handleImportFile } from "../application/importExportWorkflow.js";
 import { resetPagination } from "../manager/state.js";
 
 const SEARCH_DEBOUNCE_MS = 220;
+
+export function updateFilterSummary(root) {
+  if (!root) return "";
+  const summary = root.querySelector('[data-role="filterSummary"]');
+  const status = root.querySelector('[data-field="status"]');
+  const sort = root.querySelector('[data-field="sort"]');
+  const pageSize = root.querySelector('[data-field="pageSize"]');
+  const statusLabel = String(status?.selectedOptions?.[0]?.textContent || "All Status")
+    .replace(/\s+status$/i, "") || "All";
+  const sortLabels = {
+    "updatedAt:desc": "Newest",
+    "updatedAt:asc": "Oldest",
+    "title:asc": "Title A-Z",
+    "title:desc": "Title Z-A",
+    "rating:desc": "Rating high",
+    "rating:asc": "Rating low",
+  };
+  const sortLabel = sortLabels[String(sort?.value || "updatedAt:desc")] || "Newest";
+  const value = `${statusLabel} · ${sortLabel} · ${pageSize?.value || "50"}/page`;
+  if (summary) summary.textContent = value;
+  return value;
+}
+
 export function bindManagerEvents(root, state, handlers, deps) {
   const { reloadRowsFn, onMutatedFn, library, askConfirmFn } = deps;
   const controller = new AbortController();
@@ -132,9 +155,8 @@ export function bindManagerEvents(root, state, handlers, deps) {
 
   // Close advanced panel when clicking outside
   root.addEventListener("click", (event) => {
-    const activePanel = event.target?.closest?.(".f95ue-library-more-actions");
     root.querySelectorAll(".f95ue-library-more-actions[open]").forEach((panel) => {
-      if (panel !== activePanel) panel.removeAttribute("open");
+      if (!panel.contains(event.target)) panel.removeAttribute("open");
     });
   }, listenerOptions);
 
@@ -159,6 +181,7 @@ export function bindManagerEvents(root, state, handlers, deps) {
   if (statusSelect) {
     statusSelect.addEventListener("change", async () => {
       state.status = String(statusSelect.value || "all").trim();
+      updateFilterSummary(root);
       resetPagination(state);
       await reloadRowsFn(root);
     }, listenerOptions);
@@ -171,6 +194,7 @@ export function bindManagerEvents(root, state, handlers, deps) {
       const pair = String(sortSelect.value || "updatedAt:desc").split(":");
       state.sortBy = String(pair[0] || "updatedAt").trim();
       state.sortDir = String(pair[1] || "desc").trim();
+      updateFilterSummary(root);
       resetPagination(state);
       await reloadRowsFn(root);
     }, listenerOptions);
@@ -198,10 +222,13 @@ export function bindManagerEvents(root, state, handlers, deps) {
     pageSizeSelect.addEventListener("change", async () => {
       const nextSize = Math.max(1, Number(pageSizeSelect.value || 50));
       state.pageSize = Number.isFinite(nextSize) ? nextSize : state.pageSize || 50;
+      updateFilterSummary(root);
       resetPagination(state);
       await reloadRowsFn(root);
     }, listenerOptions);
   }
+
+  updateFilterSummary(root);
 
   // Tooltip flip handling (chips + note preview)
   root.addEventListener("pointerenter", (event) => {

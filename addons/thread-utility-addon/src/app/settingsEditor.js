@@ -122,6 +122,7 @@ export function createThreadUtilitySettingsEditor({
       title: "Thread Utility Settings",
       html: renderSettingsDialog(session.draft),
       size: "lg",
+      scrollMode: "addon",
     });
     if (active !== session) {
       if (result?.ok) {

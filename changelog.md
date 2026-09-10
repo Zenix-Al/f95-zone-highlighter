@@ -1,5 +1,10 @@
 # Changelog
 
+## [5.4.1 - Add-on dialog scrolling fix]
+
+- Added explicit add-on-owned dialog scrolling so complex add-on interfaces can keep fixed headers and footers without a redundant core scrollbar.
+- Kept core-managed scrolling as the default for simple dialogs and documented the shared dialog sizing contract.
+
 ## [5.4.0 - Storage reliability overhaul]
 
 - Rebuilt core configuration startup around one verified storage bootstrap, readiness state, and write gate, with storage status and recovery available through Feature Health.

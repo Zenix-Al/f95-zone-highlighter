@@ -1,7 +1,7 @@
 {
   "addons": {
     "library-addon": {
-      "regular": "5568389ec6172aaa504b913eb0f7fb000b4998f38489ba99b6c8323b41188373",
+      "regular": "e286a891b64b964928be4414d49f093ee67c020d0479eca2745cf1c6f85dfe6d",
       "release": "47f4edaa51b5564108e426840db52d02f537a2c196f66f85d4c5a29c0a95f252"
     },
     "image-repair-addon": {
@@ -30,7 +30,7 @@
     },
     "thread-utility-addon": {
       "release": "4ccb1bdea7fca63e72e55969c1af9fcef66503d052d74158ed6df59588bf4479",
-      "regular": "0b20c8f0f73e1a40d92d9aba73f81b25d8566f039980cf3fc82af89b5e454266"
+      "regular": "f23d376bd235edd152001ef69ce0ed396d4f1c71bf2f6ac789c973ba3ec21406"
     }
   }
 }

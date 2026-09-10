@@ -46,8 +46,41 @@ Formats requested scopes/permissions and handles missing scope metadata.
 
 ## Add-on Dialogs and Panels
 
+Add-on content should follow the canonical core Settings palette and surface
+hierarchy in the [Core UI Visual Style Reference](visual-style-reference.md).
+The dialog host's current inline colors are implementation defaults, not a
+separate add-on design language.
+
 ### `addonDialog.js`
 Provides add-on-focused dialogs with multiple size presets (`sm`, default, `lg`, `xl`, and full), focus placement, focus trapping, and dialog semantics/ARIA behavior.
+
+The core dialog surface always owns the viewport bound through its size preset
+(`max-height: calc(100vh - ...)`). It manages overflow by default, which is the
+right choice for simple, naturally sized dialog content.
+
+Complex add-on applications that already have a fixed header/footer and an
+inner scrolling region must open the dialog with `scrollMode: "addon"`. In that
+mode the core retains the viewport bound but disables scrolling on its surface
+and content host. The add-on must then:
+
+- size its root with `max-height: 100%` or a viewport height no larger than the
+  selected dialog preset;
+- use `min-height: 0` through the flex/grid chain;
+- put `overflow-y: auto` on exactly one inner content/list region;
+- keep headers and action footers outside that scrolling region.
+
+Do not combine a viewport-sized add-on root with the default core scrolling.
+That creates nested scrollbars and can place content beneath an add-on footer.
+Do not remove the core viewport `max-height`; select the correct scroll owner
+instead.
+
+`scrollMode: "addon"` removes only the redundant core-host scrollbar. A visible
+scrollbar on the add-on's designated list/content region is expected whenever
+that region contains more rows than fit in the viewport. Diagnose ownership
+with `clientHeight`, `scrollHeight`, and computed `overflow-y` on the dialog
+surface, content host, add-on root, and intended inner scroller before changing
+height rules. A surface with equal client/scroll heights is not the scrollbar
+owner even if its computed overflow is `auto`.
 
 ### `addonPanelActions.js`
 Builds action controls for add-on detail panels: Back, enable/disable, commands, and status feedback through toasts.
