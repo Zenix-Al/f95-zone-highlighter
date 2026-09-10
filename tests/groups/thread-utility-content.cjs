@@ -204,8 +204,8 @@ module.exports = function registerThreadUtilityContent(context) {
     );
     const state = renderState();
     const collapsed = renderPalette(state);
-    assert.match(collapsed, />Description ><\/button>/);
-    assert.match(collapsed, />Installation ><\/button>/);
+    assert.match(collapsed, />Description<\/button>/);
+    assert.match(collapsed, />Installation<\/button>/);
     assert.doesNotMatch(collapsed, /Copy description/);
     assert.doesNotMatch(collapsed, /id="thread-utility-description-content"/);
     assert.doesNotMatch(collapsed, /id="thread-utility-installation-content"/);
@@ -247,7 +247,7 @@ module.exports = function registerThreadUtilityContent(context) {
 
     await controller.toggleContentSection("description");
     assert.strictEqual(state.ui.openContentSection, "description");
-    assert.match(actions.at(-1).payload.html, />Description v<\/button>/);
+    assert.match(actions.at(-1).payload.html, />Description<\/button>/);
     assert.doesNotMatch(actions.at(-1).payload.html, /Copy description/);
     await controller.toggleContentSection("installation");
     assert.strictEqual(state.ui.openContentSection, "installation");
@@ -261,6 +261,6 @@ module.exports = function registerThreadUtilityContent(context) {
         installation: { available: false },
       },
     });
-    assert.match(renderPalette(shortState), />Description ><\/button>/);
+    assert.match(renderPalette(shortState), />Description<\/button>/);
   });
 };

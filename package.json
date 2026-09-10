@@ -38,6 +38,10 @@
     "lint": "eslint \"src/**\" --ext .js",
     "lint:fix": "eslint \"src/**\" --ext .js --fix",
     "test": "node tests/run.cjs",
+    "test:visual": "playwright test --config=playwright.config.cjs",
+    "test:visual:headed": "playwright test --config=playwright.config.cjs --headed",
+    "test:visual:debug": "playwright test --config=playwright.config.cjs --debug",
+    "test:visual:report": "playwright show-report playwright-report",
     "validate:manifest": "node scripts/validate-manifest.js",
     "check:manifest": "node scripts/check-feature-manifest.cjs",
     "check:docs": "node scripts/check-docs.cjs",
@@ -57,6 +61,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",
+    "@playwright/test": "^1.63.0",
     "esbuild": "^0.25.9",
     "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.1.8",

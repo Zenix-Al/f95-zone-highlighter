@@ -183,12 +183,12 @@ module.exports = function registerThreadUtilityDownloads(context) {
     };
     const collapsed = renderPalette(state);
     assert.match(collapsed, /Downloads \(2\)/);
-    assert.match(collapsed, /Downloads \(2\) >/);
+    assert.match(collapsed, />Downloads \(2\)<\/button>/);
     assert.doesNotMatch(collapsed, /data-download-action="open"/);
     state.ui.openContentSection = "downloads";
     const open = renderPalette(state);
     assert.match(open, /data-download-action="open"/);
-    assert.match(open, /Downloads \(2\) v/);
+    assert.match(open, />Downloads \(2\)<\/button>/);
     assert.strictEqual((open.match(/<strong>Windows:<\/strong>/g) || []).length, 1);
     assert.match(open, /PIXELDRAIN[\s\S]*Direct DL/);
     assert.match(open, /DATANODES[\s\S]*Resolve/);

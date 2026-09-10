@@ -141,13 +141,14 @@ module.exports = function registerLibraryPersonalGroup(context) {
     },
   );
 
-  runTest("Library manager keeps bulk and transfer controls in one compact row", () => {
+  runTest("Library manager keeps bulk and transfer controls in one compact disclosure", () => {
     const html = fs.readFileSync(
       path.join(ROOT, "addons/library-addon/src/ui/assets/manager.html"),
       "utf8",
     );
     assert.match(html, /<summary>Bulk actions<\/summary>/);
-    assert.match(html, /<summary>Export<\/summary>/);
+    assert.match(html, /<summary>More actions<\/summary>/);
+    assert.match(html, /<summary>Import \/ export<\/summary>/);
     assert.match(html, /data-field="bulkAction"/);
     assert.match(html, /data-field="exportScope"/);
     assert.match(html, /value="selected">Selected records/);

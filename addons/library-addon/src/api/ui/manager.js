@@ -32,6 +32,7 @@ export function createManagerApi(bridge, library) {
         closeOnBackdrop: true,
         closeOnEsc: true,
         size: "xl",
+        scrollMode: "addon",
         ...options,
       });
       return result;

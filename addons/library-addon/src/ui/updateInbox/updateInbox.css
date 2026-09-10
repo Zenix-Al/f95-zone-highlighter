@@ -7,11 +7,23 @@ __ROOT__ {
   max-height: min(78vh, 820px);
   padding: 18px;
   overflow: hidden;
-  border: 1px solid #3a3f46;
+  color-scheme: dark;
+  border: 1px solid #3f4043;
   border-radius: 10px;
   background: #191b1e;
-  color: #e8e8e8;
+  color: #f0f2f6;
   box-shadow: 0 18px 48px rgb(0 0 0 / 45%);
+}
+
+__ROOT__,
+__ROOT__ div,
+__ROOT__ section,
+__ROOT__ article,
+__ROOT__ span,
+__ROOT__ strong,
+__ROOT__ button,
+__ROOT__ a {
+  box-sizing: border-box;
 }
 
 __ROOT__ .f95ue-library-inbox-summary {
@@ -23,7 +35,7 @@ __ROOT__ .f95ue-library-inbox-summary {
 __ROOT__ .f95ue-library-inbox-status {
   min-height: 18px;
   font-size: 13px;
-  color: #b8c2cc;
+  color: #b0b3b8;
 }
 
 __ROOT__ .f95ue-library-inbox-list {
@@ -32,7 +44,8 @@ __ROOT__ .f95ue-library-inbox-list {
   min-height: 0;
   padding-right: 5px;
   overflow: auto;
-  scrollbar-color: #6b747e #202328;
+  scrollbar-color: #893839 #191b1e;
+  scrollbar-width: thin;
 }
 
 __ROOT__ .f95ue-library-inbox-entry {
@@ -41,9 +54,9 @@ __ROOT__ .f95ue-library-inbox-entry {
   gap: 8px 16px;
   align-items: center;
   padding: 14px;
-  border: 1px solid #41474f;
+  border: 1px solid #31343a;
   border-radius: 8px;
-  background: #22252a;
+  background: #17191d;
   box-shadow: 0 1px 0 rgb(255 255 255 / 3%) inset;
 }
 
@@ -60,7 +73,7 @@ __ROOT__ .f95ue-library-inbox-meta {
   display: flex;
   flex-wrap: wrap;
   gap: 6px 12px;
-  color: #b8c2cc;
+  color: #b0b3b8;
   font-size: 12px;
 }
 
@@ -82,26 +95,26 @@ __ROOT__ .f95ue-library-inbox-footer {
   z-index: 2;
   margin: 0 -18px -18px;
   padding: 13px 18px;
-  border-top: 1px solid #343941;
-  background: #15171a;
+  border-top: 1px solid #2b2e33;
+  background: #17191d;
   box-shadow: 0 -10px 22px rgb(0 0 0 / 28%);
 }
 
 __ROOT__ .f95ue-library-inbox-entry button,
 __ROOT__ .f95ue-library-inbox-footer button {
-  border: 1px solid #555d66;
-  border-radius: 5px;
+  border: 1px solid #555;
+  border-radius: 6px;
   min-height: 36px;
   padding: 7px 12px;
-  background: #30353b;
+  background: #222;
   color: #fff;
   cursor: pointer;
 }
 
 __ROOT__ .f95ue-library-inbox-entry button:hover,
 __ROOT__ .f95ue-library-inbox-footer button:hover {
-  border-color: #747f8a;
-  background: #3a4047;
+  border-color: #b94f4f;
+  background: #893839;
 }
 
 __ROOT__ button.primary {
@@ -114,16 +127,31 @@ __ROOT__ button.primary:hover {
 }
 
 __ROOT__ button:disabled {
-  cursor: wait;
-  opacity: 0.6;
+  cursor: default;
+  opacity: 0.55;
+}
+
+__ROOT__ button:focus-visible,
+__ROOT__ a:focus-visible {
+  outline: 2px solid #c15858;
+  outline-offset: 2px;
 }
 
 __ROOT__ .f95ue-library-inbox-empty {
   padding: 24px;
   text-align: center;
-  border: 1px dashed #555d66;
+  border: 1px dashed #555;
   border-radius: 8px;
-  background: #202328;
+  background: #17191d;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  __ROOT__,
+  __ROOT__ button {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }
 
 @media (max-width: 720px) {

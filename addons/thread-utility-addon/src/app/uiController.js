@@ -49,6 +49,7 @@ export function createThreadUtilityUiController({
         title: "Thread Utility",
         html: renderPalette(state),
         size: "lg",
+        scrollMode: "addon",
       });
       if (!result?.ok) return result;
       if (!isCurrent() || state.ui.dialogGeneration !== generation) {

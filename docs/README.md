@@ -19,9 +19,11 @@ Welcome to the documentation for the Latest Highlighter userscript. This directo
 - [Library Update Queue Settings and UI](architecture/library-update-queue-settings-ui.md) - Migrated controls, stable live progress, and state-derived queue actions.
 - [Library Update Queue Compatibility](architecture/library-update-queue-compatibility.md) - One-time legacy metadata carry-forward, retired fallback paths, and identity-bounded cleanup.
 - [Library Update Queue Verification](architecture/library-update-queue-verification.md) - Automated release evidence and the remaining browser smoke gate.
+- [Library UI Responsive Baseline](architecture/library-ui-responsive-baseline.md) - Pre-rework Manager, Updates Inbox, and Auto Update geometry, scrollbar ownership, and responsive risks.
 - [Library Legacy Upgrade Guard](architecture/library-legacy-upgrade-guard.md) - Retired schema-v1 conversion, the v1.2.2 bridge, and fail-closed direct-upgrade handling.
 - [Thread Utility Baseline](architecture/thread-utility-baseline.md) - Reference quick-search behavior and the canonical opening-post fixture contract.
 - [Thread Utility Golden Contract](architecture/thread-utility-golden-contract.md) - Bounded Example Add-on bootstrap, API, lifecycle, UI ownership, and teardown requirements.
+- [Thread Utility Style Baseline](architecture/thread-utility-style-baseline.md) - Playwright screenshots, computed colors, disclosure labels, and pre-alignment palette evidence.
 - [AI Guidelines](agent.md) - Strict rules for AI agents modifying this codebase.
 - **Modules**
   - [Core](core/index.md) - The mini-framework (feature factory, observer, task queue).
@@ -31,6 +33,8 @@ Welcome to the documentation for the Latest Highlighter userscript. This directo
     - [Add-on Development](services/addon-development.md) - Detailed guide and API reference for building add-ons.
     - [Latest Overlay Capture](services/fastCapture.md) - Private early capture for the site's Latest response.
   - [UI](ui/index.md) - Rendering principles and Shadow DOM usage.
+    - [Core UI Visual Style Reference](ui/visual-style-reference.md) - Canonical Settings palette, surface hierarchy, controls, and add-on dialog guidance.
+    - [Visual Browser Tests](ui/visual-testing.md) - Separate Playwright layout checks, screenshots, traces, and local inspection commands.
     - [Components](ui/components.md) - Reusable UI widgets (dialogs, toasts, picker).
   - [Config](config/index.md) - Configuration, defaults, and page definitions.
 

@@ -11,12 +11,32 @@ __ROOT__ {
   border-radius: 10px;
 }
 
+__ROOT__,
+__ROOT__ section,
+__ROOT__ details,
+__ROOT__ summary,
+__ROOT__ div,
+__ROOT__ span,
+__ROOT__ strong,
+__ROOT__ b,
+__ROOT__ label,
+__ROOT__ input,
+__ROOT__ progress,
+__ROOT__ button {
+  box-sizing: border-box;
+}
+
+__ROOT__ {
+  scrollbar-color: #893839 #191b1e;
+  scrollbar-width: thin;
+}
+
 __ROOT__ section,
 __ROOT__ details {
   padding: 12px 14px;
-  color: #c7ccd4;
-  background: #202329;
-  border: 1px solid #3f4043;
+  color: #c5c7cb;
+  background: #17191d;
+  border: 1px solid #31343a;
   border-radius: 8px;
 }
 
@@ -26,7 +46,7 @@ __ROOT__ .f95ue-library-auto-stats,
 __ROOT__ .f95ue-library-auto-meta,
 __ROOT__ .f95ue-library-auto-details { display: flex; flex-wrap: wrap; gap: 10px 18px; }
 __ROOT__ .f95ue-library-auto-heading { justify-content: space-between; }
-__ROOT__ .f95ue-library-auto-state { padding: 2px 8px; border: 1px solid #59616d; border-radius: 999px; }
+__ROOT__ .f95ue-library-auto-state { padding: 2px 8px; border: 1px solid #555; border-radius: 999px; }
 __ROOT__ progress { width: 100%; margin: 10px 0; }
 __ROOT__ .f95ue-library-auto-details { margin-top: 12px; align-items: center; }
 
@@ -39,7 +59,7 @@ __ROOT__ .f95ue-library-auto-grid {
 __ROOT__ label {
   display: grid;
   gap: 6px;
-  color: #c7ccd4;
+  color: #c5c7cb;
   font-size: 13px;
 }
 
@@ -48,8 +68,8 @@ __ROOT__ input[type="number"] {
   width: 100%;
   padding: 9px 10px;
   color: #f0f2f6;
-  background: #111315;
-  border: 1px solid #4a4d53;
+  background: #222;
+  border: 1px solid #555;
   border-radius: 6px;
 }
 
@@ -69,18 +89,37 @@ __ROOT__ .f95ue-library-auto-actions {
 __ROOT__ button {
   padding: 9px 14px;
   color: #f4f4f4;
-  background: #30343a;
-  border: 1px solid #4a4f57;
+  background: #222;
+  border: 1px solid #555;
   border-radius: 7px;
   cursor: pointer;
 }
 
 __ROOT__ button.primary {
-  background: #8e3c3e;
-  border-color: #a54a4d;
+  background: #893839;
+  border-color: #893839;
 }
 
-__ROOT__ button:disabled { cursor: default; opacity: .6; }
+__ROOT__ button:hover { background: #893839; border-color: #b94f4f; }
+__ROOT__ button.primary:hover { background: #b94f4f; border-color: #b94f4f; }
+__ROOT__ button:disabled { cursor: default; opacity: .55; }
+__ROOT__ button:focus-visible,
+__ROOT__ summary:focus-visible,
+__ROOT__ input:focus-visible {
+  outline: 2px solid #c15858;
+  outline-offset: 2px;
+}
+
+__ROOT__ input[type="checkbox"] { accent-color: #c15858; }
+
+@media (prefers-reduced-motion: reduce) {
+  __ROOT__,
+  __ROOT__ button {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
 
 @media (max-width: 620px) {
   __ROOT__ .f95ue-library-auto-grid {

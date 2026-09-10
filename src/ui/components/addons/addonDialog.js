@@ -106,6 +106,7 @@ export function createAddonDialogElements({
   payload = {},
 } = {}) {
   const surfaceMetrics = resolveAddonDialogSurfaceMetrics(payload);
+  const addonOwnsScroll = payload?.scrollMode === "addon";
 
   const overlayEl = createEl("div", {
     className: "f95ue-addon-dialog-overlay",
@@ -138,7 +139,7 @@ export function createAddonDialogElements({
     style: {
       width: surfaceMetrics.width,
       maxHeight: surfaceMetrics.maxHeight,
-      overflow: "auto",
+      overflow: addonOwnsScroll ? "hidden" : "auto",
       border: "1px solid #454b55",
       borderRadius: "10px",
       background: "#1f2329",
@@ -154,6 +155,13 @@ export function createAddonDialogElements({
       "data-addon-id": addonId,
       "data-dialog-id": dialogId,
     },
+    style: addonOwnsScroll
+      ? {
+        width: "100%",
+        minHeight: "0",
+        overflow: "hidden",
+      }
+      : undefined,
   });
   contentEl.innerHTML = html;
 

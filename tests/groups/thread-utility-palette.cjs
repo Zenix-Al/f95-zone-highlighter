@@ -86,6 +86,7 @@ module.exports = function registerThreadUtilityPalette(context) {
     assert.deepStrictEqual([...order].sort((a, b) => a - b), order);
     assert.match(html, />\+6<\/button>/);
     assert.match(html, /aria-expanded="false"/);
+    assert.doesNotMatch(html, /(?:Description|Installation|Downloads \(1\)) [>v]/);
     assert.doesNotMatch(html, /Open thread|Copy title \+ URL|Copy description/);
     assert.match(html, /data-preserve-scroll="palette"/);
     assert.strictEqual(
@@ -225,5 +226,18 @@ module.exports = function registerThreadUtilityPalette(context) {
     assert.match(css, /\.thread-utility-scroll/);
     assert.match(css, /\.thread-utility-footer/);
     assert.match(css, /:focus-visible/);
+    assert.match(css, /grid-template-rows: auto minmax\(0, 1fr\) auto/);
+    assert.match(css, /\.thread-utility-settings-list\s*\{[^}]*overflow-y: auto/s);
+    assert.match(css, /\.thread-utility-settings\s*\{[^}]*overflow: hidden/s);
+    assert.doesNotMatch(css, /\.thread-utility-settings-actions\s*\{[^}]*position: sticky/s);
+    assert.match(css, /var\(--marked-color, #4a4f55\)/);
+    assert.match(css, /var\(--preferred-color, #7b1fa2\)/);
+    assert.match(css, /var\(--excluded-color, #b71c1c\)/);
+    assert.match(css, /\.thread-utility-content-disclosure::after/);
+    assert.match(css, /\.thread-utility-content-disclosure\[aria-expanded="true"\]::after/);
+    assert.match(css, /@media \(prefers-reduced-motion: reduce\)/);
+    assert.match(css, /button\[data-settings-action="save"\]/);
+    assert.match(css, /button\[data-settings-action="delete"\]/);
+    assert.match(css, /accent-color: #c15858/);
   });
 };

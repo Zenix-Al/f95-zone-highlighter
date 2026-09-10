@@ -213,19 +213,19 @@ export function renderRows(
       const canUpdate = Boolean(state?.liveThreadId && state.liveThreadId === entry.threadId);
       return `
         <tr data-thread-id="${threadIdAttr}">
-          <td>
+          <td data-cell="select" data-label="Select">
             <input type="checkbox" data-action="toggle-select" data-thread-id="${threadIdAttr}" ${actionThreadId ? checked : "disabled"} />
           </td>
-          <td>${titleHtml}</td>
-          <td>${statusCell}</td>
-          <td>${ratingHtml}</td>
-          <td class="f95ue-library-updated" data-update-state="${escapeHtml(checkState)}" aria-label="${escapeHtml(`Automatic update check: ${checkState}`)}" title="${escapeHtml(`Update state: ${entry.updateState || "unchecked"}. Automatic update check: ${checkState}. Last record update: ${fmtDate(entry.recordModifiedAt)}`)}">${escapeHtml(fmtDateOnly(entry.recordModifiedAt))}</td>
-          <td>${prefixesHtml}</td>
-          <td>${versionHtml}</td>
-          <td>${developerHtml}</td>
-          <td>${tagsHtml}</td>
-          <td>${noteHtml}</td>
-          <td>
+          <td data-cell="title" data-label="Title">${titleHtml}</td>
+          <td data-cell="status" data-label="Status">${statusCell}</td>
+          <td data-cell="rating" data-label="My Rating">${ratingHtml}</td>
+          <td data-cell="updated" data-label="Updated" class="f95ue-library-updated" data-update-state="${escapeHtml(checkState)}" aria-label="${escapeHtml(`Automatic update check: ${checkState}`)}" title="${escapeHtml(`Update state: ${entry.updateState || "unchecked"}. Automatic update check: ${checkState}. Last record update: ${fmtDate(entry.recordModifiedAt)}`)}">${escapeHtml(fmtDateOnly(entry.recordModifiedAt))}</td>
+          <td data-cell="prefixes" data-label="Prefixes">${prefixesHtml}</td>
+          <td data-cell="version" data-label="Version">${versionHtml}</td>
+          <td data-cell="developer" data-label="Developer">${developerHtml}</td>
+          <td data-cell="tags" data-label="Tags">${tagsHtml}</td>
+          <td data-cell="note" data-label="Note">${noteHtml}</td>
+          <td data-cell="action" data-label="Action">
             <div class="f95ue-row-menu ${rowMenuOpen ? "is-open" : ""}">
               <button type="button" class="ghost f95ue-row-menu-trigger" data-action="row-menu-toggle" data-thread-id="${threadIdAttr}" title="Actions" aria-label="Actions" ${actionThreadId ? "" : "disabled"}>⋮</button>
               <div class="f95ue-row-menu-panel" role="menu" aria-label="Row actions">

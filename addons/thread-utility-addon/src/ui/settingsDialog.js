@@ -18,8 +18,8 @@ export function renderSettingsDialog(draft, error = "") {
       <label>Query
         <input name="query" maxlength="120" value="${escapeHtml(utility.query)}">
       </label>
-      <label><input name="includeTitle" type="checkbox"${utility.includeTitle ? " checked" : ""}> Include thread title</label>
-      <label><input name="enabled" type="checkbox"${utility.enabled ? " checked" : ""}> Enabled</label>
+      <label class="thread-utility-settings-toggle"><input name="includeTitle" type="checkbox"${utility.includeTitle ? " checked" : ""}> Include thread title</label>
+      <label class="thread-utility-settings-toggle"><input name="enabled" type="checkbox"${utility.enabled ? " checked" : ""}> Enabled</label>
       <div class="thread-utility-settings-row-actions">
         <button type="button" data-settings-action="move-up" data-settings-index="${index}"${index === 0 ? " disabled" : ""}>Move up</button>
         <button type="button" data-settings-action="move-down" data-settings-index="${index}"${index === draft.quickSearches.length - 1 ? " disabled" : ""}>Move down</button>
