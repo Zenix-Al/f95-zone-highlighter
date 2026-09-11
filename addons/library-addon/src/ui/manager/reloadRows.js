@@ -69,6 +69,12 @@ export async function reloadRows(root, state, api, library, ROWS_STATUS_ID) {
 
   const visibleIds = new Set(state.rows.map((entry) => entry.threadId));
   if (state.editingNoteId && !visibleIds.has(state.editingNoteId)) state.editingNoteId = "";
+  if (state.openStatusMenuId && !visibleIds.has(state.openStatusMenuId)) {
+    state.openStatusMenuId = "";
+  }
+  if (state.openRowMenuId && !visibleIds.has(state.openRowMenuId)) {
+    state.openRowMenuId = "";
+  }
 
   renderRows(tbody, state.rows, state.selectedIds, state, {
     tagConfig: state.tagConfig,

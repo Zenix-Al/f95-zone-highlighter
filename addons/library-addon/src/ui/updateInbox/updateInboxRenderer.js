@@ -1,4 +1,8 @@
 import cssTemplate from "./updateInbox.css";
+import {
+  normalizeF95ThreadId,
+  normalizeF95ThreadUrl,
+} from "../../library/threadIdentity.js";
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -37,6 +41,12 @@ export function renderUpdateInbox({
     .map(({ record, previousVersion = "" }) => {
       const id = String(record?.threadId || "");
       const thread = record?.thread || {};
+      const canonicalId = normalizeF95ThreadId(id);
+      const threadUrl = normalizeF95ThreadUrl(thread.url, canonicalId);
+      const title = escapeHtml(thread.title || `Thread ${id}`);
+      const titleMarkup = threadUrl
+        ? `<a class="f95ue-library-inbox-title" href="${escapeHtml(threadUrl)}" target="_blank" rel="noopener noreferrer">${title}</a>`
+        : `<strong class="f95ue-library-inbox-title">${title}</strong>`;
       const detectedAt =
         record?.lastThreadChangeAt ||
         thread.versionObservedAt ||
@@ -47,7 +57,7 @@ export function renderUpdateInbox({
       return `
         <article class="f95ue-library-inbox-entry" data-thread-id="${escapeHtml(id)}">
           <div>
-            <strong class="f95ue-library-inbox-title">${escapeHtml(thread.title || `Thread ${id}`)}</strong>
+            ${titleMarkup}
             <div class="f95ue-library-inbox-meta">
               <span>Version: ${escapeHtml(versionText)}</span>
               <span>Detected: ${escapeHtml(formatDate(detectedAt))}</span>
@@ -63,7 +73,7 @@ export function renderUpdateInbox({
     .join("");
 
   return `
-    <section class="f95ue-library-update-inbox" data-role="update-inbox">
+    <section class="f95ue-library-update-inbox${entries.length ? " has-entries" : ""}" data-role="update-inbox">
       <div class="f95ue-library-inbox-summary">${escapeHtml(countText)}</div>
       <div class="f95ue-library-inbox-status" data-role="inbox-status" aria-live="polite">${escapeHtml(status || (loading ? "Loading updates…" : ""))}</div>
       <div class="f95ue-library-inbox-list" data-role="inbox-list">

@@ -35,3 +35,26 @@ Manager reference; it is checked for availability but is not treated as source.
 
 These are observations, not target behavior. Waves 2-7 replace the visual and
 responsive contracts while preserving production actions and render paths.
+
+## Post-rework verification
+
+The final production renderers and scoped CSS pass the browser-backed fixture at
+1280x800, 768x900, 390x844, and the defensive 320x720 width. The 12-view matrix
+covers Manager, Updates Inbox, and Auto Update at every viewport.
+
+- Manager retains the dense desktop table and reflows the same semantic rows
+  into cards at mobile widths. Filters, selection actions, row menus, notes,
+  pagination, focus states, and bounded transient UI remain operable.
+- Updates Inbox keeps its list as the sole content scroller, preserves the final
+  card above the footer, and stacks Full Edit controls without document overflow.
+- Auto Update owns its internal body scroll, preserves disclosure/input/focus
+  state across live patches, and exposes its primary states without overlap.
+- The Library intentionally remains denser than core Settings while using the
+  same dark surface/control roles, border hierarchy, focus treatment, and red
+  accent family.
+
+Verification completed with Library/add-on lint, the full 631-test suite,
+sanitizer coverage, deterministic API/size/personal/add-on audits, manifest and
+catalog checks, source/documentation inventory checks, regular and release smoke
+builds, `git diff --check`, and the 12-case Playwright matrix. The tracked Library
+userscript was rebuilt in regular mode without changing version 1.3.2.

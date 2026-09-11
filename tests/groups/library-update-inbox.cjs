@@ -249,10 +249,12 @@ module.exports = function registerLibraryUpdateInboxGroup(context) {
         { loader: { ".css": "text" } },
       );
       const order = [];
+      let openPayload = null;
       const roots = new Map();
       const core = {
         async invokeCoreAction(action, payload) {
           if (action === "ui.dialog.open") {
+            openPayload = payload;
             const root = window.document.createElement("div");
             root.id = `${payload.dialogId}-content`;
             root.innerHTML = payload.html;
@@ -295,6 +297,11 @@ module.exports = function registerLibraryUpdateInboxGroup(context) {
         },
       });
       await controller.open();
+      assert.strictEqual(openPayload.scrollMode, "addon");
+      const titleLink = window.document.querySelector("a.f95ue-library-inbox-title");
+      assert.strictEqual(titleLink?.getAttribute("href"), "https://f95zone.to/threads/42/");
+      assert.strictEqual(titleLink?.getAttribute("target"), "_blank");
+      assert.strictEqual(titleLink?.getAttribute("rel"), "noopener noreferrer");
       window.document
         .querySelector('[data-inbox-action="edit"]')
         .click();
@@ -305,5 +312,25 @@ module.exports = function registerLibraryUpdateInboxGroup(context) {
       global.document = previous.document;
       global.AbortController = previous.AbortController;
     }
+  });
+
+  runTest("LIBRARY-UI-INBOX-01 renderer links only canonical F95 thread identities", () => {
+    const { renderUpdateInbox } = loadModule(
+      "addons/library-addon/src/ui/updateInbox/updateInboxRenderer.js",
+      { loader: { ".css": "text" } },
+    );
+    const valid = renderUpdateInbox({ entries: [{ record: record("73", 100) }] });
+    const invalid = renderUpdateInbox({
+      entries: [{
+        record: {
+          ...record("not-an-id", 100),
+          thread: { title: "Unsafe", url: "https://example.com/threads/73/" },
+        },
+      }],
+    });
+    assert.match(valid, /<a class="f95ue-library-inbox-title"[^>]+target="_blank"[^>]+rel="noopener noreferrer"/);
+    assert.match(valid, /href="https:\/\/f95zone\.to\/threads\/73\/"/);
+    assert.doesNotMatch(invalid, /<a class="f95ue-library-inbox-title"/);
+    assert.match(invalid, /<strong class="f95ue-library-inbox-title">Unsafe<\/strong>/);
   });
 };
