@@ -13,14 +13,13 @@
     <div class="f95ue-library-toolbar">
       <div class="f95ue-library-search-wrap">
         <input type="search" placeholder="Search title, developer, version, tags..." data-field="search" />
-        <span
+        <button
+          type="button"
           class="f95ue-library-search-help"
-          tabindex="0"
           aria-describedby="f95ue-library-search-help-text"
-          >?<span id="f95ue-library-search-help-text" role="tooltip">Filters: tag:&quot;male protagonist&quot; status:playing rating&gt;=4 public-rating&gt;=4 developer:&quot;name&quot; version:v1 prefix:completed update:changed check:failed pinned has:note has:progress id:123</span></span
-        >
+          >?<span id="f95ue-library-search-help-text" role="tooltip">Filters: tag:&quot;male protagonist&quot; status:playing rating&gt;=4 public-rating&gt;=4 developer:&quot;name&quot; version:v1 prefix:completed update:changed check:failed pinned has:note has:progress id:123</span></button>
       </div>
-      <details class="f95ue-library-filter-disclosure">
+      <details class="f95ue-library-filter-disclosure" open>
         <summary>Filters <span data-role="filterSummary">All status · Newest · 50/page</span></summary>
         <div class="f95ue-library-filter-controls" role="group" aria-label="Library filters">
         <select data-field="status" aria-label="Status filter">

@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.3.2 - Responsive Library UI
+
+- Aligned the Library Manager, Updates Inbox, and Auto Update dialog with the core Settings palette, controls, focus treatment, disabled states, and scrollbar styling.
+- Kept the dense desktop Manager table while reflowing the same semantic rows into touch-friendly cards on mobile, with compact filters, reachable actions, stable pagination, and no document-level horizontal overflow down to 320px.
+- Rebuilt the Updates Inbox around one bounded list scroller, direct safe thread links, responsive actions, and a footer that never obscures the final entry.
+- Reworked Auto Update into a bounded dialog with one internal body scroller, responsive settings and activity sections, and live patches that preserve disclosure state, inputs, focus, and scroll position.
+- Improved keyboard and touch access for menus, disclosures, notes, ratings, copy controls, selection, Full Edit stacking, and reduced-motion users.
+
 ## v1.3.1 - Import identity hardening
 
 - Validated imported thread IDs and F95Zone thread URLs, rejecting malformed or mismatched identities before database writes.

@@ -10,6 +10,7 @@ const VIEWPORTS = [
   { name: "desktop", width: 1280, height: 800 },
   { name: "tablet", width: 768, height: 900 },
   { name: "mobile-390", width: 390, height: 844 },
+  { name: "mobile-320", width: 320, height: 720 },
 ];
 
 function source(relativePath) {
@@ -71,9 +72,17 @@ const rows = Array.from({ length: 12 }, (_, index) => ({
   updateCheck: { enabled: true, status: index % 3 === 0 ? "changed" : "current" },
 }));
 
-const inboxEntries = rows.slice(0, 8).map((entry, index) => ({
+const inboxEntries = Array.from({ length: 25 }, (_, index) => ({
   record: {
-    ...entry,
+    ...rows[index % rows.length],
+    threadId: String(51000 + index),
+    thread: {
+      ...rows[index % rows.length].thread,
+      title: index === 24
+        ? "The final Inbox title remains reachable above the footer on every viewport"
+        : `Inbox update ${index + 1}`,
+      url: `https://f95zone.to/threads/example.${51000 + index}/`,
+    },
     lastThreadChangeAt: Date.UTC(2026, 8, 10, 10, index),
   },
   previousVersion: `v0.${index}.${index}`,
@@ -190,6 +199,21 @@ for (const viewport of VIEWPORTS) {
       window.LibraryManagerRenderer.renderRows(
         document.querySelector('[data-role="rows"]'), items, new Set(["41000"]), state,
       );
+      const eventState = {
+        search: "", status: "all", sortBy: "updatedAt", sortDir: "desc", pageSize: 50,
+        searchDebounceTimer: 0, openStatusMenuId: "", openRowMenuId: "",
+        noteSaveTimers: new Map(), ratingSaveTimers: new Map(),
+        ratingCommitChains: new Map(), ratingGeneration: 0,
+      };
+      window.__libraryManagerUnbind = window.LibraryManagerEvents.bindManagerEvents(
+        document.querySelector(".f95ue-library-manager-root"),
+        eventState,
+        {},
+        {
+          reloadRowsFn: async () => {}, onMutatedFn: () => {}, library: {},
+          askConfirmFn: async () => false,
+        },
+      );
     }, rows);
     const populated = await attachState(page, testInfo, `manager-${viewport.name}-populated`, [
       ".core-surface", ".core-content", ".f95ue-library-manager-window",
@@ -219,6 +243,20 @@ for (const viewport of VIEWPORTS) {
       expect(populated.nodes[".f95ue-library-table-wrap"].scrollWidth)
         .toBeGreaterThan(populated.nodes[".f95ue-library-table-wrap"].clientWidth);
     }
+    if (viewport.width > 720) {
+      expect(await computedStyle(page, ".f95ue-library-filter-disclosure", ["display"]))
+        .toEqual({ display: "block" });
+      await expect(page.locator('[data-field="status"]')).toBeVisible();
+      await expect(page.locator('[data-field="sort"]')).toBeVisible();
+      await expect(page.locator('[data-field="pageSize"]')).toBeVisible();
+      expect(await computedStyle(page, '.f95ue-library-table-wrap th:nth-child(2)', ["width"]))
+        .toEqual({ width: "200px" });
+      const helpBounds = await page.locator(".f95ue-library-search-help").evaluate((node) => {
+        const rect = node.getBoundingClientRect();
+        return { width: rect.width, height: rect.height };
+      });
+      expect(Math.abs(helpBounds.width - helpBounds.height)).toBeLessThanOrEqual(1);
+    }
     if (viewport.width <= 720) {
       const nodes = populated.nodes;
       expect(nodes[".f95ue-library-table-wrap"].scrollWidth)
@@ -232,13 +270,13 @@ for (const viewport of VIEWPORTS) {
       await expect(page.locator('.f95ue-library-table-wrap td[data-cell="updated"]').first())
         .toHaveAttribute("data-label", "Updated");
       await expect(page.locator(".f95ue-library-filter-disclosure > summary")).toBeVisible();
+      await expect(page.locator(".f95ue-library-filter-disclosure")).not.toHaveAttribute("open", "");
       await page.locator(".f95ue-library-filter-disclosure > summary").click();
       await expect(page.locator('[data-field="status"]')).toBeVisible();
       await page.locator('[data-field="status"]').selectOption("playing");
       await page.locator('[data-field="sort"]').selectOption("title:asc");
-      const filterSummary = await page.evaluate(() =>
-        window.LibraryManagerEvents.updateFilterSummary(document));
-      expect(filterSummary).toBe("playing · Title A-Z · 50/page");
+      await expect(page.locator('[data-role="filterSummary"]'))
+        .toHaveText("playing · Title A-Z · 50/page");
 
       await page.locator(".f95ue-library-secondary-actions > summary").click();
       await page.locator(".f95ue-library-bulk-actions > summary").click();
@@ -261,7 +299,9 @@ for (const viewport of VIEWPORTS) {
       expect(menuBounds.left).toBeGreaterThanOrEqual(0);
       expect(menuBounds.right).toBeLessThanOrEqual(menuBounds.viewportWidth);
       expect(menuBounds.scrollTop).toBe(80);
+      await expect(page.locator(".f95ue-library-search-help")).toHaveJSProperty("tagName", "BUTTON");
     }
+    await page.evaluate(() => window.__libraryManagerUnbind?.());
     await page.locator('[data-role="rows"]').evaluate((node) => { node.innerHTML = ""; });
     await attachState(page, testInfo, `manager-${viewport.name}-empty`, [
       ".core-surface", ".f95ue-library-manager-window", ".f95ue-library-table-wrap", ".f95ue-library-footer",
@@ -275,22 +315,48 @@ for (const viewport of VIEWPORTS) {
       html: window.LibraryInboxRenderer.renderUpdateInbox({ entries, count: entries.length, hasNext: true }),
       css: window.LibraryInboxRenderer.getUpdateInboxStyleText(),
     }), inboxEntries);
-    await mountCoreDialog(page, { html: rendered.html, css: rendered.css, size: "lg", addonScroll: false });
+    await mountCoreDialog(page, { html: rendered.html, css: rendered.css, size: "lg", addonScroll: true });
     const populated = await attachState(page, testInfo, `inbox-${viewport.name}-populated`, [
       ".core-surface", ".core-content", ".f95ue-library-update-inbox",
       ".f95ue-library-inbox-list", ".f95ue-library-inbox-entry",
       ".f95ue-library-inbox-footer", '[data-inbox-action="acknowledge"]',
     ]);
     expect(populated.document.scrollWidth).toBeLessThanOrEqual(populated.document.clientWidth);
+    await expect(page.locator(".f95ue-library-inbox-entry")).toHaveCount(25);
+    expect(populated.nodes[".core-surface"].overflowY).toBe("hidden");
+    expect(populated.nodes[".core-content"].overflowY).toBe("hidden");
+    expect(populated.nodes[".f95ue-library-update-inbox"].overflowY).toBe("hidden");
+    expect(populated.nodes[".f95ue-library-inbox-list"].overflowY).toBe("auto");
+    expect(populated.nodes[".f95ue-library-inbox-footer"].position).toBe("static");
     expect(await computedStyle(page, ".f95ue-library-inbox-entry", ["backgroundColor", "borderTopColor"]))
       .toEqual({ backgroundColor: "rgb(23, 25, 29)", borderTopColor: "rgb(49, 52, 58)" });
     expect(await computedStyle(page, '[data-inbox-action="acknowledge"]', ["backgroundColor", "borderTopColor"]))
       .toEqual({ backgroundColor: "rgb(34, 34, 34)", borderTopColor: "rgb(85, 85, 85)" });
+    await expect(page.locator("a.f95ue-library-inbox-title").first()).toHaveAttribute("target", "_blank");
+    await expect(page.locator("a.f95ue-library-inbox-title").first()).toHaveAttribute("rel", "noopener noreferrer");
+    expect(await computedStyle(page, "a.f95ue-library-inbox-title", ["color"]))
+      .toEqual({ color: "rgb(255, 102, 102)" });
+    const finalCard = await page.evaluate(() => {
+      const list = document.querySelector(".f95ue-library-inbox-list");
+      list.scrollTop = list.scrollHeight;
+      const last = list.lastElementChild.getBoundingClientRect();
+      const listBox = list.getBoundingClientRect();
+      const footer = document.querySelector(".f95ue-library-inbox-footer").getBoundingClientRect();
+      return {
+        lastBottom: last.bottom,
+        listBottom: listBox.bottom,
+        footerTop: footer.top,
+        titleVisible: list.lastElementChild.querySelector(".f95ue-library-inbox-title").getBoundingClientRect().width > 0,
+      };
+    });
+    expect(finalCard.lastBottom).toBeLessThanOrEqual(finalCard.listBottom + 1);
+    expect(finalCard.listBottom).toBeLessThanOrEqual(finalCard.footerTop + 1);
+    expect(finalCard.titleVisible).toBe(true);
     const empty = await page.evaluate(() => ({
       html: window.LibraryInboxRenderer.renderUpdateInbox({ entries: [], count: 0 }),
       css: window.LibraryInboxRenderer.getUpdateInboxStyleText(),
     }));
-    await mountCoreDialog(page, { html: empty.html, css: empty.css, size: "lg", addonScroll: false });
+    await mountCoreDialog(page, { html: empty.html, css: empty.css, size: "lg", addonScroll: true });
     await attachState(page, testInfo, `inbox-${viewport.name}-empty`, [
       ".core-surface", ".f95ue-library-update-inbox", ".f95ue-library-inbox-list", ".f95ue-library-inbox-footer",
     ]);
@@ -303,14 +369,48 @@ for (const viewport of VIEWPORTS) {
       html: window.LibraryAutoRenderer.renderAutoUpdateDialog(config, cycle),
       css: window.LibraryAutoRenderer.getAutoUpdateStyleText(),
     }), { config: autoConfig, cycle: autoCycle });
-    await mountCoreDialog(page, { html: rendered.html, css: rendered.css, addonScroll: false });
+    await mountCoreDialog(page, { html: rendered.html, css: rendered.css, addonScroll: true });
     await page.locator("details").evaluateAll((details) => details.forEach((item) => { item.open = true; }));
     const populated = await attachState(page, testInfo, `auto-update-${viewport.name}-populated`, [
       ".core-surface", ".core-content", ".f95ue-library-auto-dialog",
+      ".f95ue-library-auto-body",
       ".f95ue-library-auto-overview", ".f95ue-library-auto-grid",
       ".f95ue-library-auto-actions", '[data-role="primaryAction"]',
     ]);
     expect(populated.document.scrollWidth).toBeLessThanOrEqual(populated.document.clientWidth);
+    expect(populated.nodes[".core-surface"].overflowY).toBe("hidden");
+    expect(populated.nodes[".core-content"].overflowY).toBe("hidden");
+    expect(populated.nodes[".f95ue-library-auto-dialog"].overflowY).toBe("hidden");
+    expect(populated.nodes[".f95ue-library-auto-body"].overflowY).toBe("auto");
+    const fixedActions = await page.evaluate((currentCycle) => {
+      const root = document.querySelector(".f95ue-library-auto-dialog");
+      const body = document.querySelector(".f95ue-library-auto-body");
+      const actions = document.querySelector(".f95ue-library-auto-actions");
+      const input = document.querySelector('[name="checksPerDay"]');
+      const details = document.querySelectorAll("details");
+      body.scrollTop = body.scrollHeight;
+      input.focus();
+      input.value = "123";
+      window.LibraryAutoRenderer.patchAutoUpdateView(root, {
+        ...currentCycle,
+        status: "running",
+        completed: 18,
+      }, { running: true });
+      return {
+        bodyBottom: body.getBoundingClientRect().bottom,
+        actionsTop: actions.getBoundingClientRect().top,
+        scrollTop: body.scrollTop,
+        inputValue: input.value,
+        inputFocused: document.activeElement === input,
+        detailsOpen: [...details].every((item) => item.open),
+        summaries: [...document.querySelectorAll("summary")].map((item) => item.textContent),
+      };
+    }, autoCycle);
+    expect(fixedActions.bodyBottom).toBeLessThanOrEqual(fixedActions.actionsTop + 1);
+    expect(fixedActions.inputValue).toBe("123");
+    expect(fixedActions.inputFocused).toBe(true);
+    expect(fixedActions.detailsOpen).toBe(true);
+    expect(fixedActions.summaries.every((text) => !text.includes(">"))).toBe(true);
     expect(await computedStyle(page, ".f95ue-library-auto-dialog details", ["backgroundColor", "borderTopColor"]))
       .toEqual({ backgroundColor: "rgb(23, 25, 29)", borderTopColor: "rgb(49, 52, 58)" });
     expect(await computedStyle(page, '[data-auto-action="pause"]', ["backgroundColor", "borderTopColor"]))
@@ -319,7 +419,7 @@ for (const viewport of VIEWPORTS) {
       html: window.LibraryAutoRenderer.renderAutoUpdateDialog(config, null),
       css: window.LibraryAutoRenderer.getAutoUpdateStyleText(),
     }), { config: autoConfig });
-    await mountCoreDialog(page, { html: empty.html, css: empty.css, addonScroll: false });
+    await mountCoreDialog(page, { html: empty.html, css: empty.css, addonScroll: true });
     await attachState(page, testInfo, `auto-update-${viewport.name}-empty`, [
       ".core-surface", ".f95ue-library-auto-dialog", ".f95ue-library-auto-actions",
     ]);

@@ -133,6 +133,9 @@ module.exports = function registerLibraryAutoUpdateGroup(context) {
       "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
     );
     const markup = renderAutoUpdateDialog({ enabled: true, checksPerDay: 100 }, null);
+    assert.match(markup, /data-role="auto-update-scroll"/);
+    assert.match(markup, /data-preserve-scroll="auto-update"/);
+    assert.doesNotMatch(markup, /<summary>[^<]*&gt;<\/summary>/);
     for (const field of ["enabled", "runHour", "spacingMs", "timeoutMs", "retryLimit", "checksPerDay"]) {
       assert.match(markup, new RegExp(`name="${field}"`));
     }

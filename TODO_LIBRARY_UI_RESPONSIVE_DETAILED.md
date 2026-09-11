@@ -111,7 +111,7 @@ missing field, or horizontal scrollbar.
 
 ## Wave 5 — Manager responsive interactions
 
-### [ ] LIBRARY-UI-MANAGER-INTERACTIONS-01
+### [x] LIBRARY-UI-MANAGER-INTERACTIONS-01
 
 - Make status/row menus, bulk/export disclosures, search help, chip expansion,
   note editing, and copy actions usable by keyboard and touch.
@@ -133,7 +133,7 @@ Checkpoint: no Manager capability requires hover or an off-screen control.
 
 ## Wave 6 — Updates Inbox alignment and mobile layout
 
-### [ ] LIBRARY-UI-INBOX-01
+### [x] LIBRARY-UI-INBOX-01
 
 - Align Inbox surfaces, cards, metadata, controls, status, empty state, and
   footer with core roles.
@@ -155,7 +155,7 @@ never covers entries.
 
 ## Wave 7 — Auto Update alignment and mobile layout
 
-### [ ] LIBRARY-UI-AUTO-UPDATE-01
+### [x] LIBRARY-UI-AUTO-UPDATE-01
 
 - Give Auto Update a bounded grid/flex shell with one scrolling body and an
   action row outside it.
@@ -174,7 +174,7 @@ body scrolls.
 
 ## Wave 8 — Cross-view responsive verification
 
-### [ ] LIBRARY-UI-RESPONSIVE-VERIFY-01
+### [x] LIBRARY-UI-RESPONSIVE-VERIFY-01
 
 - Run Library/add-on lint, full tests, sanitizer checks, deterministic audits,
   inventory, and diff checks.

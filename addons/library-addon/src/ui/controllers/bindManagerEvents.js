@@ -34,6 +34,14 @@ export function bindManagerEvents(root, state, handlers, deps) {
   const { reloadRowsFn, onMutatedFn, library, askConfirmFn } = deps;
   const controller = new AbortController();
   const listenerOptions = { signal: controller.signal };
+  const filterDisclosure = root.querySelector(".f95ue-library-filter-disclosure");
+
+  // Native details elements suppress their contents while closed even when desktop CSS
+  // uses display: contents. Markup stays open for desktop/no-JS rendering; mobile starts
+  // with the compact disclosure collapsed once interactions are available.
+  if (filterDisclosure) {
+    filterDisclosure.open = !globalThis.matchMedia?.("(max-width: 720px)").matches;
+  }
 
   function shouldFlipTooltip(anchorEl, tooltipEl) {
     if (!anchorEl || !tooltipEl) return false;

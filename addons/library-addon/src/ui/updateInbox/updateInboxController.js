@@ -242,6 +242,7 @@ export function createUpdateInboxController({
       title: "Library Updates",
       html: renderUpdateInbox(active),
       size: "lg",
+      scrollMode: "addon",
       closeOnEsc: true,
       closeOnBackdrop: true,
     });

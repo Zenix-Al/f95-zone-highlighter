@@ -13,6 +13,12 @@ button nodes. They do not replace settings inputs, details elements, selection,
 focus, or scroll state. Scheduler cycle notifications drive updates without an
 idle repaint timer.
 
+The add-on owns dialog scrolling: the overview and disclosures live in one
+bounded scrolling body, while the primary action row remains a separate final
+grid row. Native `details` markers communicate disclosure state; summary text
+does not contain a manually maintained direction character. At narrow widths,
+settings become one column and footer actions use a bounded two-column layout.
+
 The primary button is derived from durable state: Update now, Resume updates,
 Continue another batch, disabled preparation/running/recovery labels, or Check
 again. Additional batches and early fresh cycles require confirmation. A daily
