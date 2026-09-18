@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.3.3 - Automatic update retry scheduling
+
+- Fixed failed update retries holding the entire automatic-update queue until their backoff expired, allowing other eligible records to continue processing.
+
 ## v1.3.2 - Responsive Library UI
 
 - Aligned the Library Manager, Updates Inbox, and Auto Update dialog with the core Settings palette, controls, focus treatment, disabled states, and scrollbar styling.

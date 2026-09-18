@@ -50,19 +50,32 @@ module.exports = function registerLibraryUpdateQueueWorkerGroup(context) {
         return { ok: true, value: structuredClone(cycle) };
       },
       async recoverStaleProcessing() { return { ok: true, recovered: 0 }; },
+      async queryCycleItems({ cycleId, queueStatus, cursor = null }) {
+        const values = [...items.values()]
+          .filter((item) => item.cycleId === cycleId && item.status === queueStatus)
+          .sort((left, right) => left.position - right.position)
+          .filter((item) => cursor === null || item.position > cursor);
+        return {
+          ok: true,
+          items: values.map((value) => ({ value: structuredClone(value) })),
+          hasMore: false,
+          nextCursor: null,
+        };
+      },
       async getNextActionableItem(cycleId, now) {
-        const candidates = [...items.values()]
-          .filter((item) => item.cycleId === cycleId)
-          .filter((item) => item.status === "pending" ||
-            (item.status === "retry" && item.nextAttemptAt <= now))
-          .sort((left, right) => left.position - right.position);
+        const pending = [...items.values()]
+          .filter((item) => item.cycleId === cycleId && item.status === "pending")
+          .sort((left, right) => left.position - right.position)[0];
+        const retry = [...items.values()]
+          .filter((item) => item.cycleId === cycleId && item.status === "retry" && item.nextAttemptAt <= now)
+          .sort((left, right) => left.nextAttemptAt - right.nextAttemptAt)[0];
         const future = [...items.values()]
           .filter((item) => item.status === "retry" && item.nextAttemptAt > now)
           .sort((left, right) => left.nextAttemptAt - right.nextAttemptAt)[0];
         return {
           ok: true,
-          item: candidates[0] ? structuredClone(candidates[0]) : null,
-          waitingForRetryAt: candidates.length ? 0 : future?.nextAttemptAt || 0,
+          item: pending || retry ? structuredClone(pending || retry) : null,
+          waitingForRetryAt: pending || retry ? 0 : future?.nextAttemptAt || 0,
         };
       },
       async getCycleStatusCounts() {
@@ -212,7 +225,7 @@ module.exports = function registerLibraryUpdateQueueWorkerGroup(context) {
           threadId,
           ok: threadId === "good",
           reason: threadId === "bad" ? "network_error" : "",
-          attempts: threadId === "bad" ? 3 : 1,
+          attempts: threadId === "bad" ? 2 : 1,
         }] };
       },
       commitResults: async (preview) => ({
@@ -237,6 +250,127 @@ module.exports = function registerLibraryUpdateQueueWorkerGroup(context) {
       "completed",
     ]);
     assert.strictEqual(repository.snapshot().cycle.retryPending, 1);
+  });
+
+  runTest("LIBRARY-UPDATE-QUEUE-WORKER-01 repairs an existing 403 retry without losing completed work", async () => {
+    const repository = createRepository(["done", "denied"]);
+    await repository.putQueueItem({
+      ...repository.snapshot().items[0], status: "completed", completedAt: 100,
+    });
+    await repository.putQueueItem({
+      ...repository.snapshot().items[1], status: "retry", attempts: 1,
+      lastAttemptAt: 100, nextAttemptAt: 100 + 2 * 86400000,
+      lastErrorCode: "http_403",
+    });
+    await repository.putCycle({
+      ...repository.snapshot().cycle, status: "waiting", completed: 1,
+      retryPending: 1, nextRunAt: 100 + 2 * 86400000,
+    });
+    let requests = 0;
+    const worker = createWorker({
+      repository,
+      getRecord: async () => ({ updateCheck: { enabled: true } }),
+      checkRecords: async () => { requests += 1; return { results: [] }; },
+      commitResults: async () => ({}),
+      now: () => 200,
+      waitFor: async () => {},
+    });
+    const result = await worker.run({
+      owner: "repair-tab", config, stillOwn: async () => true,
+      renewOwnership: async () => true,
+    });
+    assert.strictEqual(result.cycle.status, "completed");
+    assert.strictEqual(result.cycle.completed, 1);
+    assert.strictEqual(result.cycle.failed, 1);
+    assert.strictEqual(result.cycle.retryPending, 0);
+    assert.strictEqual(repository.snapshot().items[1].status, "failed");
+    assert.strictEqual(requests, 0);
+  });
+
+  runTest("LIBRARY-UPDATE-QUEUE-WORKER-01 makes a missed daily slot due after late completion", async () => {
+    const firstDay = new Date(2026, 8, 17, 0, 0).getTime();
+    const thirdDay = new Date(2026, 8, 19, 0, 39).getTime();
+    const repository = createRepository([]);
+    await repository.putCycle({
+      ...repository.snapshot().cycle, scheduledFor: firstDay, status: "waiting",
+    });
+    const worker = createWorker({
+      repository,
+      getRecord: async () => null,
+      checkRecords: async () => ({ results: [] }),
+      commitResults: async () => ({}),
+      now: () => thirdDay,
+      waitFor: async () => {},
+    });
+    const result = await worker.run({
+      owner: "late-tab", config, stillOwn: async () => true,
+      renewOwnership: async () => true,
+    });
+    assert.strictEqual(result.cycle.status, "completed");
+    assert.strictEqual(result.cycle.nextRunAt, thirdDay);
+    assert.strictEqual(result.cycle.dailyAttempted, 0);
+  });
+
+  runTest("LIBRARY-UPDATE-QUEUE-WORKER-01 settles a fresh 403 and completes the cycle", async () => {
+    const repository = createRepository(["denied"]);
+    const worker = createWorker({
+      repository,
+      getRecord: async () => ({ updateCheck: { enabled: true } }),
+      checkRecords: async () => ({
+        results: [{ ok: false, reason: "http_403", attempts: 1 }],
+      }),
+      commitResults: async () => ({ failed: 1 }),
+      now: () => 100,
+      waitFor: async () => {},
+    });
+    const result = await worker.run({
+      owner: "denied-tab", config, stillOwn: async () => true,
+      renewOwnership: async () => true,
+    });
+    assert.strictEqual(result.cycle.status, "completed");
+    assert.strictEqual(result.cycle.failed, 1);
+    assert.strictEqual(result.cycle.retryPending, 0);
+    assert.strictEqual(repository.snapshot().items[0].status, "failed");
+  });
+
+  runTest("LIBRARY-UPDATE-QUEUE-WORKER-01 shortens a legacy transient retry and caps repeated failures", async () => {
+    const repository = createRepository(["flaky"]);
+    await repository.putQueueItem({
+      ...repository.snapshot().items[0], status: "retry", attempts: 1,
+      lastAttemptAt: 100, nextAttemptAt: 100 + 2 * 86400000,
+      lastErrorCode: "network_error",
+    });
+    await repository.putCycle({
+      ...repository.snapshot().cycle, status: "waiting", retryPending: 1,
+    });
+    let requests = 0;
+    let currentTime = 100;
+    const worker = createWorker({
+      repository,
+      getRecord: async () => ({ updateCheck: { enabled: true } }),
+      checkRecords: async () => {
+        requests += 1;
+        return { results: [{ ok: false, reason: "network_error", attempts: 1 }] };
+      },
+      commitResults: async () => ({ failed: 1 }),
+      now: () => currentTime,
+      waitFor: async () => {},
+    });
+    const run = () => worker.run({
+      owner: "retry-tab", config, stillOwn: async () => true,
+      renewOwnership: async () => true,
+    });
+    await run();
+    assert.strictEqual(repository.snapshot().items[0].nextAttemptAt, 100 + 5 * 60000);
+    assert.strictEqual(requests, 0);
+    currentTime = 100 + 5 * 60000;
+    await run();
+    assert.strictEqual(repository.snapshot().items[0].nextAttemptAt, currentTime + 10 * 60000);
+    currentTime += 10 * 60000;
+    const done = await run();
+    assert.strictEqual(done.cycle.status, "completed");
+    assert.strictEqual(done.cycle.failed, 1);
+    assert.strictEqual(requests, 2);
   });
 
   runTest("LIBRARY-UPDATE-QUEUE-WORKER-01 settles removed disabled and terminal records", async () => {

@@ -1,4 +1,4 @@
-import { getClaimJitter, getLocalDayKey, getNextScheduledAt } from "./autoUpdatePolicy.js";
+import { getClaimJitter, getLocalDayKey, getNextCycleRunAt, getNextScheduledAt } from "./autoUpdatePolicy.js";
 import { debugLog } from "../../../shared/debugLog.js";
 
 const DEBUG_OWNER = "library-addon:auto-update";
@@ -136,6 +136,19 @@ export function createAutoUpdateScheduler({
     const startedAt = now();
     const nextRunAt = getNextScheduledAt(startedAt, config.intervalMs, config.runHour);
     let cycle = migrated.cycle;
+    if (cycle?.status === "completed" && !options.force && !options.runNow &&
+        cycle.scheduledFor && cycle.completedAt && cycle.nextRunAt > startedAt) {
+      const missedSlot = getNextCycleRunAt(cycle, cycle.completedAt, config.intervalMs, config.runHour);
+      if (missedSlot <= startedAt && missedSlot < cycle.nextRunAt) {
+        const repaired = await queueRuntime.putCycle({ ...cycle, nextRunAt: missedSlot });
+        if (!repaired?.ok) {
+          await releaseLease();
+          controller = null;
+          return repaired;
+        }
+        cycle = repaired.value;
+      }
+    }
     if (cycle?.status === "completed" && !options.force && !options.runNow && cycle.nextRunAt > startedAt) {
       await releaseLease();
       controller = null;

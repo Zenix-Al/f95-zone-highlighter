@@ -9,6 +9,18 @@ export function getFailureDelay(intervalMs, consecutiveFailures) {
   return interval * 2 ** Math.min(5, failures);
 }
 
+export const MAX_DURABLE_RETRY_ATTEMPTS = 3;
+
+export function getDurableRetryDelay(attempts) {
+  const count = Math.max(1, Number(attempts) || 1);
+  return Math.min(60 * 60_000, 5 * 60_000 * 2 ** Math.min(10, count - 1));
+}
+
+export function isTerminalQueueFailure(reason, attempts) {
+  return ["http_403", "http_404", "thread_not_found", "entry_not_found"].includes(reason) ||
+    Number(attempts) >= MAX_DURABLE_RETRY_ATTEMPTS;
+}
+
 export function getLocalDayKey(timestamp = Date.now()) {
   const date = new Date(Number(timestamp));
   if (Number.isNaN(date.getTime())) return "";
@@ -34,4 +46,10 @@ export function getNextScheduledAt(now, intervalMs, runHour = 0) {
   if (anchor.getTime() > current.getTime()) return anchor.getTime();
   const slots = Math.floor((current.getTime() - anchor.getTime()) / interval) + 1;
   return anchor.getTime() + slots * interval;
+}
+
+export function getNextCycleRunAt(cycle, timestamp, intervalMs, runHour = 0) {
+  const scheduledFor = Number(cycle?.scheduledFor || cycle?.startedAt || cycle?.createdAt || timestamp);
+  const nextSlot = getNextScheduledAt(scheduledFor, intervalMs, runHour);
+  return nextSlot <= timestamp ? timestamp : nextSlot;
 }

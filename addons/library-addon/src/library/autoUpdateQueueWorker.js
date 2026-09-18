@@ -1,11 +1,10 @@
 import {
-  getFailureDelay,
+  getDurableRetryDelay,
+  getNextCycleRunAt,
   getLocalDayKey,
   getNextLocalDayAt,
-  getNextScheduledAt,
+  isTerminalQueueFailure,
 } from "./autoUpdatePolicy.js";
-
-const TERMINAL_FAILURES = new Set(["http_404", "thread_not_found", "entry_not_found"]);
 
 function wait(ms, signal) {
   return new Promise((resolve) => {
@@ -64,6 +63,44 @@ export function createAutoUpdateQueueWorker({
     await updateCycle({ status: "recovering" });
     const recovered = await repository.recoverStaleProcessing(cycle.cycleId, now());
     if (!recovered?.ok) return { ...recovered, cycle };
+
+    // Reconcile retry rows written by older versions without deleting the cycle.
+    // In particular, an access-denied row must not keep every future cycle waiting.
+    let retryCursor = null;
+    let repairedRetries = 0;
+    do {
+      if (!(await owned())) return { ok: false, reason: "lease_lost", cycle };
+      const page = await repository.queryCycleItems({
+        cycleId: cycle.cycleId,
+        queueStatus: "retry",
+        limit: 500,
+        cursor: retryCursor,
+      });
+      if (!page?.ok) return { ...page, cycle };
+      for (const { value: item } of page.items) {
+        const terminal = isTerminalQueueFailure(item.lastErrorCode, item.attempts);
+        const cappedAt = Number(item.lastAttemptAt || 0) + getDurableRetryDelay(item.attempts);
+        if (!terminal && (!item.lastAttemptAt || item.nextAttemptAt <= cappedAt)) continue;
+        if (!(await owned(item.threadId))) return { ok: false, reason: "lease_lost", cycle };
+        const written = await repository.putQueueItem({
+          ...item,
+          status: terminal ? "failed" : "retry",
+          nextAttemptAt: terminal ? 0 : cappedAt,
+        });
+        if (!written?.ok) return { ...written, cycle };
+        repairedRetries += 1;
+      }
+      retryCursor = page.hasMore ? page.nextCursor : null;
+    } while (retryCursor);
+    if (repairedRetries) {
+      const counts = await repository.getCycleStatusCounts(cycle.cycleId);
+      if (!counts?.ok) return { ...counts, cycle };
+      const updated = await updateCycle({
+        retryPending: counts.counts.retry,
+        failed: counts.counts.failed,
+      });
+      if (!updated?.ok) return { ...updated, cycle };
+    }
 
     async function settleSkipped(item, reason) {
       const claimed = await repository.claimQueueItem(item, {
@@ -136,7 +173,7 @@ export function createAutoUpdateQueueWorker({
         const unfinished = counts.counts.pending + counts.counts.processing + counts.counts.retry;
         const status = unfinished === 0 ? "completed" : "waiting";
         const nextRunAt = status === "completed"
-          ? getNextScheduledAt(now(), config.intervalMs, config.runHour)
+          ? getNextCycleRunAt(cycle, now(), config.intervalMs, config.runHour)
           : next.waitingForRetryAt || cycle.nextRunAt;
         const updated = await updateCycle({
           status,
@@ -255,14 +292,14 @@ export function createAutoUpdateQueueWorker({
       const totalAttempts = claim.value.attempts + requestAttempts - 1;
       const wasRetry = item.status === "retry";
       if (!check.ok) {
-        const terminal = TERMINAL_FAILURES.has(check.reason);
+        const terminal = isTerminalQueueFailure(check.reason, totalAttempts);
         const settled = await repository.settleQueueItem(activeClaim, {
           owner,
           status: terminal ? "failed" : "retry",
           attempts: totalAttempts,
           nextAttemptAt: terminal
             ? 0
-            : now() + getFailureDelay(config.intervalMs, totalAttempts),
+            : now() + getDurableRetryDelay(totalAttempts),
           lastErrorCode: check.reason || "unknown_error",
         });
         if (!settled?.ok) return { ...settled, cycle };

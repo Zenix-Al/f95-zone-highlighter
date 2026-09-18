@@ -104,6 +104,29 @@ module.exports = function registerLibraryAutoUpdateGroup(context) {
     assert.strictEqual(getFailureDelay(60000, 99), 1920000);
   });
 
+  runTest("LIBRARY-AUTO-UPDATE-01 durable retry backoff is short, capped, and finite", () => {
+    const { getDurableRetryDelay, isTerminalQueueFailure } = loadModule(
+      "addons/library-addon/src/library/autoUpdatePolicy.js",
+    );
+    assert.strictEqual(getDurableRetryDelay(1), 5 * 60_000);
+    assert.strictEqual(getDurableRetryDelay(2), 10 * 60_000);
+    assert.strictEqual(getDurableRetryDelay(99), 60 * 60_000);
+    assert.strictEqual(isTerminalQueueFailure("http_403", 1), true);
+    assert.strictEqual(isTerminalQueueFailure("network_error", 2), false);
+    assert.strictEqual(isTerminalQueueFailure("network_error", 3), true);
+  });
+
+  runTest("LIBRARY-AUTO-UPDATE-01 carries a missed daily slot across cycle completion", () => {
+    const { getNextCycleRunAt } = loadModule(
+      "addons/library-addon/src/library/autoUpdatePolicy.js",
+    );
+    const firstDay = new Date(2026, 8, 17, 0, 0).getTime();
+    const thirdDay = new Date(2026, 8, 19, 0, 39).getTime();
+    const fourthDay = new Date(2026, 8, 20, 0, 0).getTime();
+    assert.strictEqual(getNextCycleRunAt({ scheduledFor: firstDay }, thirdDay, 86400000, 0), thirdDay);
+    assert.strictEqual(getNextCycleRunAt({ scheduledFor: thirdDay }, thirdDay, 86400000, 0), fourthDay);
+  });
+
   runTest("LIBRARY-UPDATE-QUEUE-RECOVERY-01 schedules refresh recovery at lease expiry", () => {
     const { getStartupDelay } = loadModule(
       "addons/library-addon/src/library/autoUpdateScheduler.js",
@@ -262,6 +285,29 @@ module.exports = function registerLibraryAutoUpdateGroup(context) {
     assert.strictEqual(result.reason, "not_due");
     assert.strictEqual(result.nextRunAt, 500);
     assert.strictEqual(cleared, 1);
+  });
+
+  runTest("LIBRARY-UPDATE-QUEUE-RECOVERY-01 repairs a completed cycle that missed today's slot", async () => {
+    const firstDay = new Date(2026, 8, 17, 0, 0).getTime();
+    const thirdDay = new Date(2026, 8, 19, 0, 39).getTime();
+    const fourthDay = new Date(2026, 8, 20, 0, 0).getTime();
+    const repository = createRepository({
+      getConfig: async () => ({ ...await createRepository().getConfig(), intervalMs: 86400000 }),
+    });
+    const queue = createQueue({
+      cycleId: "old-cycle", status: "completed", scheduledFor: firstDay,
+      completedAt: thirdDay, nextRunAt: fourthDay,
+    });
+    const { createAutoUpdateScheduler } = loadModule(
+      "addons/library-addon/src/library/autoUpdateScheduler.js",
+    );
+    const result = await createAutoUpdateScheduler({
+      repository, queueRuntime: queue, owner: "rollover-tab",
+      now: () => thirdDay + 60_000, random: () => 0,
+    }).run();
+    assert.strictEqual(result.ok, true);
+    assert.strictEqual(queue.snapshot().snapshots, 1);
+    assert.strictEqual(queue.snapshot().workerRuns, 1);
   });
 
   runTest("LIBRARY-UPDATE-QUEUE-COMPAT-01 removes the duplicate due runner but retains record backoff metadata", () => {
