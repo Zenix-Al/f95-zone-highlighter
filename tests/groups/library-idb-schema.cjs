@@ -602,7 +602,7 @@ module.exports = function registerLibraryIdbSchemaGroup(context) {
     });
   });
 
-  runTest("LIBRARY-UPDATE-QUEUE-WORKER-01 selects due retry without blocking pending work", async () => {
+  runTest("LIBRARY-UPDATE-QUEUE-WORKER-01 finishes pending work before due retries", async () => {
     const bridge = createQueueBridge();
     const repository = createQueueRepository(bridge, { now: () => 500 });
     await repository.prepareCycle({
@@ -615,12 +615,17 @@ module.exports = function registerLibraryIdbSchemaGroup(context) {
     await repository.putQueueItem({ ...due, status: "retry", nextAttemptAt: 400 });
     assert.strictEqual(
       (await repository.getNextActionableItem("cycle-selection", 500)).item.threadId,
+      "pending",
+    );
+    await repository.putQueueItem({ ...await repository.getQueueItem("cycle-selection:pending"), status: "completed" });
+    assert.strictEqual(
+      (await repository.getNextActionableItem("cycle-selection", 500)).item.threadId,
       "due",
     );
     await repository.putQueueItem({ ...due, status: "completed", nextAttemptAt: 0 });
     assert.strictEqual(
-      (await repository.getNextActionableItem("cycle-selection", 500)).item.threadId,
-      "pending",
+      (await repository.getNextActionableItem("cycle-selection", 500)).waitingForRetryAt,
+      900,
     );
   });
 

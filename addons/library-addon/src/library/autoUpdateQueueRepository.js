@@ -245,13 +245,7 @@ export function createAutoUpdateQueueRepository(api, { now = Date.now } = {}) {
     const nextRetry = Array.isArray(nextRetryResult.value) && nextRetryResult.value[0]
       ? normalizeAutoUpdateQueueItem(nextRetryResult.value[0])
       : null;
-    const item = !pending
-      ? eligibleRetry
-      : !eligibleRetry
-        ? pending
-        : eligibleRetry.position < pending.position
-          ? eligibleRetry
-          : pending;
+    const item = pending || eligibleRetry;
     return {
       ok: true,
       item,

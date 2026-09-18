@@ -364,11 +364,11 @@
     }
   ],
   "build": {
-    "authoredBytes": 389755,
+    "authoredBytes": 392589,
     "fileCount": 98,
     "regular": {
       "mode": "regular",
-      "bytes": 402360,
+      "bytes": 405075,
       "contributors": [
         {
           "path": "addons/library-addon/src/library/service.js",
@@ -380,7 +380,7 @@
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-          "bytes": 19466
+          "bytes": 19369
         },
         {
           "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
@@ -388,15 +388,15 @@
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-          "bytes": 11452
+          "bytes": 12918
+        },
+        {
+          "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
+          "bytes": 11449
         },
         {
           "path": "addons/library-addon/src/app/dockController.js",
           "bytes": 11034
-        },
-        {
-          "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-          "bytes": 10835
         },
         {
           "path": "addons/library-addon/src/library/recordModel.js",
@@ -454,7 +454,7 @@
     },
     "release": {
       "mode": "release",
-      "bytes": 360317,
+      "bytes": 363245,
       "contributors": [
         {
           "path": "addons/library-addon/src/ui/assets/manager.css",
@@ -466,23 +466,23 @@
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-          "bytes": 14323
+          "bytes": 14247
         },
         {
           "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
           "bytes": 11573
         },
         {
+          "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
+          "bytes": 8723
+        },
+        {
           "path": "addons/library-addon/src/library/recordModel.js",
           "bytes": 7942
         },
         {
-          "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-          "bytes": 7716
-        },
-        {
           "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-          "bytes": 7392
+          "bytes": 7834
         },
         {
           "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",

@@ -29,14 +29,24 @@ safer than marking work complete before its canonical record commit succeeds.
 - Successful checks become `completed` and increment current/changed counters.
 - Removed or newly disabled records are settled as completed-but-skipped without
   making a request (or without committing a request that raced the change).
-- Explicit missing-thread responses (`http_404`, `thread_not_found`, and
-  `entry_not_found`) become terminal `failed` rows.
-- Other failures default to `retry`, receive bounded exponential delay, and do
-  not block later pending rows.
+- Access-denied (`http_403`) and explicit missing-thread responses
+  (`http_404`, `thread_not_found`, and `entry_not_found`) become terminal
+  `failed` rows without holding the cycle open.
+- Other failures receive a durable retry delay of five minutes initially,
+  capped at one hour, independent of the daily cycle interval. Pending rows
+  run before due retries. After three total request attempts, the row becomes
+  terminal; the next scheduled cycle can consider the record again.
+- On recovery, legacy retry rows with multi-day delays are shortened to the
+  bounded policy. Legacy 403 retry rows are settled as failed without another
+  request, preserving all previously completed queue rows.
 - Internal request retries are included in queue and cycle network-attempt
   evidence.
 - A cycle becomes `completed` when no pending, processing, or retry rows remain;
   otherwise it becomes `waiting` for the next retry.
+- Completion schedules from the cycle's original slot, not the completion time.
+  If a waiting cycle crossed a daily slot, the next snapshot is due immediately;
+  its new requests still consume the current day's allowance. The scheduler
+  repairs already-completed cycles with the old next-day timestamp on its next poll.
 
 The queue schema includes `[cycleId, status, nextAttemptAt]`, allowing due
 retries to be selected by time without an earlier future retry blocking them.

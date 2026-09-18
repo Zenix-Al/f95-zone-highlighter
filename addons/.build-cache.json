@@ -2,7 +2,7 @@
   "addons": {
     "library-addon": {
       "regular": "9e9b8351a41e27a912926f8fa95da201c95e7a15f9360440a163771f8ecb957c",
-      "release": "4ef58a87414302e9657a3b69446fa3f35c00cd152c64de4d82e16398ae714c09"
+      "release": "0756261797ac56b4f2ee7222d6e07e9a5b77f083f315253f084152fd19703620"
     },
     "image-repair-addon": {
       "release": "599180b41d1edaf69497c5acbf83bdcee2b3417604595341691dd6eac64a4450",
@@ -29,7 +29,7 @@
       "release": "ca5c15ff4b103d81abec821bff5f01f0865cd4e987dbec568eb7fd93477a7534"
     },
     "thread-utility-addon": {
-      "release": "4ccb1bdea7fca63e72e55969c1af9fcef66503d052d74158ed6df59588bf4479",
+      "release": "84230151ce0a8393745d615a2ca7e052343038b5dd01024dbc14d77ce4c39ed6",
       "regular": "f23d376bd235edd152001ef69ce0ed396d4f1c71bf2f6ac789c973ba3ec21406"
     }
   }
