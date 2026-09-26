@@ -96,6 +96,10 @@ export function createManagerApi(bridge, library) {
       return await library.patchEntry(threadId, patch);
     },
 
+    setPersonalStatus: async (threadId, status, options) => {
+      return await library.setPersonalStatus(threadId, status, options);
+    },
+
     acknowledgeCurrentUpdate: async (threadId) => {
       return await library.acknowledgeCurrentUpdate(threadId);
     },

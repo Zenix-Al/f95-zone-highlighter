@@ -9,13 +9,13 @@
   "authoredBytes": 29892,
   "bundle": {
     "readable": {
-      "fullBytes": 613472,
-      "gzipBytes": 132099,
+      "fullBytes": 632403,
+      "gzipBytes": 136064,
       "contributionBytes": 21749
     },
     "uglified": {
-      "fullBytes": 309707,
-      "gzipBytes": 92836,
+      "fullBytes": 319747,
+      "gzipBytes": 95542,
       "contributionBytes": 24665
     }
   },
@@ -1233,36 +1233,6 @@
           "file": "src/ui/components/configButton.js",
           "line": 6,
           "excerpt": "const PAGE_DOCK_ADDON_SLOT_ID = \"f95ue-page-dock-addon-slot\";"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/src_core_teardown.js.cjs",
-          "line": 4221,
-          "excerpt": "var ADDON_DOCK_SLOT_ID = \"f95ue-page-dock-addon-slot\";"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/src_services_addons_actionRuntime.js.cjs",
-          "line": 4496,
-          "excerpt": "var ADDON_DOCK_SLOT_ID = \"f95ue-page-dock-addon-slot\";"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/src_services_addons_uiHost.js.cjs",
-          "line": 4576,
-          "excerpt": "var ADDON_DOCK_SLOT_ID = \"f95ue-page-dock-addon-slot\";"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/src_services_addonsService.js.cjs",
-          "line": 4528,
-          "excerpt": "var ADDON_DOCK_SLOT_ID = \"f95ue-page-dock-addon-slot\";"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/tests_fixtures_bootstrapHarness.js.cjs",
-          "line": 4356,
-          "excerpt": "var ADDON_DOCK_SLOT_ID = \"f95ue-page-dock-addon-slot\";"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/tests_fixtures_routeTeardownHarness.js.cjs",
-          "line": 4276,
-          "excerpt": "var ADDON_DOCK_SLOT_ID = \"f95ue-page-dock-addon-slot\";"
         }
       ],
       "protectedReason": null
@@ -1435,23 +1405,23 @@
         },
         {
           "file": "src/ui/settings/modalLifecycle.js",
-          "line": 48,
+          "line": 53,
           "excerpt": "const modal = shadowRoot.getElementById(\"tag-config-modal\");"
         },
         {
-          "file": "tests/.tmp-modal-css-verify/tests_fixtures_tagSearchBoundHarness.js.cjs",
-          "line": 5891,
+          "file": "tests/fixtures/tagSearchBoundHarness.js",
+          "line": 37,
           "excerpt": "modal.id = \"tag-config-modal\";"
         },
         {
-          "file": "tests/.tmp-modal-css-verify/tests_fixtures_tagSearchBoundHarness.js.cjs",
-          "line": 5891,
+          "file": "tests/fixtures/tagSearchBoundHarness.js",
+          "line": 37,
           "excerpt": "modal.id = \"tag-config-modal\";"
         },
         {
-          "file": "tests/.tmp-tag-search-bound/tests_fixtures_tagSearchBoundHarness.js.cjs",
-          "line": 2832,
-          "excerpt": "modal.id = \"tag-config-modal\";"
+          "file": "tests/visual/core-settings-reference.visual.cjs",
+          "line": 19,
+          "excerpt": "<div id=\"tag-config-modal\"><div class=\"modal-content\"><div class=\"settings-shell\">"
         }
       ],
       "protectedReason": null
@@ -1528,24 +1498,24 @@
           "excerpt": "container = createEl(\"div\", { attrs: { id: \"toast-container\" } });"
         },
         {
-          "file": "tests/.tmp-config-catalog-copy/src_core_featureFactory.js.cjs",
-          "line": 781,
-          "excerpt": "let container = document.getElementById(\"toast-container\");"
+          "file": "tests/fixtures/configInteractionHarness.js",
+          "line": 154,
+          "excerpt": "const loadToasts = [...document.querySelectorAll(\"#toast-container .toast\")]"
         },
         {
-          "file": "tests/.tmp-config-catalog-copy/src_core_featureFactory.js.cjs",
-          "line": 790,
-          "excerpt": "let container = shadowRoot.getElementById(\"toast-container\");"
+          "file": "tests/fixtures/configInteractionHarness.js",
+          "line": 162,
+          "excerpt": "const interactiveToasts = [...document.querySelectorAll(\"#toast-container .toast\")]"
         },
         {
-          "file": "tests/.tmp-config-catalog-copy/src_core_featureFactory.js.cjs",
-          "line": 783,
-          "excerpt": "container = createEl(\"div\", { attrs: { id: \"toast-container\" } });"
+          "file": "tests/fixtures/configInteractionHarness.js",
+          "line": 189,
+          "excerpt": "toasts: [...document.querySelectorAll(\"#toast-container .toast\")]"
         },
         {
-          "file": "tests/.tmp-config-catalog-copy/src_core_featureFactory.js.cjs",
-          "line": 792,
-          "excerpt": "container = createEl(\"div\", { attrs: { id: \"toast-container\" } });"
+          "file": "tests/groups/addon-service.cjs",
+          "line": 379,
+          "excerpt": "const container = docWithBody.getElementById(\"toast-container\");"
         }
       ],
       "protectedReason": null
@@ -1607,39 +1577,14 @@
           "excerpt": "className: `addins-action-btn${extraClass ? ` ${extraClass}` : \"\"}`,"
         },
         {
-          "file": "tests/.tmp-config-catalog-full/src_ui_components_addons_addonPanelActions.js.cjs",
-          "line": 47,
-          "excerpt": "className: `addins-action-btn${extraClass ? ` ${extraClass}` : \"\"}`,"
+          "file": "tests/visual/core-settings-reference.visual.cjs",
+          "line": 33,
+          "excerpt": "<button class=\"addins-action-btn\">Neutral</button>"
         },
         {
-          "file": "tests/.tmp-download-clicks/src_ui_components_addons_addonPanelActions.js.cjs",
-          "line": 47,
-          "excerpt": "className: `addins-action-btn${extraClass ? ` ${extraClass}` : \"\"}`,"
-        },
-        {
-          "file": "tests/.tmp-modal-css-full/src_ui_components_addons_addonPanelActions.js.cjs",
-          "line": 47,
-          "excerpt": "className: `addins-action-btn${extraClass ? ` ${extraClass}` : \"\"}`,"
-        },
-        {
-          "file": "tests/.tmp-modal-css-verify/src_ui_components_addons_addonPanelActions.js.cjs",
-          "line": 47,
-          "excerpt": "className: `addins-action-btn${extraClass ? ` ${extraClass}` : \"\"}`,"
-        },
-        {
-          "file": "tests/.tmp-performance-baseline/src_ui_components_addons_addonPanelActions.js.cjs",
-          "line": 47,
-          "excerpt": "className: `addins-action-btn${extraClass ? ` ${extraClass}` : \"\"}`,"
-        },
-        {
-          "file": "tests/.tmp-rating-fix/src_ui_components_addons_addonPanelActions.js.cjs",
-          "line": 47,
-          "excerpt": "className: `addins-action-btn${extraClass ? ` ${extraClass}` : \"\"}`,"
-        },
-        {
-          "file": "tests/.tmp-settings-shell/src_ui_components_addons_addonPanelActions.js.cjs",
-          "line": 47,
-          "excerpt": "className: `addins-action-btn${extraClass ? ` ${extraClass}` : \"\"}`,"
+          "file": "tests/visual/core-settings-reference.visual.cjs",
+          "line": 33,
+          "excerpt": "<button class=\"addins-action-btn\">Neutral</button>"
         }
       ],
       "protectedReason": null
@@ -1711,6 +1656,16 @@
           "file": "src/ui/components/addons/addonCard.js",
           "line": 113,
           "excerpt": "className: \"addins-card-actions\","
+        },
+        {
+          "file": "tests/visual/core-settings-reference.visual.cjs",
+          "line": 32,
+          "excerpt": "<div class=\"addins-card-actions\">"
+        },
+        {
+          "file": "tests/visual/core-settings-reference.visual.cjs",
+          "line": 32,
+          "excerpt": "<div class=\"addins-card-actions\">"
         }
       ],
       "protectedReason": null
@@ -1776,6 +1731,16 @@
           "file": "src/ui/components/addons/addonCard.js",
           "line": 29,
           "excerpt": "className: \"addins-card-name\","
+        },
+        {
+          "file": "tests/visual/core-settings-reference.visual.cjs",
+          "line": 28,
+          "excerpt": "<div class=\"addins-card-name\">Reference group</div>"
+        },
+        {
+          "file": "tests/visual/core-settings-reference.visual.cjs",
+          "line": 28,
+          "excerpt": "<div class=\"addins-card-name\">Reference group</div>"
         }
       ],
       "protectedReason": null
@@ -1840,41 +1805,6 @@
         {
           "file": "src/ui/components/addons/addonPanelActions.js",
           "line": 6,
-          "excerpt": "className: \"addins-panel-actions\","
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/src_ui_components_addons_addonPanelActions.js.cjs",
-          "line": 61,
-          "excerpt": "className: \"addins-panel-actions\","
-        },
-        {
-          "file": "tests/.tmp-download-clicks/src_ui_components_addons_addonPanelActions.js.cjs",
-          "line": 61,
-          "excerpt": "className: \"addins-panel-actions\","
-        },
-        {
-          "file": "tests/.tmp-modal-css-full/src_ui_components_addons_addonPanelActions.js.cjs",
-          "line": 61,
-          "excerpt": "className: \"addins-panel-actions\","
-        },
-        {
-          "file": "tests/.tmp-modal-css-verify/src_ui_components_addons_addonPanelActions.js.cjs",
-          "line": 61,
-          "excerpt": "className: \"addins-panel-actions\","
-        },
-        {
-          "file": "tests/.tmp-performance-baseline/src_ui_components_addons_addonPanelActions.js.cjs",
-          "line": 61,
-          "excerpt": "className: \"addins-panel-actions\","
-        },
-        {
-          "file": "tests/.tmp-rating-fix/src_ui_components_addons_addonPanelActions.js.cjs",
-          "line": 61,
-          "excerpt": "className: \"addins-panel-actions\","
-        },
-        {
-          "file": "tests/.tmp-settings-shell/src_ui_components_addons_addonPanelActions.js.cjs",
-          "line": 61,
           "excerpt": "className: \"addins-panel-actions\","
         }
       ],
@@ -2052,43 +1982,18 @@
       "callSites": [
         {
           "file": "src/ui/renderers/renderSetting.js",
-          "line": 32,
+          "line": 33,
           "excerpt": "className: \"config-button\","
         },
         {
-          "file": "tests/.tmp-config-catalog-copy/src_ui_renderers_renderSetting.js.cjs",
-          "line": 2439,
-          "excerpt": "className: \"config-button\","
+          "file": "tests/visual/core-settings-reference.visual.cjs",
+          "line": 34,
+          "excerpt": "<button class=\"config-button\">Primary</button>"
         },
         {
-          "file": "tests/.tmp-config-catalog-copy/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3052,
-          "excerpt": "className: \"config-button\","
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy-2/src_ui_renderers_renderSetting.js.cjs",
-          "line": 2439,
-          "excerpt": "className: \"config-button\","
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy-2/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3052,
-          "excerpt": "className: \"config-button\","
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/src_ui_renderers_renderSetting.js.cjs",
-          "line": 2439,
-          "excerpt": "className: \"config-button\","
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3052,
-          "excerpt": "className: \"config-button\","
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/tests_fixtures_routeHarness.js.cjs",
-          "line": 3441,
-          "excerpt": "className: \"config-button\","
+          "file": "tests/visual/core-settings-reference.visual.cjs",
+          "line": 34,
+          "excerpt": "<button class=\"config-button\">Primary</button>"
         }
       ],
       "protectedReason": null
@@ -2101,41 +2006,6 @@
           "file": "src/ui/renderers/createInput.js",
           "line": 18,
           "excerpt": "input.classList.add(\"config-color-input\");"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy/src_ui_renderers_createInput.js.cjs",
-          "line": 616,
-          "excerpt": "input.classList.add(\"config-color-input\");"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy/src_ui_renderers_renderSetting.js.cjs",
-          "line": 2312,
-          "excerpt": "input.classList.add(\"config-color-input\");"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 2925,
-          "excerpt": "input.classList.add(\"config-color-input\");"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy-2/src_ui_renderers_createInput.js.cjs",
-          "line": 616,
-          "excerpt": "input.classList.add(\"config-color-input\");"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy-2/src_ui_renderers_renderSetting.js.cjs",
-          "line": 2312,
-          "excerpt": "input.classList.add(\"config-color-input\");"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy-2/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 2925,
-          "excerpt": "input.classList.add(\"config-color-input\");"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/src_ui_renderers_createInput.js.cjs",
-          "line": 616,
-          "excerpt": "input.classList.add(\"config-color-input\");"
         }
       ],
       "protectedReason": null
@@ -2146,42 +2016,22 @@
       "callSites": [
         {
           "file": "src/ui/components/dialog.js",
-          "line": 37,
+          "line": 43,
           "excerpt": "const actions = createEl(\"div\", { className: \"config-dialog-actions\" });"
         },
         {
           "file": "src/ui/components/dialog.js",
-          "line": 131,
+          "line": 137,
           "excerpt": "const actions = createEl(\"div\", { className: \"config-dialog-actions\" });"
         },
         {
           "file": "src/ui/components/dialog.js",
-          "line": 275,
+          "line": 281,
           "excerpt": "const actions = createEl(\"div\", { className: \"config-dialog-actions\" });"
         },
         {
           "file": "src/ui/components/dialog.js",
-          "line": 357,
-          "excerpt": "const actions = createEl(\"div\", { className: \"config-dialog-actions\" });"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3203,
-          "excerpt": "const actions = createEl(\"div\", { className: \"config-dialog-actions\" });"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3271,
-          "excerpt": "const actions = createEl(\"div\", { className: \"config-dialog-actions\" });"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy-2/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3203,
-          "excerpt": "const actions = createEl(\"div\", { className: \"config-dialog-actions\" });"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy-2/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3271,
+          "line": 363,
           "excerpt": "const actions = createEl(\"div\", { className: \"config-dialog-actions\" });"
         }
       ],
@@ -2193,43 +2043,23 @@
       "callSites": [
         {
           "file": "src/ui/components/dialog.js",
-          "line": 31,
+          "line": 37,
           "excerpt": "className: \"config-dialog-backdrop\","
         },
         {
           "file": "src/ui/components/dialog.js",
-          "line": 107,
+          "line": 113,
           "excerpt": "className: \"config-dialog-backdrop\","
         },
         {
           "file": "src/ui/components/dialog.js",
-          "line": 223,
+          "line": 229,
           "excerpt": "className: \"config-dialog-backdrop\","
         },
         {
           "file": "src/ui/components/dialog.js",
-          "line": 336,
+          "line": 342,
           "excerpt": "className: \"config-dialog-backdrop\","
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3163,
-          "excerpt": "className: \"config-dialog-backdrop\""
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3256,
-          "excerpt": "className: \"config-dialog-backdrop\""
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy-2/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3163,
-          "excerpt": "className: \"config-dialog-backdrop\""
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy-2/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3256,
-          "excerpt": "className: \"config-dialog-backdrop\""
         }
       ],
       "protectedReason": null
@@ -2240,42 +2070,22 @@
       "callSites": [
         {
           "file": "src/ui/components/dialog.js",
-          "line": 35,
+          "line": 41,
           "excerpt": "const body = createEl(\"div\", { className: \"config-dialog-description\", text: description });"
         },
         {
           "file": "src/ui/components/dialog.js",
-          "line": 114,
+          "line": 120,
           "excerpt": "const body = createEl(\"div\", { className: \"config-dialog-description\", text: description });"
         },
         {
           "file": "src/ui/components/dialog.js",
-          "line": 230,
+          "line": 236,
           "excerpt": "const body = createEl(\"div\", { className: \"config-dialog-description\", text: description });"
         },
         {
           "file": "src/ui/components/dialog.js",
-          "line": 347,
-          "excerpt": "const body = createEl(\"div\", { className: \"config-dialog-description\", text: description });"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3167,
-          "excerpt": "const body = createEl(\"div\", { className: \"config-dialog-description\", text: description });"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3263,
-          "excerpt": "const body = createEl(\"div\", { className: \"config-dialog-description\", text: description });"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy-2/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3167,
-          "excerpt": "const body = createEl(\"div\", { className: \"config-dialog-description\", text: description });"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy-2/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3263,
+          "line": 353,
           "excerpt": "const body = createEl(\"div\", { className: \"config-dialog-description\", text: description });"
         }
       ],
@@ -2287,7 +2097,7 @@
       "callSites": [
         {
           "file": "src/ui/components/dialog.js",
-          "line": 129,
+          "line": 135,
           "excerpt": "const error = createEl(\"div\", { className: \"config-dialog-error\" });"
         }
       ],
@@ -2299,12 +2109,12 @@
       "callSites": [
         {
           "file": "src/ui/components/dialog.js",
-          "line": 117,
+          "line": 123,
           "excerpt": "? createEl(\"textarea\", { className: \"config-dialog-input\" })"
         },
         {
           "file": "src/ui/components/dialog.js",
-          "line": 118,
+          "line": 124,
           "excerpt": ": createEl(\"input\", { className: \"config-dialog-input\" });"
         }
       ],
@@ -2316,42 +2126,22 @@
       "callSites": [
         {
           "file": "src/ui/components/dialog.js",
-          "line": 33,
+          "line": 39,
           "excerpt": "const panel = createEl(\"div\", { className: \"config-dialog-panel\" });"
         },
         {
           "file": "src/ui/components/dialog.js",
-          "line": 110,
+          "line": 116,
           "excerpt": "const panel = createEl(\"div\", { className: \"config-dialog-panel\" });"
         },
         {
           "file": "src/ui/components/dialog.js",
-          "line": 226,
+          "line": 232,
           "excerpt": "const panel = createEl(\"div\", { className: \"config-dialog-panel\" });"
         },
         {
           "file": "src/ui/components/dialog.js",
-          "line": 339,
-          "excerpt": "const panel = createEl(\"div\", { className: \"config-dialog-panel\" });"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3165,
-          "excerpt": "const panel = createEl(\"div\", { className: \"config-dialog-panel\" });"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3258,
-          "excerpt": "const panel = createEl(\"div\", { className: \"config-dialog-panel\" });"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy-2/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3165,
-          "excerpt": "const panel = createEl(\"div\", { className: \"config-dialog-panel\" });"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy-2/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3258,
+          "line": 345,
           "excerpt": "const panel = createEl(\"div\", { className: \"config-dialog-panel\" });"
         }
       ],
@@ -2363,42 +2153,7 @@
       "callSites": [
         {
           "file": "src/ui/components/dialog.js",
-          "line": 351,
-          "excerpt": "const content = createEl(\"div\", { className: \"config-dialog-settings\" });"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3266,
-          "excerpt": "const content = createEl(\"div\", { className: \"config-dialog-settings\" });"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy-2/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3266,
-          "excerpt": "const content = createEl(\"div\", { className: \"config-dialog-settings\" });"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3266,
-          "excerpt": "const content = createEl(\"div\", { className: \"config-dialog-settings\" });"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/tests_fixtures_routeHarness.js.cjs",
-          "line": 4348,
-          "excerpt": "const content = createEl(\"div\", { className: \"config-dialog-settings\" });"
-        },
-        {
-          "file": "tests/.tmp-download-clicks/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3226,
-          "excerpt": "const content = createEl(\"div\", { className: \"config-dialog-settings\" });"
-        },
-        {
-          "file": "tests/.tmp-download-clicks/tests_fixtures_routeHarness.js.cjs",
-          "line": 4309,
-          "excerpt": "const content = createEl(\"div\", { className: \"config-dialog-settings\" });"
-        },
-        {
-          "file": "tests/.tmp-modal-css-full/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3226,
+          "line": 357,
           "excerpt": "const content = createEl(\"div\", { className: \"config-dialog-settings\" });"
         }
       ],
@@ -2410,42 +2165,22 @@
       "callSites": [
         {
           "file": "src/ui/components/dialog.js",
-          "line": 34,
+          "line": 40,
           "excerpt": "const header = createEl(\"div\", { className: \"config-dialog-title\", text: title });"
         },
         {
           "file": "src/ui/components/dialog.js",
-          "line": 112,
+          "line": 118,
           "excerpt": "const header = createEl(\"div\", { className: \"config-dialog-title\", text: title });"
         },
         {
           "file": "src/ui/components/dialog.js",
-          "line": 228,
+          "line": 234,
           "excerpt": "const header = createEl(\"div\", { className: \"config-dialog-title\", text: title });"
         },
         {
           "file": "src/ui/components/dialog.js",
-          "line": 341,
-          "excerpt": "const header = createEl(\"div\", { className: \"config-dialog-title\", text: title });"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3166,
-          "excerpt": "const header = createEl(\"div\", { className: \"config-dialog-title\", text: title });"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3259,
-          "excerpt": "const header = createEl(\"div\", { className: \"config-dialog-title\", text: title });"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy-2/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3166,
-          "excerpt": "const header = createEl(\"div\", { className: \"config-dialog-title\", text: title });"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy-2/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3259,
+          "line": 347,
           "excerpt": "const header = createEl(\"div\", { className: \"config-dialog-title\", text: title });"
         }
       ],
@@ -2472,27 +2207,7 @@
         },
         {
           "file": "src/ui/renderers/renderSetting.js",
-          "line": 11,
-          "excerpt": "return createEl(\"div\", { className: \"config-header\", text: meta.text });"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy/src_ui_renderers_renderSetting.js.cjs",
-          "line": 2422,
-          "excerpt": "return createEl(\"div\", { className: \"config-header\", text: meta.text });"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3035,
-          "excerpt": "return createEl(\"div\", { className: \"config-header\", text: meta.text });"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy-2/src_ui_renderers_renderSetting.js.cjs",
-          "line": 2422,
-          "excerpt": "return createEl(\"div\", { className: \"config-header\", text: meta.text });"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy-2/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3035,
+          "line": 12,
           "excerpt": "return createEl(\"div\", { className: \"config-header\", text: meta.text });"
         }
       ],
@@ -2504,42 +2219,12 @@
       "callSites": [
         {
           "file": "src/ui/components/dialog.js",
-          "line": 244,
+          "line": 250,
           "excerpt": "className: \"config-reorder-btn\","
         },
         {
           "file": "src/ui/components/dialog.js",
-          "line": 256,
-          "excerpt": "className: \"config-reorder-btn\","
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3176,
-          "excerpt": "className: \"config-reorder-btn\","
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3187,
-          "excerpt": "className: \"config-reorder-btn\","
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy-2/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3176,
-          "excerpt": "className: \"config-reorder-btn\","
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy-2/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3187,
-          "excerpt": "className: \"config-reorder-btn\","
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3176,
-          "excerpt": "className: \"config-reorder-btn\","
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3187,
+          "line": 262,
           "excerpt": "className: \"config-reorder-btn\","
         }
       ],
@@ -2551,42 +2236,7 @@
       "callSites": [
         {
           "file": "src/ui/components/dialog.js",
-          "line": 241,
-          "excerpt": "const handle = createEl(\"div\", { className: \"config-reorder-handle\" });"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3174,
-          "excerpt": "const handle = createEl(\"div\", { className: \"config-reorder-handle\" });"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy-2/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3174,
-          "excerpt": "const handle = createEl(\"div\", { className: \"config-reorder-handle\" });"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3174,
-          "excerpt": "const handle = createEl(\"div\", { className: \"config-reorder-handle\" });"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/tests_fixtures_routeHarness.js.cjs",
-          "line": 4256,
-          "excerpt": "const handle = createEl(\"div\", { className: \"config-reorder-handle\" });"
-        },
-        {
-          "file": "tests/.tmp-download-clicks/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3134,
-          "excerpt": "const handle = createEl(\"div\", { className: \"config-reorder-handle\" });"
-        },
-        {
-          "file": "tests/.tmp-download-clicks/tests_fixtures_routeHarness.js.cjs",
-          "line": 4217,
-          "excerpt": "const handle = createEl(\"div\", { className: \"config-reorder-handle\" });"
-        },
-        {
-          "file": "tests/.tmp-modal-css-full/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3134,
+          "line": 247,
           "excerpt": "const handle = createEl(\"div\", { className: \"config-reorder-handle\" });"
         }
       ],
@@ -2598,42 +2248,7 @@
       "callSites": [
         {
           "file": "src/ui/components/dialog.js",
-          "line": 237,
-          "excerpt": "const row = createEl(\"div\", { className: \"config-reorder-item\" });"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3172,
-          "excerpt": "const row = createEl(\"div\", { className: \"config-reorder-item\" });"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy-2/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3172,
-          "excerpt": "const row = createEl(\"div\", { className: \"config-reorder-item\" });"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3172,
-          "excerpt": "const row = createEl(\"div\", { className: \"config-reorder-item\" });"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/tests_fixtures_routeHarness.js.cjs",
-          "line": 4254,
-          "excerpt": "const row = createEl(\"div\", { className: \"config-reorder-item\" });"
-        },
-        {
-          "file": "tests/.tmp-download-clicks/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3132,
-          "excerpt": "const row = createEl(\"div\", { className: \"config-reorder-item\" });"
-        },
-        {
-          "file": "tests/.tmp-download-clicks/tests_fixtures_routeHarness.js.cjs",
-          "line": 4215,
-          "excerpt": "const row = createEl(\"div\", { className: \"config-reorder-item\" });"
-        },
-        {
-          "file": "tests/.tmp-modal-css-full/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3132,
+          "line": 243,
           "excerpt": "const row = createEl(\"div\", { className: \"config-reorder-item\" });"
         }
       ],
@@ -2645,42 +2260,7 @@
       "callSites": [
         {
           "file": "src/ui/components/dialog.js",
-          "line": 239,
-          "excerpt": "const label = createEl(\"span\", { className: \"config-reorder-label\", text: item.label });"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3173,
-          "excerpt": "const label = createEl(\"span\", { className: \"config-reorder-label\", text: item.label });"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy-2/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3173,
-          "excerpt": "const label = createEl(\"span\", { className: \"config-reorder-label\", text: item.label });"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3173,
-          "excerpt": "const label = createEl(\"span\", { className: \"config-reorder-label\", text: item.label });"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/tests_fixtures_routeHarness.js.cjs",
-          "line": 4255,
-          "excerpt": "const label = createEl(\"span\", { className: \"config-reorder-label\", text: item.label });"
-        },
-        {
-          "file": "tests/.tmp-download-clicks/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3133,
-          "excerpt": "const label = createEl(\"span\", { className: \"config-reorder-label\", text: item.label });"
-        },
-        {
-          "file": "tests/.tmp-download-clicks/tests_fixtures_routeHarness.js.cjs",
-          "line": 4216,
-          "excerpt": "const label = createEl(\"span\", { className: \"config-reorder-label\", text: item.label });"
-        },
-        {
-          "file": "tests/.tmp-modal-css-full/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3133,
+          "line": 245,
           "excerpt": "const label = createEl(\"span\", { className: \"config-reorder-label\", text: item.label });"
         }
       ],
@@ -2692,42 +2272,7 @@
       "callSites": [
         {
           "file": "src/ui/components/dialog.js",
-          "line": 232,
-          "excerpt": "const list = createEl(\"div\", { className: \"config-reorder-list\" });"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3168,
-          "excerpt": "const list = createEl(\"div\", { className: \"config-reorder-list\" });"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy-2/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3168,
-          "excerpt": "const list = createEl(\"div\", { className: \"config-reorder-list\" });"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3168,
-          "excerpt": "const list = createEl(\"div\", { className: \"config-reorder-list\" });"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/tests_fixtures_routeHarness.js.cjs",
-          "line": 4250,
-          "excerpt": "const list = createEl(\"div\", { className: \"config-reorder-list\" });"
-        },
-        {
-          "file": "tests/.tmp-download-clicks/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3128,
-          "excerpt": "const list = createEl(\"div\", { className: \"config-reorder-list\" });"
-        },
-        {
-          "file": "tests/.tmp-download-clicks/tests_fixtures_routeHarness.js.cjs",
-          "line": 4211,
-          "excerpt": "const list = createEl(\"div\", { className: \"config-reorder-list\" });"
-        },
-        {
-          "file": "tests/.tmp-modal-css-full/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3128,
+          "line": 238,
           "excerpt": "const list = createEl(\"div\", { className: \"config-reorder-list\" });"
         }
       ],
@@ -2744,38 +2289,38 @@
         },
         {
           "file": "src/ui/renderers/renderSetting.js",
-          "line": 27,
+          "line": 28,
           "excerpt": "const row = createEl(\"div\", { className: \"config-row\" });"
         },
         {
           "file": "src/ui/renderers/renderSetting.js",
-          "line": 54,
+          "line": 55,
           "excerpt": "const row = createEl(\"div\", { className: \"config-row\" });"
         },
         {
-          "file": "tests/.tmp-config-catalog-copy/src_ui_renderers_renderSetting.js.cjs",
-          "line": 2435,
-          "excerpt": "const row2 = createEl(\"div\", { className: \"config-row\" });"
+          "file": "tests/groups/core-size-reduction.cjs",
+          "line": 286,
+          "excerpt": "row.className = \"config-row\";"
         },
         {
-          "file": "tests/.tmp-config-catalog-copy/src_ui_renderers_renderSetting.js.cjs",
-          "line": 2458,
-          "excerpt": "const row = createEl(\"div\", { className: \"config-row\" });"
+          "file": "tests/visual/core-settings-reference.visual.cjs",
+          "line": 29,
+          "excerpt": "<div class=\"config-row\"><label for=\"reference-input\">Text value</label><input id=\"reference-input\" value=\"Example\"></div>"
         },
         {
-          "file": "tests/.tmp-config-catalog-copy/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3048,
-          "excerpt": "const row2 = createEl(\"div\", { className: \"config-row\" });"
+          "file": "tests/visual/core-settings-reference.visual.cjs",
+          "line": 30,
+          "excerpt": "<div class=\"config-row\"><label for=\"reference-select\">Select value</label><select id=\"reference-select\"><option>Choice</option></select></div>"
         },
         {
-          "file": "tests/.tmp-config-catalog-copy/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 3071,
-          "excerpt": "const row = createEl(\"div\", { className: \"config-row\" });"
+          "file": "tests/visual/core-settings-reference.visual.cjs",
+          "line": 31,
+          "excerpt": "<div class=\"config-row\"><label for=\"reference-check\">Enabled</label><input id=\"reference-check\" type=\"checkbox\" checked></div>"
         },
         {
-          "file": "tests/.tmp-config-catalog-copy-2/src_ui_renderers_renderSetting.js.cjs",
-          "line": 2435,
-          "excerpt": "const row2 = createEl(\"div\", { className: \"config-row\" });"
+          "file": "tests/visual/core-settings-reference.visual.cjs",
+          "line": 29,
+          "excerpt": "<div class=\"config-row\"><label for=\"reference-input\">Text value</label><input id=\"reference-input\" value=\"Example\"></div>"
         }
       ],
       "protectedReason": null
@@ -2802,39 +2347,9 @@
           "excerpt": "className: \"addins-status-copy disabled\","
         },
         {
-          "file": "tests/.tmp-config-catalog-full/addons_library-addon_src_app_createLibraryAddonApp.js.cjs",
-          "line": 4989,
-          "excerpt": "${entries.length ? `<button type=\"button\" class=\"primary\" data-inbox-action=\"acknowledge-all\"${busy ? \" disabled\" : \"\"}>Acknowledge all</button>` : \"\"}"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/addons_library-addon_src_app_createLibraryAddonApp.js.cjs",
-          "line": 5431,
-          "excerpt": "<button type=\"button\" class=\"f95ue-row-menu-item\" data-action=\"row-update-thread\" data-thread-id=\"${entry.threadId}\" ${canUpdate ? \"\" : \"disabled\"}>Update</button>"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/addons_library-addon_src_ui_components_manager_tableRenderer.js.cjs",
-          "line": 206,
-          "excerpt": "<button type=\"button\" class=\"f95ue-row-menu-item\" data-action=\"row-update-thread\" data-thread-id=\"${entry.threadId}\" ${canUpdate ? \"\" : \"disabled\"}>Update</button>"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/addons_library-addon_src_ui_manager_managerApp.js.cjs",
-          "line": 2293,
-          "excerpt": "${entries.length ? `<button type=\"button\" class=\"primary\" data-inbox-action=\"acknowledge-all\"${busy ? \" disabled\" : \"\"}>Acknowledge all</button>` : \"\"}"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/addons_library-addon_src_ui_manager_managerApp.js.cjs",
-          "line": 2735,
-          "excerpt": "<button type=\"button\" class=\"f95ue-row-menu-item\" data-action=\"row-update-thread\" data-thread-id=\"${entry.threadId}\" ${canUpdate ? \"\" : \"disabled\"}>Update</button>"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/addons_library-addon_src_ui_updateInbox_updateInboxController.js.cjs",
-          "line": 130,
-          "excerpt": "${entries.length ? `<button type=\"button\" class=\"primary\" data-inbox-action=\"acknowledge-all\"${busy ? \" disabled\" : \"\"}>Acknowledge all</button>` : \"\"}"
-        },
-        {
-          "file": "tests/.tmp-download-clicks/addons_library-addon_src_app_createLibraryAddonApp.js.cjs",
-          "line": 4989,
-          "excerpt": "${entries.length ? `<button type=\"button\" class=\"primary\" data-inbox-action=\"acknowledge-all\"${busy ? \" disabled\" : \"\"}>Acknowledge all</button>` : \"\"}"
+          "file": "tests/concept/latest.min.js",
+          "line": 33,
+          "excerpt": "l)})},error:function(c){K(U(c,\"Unable to fetch data, please try again\"),403!==c.status&&429!==c.status)}})},aa=!1,na=function(a){!q.hasClass(\"sticky\")||!a&&aa||480>=u.outerWidth()||(aa=!0,q.css({top:b(\".p-body-main\").offset().top}),setTimeout(function(){aa=!1},200))},oa=function(a,c){return a.selectize({closeAfterSelect:!0,placeholder:\"Select a tag to \"+(\"tags\"===c?\"filter\":\"exclude\")+\"...\",render:{option:function(e,f){return'<div class=\"option'+(e.hasOwnProperty(\"disabled\")&&e.disabled?\" disabled\":"
         }
       ],
       "protectedReason": null
@@ -2846,41 +2361,6 @@
         {
           "file": "src/ui/components/tag-search/tagDrag.js",
           "line": 313,
-          "excerpt": "ghost.classList.add(\"drag-ghost\");"
-        },
-        {
-          "file": "tests/.tmp-modal-css-verify/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 6123,
-          "excerpt": "ghost.classList.add(\"drag-ghost\");"
-        },
-        {
-          "file": "tests/.tmp-modal-css-verify/tests_fixtures_tagSearchBoundHarness.js.cjs",
-          "line": 2457,
-          "excerpt": "ghost.classList.add(\"drag-ghost\");"
-        },
-        {
-          "file": "tests/.tmp-tag-search-bound/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 6049,
-          "excerpt": "ghost.classList.add(\"drag-ghost\");"
-        },
-        {
-          "file": "tests/.tmp-tag-search-bound/tests_fixtures_tagSearchBoundHarness.js.cjs",
-          "line": 2403,
-          "excerpt": "ghost.classList.add(\"drag-ghost\");"
-        },
-        {
-          "file": "tests/.tmp-tag-search-bound-2/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 6049,
-          "excerpt": "ghost.classList.add(\"drag-ghost\");"
-        },
-        {
-          "file": "tests/.tmp-tag-search-bound-2/tests_fixtures_tagSearchBoundHarness.js.cjs",
-          "line": 2403,
-          "excerpt": "ghost.classList.add(\"drag-ghost\");"
-        },
-        {
-          "file": "tests/.tmp-tag-search-full/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 6123,
           "excerpt": "ghost.classList.add(\"drag-ghost\");"
         }
       ],
@@ -2946,36 +2426,6 @@
           "file": "src/ui/components/tag-search/tagDrag.js",
           "line": 63,
           "excerpt": "container.classList.remove(\"drag-target\");"
-        },
-        {
-          "file": "tests/.tmp-modal-css-verify/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 5922,
-          "excerpt": "container.classList.add(\"drag-target\");"
-        },
-        {
-          "file": "tests/.tmp-modal-css-verify/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 5930,
-          "excerpt": "container.classList.remove(\"drag-target\");"
-        },
-        {
-          "file": "tests/.tmp-modal-css-verify/tests_fixtures_tagSearchBoundHarness.js.cjs",
-          "line": 2246,
-          "excerpt": "container.classList.add(\"drag-target\");"
-        },
-        {
-          "file": "tests/.tmp-modal-css-verify/tests_fixtures_tagSearchBoundHarness.js.cjs",
-          "line": 2254,
-          "excerpt": "container.classList.remove(\"drag-target\");"
-        },
-        {
-          "file": "tests/.tmp-tag-search-bound/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 5848,
-          "excerpt": "container.classList.add(\"drag-target\");"
-        },
-        {
-          "file": "tests/.tmp-tag-search-bound/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 5856,
-          "excerpt": "container.classList.remove(\"drag-target\");"
         }
       ],
       "protectedReason": null
@@ -2998,31 +2448,6 @@
           "file": "src/ui/components/tag-search/tagDrag.js",
           "line": 340,
           "excerpt": "item.classList.add(\"dragging\");"
-        },
-        {
-          "file": "tests/.tmp-modal-css-verify/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 6098,
-          "excerpt": "item.classList.add(\"dragging\");"
-        },
-        {
-          "file": "tests/.tmp-modal-css-verify/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 6105,
-          "excerpt": "item.classList.remove(\"dragging\");"
-        },
-        {
-          "file": "tests/.tmp-modal-css-verify/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 6148,
-          "excerpt": "item.classList.add(\"dragging\");"
-        },
-        {
-          "file": "tests/.tmp-modal-css-verify/tests_fixtures_tagSearchBoundHarness.js.cjs",
-          "line": 2432,
-          "excerpt": "item.classList.add(\"dragging\");"
-        },
-        {
-          "file": "tests/.tmp-modal-css-verify/tests_fixtures_tagSearchBoundHarness.js.cjs",
-          "line": 2439,
-          "excerpt": "item.classList.remove(\"dragging\");"
         }
       ],
       "protectedReason": null
@@ -3058,7 +2483,7 @@
         },
         {
           "file": "src/ui/components/dialog.js",
-          "line": 129,
+          "line": 135,
           "excerpt": "const error = createEl(\"div\", { className: \"config-dialog-error\" });"
         },
         {
@@ -3105,36 +2530,6 @@
           "file": "src/ui/components/configButton.js",
           "line": 89,
           "excerpt": "button.className = \"f95ue-page-dock-btn\";"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy/src_ui_components_addons_addonDockGroup.js.cjs",
-          "line": 66,
-          "excerpt": "className: \"f95ue-page-dock-btn\","
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy-2/src_ui_components_addons_addonDockGroup.js.cjs",
-          "line": 66,
-          "excerpt": "className: \"f95ue-page-dock-btn\","
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/addons_example-addon_src_app_createExampleAddonApp.js.cjs",
-          "line": 1328,
-          "excerpt": "var dock_default = '<div class=\"f95ue-page-dock-group\" data-role=\"exampleDock\">\\r\\n  <button type=\"button\" class=\"f95ue-page-dock-btn secondary\" data-action=\"open-example\">\\r\\n    Example API\\r\\n  </button>\\r\\n</div>\\r\\n';"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/addons_example-addon_src_app_createExampleAddonApp.js.cjs",
-          "line": 1328,
-          "excerpt": "var dock_default = '<div class=\"f95ue-page-dock-group\" data-role=\"exampleDock\">\\r\\n  <button type=\"button\" class=\"f95ue-page-dock-btn secondary\" data-action=\"open-example\">\\r\\n    Example API\\r\\n  </button>\\r\\n</div>\\r\\n';"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/addons_library-addon_src_app_createLibraryAddonApp.js.cjs",
-          "line": 5809,
-          "excerpt": "var dock_default = '<div class=\"f95ue-page-dock-group\" data-role=\"libraryDock\">\\r\\n  __PRIMARY_BUTTON__\\r\\n  __UPDATE_BUTTON__\\r\\n  <button type=\"button\" class=\"f95ue-page-dock-btn secondary\" data-action=\"open-library\">\\r\\n    Library\\r\\n  </button>\\r\\n</div>\\r\\n';"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/addons_library-addon_src_app_createLibraryAddonApp.js.cjs",
-          "line": 5820,
-          "excerpt": "return `<button type=\"button\" class=\"f95ue-page-dock-btn secondary\" data-action=\"update-thread\" title=\"Update from this thread\">Update</button>`;"
         }
       ],
       "protectedReason": null
@@ -3147,41 +2542,6 @@
           "file": "src/ui/components/addons/addonDockGroup.js",
           "line": 14,
           "excerpt": "className: \"f95ue-page-dock-group\","
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy/src_ui_components_addons_addonDockGroup.js.cjs",
-          "line": 55,
-          "excerpt": "className: \"f95ue-page-dock-group\","
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy-2/src_ui_components_addons_addonDockGroup.js.cjs",
-          "line": 55,
-          "excerpt": "className: \"f95ue-page-dock-group\","
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/addons_example-addon_src_app_createExampleAddonApp.js.cjs",
-          "line": 1328,
-          "excerpt": "var dock_default = '<div class=\"f95ue-page-dock-group\" data-role=\"exampleDock\">\\r\\n  <button type=\"button\" class=\"f95ue-page-dock-btn secondary\" data-action=\"open-example\">\\r\\n    Example API\\r\\n  </button>\\r\\n</div>\\r\\n';"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/addons_example-addon_src_app_createExampleAddonApp.js.cjs",
-          "line": 1328,
-          "excerpt": "var dock_default = '<div class=\"f95ue-page-dock-group\" data-role=\"exampleDock\">\\r\\n  <button type=\"button\" class=\"f95ue-page-dock-btn secondary\" data-action=\"open-example\">\\r\\n    Example API\\r\\n  </button>\\r\\n</div>\\r\\n';"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/addons_library-addon_src_app_createLibraryAddonApp.js.cjs",
-          "line": 5809,
-          "excerpt": "var dock_default = '<div class=\"f95ue-page-dock-group\" data-role=\"libraryDock\">\\r\\n  __PRIMARY_BUTTON__\\r\\n  __UPDATE_BUTTON__\\r\\n  <button type=\"button\" class=\"f95ue-page-dock-btn secondary\" data-action=\"open-library\">\\r\\n    Library\\r\\n  </button>\\r\\n</div>\\r\\n';"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/addons_library-addon_src_app_createLibraryAddonApp.js.cjs",
-          "line": 5809,
-          "excerpt": "var dock_default = '<div class=\"f95ue-page-dock-group\" data-role=\"libraryDock\">\\r\\n  __PRIMARY_BUTTON__\\r\\n  __UPDATE_BUTTON__\\r\\n  <button type=\"button\" class=\"f95ue-page-dock-btn secondary\" data-action=\"open-library\">\\r\\n    Library\\r\\n  </button>\\r\\n</div>\\r\\n';"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/src_core_teardown.js.cjs",
-          "line": 4184,
-          "excerpt": "className: \"f95ue-page-dock-group\","
         }
       ],
       "protectedReason": null
@@ -3192,7 +2552,7 @@
       "callSites": [
         {
           "file": "src/ui/components/featureHealth/index.js",
-          "line": 161,
+          "line": 188,
           "excerpt": "className: \"feature-health-actions\","
         }
       ],
@@ -3204,7 +2564,7 @@
       "callSites": [
         {
           "file": "src/ui/components/featureHealth/index.js",
-          "line": 172,
+          "line": 199,
           "excerpt": "box = createEl(\"div\", { className: \"feature-health-box\", children: [header, content] });"
         }
       ],
@@ -3216,12 +2576,17 @@
       "callSites": [
         {
           "file": "src/ui/components/featureHealth/index.js",
-          "line": 154,
+          "line": 177,
           "excerpt": "const copyBtn = createEl(\"button\", { className: \"feature-health-close\", text: \"Copy\" });"
         },
         {
           "file": "src/ui/components/featureHealth/index.js",
-          "line": 157,
+          "line": 180,
+          "excerpt": "const retryBtn = createEl(\"button\", { className: \"feature-health-close\", text: \"Retry storage\" });"
+        },
+        {
+          "file": "src/ui/components/featureHealth/index.js",
+          "line": 184,
           "excerpt": "const closeBtn = createEl(\"button\", { className: \"feature-health-close\", text: \"Close\" });"
         }
       ],
@@ -3233,7 +2598,7 @@
       "callSites": [
         {
           "file": "src/ui/components/featureHealth/index.js",
-          "line": 171,
+          "line": 198,
           "excerpt": "const content = createEl(\"pre\", { className: \"feature-health-content\" });"
         }
       ],
@@ -3245,7 +2610,7 @@
       "callSites": [
         {
           "file": "src/ui/components/featureHealth/index.js",
-          "line": 165,
+          "line": 192,
           "excerpt": "className: \"feature-health-header\","
         }
       ],
@@ -3262,7 +2627,7 @@
         },
         {
           "file": "src/ui/components/featureHealth/index.js",
-          "line": 167,
+          "line": 194,
           "excerpt": "createEl(\"div\", { className: \"feature-health-title\", text: \"Diagnostic\" }),"
         }
       ],
@@ -3356,22 +2721,22 @@
         },
         {
           "file": "src/ui/components/dialog.js",
-          "line": 39,
+          "line": 45,
           "excerpt": "className: \"modal-btn dialog-cancel\","
         },
         {
           "file": "src/ui/components/dialog.js",
-          "line": 44,
+          "line": 50,
           "excerpt": "className: \"modal-btn dialog-submit\","
         },
         {
           "file": "src/ui/components/dialog.js",
-          "line": 134,
+          "line": 140,
           "excerpt": "className: \"modal-btn dialog-cancel\","
         },
         {
           "file": "src/ui/components/dialog.js",
-          "line": 139,
+          "line": 145,
           "excerpt": "className: \"modal-btn dialog-submit\","
         }
       ],
@@ -3390,6 +2755,16 @@
           "file": "src/ui/assets/ui.html",
           "line": 1,
           "excerpt": "<div class=\"modal-content\">"
+        },
+        {
+          "file": "tests/visual/core-settings-reference.visual.cjs",
+          "line": 19,
+          "excerpt": "<div id=\"tag-config-modal\"><div class=\"modal-content\"><div class=\"settings-shell\">"
+        },
+        {
+          "file": "tests/visual/core-settings-reference.visual.cjs",
+          "line": 19,
+          "excerpt": "<div id=\"tag-config-modal\"><div class=\"modal-content\"><div class=\"settings-shell\">"
         }
       ],
       "protectedReason": null
@@ -3433,7 +2808,7 @@
       "callSites": [
         {
           "file": "src/ui/components/featureHealth/index.js",
-          "line": 24,
+          "line": 45,
           "excerpt": "textarea.className = \"offscreen-copy\";"
         }
       ],
@@ -3462,26 +2837,6 @@
           "file": "src/ui/assets/ui.html",
           "line": 37,
           "excerpt": "<div id=\"settings-nav-pinned-items\" class=\"settings-nav-pinned-items\"></div>"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/addons_library-addon_src_app_createLibraryAddonApp.js.cjs",
-          "line": 2935,
-          "excerpt": "var manager_default2 = '<div class=\"f95ue-library-manager-root\">\\n  <div\\n    class=\"f95ue-library-manager-window\"\\n    role=\"document\"\\n    aria-label=\"Library Manager\"\\n    tabindex=\"-1\"\\n  >\\n    <div class=\"f95ue-library-header\">\\n      <div class=\"f95ue-library-title\">Library Manager</div>\\n      <button type=\"button\" data-action=\"close\">Close</button>\\n    </div>\\n\\n    <div class=\"f95ue-library-toolbar\">\\n      <div class=\"f95ue-library-search-wrap\">\\n        <input type=\"search\" placeholder=\"Search title, id, tags...\" data-field=\"search\" />\\n        <span\\n          class=\"f95ue-library-search-help\"\\n          title=\"Advanced search: tag:ntr status:playing score>=8 pinned has:note id:123\"\\n          >?</span\\n        >\\n      </div>\\n      <select data-field=\"status\">\\n        <option value=\"all\">All Status</option>\\n        <option value=\"saved\">saved</option>\\n        <option value=\"playing\">playing</option>\\n        <option value=\"completed\">completed</option>\\n        <option value=\"dropped\">dropped</option>\\n      </select>\\n      <select data-field=\"sort\">\\n        <option value=\"updatedAt:desc\">Updated (Newest)</option>\\n        <option value=\"updatedAt:asc\">Updated (Oldest)</option>\\n          <option value=\"title:asc\">Title (A-Z)</option>\\n          <option value=\"rating:desc\">My Rating (Highest)</option>\\n          <option value=\"rating:asc\">My Rating (Lowest)</option>\\n        <option value=\"title:desc\">Title (Z-A)</option>\\n      </select>\\n      <select data-field=\"pageSize\" title=\"Rows per page\">\\n        <option value=\"25\">25 / page</option>\\n        <option value=\"50\" selected>50 / page</option>\\n        <option value=\"100\">100 / page</option>\\n        <option value=\"200\">200 / page</option>\\n      </select>\\n    </div>\\n\\n    <div class=\"f95ue-library-actions\">\\n      <label class=\"bulk-select-all\"\\n        ><input type=\"checkbox\" data-action=\"toggle-all\" /> All</label\\n      >\\n      <span data-role=\"selectedInfo\">0 selected</span>\\n      <button type=\"button\" data-action=\"check-selected-updates\">Check for updates</button>\\n      <details class=\"f95ue-library-more-actions f95ue-library-bulk-actions\">\\n        <summary>Bulk actions</summary>\\n        <div class=\"f95ue-library-more-grid\">\\n          <label>\\n            <span>Apply to selected records</span>\\n            <select data-field=\"bulkAction\">\\n              <option value=\"status:saved\">Status: saved</option>\\n              <option value=\"status:backlog\">Status: backlog</option>\\n              <option value=\"status:playing\">Status: playing</option>\\n              <option value=\"status:paused\">Status: paused</option>\\n              <option value=\"status:completed\">Status: completed</option>\\n              <option value=\"status:dropped\">Status: dropped</option>\\n              <option value=\"pin\">Pin selected</option>\\n              <option value=\"unpin\">Unpin selected</option>\\n              <option value=\"auto-enable\">Enable auto update</option>\\n              <option value=\"auto-disable\">Disable auto update</option>\\n              <option value=\"remove\">Remove selected</option>\\n              <option value=\"clear\">Clear selection</option>\\n            </select>\\n          </label>\\n          <button type=\"button\" data-action=\"bulk-apply\">Apply</button>\\n        </div>\\n      </details>\\n      <button type=\"button\" data-action=\"open-auto-update\">Auto update</button>\\n      <button type=\"button\" data-action=\"open-updates\">\\n        Updates <span data-role=\"updatesCount\">0</span>\\n      </button>\\n      <div\\n        id=\"f95ue-library-rows-status\"\\n        class=\"f95ue-library-status-line f95ue-library-toolbar-status\"\\n        role=\"status\"\\n        aria-live=\"polite\"\\n      ></div>\\n      <button type=\"button\" data-action=\"cancel-manual-check\" data-role=\"cancelManualCheck\" hidden>\\n        Cancel check\\n      </button>\\n      <details class=\"f95ue-library-more-actions f95ue-library-export-actions\">\\n        <summary>Export</summary>\\n        <div class=\"f95ue-library-more-grid\">\\n          <label>\\n            <span>Records to export</span>\\n            <select data-field=\"exportScope\">\\n              <option value=\"all\">All records</option>\\n              <option value=\"filtered\">Filtered records</option>\\n              <option value=\"selected\">Selected records</option>\\n            </select>\\n          </label>\\n          <button type=\"button\" data-action=\"export\">Export JSON</button>\\n          <label>\\n            <span>Import policy</span>\\n            <select data-field=\"conflictPolicy\">\\n              <option value=\"newer\">Newer Wins</option>\\n              <option value=\"replace\">Replace Existing</option>\\n              <option value=\"skip\">Skip Existing</option>\\n            </select>\\n          </label>\\n          <button type=\"button\" class=\"ghost\" data-action=\"import\">Import JSON</button>\\n        </div>\\n      </details>\\n      <input type=\"file\" data-field=\"importFile\" accept=\"application/json,.json\" hidden />\\n    </div>\\n\\n    <div class=\"f95ue-library-layout\">\\n      <div class=\"f95ue-library-list-panel\">\\n        <div class=\"f95ue-library-table-wrap\">\\n          <table>\\n            <thead>\\n              <tr>\\n                <th class=\"col-check\"></th>\\n                <th>Title</th>\\n                <th>Status</th>\\n                  <th>My Rating</th>\\n                <th>Updated</th>\\n                <th>Prefixes</th>\\n                <th>Version</th>\\n                <th>Developer</th>\\n                <th>Tags</th>\\n                <th>Note</th>\\n                <th>Action</th>\\n              </tr>\\n            </thead>\\n            <tbody data-role=\"rows\"></tbody>\\n          </table>\\n        </div>\\n      </div>\\n    </div>\\n    <div class=\"f95ue-library-footer\">\\n      <button type=\"button\" data-action=\"prev\">Prev</button>\\n      <span data-role=\"pageInfo\">Page 1</span>\\n      <button type=\"button\" data-action=\"next\">Next</button>\\n    </div>\\n  </div>\\n</div>\\n';"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/addons_library-addon_src_ui_manager_managerApp.js.cjs",
-          "line": 30,
-          "excerpt": "var manager_default2 = '<div class=\"f95ue-library-manager-root\">\\n  <div\\n    class=\"f95ue-library-manager-window\"\\n    role=\"document\"\\n    aria-label=\"Library Manager\"\\n    tabindex=\"-1\"\\n  >\\n    <div class=\"f95ue-library-header\">\\n      <div class=\"f95ue-library-title\">Library Manager</div>\\n      <button type=\"button\" data-action=\"close\">Close</button>\\n    </div>\\n\\n    <div class=\"f95ue-library-toolbar\">\\n      <div class=\"f95ue-library-search-wrap\">\\n        <input type=\"search\" placeholder=\"Search title, id, tags...\" data-field=\"search\" />\\n        <span\\n          class=\"f95ue-library-search-help\"\\n          title=\"Advanced search: tag:ntr status:playing score>=8 pinned has:note id:123\"\\n          >?</span\\n        >\\n      </div>\\n      <select data-field=\"status\">\\n        <option value=\"all\">All Status</option>\\n        <option value=\"saved\">saved</option>\\n        <option value=\"playing\">playing</option>\\n        <option value=\"completed\">completed</option>\\n        <option value=\"dropped\">dropped</option>\\n      </select>\\n      <select data-field=\"sort\">\\n        <option value=\"updatedAt:desc\">Updated (Newest)</option>\\n        <option value=\"updatedAt:asc\">Updated (Oldest)</option>\\n          <option value=\"title:asc\">Title (A-Z)</option>\\n          <option value=\"rating:desc\">My Rating (Highest)</option>\\n          <option value=\"rating:asc\">My Rating (Lowest)</option>\\n        <option value=\"title:desc\">Title (Z-A)</option>\\n      </select>\\n      <select data-field=\"pageSize\" title=\"Rows per page\">\\n        <option value=\"25\">25 / page</option>\\n        <option value=\"50\" selected>50 / page</option>\\n        <option value=\"100\">100 / page</option>\\n        <option value=\"200\">200 / page</option>\\n      </select>\\n    </div>\\n\\n    <div class=\"f95ue-library-actions\">\\n      <label class=\"bulk-select-all\"\\n        ><input type=\"checkbox\" data-action=\"toggle-all\" /> All</label\\n      >\\n      <span data-role=\"selectedInfo\">0 selected</span>\\n      <button type=\"button\" data-action=\"check-selected-updates\">Check for updates</button>\\n      <details class=\"f95ue-library-more-actions f95ue-library-bulk-actions\">\\n        <summary>Bulk actions</summary>\\n        <div class=\"f95ue-library-more-grid\">\\n          <label>\\n            <span>Apply to selected records</span>\\n            <select data-field=\"bulkAction\">\\n              <option value=\"status:saved\">Status: saved</option>\\n              <option value=\"status:backlog\">Status: backlog</option>\\n              <option value=\"status:playing\">Status: playing</option>\\n              <option value=\"status:paused\">Status: paused</option>\\n              <option value=\"status:completed\">Status: completed</option>\\n              <option value=\"status:dropped\">Status: dropped</option>\\n              <option value=\"pin\">Pin selected</option>\\n              <option value=\"unpin\">Unpin selected</option>\\n              <option value=\"auto-enable\">Enable auto update</option>\\n              <option value=\"auto-disable\">Disable auto update</option>\\n              <option value=\"remove\">Remove selected</option>\\n              <option value=\"clear\">Clear selection</option>\\n            </select>\\n          </label>\\n          <button type=\"button\" data-action=\"bulk-apply\">Apply</button>\\n        </div>\\n      </details>\\n      <button type=\"button\" data-action=\"open-auto-update\">Auto update</button>\\n      <button type=\"button\" data-action=\"open-updates\">\\n        Updates <span data-role=\"updatesCount\">0</span>\\n      </button>\\n      <div\\n        id=\"f95ue-library-rows-status\"\\n        class=\"f95ue-library-status-line f95ue-library-toolbar-status\"\\n        role=\"status\"\\n        aria-live=\"polite\"\\n      ></div>\\n      <button type=\"button\" data-action=\"cancel-manual-check\" data-role=\"cancelManualCheck\" hidden>\\n        Cancel check\\n      </button>\\n      <details class=\"f95ue-library-more-actions f95ue-library-export-actions\">\\n        <summary>Export</summary>\\n        <div class=\"f95ue-library-more-grid\">\\n          <label>\\n            <span>Records to export</span>\\n            <select data-field=\"exportScope\">\\n              <option value=\"all\">All records</option>\\n              <option value=\"filtered\">Filtered records</option>\\n              <option value=\"selected\">Selected records</option>\\n            </select>\\n          </label>\\n          <button type=\"button\" data-action=\"export\">Export JSON</button>\\n          <label>\\n            <span>Import policy</span>\\n            <select data-field=\"conflictPolicy\">\\n              <option value=\"newer\">Newer Wins</option>\\n              <option value=\"replace\">Replace Existing</option>\\n              <option value=\"skip\">Skip Existing</option>\\n            </select>\\n          </label>\\n          <button type=\"button\" class=\"ghost\" data-action=\"import\">Import JSON</button>\\n        </div>\\n      </details>\\n      <input type=\"file\" data-field=\"importFile\" accept=\"application/json,.json\" hidden />\\n    </div>\\n\\n    <div class=\"f95ue-library-layout\">\\n      <div class=\"f95ue-library-list-panel\">\\n        <div class=\"f95ue-library-table-wrap\">\\n          <table>\\n            <thead>\\n              <tr>\\n                <th class=\"col-check\"></th>\\n                <th>Title</th>\\n                <th>Status</th>\\n                  <th>My Rating</th>\\n                <th>Updated</th>\\n                <th>Prefixes</th>\\n                <th>Version</th>\\n                <th>Developer</th>\\n                <th>Tags</th>\\n                <th>Note</th>\\n                <th>Action</th>\\n              </tr>\\n            </thead>\\n            <tbody data-role=\"rows\"></tbody>\\n          </table>\\n        </div>\\n      </div>\\n    </div>\\n    <div class=\"f95ue-library-footer\">\\n      <button type=\"button\" data-action=\"prev\">Prev</button>\\n      <span data-role=\"pageInfo\">Page 1</span>\\n      <button type=\"button\" data-action=\"next\">Next</button>\\n    </div>\\n  </div>\\n</div>\\n';"
-        },
-        {
-          "file": "tests/.tmp-download-clicks/addons_library-addon_src_app_createLibraryAddonApp.js.cjs",
-          "line": 2935,
-          "excerpt": "var manager_default2 = '<div class=\"f95ue-library-manager-root\">\\n  <div\\n    class=\"f95ue-library-manager-window\"\\n    role=\"document\"\\n    aria-label=\"Library Manager\"\\n    tabindex=\"-1\"\\n  >\\n    <div class=\"f95ue-library-header\">\\n      <div class=\"f95ue-library-title\">Library Manager</div>\\n      <button type=\"button\" data-action=\"close\">Close</button>\\n    </div>\\n\\n    <div class=\"f95ue-library-toolbar\">\\n      <div class=\"f95ue-library-search-wrap\">\\n        <input type=\"search\" placeholder=\"Search title, id, tags...\" data-field=\"search\" />\\n        <span\\n          class=\"f95ue-library-search-help\"\\n          title=\"Advanced search: tag:ntr status:playing score>=8 pinned has:note id:123\"\\n          >?</span\\n        >\\n      </div>\\n      <select data-field=\"status\">\\n        <option value=\"all\">All Status</option>\\n        <option value=\"saved\">saved</option>\\n        <option value=\"playing\">playing</option>\\n        <option value=\"completed\">completed</option>\\n        <option value=\"dropped\">dropped</option>\\n      </select>\\n      <select data-field=\"sort\">\\n        <option value=\"updatedAt:desc\">Updated (Newest)</option>\\n        <option value=\"updatedAt:asc\">Updated (Oldest)</option>\\n          <option value=\"title:asc\">Title (A-Z)</option>\\n          <option value=\"rating:desc\">My Rating (Highest)</option>\\n          <option value=\"rating:asc\">My Rating (Lowest)</option>\\n        <option value=\"title:desc\">Title (Z-A)</option>\\n      </select>\\n      <select data-field=\"pageSize\" title=\"Rows per page\">\\n        <option value=\"25\">25 / page</option>\\n        <option value=\"50\" selected>50 / page</option>\\n        <option value=\"100\">100 / page</option>\\n        <option value=\"200\">200 / page</option>\\n      </select>\\n    </div>\\n\\n    <div class=\"f95ue-library-actions\">\\n      <label class=\"bulk-select-all\"\\n        ><input type=\"checkbox\" data-action=\"toggle-all\" /> All</label\\n      >\\n      <span data-role=\"selectedInfo\">0 selected</span>\\n      <button type=\"button\" data-action=\"check-selected-updates\">Check for updates</button>\\n      <details class=\"f95ue-library-more-actions f95ue-library-bulk-actions\">\\n        <summary>Bulk actions</summary>\\n        <div class=\"f95ue-library-more-grid\">\\n          <label>\\n            <span>Apply to selected records</span>\\n            <select data-field=\"bulkAction\">\\n              <option value=\"status:saved\">Status: saved</option>\\n              <option value=\"status:backlog\">Status: backlog</option>\\n              <option value=\"status:playing\">Status: playing</option>\\n              <option value=\"status:paused\">Status: paused</option>\\n              <option value=\"status:completed\">Status: completed</option>\\n              <option value=\"status:dropped\">Status: dropped</option>\\n              <option value=\"pin\">Pin selected</option>\\n              <option value=\"unpin\">Unpin selected</option>\\n              <option value=\"auto-enable\">Enable auto update</option>\\n              <option value=\"auto-disable\">Disable auto update</option>\\n              <option value=\"remove\">Remove selected</option>\\n              <option value=\"clear\">Clear selection</option>\\n            </select>\\n          </label>\\n          <button type=\"button\" data-action=\"bulk-apply\">Apply</button>\\n        </div>\\n      </details>\\n      <button type=\"button\" data-action=\"open-auto-update\">Auto update</button>\\n      <button type=\"button\" data-action=\"open-updates\">\\n        Updates <span data-role=\"updatesCount\">0</span>\\n      </button>\\n      <div\\n        id=\"f95ue-library-rows-status\"\\n        class=\"f95ue-library-status-line f95ue-library-toolbar-status\"\\n        role=\"status\"\\n        aria-live=\"polite\"\\n      ></div>\\n      <button type=\"button\" data-action=\"cancel-manual-check\" data-role=\"cancelManualCheck\" hidden>\\n        Cancel check\\n      </button>\\n      <details class=\"f95ue-library-more-actions f95ue-library-export-actions\">\\n        <summary>Export</summary>\\n        <div class=\"f95ue-library-more-grid\">\\n          <label>\\n            <span>Records to export</span>\\n            <select data-field=\"exportScope\">\\n              <option value=\"all\">All records</option>\\n              <option value=\"filtered\">Filtered records</option>\\n              <option value=\"selected\">Selected records</option>\\n            </select>\\n          </label>\\n          <button type=\"button\" data-action=\"export\">Export JSON</button>\\n          <label>\\n            <span>Import policy</span>\\n            <select data-field=\"conflictPolicy\">\\n              <option value=\"newer\">Newer Wins</option>\\n              <option value=\"replace\">Replace Existing</option>\\n              <option value=\"skip\">Skip Existing</option>\\n            </select>\\n          </label>\\n          <button type=\"button\" class=\"ghost\" data-action=\"import\">Import JSON</button>\\n        </div>\\n      </details>\\n      <input type=\"file\" data-field=\"importFile\" accept=\"application/json,.json\" hidden />\\n    </div>\\n\\n    <div class=\"f95ue-library-layout\">\\n      <div class=\"f95ue-library-list-panel\">\\n        <div class=\"f95ue-library-table-wrap\">\\n          <table>\\n            <thead>\\n              <tr>\\n                <th class=\"col-check\"></th>\\n                <th>Title</th>\\n                <th>Status</th>\\n                  <th>My Rating</th>\\n                <th>Updated</th>\\n                <th>Prefixes</th>\\n                <th>Version</th>\\n                <th>Developer</th>\\n                <th>Tags</th>\\n                <th>Note</th>\\n                <th>Action</th>\\n              </tr>\\n            </thead>\\n            <tbody data-role=\"rows\"></tbody>\\n          </table>\\n        </div>\\n      </div>\\n    </div>\\n    <div class=\"f95ue-library-footer\">\\n      <button type=\"button\" data-action=\"prev\">Prev</button>\\n      <span data-role=\"pageInfo\">Page 1</span>\\n      <button type=\"button\" data-action=\"next\">Next</button>\\n    </div>\\n  </div>\\n</div>\\n';"
-        },
-        {
-          "file": "tests/.tmp-download-clicks/addons_library-addon_src_ui_manager_managerApp.js.cjs",
-          "line": 30,
-          "excerpt": "var manager_default2 = '<div class=\"f95ue-library-manager-root\">\\n  <div\\n    class=\"f95ue-library-manager-window\"\\n    role=\"document\"\\n    aria-label=\"Library Manager\"\\n    tabindex=\"-1\"\\n  >\\n    <div class=\"f95ue-library-header\">\\n      <div class=\"f95ue-library-title\">Library Manager</div>\\n      <button type=\"button\" data-action=\"close\">Close</button>\\n    </div>\\n\\n    <div class=\"f95ue-library-toolbar\">\\n      <div class=\"f95ue-library-search-wrap\">\\n        <input type=\"search\" placeholder=\"Search title, id, tags...\" data-field=\"search\" />\\n        <span\\n          class=\"f95ue-library-search-help\"\\n          title=\"Advanced search: tag:ntr status:playing score>=8 pinned has:note id:123\"\\n          >?</span\\n        >\\n      </div>\\n      <select data-field=\"status\">\\n        <option value=\"all\">All Status</option>\\n        <option value=\"saved\">saved</option>\\n        <option value=\"playing\">playing</option>\\n        <option value=\"completed\">completed</option>\\n        <option value=\"dropped\">dropped</option>\\n      </select>\\n      <select data-field=\"sort\">\\n        <option value=\"updatedAt:desc\">Updated (Newest)</option>\\n        <option value=\"updatedAt:asc\">Updated (Oldest)</option>\\n          <option value=\"title:asc\">Title (A-Z)</option>\\n          <option value=\"rating:desc\">My Rating (Highest)</option>\\n          <option value=\"rating:asc\">My Rating (Lowest)</option>\\n        <option value=\"title:desc\">Title (Z-A)</option>\\n      </select>\\n      <select data-field=\"pageSize\" title=\"Rows per page\">\\n        <option value=\"25\">25 / page</option>\\n        <option value=\"50\" selected>50 / page</option>\\n        <option value=\"100\">100 / page</option>\\n        <option value=\"200\">200 / page</option>\\n      </select>\\n    </div>\\n\\n    <div class=\"f95ue-library-actions\">\\n      <label class=\"bulk-select-all\"\\n        ><input type=\"checkbox\" data-action=\"toggle-all\" /> All</label\\n      >\\n      <span data-role=\"selectedInfo\">0 selected</span>\\n      <button type=\"button\" data-action=\"check-selected-updates\">Check for updates</button>\\n      <details class=\"f95ue-library-more-actions f95ue-library-bulk-actions\">\\n        <summary>Bulk actions</summary>\\n        <div class=\"f95ue-library-more-grid\">\\n          <label>\\n            <span>Apply to selected records</span>\\n            <select data-field=\"bulkAction\">\\n              <option value=\"status:saved\">Status: saved</option>\\n              <option value=\"status:backlog\">Status: backlog</option>\\n              <option value=\"status:playing\">Status: playing</option>\\n              <option value=\"status:paused\">Status: paused</option>\\n              <option value=\"status:completed\">Status: completed</option>\\n              <option value=\"status:dropped\">Status: dropped</option>\\n              <option value=\"pin\">Pin selected</option>\\n              <option value=\"unpin\">Unpin selected</option>\\n              <option value=\"auto-enable\">Enable auto update</option>\\n              <option value=\"auto-disable\">Disable auto update</option>\\n              <option value=\"remove\">Remove selected</option>\\n              <option value=\"clear\">Clear selection</option>\\n            </select>\\n          </label>\\n          <button type=\"button\" data-action=\"bulk-apply\">Apply</button>\\n        </div>\\n      </details>\\n      <button type=\"button\" data-action=\"open-auto-update\">Auto update</button>\\n      <button type=\"button\" data-action=\"open-updates\">\\n        Updates <span data-role=\"updatesCount\">0</span>\\n      </button>\\n      <div\\n        id=\"f95ue-library-rows-status\"\\n        class=\"f95ue-library-status-line f95ue-library-toolbar-status\"\\n        role=\"status\"\\n        aria-live=\"polite\"\\n      ></div>\\n      <button type=\"button\" data-action=\"cancel-manual-check\" data-role=\"cancelManualCheck\" hidden>\\n        Cancel check\\n      </button>\\n      <details class=\"f95ue-library-more-actions f95ue-library-export-actions\">\\n        <summary>Export</summary>\\n        <div class=\"f95ue-library-more-grid\">\\n          <label>\\n            <span>Records to export</span>\\n            <select data-field=\"exportScope\">\\n              <option value=\"all\">All records</option>\\n              <option value=\"filtered\">Filtered records</option>\\n              <option value=\"selected\">Selected records</option>\\n            </select>\\n          </label>\\n          <button type=\"button\" data-action=\"export\">Export JSON</button>\\n          <label>\\n            <span>Import policy</span>\\n            <select data-field=\"conflictPolicy\">\\n              <option value=\"newer\">Newer Wins</option>\\n              <option value=\"replace\">Replace Existing</option>\\n              <option value=\"skip\">Skip Existing</option>\\n            </select>\\n          </label>\\n          <button type=\"button\" class=\"ghost\" data-action=\"import\">Import JSON</button>\\n        </div>\\n      </details>\\n      <input type=\"file\" data-field=\"importFile\" accept=\"application/json,.json\" hidden />\\n    </div>\\n\\n    <div class=\"f95ue-library-layout\">\\n      <div class=\"f95ue-library-list-panel\">\\n        <div class=\"f95ue-library-table-wrap\">\\n          <table>\\n            <thead>\\n              <tr>\\n                <th class=\"col-check\"></th>\\n                <th>Title</th>\\n                <th>Status</th>\\n                  <th>My Rating</th>\\n                <th>Updated</th>\\n                <th>Prefixes</th>\\n                <th>Version</th>\\n                <th>Developer</th>\\n                <th>Tags</th>\\n                <th>Note</th>\\n                <th>Action</th>\\n              </tr>\\n            </thead>\\n            <tbody data-role=\"rows\"></tbody>\\n          </table>\\n        </div>\\n      </div>\\n    </div>\\n    <div class=\"f95ue-library-footer\">\\n      <button type=\"button\" data-action=\"prev\">Prev</button>\\n      <span data-role=\"pageInfo\">Page 1</span>\\n      <button type=\"button\" data-action=\"next\">Next</button>\\n    </div>\\n  </div>\\n</div>\\n';"
         }
       ],
       "protectedReason": null
@@ -3526,39 +2881,9 @@
           "excerpt": "button.classList.add(\"saved\");"
         },
         {
-          "file": "tests/.tmp-config-catalog-copy/src_ui_components_addons_addonDockGroup.js.cjs",
-          "line": 78,
-          "excerpt": "button.classList.add(\"saved\");"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy-2/src_ui_components_addons_addonDockGroup.js.cjs",
-          "line": 78,
-          "excerpt": "button.classList.add(\"saved\");"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/addons_latest-filters-addon_src_app_createLatestFiltersApp.js.cjs",
-          "line": 857,
-          "excerpt": "var dialog_default = '<div class=\"f95ue-lf-dialog\" role=\"dialog\" aria-modal=\"true\" aria-label=\"Saved Filters\">\\r\\n  <div class=\"f95ue-lf-popover-header\">\\r\\n    <div class=\"f95ue-lf-popover-title\">Saved Filters</div>\\r\\n    <button type=\"button\" class=\"f95ue-lf-close\" data-action=\"close-panel\" aria-label=\"Close\">\\r\\n      &#x2715;\\r\\n    </button>\\r\\n  </div>\\r\\n  <div class=\"f95ue-lf-current\" data-role=\"current\"></div>\\r\\n  <div class=\"f95ue-lf-save-row\">\\r\\n    <input type=\"text\" data-role=\"save-name\" placeholder=\"Preset name\" maxlength=\"80\" />\\r\\n    <button type=\"button\" class=\"f95ue-lf-btn primary\" data-action=\"save-current\">\\r\\n      Save Current\\r\\n    </button>\\r\\n  </div>\\r\\n  <div class=\"f95ue-lf-toolbar\">\\r\\n    <input type=\"search\" data-role=\"search\" placeholder=\"Filter saved presets\" value=\"\" />\\r\\n  </div>\\r\\n  <div class=\"f95ue-lf-results\" data-role=\"results\"></div>\\r\\n</div>\\r\\n';"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/addons_latest-filters-addon_src_app_createLatestFiltersApp.js.cjs",
-          "line": 952,
-          "excerpt": "return `<div class=\"${NS}-empty\">No saved filters match the current search.</div>`;"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/addons_latest-filters-addon_src_ui_renderer.js.cjs",
-          "line": 47,
-          "excerpt": "var dialog_default = '<div class=\"f95ue-lf-dialog\" role=\"dialog\" aria-modal=\"true\" aria-label=\"Saved Filters\">\\r\\n  <div class=\"f95ue-lf-popover-header\">\\r\\n    <div class=\"f95ue-lf-popover-title\">Saved Filters</div>\\r\\n    <button type=\"button\" class=\"f95ue-lf-close\" data-action=\"close-panel\" aria-label=\"Close\">\\r\\n      &#x2715;\\r\\n    </button>\\r\\n  </div>\\r\\n  <div class=\"f95ue-lf-current\" data-role=\"current\"></div>\\r\\n  <div class=\"f95ue-lf-save-row\">\\r\\n    <input type=\"text\" data-role=\"save-name\" placeholder=\"Preset name\" maxlength=\"80\" />\\r\\n    <button type=\"button\" class=\"f95ue-lf-btn primary\" data-action=\"save-current\">\\r\\n      Save Current\\r\\n    </button>\\r\\n  </div>\\r\\n  <div class=\"f95ue-lf-toolbar\">\\r\\n    <input type=\"search\" data-role=\"search\" placeholder=\"Filter saved presets\" value=\"\" />\\r\\n  </div>\\r\\n  <div class=\"f95ue-lf-results\" data-role=\"results\"></div>\\r\\n</div>\\r\\n';"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/addons_latest-filters-addon_src_ui_renderer.js.cjs",
-          "line": 142,
-          "excerpt": "return `<div class=\"${NS}-empty\">No saved filters match the current search.</div>`;"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/addons_library-addon_src_app_createLibraryAddonApp.js.cjs",
-          "line": 2935,
-          "excerpt": "var manager_default2 = '<div class=\"f95ue-library-manager-root\">\\n  <div\\n    class=\"f95ue-library-manager-window\"\\n    role=\"document\"\\n    aria-label=\"Library Manager\"\\n    tabindex=\"-1\"\\n  >\\n    <div class=\"f95ue-library-header\">\\n      <div class=\"f95ue-library-title\">Library Manager</div>\\n      <button type=\"button\" data-action=\"close\">Close</button>\\n    </div>\\n\\n    <div class=\"f95ue-library-toolbar\">\\n      <div class=\"f95ue-library-search-wrap\">\\n        <input type=\"search\" placeholder=\"Search title, id, tags...\" data-field=\"search\" />\\n        <span\\n          class=\"f95ue-library-search-help\"\\n          title=\"Advanced search: tag:ntr status:playing score>=8 pinned has:note id:123\"\\n          >?</span\\n        >\\n      </div>\\n      <select data-field=\"status\">\\n        <option value=\"all\">All Status</option>\\n        <option value=\"saved\">saved</option>\\n        <option value=\"playing\">playing</option>\\n        <option value=\"completed\">completed</option>\\n        <option value=\"dropped\">dropped</option>\\n      </select>\\n      <select data-field=\"sort\">\\n        <option value=\"updatedAt:desc\">Updated (Newest)</option>\\n        <option value=\"updatedAt:asc\">Updated (Oldest)</option>\\n          <option value=\"title:asc\">Title (A-Z)</option>\\n          <option value=\"rating:desc\">My Rating (Highest)</option>\\n          <option value=\"rating:asc\">My Rating (Lowest)</option>\\n        <option value=\"title:desc\">Title (Z-A)</option>\\n      </select>\\n      <select data-field=\"pageSize\" title=\"Rows per page\">\\n        <option value=\"25\">25 / page</option>\\n        <option value=\"50\" selected>50 / page</option>\\n        <option value=\"100\">100 / page</option>\\n        <option value=\"200\">200 / page</option>\\n      </select>\\n    </div>\\n\\n    <div class=\"f95ue-library-actions\">\\n      <label class=\"bulk-select-all\"\\n        ><input type=\"checkbox\" data-action=\"toggle-all\" /> All</label\\n      >\\n      <span data-role=\"selectedInfo\">0 selected</span>\\n      <button type=\"button\" data-action=\"check-selected-updates\">Check for updates</button>\\n      <details class=\"f95ue-library-more-actions f95ue-library-bulk-actions\">\\n        <summary>Bulk actions</summary>\\n        <div class=\"f95ue-library-more-grid\">\\n          <label>\\n            <span>Apply to selected records</span>\\n            <select data-field=\"bulkAction\">\\n              <option value=\"status:saved\">Status: saved</option>\\n              <option value=\"status:backlog\">Status: backlog</option>\\n              <option value=\"status:playing\">Status: playing</option>\\n              <option value=\"status:paused\">Status: paused</option>\\n              <option value=\"status:completed\">Status: completed</option>\\n              <option value=\"status:dropped\">Status: dropped</option>\\n              <option value=\"pin\">Pin selected</option>\\n              <option value=\"unpin\">Unpin selected</option>\\n              <option value=\"auto-enable\">Enable auto update</option>\\n              <option value=\"auto-disable\">Disable auto update</option>\\n              <option value=\"remove\">Remove selected</option>\\n              <option value=\"clear\">Clear selection</option>\\n            </select>\\n          </label>\\n          <button type=\"button\" data-action=\"bulk-apply\">Apply</button>\\n        </div>\\n      </details>\\n      <button type=\"button\" data-action=\"open-auto-update\">Auto update</button>\\n      <button type=\"button\" data-action=\"open-updates\">\\n        Updates <span data-role=\"updatesCount\">0</span>\\n      </button>\\n      <div\\n        id=\"f95ue-library-rows-status\"\\n        class=\"f95ue-library-status-line f95ue-library-toolbar-status\"\\n        role=\"status\"\\n        aria-live=\"polite\"\\n      ></div>\\n      <button type=\"button\" data-action=\"cancel-manual-check\" data-role=\"cancelManualCheck\" hidden>\\n        Cancel check\\n      </button>\\n      <details class=\"f95ue-library-more-actions f95ue-library-export-actions\">\\n        <summary>Export</summary>\\n        <div class=\"f95ue-library-more-grid\">\\n          <label>\\n            <span>Records to export</span>\\n            <select data-field=\"exportScope\">\\n              <option value=\"all\">All records</option>\\n              <option value=\"filtered\">Filtered records</option>\\n              <option value=\"selected\">Selected records</option>\\n            </select>\\n          </label>\\n          <button type=\"button\" data-action=\"export\">Export JSON</button>\\n          <label>\\n            <span>Import policy</span>\\n            <select data-field=\"conflictPolicy\">\\n              <option value=\"newer\">Newer Wins</option>\\n              <option value=\"replace\">Replace Existing</option>\\n              <option value=\"skip\">Skip Existing</option>\\n            </select>\\n          </label>\\n          <button type=\"button\" class=\"ghost\" data-action=\"import\">Import JSON</button>\\n        </div>\\n      </details>\\n      <input type=\"file\" data-field=\"importFile\" accept=\"application/json,.json\" hidden />\\n    </div>\\n\\n    <div class=\"f95ue-library-layout\">\\n      <div class=\"f95ue-library-list-panel\">\\n        <div class=\"f95ue-library-table-wrap\">\\n          <table>\\n            <thead>\\n              <tr>\\n                <th class=\"col-check\"></th>\\n                <th>Title</th>\\n                <th>Status</th>\\n                  <th>My Rating</th>\\n                <th>Updated</th>\\n                <th>Prefixes</th>\\n                <th>Version</th>\\n                <th>Developer</th>\\n                <th>Tags</th>\\n                <th>Note</th>\\n                <th>Action</th>\\n              </tr>\\n            </thead>\\n            <tbody data-role=\"rows\"></tbody>\\n          </table>\\n        </div>\\n      </div>\\n    </div>\\n    <div class=\"f95ue-library-footer\">\\n      <button type=\"button\" data-action=\"prev\">Prev</button>\\n      <span data-role=\"pageInfo\">Page 1</span>\\n      <button type=\"button\" data-action=\"next\">Next</button>\\n    </div>\\n  </div>\\n</div>\\n';"
+          "file": "tests/concept/latest.min.js",
+          "line": 71,
+          "excerpt": "p.unmask();b(\"#options-panel_item-btns-info\").html('<i class=\"fas fa-check-circle\"></i> Your options have been saved to your account');p.unmask();S&&(S=!1,t())},error:function(c){b(\"#options-panel_item-btns-info\").html('<i class=\"fas fa-exclamation-triangle\"></i> '+U(c,\"Unable to contact server, please try again in a moment\"));p.unmask()}})});$hoverDelayRange=noUiSlider.create(b(\"#options-panel_hover-delay\")[0],{start:0,snap:!0,connect:[!0,!1],keyboardSupport:!1,direction:\"ltr\",range:{min:0,\"10%\":50,"
         }
       ],
       "protectedReason": null
@@ -3571,41 +2896,6 @@
           "file": "src/ui/components/addons/addonDockGroup.js",
           "line": 38,
           "excerpt": "button.classList.add(\"secondary\");"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy/src_ui_components_addons_addonDockGroup.js.cjs",
-          "line": 76,
-          "excerpt": "button.classList.add(\"secondary\");"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy-2/src_ui_components_addons_addonDockGroup.js.cjs",
-          "line": 76,
-          "excerpt": "button.classList.add(\"secondary\");"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/addons_example-addon_src_app_createExampleAddonApp.js.cjs",
-          "line": 620,
-          "excerpt": "<button type=\"button\" class=\"f95ue-example-button secondary\" data-example-action=\"bulk-import-cancel\">"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/addons_example-addon_src_app_createExampleAddonApp.js.cjs",
-          "line": 1328,
-          "excerpt": "var dock_default = '<div class=\"f95ue-page-dock-group\" data-role=\"exampleDock\">\\r\\n  <button type=\"button\" class=\"f95ue-page-dock-btn secondary\" data-action=\"open-example\">\\r\\n    Example API\\r\\n  </button>\\r\\n</div>\\r\\n';"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/addons_example-addon_src_app_createExampleAddonApp.js.cjs",
-          "line": 1409,
-          "excerpt": "<button type=\"button\" class=\"f95ue-example-button secondary\" data-example-action=\"panel-close\">"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/addons_example-addon_src_app_createExampleAddonApp.js.cjs",
-          "line": 620,
-          "excerpt": "<button type=\"button\" class=\"f95ue-example-button secondary\" data-example-action=\"bulk-import-cancel\">"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/addons_example-addon_src_app_createExampleAddonApp.js.cjs",
-          "line": 1328,
-          "excerpt": "var dock_default = '<div class=\"f95ue-page-dock-group\" data-role=\"exampleDock\">\\r\\n  <button type=\"button\" class=\"f95ue-page-dock-btn secondary\" data-action=\"open-example\">\\r\\n    Example API\\r\\n  </button>\\r\\n</div>\\r\\n';"
         }
       ],
       "protectedReason": null
@@ -3622,36 +2912,6 @@
         {
           "file": "src/ui/renderers/createLabel.js",
           "line": 11,
-          "excerpt": "className: \"setting-tooltip-badge\","
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy/src_ui_renderers_renderSetting.js.cjs",
-          "line": 2371,
-          "excerpt": "className: \"setting-tooltip-badge\","
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 2984,
-          "excerpt": "className: \"setting-tooltip-badge\","
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy-2/src_ui_renderers_renderSetting.js.cjs",
-          "line": 2371,
-          "excerpt": "className: \"setting-tooltip-badge\","
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy-2/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 2984,
-          "excerpt": "className: \"setting-tooltip-badge\","
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/src_ui_renderers_renderSetting.js.cjs",
-          "line": 2371,
-          "excerpt": "className: \"setting-tooltip-badge\","
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 2984,
           "excerpt": "className: \"setting-tooltip-badge\","
         }
       ],
@@ -3692,6 +2952,16 @@
           "file": "src/ui/assets/ui.html",
           "line": 41,
           "excerpt": "<button id=\"close-modal\" class=\"modal-btn settings-close-btn\">Close</button>"
+        },
+        {
+          "file": "tests/visual/core-settings-reference.visual.cjs",
+          "line": 23,
+          "excerpt": "<button class=\"modal-btn settings-close-btn\">Close</button>"
+        },
+        {
+          "file": "tests/visual/core-settings-reference.visual.cjs",
+          "line": 23,
+          "excerpt": "<button class=\"modal-btn settings-close-btn\">Close</button>"
         }
       ],
       "protectedReason": null
@@ -3709,6 +2979,16 @@
           "file": "src/ui/assets/ui.html",
           "line": 45,
           "excerpt": "<section class=\"settings-main\" aria-live=\"polite\">"
+        },
+        {
+          "file": "tests/visual/core-settings-reference.visual.cjs",
+          "line": 25,
+          "excerpt": "<section class=\"settings-main\"><div class=\"settings-panel active\">"
+        },
+        {
+          "file": "tests/visual/core-settings-reference.visual.cjs",
+          "line": 25,
+          "excerpt": "<section class=\"settings-main\"><div class=\"settings-panel active\">"
         }
       ],
       "protectedReason": null
@@ -4028,6 +3308,16 @@
           "file": "src/ui/assets/ui.html",
           "line": 2,
           "excerpt": "<div class=\"settings-shell\">"
+        },
+        {
+          "file": "tests/visual/core-settings-reference.visual.cjs",
+          "line": 19,
+          "excerpt": "<div id=\"tag-config-modal\"><div class=\"modal-content\"><div class=\"settings-shell\">"
+        },
+        {
+          "file": "tests/visual/core-settings-reference.visual.cjs",
+          "line": 19,
+          "excerpt": "<div id=\"tag-config-modal\"><div class=\"modal-content\"><div class=\"settings-shell\">"
         }
       ],
       "protectedReason": null
@@ -4065,6 +3355,16 @@
           "file": "src/ui/assets/ui.html",
           "line": 40,
           "excerpt": "<div class=\"settings-sidebar-footer\">"
+        },
+        {
+          "file": "tests/visual/core-settings-reference.visual.cjs",
+          "line": 20,
+          "excerpt": "<aside class=\"settings-sidebar\">"
+        },
+        {
+          "file": "tests/visual/core-settings-reference.visual.cjs",
+          "line": 21,
+          "excerpt": "<div class=\"settings-sidebar-title\">Settings</div>"
         }
       ],
       "protectedReason": null
@@ -4098,6 +3398,16 @@
         {
           "file": "src/ui/assets/ui.html",
           "line": 4,
+          "excerpt": "<div class=\"settings-sidebar-title\">Settings</div>"
+        },
+        {
+          "file": "tests/visual/core-settings-reference.visual.cjs",
+          "line": 21,
+          "excerpt": "<div class=\"settings-sidebar-title\">Settings</div>"
+        },
+        {
+          "file": "tests/visual/core-settings-reference.visual.cjs",
+          "line": 21,
           "excerpt": "<div class=\"settings-sidebar-title\">Settings</div>"
         }
       ],
@@ -4173,26 +3483,6 @@
           "file": "src/ui/settings/panelNavigation.js",
           "line": 29,
           "excerpt": "shell.classList.toggle(\"mobile-show-panel\", Boolean(showPanel));"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy/src_core_featureFactory.js.cjs",
-          "line": 818,
-          "excerpt": "toast.classList.add(\"show\");"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy/src_core_featureFactory.js.cjs",
-          "line": 821,
-          "excerpt": "toast.classList.remove(\"show\");"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy/src_services_prefixService.js.cjs",
-          "line": 944,
-          "excerpt": "toast.classList.add(\"show\");"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy/src_services_prefixService.js.cjs",
-          "line": 947,
-          "excerpt": "toast.classList.remove(\"show\");"
         }
       ],
       "protectedReason": null
@@ -4204,26 +3494,6 @@
         {
           "file": "src/ui/components/tag-search/index.js",
           "line": 79,
-          "excerpt": "actions.className = \"tag-actions\";"
-        },
-        {
-          "file": "tests/.tmp-modal-css-verify/tests_fixtures_tagSearchBoundHarness.js.cjs",
-          "line": 5613,
-          "excerpt": "actions.className = \"tag-actions\";"
-        },
-        {
-          "file": "tests/.tmp-tag-search-bound/tests_fixtures_tagSearchBoundHarness.js.cjs",
-          "line": 2554,
-          "excerpt": "actions.className = \"tag-actions\";"
-        },
-        {
-          "file": "tests/.tmp-tag-search-bound-2/tests_fixtures_tagSearchBoundHarness.js.cjs",
-          "line": 2554,
-          "excerpt": "actions.className = \"tag-actions\";"
-        },
-        {
-          "file": "tests/.tmp-tag-search-full/tests_fixtures_tagSearchBoundHarness.js.cjs",
-          "line": 5613,
           "excerpt": "actions.className = \"tag-actions\";"
         }
       ],
@@ -4237,26 +3507,6 @@
           "file": "src/ui/components/tag-search/index.js",
           "line": 63,
           "excerpt": "btn.className = `tag-btn ${typeClass}`;"
-        },
-        {
-          "file": "tests/.tmp-modal-css-verify/tests_fixtures_tagSearchBoundHarness.js.cjs",
-          "line": 5601,
-          "excerpt": "btn.className = `tag-btn ${typeClass}`;"
-        },
-        {
-          "file": "tests/.tmp-tag-search-bound/tests_fixtures_tagSearchBoundHarness.js.cjs",
-          "line": 2542,
-          "excerpt": "btn.className = `tag-btn ${typeClass}`;"
-        },
-        {
-          "file": "tests/.tmp-tag-search-bound-2/tests_fixtures_tagSearchBoundHarness.js.cjs",
-          "line": 2542,
-          "excerpt": "btn.className = `tag-btn ${typeClass}`;"
-        },
-        {
-          "file": "tests/.tmp-tag-search-full/tests_fixtures_tagSearchBoundHarness.js.cjs",
-          "line": 5601,
-          "excerpt": "btn.className = `tag-btn ${typeClass}`;"
         }
       ],
       "protectedReason": null
@@ -4269,41 +3519,6 @@
           "file": "src/ui/components/tag-search/tagDrag.js",
           "line": 414,
           "excerpt": "const item = createEl(\"div\", { className: `tag-list-item ${itemClass} tag-chip`, mount: sr });"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/addons_latest-filters-addon_src_app_createLatestFiltersApp.js.cjs",
-          "line": 902,
-          "excerpt": "return `<span class=\"${NS}-tag-chip\"${state ? ` data-state=\"${state}\"` : \"\"}${style}>${escapeHtml(label)}</span>`;"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/addons_latest-filters-addon_src_app_createLatestFiltersApp.js.cjs",
-          "line": 902,
-          "excerpt": "return `<span class=\"${NS}-tag-chip\"${state ? ` data-state=\"${state}\"` : \"\"}${style}>${escapeHtml(label)}</span>`;"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/addons_latest-filters-addon_src_ui_renderer.js.cjs",
-          "line": 92,
-          "excerpt": "return `<span class=\"${NS}-tag-chip\"${state ? ` data-state=\"${state}\"` : \"\"}${style}>${escapeHtml(label)}</span>`;"
-        },
-        {
-          "file": "tests/.tmp-config-catalog-full/addons_latest-filters-addon_src_ui_renderer.js.cjs",
-          "line": 92,
-          "excerpt": "return `<span class=\"${NS}-tag-chip\"${state ? ` data-state=\"${state}\"` : \"\"}${style}>${escapeHtml(label)}</span>`;"
-        },
-        {
-          "file": "tests/.tmp-download-clicks/addons_latest-filters-addon_src_app_createLatestFiltersApp.js.cjs",
-          "line": 902,
-          "excerpt": "return `<span class=\"${NS}-tag-chip\"${state ? ` data-state=\"${state}\"` : \"\"}${style}>${escapeHtml(label)}</span>`;"
-        },
-        {
-          "file": "tests/.tmp-download-clicks/addons_latest-filters-addon_src_app_createLatestFiltersApp.js.cjs",
-          "line": 902,
-          "excerpt": "return `<span class=\"${NS}-tag-chip\"${state ? ` data-state=\"${state}\"` : \"\"}${style}>${escapeHtml(label)}</span>`;"
-        },
-        {
-          "file": "tests/.tmp-download-clicks/addons_latest-filters-addon_src_ui_renderer.js.cjs",
-          "line": 92,
-          "excerpt": "return `<span class=\"${NS}-tag-chip\"${state ? ` data-state=\"${state}\"` : \"\"}${style}>${escapeHtml(label)}</span>`;"
         }
       ],
       "protectedReason": null
@@ -4389,41 +3604,6 @@
         {
           "file": "src/ui/components/tag-search/tagDrag.js",
           "line": 414,
-          "excerpt": "const item = createEl(\"div\", { className: `tag-list-item ${itemClass} tag-chip`, mount: sr });"
-        },
-        {
-          "file": "tests/.tmp-modal-css-verify/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 6212,
-          "excerpt": "const item = createEl(\"div\", { className: `tag-list-item ${itemClass} tag-chip`, mount: sr });"
-        },
-        {
-          "file": "tests/.tmp-modal-css-verify/tests_fixtures_tagSearchBoundHarness.js.cjs",
-          "line": 2546,
-          "excerpt": "const item = createEl(\"div\", { className: `tag-list-item ${itemClass} tag-chip`, mount: sr });"
-        },
-        {
-          "file": "tests/.tmp-tag-search-bound/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 6138,
-          "excerpt": "const item = createEl(\"div\", { className: `tag-list-item ${itemClass} tag-chip`, mount: sr });"
-        },
-        {
-          "file": "tests/.tmp-tag-search-bound/tests_fixtures_tagSearchBoundHarness.js.cjs",
-          "line": 2492,
-          "excerpt": "const item = createEl(\"div\", { className: `tag-list-item ${itemClass} tag-chip`, mount: sr });"
-        },
-        {
-          "file": "tests/.tmp-tag-search-bound-2/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 6138,
-          "excerpt": "const item = createEl(\"div\", { className: `tag-list-item ${itemClass} tag-chip`, mount: sr });"
-        },
-        {
-          "file": "tests/.tmp-tag-search-bound-2/tests_fixtures_tagSearchBoundHarness.js.cjs",
-          "line": 2492,
-          "excerpt": "const item = createEl(\"div\", { className: `tag-list-item ${itemClass} tag-chip`, mount: sr });"
-        },
-        {
-          "file": "tests/.tmp-tag-search-full/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 6212,
           "excerpt": "const item = createEl(\"div\", { className: `tag-list-item ${itemClass} tag-chip`, mount: sr });"
         }
       ],
@@ -4511,41 +3691,6 @@
           "file": "src/ui/components/tag-search/tagDrag.js",
           "line": 261,
           "excerpt": "className: `tag-remove-btn ${removeBtnClass}`,"
-        },
-        {
-          "file": "tests/.tmp-modal-css-verify/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 6079,
-          "excerpt": "className: `tag-remove-btn ${removeBtnClass}`,"
-        },
-        {
-          "file": "tests/.tmp-modal-css-verify/tests_fixtures_tagSearchBoundHarness.js.cjs",
-          "line": 2413,
-          "excerpt": "className: `tag-remove-btn ${removeBtnClass}`,"
-        },
-        {
-          "file": "tests/.tmp-tag-search-bound/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 6005,
-          "excerpt": "className: `tag-remove-btn ${removeBtnClass}`,"
-        },
-        {
-          "file": "tests/.tmp-tag-search-bound/tests_fixtures_tagSearchBoundHarness.js.cjs",
-          "line": 2359,
-          "excerpt": "className: `tag-remove-btn ${removeBtnClass}`,"
-        },
-        {
-          "file": "tests/.tmp-tag-search-bound-2/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 6005,
-          "excerpt": "className: `tag-remove-btn ${removeBtnClass}`,"
-        },
-        {
-          "file": "tests/.tmp-tag-search-bound-2/tests_fixtures_tagSearchBoundHarness.js.cjs",
-          "line": 2359,
-          "excerpt": "className: `tag-remove-btn ${removeBtnClass}`,"
-        },
-        {
-          "file": "tests/.tmp-tag-search-full/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 6079,
-          "excerpt": "className: `tag-remove-btn ${removeBtnClass}`,"
         }
       ],
       "protectedReason": null
@@ -4563,36 +3708,6 @@
           "file": "src/ui/components/tag-search/index.js",
           "line": 118,
           "excerpt": "button.className = \"tag-search-load-more\";"
-        },
-        {
-          "file": "tests/.tmp-modal-css-verify/tests_fixtures_tagSearchBoundHarness.js.cjs",
-          "line": 5644,
-          "excerpt": "li.className = \"tag-search-load-more-row\";"
-        },
-        {
-          "file": "tests/.tmp-modal-css-verify/tests_fixtures_tagSearchBoundHarness.js.cjs",
-          "line": 5647,
-          "excerpt": "button.className = \"tag-search-load-more\";"
-        },
-        {
-          "file": "tests/.tmp-tag-search-bound/tests_fixtures_tagSearchBoundHarness.js.cjs",
-          "line": 2585,
-          "excerpt": "li.className = \"tag-search-load-more-row\";"
-        },
-        {
-          "file": "tests/.tmp-tag-search-bound/tests_fixtures_tagSearchBoundHarness.js.cjs",
-          "line": 2588,
-          "excerpt": "button.className = \"tag-search-load-more\";"
-        },
-        {
-          "file": "tests/.tmp-tag-search-bound-2/tests_fixtures_tagSearchBoundHarness.js.cjs",
-          "line": 2585,
-          "excerpt": "li.className = \"tag-search-load-more-row\";"
-        },
-        {
-          "file": "tests/.tmp-tag-search-bound-2/tests_fixtures_tagSearchBoundHarness.js.cjs",
-          "line": 2588,
-          "excerpt": "button.className = \"tag-search-load-more\";"
         }
       ],
       "protectedReason": null
@@ -4604,26 +3719,6 @@
         {
           "file": "src/ui/components/tag-search/index.js",
           "line": 115,
-          "excerpt": "li.className = \"tag-search-load-more-row\";"
-        },
-        {
-          "file": "tests/.tmp-modal-css-verify/tests_fixtures_tagSearchBoundHarness.js.cjs",
-          "line": 5644,
-          "excerpt": "li.className = \"tag-search-load-more-row\";"
-        },
-        {
-          "file": "tests/.tmp-tag-search-bound/tests_fixtures_tagSearchBoundHarness.js.cjs",
-          "line": 2585,
-          "excerpt": "li.className = \"tag-search-load-more-row\";"
-        },
-        {
-          "file": "tests/.tmp-tag-search-bound-2/tests_fixtures_tagSearchBoundHarness.js.cjs",
-          "line": 2585,
-          "excerpt": "li.className = \"tag-search-load-more-row\";"
-        },
-        {
-          "file": "tests/.tmp-tag-search-full/tests_fixtures_tagSearchBoundHarness.js.cjs",
-          "line": 5644,
           "excerpt": "li.className = \"tag-search-load-more-row\";"
         }
       ],
@@ -4671,41 +3766,6 @@
           "file": "src/ui/components/toast.js",
           "line": 47,
           "excerpt": "className: \"toast\","
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy/src_core_featureFactory.js.cjs",
-          "line": 809,
-          "excerpt": "className: \"toast\","
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy/src_services_prefixService.js.cjs",
-          "line": 935,
-          "excerpt": "className: \"toast\","
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy/src_ui_components_toast.js.cjs",
-          "line": 634,
-          "excerpt": "className: \"toast\","
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy/src_ui_renderers_renderSetting.js.cjs",
-          "line": 942,
-          "excerpt": "className: \"toast\","
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy/tests_fixtures_configInteractionHarness.js.cjs",
-          "line": 984,
-          "excerpt": "className: \"toast\","
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy-2/src_core_featureFactory.js.cjs",
-          "line": 809,
-          "excerpt": "className: \"toast\","
-        },
-        {
-          "file": "tests/.tmp-config-catalog-copy-2/src_services_prefixService.js.cjs",
-          "line": 935,
-          "excerpt": "className: \"toast\","
         }
       ],
       "protectedReason": null
@@ -4718,26 +3778,6 @@
           "file": "src/ui/components/tag-search/index.js",
           "line": 55,
           "excerpt": "clearBtn.classList.toggle(\"visible\", hasValue);"
-        },
-        {
-          "file": "tests/.tmp-modal-css-verify/tests_fixtures_tagSearchBoundHarness.js.cjs",
-          "line": 5594,
-          "excerpt": "clearBtn.classList.toggle(\"visible\", hasValue2);"
-        },
-        {
-          "file": "tests/.tmp-tag-search-bound/tests_fixtures_tagSearchBoundHarness.js.cjs",
-          "line": 2535,
-          "excerpt": "clearBtn.classList.toggle(\"visible\", hasValue2);"
-        },
-        {
-          "file": "tests/.tmp-tag-search-bound-2/tests_fixtures_tagSearchBoundHarness.js.cjs",
-          "line": 2535,
-          "excerpt": "clearBtn.classList.toggle(\"visible\", hasValue2);"
-        },
-        {
-          "file": "tests/.tmp-tag-search-full/tests_fixtures_tagSearchBoundHarness.js.cjs",
-          "line": 5594,
-          "excerpt": "clearBtn.classList.toggle(\"visible\", hasValue2);"
         }
       ],
       "protectedReason": null
@@ -4769,53 +3809,10 @@
     "src/ui/settings/modalLifecycle.js",
     "src/ui/settings/panelNavigation.js",
     "src/ui/settings/tagsSettings.js",
-    "tests/.tmp-config-catalog-copy-2/src_core_featureFactory.js.cjs",
-    "tests/.tmp-config-catalog-copy-2/src_services_prefixService.js.cjs",
-    "tests/.tmp-config-catalog-copy-2/src_ui_components_addons_addonDockGroup.js.cjs",
-    "tests/.tmp-config-catalog-copy-2/src_ui_renderers_createInput.js.cjs",
-    "tests/.tmp-config-catalog-copy-2/src_ui_renderers_renderSetting.js.cjs",
-    "tests/.tmp-config-catalog-copy-2/tests_fixtures_configInteractionHarness.js.cjs",
-    "tests/.tmp-config-catalog-copy/src_core_featureFactory.js.cjs",
-    "tests/.tmp-config-catalog-copy/src_services_prefixService.js.cjs",
-    "tests/.tmp-config-catalog-copy/src_ui_components_addons_addonDockGroup.js.cjs",
-    "tests/.tmp-config-catalog-copy/src_ui_components_toast.js.cjs",
-    "tests/.tmp-config-catalog-copy/src_ui_renderers_createInput.js.cjs",
-    "tests/.tmp-config-catalog-copy/src_ui_renderers_renderSetting.js.cjs",
-    "tests/.tmp-config-catalog-copy/tests_fixtures_configInteractionHarness.js.cjs",
-    "tests/.tmp-config-catalog-full/addons_example-addon_src_app_createExampleAddonApp.js.cjs",
-    "tests/.tmp-config-catalog-full/addons_latest-filters-addon_src_app_createLatestFiltersApp.js.cjs",
-    "tests/.tmp-config-catalog-full/addons_latest-filters-addon_src_ui_renderer.js.cjs",
-    "tests/.tmp-config-catalog-full/addons_library-addon_src_app_createLibraryAddonApp.js.cjs",
-    "tests/.tmp-config-catalog-full/addons_library-addon_src_ui_components_manager_tableRenderer.js.cjs",
-    "tests/.tmp-config-catalog-full/addons_library-addon_src_ui_manager_managerApp.js.cjs",
-    "tests/.tmp-config-catalog-full/addons_library-addon_src_ui_updateInbox_updateInboxController.js.cjs",
-    "tests/.tmp-config-catalog-full/src_core_teardown.js.cjs",
-    "tests/.tmp-config-catalog-full/src_ui_components_addons_addonPanelActions.js.cjs",
-    "tests/.tmp-config-catalog-full/src_ui_renderers_createInput.js.cjs",
-    "tests/.tmp-config-catalog-full/src_ui_renderers_renderSetting.js.cjs",
-    "tests/.tmp-config-catalog-full/tests_fixtures_configInteractionHarness.js.cjs",
-    "tests/.tmp-config-catalog-full/tests_fixtures_routeHarness.js.cjs",
-    "tests/.tmp-download-clicks/addons_latest-filters-addon_src_app_createLatestFiltersApp.js.cjs",
-    "tests/.tmp-download-clicks/addons_latest-filters-addon_src_ui_renderer.js.cjs",
-    "tests/.tmp-download-clicks/addons_library-addon_src_app_createLibraryAddonApp.js.cjs",
-    "tests/.tmp-download-clicks/src_ui_components_addons_addonPanelActions.js.cjs",
-    "tests/.tmp-download-clicks/tests_fixtures_configInteractionHarness.js.cjs",
-    "tests/.tmp-download-clicks/tests_fixtures_routeHarness.js.cjs",
-    "tests/.tmp-modal-css-full/src_ui_components_addons_addonPanelActions.js.cjs",
-    "tests/.tmp-modal-css-full/tests_fixtures_configInteractionHarness.js.cjs",
-    "tests/.tmp-modal-css-verify/src_ui_components_addons_addonPanelActions.js.cjs",
-    "tests/.tmp-modal-css-verify/tests_fixtures_configInteractionHarness.js.cjs",
-    "tests/.tmp-modal-css-verify/tests_fixtures_tagSearchBoundHarness.js.cjs",
-    "tests/.tmp-performance-baseline/src_ui_components_addons_addonPanelActions.js.cjs",
-    "tests/.tmp-rating-fix/src_ui_components_addons_addonPanelActions.js.cjs",
-    "tests/.tmp-settings-shell/src_ui_components_addons_addonPanelActions.js.cjs",
-    "tests/.tmp-tag-search-bound-2/tests_fixtures_configInteractionHarness.js.cjs",
-    "tests/.tmp-tag-search-bound-2/tests_fixtures_tagSearchBoundHarness.js.cjs",
-    "tests/.tmp-tag-search-bound/tests_fixtures_configInteractionHarness.js.cjs",
-    "tests/.tmp-tag-search-bound/tests_fixtures_tagSearchBoundHarness.js.cjs",
-    "tests/.tmp-tag-search-full/tests_fixtures_configInteractionHarness.js.cjs",
-    "tests/.tmp-tag-search-full/tests_fixtures_tagSearchBoundHarness.js.cjs",
-    "tests/concept/latest.min.js"
+    "tests/concept/latest.min.js",
+    "tests/fixtures/tagSearchBoundHarness.js",
+    "tests/groups/core-size-reduction.cjs",
+    "tests/visual/core-settings-reference.visual.cjs"
   ],
   "externalPageSelectors": [],
   "duplicateSelectorBlocks": [],
@@ -5599,13 +4596,13 @@
     },
     "readableBundleFullBytes": {
       "before": 586580,
-      "after": 613472,
-      "delta": 26892
+      "after": 632403,
+      "delta": 45823
     },
     "readableBundleGzipBytes": {
       "before": 124202,
-      "after": 132099,
-      "delta": 7897
+      "after": 136064,
+      "delta": 11862
     },
     "uglifiedBundleContributionBytes": {
       "before": 27380,
@@ -5614,13 +4611,13 @@
     },
     "uglifiedBundleFullBytes": {
       "before": 302505,
-      "after": 309707,
-      "delta": 7202
+      "after": 319747,
+      "delta": 17242
     },
     "uglifiedBundleGzipBytes": {
       "before": 88402,
-      "after": 92836,
-      "delta": 4434
+      "after": 95542,
+      "delta": 7140
     },
     "selectorCount": {
       "before": 252,

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "identifier": "cfb91316b00ab9566ef411dd90d23eab2e533ab658bbf84a6e2de127399ec65b",
+  "identifier": "d4f1c0bd2da1dda37eaee99ccf9836e1c6d9d0e7d4668a4de71ee655770c2632",
   "catalog": [
     {
       "id": "example-addon",
@@ -96,7 +96,7 @@
       "id": "library-addon",
       "name": "F95UE Library Add-on",
       "description": "Quick-add threads to a personal library and manage entries with a dedicated add-on UI.",
-      "version": "1.3.3",
+      "version": "1.3.4",
       "pageScopes": [
         "f95zone"
       ],

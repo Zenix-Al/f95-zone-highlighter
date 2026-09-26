@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.3.4 - Consistent library state and thread context
+
+- Unified every user-initiated status change behind one activity-aware command, so inline Manager controls, Full Edit, bulk actions, and thread-page actions keep status history and transition timestamps consistent.
+- Added immediate thread-title status chips for every Library status, including `Saved`, and kept them synchronized after saves, changes, imports, removals, and route changes.
+- Separated unacknowledged-update and unplayed-current-version state: each now has its own indicator and action, so acknowledging an update never marks its version played.
+- Prioritized the current saved thread at the top of the first Manager page without changing pins, persisted order, filters, or the selected sort.
+- Preserved compatibility with existing Library records and import/export history.
+
 ## v1.3.3 - Automatic update retry scheduling
 
 - Fixed failed update retries holding the entire automatic-update queue until their backoff expired, allowing other eligible records to continue processing.

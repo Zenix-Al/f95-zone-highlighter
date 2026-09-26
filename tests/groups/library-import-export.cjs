@@ -63,7 +63,7 @@ module.exports = function registerLibraryImportExportGroup(context) {
     };
   }
 
-  runTest("LIBRARY-IMPORT-EXPORT-02 accepts v1 and creates no history", async () => {
+  runTest("LIBRARY-STATE-VERIFY-01 preserves v1 records without fabricating history", async () => {
     const { createLibraryService } = loadModule("addons/library-addon/src/library/service.js");
     const memory = createBridge();
     const service = createLibraryService(memory.bridge, { get: async () => true });
@@ -81,7 +81,7 @@ module.exports = function registerLibraryImportExportGroup(context) {
     assert.deepStrictEqual(snapshot.activity, []);
   });
 
-  runTest("LIBRARY-IMPORT-EXPORT-02 v2 round trips records and histories", async () => {
+  runTest("LIBRARY-STATE-VERIFY-01 round trips v2 canonical records and histories", async () => {
     const { createLibraryService } = loadModule("addons/library-addon/src/library/service.js");
     const sourceMemory = createBridge();
     const source = createLibraryService(sourceMemory.bridge, { get: async () => true });

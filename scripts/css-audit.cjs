@@ -288,7 +288,9 @@ function findTokenMatches(file, token) {
 
 function sourceEvidence(rootDir, css, parsed) {
   const sourceFiles = walkFiles(rootDir, path.join(rootDir, "src")).filter((file) => !CSS_FILES.includes(file.relative));
-  const testFiles = walkFiles(rootDir, path.join(rootDir, "tests")).filter((file) => !file.relative.startsWith("tests/.tmp/"));
+  // Test runs leave isolated fixture copies under several `tests/.tmp*`
+  // directories. They are neither authored call sites nor stable audit input.
+  const testFiles = walkFiles(rootDir, path.join(rootDir, "tests")).filter((file) => !file.relative.split("/").some((segment) => segment.startsWith(".tmp")));
   const contents = [...sourceFiles, ...testFiles].map((file) => ({ ...file, source: fs.readFileSync(file.absolute, "utf8") }));
   const tokens = new Set();
   for (const rule of parsed.selectorRules) {
@@ -302,7 +304,10 @@ function sourceEvidence(rootDir, css, parsed) {
   const evidence = [...tokens].sort().map((token) => {
     const bare = token.slice(1);
     const matches = contents
-      .filter((file) => path.extname(file.relative) !== ".css")
+      // Every evidence pattern includes the selector's bare token. Avoid running
+      // several regular expressions over every repository file for selectors the
+      // file cannot possibly reference.
+      .filter((file) => path.extname(file.relative) !== ".css" && file.source.includes(bare))
       .flatMap((file) => findTokenMatches(file, token));
     const callSites = matches.slice(0, 8).map(({ file, index }) => {
       const line = lineAt(file.source, index);

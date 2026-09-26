@@ -363,15 +363,26 @@ module.exports = function registerLibraryEntryEditorGroup(context) {
       );
       const bridge = createBridge(window);
       const records = [
-        createRecord({ thread: { title: "Initial", currentVersion: "v1" } }),
-        createRecord({ thread: { title: "Refreshed", currentVersion: "v2" } }),
+        createRecord({
+          thread: { title: "Initial", currentVersion: "v1" },
+          personal: { status: "saved" },
+        }),
+        createRecord({
+          thread: { title: "Refreshed", currentVersion: "v2" },
+          personal: { status: "saved" },
+        }),
       ];
       const patches = [];
+      const statusCommands = [];
       const editor = createEntryEditorController({
         core: bridge,
         addonId: "library-addon",
         library: {
           getEntry: async () => records.shift(),
+          setPersonalStatus: async (id, status) => {
+            statusCommands.push({ id, status });
+            return { ok: true, value: createRecord({ personal: { status } }) };
+          },
           applyPersonalActivity: async (_id, patch) => {
             patches.push(patch);
             return { ok: true };
@@ -392,7 +403,9 @@ module.exports = function registerLibraryEntryEditorGroup(context) {
       });
       assert.strictEqual(result.ok, true);
       assert.strictEqual(records.length, 0);
+      assert.deepStrictEqual(statusCommands, [{ id: "42", status: "playing" }]);
       assert.strictEqual(patches.length, 1);
+      assert.ok(!Object.hasOwn(patches[0], "status"));
       assert.ok(!Object.hasOwn(patches[0], "thread"));
       assert.strictEqual(patches[0].note, "saved note");
     }));

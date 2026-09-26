@@ -6,6 +6,7 @@
 import { renderRows, updatePageInfo, updateStatusLine } from "../components/manager/tableRenderer.js";
 import { parseSearchQuery, matchesSearchTokens } from "../utils/searchTokens.js";
 import { buildTagChipItems } from "../utils/tagViewModel.js";
+import { matchesCurrentThreadPriorityFilters, prioritizeCurrentThreadRow } from "./currentThreadPriority.js";
 
 export async function reloadRows(root, state, api, library, ROWS_STATUS_ID) {
   state.ratingGeneration += 1;
@@ -27,24 +28,46 @@ export async function reloadRows(root, state, api, library, ROWS_STATUS_ID) {
   statusLine.textContent = "Loading library...";
 
   try {
-    const [pageResult, changedCount] = await Promise.all([
-      api.queryEntriesPage({
+    const matchesRecord =
+      parsedSearch.tokens.length > 0
+        ? (entry) => matchesSearchTokens(entry, parsedSearch.tokens)
+        : undefined;
+    const liveThreadId = String(state.liveThreadId || "").trim();
+    const isFirstPage = state.page === 1;
+    const [liveRecord, changedCount] = await Promise.all([
+      isFirstPage && liveThreadId
+        ? api.getEntry(liveThreadId).catch(() => null)
+        : Promise.resolve(null),
+      api.countChangedEntries(),
+    ]);
+    const includeCurrentThread = Boolean(
+      isFirstPage &&
+        liveRecord &&
+        matchesCurrentThreadPriorityFilters(liveRecord, {
+          search: parsedSearch.text,
+          status: state.status,
+          matchesRecord,
+        }),
+    );
+    if (isFirstPage) state.priorityThreadId = includeCurrentThread ? liveThreadId : "";
+    const pageResult = await api.queryEntriesPage({
         search: parsedSearch.text,
         status: state.status,
         sortBy: state.sortBy,
         sortDir: state.sortDir,
-        limit: state.pageSize,
+        limit: includeCurrentThread ? Math.max(1, state.pageSize - 1) : state.pageSize,
         page: state.page,
         cursor: state.pageCursors[state.page - 1] || null,
-        matchesRecord:
-          parsedSearch.tokens.length > 0
-            ? (entry) => matchesSearchTokens(entry, parsedSearch.tokens)
-            : undefined,
-      }),
-      api.countChangedEntries(),
-    ]);
+        matchesRecord,
+      });
 
-    state.rows = Array.isArray(pageResult?.rows) ? pageResult.rows : [];
+    const queriedRows = Array.isArray(pageResult?.rows) ? pageResult.rows : [];
+    const withoutPriorityDuplicate = queriedRows.filter(
+      (entry) => String(entry?.threadId || "").trim() !== state.priorityThreadId,
+    );
+    state.rows = includeCurrentThread
+      ? prioritizeCurrentThreadRow([liveRecord, ...withoutPriorityDuplicate], liveThreadId)
+      : withoutPriorityDuplicate;
     state.nextCursor = pageResult?.nextCursor || null;
     state.hasNextPage = Boolean(pageResult?.hasNext);
     state.totalRows = Number.isFinite(pageResult?.totalRows)

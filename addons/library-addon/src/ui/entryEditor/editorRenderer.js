@@ -1,6 +1,9 @@
 import editorCssTemplate from "./editor.css";
 import { EDITOR_STATUSES } from "./editorValidation.js";
-import { normalizeVersionIdentity } from "../../library/updateEventModel.js";
+import {
+  hasUnacknowledgedUpdate,
+  hasUnplayedCurrentVersion,
+} from "../../library/versionState.js";
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -41,8 +44,8 @@ export function renderEntryEditor(
   const issuePaths = new Set(issues.map((issue) => issue.path));
   const invalid = (path) => (issuePaths.has(path) ? ' aria-invalid="true"' : "");
   const thread = record?.thread || {};
-  const playedVersion = normalizeVersionIdentity(record?.personal?.lastPlayedVersion);
-  const currentVersion = normalizeVersionIdentity(thread.currentVersion);
+  const unacknowledgedUpdate = hasUnacknowledgedUpdate(record);
+  const unplayedCurrentVersion = hasUnplayedCurrentVersion(record);
   const statusOptions = EDITOR_STATUSES.map(
     (value) =>
       `<option value="${value}"${value === draft.status ? " selected" : ""}>${value}</option>`,
@@ -58,8 +61,8 @@ export function renderEntryEditor(
           <span><small>Update state</small>${escapeHtml(record?.updateState || "unchecked")}</span>
         </div>
         ${
-          record?.updateState === "changed"
-            ? '<button type="button" data-editor-action="acknowledge-update">Acknowledge current update</button>'
+          unacknowledgedUpdate
+            ? '<button type="button" data-editor-action="acknowledge-update" title="Marks the detected update acknowledged without changing your played-version history.">Acknowledge current update</button>'
             : ""
         }
         <div class="f95ue-library-editor-history">
@@ -75,7 +78,7 @@ export function renderEntryEditor(
               : "<span>No observed updates.</span>"
           }
         </div>
-        ${playedVersion !== currentVersion ? '<button type="button" data-editor-action="played-version">Played this version</button>' : ""}
+        ${unplayedCurrentVersion ? '<button type="button" data-editor-action="played-version" title="Marks the current version played without acknowledging a detected update.">Played this version</button>' : ""}
         <div class="f95ue-library-editor-history">
           <small>Recent activity</small>
           ${

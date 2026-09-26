@@ -198,6 +198,38 @@ module.exports = function registerLibraryPersonalGroup(context) {
     assert.strictEqual(state.selectedIds.size, 0);
   });
 
+  runTest("LIBRARY-STATE-CALLERS-01 Manager inline status uses the canonical command", async () => {
+    const { createStatusHandlers } = loadModule(
+      "addons/library-addon/src/ui/manager/handlers/statusHandlers.js",
+    );
+    const calls = [];
+    let reloads = 0;
+    const state = { openStatusMenuId: "42", openRowMenuId: "" };
+    const handlers = createStatusHandlers({
+      api: {
+        setPersonalStatus: async (threadId, status, options) => {
+          calls.push({ threadId, status, commandId: options.commandId });
+          return { ok: true, value: { threadId, personal: { status } } };
+        },
+      },
+      getRoot: () => ({ querySelectorAll: () => [] }),
+      notifyMutated() {},
+      reloadRows: async () => { reloads += 1; },
+      state,
+    });
+
+    await handlers["set-status"]("42", "playing");
+
+    assert.strictEqual(calls.length, 1);
+    assert.deepStrictEqual(
+      { threadId: calls[0].threadId, status: calls[0].status },
+      { threadId: "42", status: "playing" },
+    );
+    assert.match(calls[0].commandId, /^status:/);
+    assert.strictEqual(state.openStatusMenuId, "");
+    assert.strictEqual(reloads, 1);
+  });
+
   runTest(
     "LIBRARY-PERSONAL-BASELINE-01 characterizes sorting filtering and thread patches",
     () => {
