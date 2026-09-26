@@ -1,5 +1,6 @@
 import { idbActions } from "./families/idb.js";
 import { lifecycleActions } from "./families/lifecycle.js";
+import { latestMarkerActions } from "./families/latestMarkers.js";
 import { observerActions } from "./families/observer.js";
 import { pageActions } from "./families/page.js";
 import { storageActions } from "./families/storage.js";
@@ -10,6 +11,7 @@ import { getAction, getActionSnapshot, registerAction } from "./registry.js";
 export const ACTION_FAMILIES = Object.freeze({
   toast: toastActions,
   lifecycle: lifecycleActions,
+  latestMarkers: latestMarkerActions,
   storage: storageActions,
   page: pageActions,
   idb: idbActions,

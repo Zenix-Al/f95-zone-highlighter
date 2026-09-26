@@ -206,6 +206,81 @@ module.exports = function registerLibraryEntryEditorGroup(context) {
     assert.doesNotMatch(markup, /v2[^<]*v2/);
   });
 
+  runTest("LIBRARY-FULL-EDIT-HISTORY-02 renders independent collapsed histories after the fields", () =>
+    withEditorDom(async (window) => {
+      const { createEditorDraft } = loadModule(
+        "addons/library-addon/src/ui/entryEditor/editorValidation.js",
+      );
+      const { renderEntryEditor } = loadModule(
+        "addons/library-addon/src/ui/entryEditor/editorRenderer.js",
+        { loader: { ".css": "text" } },
+      );
+      const { record, updateEvents, activityEvents } = require("../fixtures/libraryFullEditMaxHistory.cjs");
+      const host = window.document.createElement("div");
+      host.innerHTML = renderEntryEditor(record, createEditorDraft(record), [], updateEvents, activityEvents);
+      const updates = host.querySelector('[data-history="updates"]');
+      const activity = host.querySelector('[data-history="activity"]');
+      assert.strictEqual(host.querySelectorAll("details.f95ue-library-editor-history").length, 2);
+      assert.strictEqual(updates.querySelector("summary").textContent.trim(), "Recent updates (20)");
+      assert.strictEqual(activity.querySelector("summary").textContent.trim(), "Recent activity (20)");
+      assert.strictEqual(updates.open, false);
+      assert.strictEqual(activity.open, false);
+      assert.strictEqual(updates.querySelectorAll("li").length, 20);
+      assert.strictEqual(activity.querySelectorAll("li").length, 20);
+      assert.ok(host.querySelector(".f95ue-library-editor-grid").compareDocumentPosition(updates) & window.Node.DOCUMENT_POSITION_FOLLOWING);
+      assert.ok(host.querySelector('[data-editor-action="played-version"]').compareDocumentPosition(updates) & window.Node.DOCUMENT_POSITION_FOLLOWING);
+      assert.strictEqual(host.querySelectorAll(".f95ue-library-editor-history button").length, 0);
+      const emptyHost = window.document.createElement("div");
+      emptyHost.innerHTML = renderEntryEditor(record, createEditorDraft(record));
+      assert.strictEqual(emptyHost.querySelector(".f95ue-library-editor-histories"), null);
+    }));
+
+  runTest("LIBRARY-FULL-EDIT-HISTORY-02 preserves disclosure state on rerender and resets on reopen", async () =>
+    withEditorDom(async (window) => {
+      const { createEntryEditorController } = loadModule(
+        "addons/library-addon/src/ui/entryEditor/editorController.js",
+        { loader: { ".css": "text" } },
+      );
+      const { record, updateEvents, activityEvents } = require("../fixtures/libraryFullEditMaxHistory.cjs");
+      const bridge = createBridge(window);
+      let current = record;
+      const editor = createEntryEditorController({
+        core: bridge,
+        addonId: "library-addon-history",
+        library: {
+          getEntry: async () => current,
+          listUpdateEvents: async () => updateEvents,
+          listActivityEvents: async () => activityEvents,
+          acknowledgeCurrentUpdate: async () => {
+            current = { ...current, updateState: "acknowledged" };
+            return { ok: true, value: current };
+          },
+          applyPersonalActivity: async () => {
+            current = { ...current, personal: { ...current.personal, lastPlayedVersion: current.thread.currentVersion } };
+            return { ok: true, value: current };
+          },
+        },
+      });
+      assert.strictEqual((await editor.open("42000")).ok, true);
+      const root = window.document.getElementById("library-addon-history-entry-editor-content");
+      root.querySelector('[data-history="updates"]').open = true;
+      root.querySelector('[data-editor-action="acknowledge-update"]').click();
+      await new Promise((resolve) => window.setTimeout(resolve, 0));
+      assert.strictEqual(root.querySelector('[data-history="updates"]').open, true);
+      assert.strictEqual(root.querySelector('[data-history="activity"]').open, false);
+      root.querySelector('[data-history="activity"]').open = true;
+      root.querySelector('[data-editor-action="played-version"]').click();
+      await new Promise((resolve) => window.setTimeout(resolve, 0));
+      assert.strictEqual(root.querySelector('[data-history="updates"]').open, true);
+      assert.strictEqual(root.querySelector('[data-history="activity"]').open, true);
+      await editor.close("test-close");
+      assert.strictEqual((await editor.open("42000")).ok, true);
+      const reopened = window.document.querySelectorAll('#library-addon-history-entry-editor-content');
+      const latestRoot = reopened[reopened.length - 1];
+      assert.strictEqual(latestRoot.querySelector('[data-history="updates"]').open, false);
+      assert.strictEqual(latestRoot.querySelector('[data-history="activity"]').open, false);
+    }));
+
   runTest("LIBRARY-ENTRY-EDITOR-01 derives played-version visibility from canonical normalized state", () => {
     const { createEditorDraft } = loadModule(
       "addons/library-addon/src/ui/entryEditor/editorValidation.js",

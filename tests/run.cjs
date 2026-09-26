@@ -7,6 +7,7 @@ for (const group of [
   "core-size-reduction",
   "core-size-dialog-shell",
   "addon-service",
+  "latest-marker-provider",
   "addons",
   "addon-matrix",
   "addon-size",

@@ -18,6 +18,10 @@ function field(label, control, wide = false) {
   return `<label class="f95ue-library-editor-field${wide ? " is-wide" : ""}"><span>${label}</span>${control}</label>`;
 }
 
+function toggleField(label, name, checked) {
+  return `<label class="f95ue-library-editor-toggle-field"><span>${label}</span><span class="f95ue-library-editor-toggle-control"><input name="${name}" type="checkbox" role="switch"${checked ? " checked" : ""}><span class="f95ue-library-editor-toggle-track" aria-hidden="true"></span></span></label>`;
+}
+
 export function getEntryEditorStyleText(rootSelector = ".f95ue-library-entry-editor") {
   return editorCssTemplate.replaceAll("__ROOT__", rootSelector);
 }
@@ -28,6 +32,7 @@ export function renderEntryEditor(
   issues = [],
   updateEvents = [],
   activityEvents = [],
+  historyOpen = {},
 ) {
   updateEvents = updateEvents.map((event) =>
     event?.type === "version"
@@ -65,33 +70,7 @@ export function renderEntryEditor(
             ? '<button type="button" data-editor-action="acknowledge-update" title="Marks the detected update acknowledged without changing your played-version history.">Acknowledge current update</button>'
             : ""
         }
-        <div class="f95ue-library-editor-history">
-          <small>Recent updates</small>
-          ${
-            updateEvents.length
-              ? `<ul>${updateEvents
-                  .map(
-                    (event) =>
-                      `<li>${escapeHtml(event.previousVersion || "?")} → ${escapeHtml(event.version || "?")} · ${escapeHtml(new Date(event.observedAt).toLocaleString())}</li>`,
-                  )
-                  .join("")}</ul>`
-              : "<span>No observed updates.</span>"
-          }
-        </div>
         ${unplayedCurrentVersion ? '<button type="button" data-editor-action="played-version" title="Marks the current version played without acknowledging a detected update.">Played this version</button>' : ""}
-        <div class="f95ue-library-editor-history">
-          <small>Recent activity</small>
-          ${
-            activityEvents.length
-              ? `<ul>${activityEvents
-                  .map(
-                    (event) =>
-                      `<li>${escapeHtml(event.type)}${event.version ? ` · ${escapeHtml(event.version)}` : ""} · ${escapeHtml(new Date(event.occurredAt).toLocaleString())}</li>`,
-                  )
-                  .join("")}</ul>`
-              : "<span>No personal activity.</span>"
-          }
-        </div>
       </div>
       <div class="f95ue-library-editor-grid">
         ${field("Status", `<select name="status"${invalid("personal.status")}>${statusOptions}</select>`)}
@@ -103,9 +82,31 @@ export function renderEntryEditor(
         ${field("Dropped", `<input name="droppedAt" type="date" value="${escapeHtml(draft.droppedAt)}"${invalid("personal.droppedAt")}>`)}
         ${field("Note", `<textarea name="note" maxlength="10000" rows="4">${escapeHtml(draft.note)}</textarea>`, true)}
         ${field("Progress note", `<textarea name="progressNote" maxlength="10000" rows="4">${escapeHtml(draft.progressNote)}</textarea>`, true)}
-        ${field("Pinned", `<input name="pinned" type="checkbox"${draft.pinned ? " checked" : ""}> Keep this entry above unpinned entries`)}
-        ${field("Auto update", `<input name="autoUpdateEnabled" type="checkbox"${draft.autoUpdateEnabled ? " checked" : ""}> Check this record automatically`)}
+        ${toggleField("Pinned", "pinned", draft.pinned)}
+        ${toggleField("Auto update", "autoUpdateEnabled", draft.autoUpdateEnabled)}
       </div>
+      ${updateEvents.length || activityEvents.length ? `<div class="f95ue-library-editor-histories">
+        ${updateEvents.length ? `
+          <details class="f95ue-library-editor-history" data-history="updates"${historyOpen.updates ? " open" : ""}>
+            <summary>Recent updates (${updateEvents.length})</summary>
+            <ul>${updateEvents
+              .map(
+                (event) =>
+                  `<li>${escapeHtml(event.previousVersion || "?")} → ${escapeHtml(event.version || "?")} · ${escapeHtml(new Date(event.observedAt).toLocaleString())}</li>`,
+              )
+              .join("")}</ul>
+          </details>` : ""}
+        ${activityEvents.length ? `
+          <details class="f95ue-library-editor-history" data-history="activity"${historyOpen.activity ? " open" : ""}>
+            <summary>Recent activity (${activityEvents.length})</summary>
+            <ul>${activityEvents
+              .map(
+                (event) =>
+                  `<li>${escapeHtml(event.type)}${event.version ? ` · ${escapeHtml(event.version)}` : ""} · ${escapeHtml(new Date(event.occurredAt).toLocaleString())}</li>`,
+              )
+              .join("")}</ul>
+          </details>` : ""}
+      </div>` : ""}
       <p class="f95ue-library-editor-error" data-role="editor-error">${issues.length ? "Check the highlighted fields." : ""}</p>
       <div class="f95ue-library-editor-actions">
         <button type="button" data-editor-action="cancel">Cancel</button>

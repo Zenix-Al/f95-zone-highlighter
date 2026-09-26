@@ -109,6 +109,14 @@ const latestSettings = node("object", defaultLatestSettings, {
     wideLatest: bool(defaultLatestSettings.wideLatest),
     denseLatestGrid: bool(defaultLatestSettings.denseLatestGrid),
     latestOverlayToggle: bool(defaultLatestSettings.latestOverlayToggle),
+    latestMarkerProviders: node("object", {}, {
+      keyPattern: /^(?!__proto__$|constructor$|prototype$)[a-z0-9][a-z0-9_-]{0,63}$/,
+      additionalProperties: node("object", {}, {
+        properties: { enabled: bool(true) },
+        additionalProperties: false,
+      }),
+      validate: (value) => Object.keys(value).length <= 16 ? null : { code: "limit", expected: "at most 16 providers" },
+    }),
     latestOverlayColorOrder: node("array", defaultLatestSettings.latestOverlayColorOrder, {
       items: string("", { enum: ["excluded", "preferred", "completed", "onhold", "abandoned", "highVersion", "invalidVersion"] }),
       unique: true,
