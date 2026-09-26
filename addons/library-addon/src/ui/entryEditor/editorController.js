@@ -31,6 +31,11 @@ export function createEntryEditorController({
 
   async function renderActive(issues = []) {
     if (!active) return { ok: false, reason: "editor_closed" };
+    const previousRoot = getRoot(active.contentId);
+    active.historyOpen = {
+      updates: previousRoot?.querySelector('[data-history="updates"]')?.open ?? active.historyOpen.updates,
+      activity: previousRoot?.querySelector('[data-history="activity"]')?.open ?? active.historyOpen.activity,
+    };
     const result = await updateDialog(
       core,
       dialogId,
@@ -40,6 +45,7 @@ export function createEntryEditorController({
         issues,
         active.updateEvents,
         active.activityEvents,
+        active.historyOpen,
       ),
     );
     if (!result?.ok) return result;
@@ -261,6 +267,7 @@ export function createEntryEditorController({
       draft,
       updateEvents,
       activityEvents,
+      historyOpen: { updates: false, activity: false },
       contentId,
       saving: false,
     };

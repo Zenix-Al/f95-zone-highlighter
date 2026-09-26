@@ -18,6 +18,7 @@ export const VALID_ADDON_CAPABILITIES = new Set([
   "ui.mount",
   "ui.dialog",
   "ui.dock",
+  "latest.markers",
 ]);
 export const UNTRUSTED_ALLOWED_CAPABILITIES = new Set(["toast", "feature", "storage"]);
 export const MAX_OBSERVER_SUBSCRIPTIONS_PER_ADDON = 4;

@@ -5,6 +5,7 @@ runTest("ADDON-ACTIONS-02 composes every public action exactly once with complet
   const expected = [
     "config.getTagPrefs", "feature.disable", "feature.enable", "feature.refresh",
     "idb.bulkDelete", "idb.bulkPut", "idb.count", "idb.delete", "idb.get", "idb.put", "idb.query",
+    "latest.markers.invalidate", "latest.markers.register", "latest.markers.respond", "latest.markers.unregister",
     "observer.unwatch", "observer.waitFor", "observer.watch", "page.getContext",
     "storage.get", "storage.getUsage", "storage.set", "toast.show",
     "ui.confirm", "ui.dialog.close", "ui.dialog.open", "ui.dialog.update",
@@ -111,7 +112,7 @@ runTest("ADDON-SERVICE-FACADE-01 uses bounded family dependencies and owned modu
   assert.match(state, /removeAddonInstallationTrace/);
   assert.match(lifecycle, /shutdownAddonsBridgeServer/);
   assert.doesNotMatch(bootstrap, /let _|configureBootstrap|from .*addonsService/);
-  assert.deepStrictEqual(Object.keys(deps).sort(), ["idb", "lifecycle", "observer", "page", "storage", "toast", "ui"]);
+  assert.deepStrictEqual(Object.keys(deps).sort(), ["idb", "latestMarkers", "lifecycle", "observer", "page", "storage", "toast", "ui"]);
   assert.ok(Object.values(deps).every((entries) => entries.length < 20));
 });
 

@@ -61,6 +61,7 @@ export const defaultLatestSettings = {
   wideLatest: false,
   denseLatestGrid: false,
   latestOverlayToggle: true,
+  latestMarkerProviders: {},
   latestOverlayColorOrder: [
     "excluded",
     "preferred",

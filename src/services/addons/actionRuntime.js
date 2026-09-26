@@ -36,6 +36,7 @@ import {
   updateAddonUi,
 } from "./uiHost.js";
 import { measurePayloadBytes } from "./apiPolicy.js";
+import { latestMarkerBroker } from "./latestMarkerRuntime.js";
 
 const FAMILY_DEPS = Object.freeze({
   toast: Object.freeze({ showToast }),
@@ -80,6 +81,7 @@ const FAMILY_DEPS = Object.freeze({
     unregisterAddonStyle,
   }),
   page: Object.freeze({}),
+  latestMarkers: Object.freeze({ latestMarkerBroker }),
 });
 
 export function getAddonActionFamily(action) {
@@ -90,6 +92,7 @@ export function getAddonActionFamily(action) {
   if (action.startsWith("observer.")) return "observer";
   if (action.startsWith("ui.")) return "ui";
   if (action.startsWith("page.")) return "page";
+  if (action.startsWith("latest.markers.")) return "latestMarkers";
   return "";
 }
 

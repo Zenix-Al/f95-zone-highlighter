@@ -9,6 +9,7 @@ import {
 } from "./registry.js";
 import { ADDON_COMMAND_EVENT, sanitizeAddonId } from "./shared.js";
 import { cleanupAddonUi, getAddonUiPolicySnapshot } from "./uiHost.js";
+import { latestMarkerBroker } from "./latestMarkerRuntime.js";
 
 export const ADDON_TEARDOWN_WATCHDOG_MS = 1200;
 
@@ -26,10 +27,12 @@ export function getAddonLifecycleSnapshot() {
 }
 
 export function notifyAllAddonsBeforePageChange() {
+  latestMarkerBroker.cancelPending();
   addonLifecycle.notifyAllBeforePageChange();
 }
 
 export function shutdownAddonsService(reason = "runtime teardown") {
+  latestMarkerBroker.reset();
   shutdownAddonsBridgeServer();
   const summary = addonLifecycle.shutdownAll(reason);
   replaceRegisteredAddons([]);
@@ -37,6 +40,7 @@ export function shutdownAddonsService(reason = "runtime teardown") {
 }
 
 export function disableAddonsService() {
+  latestMarkerBroker.reset();
   shutdownAddonsBridgeServer();
   for (const addon of listRegisteredAddons()) {
     if (addon?.id) addonLifecycle.requestTeardown(addon.id, "service-disabled");
@@ -48,12 +52,14 @@ export function disableAddonsService() {
 export function unregisterAddon(addonId) {
   const normalizedId = sanitizeAddonId(addonId);
   if (!normalizedId) return listRegisteredAddons();
+  latestMarkerBroker.removeOwner(normalizedId);
   addonLifecycle.requestTeardown(normalizedId, "unregister");
   addonLifecycle.emitLifecycleCommand(normalizedId, "before-unregister");
   return unregisterAddonFromRegistry(normalizedId);
 }
 
 export function cleanupAddonRuntimeResources(addonId, reason = "disable") {
+  latestMarkerBroker.removeOwner(addonId);
   const before = getAddonUiPolicySnapshot().owners;
   cleanupAddonObserverSubscriptions(addonId);
   cleanupAddonUi(addonId);

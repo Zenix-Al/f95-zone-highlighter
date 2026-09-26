@@ -10,6 +10,7 @@ import {
   registerSettingsMetadata,
 } from "../../ui/settings/metaRegistry.js";
 import { normalizeOverlayColorOrder } from "./overlayOrder.js";
+import { latestMarkerBroker } from "../../services/addons/latestMarkerRuntime.js";
 
 const OVERLAY_KEY_LABELS = {
   excluded: "Excluded",
@@ -64,10 +65,19 @@ async function openOverlayColorOrderEditor() {
 }
 
 function openLatestOverlaySettingsDialog() {
+  const providerSettings = Object.fromEntries(latestMarkerBroker.list().map((provider) => [
+    `marker-provider-${provider.id}`,
+    createToggleSetting({
+      text: provider.name,
+      tooltip: provider.description || "Show this add-on's marker on Latest cards",
+      config: `latestSettings.latestMarkerProviders.${provider.id}.enabled`,
+      custom: () => reprocessTilesEffect(),
+    }),
+  ]));
   latestOverlaySettingsDialog = openSettingsDialog({
     title: "Latest Overlay Settings",
     description: "Configure overlay toggle, labels, filters, and color order.",
-    metaMap: latestOverlaySettingsDialogMeta,
+    metaMap: { ...latestOverlaySettingsDialogMeta, ...providerSettings },
   });
 }
 

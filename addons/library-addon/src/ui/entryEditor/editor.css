@@ -23,17 +23,86 @@ __ROOT__ .f95ue-library-editor-facts {
   background: #202329;
 }
 
-__ROOT__ .f95ue-library-editor-history {
-  display: grid;
-  gap: 5px;
-  margin-top: 10px;
+__ROOT__ .f95ue-library-editor-facts > button {
+  box-sizing: border-box;
+  justify-self: start;
+  width: fit-content;
+  max-width: 100%;
+  min-height: 32px;
+  padding: 7px 12px;
+  color: #f6d7d7;
+  background: #292124;
+  border: 1px solid #a44748;
+  border-radius: 6px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+}
+
+__ROOT__ .f95ue-library-editor-facts > button[data-editor-action="played-version"] {
+  color: #fff;
+  background: #893839;
+}
+
+__ROOT__ .f95ue-library-editor-facts > button:not(:disabled):hover {
+  color: #fff;
+  background: #a44748;
+  border-color: #bb595a;
+}
+
+__ROOT__ .f95ue-library-editor-facts > button:focus-visible,
+__ROOT__ .f95ue-library-editor-actions button:focus-visible {
+  outline: 2px solid #e4a2a2;
+  outline-offset: 2px;
+}
+
+__ROOT__ .f95ue-library-editor-facts > button:disabled,
+__ROOT__ .f95ue-library-editor-actions button:disabled,
+__ROOT__ .f95ue-library-editor-actions button.primary:disabled {
   color: #aeb4bd;
+  background: #35383d;
+  border-color: #555b63;
+  cursor: not-allowed;
+}
+
+__ROOT__ .f95ue-library-editor-histories {
+  display: grid;
+  gap: 8px;
+}
+
+__ROOT__ .f95ue-library-editor-history {
+  min-width: 0;
+  padding: 0 12px;
+  color: #aeb4bd;
+  border: 1px solid #3f4043;
+  border-radius: 6px;
+  background: #1d2024;
   font-size: 12px;
 }
 
+__ROOT__ .f95ue-library-editor-history summary {
+  padding: 10px 0;
+  color: #e4e8ee;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+__ROOT__ .f95ue-library-editor-history summary:hover {
+  color: #fff;
+}
+
+__ROOT__ .f95ue-library-editor-history summary:focus-visible {
+  outline: 2px solid #c15858;
+  outline-offset: 2px;
+}
+
 __ROOT__ .f95ue-library-editor-history ul {
-  margin: 0;
+  margin: 0 0 10px;
   padding-left: 18px;
+  overflow-wrap: anywhere;
 }
 
 __ROOT__ .f95ue-library-editor-title {
@@ -86,6 +155,81 @@ __ROOT__ .f95ue-library-editor-field {
 
 __ROOT__ .f95ue-library-editor-field.is-wide {
   grid-column: 1 / -1;
+}
+
+__ROOT__ .f95ue-library-editor-toggle-field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+  min-height: 44px;
+  padding: 8px 10px;
+  color: #d9dde4;
+  background: #1d2024;
+  border: 1px solid #3f4043;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+__ROOT__ .f95ue-library-editor-toggle-field:hover {
+  border-color: #a44748;
+}
+
+__ROOT__ .f95ue-library-editor-toggle-control {
+  position: relative;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 24px;
+}
+
+__ROOT__ .f95ue-library-editor-toggle-control input {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+__ROOT__ .f95ue-library-editor-toggle-track {
+  position: absolute;
+  inset: 0;
+  background: #41464e;
+  border: 1px solid #626771;
+  border-radius: 999px;
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+__ROOT__ .f95ue-library-editor-toggle-track::after {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  content: "";
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 120ms ease;
+}
+
+__ROOT__ .f95ue-library-editor-toggle-control input:checked + .f95ue-library-editor-toggle-track {
+  background: #893839;
+  border-color: #bb595a;
+}
+
+__ROOT__ .f95ue-library-editor-toggle-control input:checked + .f95ue-library-editor-toggle-track::after {
+  transform: translateX(20px);
+}
+
+__ROOT__ .f95ue-library-editor-toggle-control input:focus-visible + .f95ue-library-editor-toggle-track {
+  outline: 2px solid #e4a2a2;
+  outline-offset: 2px;
 }
 
 __ROOT__ input,
@@ -173,7 +317,7 @@ __ROOT__ .f95ue-library-editor-actions button {
   cursor: pointer;
 }
 
-__ROOT__ .f95ue-library-editor-actions button:hover {
+__ROOT__ .f95ue-library-editor-actions button:not(:disabled):hover {
   background: #30343a;
   border-color: #626771;
 }
@@ -183,7 +327,7 @@ __ROOT__ .f95ue-library-editor-actions button.primary {
   border-color: #a44748;
 }
 
-__ROOT__ .f95ue-library-editor-actions button.primary:hover {
+__ROOT__ .f95ue-library-editor-actions button.primary:not(:disabled):hover {
   background: #a44748;
   border-color: #bb595a;
 }
@@ -199,5 +343,12 @@ __ROOT__ .f95ue-library-editor-actions button.primary:hover {
 
   __ROOT__ .f95ue-library-editor-fact-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  __ROOT__ .f95ue-library-editor-toggle-track,
+  __ROOT__ .f95ue-library-editor-toggle-track::after {
+    transition-duration: 0.01ms;
   }
 }
