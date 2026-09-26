@@ -14,6 +14,10 @@ const UPDATE_STATES = new Set([
   "unchecked",
 ]);
 
+export function isPersonalStatus(value) {
+  return PERSONAL_STATUSES.has(String(value || "").trim().toLowerCase());
+}
+
 function text(value, fallback = "") {
   return String(value ?? fallback).trim();
 }

@@ -3,6 +3,7 @@ import {
   normalizeF95ThreadId,
   normalizeF95ThreadUrl,
 } from "../../library/threadIdentity.js";
+import { hasUnacknowledgedUpdate } from "../../library/versionState.js";
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -38,6 +39,7 @@ export function renderUpdateInbox({
     ? `${count} unacknowledged update${count === 1 ? "" : "s"}`
     : "Unacknowledged updates";
   const rows = entries
+    .filter(({ record }) => hasUnacknowledgedUpdate(record))
     .map(({ record, previousVersion = "" }) => {
       const id = String(record?.threadId || "");
       const thread = record?.thread || {};

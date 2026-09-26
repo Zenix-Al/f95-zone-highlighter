@@ -58,7 +58,7 @@ export function createLibraryManagerApp({
     onSaved: async () => {
       const root = getActiveRoot();
       if (root) await reloadRows(root, state, api, library, ROWS_STATUS_ID);
-      if (typeof onMutated === "function") onMutated();
+      if (typeof onMutated === "function") await onMutated();
     },
   });
   const autoUpdate = createAutoUpdateController({
@@ -69,7 +69,7 @@ export function createLibraryManagerApp({
     onSaved: async () => {
       const root = getActiveRoot();
       if (root) await reloadRows(root, state, api, library, ROWS_STATUS_ID);
-      if (typeof onMutated === "function") onMutated();
+      if (typeof onMutated === "function") await onMutated();
     },
   });
   const updateInbox = createUpdateInboxController({
@@ -80,7 +80,7 @@ export function createLibraryManagerApp({
     onMutated: async () => {
       const root = getActiveRoot();
       if (root) await reloadRows(root, state, api, library, ROWS_STATUS_ID);
-      if (typeof onMutated === "function") onMutated();
+      if (typeof onMutated === "function") await onMutated();
     },
   });
 
@@ -89,6 +89,12 @@ export function createLibraryManagerApp({
     const snapshot = getCurrentThreadSnapshot();
     if (!snapshot?.threadId) return null;
     return snapshot;
+  }
+
+  function refreshLiveThreadContext() {
+    const nextThreadId = String(getLiveThreadSnapshot()?.threadId || "").trim();
+    if (state.liveThreadId !== nextThreadId) state.priorityThreadId = "";
+    state.liveThreadId = nextThreadId;
   }
 
   async function askConfirm(
@@ -153,7 +159,7 @@ export function createLibraryManagerApp({
   // Create handlers with dependencies
   const deps = {
     reloadRowsFn: (root) => {
-      state.liveThreadId = String(getLiveThreadSnapshot()?.threadId || "").trim();
+      refreshLiveThreadContext();
       return reloadRows(root, state, api, library, ROWS_STATUS_ID);
     },
     onMutatedFn: onMutated,
@@ -221,7 +227,7 @@ export function createLibraryManagerApp({
     unbindEvents = bindManagerEvents(appContext.dialogRoot, state, handlers, deps);
 
     // Load initial data
-    state.liveThreadId = String(getLiveThreadSnapshot()?.threadId || "").trim();
+    refreshLiveThreadContext();
     await reloadRows(appContext.dialogRoot, state, api, library, ROWS_STATUS_ID);
     if (openGeneration !== generation) return;
     appContext.dialogRoot.querySelector(".f95ue-library-manager-window")?.focus();

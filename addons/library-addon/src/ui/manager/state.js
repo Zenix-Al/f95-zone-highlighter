@@ -23,6 +23,7 @@ export function createInitialState() {
     tagConfig: null,
 
     liveThreadId: "",
+    priorityThreadId: "",
     openStatusMenuId: "",
     openRowMenuId: "",
 

@@ -20,6 +20,7 @@ Welcome to the documentation for the Latest Highlighter userscript. This directo
 - [Library Update Queue Compatibility](architecture/library-update-queue-compatibility.md) - One-time legacy metadata carry-forward, retired fallback paths, and identity-bounded cleanup.
 - [Library Update Queue Verification](architecture/library-update-queue-verification.md) - Automated release evidence and the remaining browser smoke gate.
 - [Library UI Responsive Baseline](architecture/library-ui-responsive-baseline.md) - Pre-rework Manager, Updates Inbox, and Auto Update geometry, scrollbar ownership, and responsive risks.
+- [Library State and Thread Context Baseline](architecture/library-state-thread-context-baseline.md) - Wave-1 status-write inventory, title-chip behavior, version-state gaps, and Manager ordering evidence.
 - [Library Legacy Upgrade Guard](architecture/library-legacy-upgrade-guard.md) - Retired schema-v1 conversion, the v1.2.2 bridge, and fail-closed direct-upgrade handling.
 - [Thread Utility Baseline](architecture/thread-utility-baseline.md) - Reference quick-search behavior and the canonical opening-post fixture contract.
 - [Thread Utility Golden Contract](architecture/thread-utility-golden-contract.md) - Bounded Example Add-on bootstrap, API, lifecycle, UI ownership, and teardown requirements.

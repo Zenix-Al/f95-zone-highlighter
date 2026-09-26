@@ -47,7 +47,7 @@ userscripts are rebuilt only when explicitly requested.
 
 ## Wave 1 — Baseline and write-path inventory
 
-### [ ] LIBRARY-STATE-BASELINE-01
+### [x] LIBRARY-STATE-BASELINE-01
 
 - Add focused tests that reproduce status changes through Manager inline
   status, Full Edit, bulk status, and any thread-page/main-app status control.
@@ -68,7 +68,7 @@ data or generated bundles.
 
 ## Wave 2 — Canonical personal-state command
 
-### [ ] LIBRARY-STATE-COMMAND-01
+### [x] LIBRARY-STATE-COMMAND-01
 
 - Introduce one clearly named service operation for user-initiated personal
   status changes, implemented through the existing activity transaction flow.
@@ -88,7 +88,7 @@ matching history event.
 
 ## Wave 3 — Route every status UI through the command
 
-### [ ] LIBRARY-STATE-CALLERS-01
+### [x] LIBRARY-STATE-CALLERS-01
 
 - Route Manager inline status, Full Edit, bulk status, and thread-page/main-app
   status controls through the canonical operation.
@@ -105,7 +105,7 @@ timestamps, activity entry, and visible chips.
 
 ## Wave 4 — Complete and immediate thread-title status chips
 
-### [ ] LIBRARY-STATE-TITLE-CHIPS-01
+### [x] LIBRARY-STATE-TITLE-CHIPS-01
 
 - Render a status chip for `saved`, `backlog`, `playing`, `paused`,
   `completed`, and `dropped` using the canonical record value.
@@ -122,7 +122,7 @@ its current personal status during the same page session.
 
 ## Wave 5 — Separate acknowledgement from played-version state
 
-### [ ] LIBRARY-STATE-VERSION-SEMANTICS-01
+### [x] LIBRARY-STATE-VERSION-SEMANTICS-01
 
 - Centralize selectors for `hasUnacknowledgedUpdate` and
   `hasUnplayedCurrentVersion` so Manager, Inbox, Full Edit, and title chips use
@@ -143,7 +143,7 @@ all surfaces display the same result.
 
 ## Wave 6 — Current-thread priority in Manager
 
-### [ ] LIBRARY-STATE-CURRENT-THREAD-01
+### [x] LIBRARY-STATE-CURRENT-THREAD-01
 
 - Pass the live thread ID into Manager as transient view context.
 - If that ID exists in the current result set, display it first, ahead of

@@ -13,10 +13,11 @@ export function createHandlerContext(state, api, deps) {
     return root ? reloadRowsFn(root) : undefined;
   }
 
-  function notifyMutated() {
+  async function notifyMutated() {
     if (typeof onMutatedFn === "function") {
-      onMutatedFn();
+      return await onMutatedFn();
     }
+    return undefined;
   }
 
   function getPageSize() {

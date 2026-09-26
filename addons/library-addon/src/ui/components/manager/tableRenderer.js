@@ -5,7 +5,9 @@
 
 import { escapeHtml } from "../../../../../shared/htmlUtils.js";
 import { normalizeF95ThreadId, normalizeF95ThreadUrl } from "../../../library/threadIdentity.js";
+import { hasUnacknowledgedUpdate } from "../../../library/versionState.js";
 import { fmtDate, fmtDateOnly, safeText } from "../../utils/formatters.js";
+import { prioritizeCurrentThreadRow } from "../../manager/currentThreadPriority.js";
 
 const NOTE_MAX_LEN = 20000;
 
@@ -170,7 +172,7 @@ export function renderRows(
   state = null,
   { tagItemsForEntry = null } = {},
 ) {
-  tbody.innerHTML = rows
+  tbody.innerHTML = prioritizeCurrentThreadRow(rows, state?.liveThreadId)
     .map((entry) => {
       const actionThreadId = normalizeF95ThreadId(entry.threadId);
       const threadIdAttr = escapeHtml(actionThreadId);
@@ -207,6 +209,9 @@ export function renderRows(
           ? "current"
           : entry.updateCheck?.status || "pending",
       ).toLowerCase();
+      const updateDescription = hasUnacknowledgedUpdate(entry)
+        ? "A detected update has not been acknowledged."
+        : "No unacknowledged detected update.";
       const checked = selectedIds.has(entry.threadId) ? "checked" : "";
       const rowMenuOpen =
         state?.openRowMenuId && String(state.openRowMenuId) === String(entry.threadId);
@@ -219,7 +224,7 @@ export function renderRows(
           <td data-cell="title" data-label="Title">${titleHtml}</td>
           <td data-cell="status" data-label="Status">${statusCell}</td>
           <td data-cell="rating" data-label="My Rating">${ratingHtml}</td>
-          <td data-cell="updated" data-label="Updated" class="f95ue-library-updated" data-update-state="${escapeHtml(checkState)}" aria-label="${escapeHtml(`Automatic update check: ${checkState}`)}" title="${escapeHtml(`Update state: ${entry.updateState || "unchecked"}. Automatic update check: ${checkState}. Last record update: ${fmtDate(entry.recordModifiedAt)}`)}">${escapeHtml(fmtDateOnly(entry.recordModifiedAt))}</td>
+          <td data-cell="updated" data-label="Updated" class="f95ue-library-updated" data-update-state="${escapeHtml(checkState)}" aria-label="${escapeHtml(`Automatic update check: ${checkState}. ${updateDescription}`)}" title="${escapeHtml(`${updateDescription} Update state: ${entry.updateState || "unchecked"}. Automatic update check: ${checkState}. Last record update: ${fmtDate(entry.recordModifiedAt)}`)}">${escapeHtml(fmtDateOnly(entry.recordModifiedAt))}</td>
           <td data-cell="prefixes" data-label="Prefixes">${prefixesHtml}</td>
           <td data-cell="version" data-label="Version">${versionHtml}</td>
           <td data-cell="developer" data-label="Developer">${developerHtml}</td>

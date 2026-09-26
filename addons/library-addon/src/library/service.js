@@ -11,8 +11,10 @@ import {
   mergePersonalState,
   mergeThreadFacts,
   normalizeRecord,
+  isPersonalStatus,
   validateRecord,
 } from "./recordModel.js";
+import { createActivityCommandId } from "./activityCommandId.js";
 import { validateImportedThreadIdentity } from "./threadIdentity.js";
 import { createUpdateEvent, diffThreadFacts } from "./updateEventModel.js";
 import { createUpdateRepository } from "./updateRepository.js";
@@ -461,6 +463,15 @@ export function createLibraryService(bridge, _storage, dependencies = {}) {
     const existing = await getEntry(normalizedId);
     if (!existing) return { ok: false, reason: "entry_not_found" };
 
+    const personalPatch =
+      patch?.personal && typeof patch.personal === "object" ? patch.personal : null;
+    const hasStatusPatch =
+      Object.hasOwn(patch || {}, "status") ||
+      Object.hasOwn(patch || {}, "userStatus") ||
+      Object.hasOwn(personalPatch || {}, "status") ||
+      Object.hasOwn(personalPatch || {}, "userStatus");
+    if (hasStatusPatch) return { ok: false, reason: "status_command_required" };
+
     const personalKeys = new Set([
       "personal",
       "status",
@@ -813,6 +824,23 @@ export function createLibraryService(bridge, _storage, dependencies = {}) {
     return activity.listByThread(String(threadId || "").trim(), limit);
   }
 
+  async function setPersonalStatus(threadId, status, options = {}) {
+    const nextStatus = String(status || "").trim().toLowerCase();
+    if (!isPersonalStatus(nextStatus)) return { ok: false, reason: "invalid_status" };
+
+    const commandId = String(
+      options.commandId || createActivityCommandId("status"),
+    )
+      .trim()
+      .slice(0, 128);
+    if (!commandId) return { ok: false, reason: "command_id_required" };
+
+    return applyPersonalActivity(threadId, { status: nextStatus }, {
+      ...options,
+      commandId,
+    });
+  }
+
   async function applyPersonalActivity(threadId, personalPatch = {}, options = {}) {
     const id = String(threadId || "").trim();
     const commandId = String(options.commandId || "").trim();
@@ -828,6 +856,15 @@ export function createLibraryService(bridge, _storage, dependencies = {}) {
 
     const occurredAt = Number(options.occurredAt || Date.now());
     const patch = personalPatch?.personal || personalPatch;
+    const hasStatusChange =
+      Object.hasOwn(patch || {}, "status") || Object.hasOwn(patch || {}, "userStatus");
+    const requestedStatus = Object.hasOwn(patch || {}, "status")
+      ? patch.status
+      : patch?.userStatus;
+    const nextStatus = String(requestedStatus || "").trim().toLowerCase();
+    if (hasStatusChange && !isPersonalStatus(nextStatus)) {
+      return { ok: false, reason: "invalid_status" };
+    }
     const derived = { ...patch };
     const specs = [];
     const add = (type, before, after, version = "") => {
@@ -835,8 +872,8 @@ export function createLibraryService(bridge, _storage, dependencies = {}) {
       specs.push({ type, before, after, version });
     };
 
-    if (Object.hasOwn(patch, "status")) {
-      const nextStatus = String(patch.status || "").trim();
+    if (hasStatusChange) {
+      derived.status = nextStatus;
       add("status-change", existing.personal.status, nextStatus);
       if (
         nextStatus === "playing" &&
@@ -1018,9 +1055,9 @@ export function createLibraryService(bridge, _storage, dependencies = {}) {
     let skipped = 0;
 
     for (const id of ids) {
-      const result = await applyPersonalActivity(
+      const result = await setPersonalStatus(
         id,
-        { status: nextStatus },
+        nextStatus,
         { commandId: `${commandId}:${id}` },
       );
       if (result?.ok) updated += 1;
@@ -1094,6 +1131,7 @@ export function createLibraryService(bridge, _storage, dependencies = {}) {
     previewImport,
     importEntries,
     patchEntry,
+    setPersonalStatus,
     observeThreadFacts,
     listUpdateEvents,
     acknowledgeCurrentUpdate,

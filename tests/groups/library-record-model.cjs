@@ -114,7 +114,7 @@ module.exports = function registerLibraryRecordModelGroup(context) {
     assert.ok(!Object.hasOwn(first, "gameVersion"));
   });
 
-  runTest("LIBRARY-RECORD-MODEL-04 reads legacy records without writing", async () => {
+  runTest("LIBRARY-STATE-VERIFY-01 reads legacy status records without history backfill", async () => {
     const { createLibraryService } = loadModule(
       "addons/library-addon/src/library/service.js",
     );
@@ -130,6 +130,7 @@ module.exports = function registerLibraryRecordModelGroup(context) {
     const library = createLibraryService(bridge, {});
     const record = await library.getEntry(source.threadId);
     assert.strictEqual(record.schemaVersion, 5);
+    assert.strictEqual(record.personal.status, source.userStatus);
     assert.strictEqual(writes, 0);
   });
 };

@@ -155,14 +155,32 @@ export function createEntryEditorController({
       return { ok: false, reason: "entry_not_found" };
     }
 
-    const result = await library.applyPersonalActivity(
-      active.threadId,
-      validation.personal,
-      {
-        commandId: createActivityCommandId("editor-save"),
-        shouldCancel: () => saveGeneration !== generation,
-      },
-    );
+    const shouldCancel = () => saveGeneration !== generation;
+    const statusChanged = fresh.personal?.status !== validation.personal.status;
+    let statusResult = { ok: true, value: fresh, unchanged: true };
+    if (statusChanged) {
+      statusResult = await library.setPersonalStatus(
+        active.threadId,
+        validation.personal.status,
+        {
+          commandId: createActivityCommandId("editor-status"),
+          shouldCancel,
+        },
+      );
+      if (!statusResult?.ok) {
+        active.saving = false;
+        await showToast(`Failed to save entry: ${statusResult?.reason || "unknown"}`, "error");
+        return statusResult;
+      }
+    }
+    if (shouldCancel() || !active) return { ok: false, reason: "cancelled" };
+
+    const nonStatusPersonal = { ...validation.personal };
+    delete nonStatusPersonal.status;
+    const result = await library.applyPersonalActivity(active.threadId, nonStatusPersonal, {
+      commandId: createActivityCommandId("editor-save"),
+      shouldCancel,
+    });
     if (saveGeneration !== generation || !active) {
       return { ok: false, reason: "cancelled" };
     }
@@ -182,8 +200,9 @@ export function createEntryEditorController({
       return { ok: false, reason: "auto_update_save_failed" };
     }
     await close("saved");
-    await onSaved(result);
-    return result;
+    const canonicalResult = result?.value ? result : statusResult;
+    await onSaved(canonicalResult);
+    return canonicalResult;
   }
 
   async function open(threadId) {

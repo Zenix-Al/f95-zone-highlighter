@@ -127,6 +127,121 @@ module.exports = function registerLibraryActivityGroup(context) {
     assert.strictEqual(snapshot.updates.length, 1);
   });
 
+  runTest("LIBRARY-STATE-VERSION-SEMANTICS-01 keeps acknowledgement and played-version writes independent", async () => {
+    const { createLibraryService } = loadModule("addons/library-addon/src/library/service.js");
+    const memory = createMemoryBridge();
+    memory.snapshot().record.updateState = "changed";
+    memory.snapshot().record.personal.lastPlayedVersion = "0.6";
+    memory.snapshot().record.personal.lastPlayedAt = 60;
+    const library = createLibraryService(memory.bridge, {});
+
+    const acknowledged = await library.acknowledgeCurrentUpdate("42", { now: 100 });
+    assert.strictEqual(acknowledged.ok, true);
+    assert.strictEqual(memory.snapshot().record.updateState, "acknowledged");
+    assert.strictEqual(memory.snapshot().record.personal.lastPlayedVersion, "0.6");
+    assert.strictEqual(memory.snapshot().record.personal.lastPlayedAt, 60);
+
+    memory.snapshot().record.updateState = "changed";
+    library.clearEntryCache();
+    const played = await library.applyPersonalActivity("42", {}, {
+      commandId: "played-current",
+      occurredAt: 200,
+      playedCurrentVersion: true,
+    });
+    assert.strictEqual(played.ok, true);
+    assert.strictEqual(memory.snapshot().record.updateState, "changed");
+    assert.strictEqual(memory.snapshot().record.personal.lastPlayedVersion, "0.7");
+    assert.strictEqual(memory.snapshot().record.personal.lastPlayedAt, 200);
+    assert.strictEqual(memory.snapshot().activity.at(-1).type, "played-version");
+  });
+
+  runTest("LIBRARY-STATE-BASELINE-01 rejects status patches that would bypass activity history", async () => {
+    const { createLibraryService } = loadModule("addons/library-addon/src/library/service.js");
+    const memory = createMemoryBridge();
+    const library = createLibraryService(memory.bridge, {});
+
+    const result = await library.patchEntry("42", { status: "playing" });
+
+    assert.deepStrictEqual(result, {
+      ok: false,
+      reason: "status_command_required",
+    });
+    assert.strictEqual(memory.snapshot().record.personal.status, "saved");
+    assert.strictEqual(memory.snapshot().activity.length, 0);
+  });
+
+  runTest("LIBRARY-STATE-COMMAND-01 validates, normalizes, and deduplicates status commands", async () => {
+    const { createLibraryService } = loadModule("addons/library-addon/src/library/service.js");
+    const memory = createMemoryBridge();
+    const library = createLibraryService(memory.bridge, {});
+
+    const invalid = await library.setPersonalStatus("42", "not-a-status");
+    const first = await library.setPersonalStatus("42", " Playing ", {
+      commandId: "status-playing",
+      occurredAt: 300,
+    });
+    const repeat = await library.setPersonalStatus("42", "playing", {
+      commandId: "status-playing",
+      occurredAt: 300,
+    });
+
+    assert.deepStrictEqual(invalid, { ok: false, reason: "invalid_status" });
+    assert.strictEqual(first.ok, true);
+    assert.strictEqual(first.value.personal.status, "playing");
+    assert.strictEqual(first.value.personal.startedAt, 300);
+    assert.strictEqual(repeat.unchanged, true);
+    assert.strictEqual(memory.snapshot().activity.length, 1);
+    assert.deepStrictEqual(memory.snapshot().activity[0], {
+      id: "activity:42:status-playing:status-change",
+      threadId: "42",
+      commandId: "status-playing",
+      type: "status-change",
+      occurredAt: 300,
+      version: "",
+      before: "saved",
+      after: "playing",
+    });
+  });
+
+  runTest("LIBRARY-STATE-COMMAND-01 preserves activity history for legacy status aliases", async () => {
+    const { createLibraryService } = loadModule("addons/library-addon/src/library/service.js");
+    const memory = createMemoryBridge();
+    const library = createLibraryService(memory.bridge, {});
+
+    const result = await library.applyPersonalActivity(
+      "42",
+      { userStatus: "paused" },
+      { commandId: "legacy-status", occurredAt: 350 },
+    );
+
+    assert.strictEqual(result.ok, true);
+    assert.strictEqual(result.value.personal.status, "paused");
+    assert.strictEqual(memory.snapshot().activity.length, 1);
+    assert.strictEqual(memory.snapshot().activity[0].after, "paused");
+  });
+
+  runTest("LIBRARY-STATE-COMMAND-01 rolls back its event when the record write fails", async () => {
+    const { createLibraryService } = loadModule("addons/library-addon/src/library/service.js");
+    const memory = createMemoryBridge();
+    const originalInvoke = memory.bridge.invokeCoreAction;
+    memory.bridge.invokeCoreAction = async (action, payload) => {
+      if (action === "idb.put" && (payload.storeName || "records") === "records") {
+        return { ok: false, reason: "write_failed" };
+      }
+      return originalInvoke(action, payload);
+    };
+    const library = createLibraryService(memory.bridge, {});
+
+    const result = await library.setPersonalStatus("42", "playing", {
+      commandId: "record-write-failure",
+      occurredAt: 400,
+    });
+
+    assert.strictEqual(result.ok, false);
+    assert.strictEqual(memory.snapshot().record.personal.status, "saved");
+    assert.strictEqual(memory.snapshot().activity.length, 0);
+  });
+
   runTest("LIBRARY-ACTIVITY-01 deduplicates repeated played versions and returns complete records", async () => {
     const { createLibraryService } = loadModule("addons/library-addon/src/library/service.js");
     const memory = createMemoryBridge();

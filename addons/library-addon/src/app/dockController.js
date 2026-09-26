@@ -343,7 +343,7 @@ export function createLibraryDockController({
         : "Failed to save current thread.",
       result?.ok ? "success" : "error",
     );
-    if (result?.ok) await state.refreshRuntime();
+    if (result?.ok) await refresh();
   }
 
   return { refresh, saveCurrentThread, unmount };

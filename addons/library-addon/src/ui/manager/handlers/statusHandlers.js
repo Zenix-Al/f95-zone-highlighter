@@ -27,9 +27,9 @@ export function createStatusHandlers(context) {
         .toLowerCase();
       if (!threadIdClean || !ALLOWED_STATUSES.has(nextStatus)) return;
 
-      const result = await api.applyPersonalActivity(
+      const result = await api.setPersonalStatus(
         threadIdClean,
-        { status: nextStatus },
+        nextStatus,
         { commandId: createActivityCommandId("status") },
       );
       if (!result?.ok) {
@@ -39,7 +39,7 @@ export function createStatusHandlers(context) {
 
       state.openStatusMenuId = "";
       await reloadRows();
-      notifyMutated();
+      await notifyMutated();
     },
     "status-menu-toggle": async (threadId) => {
       const id = String(threadId || "").trim();

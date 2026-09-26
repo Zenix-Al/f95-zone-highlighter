@@ -148,8 +148,8 @@ export function createLibraryAddonApp({ core, runtime }) {
     lifecycle,
     getEnabled: () => state.enabled,
     getCurrentThreadSnapshot: getThreadSnapshot,
-    onMutated: () => {
-      if (state.enabled) void dock.refresh();
+    onMutated: async () => {
+      if (state.enabled) await dock.refresh();
     },
     autoUpdateScheduler,
   });
