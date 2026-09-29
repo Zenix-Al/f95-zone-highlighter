@@ -30,6 +30,9 @@ runTest("ADDON-API-AUDIT-01 covers every add-on and bounds the next API package"
   assert.strictEqual(first.inventory.coverage.rawActionIdsAccountedFor, true);
   assert.strictEqual(first.inventory.addOns.length, ADDON_MANIFEST.addons.length);
   assert.ok(first.rawActions.some((entry) => entry.id === "ui.dialog.close" && entry.callSites.length > 0));
+  for (const action of ["register", "unregister", "respond", "invalidate"]) {
+    assert.ok(first.rawActions.some((entry) => entry.id === `latest.markers.${action}` && entry.callSites.length > 0));
+  }
   assert.ok(first.inventory.addOns.some((entry) => entry.id === "masked-direct-addon" && entry.directGmAccess.length > 0));
   assert.ok(first.inventory.addOns.some((entry) => entry.id === "latest-filters-addon" && entry.urlAndPageParsing.length > 0));
   for (const candidate of first.candidates.filter((entry) => entry.decision === "implement")) {

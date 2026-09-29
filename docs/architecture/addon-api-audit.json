@@ -3125,6 +3125,7 @@
             "f95zone"
           ],
           "capabilities": [
+            "latest.markers",
             "toast",
             "feature",
             "storage",
@@ -3156,6 +3157,7 @@
           "addons/library-addon/src/app/commands.js",
           "addons/library-addon/src/app/createLibraryAddonApp.js",
           "addons/library-addon/src/app/dockController.js",
+          "addons/library-addon/src/app/latestMarkerProvider.js",
           "addons/library-addon/src/app/legacyUpgradeGuard.js",
           "addons/library-addon/src/app/lifecycle.js",
           "addons/library-addon/src/app/managerController.js",
@@ -3475,6 +3477,51 @@
             ]
           },
           {
+            "id": "latest.markers.invalidate",
+            "callSites": [
+              {
+                "path": "addons/library-addon/src/app/latestMarkerProvider.js",
+                "line": 37,
+                "text": "if (registered && isActive()) void core.invokeCoreAction(\"latest.markers.invalidate\", { id: ID });"
+              }
+            ]
+          },
+          {
+            "id": "latest.markers.register",
+            "callSites": [
+              {
+                "path": "addons/library-addon/src/app/latestMarkerProvider.js",
+                "line": 14,
+                "text": "const result = await core.invokeCoreAction(\"latest.markers.register\", {"
+              }
+            ]
+          },
+          {
+            "id": "latest.markers.respond",
+            "callSites": [
+              {
+                "path": "addons/library-addon/src/app/latestMarkerProvider.js",
+                "line": 54,
+                "text": "if (current === generation && isActive()) await core.invokeCoreAction(\"latest.markers.respond\", { providerId: ID, requestId: detail.requestId, markers });"
+              }
+            ]
+          },
+          {
+            "id": "latest.markers.unregister",
+            "callSites": [
+              {
+                "path": "addons/library-addon/src/app/latestMarkerProvider.js",
+                "line": 18,
+                "text": "if (result?.ok) await core.invokeCoreAction(\"latest.markers.unregister\", { id: ID });"
+              },
+              {
+                "path": "addons/library-addon/src/app/latestMarkerProvider.js",
+                "line": 28,
+                "text": "if (wasRegistered) await core.invokeCoreAction(\"latest.markers.unregister\", { id: ID });"
+              }
+            ]
+          },
+          {
             "id": "observer.waitFor",
             "callSites": [
               {
@@ -3633,7 +3680,7 @@
         "globalEventListeners": [
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 204,
+            "line": 209,
             "text": "window.addEventListener(\"pagehide\", onPageHide);"
           },
           {
@@ -4191,6 +4238,16 @@
             "text": "return contentId ? document.getElementById(contentId) : null;"
           },
           {
+            "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+            "line": 36,
+            "text": "updates: previousRoot?.querySelector('[data-history=\"updates\"]')?.open ?? active.historyOpen.updates,"
+          },
+          {
+            "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+            "line": 37,
+            "text": "activity: previousRoot?.querySelector('[data-history=\"activity\"]')?.open ?? active.historyOpen.activity,"
+          },
+          {
             "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
             "line": 17,
             "text": "const bulkStatusEl = root?.querySelector('[data-field=\"bulkStatus\"]');"
@@ -4350,67 +4407,72 @@
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 57,
+            "line": 58,
             "text": "function isCurrent(context) {"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 60,
+            "line": 61,
             "text": "typeof context.isCurrent !== \"function\" ||"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 61,
+            "line": 62,
             "text": "context.isCurrent()"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 78,
+            "line": 80,
             "text": "if (!isCurrent(context)) {"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 88,
+            "line": 90,
             "text": "if (!isCurrent(context)) {"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 94,
+            "line": 98,
             "text": "if (!isCurrent(context)) {"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 99,
+            "line": 103,
             "text": "if (!isCurrent(context)) {"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 110,
+            "line": 114,
             "text": "return context.isCurrent()"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 116,
+            "line": 120,
             "text": "return context.isCurrent()"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 122,
+            "line": 126,
             "text": "return context.isCurrent()"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 171,
+            "line": 176,
             "text": "else if (command === \"disable\") void lifecycle.disable(detail);"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 191,
+            "line": 179,
+            "text": "markerProvider.cancel();"
+          },
+          {
+            "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
+            "line": 197,
             "text": "} else if (command === \"teardown\") {"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 192,
+            "line": 198,
             "text": "void lifecycle.teardown(detail);"
           },
           {
@@ -4467,6 +4529,56 @@
             "path": "addons/library-addon/src/app/dockController.js",
             "line": 236,
             "text": "if (!state.enabled || !isCurrent(context)) {"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestMarkerProvider.js",
+            "line": 9,
+            "text": "let generation = 0;"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestMarkerProvider.js",
+            "line": 13,
+            "text": "const current = generation;"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestMarkerProvider.js",
+            "line": 17,
+            "text": "if (current !== generation || !isActive()) {"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestMarkerProvider.js",
+            "line": 25,
+            "text": "generation += 1;"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestMarkerProvider.js",
+            "line": 30,
+            "text": "function cancel() { generation += 1; }"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestMarkerProvider.js",
+            "line": 33,
+            "text": "generation += 1;"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestMarkerProvider.js",
+            "line": 42,
+            "text": "const current = generation;"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestMarkerProvider.js",
+            "line": 46,
+            "text": "if (current !== generation || !isActive()) return;"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestMarkerProvider.js",
+            "line": 54,
+            "text": "if (current === generation && isActive()) await core.invokeCoreAction(\"latest.markers.respond\", { providerId: ID, requestId: detail.requestId, markers });"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestMarkerProvider.js",
+            "line": 56,
+            "text": "return { start, stop, cancel, changed, query };"
           },
           {
             "path": "addons/library-addon/src/app/opportunisticObserver.js",
@@ -4820,117 +4932,117 @@
           },
           {
             "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-            "line": 52,
+            "line": 58,
             "text": "onCancel: () => close(\"cancel\"),"
           },
           {
             "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-            "line": 63,
+            "line": 69,
             "text": "const actionGeneration = generation;"
           },
           {
             "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-            "line": 73,
+            "line": 79,
             "text": "shouldCancel: () => actionGeneration !== generation,"
           },
           {
             "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-            "line": 76,
+            "line": 82,
             "text": "if (actionGeneration !== generation || !active || active.threadId !== threadId) {"
           },
           {
             "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-            "line": 84,
+            "line": 90,
             "text": "if (actionGeneration !== generation || !active || active.threadId !== threadId) {"
           },
           {
             "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-            "line": 100,
+            "line": 106,
             "text": "if (actionGeneration !== generation || !active) {"
           },
           {
             "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-            "line": 113,
+            "line": 119,
             "text": "const actionGeneration = generation;"
           },
           {
             "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-            "line": 117,
+            "line": 123,
             "text": "if (actionGeneration !== generation || !active || active.threadId !== threadId) {"
           },
           {
             "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-            "line": 125,
+            "line": 131,
             "text": "if (actionGeneration !== generation || !active || active.threadId !== threadId) {"
           },
           {
             "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-            "line": 139,
+            "line": 145,
             "text": "const saveGeneration = generation;"
           },
           {
             "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-            "line": 149,
+            "line": 155,
             "text": "if (saveGeneration !== generation || !active) {"
           },
           {
             "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-            "line": 158,
+            "line": 164,
             "text": "const shouldCancel = () => saveGeneration !== generation;"
           },
           {
             "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-            "line": 184,
+            "line": 190,
             "text": "if (saveGeneration !== generation || !active) {"
           },
           {
             "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-            "line": 199,
+            "line": 205,
             "text": "if (!autoResult?.ok || saveGeneration !== generation) {"
           },
           {
             "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-            "line": 211,
+            "line": 217,
             "text": "const openGeneration = ++generation;"
           },
           {
             "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-            "line": 217,
+            "line": 223,
             "text": "if (openGeneration !== generation) return { ok: false, reason: \"cancelled\" };"
           },
           {
             "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-            "line": 224,
+            "line": 230,
             "text": "if (openGeneration !== generation) return { ok: false, reason: \"cancelled\" };"
           },
           {
             "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-            "line": 229,
+            "line": 235,
             "text": "if (openGeneration !== generation) return { ok: false, reason: \"cancelled\" };"
           },
           {
             "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-            "line": 233,
+            "line": 239,
             "text": "if (openGeneration !== generation) {"
           },
           {
             "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-            "line": 246,
+            "line": 252,
             "text": "if (!result?.ok || openGeneration !== generation) {"
           },
           {
             "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-            "line": 269,
+            "line": 276,
             "text": "onCancel: () => close(\"cancel\"),"
           },
           {
             "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-            "line": 302,
+            "line": 309,
             "text": "generation,"
           },
           {
             "path": "addons/library-addon/src/ui/entryEditor/editorRenderer.js",
-            "line": 111,
+            "line": 112,
             "text": "<button type=\"button\" data-editor-action=\"cancel\">Cancel</button>"
           },
           {
@@ -5234,7 +5346,7 @@
             "text": "generation,"
           }
         ],
-        "rawActionCount": 55
+        "rawActionCount": 60
       },
       {
         "id": "example-addon",
@@ -8360,6 +8472,67 @@
       "consumerCount": 2
     },
     {
+      "id": "latest.markers.invalidate",
+      "callSites": [
+        {
+          "path": "addons/library-addon/src/app/latestMarkerProvider.js",
+          "line": 37,
+          "text": "if (registered && isActive()) void core.invokeCoreAction(\"latest.markers.invalidate\", { id: ID });"
+        }
+      ],
+      "consumers": [
+        "library-addon"
+      ],
+      "consumerCount": 1
+    },
+    {
+      "id": "latest.markers.register",
+      "callSites": [
+        {
+          "path": "addons/library-addon/src/app/latestMarkerProvider.js",
+          "line": 14,
+          "text": "const result = await core.invokeCoreAction(\"latest.markers.register\", {"
+        }
+      ],
+      "consumers": [
+        "library-addon"
+      ],
+      "consumerCount": 1
+    },
+    {
+      "id": "latest.markers.respond",
+      "callSites": [
+        {
+          "path": "addons/library-addon/src/app/latestMarkerProvider.js",
+          "line": 54,
+          "text": "if (current === generation && isActive()) await core.invokeCoreAction(\"latest.markers.respond\", { providerId: ID, requestId: detail.requestId, markers });"
+        }
+      ],
+      "consumers": [
+        "library-addon"
+      ],
+      "consumerCount": 1
+    },
+    {
+      "id": "latest.markers.unregister",
+      "callSites": [
+        {
+          "path": "addons/library-addon/src/app/latestMarkerProvider.js",
+          "line": 18,
+          "text": "if (result?.ok) await core.invokeCoreAction(\"latest.markers.unregister\", { id: ID });"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestMarkerProvider.js",
+          "line": 28,
+          "text": "if (wasRegistered) await core.invokeCoreAction(\"latest.markers.unregister\", { id: ID });"
+        }
+      ],
+      "consumers": [
+        "library-addon"
+      ],
+      "consumerCount": 1
+    },
+    {
       "id": "observer.unwatch",
       "callSites": [
         {
@@ -11047,27 +11220,32 @@
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-          "line": 46,
+          "line": 34,
+          "text": "const previousRoot = getRoot(active.contentId);"
+        },
+        {
+          "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+          "line": 52,
           "text": "const root = getRoot(result.value?.contentId || active.contentId);"
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-          "line": 48,
+          "line": 54,
           "text": "active.contentId = result.value?.contentId || active.contentId;"
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-          "line": 251,
+          "line": 257,
           "text": "const contentId = String(result.value?.contentId || \"\");"
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-          "line": 252,
+          "line": 258,
           "text": "const root = getRoot(contentId);"
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-          "line": 264,
+          "line": 271,
           "text": "contentId,"
         },
         {
@@ -11379,7 +11557,7 @@
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 209,
+          "line": 214,
           "text": "const access = await getAddonAccess(core);"
         },
         {
@@ -11560,12 +11738,12 @@
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 21,
+          "line": 22,
           "text": "configureImportProgress(core);"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 183,
+          "line": 189,
           "text": "handleImportProgressDialogClosed(detail);"
         },
         {
@@ -11615,17 +11793,17 @@
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 362,
+          "line": 369,
           "text": "const onProgress = typeof options.onProgress === \"function\" ? options.onProgress : () => {};"
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 380,
+          "line": 387,
           "text": "onProgress,"
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 483,
+          "line": 490,
           "text": "\"progressNote\","
         },
         {
@@ -11975,12 +12153,12 @@
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-          "line": 61,
+          "line": 67,
           "text": "if (active.playingVersion) return { ok: false, reason: \"already_in_progress\" };"
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorRenderer.js",
-          "line": 105,
+          "line": 84,
           "text": "${field(\"Progress note\", `<textarea name=\"progressNote\" maxlength=\"10000\" rows=\"4\">${escapeHtml(draft.progressNote)}</textarea>`, true)}"
         },
         {
@@ -12854,62 +13032,67 @@
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 57,
+          "line": 58,
           "text": "function isCurrent(context) {"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 60,
+          "line": 61,
           "text": "typeof context.isCurrent !== \"function\" ||"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 61,
+          "line": 62,
           "text": "context.isCurrent()"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 78,
+          "line": 80,
           "text": "if (!isCurrent(context)) {"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 88,
+          "line": 90,
           "text": "if (!isCurrent(context)) {"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 94,
+          "line": 98,
           "text": "if (!isCurrent(context)) {"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 99,
+          "line": 103,
           "text": "if (!isCurrent(context)) {"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 110,
+          "line": 114,
           "text": "return context.isCurrent()"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 116,
+          "line": 120,
           "text": "return context.isCurrent()"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 122,
+          "line": 126,
           "text": "return context.isCurrent()"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 191,
+          "line": 179,
+          "text": "markerProvider.cancel();"
+        },
+        {
+          "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
+          "line": 197,
           "text": "} else if (command === \"teardown\") {"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 192,
+          "line": 198,
           "text": "void lifecycle.teardown(detail);"
         },
         {
@@ -12971,6 +13154,56 @@
           "path": "addons/library-addon/src/app/dockController.js",
           "line": 236,
           "text": "if (!state.enabled || !isCurrent(context)) {"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestMarkerProvider.js",
+          "line": 9,
+          "text": "let generation = 0;"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestMarkerProvider.js",
+          "line": 13,
+          "text": "const current = generation;"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestMarkerProvider.js",
+          "line": 17,
+          "text": "if (current !== generation || !isActive()) {"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestMarkerProvider.js",
+          "line": 25,
+          "text": "generation += 1;"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestMarkerProvider.js",
+          "line": 30,
+          "text": "function cancel() { generation += 1; }"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestMarkerProvider.js",
+          "line": 33,
+          "text": "generation += 1;"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestMarkerProvider.js",
+          "line": 42,
+          "text": "const current = generation;"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestMarkerProvider.js",
+          "line": 46,
+          "text": "if (current !== generation || !isActive()) return;"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestMarkerProvider.js",
+          "line": 54,
+          "text": "if (current === generation && isActive()) await core.invokeCoreAction(\"latest.markers.respond\", { providerId: ID, requestId: detail.requestId, markers });"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestMarkerProvider.js",
+          "line": 56,
+          "text": "return { start, stop, cancel, changed, query };"
         },
         {
           "path": "addons/library-addon/src/app/opportunisticObserver.js",
@@ -13314,117 +13547,117 @@
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-          "line": 52,
+          "line": 58,
           "text": "onCancel: () => close(\"cancel\"),"
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-          "line": 63,
+          "line": 69,
           "text": "const actionGeneration = generation;"
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-          "line": 73,
+          "line": 79,
           "text": "shouldCancel: () => actionGeneration !== generation,"
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-          "line": 76,
+          "line": 82,
           "text": "if (actionGeneration !== generation || !active || active.threadId !== threadId) {"
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-          "line": 84,
+          "line": 90,
           "text": "if (actionGeneration !== generation || !active || active.threadId !== threadId) {"
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-          "line": 100,
+          "line": 106,
           "text": "if (actionGeneration !== generation || !active) {"
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-          "line": 113,
+          "line": 119,
           "text": "const actionGeneration = generation;"
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-          "line": 117,
+          "line": 123,
           "text": "if (actionGeneration !== generation || !active || active.threadId !== threadId) {"
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-          "line": 125,
+          "line": 131,
           "text": "if (actionGeneration !== generation || !active || active.threadId !== threadId) {"
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-          "line": 139,
+          "line": 145,
           "text": "const saveGeneration = generation;"
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-          "line": 149,
+          "line": 155,
           "text": "if (saveGeneration !== generation || !active) {"
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-          "line": 158,
+          "line": 164,
           "text": "const shouldCancel = () => saveGeneration !== generation;"
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-          "line": 184,
+          "line": 190,
           "text": "if (saveGeneration !== generation || !active) {"
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-          "line": 199,
+          "line": 205,
           "text": "if (!autoResult?.ok || saveGeneration !== generation) {"
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-          "line": 211,
+          "line": 217,
           "text": "const openGeneration = ++generation;"
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-          "line": 217,
+          "line": 223,
           "text": "if (openGeneration !== generation) return { ok: false, reason: \"cancelled\" };"
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-          "line": 224,
+          "line": 230,
           "text": "if (openGeneration !== generation) return { ok: false, reason: \"cancelled\" };"
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-          "line": 229,
+          "line": 235,
           "text": "if (openGeneration !== generation) return { ok: false, reason: \"cancelled\" };"
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-          "line": 233,
+          "line": 239,
           "text": "if (openGeneration !== generation) {"
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-          "line": 246,
+          "line": 252,
           "text": "if (!result?.ok || openGeneration !== generation) {"
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-          "line": 269,
+          "line": 276,
           "text": "onCancel: () => close(\"cancel\"),"
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-          "line": 302,
+          "line": 309,
           "text": "generation,"
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorRenderer.js",
-          "line": 111,
+          "line": 112,
           "text": "<button type=\"button\" data-editor-action=\"cancel\">Cancel</button>"
         },
         {

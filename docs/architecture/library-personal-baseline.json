@@ -364,15 +364,15 @@
     }
   ],
   "build": {
-    "authoredBytes": 400527,
-    "fileCount": 100,
+    "authoredBytes": 407979,
+    "fileCount": 101,
     "regular": {
       "mode": "regular",
-      "bytes": 412661,
+      "bytes": 420581,
       "contributors": [
         {
           "path": "addons/library-addon/src/library/service.js",
-          "bytes": 39405
+          "bytes": 39570
         },
         {
           "path": "addons/library-addon/src/ui/assets/manager.css",
@@ -399,12 +399,12 @@
           "bytes": 11021
         },
         {
-          "path": "addons/library-addon/src/library/recordModel.js",
-          "bytes": 10465
+          "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+          "bytes": 10759
         },
         {
-          "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-          "bytes": 10357
+          "path": "addons/library-addon/src/library/recordModel.js",
+          "bytes": 10465
         },
         {
           "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
@@ -432,7 +432,11 @@
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "bytes": 7911
+          "bytes": 8476
+        },
+        {
+          "path": "addons/library-addon/src/ui/entryEditor/editor.css",
+          "bytes": 7764
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
@@ -445,16 +449,12 @@
         {
           "path": "addons/library-addon/src/ui/application/importExportWorkflow.js",
           "bytes": 6247
-        },
-        {
-          "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
-          "bytes": 6220
         }
       ]
     },
     "release": {
       "mode": "release",
-      "bytes": 369550,
+      "bytes": 377238,
       "contributors": [
         {
           "path": "addons/library-addon/src/ui/assets/manager.css",
@@ -462,7 +462,7 @@
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "bytes": 27298
+          "bytes": 27405
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
@@ -485,6 +485,14 @@
           "bytes": 7834
         },
         {
+          "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
+          "bytes": 7533
+        },
+        {
+          "path": "addons/library-addon/src/ui/entryEditor/editor.css",
+          "bytes": 7405
+        },
+        {
           "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
           "bytes": 7358
         },
@@ -495,10 +503,6 @@
         {
           "path": "addons/library-addon/src/ui/assets/manager.html",
           "bytes": 7293
-        },
-        {
-          "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-          "bytes": 7214
         },
         {
           "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
@@ -521,20 +525,16 @@
           "bytes": 6011
         },
         {
+          "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
+          "bytes": 5934
+        },
+        {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
           "bytes": 5536
         },
         {
-          "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "bytes": 5478
-        },
-        {
           "path": "addons/library-addon/src/ui/entryEditor/editorRenderer.js",
-          "bytes": 4930
-        },
-        {
-          "path": "addons/library-addon/src/ui/application/importExportWorkflow.js",
-          "bytes": 4821
+          "bytes": 5397
         }
       ]
     }
