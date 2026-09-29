@@ -23,6 +23,7 @@ const VALID_CAPABILITIES = new Set([
   "ui.mount",
   "ui.dialog",
   "ui.dock",
+  "latest.markers",
 ]);
 const VALID_RUN_AT = new Set(["document-start", "document-body", "document-end", "document-idle", "context-menu"]);
 const F95ZONE_SAMPLE_URLS = [

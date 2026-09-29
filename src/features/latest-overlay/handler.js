@@ -18,6 +18,7 @@ import {
 import { resetAllTiles, resetTile } from "./tilePatcher.js";
 import { setupHoverListener, teardownHoverListener } from "./hoverTagHandler.js";
 import { latestDataIndex } from "./latestDataIndex.js";
+import { latestMarkers, hasMarkerTileChanges } from "./markers.js";
 
 export { reprocessAllTiles, resetTile, processTile, processAllTiles };
 
@@ -170,6 +171,8 @@ export function enableLatestOverlay() {
   );
 
   setupHoverListener();
+  latestMarkers.enable();
+  addObserverCallback("latest-overlay-markers", () => latestMarkers.refresh(), { filter: hasMarkerTileChanges, healthId: "Latest Overlay" });
   stateManager.set("latestOverlayStatus", "ACTIVE");
   debugLog("latest-overlay", "Enable completed", {
     data: { generation: currentGeneration, navigationElapsedMs: Number(performance.now().toFixed(2)) },
@@ -189,6 +192,8 @@ export function disableLatestOverlay() {
 
   incrementGeneration();
   clearMutationState();
+  latestMarkers.disable();
+  removeObserverCallback("latest-overlay-markers");
   unsubscribeLatestDataCapture();
   teardownHoverListener();
 

@@ -146,13 +146,19 @@ export function createLibraryService(bridge, _storage, dependencies = {}) {
     // IndexedDB put resolves to the primary key, not the stored object.
     // Cache the canonical value we submitted so an immediate read cannot
     // return the pre-commit record.
-    if (result?.ok) rememberEntry(record);
+    if (result?.ok) {
+      rememberEntry(record);
+      dependencies.onRecordsChanged?.();
+    }
     return result;
   }
 
   async function deleteEntry(threadId) {
     const result = await api.deleteEntry(threadId);
-    if (result?.ok) invalidateEntry(threadId);
+    if (result?.ok) {
+      invalidateEntry(threadId);
+      dependencies.onRecordsChanged?.();
+    }
     return result;
   }
 
@@ -160,6 +166,7 @@ export function createLibraryService(bridge, _storage, dependencies = {}) {
     const result = await api.bulkPutEntries(entries, shouldCancel);
     if (result?.ok) {
       for (const entry of entries) rememberEntry(entry);
+      dependencies.onRecordsChanged?.();
     }
     return result;
   }

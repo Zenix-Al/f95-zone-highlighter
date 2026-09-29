@@ -12,6 +12,7 @@ import { createLibraryManagerController } from "./managerController.js";
 import { getLocalLibraryPageContext } from "./pageContext.js";
 import { createLibraryRegistration } from "./registration.js";
 import { createLibrarySettings } from "./settings.js";
+import { createLibraryLatestMarkerProvider } from "./latestMarkerProvider.js";
 import { createAutoUpdateScheduler } from "../library/autoUpdateScheduler.js";
 import { createUpdateNotificationCoordinator } from "../library/updateNotificationCoordinator.js";
 import { getLegacyUpgradeMessage, prepareLibraryStorage } from "./legacyUpgradeGuard.js";
@@ -19,7 +20,6 @@ import { getLegacyUpgradeMessage, prepareLibraryStorage } from "./legacyUpgradeG
 export function createLibraryAddonApp({ core, runtime }) {
   configureToast(core);
   configureImportProgress(core);
-
   const state = {
     enabled: true,
     showPageButtons: true,
@@ -32,9 +32,12 @@ export function createLibraryAddonApp({ core, runtime }) {
     notify: showToast,
     isActive: () => state.enabled,
   });
+  let markerProvider;
   const library = createLibraryService(core, settings.storage, {
     notifyFirstChanged: updateNotifications.notifyFirstChanged,
+    onRecordsChanged: () => markerProvider?.changed(),
   });
+  markerProvider = createLibraryLatestMarkerProvider({ core, getEntry: library.getEntry, isActive: () => state.enabled && !state.upgradeRequired });
   const autoUpdateScheduler = createAutoUpdateScheduler({
     repository: library.autoUpdate,
     queueRuntime: library.autoUpdateQueue,
@@ -45,7 +48,6 @@ export function createLibraryAddonApp({ core, runtime }) {
     getEnabled: () => state.enabled,
     getShowPageButtons: () => state.showPageButtons,
   });
-
   let dock;
   let manager;
   let commandHandler = null;
@@ -53,7 +55,6 @@ export function createLibraryAddonApp({ core, runtime }) {
   const onPageHide = () => {
     void autoUpdateScheduler.stop();
   };
-
   function isCurrent(context) {
     return (
       !context ||
@@ -61,15 +62,16 @@ export function createLibraryAddonApp({ core, runtime }) {
       context.isCurrent()
     );
   }
-
   async function setEnabled(nextEnabled, context = null) {
     if (state.upgradeRequired) return { ok: false, reason: "upgrade_required" };
     state.enabled = Boolean(nextEnabled);
     await settings.save({ enabled: state.enabled });
     if (state.enabled) {
+      await markerProvider.start();
       await dock.refresh(context);
       await autoUpdateScheduler.start();
     } else {
+      await markerProvider.stop();
       await autoUpdateScheduler.stop();
       await cancelActiveImport("disabled");
       await manager.close("disabled");
@@ -90,6 +92,8 @@ export function createLibraryAddonApp({ core, runtime }) {
     }
     state.enabled = loaded.enabled !== false;
     state.showPageButtons = loaded.showPageButtons !== false;
+    if (state.enabled) await markerProvider.start();
+    else await markerProvider.stop();
     await dock.unmount();
     if (!isCurrent(context)) {
       return { ok: false, reason: "refresh_superseded" };
@@ -125,6 +129,7 @@ export function createLibraryAddonApp({ core, runtime }) {
     },
     onTeardown: async ({ reason }) => {
       state.enabled = false;
+      await markerProvider.stop();
       await autoUpdateScheduler.stop();
       await dock.unmount();
       await manager.close(reason);
@@ -163,14 +168,15 @@ export function createLibraryAddonApp({ core, runtime }) {
   });
   state.openManager = manager.open;
   state.refreshRuntime = refreshRuntimeState;
-
   function handleCommand(detail = {}) {
     if (String(detail.addonId || "") !== runtime.addonId) return;
     const command = String(detail.command || "").trim();
-    if (command === "enable") void lifecycle.enable(detail);
+    if (command === "latest-markers.query") void markerProvider.query(detail);
+    else if (command === "enable") void lifecycle.enable(detail);
     else if (command === "disable") void lifecycle.disable(detail);
     else if (command === "refresh") void lifecycle.refresh(detail);
     else if (command === "before-page-change") {
+      markerProvider.cancel();
       void autoUpdateScheduler.stop();
       lifecycle.invalidate(
         String(detail.reason || "page-change"),
@@ -196,7 +202,6 @@ export function createLibraryAddonApp({ core, runtime }) {
   const commandBinding = createLibraryCommandBinding(core, (detail) =>
     commandHandler?.(detail),
   );
-
   async function bootstrap() {
     commandHandler = handleCommand;
     commandBinding.bind();

@@ -114,7 +114,7 @@
       "id": "library-addon",
       "name": "F95UE Library Add-on",
       "description": "Quick-add threads to a personal library and manage entries with a dedicated add-on UI.",
-      "version": "1.3.5",
+      "version": "1.3.6",
       "author": "X Death",
       "entry": "addons/library-addon/src/main.js",
       "outfile": "addons/library-addon/dist/library-addon.user.js",
@@ -132,6 +132,7 @@
       ],
       "downloadUrl": "https://greasyfork.org/en/scripts/572506-f95ue-library-add-on",
       "capabilities": [
+        "latest.markers",
         "toast",
         "feature",
         "storage",

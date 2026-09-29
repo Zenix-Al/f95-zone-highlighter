@@ -8,6 +8,7 @@ import { latestDataIndex } from "./latestDataIndex.js";
 import { createTileState } from "./tileStateFactory.js";
 import { evaluateTileState } from "./overlayEvaluator.js";
 import { applyTilePatch, clearAllOverlayStyles } from "./tilePatcher.js";
+import { latestMarkers } from "./markers.js";
 
 const LOG_CHANNEL = "latest-overlay";
 let generation = 0;
@@ -169,6 +170,7 @@ export function processAllTiles(
 ) {
   if (expectedGeneration !== generation) return;
   refreshCaches();
+  latestMarkers.refresh();
   if (reset) clearAllOverlayStyles();
   processTiles(
     Array.from(document.getElementsByClassName(SELECTORS.TILE.CLASS)),
