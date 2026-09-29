@@ -7,9 +7,9 @@ Missing records and failed reads produce no marker. It never touches Latest DOM.
 
 Saved, Backlog, Playing, Paused, Completed and Dropped each return one label,
 core tone, and accessible description. Update acknowledgement and played-version
-state are intentionally excluded. The integration is opt-in through the core
-Latest Overlay settings toggle named **Library status**; provider registration
-does not change that preference.
+state are intentionally excluded. The integration defaults on through the core
+Latest Overlay settings toggle named **Library status**. An explicit saved disable
+is preserved; provider registration does not change that preference.
 
 Successful record puts, deletes, and bulk import writes signal coalesced
 invalidation through the service callback. Route changes invalidate in-progress

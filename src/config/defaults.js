@@ -61,7 +61,7 @@ export const defaultLatestSettings = {
   wideLatest: false,
   denseLatestGrid: false,
   latestOverlayToggle: true,
-  latestMarkerProviders: {},
+  latestMarkerProviders: { "library-status": { enabled: true } },
   latestOverlayColorOrder: [
     "excluded",
     "preferred",

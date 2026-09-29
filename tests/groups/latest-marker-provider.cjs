@@ -3,6 +3,17 @@
 module.exports = function registerLatestMarkerProviderGroup({ assert, loadModule, runTest, validateConfig }) {
   const { createLatestMarkerBroker, MARKER_LIMITS } = loadModule("src/services/addons/latestMarkerBroker.js");
   const metadata = { id: "library-status", name: "Library status", description: "Saved state" };
+  runTest("Library markers default on for missing preferences and preserve explicit disable", () => {
+    for (const latestSettings of [{}, { latestMarkerProviders: {} }]) {
+      const result = validateConfig({ latestSettings }, { mode: "strict", partial: true });
+      assert.strictEqual(result.valid, true);
+      assert.strictEqual(result.data.latestSettings.latestMarkerProviders["library-status"].enabled, true);
+    }
+    const result = validateConfig({ latestSettings: { latestMarkerProviders: { "library-status": { enabled: false } } } }, { mode: "strict", partial: true });
+    assert.strictEqual(result.valid, true);
+    assert.strictEqual(result.data.latestSettings.latestMarkerProviders["library-status"].enabled, false);
+    assert.strictEqual(result.data.latestSettings.latestMarkerProviders.other, undefined);
+  });
   runTest("Latest marker contract supports an independent recommendation provider and safe diagnostics", async () => {
     const commands = [];
     const broker = createLatestMarkerBroker({ authorize: () => true, dispatch: (owner, detail) => commands.push({ owner, detail }) });

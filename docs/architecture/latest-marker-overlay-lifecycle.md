@@ -5,6 +5,14 @@
 its subscription and a framework observer named `latest-overlay-markers`.
 No additional raw observer or DOM ownership is granted to providers.
 
+When the Library status provider is registered and its marker preference enabled,
+the overlay hides the native thumbnail watch icon through a reversible root
+class. It does not delete the icon or raise overlay z-index. Disabling the
+preference, unregistering the provider, or disabling the overlay restores it.
+Without replacement, cards containing a watch icon place the score one level
+lower, and any marker below that score. Cards without an eye retain their normal
+placement. The Library provider settings tooltip explains the substitution.
+
 Normal card painting starts before marker enablement; provider requests never
 join that paint promise. Reconciliation runs after a coalesced microtask and
 uses the shared frame-budget runner for slot removal and marker painting.

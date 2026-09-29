@@ -12,7 +12,7 @@ export function createLibraryLatestMarkerProvider({ core, getEntry, isActive }) 
     if (registered || !isActive()) return;
     const current = generation;
     const result = await core.invokeCoreAction("latest.markers.register", {
-      id: ID, name: "Library status", description: "Show saved and personal Library status on Latest cards", priority: 50,
+      id: ID, name: "Library status", description: "Show Library status on Latest cards, replacing the site's native watched icon while enabled.", priority: 50,
     });
     if (current !== generation || !isActive()) {
       if (result?.ok) await core.invokeCoreAction("latest.markers.unregister", { id: ID });

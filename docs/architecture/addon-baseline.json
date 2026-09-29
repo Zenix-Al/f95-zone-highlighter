@@ -2352,7 +2352,7 @@
       "id": "library-addon",
       "source": {
         "fileCount": 101,
-        "authoredBytes": 407941,
+        "authoredBytes": 407979,
         "physicalLines": 12757,
         "nonblankLines": 11557,
         "files": [
@@ -2472,7 +2472,7 @@
           },
           {
             "path": "addons/library-addon/src/app/latestMarkerProvider.js",
-            "bytes": 2462,
+            "bytes": 2500,
             "physicalLines": 57,
             "nonblankLines": 56
           },
@@ -2967,8 +2967,8 @@
       "builds": {
         "regular": {
           "mode": "regular",
-          "bytes": 420543,
-          "gzipBytes": 86102,
+          "bytes": 420581,
+          "gzipBytes": 86127,
           "contributors": [
             {
               "path": "addons/library-addon/src/library/service.js",
@@ -3054,8 +3054,8 @@
         },
         "release": {
           "mode": "release",
-          "bytes": 377200,
-          "gzipBytes": 75254,
+          "bytes": 377238,
+          "gzipBytes": 75275,
           "contributors": [
             {
               "path": "addons/library-addon/src/ui/assets/manager.css",

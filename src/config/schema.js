@@ -109,7 +109,13 @@ const latestSettings = node("object", defaultLatestSettings, {
     wideLatest: bool(defaultLatestSettings.wideLatest),
     denseLatestGrid: bool(defaultLatestSettings.denseLatestGrid),
     latestOverlayToggle: bool(defaultLatestSettings.latestOverlayToggle),
-    latestMarkerProviders: node("object", {}, {
+    latestMarkerProviders: node("object", defaultLatestSettings.latestMarkerProviders, {
+      properties: {
+        "library-status": node("object", { enabled: true }, {
+          properties: { enabled: bool(true) },
+          additionalProperties: false,
+        }),
+      },
       keyPattern: /^(?!__proto__$|constructor$|prototype$)[a-z0-9][a-z0-9_-]{0,63}$/,
       additionalProperties: node("object", {}, {
         properties: { enabled: bool(true) },

@@ -140,6 +140,11 @@ div#latest-page_items-wrap_inner div.resource-tile a.resource-tile_link {
   z-index: 2;
 }
 .resource-tile_thumb-wrap:has(.tile-score-display) .f95ue-latest-markers { top: 30px; }
+/* Library markers take the native watch indicator's space, without deleting it. */
+.f95ue-library-replaces-watch .resource-tile_thumb .watch-icon { display: none !important; }
+html:not(.f95ue-library-replaces-watch) .resource-tile_thumb-wrap:has(.watch-icon) .tile-score-display { top: 30px; }
+html:not(.f95ue-library-replaces-watch) .resource-tile_thumb-wrap:has(.watch-icon):has(.tile-score-display) .f95ue-latest-markers { top: 56px; }
+html:not(.f95ue-library-replaces-watch) .resource-tile_thumb-wrap:has(.watch-icon):not(:has(.tile-score-display)) .f95ue-latest-markers { top: 30px; }
 .f95ue-latest-marker,
 .f95ue-latest-marker-more {
   max-width: 100%;

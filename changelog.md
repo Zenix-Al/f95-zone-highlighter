@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.4.2 - Library status on Latest cards]
+
+- Added a trusted add-on marker bridge so Library can supply saved-thread status directly to core Latest cards without blocking the normal overlay.
+- Kept compact status labels beneath the score. When Library markers are unavailable or disabled, the native watched icon remains and the score moves down on watched cards to avoid overlap.
+
+This core update connects information that was previously separate: Library already tracked personal thread status, but Latest cards had no bridge to display it. The new bridge makes that context available while browsing, without opening Library or each thread.
+
 ## [5.4.1 - Add-on dialog scrolling fix]
 
 - Added explicit add-on-owned dialog scrolling so complex add-on interfaces can keep fixed headers and footers without a redundant core scrollbar.

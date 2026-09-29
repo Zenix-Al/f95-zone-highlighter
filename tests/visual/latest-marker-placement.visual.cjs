@@ -31,5 +31,22 @@ for (const width of [380, 240]) {
     await expect(page.locator('.f95ue-latest-marker-more')).toHaveText('+1');
     expect(await slot.evaluate((node) => node.scrollWidth <= node.clientWidth)).toBe(true);
     await testInfo.attach('multiple-providers.png', {body:await page.screenshot(),contentType:'image/png'});
+    await page.evaluate(() => {
+      const thumb = document.querySelector('.resource-tile_thumb');
+      thumb.style.display = 'block';
+      thumb.innerHTML = '<i class="far fa-eye watch-icon" style="position:absolute;top:4px;right:4px;z-index:12">eye</i>';
+      const score = document.createElement('span');
+      score.className = 'tile-score-display';
+      score.textContent = '8.3';
+      document.querySelector('.resource-tile_thumb-wrap').append(score);
+    });
+    await expect(page.locator('.watch-icon')).toBeVisible();
+    expect(await page.locator('.tile-score-display').evaluate(node => getComputedStyle(node).top)).toBe('30px');
+    await page.evaluate(() => document.documentElement.classList.add('f95ue-library-replaces-watch'));
+    await expect(page.locator('.watch-icon')).toBeHidden();
+    expect(await page.locator('.tile-score-display').evaluate(node => getComputedStyle(node).top)).toBe('4px');
+    await page.evaluate(() => MarkerRenderer.latestMarkers.disable());
+    await expect(page.locator('.watch-icon')).toBeVisible();
+    expect(await page.locator('.tile-score-display').evaluate(node => getComputedStyle(node).top)).toBe('30px');
   });
 }

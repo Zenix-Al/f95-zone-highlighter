@@ -37,8 +37,9 @@ marker with a 40-character label, 160-character description, and one of
 
 Preferences live at `latestSettings.latestMarkerProviders.<providerId>.enabled`.
 The map is schema validated, exportable with Latest settings, and capped at 16
-entries. An absent preference is **off**; registration does not implicitly
-enable an add-on marker. Registered providers are shown as toggles in the
+entries. Library status defaults **on**, including existing empty preference maps;
+an explicit saved disable is preserved. Other absent provider preferences are **off**.
+Registered providers are shown as toggles in the
 Latest Overlay settings dialog. Preferences remain after the provider leaves,
 so a late registration can use the existing setting.
 
