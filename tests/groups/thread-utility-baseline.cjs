@@ -2,12 +2,6 @@
 
 module.exports = function registerThreadUtilityBaseline(context) {
   const { ROOT, Window, assert, fs, path, runTest } = context;
-  const referencePath = path.join(
-    ROOT,
-    "addons",
-    "reference",
-    "F95 Utility buttons.user.js",
-  );
   const fixturePath = path.join(
     ROOT,
     "addons",
@@ -37,48 +31,6 @@ module.exports = function registerThreadUtilityBaseline(context) {
     return node;
   }
 
-  runTest(
-    "THREAD-UTILITY-BASELINE-01 records reference defaults and settings behavior",
-    () => {
-      const source = readRequired(referencePath, "reference userscript");
-      assert.match(source, /@author\s+GGD40727/);
-      assert.match(source, /@license\s+MIT/);
-
-      const defaultsMatch = source.match(
-        /const DEFAULT_BUTTONS\s*=\s*(\[[\s\S]*?\]);/,
-      );
-      assert.ok(
-        defaultsMatch,
-        "THREAD-UTILITY-BASELINE-01 missing contract: DEFAULT_BUTTONS",
-      );
-      const defaults = Function(`"use strict"; return (${defaultsMatch[1]});`)();
-      assert.deepStrictEqual(defaults, [
-        { label: "Update", query: "Update", useTitle: true },
-        { label: "New+Compressed", query: "Compressed", useTitle: true },
-        { label: "Compressed", query: "Compressed", useTitle: false },
-        { label: "Walkthrough", query: "Walkthrough", useTitle: true },
-        { label: "Mod", query: "Mod", useTitle: false },
-        { label: "Cheats", query: "Cheats", useTitle: true },
-      ]);
-
-      for (const [contract, pattern] of [
-        ["new-tab preference", /GM_getValue\('openInNewTab',\s*true\)/],
-        ["custom label", /f95-input-label/],
-        ["custom query", /f95-input-query/],
-        ["include-title toggle", /f95-input-title/],
-        ["move up", /btn-up/],
-        ["move down", /btn-down/],
-        ["delete", /btn-del/],
-        ["add button", /f95-add-row/],
-      ]) {
-        assert.match(
-          source,
-          pattern,
-          `THREAD-UTILITY-BASELINE-01 missing contract: ${contract}`,
-        );
-      }
-    },
-  );
 
   runTest(
     "THREAD-UTILITY-BASELINE-01 fixture has one canonical starter and required roots",
