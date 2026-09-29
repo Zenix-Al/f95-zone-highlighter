@@ -6,6 +6,7 @@ import { createLatestMarkerBroker } from "./latestMarkerBroker.js";
 import { getRegisteredAddon, subscribeAddonsRegistry } from "./registry.js";
 import { getCurrentAddonPageScopes } from "./scope.js";
 import { getAddonState } from "./state.js";
+import { registerDiagnosticsProvider } from "../../core/featureHealth.js";
 
 const listeners = new Set();
 export const latestMarkerBroker = createLatestMarkerBroker({
@@ -28,6 +29,7 @@ export const latestMarkerBroker = createLatestMarkerBroker({
 });
 
 subscribeAddonsRegistry(() => latestMarkerBroker.prune());
+registerDiagnosticsProvider("latestMarkerProviders", () => ({ ...latestMarkerBroker.getSnapshot(), subscribers: listeners.size }));
 
 export function subscribeLatestMarkerProviders(listener) {
   listeners.add(listener);

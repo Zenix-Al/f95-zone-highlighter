@@ -23,6 +23,8 @@ Welcome to the documentation for the Latest Highlighter userscript. This directo
 - [Library State and Thread Context Baseline](architecture/library-state-thread-context-baseline.md) - Wave-1 status-write inventory, title-chip behavior, version-state gaps, and Manager ordering evidence.
 - [Library Full Edit History Baseline](architecture/library-full-edit-history-baseline.md) - Maximum-history geometry, action semantics, computed colors, and Playwright evidence before the disclosure rework.
 - [Latest Marker Provider Contract](architecture/latest-marker-provider-contract.md) - Data-only trusted add-on marker broker, wire actions, limits, preferences, and teardown boundaries.
+- [Latest Marker Overlay Lifecycle](architecture/latest-marker-overlay-lifecycle.md) - Non-blocking provider reconciliation, card replacement, frame-budgeted slots, and teardown.
+- [Library Latest Marker Provider](architecture/library-latest-marker-provider.md) - Library status mapping, cache reads, record invalidation, and lifecycle ownership.
 - [Library Legacy Upgrade Guard](architecture/library-legacy-upgrade-guard.md) - Retired schema-v1 conversion, the v1.2.2 bridge, and fail-closed direct-upgrade handling.
 - [Thread Utility Baseline](architecture/thread-utility-baseline.md) - Reference quick-search behavior and the canonical opening-post fixture contract.
 - [Thread Utility Golden Contract](architecture/thread-utility-golden-contract.md) - Bounded Example Add-on bootstrap, API, lifecycle, UI ownership, and teardown requirements.

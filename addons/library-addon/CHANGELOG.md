@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.3.6 - Latest status bridge and compact Full Edit histories
+
+- Connected Library to the core Latest marker bridge, showing Saved, Backlog, Playing, Paused, Completed, or Dropped status on saved cards.
+- Library status is enabled by default in the updated core, respects an explicitly disabled preference, and replaces the site's native watched icon while active.
+- Made Recent updates and Recent activity independently collapsible, collapsed by default with entry counts, keeping personal fields and actions ahead of long histories.
+
+Note : Requires the updated core v5.4.2 build for Latest markers; older cores continue to support Library's normal UI without this integration.
+
 ## v1.3.4 - Consistent library state and thread context
 
 - Unified every user-initiated status change behind one activity-aware command, so inline Manager controls, Full Edit, bulk actions, and thread-page actions keep status history and transition timestamps consistent.

@@ -130,7 +130,7 @@ loads; core applies it when that provider registers.
 - Test absent, disabled, malformed, spoofed, slow, late, and duplicate
   providers, plus teardown and stale-response behavior. Keep Wave 1 DOM-free.
 
-### Wave 2 — Overlay lifecycle
+### Wave 2 — Overlay lifecycle [x]
 
 - Add one core-owned marker slot to each Latest card.
 - Request data only for deduplicated visible IDs.
@@ -138,7 +138,7 @@ loads; core applies it when that provider registers.
   and provider invalidation without duplicate marker nodes.
 - Preserve the existing overlay's ordering and performance budget.
 
-### Wave 3 — Library provider
+### Wave 3 — Library provider [x]
 
 - Add the `library-status` provider behind the core integration setting.
 - Read Library state through its own service/cache and return only requested
@@ -150,7 +150,7 @@ loads; core applies it when that provider registers.
 - Verify Library booting after Latest Overlay, disabled integration, IDB
   unavailability, and card route replacement.
 
-### Wave 4 — Generalization review
+### Wave 4 — Generalization review [x]
 
 - Validate the API with a second non-Library provider before widening the
   schema or adding arbitrary card decorations.

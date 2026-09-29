@@ -3,6 +3,38 @@
 module.exports = function registerLatestMarkerProviderGroup({ assert, loadModule, runTest, validateConfig }) {
   const { createLatestMarkerBroker, MARKER_LIMITS } = loadModule("src/services/addons/latestMarkerBroker.js");
   const metadata = { id: "library-status", name: "Library status", description: "Saved state" };
+  runTest("Library markers default on for missing preferences and preserve explicit disable", () => {
+    for (const latestSettings of [{}, { latestMarkerProviders: {} }]) {
+      const result = validateConfig({ latestSettings }, { mode: "strict", partial: true });
+      assert.strictEqual(result.valid, true);
+      assert.strictEqual(result.data.latestSettings.latestMarkerProviders["library-status"].enabled, true);
+    }
+    const result = validateConfig({ latestSettings: { latestMarkerProviders: { "library-status": { enabled: false } } } }, { mode: "strict", partial: true });
+    assert.strictEqual(result.valid, true);
+    assert.strictEqual(result.data.latestSettings.latestMarkerProviders["library-status"].enabled, false);
+    assert.strictEqual(result.data.latestSettings.latestMarkerProviders.other, undefined);
+  });
+  runTest("Latest marker contract supports an independent recommendation provider and safe diagnostics", async () => {
+    const commands = [];
+    const broker = createLatestMarkerBroker({ authorize: () => true, dispatch: (owner, detail) => commands.push({ owner, detail }) });
+    const recommendation = require("../fixtures/nonLibraryMarkerProvider.cjs")(broker);
+    assert.strictEqual(recommendation.register().ok, true);
+    assert.strictEqual(broker.register("library-addon", metadata).ok, true);
+    const query = broker.query(recommendation.id, ["42", "43"]);
+    assert.strictEqual(commands[0].owner, recommendation.owner);
+    assert.strictEqual(broker.respond("library-addon", { providerId: recommendation.id, requestId: commands[0].detail.requestId, markers: {} }).ok, false);
+    const pending = broker.getSnapshot();
+    assert.strictEqual(pending.pendingRequests, 1);
+    assert.strictEqual(pending.providers[0].priority, 0);
+    recommendation.respond(commands[0].detail);
+    assert.deepStrictEqual(await query, { 42: { label: "Editor pick", tone: "success", description: "Recommended by the editorial add-on" } });
+    assert.doesNotMatch(JSON.stringify(broker.getSnapshot()), /Recommended by|threadIds|requestId/);
+    broker.removeOwner(recommendation.owner);
+    assert.strictEqual(broker.list()[0].id, metadata.id);
+    broker.reset();
+    assert.strictEqual(broker.getSnapshot().providers.length, 0);
+    assert.strictEqual(broker.getSnapshot().pendingRequests, 0);
+  });
   const make = (options = {}) => {
     const commands = [];
     const changes = [];
@@ -83,5 +115,36 @@ module.exports = function registerLatestMarkerProviderGroup({ assert, loadModule
     assert.deepStrictEqual(await second, {});
     assert.strictEqual(broker.pendingCount(), 0);
     assert.strictEqual(broker.respond("trusted", { providerId: metadata.id, requestId: commands[0].detail.requestId, markers: {} }).ok, false);
+  });
+
+  runTest("Latest marker route cancellation and invalidation discard old replies", async () => {
+    const { broker, commands } = make();
+    broker.register("trusted", metadata);
+    const first = broker.query(metadata.id, ["1"]);
+    broker.cancelPending();
+    assert.deepStrictEqual(await first, {});
+    assert.strictEqual(broker.list().length, 1);
+    const second = broker.query(metadata.id, ["1"]);
+    broker.invalidate("trusted", metadata.id);
+    assert.deepStrictEqual(await second, {});
+    for (const { detail } of commands) {
+      assert.strictEqual(broker.respond("trusted", { providerId: metadata.id, requestId: detail.requestId, markers: {} }).ok, false);
+    }
+    broker.reset();
+    assert.strictEqual(broker.list().length, 0);
+  });
+
+  runTest("Latest marker limits use UTF-8 bytes and bound simultaneous requests", async () => {
+    const { broker, commands } = make();
+    broker.register("trusted", metadata);
+    const oversized = broker.query(metadata.id, ["1"]);
+    broker.respond("trusted", { providerId: metadata.id, requestId: commands[0].detail.requestId, markers: { 1: { label: "Saved", description: "界".repeat(12000) } } });
+    assert.deepStrictEqual(await oversized, {});
+    const requests = Array.from({ length: MARKER_LIMITS.pending }, (_, index) => broker.query(metadata.id, [String(index + 1)]));
+    assert.strictEqual(broker.pendingCount(), MARKER_LIMITS.pending);
+    assert.deepStrictEqual(await broker.query(metadata.id, ["999"]), {});
+    broker.cancelPending();
+    await Promise.all(requests);
+    assert.strictEqual(broker.pendingCount(), 0);
   });
 };

@@ -1,5 +1,5 @@
 // DOM-free boundary between Latest Overlay and data-only add-on providers.
-export const MARKER_LIMITS = Object.freeze({ providers: 16, ids: 100, bytes: 32768, label: 40, description: 160, timeoutMs: 1500 });
+export const MARKER_LIMITS = Object.freeze({ providers: 16, pending: 16, ids: 100, bytes: 32768, label: 40, description: 160, timeoutMs: 1500 });
 const ID = /^(?!__proto__$|constructor$|prototype$)[a-z0-9][a-z0-9_-]{0,63}$/;
 const THREAD_ID = /^[1-9]\d{0,19}$/;
 const TONES = new Set(["muted", "info", "success", "warning", "danger"]);
@@ -29,7 +29,8 @@ export function createLatestMarkerBroker({ authorize, enabled = () => true, disp
     const name = String(payload.name || "").trim();
     const description = String(payload.description || "").trim();
     if (!name || name.length > 80 || description.length > 240) return { ok: false, reason: "invalid_provider_metadata" };
-    const provider = { id, owner, name, description, priority: Math.max(0, Math.min(100, Math.trunc(Number(payload.priority) || 50))), generation: ++sequence };
+    const priority = Number(payload.priority ?? 50);
+    const provider = { id, owner, name, description, priority: Number.isFinite(priority) ? Math.max(0, Math.min(100, Math.trunc(priority))) : 50, generation: ++sequence };
     providers.set(id, provider);
     onChange(id);
     return { ok: true, value: { ...provider } };
@@ -55,13 +56,14 @@ export function createLatestMarkerBroker({ authorize, enabled = () => true, disp
   function list() { return [...providers.values()].filter((provider) => isAllowed(provider.owner)).map(({ id, name, description, priority }) => ({ id, name, description, priority })); }
   function invalidate(owner, id) {
     if (providers.get(id)?.owner !== owner || !isAllowed(owner)) return { ok: false, reason: "provider_not_owned" };
+    clearPending((request) => request.provider.id === id);
     onChange(id);
     return { ok: true };
   }
   function normalizeMarkers(markers, ids) {
     if (!markers || typeof markers !== "object" || Array.isArray(markers)) return {};
     let bytes;
-    try { bytes = JSON.stringify(markers).length; } catch { return {}; }
+    try { bytes = new TextEncoder().encode(JSON.stringify(markers)).byteLength; } catch { return {}; }
     if (bytes > MARKER_LIMITS.bytes) return {};
     const allowed = new Set(ids);
     const result = {};
@@ -95,6 +97,7 @@ export function createLatestMarkerBroker({ authorize, enabled = () => true, disp
       const duplicate = [...pending.values()].find((request) => request.provider === provider && !request.signal && request.ids.join(",") === ids.join(","));
       if (duplicate) return duplicate.promise;
     }
+    if (pending.size >= MARKER_LIMITS.pending) return {};
     let request;
     const promise = new Promise((finish) => {
       const requestId = `marker-${now()}-${++sequence}`;
@@ -112,5 +115,13 @@ export function createLatestMarkerBroker({ authorize, enabled = () => true, disp
     request.promise = promise;
     return promise;
   }
-  return { register, unregister, removeOwner, reset, cancelPending, prune, list, invalidate, respond, query, pendingCount: () => pending.size };
+  function getSnapshot() {
+    return {
+      providers: [...providers.values()].map(({ id, owner, priority }) => ({ id, owner, priority, enabled: enabled(id), allowed: isAllowed(owner) })),
+      pendingRequests: pending.size,
+      cachedMarkers: 0,
+      limits: { ...MARKER_LIMITS },
+    };
+  }
+  return { register, unregister, removeOwner, reset, cancelPending, prune, list, invalidate, respond, query, getSnapshot, pendingCount: () => pending.size };
 }

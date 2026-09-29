@@ -8,6 +8,8 @@ for (const group of [
   "core-size-dialog-shell",
   "addon-service",
   "latest-marker-provider",
+  "latest-marker-overlay",
+  "library-latest-marker",
   "addons",
   "addon-matrix",
   "addon-size",
