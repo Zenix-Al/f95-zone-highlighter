@@ -7,8 +7,8 @@ metadata, runtime behavior, or generated output.
 ## Reference quick-search behavior
 
 The initial concept comes from
-[`addons/reference/F95 Utility buttons.user.js`](../../addons/reference/F95%20Utility%20buttons.user.js),
-version 3.0 by GGD40727. The reference declares the MIT license. Thread Utility
+`addons/reference/F95 Utility buttons.user.js` (historical reference, removed
+from the repository), version 3.0 by GGD40727. The reference declares the MIT license. Thread Utility
 must credit the author and source concept in its README and initial changelog;
 it should adopt the behavior through the repository's add-on architecture
 rather than copying the reference's raw modal, styles, GM storage, or global
