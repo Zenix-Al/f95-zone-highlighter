@@ -39,7 +39,7 @@ import { getFailureDelay } from "./autoUpdatePolicy.js";
 const HISTORY_LIMIT_PER_THREAD = 20;
 
 export function createLibraryService(bridge, _storage, dependencies = {}) {
-  const api = createLibraryApiClient(bridge);
+  const api = createLibraryApiClient(bridge, dependencies.actionBudgetOptions);
   const updates = createUpdateRepository(api);
   const activity = createActivityRepository(api);
   const keysetCoverage = new Map();
@@ -148,6 +148,7 @@ export function createLibraryService(bridge, _storage, dependencies = {}) {
     // return the pre-commit record.
     if (result?.ok) {
       rememberEntry(record);
+      keysetCoverage.clear();
       dependencies.onRecordsChanged?.();
     }
     return result;
@@ -157,6 +158,7 @@ export function createLibraryService(bridge, _storage, dependencies = {}) {
     const result = await api.deleteEntry(threadId);
     if (result?.ok) {
       invalidateEntry(threadId);
+      keysetCoverage.clear();
       dependencies.onRecordsChanged?.();
     }
     return result;
@@ -166,6 +168,7 @@ export function createLibraryService(bridge, _storage, dependencies = {}) {
     const result = await api.bulkPutEntries(entries, shouldCancel);
     if (result?.ok) {
       for (const entry of entries) rememberEntry(entry);
+      keysetCoverage.clear();
       dependencies.onRecordsChanged?.();
     }
     return result;
@@ -359,7 +362,7 @@ export function createLibraryService(bridge, _storage, dependencies = {}) {
     });
   }
 
-  async function importEntries(documentInput, options = {}) {
+  async function importEntriesUnpaced(documentInput, options = {}) {
     const document = normalizeLibraryDocument(documentInput);
     const plan =
       options.plan && typeof options.plan === "object" && options.plan.sections
@@ -461,6 +464,10 @@ export function createLibraryService(bridge, _storage, dependencies = {}) {
         activity: plan.sections.activity.writeCount,
       },
     };
+  }
+
+  function importEntries(documentInput, options = {}) {
+    return api.runBulk(() => importEntriesUnpaced(documentInput, options), options.plan?.throttleInfo);
   }
 
   async function patchEntry(threadId, patch = {}) {
@@ -776,14 +783,21 @@ export function createLibraryService(bridge, _storage, dependencies = {}) {
     return { ok: !summary.cancelled, ...summary };
   }
 
-  async function setAutoUpdateEnabled(threadIds, enabled) {
-    const ids = Array.isArray(threadIds) ? threadIds : [threadIds];
+  function reportBulkProgress(options, progress) {
+    options?.onProgress?.({ ...progress, processed: progress.updated + progress.removed + progress.skipped });
+  }
+
+  async function setAutoUpdateEnabledUnpaced(threadIds, enabled, options = {}) {
+    const ids = [...new Set((Array.isArray(threadIds) ? threadIds : [threadIds]).map((id) => String(id || "").trim()).filter(Boolean))];
     let updated = 0;
     let skipped = 0;
+    reportBulkProgress(options, { total: ids.length, updated, removed: 0, skipped });
     for (const id of ids) {
+      if (options.shouldCancel?.()) return { ok: false, cancelled: true, updated, skipped };
       const existing = await getEntry(id);
       if (!existing) {
         skipped += 1;
+        reportBulkProgress(options, { total: ids.length, updated, removed: 0, skipped });
         continue;
       }
       const result = await putEntry({
@@ -798,8 +812,13 @@ export function createLibraryService(bridge, _storage, dependencies = {}) {
       });
       if (result?.ok) updated += 1;
       else skipped += 1;
+      reportBulkProgress(options, { total: ids.length, updated, removed: 0, skipped });
     }
-    return { ok: true, updated, skipped };
+    return { ok: skipped === 0, updated, skipped };
+  }
+
+  function setAutoUpdateEnabled(threadIds, enabled, options = {}) {
+    return api.runBulk(() => setAutoUpdateEnabledUnpaced(threadIds, enabled, options));
   }
 
   async function queryAutoUpdateSnapshotPage({
@@ -960,6 +979,7 @@ export function createLibraryService(bridge, _storage, dependencies = {}) {
     const { index, direction } = getSortConfig(options.sortBy, options.sortDir);
     const keysetSupported = supportsKeysetSort(options.sortBy);
     let indexIsComplete = false;
+    let coverage = null;
     if (keysetSupported) {
       if (!keysetCoverage.has(index)) {
         keysetCoverage.set(
@@ -978,7 +998,9 @@ export function createLibraryService(bridge, _storage, dependencies = {}) {
             .catch(() => ({ complete: false, total: null })),
         );
       }
-      indexIsComplete = (await keysetCoverage.get(index)).complete;
+      // Keep this query's snapshot: a concurrent write can invalidate the cache.
+      coverage = await keysetCoverage.get(index);
+      indexIsComplete = coverage.complete;
     }
 
     if (!keysetSupported || !indexIsComplete) {
@@ -1041,14 +1063,14 @@ export function createLibraryService(bridge, _storage, dependencies = {}) {
         !options.search &&
         (!options.status || options.status === "all") &&
         typeof options.matchesRecord !== "function"
-          ? (await keysetCoverage.get(index)).total
+          ? coverage.total
           : null,
       mode: "keyset",
       scanned,
     };
   }
 
-  async function bulkUpdateStatus(threadIds = [], status = "saved", options = {}) {
+  async function bulkUpdateStatusUnpaced(threadIds = [], status = "saved", options = {}) {
     const ids = [
       ...new Set(
         (Array.isArray(threadIds) ? threadIds : [])
@@ -1060,8 +1082,10 @@ export function createLibraryService(bridge, _storage, dependencies = {}) {
     const commandId = String(options.commandId || `bulk-status:${Date.now()}`);
     let updated = 0;
     let skipped = 0;
+    reportBulkProgress(options, { total: ids.length, updated, removed: 0, skipped });
 
     for (const id of ids) {
+      if (options.shouldCancel?.()) return { ok: false, cancelled: true, updated, skipped };
       const result = await setPersonalStatus(
         id,
         nextStatus,
@@ -1069,12 +1093,34 @@ export function createLibraryService(bridge, _storage, dependencies = {}) {
       );
       if (result?.ok) updated += 1;
       else skipped += 1;
+      reportBulkProgress(options, { total: ids.length, updated, removed: 0, skipped });
     }
 
-    return { ok: true, updated, skipped };
+    return { ok: skipped === 0, updated, skipped };
   }
 
-  async function bulkRemoveEntries(threadIds = []) {
+  function bulkUpdateStatus(threadIds = [], status = "saved", options = {}) {
+    return api.runBulk(() => bulkUpdateStatusUnpaced(threadIds, status, options));
+  }
+
+  function bulkSetPinned(threadIds = [], pinned = true, options = {}) {
+    return api.runBulk(async () => {
+      const ids = [...new Set((Array.isArray(threadIds) ? threadIds : []).map((id) => String(id || "").trim()).filter(Boolean))];
+      let updated = 0;
+      let skipped = 0;
+      reportBulkProgress(options, { total: ids.length, updated, removed: 0, skipped });
+      for (const id of ids) {
+        if (options.shouldCancel?.()) return { ok: false, cancelled: true, updated, skipped };
+        const result = await patchEntry(id, { pinned });
+        if (result?.ok) updated += 1;
+        else skipped += 1;
+        reportBulkProgress(options, { total: ids.length, updated, removed: 0, skipped });
+      }
+      return { ok: skipped === 0, updated, skipped };
+    });
+  }
+
+  async function bulkRemoveEntriesUnpaced(threadIds = [], options = {}) {
     const ids = [
       ...new Set(
         (Array.isArray(threadIds) ? threadIds : [])
@@ -1084,14 +1130,21 @@ export function createLibraryService(bridge, _storage, dependencies = {}) {
     ];
     let removed = 0;
     let skipped = 0;
+    reportBulkProgress(options, { total: ids.length, updated: 0, removed, skipped });
 
     for (const id of ids) {
+      if (options.shouldCancel?.()) return { ok: false, cancelled: true, removed, skipped };
       const result = await removeEntry(id);
       if (result?.ok) removed += 1;
       else skipped += 1;
+      reportBulkProgress(options, { total: ids.length, updated: 0, removed, skipped });
     }
 
-    return { ok: true, removed, skipped };
+    return { ok: skipped === 0, removed, skipped };
+  }
+
+  function bulkRemoveEntries(threadIds = [], options = {}) {
+    return api.runBulk(() => bulkRemoveEntriesUnpaced(threadIds, options));
   }
 
   async function runPinnedIndexMigration() {
@@ -1158,6 +1211,7 @@ export function createLibraryService(bridge, _storage, dependencies = {}) {
     listActivityEvents,
     applyPersonalActivity,
     bulkUpdateStatus,
+    bulkSetPinned,
     bulkRemoveEntries,
     runPinnedIndexMigration,
     clearEntryCache,

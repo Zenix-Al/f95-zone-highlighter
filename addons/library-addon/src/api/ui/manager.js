@@ -143,7 +143,7 @@ export function createManagerApi(bridge, library) {
         checksPerDay: 100,
       }),
     putAutoUpdateConfig: (config) => library.autoUpdate.putConfig(config),
-    setAutoUpdateEnabled: (ids, enabled) => library.setAutoUpdateEnabled(ids, enabled),
+    setAutoUpdateEnabled: (ids, enabled, options) => library.setAutoUpdateEnabled(ids, enabled, options),
 
     applyPersonalActivity: async (threadId, patch, options) => {
       return await library.applyPersonalActivity(threadId, patch, options);
@@ -152,9 +152,12 @@ export function createManagerApi(bridge, library) {
     bulkUpdateStatus: async (ids, status, options) => {
       return await library.bulkUpdateStatus(ids, status, options);
     },
+    bulkSetPinned: async (ids, pinned, options) => {
+      return await library.bulkSetPinned(ids, pinned, options);
+    },
 
-    bulkRemoveEntries: async (ids) => {
-      return await library.bulkRemoveEntries(ids);
+    bulkRemoveEntries: async (ids, options) => {
+      return await library.bulkRemoveEntries(ids, options);
     },
 
     importEntries: async (records, options) => {

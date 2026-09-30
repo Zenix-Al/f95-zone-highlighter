@@ -3139,6 +3139,7 @@
         },
         "sourceFiles": [
           "addons/library-addon/src/api/bridge.js",
+          "addons/library-addon/src/api/library/actionBudget.js",
           "addons/library-addon/src/api/library/client.js",
           "addons/library-addon/src/api/library/index.js",
           "addons/library-addon/src/api/library/schema.js",
@@ -3256,7 +3257,7 @@
             "callSites": [
               {
                 "path": "addons/library-addon/src/api/library/client.js",
-                "line": 45,
+                "line": 55,
                 "text": ": await bridge.invokeCoreAction(\"addon.throttle\", {});"
               }
             ]
@@ -3281,7 +3282,7 @@
             "callSites": [
               {
                 "path": "addons/library-addon/src/api/library/client.js",
-                "line": 126,
+                "line": 136,
                 "text": "\"idb.bulkDelete\","
               }
             ]
@@ -3291,17 +3292,17 @@
             "callSites": [
               {
                 "path": "addons/library-addon/src/api/library/client.js",
-                "line": 115,
+                "line": 125,
                 "text": "\"idb.bulkPut\","
               },
               {
                 "path": "addons/library-addon/src/api/library/client.js",
-                "line": 297,
+                "line": 307,
                 "text": "return invokeImportAction(\"idb.bulkPut\", payload, shouldCancel);"
               },
               {
                 "path": "addons/library-addon/src/api/library/client.js",
-                "line": 302,
+                "line": 312,
                 "text": "\"idb.bulkPut\","
               }
             ]
@@ -3311,12 +3312,12 @@
             "callSites": [
               {
                 "path": "addons/library-addon/src/api/library/client.js",
-                "line": 140,
+                "line": 150,
                 "text": "\"idb.count\","
               },
               {
                 "path": "addons/library-addon/src/api/library/client.js",
-                "line": 162,
+                "line": 172,
                 "text": "\"idb.count\","
               },
               {
@@ -3331,27 +3332,27 @@
             "callSites": [
               {
                 "path": "addons/library-addon/src/api/library/client.js",
-                "line": 72,
+                "line": 82,
                 "text": "\"idb.delete\","
               },
               {
                 "path": "addons/library-addon/src/api/library/client.js",
-                "line": 108,
+                "line": 118,
                 "text": "\"idb.delete\","
               },
               {
                 "path": "addons/library-addon/src/api/library/client.js",
-                "line": 184,
+                "line": 194,
                 "text": "\"idb.delete\","
               },
               {
                 "path": "addons/library-addon/src/api/library/client.js",
-                "line": 236,
+                "line": 246,
                 "text": "\"idb.delete\","
               },
               {
                 "path": "addons/library-addon/src/api/library/client.js",
-                "line": 288,
+                "line": 298,
                 "text": "\"idb.delete\","
               }
             ]
@@ -3361,27 +3362,27 @@
             "callSites": [
               {
                 "path": "addons/library-addon/src/api/library/client.js",
-                "line": 54,
+                "line": 64,
                 "text": "\"idb.get\","
               },
               {
                 "path": "addons/library-addon/src/api/library/client.js",
-                "line": 93,
+                "line": 103,
                 "text": "\"idb.get\","
               },
               {
                 "path": "addons/library-addon/src/api/library/client.js",
-                "line": 169,
+                "line": 179,
                 "text": "\"idb.get\","
               },
               {
                 "path": "addons/library-addon/src/api/library/client.js",
-                "line": 221,
+                "line": 231,
                 "text": "\"idb.get\","
               },
               {
                 "path": "addons/library-addon/src/api/library/client.js",
-                "line": 273,
+                "line": 283,
                 "text": "\"idb.get\","
               },
               {
@@ -3396,32 +3397,32 @@
             "callSites": [
               {
                 "path": "addons/library-addon/src/api/library/client.js",
-                "line": 66,
+                "line": 76,
                 "text": "? invokeImportAction(\"idb.put\", payload, options.shouldCancel)"
               },
               {
                 "path": "addons/library-addon/src/api/library/client.js",
-                "line": 67,
+                "line": 77,
                 "text": ": bridge.invokeCoreAction(\"idb.put\", payload);"
               },
               {
                 "path": "addons/library-addon/src/api/library/client.js",
-                "line": 101,
+                "line": 111,
                 "text": "\"idb.put\","
               },
               {
                 "path": "addons/library-addon/src/api/library/client.js",
-                "line": 177,
+                "line": 187,
                 "text": "\"idb.put\","
               },
               {
                 "path": "addons/library-addon/src/api/library/client.js",
-                "line": 229,
+                "line": 239,
                 "text": "\"idb.put\","
               },
               {
                 "path": "addons/library-addon/src/api/library/client.js",
-                "line": 281,
+                "line": 291,
                 "text": "\"idb.put\","
               },
               {
@@ -3436,37 +3437,37 @@
             "callSites": [
               {
                 "path": "addons/library-addon/src/api/library/client.js",
-                "line": 81,
+                "line": 91,
                 "text": "\"idb.query\","
               },
               {
                 "path": "addons/library-addon/src/api/library/client.js",
-                "line": 133,
+                "line": 143,
                 "text": "\"idb.query\","
               },
               {
                 "path": "addons/library-addon/src/api/library/client.js",
-                "line": 147,
+                "line": 157,
                 "text": "\"idb.query\","
               },
               {
                 "path": "addons/library-addon/src/api/library/client.js",
-                "line": 191,
+                "line": 201,
                 "text": "\"idb.query\","
               },
               {
                 "path": "addons/library-addon/src/api/library/client.js",
-                "line": 209,
+                "line": 219,
                 "text": "\"idb.query\","
               },
               {
                 "path": "addons/library-addon/src/api/library/client.js",
-                "line": 243,
+                "line": 253,
                 "text": "\"idb.query\","
               },
               {
                 "path": "addons/library-addon/src/api/library/client.js",
-                "line": 261,
+                "line": 271,
                 "text": "\"idb.query\","
               },
               {
@@ -3809,8 +3810,13 @@
         ],
         "pollingAndTimers": [
           {
+            "path": "addons/library-addon/src/api/library/actionBudget.js",
+            "line": 2,
+            "text": "export function createActionBudget(invoke, { now = Date.now, wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms)) } = {}) {"
+          },
+          {
             "path": "addons/library-addon/src/api/library/client.js",
-            "line": 14,
+            "line": 15,
             "text": "return new Promise((resolve) => setTimeout(resolve, Math.max(0, Number(ms) || 0)));"
           },
           {
@@ -3855,8 +3861,8 @@
           },
           {
             "path": "addons/library-addon/src/ui/application/importProgressController.js",
-            "line": 13,
-            "text": "return new Promise((resolve) => setTimeout(resolve, Math.max(0, Number(ms) || 0)));"
+            "line": 11,
+            "text": "const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));"
           },
           {
             "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
@@ -4049,23 +4055,13 @@
           },
           {
             "path": "addons/library-addon/src/ui/application/importProgressController.js",
-            "line": 17,
-            "text": "const root = activeImport?.contentId ? document.getElementById(activeImport.contentId) : null;"
+            "line": 12,
+            "text": "const rootFor = (operation) => operation?.contentId ? document.getElementById(operation.contentId) : null;"
           },
           {
             "path": "addons/library-addon/src/ui/application/importProgressController.js",
-            "line": 18,
-            "text": "root?.querySelector('[data-action=\"cancel-import\"]')?.addEventListener(\"click\", () => {"
-          },
-          {
-            "path": "addons/library-addon/src/ui/application/importProgressController.js",
-            "line": 36,
-            "text": "const root = activeImport?.contentId ? document.getElementById(activeImport.contentId) : null;"
-          },
-          {
-            "path": "addons/library-addon/src/ui/application/importProgressController.js",
-            "line": 46,
-            "text": "const root = activeImport?.contentId ? document.getElementById(activeImport.contentId) : null;"
+            "line": 49,
+            "text": "rootFor(operation)?.querySelector('[data-action=\"cancel-operation\"]')?.addEventListener(\"click\", () => {"
           },
           {
             "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
@@ -4104,18 +4100,33 @@
           },
           {
             "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
-            "line": 47,
-            "text": "const bar = root.querySelector('[data-role=\"import-progress-bar\"]');"
+            "line": 28,
+            "text": "const title = root.querySelector('[data-role=\"operation-title\"]');"
           },
           {
             "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
-            "line": 48,
-            "text": "const text = root.querySelector('[data-role=\"import-progress-text\"]');"
+            "line": 29,
+            "text": "const track = root.querySelector('[role=\"progressbar\"]');"
           },
           {
             "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
-            "line": 49,
-            "text": "const detail = root.querySelector('[data-role=\"import-progress-detail\"]');"
+            "line": 30,
+            "text": "const fill = root.querySelector('[data-role=\"operation-fill\"]');"
+          },
+          {
+            "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
+            "line": 31,
+            "text": "const countEl = root.querySelector('[data-role=\"operation-count\"]');"
+          },
+          {
+            "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
+            "line": 32,
+            "text": "const detail = root.querySelector('[data-role=\"operation-detail\"]');"
+          },
+          {
+            "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
+            "line": 43,
+            "text": "const cancel = root.querySelector('[data-action=\"cancel-operation\"]');"
           },
           {
             "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
@@ -4249,23 +4260,23 @@
           },
           {
             "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
-            "line": 17,
-            "text": "const bulkStatusEl = root?.querySelector('[data-field=\"bulkStatus\"]');"
+            "line": 20,
+            "text": "const applyButton = getRoot()?.querySelector('[data-action=\"bulk-apply\"]');"
           },
           {
             "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
-            "line": 38,
-            "text": "const bulkPinEl = root?.querySelector('[data-field=\"bulkPin\"]');"
+            "line": 46,
+            "text": "const status = String(getRoot()?.querySelector('[data-field=\"bulkStatus\"]')?.value || \"saved\").trim();"
           },
           {
             "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
-            "line": 85,
-            "text": "root?.querySelector('[data-field=\"bulkAction\"]')?.value || \"\","
+            "line": 53,
+            "text": "const pinned = getRoot()?.querySelector('[data-field=\"bulkPin\"]')?.value !== \"unpin\";"
           },
           {
             "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
-            "line": 97,
-            "text": "const temporary = root?.querySelector('[data-field=\"bulkStatus\"]');"
+            "line": 70,
+            "text": "const action = String(getRoot()?.querySelector('[data-field=\"bulkAction\"]')?.value || \"\").trim();"
           },
           {
             "path": "addons/library-addon/src/ui/manager/handlers/noteHandlers.js",
@@ -4797,13 +4808,8 @@
           },
           {
             "path": "addons/library-addon/src/ui/application/importProgressController.js",
-            "line": 18,
-            "text": "root?.querySelector('[data-action=\"cancel-import\"]')?.addEventListener(\"click\", () => {"
-          },
-          {
-            "path": "addons/library-addon/src/ui/application/importProgressController.js",
-            "line": 19,
-            "text": "void closeProgressDialog(\"cancel-import\", true);"
+            "line": 49,
+            "text": "rootFor(operation)?.querySelector('[data-action=\"cancel-operation\"]')?.addEventListener(\"click\", () => {"
           },
           {
             "path": "addons/library-addon/src/ui/assets/manager.html",
@@ -4877,8 +4883,18 @@
           },
           {
             "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
-            "line": 30,
-            "text": "<button type=\"button\" data-action=\"cancel-import\" style=\"margin-top:14px;padding:7px 12px;cursor:pointer;\">Cancel Import</button>"
+            "line": 7,
+            "text": "<div class=\"f95ue-library-operation-actions\"><button type=\"button\" data-action=\"cancel-operation\">Cancel</button><span>Stopping keeps changes already made.</span></div>"
+          },
+          {
+            "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
+            "line": 43,
+            "text": "const cancel = root.querySelector('[data-action=\"cancel-operation\"]');"
+          },
+          {
+            "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
+            "line": 44,
+            "text": "if (cancel) cancel.disabled = status === \"cancelling\" || status === \"completed\";"
           },
           {
             "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
@@ -5047,12 +5063,12 @@
           },
           {
             "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
-            "line": 67,
-            "text": "cancelText: \"Cancel\","
+            "line": 61,
+            "text": "confirmText: \"Remove\", cancelText: \"Cancel\", danger: true,"
           },
           {
             "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
-            "line": 130,
+            "line": 86,
             "text": "if (action === \"auto-enable\" || action === \"auto-disable\") {"
           },
           {
@@ -5370,6 +5386,7 @@
             "page",
             "observer",
             "idb",
+            "latest.markers",
             "ui.style",
             "ui.mount",
             "ui.dialog",
@@ -5380,6 +5397,7 @@
           "addons/example-addon/src/api/bridge.js",
           "addons/example-addon/src/api/feature.js",
           "addons/example-addon/src/api/idb.js",
+          "addons/example-addon/src/api/latestMarkers.js",
           "addons/example-addon/src/api/meta.js",
           "addons/example-addon/src/api/observer.js",
           "addons/example-addon/src/api/page.js",
@@ -5603,6 +5621,66 @@
             ]
           },
           {
+            "id": "latest.markers.invalidate",
+            "callSites": [
+              {
+                "path": "addons/example-addon/src/api/latestMarkers.js",
+                "line": 34,
+                "text": "? core.invokeCoreAction(\"latest.markers.invalidate\", { id: EXAMPLE_MARKER_PROVIDER_ID })"
+              },
+              {
+                "path": "addons/example-addon/src/ui/panel.js",
+                "line": 167,
+                "text": "renderButton(\"marker-invalidate\", \"latest.markers.invalidate\"),"
+              }
+            ]
+          },
+          {
+            "id": "latest.markers.register",
+            "callSites": [
+              {
+                "path": "addons/example-addon/src/api/latestMarkers.js",
+                "line": 11,
+                "text": "const result = await core.invokeCoreAction(\"latest.markers.register\", {"
+              },
+              {
+                "path": "addons/example-addon/src/ui/panel.js",
+                "line": 166,
+                "text": "renderButton(\"marker-register\", \"latest.markers.register\"),"
+              }
+            ]
+          },
+          {
+            "id": "latest.markers.respond",
+            "callSites": [
+              {
+                "path": "addons/example-addon/src/api/latestMarkers.js",
+                "line": 45,
+                "text": "await core.invokeCoreAction(\"latest.markers.respond\", {"
+              }
+            ]
+          },
+          {
+            "id": "latest.markers.unregister",
+            "callSites": [
+              {
+                "path": "addons/example-addon/src/api/latestMarkers.js",
+                "line": 18,
+                "text": "if (result?.ok) await core.invokeCoreAction(\"latest.markers.unregister\", { id: EXAMPLE_MARKER_PROVIDER_ID });"
+              },
+              {
+                "path": "addons/example-addon/src/api/latestMarkers.js",
+                "line": 29,
+                "text": "return core.invokeCoreAction(\"latest.markers.unregister\", { id: EXAMPLE_MARKER_PROVIDER_ID });"
+              },
+              {
+                "path": "addons/example-addon/src/ui/panel.js",
+                "line": 168,
+                "text": "renderButton(\"marker-unregister\", \"latest.markers.unregister\"),"
+              }
+            ]
+          },
+          {
             "id": "observer.unwatch",
             "callSites": [
               {
@@ -5732,7 +5810,7 @@
               },
               {
                 "path": "addons/example-addon/src/ui/panel.js",
-                "line": 173,
+                "line": 184,
                 "text": "renderButton(\"dialog-confirm\", \"ui.confirm\"),"
               }
             ]
@@ -5747,7 +5825,7 @@
               },
               {
                 "path": "addons/example-addon/src/ui/panel.js",
-                "line": 174,
+                "line": 185,
                 "text": "renderButton(\"dialog-close\", \"ui.dialog.close\"),"
               }
             ]
@@ -5762,7 +5840,7 @@
               },
               {
                 "path": "addons/example-addon/src/ui/panel.js",
-                "line": 171,
+                "line": 182,
                 "text": "renderButton(\"dialog-open\", \"ui.dialog.open\"),"
               }
             ]
@@ -5777,7 +5855,7 @@
               },
               {
                 "path": "addons/example-addon/src/ui/panel.js",
-                "line": 172,
+                "line": 183,
                 "text": "renderButton(\"dialog-update\", \"ui.dialog.update\"),"
               }
             ]
@@ -5792,7 +5870,7 @@
               },
               {
                 "path": "addons/example-addon/src/ui/panel.js",
-                "line": 176,
+                "line": 187,
                 "text": "renderButton(\"dock-remove\", \"ui.dock.removeButtons\"),"
               }
             ]
@@ -5807,7 +5885,7 @@
               },
               {
                 "path": "addons/example-addon/src/ui/panel.js",
-                "line": 175,
+                "line": 186,
                 "text": "renderButton(\"dock-set\", \"ui.dock.setButtons\"),"
               }
             ]
@@ -5822,7 +5900,7 @@
               },
               {
                 "path": "addons/example-addon/src/ui/panel.js",
-                "line": 168,
+                "line": 179,
                 "text": "renderButton(\"mount-extra\", \"ui.mount\"),"
               }
             ]
@@ -5837,7 +5915,7 @@
               },
               {
                 "path": "addons/example-addon/src/ui/panel.js",
-                "line": 166,
+                "line": 177,
                 "text": "renderButton(\"style-register\", \"ui.style.register\"),"
               }
             ]
@@ -5852,7 +5930,7 @@
               },
               {
                 "path": "addons/example-addon/src/ui/panel.js",
-                "line": 167,
+                "line": 178,
                 "text": "renderButton(\"style-unregister\", \"ui.style.unregister\"),"
               }
             ]
@@ -5867,7 +5945,7 @@
               },
               {
                 "path": "addons/example-addon/src/ui/panel.js",
-                "line": 170,
+                "line": 181,
                 "text": "renderButton(\"unmount-extra\", \"ui.unmount\"),"
               }
             ]
@@ -5882,7 +5960,7 @@
               },
               {
                 "path": "addons/example-addon/src/ui/panel.js",
-                "line": 169,
+                "line": 180,
                 "text": "renderButton(\"update-extra\", \"ui.update\"),"
               }
             ]
@@ -5936,12 +6014,12 @@
         "pollingAndTimers": [
           {
             "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-            "line": 31,
+            "line": 33,
             "text": "token.timer = window.setTimeout(finish, Math.max(0, Number(ms) || 0));"
           },
           {
             "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-            "line": 90,
+            "line": 92,
             "text": "const timer = window.setTimeout(() => {"
           }
         ],
@@ -5949,12 +6027,12 @@
         "coreDomAssumptions": [
           {
             "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-            "line": 83,
+            "line": 85,
             "text": "const node = document.createElement(\"div\");"
           },
           {
             "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-            "line": 86,
+            "line": 88,
             "text": "document.body.appendChild(node);"
           },
           {
@@ -5986,6 +6064,36 @@
             "text": "return core.invokeCoreAction(\"feature.disable\", {});"
           },
           {
+            "path": "addons/example-addon/src/api/latestMarkers.js",
+            "line": 5,
+            "text": "let generation = 0;"
+          },
+          {
+            "path": "addons/example-addon/src/api/latestMarkers.js",
+            "line": 10,
+            "text": "const current = generation;"
+          },
+          {
+            "path": "addons/example-addon/src/api/latestMarkers.js",
+            "line": 17,
+            "text": "if (current !== generation || !isActive()) {"
+          },
+          {
+            "path": "addons/example-addon/src/api/latestMarkers.js",
+            "line": 26,
+            "text": "generation += 1;"
+          },
+          {
+            "path": "addons/example-addon/src/api/latestMarkers.js",
+            "line": 40,
+            "text": "const current = generation;"
+          },
+          {
+            "path": "addons/example-addon/src/api/latestMarkers.js",
+            "line": 44,
+            "text": "if (current === generation && registered && isActive()) {"
+          },
+          {
             "path": "addons/example-addon/src/app/actions/idb.js",
             "line": 58,
             "text": "\"bulk-import-cancel\": async () => {"
@@ -5997,12 +6105,12 @@
           },
           {
             "path": "addons/example-addon/src/app/actions/index.js",
-            "line": 25,
+            "line": 28,
             "text": "action === \"feature-disable\" ||"
           },
           {
             "path": "addons/example-addon/src/app/actions/index.js",
-            "line": 26,
+            "line": 29,
             "text": "action === \"bulk-import-cancel\""
           },
           {
@@ -6012,92 +6120,92 @@
           },
           {
             "path": "addons/example-addon/src/app/commands.js",
-            "line": 34,
+            "line": 35,
             "text": "case \"disable\":"
           },
           {
             "path": "addons/example-addon/src/app/commands.js",
-            "line": 35,
+            "line": 36,
             "text": "void lifecycle.disable(context).catch((error) => onError(\"disable-command\", error, \"disable_failed\"));"
           },
           {
             "path": "addons/example-addon/src/app/commands.js",
-            "line": 62,
+            "line": 66,
             "text": "case \"teardown\":"
           },
           {
             "path": "addons/example-addon/src/app/commands.js",
-            "line": 63,
+            "line": 67,
             "text": "void lifecycle.teardown(context).catch((error) => onError(\"teardown-command\", error, \"teardown_failed\"));"
           },
           {
             "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-            "line": 37,
+            "line": 39,
             "text": "window.clearTimeout(token.timer);"
           },
           {
             "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-            "line": 45,
+            "line": 47,
             "text": "window.clearTimeout(token.timer);"
           },
           {
             "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-            "line": 101,
+            "line": 103,
             "text": "window.clearTimeout(timer);"
           },
           {
             "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-            "line": 108,
+            "line": 110,
             "text": "window.clearTimeout(timer);"
           },
           {
             "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-            "line": 198,
+            "line": 201,
             "text": "onEnable: async ({ isCurrent }) => {"
           },
           {
             "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-            "line": 202,
+            "line": 205,
             "text": "if (!isCurrent()) return { ok: false, reason: \"enable_superseded\" };"
           },
           {
             "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-            "line": 209,
+            "line": 212,
             "text": "debugLog(runtime.addonId, \"Lifecycle disable started.\", { data: lifecycle?.getSnapshot?.() });"
           },
           {
             "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-            "line": 215,
+            "line": 219,
             "text": "await ui.disable(\"disable\");"
           },
           {
             "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-            "line": 217,
+            "line": 221,
             "text": "debugLog(runtime.addonId, \"Lifecycle disable completed.\", {"
           },
           {
             "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-            "line": 222,
+            "line": 226,
             "text": "onRefresh: async ({ isCurrent }) => {"
           },
           {
             "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-            "line": 225,
+            "line": 229,
             "text": "if (!isCurrent()) return { ok: false, reason: \"refresh_superseded\" };"
           },
           {
             "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-            "line": 240,
+            "line": 245,
             "text": "await ui.disable(reason);"
           },
           {
             "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-            "line": 288,
+            "line": 294,
             "text": "// registration with an enable, disable, refresh, or teardown command."
           },
           {
             "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-            "line": 297,
+            "line": 303,
             "text": "// either from its local default or call feature.disable after registering."
           },
           {
@@ -6136,7 +6244,7 @@
             "text": "renderButton(\"feature-disable\", \"feature.disable\", \"danger\"),"
           }
         ],
-        "rawActionCount": 62
+        "rawActionCount": 70
       },
       {
         "id": "latest-filters-addon",
@@ -8057,7 +8165,7 @@
       "callSites": [
         {
           "path": "addons/library-addon/src/api/library/client.js",
-          "line": 45,
+          "line": 55,
           "text": ": await bridge.invokeCoreAction(\"addon.throttle\", {});"
         },
         {
@@ -8181,7 +8289,7 @@
       "callSites": [
         {
           "path": "addons/library-addon/src/api/library/client.js",
-          "line": 126,
+          "line": 136,
           "text": "\"idb.bulkDelete\","
         },
         {
@@ -8201,17 +8309,17 @@
       "callSites": [
         {
           "path": "addons/library-addon/src/api/library/client.js",
-          "line": 115,
+          "line": 125,
           "text": "\"idb.bulkPut\","
         },
         {
           "path": "addons/library-addon/src/api/library/client.js",
-          "line": 297,
+          "line": 307,
           "text": "return invokeImportAction(\"idb.bulkPut\", payload, shouldCancel);"
         },
         {
           "path": "addons/library-addon/src/api/library/client.js",
-          "line": 302,
+          "line": 312,
           "text": "\"idb.bulkPut\","
         },
         {
@@ -8231,12 +8339,12 @@
       "callSites": [
         {
           "path": "addons/library-addon/src/api/library/client.js",
-          "line": 140,
+          "line": 150,
           "text": "\"idb.count\","
         },
         {
           "path": "addons/library-addon/src/api/library/client.js",
-          "line": 162,
+          "line": 172,
           "text": "\"idb.count\","
         },
         {
@@ -8266,27 +8374,27 @@
       "callSites": [
         {
           "path": "addons/library-addon/src/api/library/client.js",
-          "line": 72,
+          "line": 82,
           "text": "\"idb.delete\","
         },
         {
           "path": "addons/library-addon/src/api/library/client.js",
-          "line": 108,
+          "line": 118,
           "text": "\"idb.delete\","
         },
         {
           "path": "addons/library-addon/src/api/library/client.js",
-          "line": 184,
+          "line": 194,
           "text": "\"idb.delete\","
         },
         {
           "path": "addons/library-addon/src/api/library/client.js",
-          "line": 236,
+          "line": 246,
           "text": "\"idb.delete\","
         },
         {
           "path": "addons/library-addon/src/api/library/client.js",
-          "line": 288,
+          "line": 298,
           "text": "\"idb.delete\","
         },
         {
@@ -8311,27 +8419,27 @@
       "callSites": [
         {
           "path": "addons/library-addon/src/api/library/client.js",
-          "line": 54,
+          "line": 64,
           "text": "\"idb.get\","
         },
         {
           "path": "addons/library-addon/src/api/library/client.js",
-          "line": 93,
+          "line": 103,
           "text": "\"idb.get\","
         },
         {
           "path": "addons/library-addon/src/api/library/client.js",
-          "line": 169,
+          "line": 179,
           "text": "\"idb.get\","
         },
         {
           "path": "addons/library-addon/src/api/library/client.js",
-          "line": 221,
+          "line": 231,
           "text": "\"idb.get\","
         },
         {
           "path": "addons/library-addon/src/api/library/client.js",
-          "line": 273,
+          "line": 283,
           "text": "\"idb.get\","
         },
         {
@@ -8361,32 +8469,32 @@
       "callSites": [
         {
           "path": "addons/library-addon/src/api/library/client.js",
-          "line": 66,
+          "line": 76,
           "text": "? invokeImportAction(\"idb.put\", payload, options.shouldCancel)"
         },
         {
           "path": "addons/library-addon/src/api/library/client.js",
-          "line": 67,
+          "line": 77,
           "text": ": bridge.invokeCoreAction(\"idb.put\", payload);"
         },
         {
           "path": "addons/library-addon/src/api/library/client.js",
-          "line": 101,
+          "line": 111,
           "text": "\"idb.put\","
         },
         {
           "path": "addons/library-addon/src/api/library/client.js",
-          "line": 177,
+          "line": 187,
           "text": "\"idb.put\","
         },
         {
           "path": "addons/library-addon/src/api/library/client.js",
-          "line": 229,
+          "line": 239,
           "text": "\"idb.put\","
         },
         {
           "path": "addons/library-addon/src/api/library/client.js",
-          "line": 281,
+          "line": 291,
           "text": "\"idb.put\","
         },
         {
@@ -8416,37 +8524,37 @@
       "callSites": [
         {
           "path": "addons/library-addon/src/api/library/client.js",
-          "line": 81,
+          "line": 91,
           "text": "\"idb.query\","
         },
         {
           "path": "addons/library-addon/src/api/library/client.js",
-          "line": 133,
+          "line": 143,
           "text": "\"idb.query\","
         },
         {
           "path": "addons/library-addon/src/api/library/client.js",
-          "line": 147,
+          "line": 157,
           "text": "\"idb.query\","
         },
         {
           "path": "addons/library-addon/src/api/library/client.js",
-          "line": 191,
+          "line": 201,
           "text": "\"idb.query\","
         },
         {
           "path": "addons/library-addon/src/api/library/client.js",
-          "line": 209,
+          "line": 219,
           "text": "\"idb.query\","
         },
         {
           "path": "addons/library-addon/src/api/library/client.js",
-          "line": 243,
+          "line": 253,
           "text": "\"idb.query\","
         },
         {
           "path": "addons/library-addon/src/api/library/client.js",
-          "line": 261,
+          "line": 271,
           "text": "\"idb.query\","
         },
         {
@@ -8478,12 +8586,23 @@
           "path": "addons/library-addon/src/app/latestMarkerProvider.js",
           "line": 37,
           "text": "if (registered && isActive()) void core.invokeCoreAction(\"latest.markers.invalidate\", { id: ID });"
+        },
+        {
+          "path": "addons/example-addon/src/api/latestMarkers.js",
+          "line": 34,
+          "text": "? core.invokeCoreAction(\"latest.markers.invalidate\", { id: EXAMPLE_MARKER_PROVIDER_ID })"
+        },
+        {
+          "path": "addons/example-addon/src/ui/panel.js",
+          "line": 167,
+          "text": "renderButton(\"marker-invalidate\", \"latest.markers.invalidate\"),"
         }
       ],
       "consumers": [
+        "example-addon",
         "library-addon"
       ],
-      "consumerCount": 1
+      "consumerCount": 2
     },
     {
       "id": "latest.markers.register",
@@ -8492,12 +8611,23 @@
           "path": "addons/library-addon/src/app/latestMarkerProvider.js",
           "line": 14,
           "text": "const result = await core.invokeCoreAction(\"latest.markers.register\", {"
+        },
+        {
+          "path": "addons/example-addon/src/api/latestMarkers.js",
+          "line": 11,
+          "text": "const result = await core.invokeCoreAction(\"latest.markers.register\", {"
+        },
+        {
+          "path": "addons/example-addon/src/ui/panel.js",
+          "line": 166,
+          "text": "renderButton(\"marker-register\", \"latest.markers.register\"),"
         }
       ],
       "consumers": [
+        "example-addon",
         "library-addon"
       ],
-      "consumerCount": 1
+      "consumerCount": 2
     },
     {
       "id": "latest.markers.respond",
@@ -8506,12 +8636,18 @@
           "path": "addons/library-addon/src/app/latestMarkerProvider.js",
           "line": 54,
           "text": "if (current === generation && isActive()) await core.invokeCoreAction(\"latest.markers.respond\", { providerId: ID, requestId: detail.requestId, markers });"
+        },
+        {
+          "path": "addons/example-addon/src/api/latestMarkers.js",
+          "line": 45,
+          "text": "await core.invokeCoreAction(\"latest.markers.respond\", {"
         }
       ],
       "consumers": [
+        "example-addon",
         "library-addon"
       ],
-      "consumerCount": 1
+      "consumerCount": 2
     },
     {
       "id": "latest.markers.unregister",
@@ -8525,12 +8661,28 @@
           "path": "addons/library-addon/src/app/latestMarkerProvider.js",
           "line": 28,
           "text": "if (wasRegistered) await core.invokeCoreAction(\"latest.markers.unregister\", { id: ID });"
+        },
+        {
+          "path": "addons/example-addon/src/api/latestMarkers.js",
+          "line": 18,
+          "text": "if (result?.ok) await core.invokeCoreAction(\"latest.markers.unregister\", { id: EXAMPLE_MARKER_PROVIDER_ID });"
+        },
+        {
+          "path": "addons/example-addon/src/api/latestMarkers.js",
+          "line": 29,
+          "text": "return core.invokeCoreAction(\"latest.markers.unregister\", { id: EXAMPLE_MARKER_PROVIDER_ID });"
+        },
+        {
+          "path": "addons/example-addon/src/ui/panel.js",
+          "line": 168,
+          "text": "renderButton(\"marker-unregister\", \"latest.markers.unregister\"),"
         }
       ],
       "consumers": [
+        "example-addon",
         "library-addon"
       ],
-      "consumerCount": 1
+      "consumerCount": 2
     },
     {
       "id": "observer.unwatch",
@@ -8866,7 +9018,7 @@
         },
         {
           "path": "addons/example-addon/src/ui/panel.js",
-          "line": 173,
+          "line": 184,
           "text": "renderButton(\"dialog-confirm\", \"ui.confirm\"),"
         },
         {
@@ -8902,7 +9054,7 @@
         },
         {
           "path": "addons/example-addon/src/ui/panel.js",
-          "line": 174,
+          "line": 185,
           "text": "renderButton(\"dialog-close\", \"ui.dialog.close\"),"
         },
         {
@@ -8944,7 +9096,7 @@
         },
         {
           "path": "addons/example-addon/src/ui/panel.js",
-          "line": 171,
+          "line": 182,
           "text": "renderButton(\"dialog-open\", \"ui.dialog.open\"),"
         },
         {
@@ -8981,7 +9133,7 @@
         },
         {
           "path": "addons/example-addon/src/ui/panel.js",
-          "line": 172,
+          "line": 183,
           "text": "renderButton(\"dialog-update\", \"ui.dialog.update\"),"
         },
         {
@@ -9013,7 +9165,7 @@
         },
         {
           "path": "addons/example-addon/src/ui/panel.js",
-          "line": 176,
+          "line": 187,
           "text": "renderButton(\"dock-remove\", \"ui.dock.removeButtons\"),"
         },
         {
@@ -9038,7 +9190,7 @@
         },
         {
           "path": "addons/example-addon/src/ui/panel.js",
-          "line": 175,
+          "line": 186,
           "text": "renderButton(\"dock-set\", \"ui.dock.setButtons\"),"
         },
         {
@@ -9068,7 +9220,7 @@
         },
         {
           "path": "addons/example-addon/src/ui/panel.js",
-          "line": 168,
+          "line": 179,
           "text": "renderButton(\"mount-extra\", \"ui.mount\"),"
         },
         {
@@ -9120,7 +9272,7 @@
         },
         {
           "path": "addons/example-addon/src/ui/panel.js",
-          "line": 166,
+          "line": 177,
           "text": "renderButton(\"style-register\", \"ui.style.register\"),"
         },
         {
@@ -9174,7 +9326,7 @@
         },
         {
           "path": "addons/example-addon/src/ui/panel.js",
-          "line": 167,
+          "line": 178,
           "text": "renderButton(\"style-unregister\", \"ui.style.unregister\"),"
         },
         {
@@ -9213,7 +9365,7 @@
         },
         {
           "path": "addons/example-addon/src/ui/panel.js",
-          "line": 170,
+          "line": 181,
           "text": "renderButton(\"unmount-extra\", \"ui.unmount\"),"
         },
         {
@@ -9245,7 +9397,7 @@
         },
         {
           "path": "addons/example-addon/src/ui/panel.js",
-          "line": 169,
+          "line": 180,
           "text": "renderButton(\"update-extra\", \"ui.update\"),"
         },
         {
@@ -10964,8 +11116,13 @@
           "text": "return new Promise((resolve) => setTimeout(resolve, ms));"
         },
         {
+          "path": "addons/library-addon/src/api/library/actionBudget.js",
+          "line": 2,
+          "text": "export function createActionBudget(invoke, { now = Date.now, wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms)) } = {}) {"
+        },
+        {
           "path": "addons/library-addon/src/api/library/client.js",
-          "line": 14,
+          "line": 15,
           "text": "return new Promise((resolve) => setTimeout(resolve, Math.max(0, Number(ms) || 0)));"
         },
         {
@@ -11010,8 +11167,8 @@
         },
         {
           "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 13,
-          "text": "return new Promise((resolve) => setTimeout(resolve, Math.max(0, Number(ms) || 0)));"
+          "line": 11,
+          "text": "const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));"
         },
         {
           "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
@@ -11160,43 +11317,18 @@
         },
         {
           "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 17,
-          "text": "const root = activeImport?.contentId ? document.getElementById(activeImport.contentId) : null;"
+          "line": 12,
+          "text": "const rootFor = (operation) => operation?.contentId ? document.getElementById(operation.contentId) : null;"
         },
         {
           "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 23,
-          "text": "async function updateProgressContent(progress) {"
+          "line": 30,
+          "text": "const operation = { label, total, totalBatches, progress: {}, cancelled: false, closing: false, contentId: \"\" };"
         },
         {
           "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 36,
-          "text": "const root = activeImport?.contentId ? document.getElementById(activeImport.contentId) : null;"
-        },
-        {
-          "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 46,
-          "text": "const root = activeImport?.contentId ? document.getElementById(activeImport.contentId) : null;"
-        },
-        {
-          "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 76,
-          "text": "contentId: \"\","
-        },
-        {
-          "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 105,
-          "text": "activeImport.contentId = String(result?.value?.contentId || \"\").trim();"
-        },
-        {
-          "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 112,
-          "text": "updateProgressContent(progress);"
-        },
-        {
-          "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 136,
-          "text": "updateProgressContent({ total: activeImport.total, cancelled: true });"
+          "line": 48,
+          "text": "operation.contentId = String(result.value?.contentId || \"\");"
         },
         {
           "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
@@ -11305,12 +11437,12 @@
         },
         {
           "path": "addons/example-addon/src/ui/panel.js",
-          "line": 171,
+          "line": 182,
           "text": "renderButton(\"dialog-open\", \"ui.dialog.open\"),"
         },
         {
           "path": "addons/example-addon/src/ui/panel.js",
-          "line": 174,
+          "line": 185,
           "text": "renderButton(\"dialog-close\", \"ui.dialog.close\"),"
         },
         {
@@ -11527,22 +11659,32 @@
         },
         {
           "path": "addons/library-addon/src/api/library/client.js",
-          "line": 40,
+          "line": 21,
+          "text": "getCoreThrottle: coreBridge.getCoreThrottle?.bind(coreBridge),"
+        },
+        {
+          "path": "addons/library-addon/src/api/library/client.js",
+          "line": 39,
+          "text": "const limits = throttle || await this.getCoreThrottleInfo();"
+        },
+        {
+          "path": "addons/library-addon/src/api/library/client.js",
+          "line": 50,
           "text": "async getCoreThrottleInfo() {"
         },
         {
           "path": "addons/library-addon/src/api/library/client.js",
-          "line": 43,
+          "line": 53,
           "text": "typeof bridge.getCoreThrottle === \"function\""
         },
         {
           "path": "addons/library-addon/src/api/library/client.js",
-          "line": 44,
+          "line": 54,
           "text": "? await bridge.getCoreThrottle()"
         },
         {
           "path": "addons/library-addon/src/api/library/client.js",
-          "line": 45,
+          "line": 55,
           "text": ": await bridge.invokeCoreAction(\"addon.throttle\", {});"
         },
         {
@@ -11607,17 +11749,17 @@
         },
         {
           "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-          "line": 115,
+          "line": 117,
           "text": "getAddonAccess(core),"
         },
         {
           "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-          "line": 116,
+          "line": 118,
           "text": "getCoreThrottle(core),"
         },
         {
           "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-          "line": 298,
+          "line": 304,
           "text": "const access = await getAddonAccess(core);"
         },
         {
@@ -11793,18 +11935,73 @@
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 369,
+          "line": 372,
           "text": "const onProgress = typeof options.onProgress === \"function\" ? options.onProgress : () => {};"
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 387,
+          "line": 390,
           "text": "onProgress,"
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 490,
+          "line": 497,
           "text": "\"progressNote\","
+        },
+        {
+          "path": "addons/library-addon/src/library/service.js",
+          "line": 786,
+          "text": "function reportBulkProgress(options, progress) {"
+        },
+        {
+          "path": "addons/library-addon/src/library/service.js",
+          "line": 787,
+          "text": "options?.onProgress?.({ ...progress, processed: progress.updated + progress.removed + progress.skipped });"
+        },
+        {
+          "path": "addons/library-addon/src/library/service.js",
+          "line": 794,
+          "text": "reportBulkProgress(options, { total: ids.length, updated, removed: 0, skipped });"
+        },
+        {
+          "path": "addons/library-addon/src/library/service.js",
+          "line": 800,
+          "text": "reportBulkProgress(options, { total: ids.length, updated, removed: 0, skipped });"
+        },
+        {
+          "path": "addons/library-addon/src/library/service.js",
+          "line": 815,
+          "text": "reportBulkProgress(options, { total: ids.length, updated, removed: 0, skipped });"
+        },
+        {
+          "path": "addons/library-addon/src/library/service.js",
+          "line": 1085,
+          "text": "reportBulkProgress(options, { total: ids.length, updated, removed: 0, skipped });"
+        },
+        {
+          "path": "addons/library-addon/src/library/service.js",
+          "line": 1096,
+          "text": "reportBulkProgress(options, { total: ids.length, updated, removed: 0, skipped });"
+        },
+        {
+          "path": "addons/library-addon/src/library/service.js",
+          "line": 1111,
+          "text": "reportBulkProgress(options, { total: ids.length, updated, removed: 0, skipped });"
+        },
+        {
+          "path": "addons/library-addon/src/library/service.js",
+          "line": 1117,
+          "text": "reportBulkProgress(options, { total: ids.length, updated, removed: 0, skipped });"
+        },
+        {
+          "path": "addons/library-addon/src/library/service.js",
+          "line": 1133,
+          "text": "reportBulkProgress(options, { total: ids.length, updated: 0, removed, skipped });"
+        },
+        {
+          "path": "addons/library-addon/src/library/service.js",
+          "line": 1140,
+          "text": "reportBulkProgress(options, { total: ids.length, updated: 0, removed, skipped });"
         },
         {
           "path": "addons/library-addon/src/ui/application/importExportWorkflow.js",
@@ -11843,128 +12040,103 @@
         },
         {
           "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 2,
-          "text": "createImportProgressMarkup,"
+          "line": 1,
+          "text": "import { createOperationProgressMarkup, operationProgressCss, updateOperationProgressView } from \"../components/manager/importProgressDialog.js\";"
         },
         {
           "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 3,
-          "text": "updateImportProgressView,"
+          "line": 5,
+          "text": "const DIALOG_ID = \"library-import-progress\";"
         },
         {
           "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 4,
-          "text": "} from \"../components/manager/importProgressDialog.js\";"
+          "line": 6,
+          "text": "const STYLE_ID = \"library-operation-progress-style\";"
         },
         {
           "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 7,
-          "text": "const IMPORT_PROGRESS_DIALOG_ID = \"library-import-progress\";"
+          "line": 16,
+          "text": "updateOperationProgressView(rootFor(operation), {"
         },
         {
           "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 19,
-          "text": "void closeProgressDialog(\"cancel-import\", true);"
+          "line": 20,
+          "text": "...operation.progress,"
         },
         {
           "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 23,
-          "text": "async function updateProgressContent(progress) {"
+          "line": 21,
+          "text": "status: operation.cancelled ? \"cancelling\" : operation.progress?.status,"
         },
         {
           "path": "addons/library-addon/src/ui/application/importProgressController.js",
           "line": 25,
-          "text": "const html = createImportProgressMarkup({"
+          "text": "export function configureImportProgress(bridge) { coreBridge = bridge; }"
         },
         {
           "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 29,
-          "text": "progress,"
+          "line": 27,
+          "text": "export async function openOperationProgress({ label = \"Importing library\", total = 0, totalBatches = 0 } = {}) {"
         },
         {
           "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 33,
-          "text": "IMPORT_PROGRESS_DIALOG_ID,"
+          "line": 30,
+          "text": "const operation = { label, total, totalBatches, progress: {}, cancelled: false, closing: false, contentId: \"\" };"
+        },
+        {
+          "path": "addons/library-addon/src/ui/application/importProgressController.js",
+          "line": 32,
+          "text": "const styled = await registerStyle(coreBridge, STYLE_ID, operationProgressCss);"
         },
         {
           "path": "addons/library-addon/src/ui/application/importProgressController.js",
           "line": 37,
-          "text": "updateImportProgressView(root, progress, {"
+          "text": "dialogId: DIALOG_ID, title: label, html: createOperationProgressMarkup(),"
         },
         {
           "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 47,
-          "text": "updateImportProgressView(root, progress, {"
+          "line": 57,
+          "text": "export function updateOperationProgress(progress) {"
         },
         {
           "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 54,
-          "text": "async function closeProgressDialog(reason, cancelImport = false) {"
-        },
-        {
-          "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 58,
-          "text": "await closeDialog(coreBridge, IMPORT_PROGRESS_DIALOG_ID, reason);"
-        },
-        {
-          "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 61,
-          "text": "export function configureImportProgress(bridge) {"
+          "line": 59,
+          "text": "active.progress = { ...active.progress, ...progress };"
         },
         {
           "path": "addons/library-addon/src/ui/application/importProgressController.js",
           "line": 65,
-          "text": "export async function openImportProgress(configOrTotal) {"
+          "text": "export async function finishOperationProgress(reason = \"operation-complete\") {"
         },
         {
           "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 85,
-          "text": "dialogId: IMPORT_PROGRESS_DIALOG_ID,"
+          "line": 73,
+          "text": "export async function openImportProgress(config = {}) {"
         },
         {
           "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 87,
-          "text": "html: createImportProgressMarkup({"
+          "line": 74,
+          "text": "return openOperationProgress({ label: \"Importing library\", total: config.total, totalBatches: config.totalBatches });"
         },
         {
           "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 110,
-          "text": "export function updateImportProgress(progress) {"
+          "line": 76,
+          "text": "export function updateImportProgress(progress) { updateOperationProgress(progress); }"
         },
         {
           "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 112,
-          "text": "updateProgressContent(progress);"
+          "line": 78,
+          "text": "export async function finishImportProgress(reason = \"import-complete\") { await finishOperationProgress(reason); }"
         },
         {
           "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 122,
-          "text": "await closeProgressDialog(reason, true);"
+          "line": 83,
+          "text": "await finishOperationProgress(reason);"
         },
         {
           "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 126,
-          "text": "export async function finishImportProgress(reason = \"import-complete\") {"
-        },
-        {
-          "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 128,
-          "text": "await closeProgressDialog(reason, false);"
-        },
-        {
-          "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 132,
+          "line": 86,
           "text": "export function handleImportProgressDialogClosed(detail = {}) {"
-        },
-        {
-          "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 133,
-          "text": "if (String(detail.dialogId || \"\") !== IMPORT_PROGRESS_DIALOG_ID || !activeImport) return;"
-        },
-        {
-          "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 136,
-          "text": "updateProgressContent({ total: activeImport.total, cancelled: true });"
         },
         {
           "path": "addons/library-addon/src/ui/assets/manager.html",
@@ -12029,122 +12201,82 @@
         {
           "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
           "line": 1,
-          "text": "export function createImportProgressMarkup({"
+          "text": "export function createOperationProgressMarkup() {"
         },
         {
           "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
-          "line": 5,
-          "text": "progress = {},"
+          "line": 2,
+          "text": "return `<div class=\"f95ue-library-operation-progress-root\" role=\"status\" aria-live=\"polite\">"
+        },
+        {
+          "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
+          "line": 4,
+          "text": "<div class=\"f95ue-library-operation-track\" role=\"progressbar\" aria-label=\"Operation progress\" aria-valuemin=\"0\" aria-valuemax=\"1\" aria-valuenow=\"0\"><div class=\"f95ue-library-operation-fill\" data-role=\"operation-fill\"></div></div>"
+        },
+        {
+          "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
+          "line": 11,
+          "text": "export const operationProgressCss = `"
+        },
+        {
+          "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
+          "line": 12,
+          "text": ".f95ue-library-operation-progress-root { padding: 18px; color: #f0f2f6; font: 13px/1.5 sans-serif; }"
         },
         {
           "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
           "line": 13,
-          "text": "const processed = Math.max(0, Number(progress?.processed || 0));"
+          "text": ".f95ue-library-operation-progress-root .f95ue-library-operation-title { font-size: 16px; font-weight: 700; margin-bottom: 14px; }"
         },
         {
           "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
           "line": 14,
-          "text": "const status = String(progress?.status || \"preparing\").trim();"
+          "text": ".f95ue-library-operation-progress-root .f95ue-library-operation-track { height: 9px; overflow: hidden; border-radius: 99px; background: #343941; }"
         },
         {
           "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
           "line": 15,
-          "text": "const title = progress?.cancelled || status === \"cancelling\""
+          "text": ".f95ue-library-operation-progress-root .f95ue-library-operation-fill { height: 100%; width: 0; border-radius: inherit; background: #c15858; transition: width .15s ease; }"
+        },
+        {
+          "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
+          "line": 16,
+          "text": ".f95ue-library-operation-progress-root .f95ue-library-operation-count { margin-top: 12px; font-weight: 700; }"
+        },
+        {
+          "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
+          "line": 17,
+          "text": ".f95ue-library-operation-progress-root .f95ue-library-operation-detail { margin-top: 4px; color: #aeb6c2; }"
+        },
+        {
+          "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
+          "line": 18,
+          "text": ".f95ue-library-operation-progress-root .f95ue-library-operation-actions { display: flex; align-items: center; gap: 12px; margin-top: 18px; color: #909aa7; font-size: 12px; }"
+        },
+        {
+          "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
+          "line": 19,
+          "text": ".f95ue-library-operation-progress-root button { border: 1px solid #a84b4d; border-radius: 6px; background: #893839; color: white; padding: 7px 14px; font-weight: 600; cursor: pointer; }"
         },
         {
           "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
           "line": 20,
-          "text": "const detail = `${processed} / ${Math.max(0, Number(progress?.total || total))} records | ${Math.max(0, Number(progress?.completedBatches || 0))} / ${Math.max(0, Number(progress?.totalBatches || totalBatches))} batches | added ${Math.max(0, Number(progress?.added || 0))} | updated ${Math.max(0, Number(progress?.updated || 0))} | skipped ${Math.max(0, Number(progress?.skipped || 0))} | failed ${Math.max(0, Number(progress?.failed || 0))}`;"
+          "text": ".f95ue-library-operation-progress-root button:disabled { opacity: .55; cursor: default; }"
+        },
+        {
+          "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
+          "line": 21,
+          "text": "@media (prefers-reduced-motion: reduce) { .f95ue-library-operation-progress-root .f95ue-library-operation-fill { transition: none; } }"
         },
         {
           "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
           "line": 24,
-          "text": "<div data-role=\"import-progress-text\" style=\"font-weight:700;margin-bottom:10px;\">${title}</div>"
+          "text": "export function updateOperationProgressView(root, { label = \"Working\", total = 0, processed = 0, updated = 0, removed = 0, added = 0, skipped = 0, failed = 0, completedBatches = 0, totalBatches = 0, status = \"running\" } = {}) {"
         },
         {
           "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
-          "line": 25,
-          "text": "<progress data-role=\"import-progress-bar\" max=\"${Math.max(1, total)}\" value=\"${Math.min(processed, Math.max(1, Number(total) || 1))}\" style=\"width:100%;\"></progress>"
-        },
-        {
-          "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
-          "line": 26,
-          "text": "<div data-role=\"import-progress-detail\" style=\"margin-top:10px;color:#b9c1cc;font-size:12px;\">${detail}</div>"
-        },
-        {
-          "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
-          "line": 27,
-          "text": "<div data-role=\"import-progress-note\" style=\"margin-top:8px;color:#8f99a6;font-size:11px;\">"
-        },
-        {
-          "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
-          "line": 36,
-          "text": "export function updateImportProgressView(root, progress, fallback = {}) {"
-        },
-        {
-          "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
-          "line": 39,
-          "text": "const processed = Math.max(0, Number(progress?.processed || 0));"
-        },
-        {
-          "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
-          "line": 42,
-          "text": "Number(progress?.total || fallback?.total || fallback || 0),"
-        },
-        {
-          "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
-          "line": 44,
-          "text": "const completedBatches = Math.max(0, Number(progress?.completedBatches || 0));"
-        },
-        {
-          "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
-          "line": 45,
-          "text": "const totalBatches = Math.max(0, Number(progress?.totalBatches || fallback?.totalBatches || 0));"
-        },
-        {
-          "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
-          "line": 46,
-          "text": "const status = String(progress?.status || \"running\").trim();"
-        },
-        {
-          "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
-          "line": 47,
-          "text": "const bar = root.querySelector('[data-role=\"import-progress-bar\"]');"
-        },
-        {
-          "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
-          "line": 48,
-          "text": "const text = root.querySelector('[data-role=\"import-progress-text\"]');"
-        },
-        {
-          "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
-          "line": 49,
-          "text": "const detail = root.querySelector('[data-role=\"import-progress-detail\"]');"
-        },
-        {
-          "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
-          "line": 57,
-          "text": "if (progress?.cancelled || status === \"cancelling\") {"
-        },
-        {
-          "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
-          "line": 70,
-          "text": "`added ${progress?.added || 0} | ` +"
-        },
-        {
-          "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
-          "line": 71,
-          "text": "`updated ${progress?.updated || 0} | ` +"
-        },
-        {
-          "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
-          "line": 72,
-          "text": "`skipped ${progress?.skipped || 0} | ` +"
-        },
-        {
-          "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
-          "line": 73,
-          "text": "`failed ${progress?.failed || 0}`;"
+          "line": 29,
+          "text": "const track = root.querySelector('[role=\"progressbar\"]');"
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorBindings.js",
@@ -12170,6 +12302,91 @@
           "path": "addons/library-addon/src/ui/entryEditor/editorValidation.js",
           "line": 78,
           "text": "progressNote: normalizeText(draft.progressNote, 10000),"
+        },
+        {
+          "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
+          "line": 4,
+          "text": "import { openOperationProgress, updateOperationProgress, finishOperationProgress, isOperationCancelled } from \"../../application/importProgressController.js\";"
+        },
+        {
+          "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
+          "line": 8,
+          "text": "const progressUi = deps.progressController || {"
+        },
+        {
+          "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
+          "line": 9,
+          "text": "open: openOperationProgress,"
+        },
+        {
+          "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
+          "line": 10,
+          "text": "update: updateOperationProgress,"
+        },
+        {
+          "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
+          "line": 11,
+          "text": "finish: finishOperationProgress,"
+        },
+        {
+          "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
+          "line": 24,
+          "text": "opened = await progressUi.open({ label, total: ids.length });"
+        },
+        {
+          "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
+          "line": 25,
+          "text": "progressUi.update({ total: ids.length, processed: 0 });"
+        },
+        {
+          "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
+          "line": 26,
+          "text": "const result = await invoke(progressUi.update, progressUi.isCancelled);"
+        },
+        {
+          "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
+          "line": 37,
+          "text": "if (opened) await progressUi.finish(\"bulk-finished\");"
+        },
+        {
+          "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
+          "line": 47,
+          "text": "return run(\"Bulk status\", ids, (onProgress, shouldCancel) => api.bulkUpdateStatus(ids, status, {"
+        },
+        {
+          "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
+          "line": 48,
+          "text": "commandId: createActivityCommandId(\"bulk-status\"), onProgress, shouldCancel,"
+        },
+        {
+          "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
+          "line": 54,
+          "text": "return run(\"Bulk pin\", ids, (onProgress, shouldCancel) => api.bulkSetPinned(ids, pinned, { onProgress, shouldCancel }));"
+        },
+        {
+          "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
+          "line": 64,
+          "text": "return run(\"Bulk remove\", ids, (onProgress, shouldCancel) => api.bulkRemoveEntries(ids, { onProgress, shouldCancel }), { remove: true });"
+        },
+        {
+          "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
+          "line": 78,
+          "text": "return run(\"Bulk status\", ids, (onProgress, shouldCancel) => api.bulkUpdateStatus(ids, action.slice(7), {"
+        },
+        {
+          "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
+          "line": 79,
+          "text": "commandId: createActivityCommandId(\"bulk-status\"), onProgress, shouldCancel,"
+        },
+        {
+          "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
+          "line": 84,
+          "text": "return run(\"Bulk pin\", ids, (onProgress, shouldCancel) => api.bulkSetPinned(ids, action === \"pin\", { onProgress, shouldCancel }));"
+        },
+        {
+          "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
+          "line": 88,
+          "text": "return run(\"Bulk auto update\", ids, (onProgress, shouldCancel) => api.setAutoUpdateEnabled(ids, action === \"auto-enable\", { onProgress, shouldCancel }));"
         },
         {
           "path": "addons/library-addon/src/ui/manager/handlers/updateCheckHandlers.js",
@@ -12238,42 +12455,42 @@
         },
         {
           "path": "addons/example-addon/src/app/commands.js",
-          "line": 51,
+          "line": 52,
           "text": "if (String(detail.dialogId || \"\").trim() === EXAMPLE_BULK_PROGRESS_DIALOG_ID) {"
         },
         {
           "path": "addons/example-addon/src/app/commands.js",
-          "line": 52,
+          "line": 53,
           "text": "if (bulkImport.handleDialogClosed() && state.enabled) onDialogClosed(\"bulk\", detail);"
         },
         {
           "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-          "line": 4,
+          "line": 5,
           "text": "import { createBulkImportController } from \"../domain/bulkImport/controller.js\";"
         },
         {
           "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-          "line": 128,
+          "line": 130,
           "text": "const bulkImport = createBulkImportController({"
         },
         {
           "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-          "line": 188,
+          "line": 190,
           "text": "bulkImport,"
         },
         {
           "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-          "line": 211,
+          "line": 214,
           "text": "bulkImport.requestCancellation();"
         },
         {
           "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-          "line": 236,
+          "line": 240,
           "text": "bulkImport.requestCancellation();"
         },
         {
           "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-          "line": 255,
+          "line": 260,
           "text": "bulkImport,"
         },
         {
@@ -12618,12 +12835,12 @@
         },
         {
           "path": "addons/example-addon/src/ui/panel.js",
-          "line": 171,
+          "line": 182,
           "text": "renderButton(\"dialog-open\", \"ui.dialog.open\"),"
         },
         {
           "path": "addons/example-addon/src/ui/panel.js",
-          "line": 174,
+          "line": 185,
           "text": "renderButton(\"dialog-close\", \"ui.dialog.close\"),"
         }
       ],
@@ -13016,8 +13233,13 @@
           "text": "return new Promise((resolve) => setTimeout(resolve, ms));"
         },
         {
+          "path": "addons/library-addon/src/api/library/actionBudget.js",
+          "line": 2,
+          "text": "export function createActionBudget(invoke, { now = Date.now, wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms)) } = {}) {"
+        },
+        {
           "path": "addons/library-addon/src/api/library/client.js",
-          "line": 14,
+          "line": 15,
           "text": "return new Promise((resolve) => setTimeout(resolve, Math.max(0, Number(ms) || 0)));"
         },
         {
@@ -13427,18 +13649,13 @@
         },
         {
           "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 13,
-          "text": "return new Promise((resolve) => setTimeout(resolve, Math.max(0, Number(ms) || 0)));"
+          "line": 11,
+          "text": "const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));"
         },
         {
           "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 18,
-          "text": "root?.querySelector('[data-action=\"cancel-import\"]')?.addEventListener(\"click\", () => {"
-        },
-        {
-          "path": "addons/library-addon/src/ui/application/importProgressController.js",
-          "line": 19,
-          "text": "void closeProgressDialog(\"cancel-import\", true);"
+          "line": 49,
+          "text": "rootFor(operation)?.querySelector('[data-action=\"cancel-operation\"]')?.addEventListener(\"click\", () => {"
         },
         {
           "path": "addons/library-addon/src/ui/assets/manager.html",
@@ -13507,8 +13724,18 @@
         },
         {
           "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
-          "line": 30,
-          "text": "<button type=\"button\" data-action=\"cancel-import\" style=\"margin-top:14px;padding:7px 12px;cursor:pointer;\">Cancel Import</button>"
+          "line": 7,
+          "text": "<div class=\"f95ue-library-operation-actions\"><button type=\"button\" data-action=\"cancel-operation\">Cancel</button><span>Stopping keeps changes already made.</span></div>"
+        },
+        {
+          "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
+          "line": 43,
+          "text": "const cancel = root.querySelector('[data-action=\"cancel-operation\"]');"
+        },
+        {
+          "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
+          "line": 44,
+          "text": "if (cancel) cancel.disabled = status === \"cancelling\" || status === \"completed\";"
         },
         {
           "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
@@ -13662,8 +13889,8 @@
         },
         {
           "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
-          "line": 67,
-          "text": "cancelText: \"Cancel\","
+          "line": 61,
+          "text": "confirmText: \"Remove\", cancelText: \"Cancel\", danger: true,"
         },
         {
           "path": "addons/library-addon/src/ui/manager/handlers/noteHandlers.js",

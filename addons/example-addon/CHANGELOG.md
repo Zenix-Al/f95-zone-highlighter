@@ -1,3 +1,9 @@
+## [1.0.4] - Latest marker-provider API demo
+
+- Add an opt-in Latest marker-provider API demo with register, query response,
+  invalidate, and unregister actions. Requires core v5.4.2 for the marker demo;
+  the provider is disabled in Latest settings by default.
+
 ## [1.0.3] - Correct registration and UI ownership examples
 
 - register the runtime descriptor once during bootstrap and publish lifecycle changes through status updates only

@@ -160,6 +160,17 @@ export function renderExamplePanel(state) {
       )}
 
       ${renderSection(
+        "Latest markers",
+        "Opt-in provider demo. Enable Example marker in Latest Overlay settings after registering; only the first requested card is labeled.",
+        [
+          renderButton("marker-register", "latest.markers.register"),
+          renderButton("marker-invalidate", "latest.markers.invalidate"),
+          renderButton("marker-unregister", "latest.markers.unregister"),
+        ].join(""),
+        { lastAction: state.lastAction, lastResult: state.lastResult },
+      )}
+
+      ${renderSection(
         "UI APIs",
         "Core-hosted style, mount, dialog, confirm, and dock helpers.",
         [

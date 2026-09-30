@@ -11,6 +11,9 @@ export function createExampleActions(options) {
     ...createIdbActions(options),
     ...createObserverActions(options),
     ...createUiActions(options),
+    "marker-register": () => options.markerProvider.register(),
+    "marker-invalidate": () => options.markerProvider.invalidate(),
+    "marker-unregister": () => options.markerProvider.unregister(),
   };
 
   async function handle(action) {

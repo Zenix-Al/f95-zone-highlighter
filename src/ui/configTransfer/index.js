@@ -59,12 +59,8 @@ async function importSettingsFromFile() {
   }
 
   clearConfigTransferError();
-  if (result.reloadRequired) {
-    showToast("Configuration imported. Reloading...");
-    setTimeout(() => window.location.reload(), 400);
-  } else {
-    showToast("Configuration imported.");
-  }
+  showToast("Configuration imported. Reloading...");
+  setTimeout(() => window.location.reload(), 400);
 }
 
 const configTransferDialogMeta = {

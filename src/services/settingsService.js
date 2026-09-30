@@ -610,6 +610,7 @@ function notReadyResult(origin, access = {}) {
 async function commitConfigNow(candidate, {
   origin = "local",
   preserveRuntimeCatalogs = false,
+  persistRuntimeCatalogs = [],
 } = {}) {
   const storageAccess = await ensureConfigReady();
   if (!storageAccess.ok) return notReadyResult(origin, storageAccess);
@@ -635,7 +636,18 @@ async function commitConfigNow(candidate, {
   }
 
   const previousLiveConfig = cloneRuntimeSnapshot(config);
+  const cacheRollback = [];
   try {
+    if (persistRuntimeCatalogs.length) {
+      for (const section of persistRuntimeCatalogs) {
+        if (!Object.hasOwn(CACHE_CONFIG_KEYS, section)) continue;
+        const key = CACHE_CONFIG_KEYS[section];
+        const previous = await storageAdapter.get(key, null);
+        if (storageValuesEqual(validation.data[section], previous)) continue;
+        cacheRollback.push({ key, previous });
+        await writeStorageValue(key, cloneConfig(validation.data[section]));
+      }
+    }
     const latestRaw = await storageAdapter.get(CONFIG_ENVELOPE_KEY, null);
     const latestRevision = Math.max(0, Number(latestRaw?.revision) || 0);
     const previous = validateStoredEnvelope(latestRaw);
@@ -663,6 +675,17 @@ async function commitConfigNow(candidate, {
       changedPaths: applied.changedPaths,
     };
   } catch (error) {
+    for (const { key, previous } of cacheRollback.reverse()) {
+      try {
+        if (previous === null || previous === undefined) await storageAdapter.delete(key);
+        else await writeStorageValue(key, previous);
+      } catch (rollbackError) {
+        reportPersistenceHealth("SAVE_FAILED", "Configuration cache rollback failed.", {
+          origin,
+          reason: rollbackError?.message || "cache_rollback_failed",
+        });
+      }
+    }
     reportPersistenceHealth("SAVE_FAILED", "Configuration commit failed before the live state was updated.", {
       origin,
       reason: error?.message || "storage_write_failed",
@@ -683,7 +706,7 @@ export function commitConfig(candidate, { origin = "local" } = {}) {
   return enqueueConfigUpdate(() => commitConfigNow(candidate, { origin }));
 }
 
-export function updateConfig(updater, { origin = "local" } = {}) {
+export function updateConfig(updater, { origin = "local", persistRuntimeCatalogs = [] } = {}) {
   return enqueueConfigUpdate(async () => {
     if (typeof updater !== "function") {
       return {
@@ -717,6 +740,7 @@ export function updateConfig(updater, { origin = "local" } = {}) {
     return commitConfigNow(draft, {
       origin,
       preserveRuntimeCatalogs: !catalogsReplaced,
+      persistRuntimeCatalogs,
     });
   });
 }

@@ -14,6 +14,7 @@ export function createExampleCommandController({
   onDockAction,
   onDialogClosed,
   onObserverNodes,
+  onMarkerQuery,
   onError,
 }) {
   let unbind = () => {};
@@ -58,6 +59,9 @@ export function createExampleCommandController({
           break;
         case "observer.nodes":
           if (String(detail.observerId || "").trim() === EXAMPLE_OBSERVER_ID) onObserverNodes(detail);
+          break;
+        case "latest-markers.query":
+          void onMarkerQuery(detail).catch((error) => onError("latest-markers.query", error, "marker_query_failed"));
           break;
         case "teardown":
           void lifecycle.teardown(context).catch((error) => onError("teardown-command", error, "teardown_failed"));

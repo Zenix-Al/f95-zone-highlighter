@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.3.8 - Clearer Library bulk actions and import progress
+
+- Replaced the unstyled import progress display and invisible bulk indicator with one styled progress dialog for import and bulk status, pin, auto-update, and remove actions.
+- Added live record counts and a visible progress bar. Cancelling a bulk action stops between records while keeping changes already made.
+- Improved bulk-action pacing under the core request limit and kept large import batches efficient.
+
 ## v1.3.6 - Latest status bridge and compact Full Edit histories
 
 - Connected Library to the core Latest marker bridge, showing Saved, Backlog, Playing, Paused, Completed, or Dropped status on saved cards.

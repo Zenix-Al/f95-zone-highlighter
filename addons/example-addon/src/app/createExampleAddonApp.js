@@ -1,5 +1,6 @@
 import { notifyTeardownComplete } from "../api/bridge.js";
 import { getAddonAccess, getCoreThrottle } from "../api/meta.js";
+import { createExampleMarkerProvider } from "../api/latestMarkers.js";
 import { createExampleActions } from "./actions/index.js";
 import { createBulkImportController } from "../domain/bulkImport/controller.js";
 import { createExampleCommandController } from "./commands.js";
@@ -14,6 +15,7 @@ import { createExampleUiBindings } from "../ui/bindings.js";
 export function createExampleAddonApp({ core, runtime }) {
   const state = createInitialState();
   let terminal = false;
+  const markerProvider = createExampleMarkerProvider({ core, isActive: () => state.enabled && !terminal });
   const ownedTimeouts = new Map();
   const ownedObserverNodes = new Set();
   let ownedResourceSequence = 0;
@@ -189,6 +191,7 @@ export function createExampleAddonApp({ core, runtime }) {
     onDockAction: handleDockAction,
     onDialogClosed: handleDialogClosed,
     onObserverNodes: handleObserverNodes,
+    onMarkerQuery: (detail) => markerProvider.query(detail),
     onError: (action, error, fallback) => {
       setLastResult(action, { ok: false, reason: error?.message || fallback });
     },
@@ -212,6 +215,7 @@ export function createExampleAddonApp({ core, runtime }) {
       cancelOwnedTimeouts();
       for (const node of ownedObserverNodes) node.remove?.();
       ownedObserverNodes.clear();
+      await markerProvider.unregister();
       await ui.disable("disable");
       registration.publishStatus();
       debugLog(runtime.addonId, "Lifecycle disable completed.", {
@@ -237,6 +241,7 @@ export function createExampleAddonApp({ core, runtime }) {
       cancelOwnedTimeouts();
       for (const node of ownedObserverNodes) node.remove?.();
       ownedObserverNodes.clear();
+      await markerProvider.unregister();
       await ui.disable(reason);
       commandController.unbind();
       uiBindings.unbindPanelClicks();
@@ -253,6 +258,7 @@ export function createExampleAddonApp({ core, runtime }) {
     state,
     isAvailable: () => state.enabled && !terminal,
     bulkImport,
+    markerProvider,
     setLastResult,
     syncPanel: ui.syncPanel,
     createObserverTestNode,

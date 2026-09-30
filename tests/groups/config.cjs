@@ -793,6 +793,44 @@ runTest("CORE-SIZE-LATEST-CATALOG-BRIDGE-PROBE-01 times out once without replaci
   }
 });
 
+runTest("CORE-TAGS-IMPORT-01 unavailable catalog never prunes saved tag selections", async () => {
+  const previous = {
+    window: global.window,
+    document: global.document,
+    CustomEvent: global.CustomEvent,
+    HTMLElement: global.HTMLElement,
+    GM: global.GM,
+  };
+  const testWindow = new Window({ url: "https://f95zone.to/threads/example.1/" });
+  const gm = createFakeGM();
+  Object.assign(global, {
+    window: testWindow,
+    document: testWindow.document,
+    CustomEvent: testWindow.CustomEvent,
+    HTMLElement: testWindow.HTMLElement,
+    GM: gm,
+  });
+  try {
+    const fixture = loadModule("tests/fixtures/latestCatalogBridgeHarness.js");
+    fixture.config.tags = [];
+    fixture.config.preferredTags = [7];
+    fixture.config.excludedTags = [8];
+    fixture.config.markedTags = [9];
+    await seedReadyConfig(gm, fixture, fixture.config);
+    await fixture.loadConfig();
+    fixture.stateManager.set("tagsUpdateStatus", "IDLE");
+    testWindow.latestUpdates = {};
+    const result = await fixture.updateTags();
+    assert.strictEqual(result.pruned, false);
+    assert.deepStrictEqual(fixture.config.preferredTags, [7]);
+    assert.deepStrictEqual(fixture.config.excludedTags, [8]);
+    assert.deepStrictEqual(fixture.config.markedTags, [9]);
+  } finally {
+    Object.assign(global, previous);
+    testWindow.close();
+  }
+});
+
 runTest(
   "latest records retain complete payload fields and index by thread id",
   () => {

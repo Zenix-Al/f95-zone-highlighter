@@ -111,6 +111,34 @@ module.exports = function registerLibraryKeysetPaginationGroup(context) {
     assert.strictEqual(result.mode, "keyset");
   });
 
+  runTest("Library pagination survives a concurrent write invalidating coverage", async () => {
+    const { createLibraryService } = loadModule("addons/library-addon/src/library/service.js");
+    let releasePage;
+    let pageStarted;
+    const started = new Promise((resolve) => { pageStarted = resolve; });
+    const pageGate = new Promise((resolve) => { releasePage = resolve; });
+    const bridge = {
+      async invokeCoreAction(action, payload) {
+        if (action === "idb.count") return { ok: true, value: 1 };
+        if (action === "idb.query" && payload.pagination === "keyset") {
+          pageStarted();
+          await pageGate;
+          return { ok: true, value: { items: [{ cursor: { key: 1, primaryKey: "1" }, value: { threadId: "1", recordModifiedAt: 1 } }], hasMore: false } };
+        }
+        if (action === "idb.put") return { ok: true };
+        return { ok: true, value: null };
+      },
+    };
+    const library = createLibraryService(bridge, null);
+    const pending = library.queryEntriesPage({ sortBy: "updatedAt", limit: 1 });
+    await started;
+    await library.saveEntry({ threadId: "2", title: "New" }, { skipExistingLookup: true });
+    releasePage();
+    const page = await pending;
+    assert.strictEqual(page.totalRows, 1);
+    assert.strictEqual(page.rows[0].threadId, "1");
+  });
+
   runTest("Library falls back when legacy records are absent from the keyset index", async () => {
     const { createLibraryService } = loadModule(
       "addons/library-addon/src/library/service.js",

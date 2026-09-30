@@ -6,9 +6,22 @@ A userscript that improves F95Zone's Latest Updates and thread pages through a c
 - [Documentation](docs/README.md)
 - Generated core script: `dist/f95zone-ultimate-enhancer.user.js`
 
-The project is in maintenance mode. Critical bugs, compatibility problems, and
-security issues are still maintained, but major new features are expected to
-live in add-ons.
+The core and official add-ons are in maintenance mode. Bug fixes, security and
+compatibility work, and help with existing features remain welcome. Questions,
+ideas, and contributions are welcome too; new core features and add-ons are
+evaluated case by case for safety, fit with the documentation and architecture,
+usefulness in the main project, and long-term support cost. A useful but highly
+personal or out-of-scope change may be better maintained in a fork. Opening an
+issue or pull request does not guarantee a merge or a response by a set date.
+See the [maintenance policy](docs/maintenance-policy.md) for how future work is
+triaged.
+
+To report a bug, [open a GitHub issue](https://github.com/Zenix-Al/f95-zone-highlighter/issues)
+with the affected core/add-on versions, browser and userscript manager, page URL
+or page type, steps to reproduce, expected and actual behavior, and relevant
+console errors. Remove account details, tokens, and personal Library data from
+screenshots or logs before posting. If the issue concerns a third-party site,
+name the host and the failing step.
 
 ## Core features
 

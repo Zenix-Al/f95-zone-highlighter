@@ -2333,6 +2333,87 @@ module.exports = function registerGroup(context) {
     },
   );
 
+  runTest("TRANSFER-01 imported tag catalog and selections survive a fresh load", async () => {
+    const previousGM = global.GM;
+    const gm = createFakeGM();
+    global.GM = gm;
+    try {
+      const service = loadModule("tests/fixtures/configTransferReadyHarness.js");
+      await service.authorizeStorageForTest();
+      const tags = [{ id: 7, name: "Synthetic" }, { id: 8, name: "Synthetic 2" }];
+      const imported = await service.commitConfigImport({
+        formatVersion: 1,
+        schemaVersion: 2,
+        settings: {
+          tags,
+          preferredTags: [7],
+          excludedTags: [8],
+          markedTags: [7],
+        },
+      });
+      assert.strictEqual(imported.ok, true);
+      assert.deepStrictEqual(gm.snapshot()[service.CONFIG_TAGS_CACHE_KEY], tags);
+      assert.strictEqual(Object.hasOwn(gm.snapshot(), service.CONFIG_PREFIXES_CACHE_KEY), false);
+      const loaded = await service.retryLoadData();
+      assert.deepStrictEqual(loaded.data.tags, tags);
+      assert.deepStrictEqual(loaded.data.preferredTags, [7]);
+      assert.deepStrictEqual(loaded.data.excludedTags, [8]);
+      assert.deepStrictEqual(loaded.data.markedTags, [7]);
+      assert.deepStrictEqual(service.buildConfigExport().settings.tags, tags);
+    } finally {
+      global.GM = previousGM;
+    }
+  });
+
+  runTest("TRANSFER-01 failed canonical write rolls back imported tag cache", async () => {
+    const previousGM = global.GM;
+    const gm = createFakeGM();
+    global.GM = gm;
+    try {
+      const service = loadModule("tests/fixtures/configTransferReadyHarness.js");
+      await service.authorizeStorageForTest();
+      const oldTags = [{ id: 3, name: "Existing" }];
+      assert.strictEqual((await service.saveConfigKeys({ tags: oldTags })).committed, true);
+      const before = gm.snapshot()[service.CONFIG_ENVELOPE_KEY];
+      const originalSet = gm.setValue.bind(gm);
+      gm.setValue = (key, value) => key === service.CONFIG_ENVELOPE_KEY
+        ? Promise.reject(new Error("simulated_canonical_failure"))
+        : originalSet(key, value);
+      const result = await service.commitConfigImport({ settings: {
+        tags: [{ id: 7, name: "Imported" }], preferredTags: [7],
+      } });
+      assert.strictEqual(result.ok, false);
+      assert.deepStrictEqual(gm.snapshot()[service.CONFIG_TAGS_CACHE_KEY], oldTags);
+      assert.deepStrictEqual(gm.snapshot()[service.CONFIG_ENVELOPE_KEY], before);
+      assert.deepStrictEqual(service.config.tags, oldTags);
+    } finally {
+      global.GM = previousGM;
+    }
+  });
+
+  runTest("TRANSFER-01 rejected tag-cache write does not commit core settings", async () => {
+    const previousGM = global.GM;
+    const gm = createFakeGM();
+    global.GM = gm;
+    try {
+      const service = loadModule("tests/fixtures/configTransferReadyHarness.js");
+      await service.authorizeStorageForTest();
+      const before = gm.snapshot()[service.CONFIG_ENVELOPE_KEY];
+      const originalSet = gm.setValue.bind(gm);
+      gm.setValue = (key, value) => key === service.CONFIG_TAGS_CACHE_KEY
+        ? Promise.reject(new Error("simulated_cache_failure"))
+        : originalSet(key, value);
+      const result = await service.commitConfigImport({ settings: {
+        tags: [{ id: 7, name: "Synthetic" }], preferredTags: [7],
+      } });
+      assert.strictEqual(result.ok, false);
+      assert.deepStrictEqual(gm.snapshot()[service.CONFIG_ENVELOPE_KEY], before);
+      assert.deepStrictEqual(service.config.tags, []);
+    } finally {
+      global.GM = previousGM;
+    }
+  });
+
   runTest(
     "TRANSFER-LEAN-01 file picker cancellation removes temporary DOM and listeners",
     async () => {

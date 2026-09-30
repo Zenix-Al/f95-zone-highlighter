@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.4.3 - Configuration import reliability]
+
+- Fixed imported settings not consistently taking effect until a manual refresh; a successful import now reloads the page.
+- Persisted imported tag catalogs through the configuration transfer path and strengthened settings write handling so imported data survives reloads.
+
+Important update : beyond this point, this whole project are now fully on maintenance mode including the addon, visit my github for more detail. i appreciate your support and i hope you enjoy this userscript, if you find any bug or issue, please report it to me so i can fix it as soon as possible.
+
 ## [5.4.2 - Library status on Latest cards]
 
 - Added a trusted add-on marker bridge so Library can supply saved-thread status directly to core Latest cards without blocking the normal overlay.

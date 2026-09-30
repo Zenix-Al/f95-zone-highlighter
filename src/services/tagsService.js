@@ -191,6 +191,8 @@ async function refreshTagsFromLatestUpdates(result) {
 }
 
 function buildPrunedTagLists() {
+  // An unavailable catalog is not evidence that the user's selections are invalid.
+  if (!config.tags.length) return { hasChanged: false, prunedCount: 0 };
   const validTagIds = new Set(config.tags.map((t) => t.id));
   const pruneList = (list) => (Array.isArray(list) ? list.filter((id) => validTagIds.has(id)) : []);
 

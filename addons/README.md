@@ -2,7 +2,28 @@
 
 F95UE add-ons are separate userscripts that register with the core userscript and request capability-gated services through an event bridge.
 
+## Maintenance and support
+
+The core and official add-ons are in maintenance mode. Bug fixes, security and
+compatibility work, and help with existing add-ons remain welcome. New add-ons,
+new capabilities, and feature requests are considered case by case for safety,
+fit with the documented architecture, usefulness in the main project, and
+ongoing support cost. A useful but specialized change may be better suited to a
+fork. An issue or pull request does not guarantee a merge or a response date.
+The [maintenance policy](../docs/maintenance-policy.md) describes how future
+work is triaged.
+
+Report add-on bugs in the [project's GitHub issues](https://github.com/Zenix-Al/f95-zone-highlighter/issues).
+Include the add-on and core versions, browser and userscript manager, affected
+page or download host, reproduction steps, expected and actual behavior, and
+relevant console errors. Redact account details, tokens, and Library contents
+from screenshots and logs.
+
 Use [`example-addon`](example-addon/) as the canonical implementation. It deliberately exercises every current add-on-facing action and is the best starting point for a new add-on.
+Its Latest marker demo is opt-in: use the panel to register `example-demo`,
+then enable that provider in Latest Overlay settings. It labels only the first
+requested card, supports invalidation and unregister, and unregisters on disable
+or teardown. Other provider preferences remain off by default.
 
 For hybrid cross-host download automation, use the
 [`masked-direct-addon` maintainer guide](masked-direct-addon/README.md). It
