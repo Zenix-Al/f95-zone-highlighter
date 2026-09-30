@@ -3,6 +3,7 @@ import {
   LIBRARY_IMPORT_RETRY_DELAY_MS,
 } from "../../constants.js";
 import { createLibraryStorePayload } from "./storePayload.js";
+import { createActionBudget } from "./actionBudget.js";
 
 const TRANSIENT_CORE_REASONS = new Set([
   "rate_limited",
@@ -14,7 +15,12 @@ function wait(ms) {
   return new Promise((resolve) => setTimeout(resolve, Math.max(0, Number(ms) || 0)));
 }
 
-export function createLibraryApiClient(bridge) {
+export function createLibraryApiClient(coreBridge, budgetOptions = {}) {
+  const budget = createActionBudget((action, payload) => coreBridge.invokeCoreAction(action, payload), budgetOptions);
+  const bridge = {
+    getCoreThrottle: coreBridge.getCoreThrottle?.bind(coreBridge),
+    invokeCoreAction: budget.request,
+  };
   async function invokeImportAction(action, payload, shouldCancel) {
     let result = null;
     for (let attempt = 0; attempt <= LIBRARY_IMPORT_MAX_RETRIES; attempt += 1) {
@@ -29,6 +35,10 @@ export function createLibraryApiClient(bridge) {
   }
 
   return {
+    async runBulk(callback, throttle = null) {
+      const limits = throttle || await this.getCoreThrottleInfo();
+      return budget.run(limits, callback);
+    },
     createEntriesPayload(entries = [], storeName = "records") {
       return createLibraryStorePayload({
         storeName,

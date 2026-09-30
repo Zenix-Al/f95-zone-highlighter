@@ -305,7 +305,7 @@ export async function commitConfigImport(input) {
     for (const section of preview.changedSections || []) {
       draft[section] = clone(preview.candidate[section]);
     }
-  }, { origin: "import" });
+  }, { origin: "import", persistRuntimeCatalogs: ["tags"] });
   if (!result.committed) return { ...preview, ...result, ok: false };
   return {
     ...preview,

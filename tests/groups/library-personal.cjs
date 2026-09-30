@@ -198,6 +198,54 @@ module.exports = function registerLibraryPersonalGroup(context) {
     assert.strictEqual(state.selectedIds.size, 0);
   });
 
+  runTest("Library bulk actions expose live progress and block duplicate Apply clicks", async () => {
+    const { createBulkHandlers } = loadModule("addons/library-addon/src/ui/manager/handlers/bulkHandlers.js");
+    let finish;
+    let calls = 0;
+    const progress = [];
+    const button = { disabled: false };
+    const root = { querySelector(selector) {
+      return {
+        '[data-field="bulkAction"]': { value: "pin" },
+        '[data-action="bulk-apply"]': button,
+      }[selector] || null;
+    } };
+    const handlers = createBulkHandlers({
+      api: { bulkSetPinned: (_ids, _pinned, options) => {
+        calls += 1;
+        options.onProgress({ total: 2, processed: 1, updated: 1, skipped: 0 });
+        return new Promise((resolve) => { finish = resolve; });
+      } },
+      deps: { progressController: {
+        open: async () => true,
+        update: (value) => progress.push(value),
+        finish: async () => {},
+        isCancelled: () => false,
+      } }, getRoot: () => root, notifyMutated() {}, reloadRows: async () => {},
+      state: { selectedIds: new Set(["1", "2"]), page: 1 },
+    });
+    const pending = handlers["bulk-apply"]();
+    await Promise.resolve();
+    assert.strictEqual(progress.at(-1).processed, 1);
+    assert.strictEqual(button.disabled, true);
+    await handlers["bulk-apply"]();
+    assert.strictEqual(calls, 1);
+    finish({ ok: true, updated: 2, skipped: 0 });
+    await pending;
+    assert.strictEqual(button.disabled, false);
+    assert.strictEqual(progress.at(-1).processed, 1);
+  });
+
+  runTest("Library operation progress uses sanitizer-safe shared markup and scoped styling", () => {
+    const component = loadModule("addons/library-addon/src/ui/components/manager/importProgressDialog.js");
+    const { sanitizeAddonCss } = loadModule("src/services/addons/uiSanitizer.js");
+    const html = component.createOperationProgressMarkup();
+    assert.match(html, /role="progressbar"/);
+    assert.match(html, /data-action="cancel-operation"/);
+    assert.doesNotMatch(html, /<progress\b|\sstyle=/);
+    assert.strictEqual(sanitizeAddonCss("library-addon", component.operationProgressCss).ok, true);
+  });
+
   runTest("LIBRARY-STATE-CALLERS-01 Manager inline status uses the canonical command", async () => {
     const { createStatusHandlers } = loadModule(
       "addons/library-addon/src/ui/manager/handlers/statusHandlers.js",

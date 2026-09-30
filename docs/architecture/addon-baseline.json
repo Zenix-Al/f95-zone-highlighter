@@ -129,7 +129,7 @@
         "id": "library-addon",
         "name": "F95UE Library Add-on",
         "description": "Quick-add threads to a personal library and manage entries with a dedicated add-on UI.",
-        "version": "1.3.6",
+        "version": "1.3.8",
         "author": "X Death",
         "entry": "addons/library-addon/src/main.js",
         "outfile": "addons/library-addon/dist/library-addon.user.js",
@@ -163,7 +163,7 @@
         "id": "example-addon",
         "name": "F95UE Example Add-on",
         "description": "Core API playground demonstrating every current addon-facing action through api modules.",
-        "version": "1.0.3",
+        "version": "1.0.4",
         "author": "X Death",
         "entry": "addons/example-addon/src/main.js",
         "outfile": "addons/example-addon/dist/example-addon.user.js",
@@ -187,6 +187,7 @@
           "page",
           "observer",
           "idb",
+          "latest.markers",
           "ui.style",
           "ui.mount",
           "ui.dialog",
@@ -287,13 +288,13 @@
     ]
   },
   "trustedCatalog": {
-    "source": "src/generated/trusted-addon-catalog.339a9d78acbaa116.json",
+    "source": "src/generated/trusted-addon-catalog.249c0672abc5d1fa.json",
     "projection": [
       {
         "id": "example-addon",
         "name": "F95UE Example Add-on",
         "description": "Core API playground demonstrating every current addon-facing action through api modules.",
-        "version": "1.0.3",
+        "version": "1.0.4",
         "pageScopes": [
           "f95zone"
         ],
@@ -338,7 +339,7 @@
         "id": "library-addon",
         "name": "F95UE Library Add-on",
         "description": "Quick-add threads to a personal library and manage entries with a dedicated add-on UI.",
-        "version": "1.3.6",
+        "version": "1.3.8",
         "pageScopes": [
           "f95zone"
         ],
@@ -913,6 +914,11 @@
     ],
     "sourceConstants": [
       {
+        "path": "addons/example-addon/src/api/latestMarkers.js",
+        "name": "EXAMPLE_MARKER_PROVIDER_ID",
+        "value": "example-demo"
+      },
+      {
         "path": "addons/example-addon/src/constants.js",
         "name": "EXAMPLE_BULK_PROGRESS_DIALOG_ID",
         "value": "example-addon-bulk-progress"
@@ -1134,8 +1140,13 @@
       },
       {
         "path": "addons/library-addon/src/ui/application/importProgressController.js",
-        "name": "IMPORT_PROGRESS_DIALOG_ID",
+        "name": "DIALOG_ID",
         "value": "library-import-progress"
+      },
+      {
+        "path": "addons/library-addon/src/ui/application/importProgressController.js",
+        "name": "STYLE_ID",
+        "value": "library-operation-progress-style"
       },
       {
         "path": "addons/library-addon/src/ui/manager/managerApp.js",
@@ -1384,10 +1395,10 @@
     {
       "id": "example-addon",
       "source": {
-        "fileCount": 38,
-        "authoredBytes": 73522,
-        "physicalLines": 2265,
-        "nonblankLines": 2073,
+        "fileCount": 39,
+        "authoredBytes": 76967,
+        "physicalLines": 2341,
+        "nonblankLines": 2142,
         "files": [
           {
             "path": "addons/example-addon/src/api/bridge.js",
@@ -1406,6 +1417,12 @@
             "bytes": 767,
             "physicalLines": 27,
             "nonblankLines": 21
+          },
+          {
+            "path": "addons/example-addon/src/api/latestMarkers.js",
+            "bytes": 2192,
+            "physicalLines": 52,
+            "nonblankLines": 46
           },
           {
             "path": "addons/example-addon/src/api/meta.js",
@@ -1469,9 +1486,9 @@
           },
           {
             "path": "addons/example-addon/src/app/actions/index.js",
-            "bytes": 934,
-            "physicalLines": 34,
-            "nonblankLines": 30
+            "bytes": 1134,
+            "physicalLines": 37,
+            "nonblankLines": 33
           },
           {
             "path": "addons/example-addon/src/app/actions/metadata.js",
@@ -1499,15 +1516,15 @@
           },
           {
             "path": "addons/example-addon/src/app/commands.js",
-            "bytes": 2422,
-            "physicalLines": 72,
-            "nonblankLines": 69
+            "bytes": 2611,
+            "physicalLines": 76,
+            "nonblankLines": 73
           },
           {
             "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-            "bytes": 11309,
-            "physicalLines": 326,
-            "nonblankLines": 296
+            "bytes": 11651,
+            "physicalLines": 332,
+            "nonblankLines": 302
           },
           {
             "path": "addons/example-addon/src/app/lifecycle.js",
@@ -1613,21 +1630,21 @@
           },
           {
             "path": "addons/example-addon/src/ui/panel.js",
-            "bytes": 6640,
-            "physicalLines": 190,
-            "nonblankLines": 177
+            "bytes": 7162,
+            "physicalLines": 201,
+            "nonblankLines": 187
           }
         ]
       },
       "builds": {
         "regular": {
           "mode": "regular",
-          "bytes": 85536,
-          "gzipBytes": 19104,
+          "bytes": 89066,
+          "gzipBytes": 19964,
           "contributors": [
             {
               "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-              "bytes": 10698
+              "bytes": 10986
             },
             {
               "path": "addons/shared/runtimeLifecycle.js",
@@ -1639,7 +1656,7 @@
             },
             {
               "path": "addons/example-addon/src/ui/panel.js",
-              "bytes": 6512
+              "bytes": 7014
             },
             {
               "path": "addons/example-addon/src/app/uiController.js",
@@ -1662,16 +1679,20 @@
               "bytes": 2707
             },
             {
+              "path": "addons/example-addon/src/app/commands.js",
+              "bytes": 2547
+            },
+            {
               "path": "addons/example-addon/src/app/actions/idb.js",
               "bytes": 2482
             },
             {
-              "path": "addons/example-addon/src/app/commands.js",
-              "bytes": 2350
-            },
-            {
               "path": "addons/example-addon/src/app/registration.js",
               "bytes": 2325
+            },
+            {
+              "path": "addons/example-addon/src/api/latestMarkers.js",
+              "bytes": 2267
             },
             {
               "path": "addons/example-addon/src/api/bridge.js",
@@ -1700,21 +1721,17 @@
             {
               "path": "addons/example-addon/src/constants.js",
               "bytes": 1143
-            },
-            {
-              "path": "addons/example-addon/src/app/actions/storage.js",
-              "bytes": 1130
             }
           ]
         },
         "release": {
           "mode": "release",
-          "bytes": 71988,
-          "gzipBytes": 15720,
+          "bytes": 75495,
+          "gzipBytes": 16487,
           "contributors": [
             {
               "path": "addons/example-addon/src/app/createExampleAddonApp.js",
-              "bytes": 6779
+              "bytes": 7008
             },
             {
               "path": "addons/shared/runtimeLifecycle.js",
@@ -1726,7 +1743,7 @@
             },
             {
               "path": "addons/example-addon/src/ui/panel.js",
-              "bytes": 5434
+              "bytes": 5861
             },
             {
               "path": "addons/example-addon/src/ui/example.css",
@@ -1745,6 +1762,14 @@
               "bytes": 1938
             },
             {
+              "path": "addons/example-addon/src/api/latestMarkers.js",
+              "bytes": 1719
+            },
+            {
+              "path": "addons/example-addon/src/app/commands.js",
+              "bytes": 1702
+            },
+            {
               "path": "addons/example-addon/src/app/actions/idb.js",
               "bytes": 1685
             },
@@ -1755,10 +1780,6 @@
             {
               "path": "addons/example-addon/src/ui/bindings.js",
               "bytes": 1640
-            },
-            {
-              "path": "addons/example-addon/src/app/commands.js",
-              "bytes": 1559
             },
             {
               "path": "addons/example-addon/src/app/registration.js",
@@ -1787,10 +1808,6 @@
             {
               "path": "addons/example-addon/src/main.js",
               "bytes": 740
-            },
-            {
-              "path": "addons/example-addon/src/app/actions/metadata.js",
-              "bytes": 708
             }
           ]
         }
@@ -2351,10 +2368,10 @@
     {
       "id": "library-addon",
       "source": {
-        "fileCount": 101,
-        "authoredBytes": 407979,
-        "physicalLines": 12757,
-        "nonblankLines": 11557,
+        "fileCount": 102,
+        "authoredBytes": 412657,
+        "physicalLines": 12743,
+        "nonblankLines": 11552,
         "files": [
           {
             "path": "addons/library-addon/src/api/bridge.js",
@@ -2363,10 +2380,16 @@
             "nonblankLines": 7
           },
           {
+            "path": "addons/library-addon/src/api/library/actionBudget.js",
+            "bytes": 1965,
+            "physicalLines": 51,
+            "nonblankLines": 45
+          },
+          {
             "path": "addons/library-addon/src/api/library/client.js",
-            "bytes": 8931,
-            "physicalLines": 312,
-            "nonblankLines": 279
+            "bytes": 9423,
+            "physicalLines": 322,
+            "nonblankLines": 289
           },
           {
             "path": "addons/library-addon/src/api/library/index.js",
@@ -2436,9 +2459,9 @@
           },
           {
             "path": "addons/library-addon/src/api/ui/manager.js",
-            "bytes": 5011,
-            "physicalLines": 168,
-            "nonblankLines": 143
+            "bytes": 5171,
+            "physicalLines": 171,
+            "nonblankLines": 146
           },
           {
             "path": "addons/library-addon/src/api/ui/mount.js",
@@ -2616,9 +2639,9 @@
           },
           {
             "path": "addons/library-addon/src/library/service.js",
-            "bytes": 40118,
-            "physicalLines": 1170,
-            "nonblankLines": 1095
+            "bytes": 42997,
+            "physicalLines": 1224,
+            "nonblankLines": 1142
           },
           {
             "path": "addons/library-addon/src/library/threadIdentity.js",
@@ -2688,9 +2711,9 @@
           },
           {
             "path": "addons/library-addon/src/ui/application/importProgressController.js",
-            "bytes": 4346,
-            "physicalLines": 138,
-            "nonblankLines": 120
+            "bytes": 3638,
+            "physicalLines": 88,
+            "nonblankLines": 79
           },
           {
             "path": "addons/library-addon/src/ui/assets/dock.css",
@@ -2748,9 +2771,9 @@
           },
           {
             "path": "addons/library-addon/src/ui/components/manager/importProgressDialog.js",
-            "bytes": 3641,
-            "physicalLines": 75,
-            "nonblankLines": 69
+            "bytes": 3806,
+            "physicalLines": 45,
+            "nonblankLines": 43
           },
           {
             "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
@@ -2814,9 +2837,9 @@
           },
           {
             "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
-            "bytes": 4765,
-            "physicalLines": 148,
-            "nonblankLines": 135
+            "bytes": 4490,
+            "physicalLines": 96,
+            "nonblankLines": 92
           },
           {
             "path": "addons/library-addon/src/ui/manager/handlers/navigationHandlers.js",
@@ -2967,12 +2990,12 @@
       "builds": {
         "regular": {
           "mode": "regular",
-          "bytes": 420581,
-          "gzipBytes": 86127,
+          "bytes": 425222,
+          "gzipBytes": 87334,
           "contributors": [
             {
               "path": "addons/library-addon/src/library/service.js",
-              "bytes": 39570
+              "bytes": 42457
             },
             {
               "path": "addons/library-addon/src/ui/assets/manager.css",
@@ -2980,7 +3003,7 @@
             },
             {
               "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-              "bytes": 19369
+              "bytes": 19372
             },
             {
               "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
@@ -3000,7 +3023,7 @@
             },
             {
               "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-              "bytes": 10759
+              "bytes": 10820
             },
             {
               "path": "addons/library-addon/src/library/recordModel.js",
@@ -3008,11 +3031,15 @@
             },
             {
               "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
-              "bytes": 9760
+              "bytes": 9824
             },
             {
               "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",
               "bytes": 9675
+            },
+            {
+              "path": "addons/library-addon/src/api/library/client.js",
+              "bytes": 9640
             },
             {
               "path": "addons/library-addon/src/library/importWorkflow.js",
@@ -3020,11 +3047,7 @@
             },
             {
               "path": "addons/shared/runtimeLifecycle.js",
-              "bytes": 9221
-            },
-            {
-              "path": "addons/library-addon/src/api/library/client.js",
-              "bytes": 9183
+              "bytes": 9230
             },
             {
               "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
@@ -3054,8 +3077,8 @@
         },
         "release": {
           "mode": "release",
-          "bytes": 377238,
-          "gzipBytes": 75275,
+          "bytes": 383485,
+          "gzipBytes": 76572,
           "contributors": [
             {
               "path": "addons/library-addon/src/ui/assets/manager.css",
@@ -3063,11 +3086,11 @@
             },
             {
               "path": "addons/library-addon/src/library/service.js",
-              "bytes": 27405
+              "bytes": 29632
             },
             {
               "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-              "bytes": 14247
+              "bytes": 14250
             },
             {
               "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
@@ -3087,7 +3110,7 @@
             },
             {
               "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
-              "bytes": 7533
+              "bytes": 7594
             },
             {
               "path": "addons/library-addon/src/ui/entryEditor/editor.css",
@@ -3107,11 +3130,15 @@
             },
             {
               "path": "addons/library-addon/src/ui/updateInbox/updateInboxController.js",
-              "bytes": 6795
+              "bytes": 6859
             },
             {
               "path": "addons/shared/runtimeLifecycle.js",
-              "bytes": 6436
+              "bytes": 6445
+            },
+            {
+              "path": "addons/library-addon/src/api/library/client.js",
+              "bytes": 6373
             },
             {
               "path": "addons/library-addon/src/library/importWorkflow.js",
@@ -3120,10 +3147,6 @@
             {
               "path": "addons/library-addon/src/app/dockController.js",
               "bytes": 6233
-            },
-            {
-              "path": "addons/library-addon/src/api/library/client.js",
-              "bytes": 6011
             },
             {
               "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
@@ -4410,9 +4433,9 @@
     },
     "servicesAddons": {
       "fileCount": 37,
-      "authoredBytes": 194244,
-      "physicalLines": 5236,
-      "nonblankLines": 4591,
+      "authoredBytes": 194268,
+      "physicalLines": 5237,
+      "nonblankLines": 4592,
       "files": [
         {
           "path": "src/services/addons/access.js",
@@ -4620,9 +4643,9 @@
         },
         {
           "path": "src/services/addons/trusted-catalog.json",
-          "bytes": 6590,
-          "physicalLines": 259,
-          "nonblankLines": 259
+          "bytes": 6614,
+          "physicalLines": 260,
+          "nonblankLines": 260
         },
         {
           "path": "src/services/addons/uiHost.js",

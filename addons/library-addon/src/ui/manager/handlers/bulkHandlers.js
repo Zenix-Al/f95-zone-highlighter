@@ -1,148 +1,96 @@
 import { showToast } from "../../utils/showToast.js";
 import { createActivityCommandId } from "../../../library/activityCommandId.js";
+import { resetPagination } from "../state.js";
+import { openOperationProgress, updateOperationProgress, finishOperationProgress, isOperationCancelled } from "../../application/importProgressController.js";
 
 export function createBulkHandlers(context) {
   const { api, deps, getRoot, notifyMutated, reloadRows, state } = context;
-  const { askConfirmFn } = deps;
+  const progressUi = deps.progressController || {
+    open: openOperationProgress,
+    update: updateOperationProgress,
+    finish: finishOperationProgress,
+    isCancelled: isOperationCancelled,
+  };
+  let running = false;
+
+  async function run(label, ids, invoke, { remove = false } = {}) {
+    if (running) return showToast("A Library bulk action is still running.", "info");
+    if (!ids.length) return showToast("Select at least one row first.", "error");
+    running = true;
+    const applyButton = getRoot()?.querySelector('[data-action="bulk-apply"]');
+    if (applyButton) applyButton.disabled = true;
+    let opened = false;
+    try {
+      opened = await progressUi.open({ label, total: ids.length });
+      if (opened) progressUi.update({ total: ids.length, processed: 0 });
+      const result = await invoke(
+        opened ? progressUi.update : () => {},
+        opened ? progressUi.isCancelled : () => false,
+      );
+      await showToast(`${label}: ${result.updated ?? result.removed ?? 0} changed, ${result.skipped || 0} skipped${result.cancelled ? " (stopped)" : ""}.`, result.ok ? "success" : "error");
+      if (remove && result.ok) state.selectedIds = new Set();
+      resetPagination(state);
+      await reloadRows();
+      await notifyMutated();
+      return result;
+    } catch (error) {
+      await showToast(`${label} failed: ${error?.message || error}`, "error");
+      throw error;
+    } finally {
+      if (opened) await progressUi.finish("bulk-finished");
+      running = false;
+      if (applyButton) applyButton.disabled = false;
+    }
+  }
 
   const handlers = {
-    "bulk-set-status": async () => {
+    "bulk-set-status": () => {
       const ids = [...state.selectedIds];
-      if (ids.length === 0) {
-        await showToast("Select at least one row first.", "error");
-        return;
-      }
-
-      const root = getRoot();
-      const bulkStatusEl = root?.querySelector('[data-field="bulkStatus"]');
-      const nextStatus = String(bulkStatusEl?.value || "saved").trim();
-      const result = await api.bulkUpdateStatus(ids, nextStatus, {
-        commandId: createActivityCommandId("bulk-status"),
-      });
-
-      await showToast(
-        `Bulk status updated: ${result.updated}, skipped: ${result.skipped}.`,
-        "success",
-      );
-      await reloadRows();
-      notifyMutated();
+      const status = String(getRoot()?.querySelector('[data-field="bulkStatus"]')?.value || "saved").trim();
+      return run("Bulk status", ids, (onProgress, shouldCancel) => api.bulkUpdateStatus(ids, status, {
+        commandId: createActivityCommandId("bulk-status"), onProgress, shouldCancel,
+      }));
     },
-    "bulk-set-pin": async () => {
+    "bulk-set-pin": () => {
       const ids = [...state.selectedIds];
-      if (ids.length === 0) {
-        await showToast("Select at least one row first.", "error");
-        return;
-      }
-
-      const root = getRoot();
-      const bulkPinEl = root?.querySelector('[data-field="bulkPin"]');
-      const mode = String(bulkPinEl?.value || "pin")
-        .trim()
-        .toLowerCase();
-      const pinned = mode !== "unpin";
-
-      let updated = 0;
-      let skipped = 0;
-      for (const id of ids) {
-        const result = await api.patchEntry(id, { pinned });
-        if (result?.ok) updated += 1;
-        else skipped += 1;
-      }
-
-      await showToast(`Bulk pin updated: ${updated}, skipped: ${skipped}.`, "success");
-      await reloadRows();
-      notifyMutated();
+      const pinned = getRoot()?.querySelector('[data-field="bulkPin"]')?.value !== "unpin";
+      return run("Bulk pin", ids, (onProgress, shouldCancel) => api.bulkSetPinned(ids, pinned, { onProgress, shouldCancel }));
     },
     "bulk-remove": async () => {
       const ids = [...state.selectedIds];
-      if (ids.length === 0) {
-        await showToast("Select at least one row first.", "error");
-        return;
-      }
-
-      const confirmed = await askConfirmFn(getRoot(), {
-        title: "Remove Selected",
-        message: `Remove ${ids.length} selected entries? This cannot be undone.`,
-        confirmText: "Remove",
-        cancelText: "Cancel",
-        danger: true,
+      if (!ids.length) return run("Bulk remove", ids, () => {});
+      const confirmed = await deps.askConfirmFn(getRoot(), {
+        title: "Remove Selected", message: `Remove ${ids.length} selected entries? This cannot be undone.`,
+        confirmText: "Remove", cancelText: "Cancel", danger: true,
       });
-
       if (!confirmed) return;
-
-      const result = await api.bulkRemoveEntries(ids);
-      await showToast(`Bulk Remove: ${result.removed}, skipped: ${result.skipped}.`, "success");
-
-      state.selectedIds = new Set();
-      await reloadRows();
-      notifyMutated();
+      return run("Bulk remove", ids, (onProgress, shouldCancel) => api.bulkRemoveEntries(ids, { onProgress, shouldCancel }), { remove: true });
     },
   };
 
   handlers["bulk-apply"] = async () => {
-    const root = getRoot();
-    const action = String(
-      root?.querySelector('[data-field="bulkAction"]')?.value || "",
-    ).trim();
+    if (running) return;
+    const action = String(getRoot()?.querySelector('[data-field="bulkAction"]')?.value || "").trim();
     if (action === "clear") {
       state.selectedIds = new Set();
       await reloadRows();
       return;
     }
     if (action.startsWith("status:")) {
-      if (state.selectedIds.size === 0) {
-        await showToast("Select at least one row first.", "error");
-        return;
-      }
-      const temporary = root?.querySelector('[data-field="bulkStatus"]');
-      if (temporary) temporary.value = action.slice(7);
-      else {
-        const result = await api.bulkUpdateStatus([...state.selectedIds], action.slice(7), {
-          commandId: createActivityCommandId("bulk-status"),
-        });
-        await showToast(
-          `Bulk status updated: ${result.updated}, skipped: ${result.skipped}.`,
-          "success",
-        );
-        await reloadRows();
-        notifyMutated();
-        return;
-      }
-      return handlers["bulk-set-status"]();
+      const ids = [...state.selectedIds];
+      return run("Bulk status", ids, (onProgress, shouldCancel) => api.bulkUpdateStatus(ids, action.slice(7), {
+        commandId: createActivityCommandId("bulk-status"), onProgress, shouldCancel,
+      }));
     }
     if (action === "pin" || action === "unpin") {
-      if (state.selectedIds.size === 0) {
-        await showToast("Select at least one row first.", "error");
-        return;
-      }
-      let updated = 0;
-      let skipped = 0;
-      for (const id of state.selectedIds) {
-        const result = await api.patchEntry(id, { pinned: action === "pin" });
-        if (result?.ok) updated += 1;
-        else skipped += 1;
-      }
-      await showToast(`Bulk pin updated: ${updated}, skipped: ${skipped}.`, "success");
-      await reloadRows();
-      notifyMutated();
-      return;
+      const ids = [...state.selectedIds];
+      return run("Bulk pin", ids, (onProgress, shouldCancel) => api.bulkSetPinned(ids, action === "pin", { onProgress, shouldCancel }));
     }
     if (action === "auto-enable" || action === "auto-disable") {
-      if (state.selectedIds.size === 0) {
-        await showToast("Select at least one row first.", "error");
-        return;
-      }
-      const result = await api.setAutoUpdateEnabled(
-        [...state.selectedIds],
-        action === "auto-enable",
-      );
-      await showToast(`Auto update changed: ${result.updated}, skipped: ${result.skipped}.`, "success");
-      await reloadRows();
-      notifyMutated();
-      return;
+      const ids = [...state.selectedIds];
+      return run("Bulk auto update", ids, (onProgress, shouldCancel) => api.setAutoUpdateEnabled(ids, action === "auto-enable", { onProgress, shouldCancel }));
     }
-    if (action === "remove") await handlers["bulk-remove"]();
+    if (action === "remove") return handlers["bulk-remove"]();
   };
-
   return handlers;
 }
