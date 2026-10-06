@@ -1,4 +1,5 @@
 import { debugLog } from "../../../shared/debugLog.js";
+import { CHALLENGE_PAGE_PATTERN } from "../api/threadHtml.js";
 import {
   decodeHtmlText,
   getPlainTitleTextFromHtml,
@@ -72,7 +73,7 @@ export function parseLibraryThreadHtml(html, { finalUrl = "", requestedUrl = "" 
     });
     return { ok: false, reason: "authentication_required" };
   }
-  if (/cf-chl-|challenge-platform|Just a moment|Attention Required/i.test(source)) {
+  if (CHALLENGE_PAGE_PATTERN.test(source)) {
     debugLog(DEBUG_OWNER, "Thread HTML parsing failed.", {
       level: "warn",
       data: { reason: "challenge_page", sourceChars: source.length },
