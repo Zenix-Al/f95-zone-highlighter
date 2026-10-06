@@ -5,3 +5,4 @@ export {
   disableLatestOverlay,
   enableLatestOverlay,
 } from "../../src/features/latest-overlay/handler.js";
+export { latestMarkers } from "../../src/features/latest-overlay/markers.js";

@@ -32,8 +32,6 @@ const KNOWN_LATEST_OVERLAY_CATEGORIES = new Set([
 ]);
 let latestOverlayLastHash = String(window.location?.hash || "");
 let unsubscribeLatestData = null;
-let deferredEnableAttempts = 0;
-const MAX_DEFERRED_ENABLE_ATTEMPTS = 40;
 
 function applyLatestDataSnapshot(snapshot, { processVisibleTiles = true } = {}) {
   const startedAt = performance.now();
@@ -138,20 +136,10 @@ export function enableLatestOverlay() {
   
   // If tearing down, wait for it to complete before enabling
   if (currentStatus === "TEARING_DOWN") {
-    if (deferredEnableAttempts < MAX_DEFERRED_ENABLE_ATTEMPTS) {
-      deferredEnableAttempts += 1;
-      debugLog("latest-overlay", "Enable requested while tearing down - deferring...");
-      setTimeout(() => enableLatestOverlay(), 50);
-      return;
-    }
-    // Teardown never finished (it is synchronous, so a step must have thrown earlier).
-    // Recover instead of retrying forever.
-    debugLog("latest-overlay", "Teardown did not finish; resetting status to IDLE", {
-      level: "warn",
-    });
-    stateManager.set("latestOverlayStatus", "IDLE");
+    debugLog("latest-overlay", "Enable requested while tearing down - deferring...");
+    setTimeout(() => enableLatestOverlay(), 50);
+    return;
   }
-  deferredEnableAttempts = 0;
 
   // If already active, skip
   if (currentStatus === "ACTIVE") {

@@ -2541,29 +2541,18 @@ module.exports = function registerGroup(context) {
   );
 
   runTest(
-    "LATEST-OVERLAY-01 recovers from a stuck TEARING_DOWN status instead of retrying forever",
+    "LATEST-OVERLAY-01 a throwing teardown step does not leave the status stuck in TEARING_DOWN",
     () => {
       const sandbox = createDomSandbox("https://f95zone.to/sam/latest_alpha/");
-      const realSetTimeout = global.setTimeout;
       try {
-        const { stateManager, enableLatestOverlay, disableLatestOverlay } = loadModule(
+        const { stateManager, latestMarkers, disableLatestOverlay } = loadModule(
           "tests/fixtures/latestFeaturesHarness.js",
         );
-        stateManager.set("latestOverlayStatus", "TEARING_DOWN");
-        const queued = [];
-        global.setTimeout = (callback) => { queued.push(callback); return 0; };
-        let guard = 0;
-        enableLatestOverlay();
-        while (queued.length && guard < 200) {
-          guard += 1;
-          try { queued.shift()(); } catch { break; }
-        }
-        assert.ok(guard < 200, "deferred enable must stop retrying");
-        assert.notStrictEqual(stateManager.get("latestOverlayStatus"), "TEARING_DOWN");
-        global.setTimeout = realSetTimeout;
-        disableLatestOverlay();
+        stateManager.set("latestOverlayStatus", "ACTIVE");
+        latestMarkers.disable = () => { throw new Error("marker teardown failed"); };
+        assert.throws(() => disableLatestOverlay(), /marker teardown failed/);
+        assert.strictEqual(stateManager.get("latestOverlayStatus"), "IDLE");
       } finally {
-        global.setTimeout = realSetTimeout;
         sandbox.restore();
       }
     },
