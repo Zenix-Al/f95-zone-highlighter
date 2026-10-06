@@ -40,7 +40,7 @@ function extractActionIds() {
   const source = collectFiles(ACTIONS_PATH).map((file) => fs.readFileSync(file, "utf8")).join("\n");
   const ids = [
     ...source.matchAll(/\bid\s*:\s*["']([a-z][a-z0-9-]*(?:\.[a-z][a-z0-9-]*)+)["']/gim),
-    ...source.matchAll(/\b(?:ui|toggle|markerAction)\(["']([a-z][a-z0-9-]*(?:\.[a-z][a-z0-9-]*)+)["']/gim),
+    ...source.matchAll(/\b(?:ui|toggle|markerAction)\(\s*["']([a-z][a-z0-9-]*(?:\.[a-z][a-z0-9-]*)+)["']/gim),
   ].map((match) => match[1]);
   return [...new Set([...ids, "addon.access", "addon.throttle"])].sort();
 }

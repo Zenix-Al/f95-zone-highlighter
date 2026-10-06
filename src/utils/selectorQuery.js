@@ -17,14 +17,26 @@ export function queryFirstBySelectors(selectors, root = document, options = {}) 
     try {
       const match = root.querySelector(selector);
       if (match) {
-        recordSelectorDiagnostic({ key: options.key || selector, required: Boolean(options.required), fallbackUsed: index > 0, matched: true, routeContext });
+        recordSelectorDiagnostic({
+          key: options.key || selector,
+          required: Boolean(options.required),
+          fallbackUsed: index > 0,
+          matched: true,
+          routeContext,
+        });
         return match;
       }
     } catch {
       // Ignore invalid selectors and continue with next fallback.
     }
   }
-  recordSelectorDiagnostic({ key: options.key || selectorList[0] || "unknown", required: Boolean(options.required), fallbackUsed: false, matched: false, routeContext });
+  recordSelectorDiagnostic({
+    key: options.key || selectorList[0] || "unknown",
+    required: Boolean(options.required),
+    fallbackUsed: false,
+    matched: false,
+    routeContext,
+  });
   return null;
 }
 
@@ -37,14 +49,26 @@ export function queryAllBySelectors(selectors, root = document, options = {}) {
     try {
       const matches = Array.from(root.querySelectorAll(selector));
       if (matches.length > 0) {
-        recordSelectorDiagnostic({ key: options.key || selector, required: Boolean(options.required), fallbackUsed: index > 0, matched: true, routeContext });
+        recordSelectorDiagnostic({
+          key: options.key || selector,
+          required: Boolean(options.required),
+          fallbackUsed: index > 0,
+          matched: true,
+          routeContext,
+        });
         return matches;
       }
     } catch {
       // Ignore invalid selectors and continue with next fallback.
     }
   }
-  recordSelectorDiagnostic({ key: options.key || selectorList[0] || "unknown", required: Boolean(options.required), fallbackUsed: false, matched: false, routeContext });
+  recordSelectorDiagnostic({
+    key: options.key || selectorList[0] || "unknown",
+    required: Boolean(options.required),
+    fallbackUsed: false,
+    matched: false,
+    routeContext,
+  });
   return [];
 }
 

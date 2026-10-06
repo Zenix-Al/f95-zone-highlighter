@@ -1,6 +1,10 @@
 import { ensurePageBridge } from "../../core/pageBridge.js";
 import { recordHealthEvent } from "../../core/featureHealth.js";
-import { createReplayCache, createSafeAddonResponse, validateAddonRequestEnvelope } from "./protocol.js";
+import {
+  createReplayCache,
+  createSafeAddonResponse,
+  validateAddonRequestEnvelope,
+} from "./protocol.js";
 
 const CORE_ACTION_RATE_WINDOW_MS = 5000;
 const CORE_ACTION_RATE_MAX = 100;
@@ -127,15 +131,16 @@ export function initAddonsBridgeServer({
     bridgeListener = (event) => {
       const detail = event?.detail || {};
       const type = String(detail.type || "").trim();
-        typeBridgeListener(
-          type,
-          detail,
-          apiVersion, marker,
-          isServiceDisabled,
-          getCoreActionThrottleConfig,
-          onRegister,
-          onUnregister,
-          onUpdateStatus,
+      typeBridgeListener(
+        type,
+        detail,
+        apiVersion,
+        marker,
+        isServiceDisabled,
+        getCoreActionThrottleConfig,
+        onRegister,
+        onUnregister,
+        onUpdateStatus,
         onTeardownComplete,
         onInvokeCoreAction,
       );
@@ -153,7 +158,8 @@ export function initAddonsBridgeServer({
 }
 
 export function shutdownAddonsBridgeServer() {
-  if (bridgeListener && bridgeEventName) window.removeEventListener(bridgeEventName, bridgeListener);
+  if (bridgeListener && bridgeEventName)
+    window.removeEventListener(bridgeEventName, bridgeListener);
   bridgeListener = null;
   bridgeEventName = "";
   isBridgeListenerBound = false;
@@ -167,7 +173,11 @@ export function shutdownAddonsBridgeServer() {
 }
 
 export function getAddonsBridgeDiagnostics() {
-  return Object.freeze({ listenerBound: isBridgeListenerBound, activeRequestAddons: addonInflight.size, lastRequest: lastAddonRequest && { ...lastAddonRequest } });
+  return Object.freeze({
+    listenerBound: isBridgeListenerBound,
+    activeRequestAddons: addonInflight.size,
+    lastRequest: lastAddonRequest && { ...lastAddonRequest },
+  });
 }
 
 function typeBridgeListener(
@@ -183,7 +193,8 @@ function typeBridgeListener(
   onTeardownComplete,
   onInvokeCoreAction,
 ) {
-  const serviceDisabled = typeof isServiceDisabled === "function" ? Boolean(isServiceDisabled()) : false;
+  const serviceDisabled =
+    typeof isServiceDisabled === "function" ? Boolean(isServiceDisabled()) : false;
   if (serviceDisabled) {
     if (type === "ping") {
       const replyEvent = String(detail.replyEvent || "").trim();
@@ -291,18 +302,63 @@ function typeBridgeListener(
       if (!replyEvent) return;
       const validation = validateAddonRequestEnvelope(detail, { apiVersion, marker });
       if (!validation.ok) {
-        recordHealthEvent({ code: "ADDON_REQUEST_REJECTED", severity: "warning", ownerId: String(detail.addonId || ""), subsystem: "addons", message: validation.reason, correlationId: String(detail.requestId || "") });
-        window.dispatchEvent(new CustomEvent(replyEvent, { detail: createSafeAddonResponse({ apiVersion, addonId: detail.addonId, requestId: detail.requestId, result: { ok: false, reason: validation.reason } }) }));
+        recordHealthEvent({
+          code: "ADDON_REQUEST_REJECTED",
+          severity: "warning",
+          ownerId: String(detail.addonId || ""),
+          subsystem: "addons",
+          message: validation.reason,
+          correlationId: String(detail.requestId || ""),
+        });
+        window.dispatchEvent(
+          new CustomEvent(replyEvent, {
+            detail: createSafeAddonResponse({
+              apiVersion,
+              addonId: detail.addonId,
+              requestId: detail.requestId,
+              result: { ok: false, reason: validation.reason },
+            }),
+          }),
+        );
         return;
       }
       if (replayCache.seen(detail.addonId, detail.requestId)) {
-        recordHealthEvent({ code: "ADDON_DUPLICATE_REQUEST", severity: "warning", ownerId: detail.addonId, subsystem: "addons", message: "Duplicate add-on request", correlationId: detail.requestId });
-        window.dispatchEvent(new CustomEvent(replyEvent, { detail: createSafeAddonResponse({ apiVersion, addonId: detail.addonId, requestId: detail.requestId, result: { ok: false, reason: "duplicate_request" } }) }));
+        recordHealthEvent({
+          code: "ADDON_DUPLICATE_REQUEST",
+          severity: "warning",
+          ownerId: detail.addonId,
+          subsystem: "addons",
+          message: "Duplicate add-on request",
+          correlationId: detail.requestId,
+        });
+        window.dispatchEvent(
+          new CustomEvent(replyEvent, {
+            detail: createSafeAddonResponse({
+              apiVersion,
+              addonId: detail.addonId,
+              requestId: detail.requestId,
+              result: { ok: false, reason: "duplicate_request" },
+            }),
+          }),
+        );
         return;
       }
       const action = String(detail.action || "").trim();
-      lastAddonRequest = { addonId: key, action, correlationId: detail.requestId, receivedAt: Date.now() };
-      recordHealthEvent({ code: "ADDON_REQUEST", severity: "info", ownerId: key, subsystem: "addons", message: `Action ${action}`, correlationId: detail.requestId, operationId: action });
+      lastAddonRequest = {
+        addonId: key,
+        action,
+        correlationId: detail.requestId,
+        receivedAt: Date.now(),
+      };
+      recordHealthEvent({
+        code: "ADDON_REQUEST",
+        severity: "info",
+        ownerId: key,
+        subsystem: "addons",
+        message: `Action ${action}`,
+        correlationId: detail.requestId,
+        operationId: action,
+      });
       const isCleanupAction = UNTHROTTLED_CLEANUP_ACTIONS.has(action);
       if (
         !isCleanupAction &&
@@ -314,14 +370,26 @@ function typeBridgeListener(
         )
       ) {
         window.dispatchEvent(
-          new CustomEvent(replyEvent, { detail: createSafeAddonResponse({ apiVersion, addonId: key, requestId: detail.requestId, result: { ok: false, reason: "rate_limited" } }) }),
+          new CustomEvent(replyEvent, {
+            detail: createSafeAddonResponse({
+              apiVersion,
+              addonId: key,
+              requestId: detail.requestId,
+              result: { ok: false, reason: "rate_limited" },
+            }),
+          }),
         );
         return;
       }
       if (!isCleanupAction && !tryAcquireInflight(key, throttleConfig.maxConcurrent)) {
         window.dispatchEvent(
           new CustomEvent(replyEvent, {
-            detail: createSafeAddonResponse({ apiVersion, addonId: key, requestId: detail.requestId, result: { ok: false, reason: "too_many_concurrent_requests" } }),
+            detail: createSafeAddonResponse({
+              apiVersion,
+              addonId: key,
+              requestId: detail.requestId,
+              result: { ok: false, reason: "too_many_concurrent_requests" },
+            }),
           }),
         );
         return;
@@ -334,12 +402,28 @@ function typeBridgeListener(
       )
         .then((result) => {
           if (!isCleanupAction) releaseInflight(key);
-          window.dispatchEvent(new CustomEvent(replyEvent, { detail: createSafeAddonResponse({ apiVersion, addonId: key, requestId: detail.requestId, result }) }));
+          window.dispatchEvent(
+            new CustomEvent(replyEvent, {
+              detail: createSafeAddonResponse({
+                apiVersion,
+                addonId: key,
+                requestId: detail.requestId,
+                result,
+              }),
+            }),
+          );
         })
         .catch(() => {
           if (!isCleanupAction) releaseInflight(key);
           window.dispatchEvent(
-            new CustomEvent(replyEvent, { detail: createSafeAddonResponse({ apiVersion, addonId: key, requestId: detail.requestId, result: { ok: false, reason: "internal_error" } }) }),
+            new CustomEvent(replyEvent, {
+              detail: createSafeAddonResponse({
+                apiVersion,
+                addonId: key,
+                requestId: detail.requestId,
+                result: { ok: false, reason: "internal_error" },
+              }),
+            }),
           );
         });
       break;

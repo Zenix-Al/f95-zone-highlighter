@@ -7,7 +7,9 @@ const DEFAULT_LATEST_CATEGORY = "games";
 const RATING_SUPPORTED_CATEGORIES = new Set(["games", "animations"]);
 
 function normalizeLatestCategory(pageCategory) {
-  return String(pageCategory || DEFAULT_LATEST_CATEGORY).trim().toLowerCase();
+  return String(pageCategory || DEFAULT_LATEST_CATEGORY)
+    .trim()
+    .toLowerCase();
 }
 
 function isRatingSupportedForCategory(pageCategory) {
@@ -140,10 +142,7 @@ export function getRecordHighlightClasses(record, capturedAt, pageCategory = "ga
   let engagementClass = null;
 
   if (config.overlaySettings.ratingHighlight && rating !== null) {
-    ratingClass = getRatingHighlightClass(
-      rating,
-      config.latestSettings.ratingHighlightThreshold,
-    );
+    ratingClass = getRatingHighlightClass(rating, config.latestSettings.ratingHighlightThreshold);
   }
 
   if (config.overlaySettings.engagementHighlight && likes !== null && views !== null) {

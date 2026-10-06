@@ -6,7 +6,8 @@ const ROUTE_EVENT = "f95ue:route-change";
 let cleanupRouteObserver = null;
 
 export function initRouteObserver(onRouteChange) {
-  if (cleanupRouteObserver || typeof window === "undefined") return cleanupRouteObserver || (() => {});
+  if (cleanupRouteObserver || typeof window === "undefined")
+    return cleanupRouteObserver || (() => {});
   let queued = false;
   let pendingContext = null;
   const originals = new Map();

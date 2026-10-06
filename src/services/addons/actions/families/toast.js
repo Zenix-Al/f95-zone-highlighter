@@ -10,7 +10,8 @@ export function actionToastShow(showToast, payload) {
 
 export const toastActions = Object.freeze([
   defineAction({
-    id: "toast.show", requiredCapabilities: ["toast"],
+    id: "toast.show",
+    requiredCapabilities: ["toast"],
     execute: ({ payload, deps }) => actionToastShow(deps.showToast, payload),
   }),
 ]);

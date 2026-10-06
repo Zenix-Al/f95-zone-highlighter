@@ -22,8 +22,12 @@ function cloneSummary(summary) {
 }
 
 function reportTeardownFailure(name, error, phase = "teardown.cleanup") {
-  const message = redactDiagnosticValue(error?.message || String(error || "Unknown teardown error"));
-  reportFeatureWarning("Teardown", message, phase, { details: { resource: String(name || "unknown") } });
+  const message = redactDiagnosticValue(
+    error?.message || String(error || "Unknown teardown error"),
+  );
+  reportFeatureWarning("Teardown", message, phase, {
+    details: { resource: String(name || "unknown") },
+  });
   debugLog("Teardown", `${name} failed: ${message}`, { level: "warn" });
   return message;
 }
@@ -46,7 +50,10 @@ async function disableFeatures(summary, featureTimeoutMs) {
       const result = await Promise.race([
         Promise.resolve().then(() => feature.disable({ reason: "teardown" })),
         new Promise((resolve) => {
-          timeoutId = setTimeout(() => resolve({ timedOut: true }), Math.max(0, Number(featureTimeoutMs) || 0));
+          timeoutId = setTimeout(
+            () => resolve({ timedOut: true }),
+            Math.max(0, Number(featureTimeoutMs) || 0),
+          );
         }),
       ]);
       if (result?.timedOut) {
@@ -58,7 +65,10 @@ async function disableFeatures(summary, featureTimeoutMs) {
         summary.disabledFeatures.push(name);
       }
     } catch (error) {
-      summary.failures.push({ name, message: reportTeardownFailure(name, error, "teardown.feature-disable") });
+      summary.failures.push({
+        name,
+        message: reportTeardownFailure(name, error, "teardown.feature-disable"),
+      });
     } finally {
       clearTimeout(timeoutId);
     }
@@ -90,7 +100,8 @@ export function markRuntimeRunning() {
 }
 
 export function suspendRuntime(reason = "bfcache") {
-  if (runtimeState === "stopped" || runtimeState === "stopping") return { state: runtimeState, reason };
+  if (runtimeState === "stopped" || runtimeState === "stopping")
+    return { state: runtimeState, reason };
   abortCurrentRoute(reason);
   const queues = pauseAllTaskQueues(reason);
   runtimeState = "suspended";
@@ -124,7 +135,10 @@ export async function teardownAll(reason = "unknown", { featureTimeoutMs = 1000 
       await disposeAllTaskQueues(`teardown: ${reason}`);
       summary.completed.push("taskQueues");
     } catch (error) {
-      summary.failures.push({ name: "taskQueues", message: reportTeardownFailure("taskQueues", error) });
+      summary.failures.push({
+        name: "taskQueues",
+        message: reportTeardownFailure("taskQueues", error),
+      });
     }
 
     await disableFeatures(summary, featureTimeoutMs);
@@ -142,7 +156,10 @@ export async function teardownAll(reason = "unknown", { featureTimeoutMs = 1000 
         reset();
         summary.completed.push("initialization");
       } catch (error) {
-        summary.failures.push({ name: "initialization", message: reportTeardownFailure("initialization", error) });
+        summary.failures.push({
+          name: "initialization",
+          message: reportTeardownFailure("initialization", error),
+        });
       }
     }
 

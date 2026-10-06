@@ -28,124 +28,124 @@
   },
   "authored": {
     "fileCount": 119,
-    "physicalLines": 14845,
-    "meaningfulLines": 12838,
-    "authoredBytes": 477754,
+    "physicalLines": 15834,
+    "meaningfulLines": 13824,
+    "authoredBytes": 484089,
     "bytesByArea": {
-      "config": 30523,
-      "core": 87786,
-      "services": 86489,
-      "features": 132443,
-      "ui": 140513
+      "config": 31942,
+      "core": 89521,
+      "services": 88610,
+      "features": 133301,
+      "ui": 140715
     },
     "bytesByFile": {
-      "src/services/settingsService.js": 35757,
+      "src/services/settingsService.js": 36777,
       "src/ui/assets/css.css": 25118,
-      "src/config/schema.js": 19644,
+      "src/config/schema.js": 21048,
       "src/features/latest-overlay/scoreCalculator.js": 15051,
-      "src/features/latest-overlay/settings.js": 14420,
+      "src/features/latest-overlay/settings.js": 14852,
+      "src/services/configTransfer/index.js": 12960,
       "src/ui/components/tag-search/tagDrag.js": 12819,
-      "src/core/taskQueue.js": 12467,
-      "src/services/configTransfer/index.js": 12439,
-      "src/features/latest-overlay/capture/latestCaptureService.js": 11917,
-      "src/ui/components/dialog.js": 11307,
-      "src/ui/components/featureHealth/index.js": 10608,
-      "src/ui/components/tag-search/index.js": 10256,
-      "src/services/tagsService.js": 9509,
+      "src/core/taskQueue.js": 12632,
+      "src/features/latest-overlay/capture/latestCaptureService.js": 11979,
+      "src/ui/components/dialog.js": 11317,
+      "src/ui/components/featureHealth/index.js": 10614,
+      "src/ui/components/tag-search/index.js": 10135,
+      "src/services/tagsService.js": 9543,
       "src/core/observer.js": 9254,
-      "src/core/featureFactory.js": 8641,
-      "src/core/featureHealth.js": 8567,
-      "src/features/latest-overlay/ratingEngagementHighlight.js": 7745,
-      "src/core/bootstrap.js": 7270,
-      "src/features/latest-overlay/handler.js": 6622,
-      "src/features/latest-overlay/tileProcessor.js": 5971,
+      "src/core/featureHealth.js": 8990,
+      "src/core/featureFactory.js": 8919,
+      "src/core/bootstrap.js": 7815,
+      "src/features/latest-overlay/ratingEngagementHighlight.js": 7515,
+      "src/features/latest-overlay/handler.js": 6641,
+      "src/core/teardown.js": 6024,
+      "src/features/latest-overlay/tileProcessor.js": 5979,
+      "src/ui/settings/metaRegistry.js": 5959,
       "src/ui/assets/ui.html": 5910,
-      "src/core/teardown.js": 5892,
-      "src/ui/settings/metaRegistry.js": 5860,
-      "src/services/prefixService.js": 5669,
-      "src/features/thread-overlay/index.js": 5510,
-      "src/core/resourceManager.js": 5502,
-      "src/services/storageBootstrapService.js": 5413,
+      "src/services/prefixService.js": 5673,
+      "src/core/resourceManager.js": 5582,
+      "src/services/storageBootstrapService.js": 5579,
+      "src/features/thread-overlay/index.js": 5526,
       "src/features/dismiss-notification/handler.js": 5014,
-      "src/core/featureCatalog.js": 4715,
+      "src/core/featureCatalog.js": 4763,
       "src/features/latest-overlay/overlayEvaluator.js": 4710,
+      "src/services/configChangeApplication.js": 4555,
       "src/features/latest-control/index.js": 4547,
       "src/features/latest-overlay/style.css": 4406,
-      "src/services/configChangeApplication.js": 4353,
       "src/ui/settings/panelNavigation.js": 4307,
-      "src/services/storageAdapter.js": 4013,
+      "src/services/storageAdapter.js": 4093,
+      "src/ui/components/tag-search/tagMutations.js": 3884,
       "src/ui/renderers/renderSetting.js": 3829,
-      "src/ui/components/tag-search/tagMutations.js": 3745,
-      "src/services/storageReadiness.js": 3548,
+      "src/services/storageReadiness.js": 3608,
       "src/core/StateManager.js": 3523,
       "src/ui/assets/startup.css": 3483,
-      "src/features/latest-overlay/capture/pageCaptureTransport.js": 3360,
+      "src/features/latest-overlay/capture/pageCaptureTransport.js": 3428,
       "src/core/listenerRegistry.js": 3303,
+      "src/features/latest-overlay/markers.js": 3222,
       "src/features/latest-overlay/tilePatcher.js": 3199,
-      "src/features/latest-overlay/overlayCache.js": 3113,
+      "src/features/latest-overlay/overlayCache.js": 3079,
       "src/ui/components/configButton.js": 3078,
+      "src/features/latest-overlay/capture/fastCaptureStore.js": 3048,
       "src/config/latestOverlayScoring.js": 3038,
-      "src/features/latest-overlay/capture/fastCaptureStore.js": 3038,
-      "src/features/latest-overlay/markers.js": 3026,
       "src/features/latest-overlay/hoverTagHandler.js": 2859,
       "src/ui/components/toast.js": 2822,
       "src/features/signature-collapse/index.js": 2808,
       "src/features/wide-latest/index.js": 2707,
-      "src/ui/configTransfer/index.js": 2671,
+      "src/ui/configTransfer/index.js": 2672,
       "src/core/styleRegistry.js": 2641,
+      "src/features/latest-overlay/markerLifecycle.js": 2605,
+      "src/core/routeState.js": 2573,
+      "src/ui/configTransfer/transferIO.js": 2571,
       "src/config/defaults.js": 2570,
-      "src/ui/configTransfer/transferIO.js": 2556,
       "src/features/latest-overlay/latestDataIndex.js": 2530,
       "src/core/pageDetection.js": 2522,
-      "src/core/routeState.js": 2521,
       "src/features/wide-latest/style.css": 2469,
       "src/features/latest-overlay/capture/sandboxCaptureTransport.js": 2388,
-      "src/core/routeObserver.js": 2358,
-      "src/features/latest-overlay/markerLifecycle.js": 2349,
-      "src/ui/settings/modalLifecycle.js": 2346,
-      "src/services/configMigrationService.js": 2337,
+      "src/ui/settings/modalLifecycle.js": 2384,
+      "src/services/configMigrationService.js": 2369,
+      "src/core/routeObserver.js": 2362,
       "src/core/pageBridge.js": 2253,
+      "src/ui/settings/tagsSettings.js": 2164,
       "src/ui/settings/colorSettings.js": 2162,
-      "src/ui/settings/tagsSettings.js": 2144,
       "src/ui/settingsRuntime/sectionsRegistry.js": 1950,
       "src/ui/settings/storageReadOnly.js": 1932,
+      "src/config/state.js": 1911,
       "src/services/safetyService.js": 1902,
-      "src/config/state.js": 1896,
       "src/core/frameBudget.js": 1823,
       "src/ui/helpers/updateColorStyle.js": 1816,
       "src/features/wideForum/index.js": 1744,
       "src/ui/configTransfer/dialogError.js": 1620,
       "src/ui/settingsRuntime/effectTasks.js": 1580,
       "src/ui/components/modal.js": 1573,
+      "src/features/latest-overlay/capture/captureQueue.js": 1557,
       "src/features/latest-overlay/overlayOrder.js": 1536,
       "src/features/dismiss-notification/index.js": 1517,
       "src/config/persistence.js": 1496,
-      "src/features/latest-overlay/capture/captureQueue.js": 1494,
       "src/ui/settings/index.js": 1405,
       "src/ui/settingsRuntime/prefs.js": 1396,
       "src/ui/settings/globalSettings.js": 1387,
       "src/features/signature-collapse/style.css": 1305,
       "src/core/createStyledFeature.js": 1301,
-      "src/ui/renderers/coerceSettingValue.js": 1243,
       "src/features/latest-overlay/index.js": 1235,
       "src/core/logger.js": 1232,
       "src/ui/settings/metaFactory.js": 1230,
+      "src/ui/renderers/coerceSettingValue.js": 1197,
       "src/ui/renderers/createInput.js": 1151,
       "src/features/dismiss-notification/style.css": 1081,
       "src/ui/components/listeners.js": 1004,
+      "src/core/pageLifecycle.js": 995,
       "src/config/selectors.js": 990,
-      "src/core/pageLifecycle.js": 983,
-      "src/services/configWriteLock.js": 880,
-      "src/ui/components/settingsActions.js": 853,
-      "src/ui/index.js": 829,
-      "src/features/latest-overlay/tileStateFactory.js": 826,
+      "src/services/configWriteLock.js": 886,
+      "src/ui/components/settingsActions.js": 870,
+      "src/ui/index.js": 840,
+      "src/features/latest-overlay/tileStateFactory.js": 818,
       "src/ui/renderers/applyEffects.js": 786,
       "src/ui/helpers/cssInjector.js": 714,
-      "src/services/notificationService.js": 669,
+      "src/services/notificationService.js": 665,
       "src/ui/renderers/settingsSection.js": 633,
       "src/core/createDebouncedTask.js": 597,
       "src/features/latest-overlay/capture/limits.js": 566,
-      "src/ui/storageUpgradeNotice.js": 539,
+      "src/ui/storageUpgradeNotice.js": 552,
       "src/ui/assets/document.css": 513,
       "src/ui/renderers/reRenderSetting.js": 507,
       "src/features/thread-overlay/style.css": 491,
@@ -153,7 +153,7 @@
       "src/features/wideForum/style.css": 449,
       "src/config/timings.js": 443,
       "src/features/latest-overlay/capture/index.js": 440,
-      "src/core/featureScope.js": 421,
+      "src/core/featureScope.js": 417,
       "src/config/pageDefinitions.js": 286,
       "src/ui/configTransfer/constants.js": 179,
       "src/ui/getShadowRoot.js": 161,
@@ -163,9 +163,9 @@
       {
         "path": "src/services/settingsService.js",
         "area": "services",
-        "bytes": 35757,
-        "physicalLines": 952,
-        "meaningfulLines": 876,
+        "bytes": 36777,
+        "physicalLines": 1069,
+        "meaningfulLines": 990,
         "fanIn": 9,
         "fanOut": 8,
         "exports": [
@@ -201,9 +201,9 @@
       {
         "path": "src/config/schema.js",
         "area": "config",
-        "bytes": 19644,
-        "physicalLines": 440,
-        "meaningfulLines": 410,
+        "bytes": 21048,
+        "physicalLines": 622,
+        "meaningfulLines": 592,
         "fanIn": 4,
         "fanOut": 2,
         "exports": [
@@ -237,9 +237,9 @@
       {
         "path": "src/features/latest-overlay/settings.js",
         "area": "features",
-        "bytes": 14420,
-        "physicalLines": 402,
-        "meaningfulLines": 358,
+        "bytes": 14852,
+        "physicalLines": 484,
+        "meaningfulLines": 440,
         "fanIn": 1,
         "fanOut": 8,
         "exports": [
@@ -247,6 +247,21 @@
           "resetLatestOverlaySettingsButton",
           "overlayStyleSetting",
           "initializeLatestOverlaySettings"
+        ]
+      },
+      {
+        "path": "src/services/configTransfer/index.js",
+        "area": "services",
+        "bytes": 12960,
+        "physicalLines": 388,
+        "meaningfulLines": 354,
+        "fanIn": 1,
+        "fanOut": 3,
+        "exports": [
+          "CONFIG_TRANSFER_FORMAT_VERSION",
+          "buildConfigExport",
+          "previewConfigImport",
+          "commitConfigImport"
         ]
       },
       {
@@ -266,9 +281,9 @@
       {
         "path": "src/core/taskQueue.js",
         "area": "core",
-        "bytes": 12467,
-        "physicalLines": 375,
-        "meaningfulLines": 335,
+        "bytes": 12632,
+        "physicalLines": 404,
+        "meaningfulLines": 364,
         "fanIn": 1,
         "fanOut": 3,
         "exports": [
@@ -281,26 +296,11 @@
         ]
       },
       {
-        "path": "src/services/configTransfer/index.js",
-        "area": "services",
-        "bytes": 12439,
-        "physicalLines": 316,
-        "meaningfulLines": 282,
-        "fanIn": 1,
-        "fanOut": 3,
-        "exports": [
-          "CONFIG_TRANSFER_FORMAT_VERSION",
-          "buildConfigExport",
-          "previewConfigImport",
-          "commitConfigImport"
-        ]
-      },
-      {
         "path": "src/features/latest-overlay/capture/latestCaptureService.js",
         "area": "features",
-        "bytes": 11917,
-        "physicalLines": 356,
-        "meaningfulLines": 328,
+        "bytes": 11979,
+        "physicalLines": 364,
+        "meaningfulLines": 336,
         "fanIn": 1,
         "fanOut": 8,
         "exports": [
@@ -316,9 +316,9 @@
       {
         "path": "src/ui/components/dialog.js",
         "area": "ui",
-        "bytes": 11307,
-        "physicalLines": 408,
-        "meaningfulLines": 342,
+        "bytes": 11317,
+        "physicalLines": 410,
+        "meaningfulLines": 344,
         "fanIn": 3,
         "fanOut": 4,
         "exports": [
@@ -331,9 +331,9 @@
       {
         "path": "src/ui/components/featureHealth/index.js",
         "area": "ui",
-        "bytes": 10608,
-        "physicalLines": 277,
-        "meaningfulLines": 259,
+        "bytes": 10614,
+        "physicalLines": 278,
+        "meaningfulLines": 260,
         "fanIn": 1,
         "fanOut": 4,
         "exports": [
@@ -346,9 +346,9 @@
       {
         "path": "src/ui/components/tag-search/index.js",
         "area": "ui",
-        "bytes": 10256,
-        "physicalLines": 386,
-        "meaningfulLines": 331,
+        "bytes": 10135,
+        "physicalLines": 364,
+        "meaningfulLines": 310,
         "fanIn": 4,
         "fanOut": 4,
         "exports": [
@@ -364,9 +364,9 @@
       {
         "path": "src/services/tagsService.js",
         "area": "services",
-        "bytes": 9509,
-        "physicalLines": 291,
-        "meaningfulLines": 248,
+        "bytes": 9543,
+        "physicalLines": 294,
+        "meaningfulLines": 251,
         "fanIn": 1,
         "fanOut": 7,
         "exports": [
@@ -393,28 +393,11 @@
         ]
       },
       {
-        "path": "src/core/featureFactory.js",
-        "area": "core",
-        "bytes": 8641,
-        "physicalLines": 246,
-        "meaningfulLines": 220,
-        "fanIn": 3,
-        "fanOut": 4,
-        "exports": [
-          "initGlobalErrorListeners",
-          "resetGlobalErrorListeners",
-          "createLifecycleContext",
-          "resolveFeatureId",
-          "normalizeFeatureBootstrapMode",
-          "createFeature"
-        ]
-      },
-      {
         "path": "src/core/featureHealth.js",
         "area": "core",
-        "bytes": 8567,
-        "physicalLines": 179,
-        "meaningfulLines": 161,
+        "bytes": 8990,
+        "physicalLines": 291,
+        "meaningfulLines": 272,
         "fanIn": 16,
         "fanOut": 0,
         "exports": [
@@ -441,28 +424,28 @@
         ]
       },
       {
-        "path": "src/features/latest-overlay/ratingEngagementHighlight.js",
-        "area": "features",
-        "bytes": 7745,
-        "physicalLines": 221,
-        "meaningfulLines": 139,
-        "fanIn": 2,
-        "fanOut": 3,
+        "path": "src/core/featureFactory.js",
+        "area": "core",
+        "bytes": 8919,
+        "physicalLines": 285,
+        "meaningfulLines": 259,
+        "fanIn": 3,
+        "fanOut": 4,
         "exports": [
-          "calculateEngagementRatio",
-          "getRatingHighlightClass",
-          "getEngagementHighlightClass",
-          "getRecordHighlightClasses",
-          "applyHighlightClasses",
-          "removeHighlightClasses"
+          "initGlobalErrorListeners",
+          "resetGlobalErrorListeners",
+          "createLifecycleContext",
+          "resolveFeatureId",
+          "normalizeFeatureBootstrapMode",
+          "createFeature"
         ]
       },
       {
         "path": "src/core/bootstrap.js",
         "area": "core",
-        "bytes": 7270,
-        "physicalLines": 186,
-        "meaningfulLines": 166,
+        "bytes": 7815,
+        "physicalLines": 260,
+        "meaningfulLines": 240,
         "fanIn": 1,
         "fanOut": 1,
         "exports": [
@@ -476,11 +459,28 @@
         ]
       },
       {
+        "path": "src/features/latest-overlay/ratingEngagementHighlight.js",
+        "area": "features",
+        "bytes": 7515,
+        "physicalLines": 220,
+        "meaningfulLines": 138,
+        "fanIn": 2,
+        "fanOut": 3,
+        "exports": [
+          "calculateEngagementRatio",
+          "getRatingHighlightClass",
+          "getEngagementHighlightClass",
+          "getRecordHighlightClasses",
+          "applyHighlightClasses",
+          "removeHighlightClasses"
+        ]
+      },
+      {
         "path": "src/features/latest-overlay/handler.js",
         "area": "features",
-        "bytes": 6622,
-        "physicalLines": 210,
-        "meaningfulLines": 177,
+        "bytes": 6641,
+        "physicalLines": 213,
+        "meaningfulLines": 180,
         "fanIn": 1,
         "fanOut": 8,
         "exports": [
@@ -494,22 +494,22 @@
         ]
       },
       {
-        "path": "src/features/latest-overlay/tileProcessor.js",
-        "area": "features",
-        "bytes": 5971,
-        "physicalLines": 192,
-        "meaningfulLines": 178,
+        "path": "src/core/teardown.js",
+        "area": "core",
+        "bytes": 6024,
+        "physicalLines": 182,
+        "meaningfulLines": 163,
         "fanIn": 1,
-        "fanOut": 10,
+        "fanOut": 12,
         "exports": [
-          "getCurrentGeneration",
-          "incrementGeneration",
-          "hasTileMutations",
-          "processMutations",
-          "clearMutationState",
-          "processTile",
-          "processAllTiles",
-          "reprocessAllTiles"
+          "registerTeardownResetter",
+          "getRuntimeState",
+          "markRuntimeStarting",
+          "markRuntimeRunning",
+          "suspendRuntime",
+          "resumeRuntime",
+          "teardownAll",
+          "resetTeardownForTests"
         ]
       }
     ],
@@ -541,17 +541,17 @@
           "fanOut": 8
         },
         {
+          "path": "src/services/configTransfer/index.js",
+          "fanIn": 1,
+          "fanOut": 3
+        },
+        {
           "path": "src/ui/components/tag-search/tagDrag.js",
           "fanIn": 1,
           "fanOut": 3
         },
         {
           "path": "src/core/taskQueue.js",
-          "fanIn": 1,
-          "fanOut": 3
-        },
-        {
-          "path": "src/services/configTransfer/index.js",
           "fanIn": 1,
           "fanOut": 3
         },
@@ -586,19 +586,14 @@
           "fanOut": 3
         },
         {
-          "path": "src/core/featureFactory.js",
-          "fanIn": 3,
-          "fanOut": 4
-        },
-        {
           "path": "src/core/featureHealth.js",
           "fanIn": 16,
           "fanOut": 0
         },
         {
-          "path": "src/features/latest-overlay/ratingEngagementHighlight.js",
-          "fanIn": 2,
-          "fanOut": 3
+          "path": "src/core/featureFactory.js",
+          "fanIn": 3,
+          "fanOut": 4
         },
         {
           "path": "src/core/bootstrap.js",
@@ -606,19 +601,14 @@
           "fanOut": 1
         },
         {
+          "path": "src/features/latest-overlay/ratingEngagementHighlight.js",
+          "fanIn": 2,
+          "fanOut": 3
+        },
+        {
           "path": "src/features/latest-overlay/handler.js",
           "fanIn": 1,
           "fanOut": 8
-        },
-        {
-          "path": "src/features/latest-overlay/tileProcessor.js",
-          "fanIn": 1,
-          "fanOut": 10
-        },
-        {
-          "path": "src/ui/assets/ui.html",
-          "fanIn": 1,
-          "fanOut": 0
         },
         {
           "path": "src/core/teardown.js",
@@ -626,19 +616,24 @@
           "fanOut": 12
         },
         {
+          "path": "src/features/latest-overlay/tileProcessor.js",
+          "fanIn": 1,
+          "fanOut": 10
+        },
+        {
           "path": "src/ui/settings/metaRegistry.js",
           "fanIn": 5,
+          "fanOut": 0
+        },
+        {
+          "path": "src/ui/assets/ui.html",
+          "fanIn": 1,
           "fanOut": 0
         },
         {
           "path": "src/services/prefixService.js",
           "fanIn": 1,
           "fanOut": 3
-        },
-        {
-          "path": "src/features/thread-overlay/index.js",
-          "fanIn": 1,
-          "fanOut": 8
         },
         {
           "path": "src/core/resourceManager.js",
@@ -649,6 +644,11 @@
           "path": "src/services/storageBootstrapService.js",
           "fanIn": 1,
           "fanOut": 5
+        },
+        {
+          "path": "src/features/thread-overlay/index.js",
+          "fanIn": 1,
+          "fanOut": 8
         },
         {
           "path": "src/features/dismiss-notification/handler.js",
@@ -666,6 +666,11 @@
           "fanOut": 3
         },
         {
+          "path": "src/services/configChangeApplication.js",
+          "fanIn": 1,
+          "fanOut": 5
+        },
+        {
           "path": "src/features/latest-control/index.js",
           "fanIn": 0,
           "fanOut": 6
@@ -674,11 +679,6 @@
           "path": "src/features/latest-overlay/style.css",
           "fanIn": 1,
           "fanOut": 0
-        },
-        {
-          "path": "src/services/configChangeApplication.js",
-          "fanIn": 1,
-          "fanOut": 5
         },
         {
           "path": "src/ui/settings/panelNavigation.js",
@@ -691,14 +691,14 @@
           "fanOut": 0
         },
         {
-          "path": "src/ui/renderers/renderSetting.js",
-          "fanIn": 2,
-          "fanOut": 5
-        },
-        {
           "path": "src/ui/components/tag-search/tagMutations.js",
           "fanIn": 1,
           "fanOut": 2
+        },
+        {
+          "path": "src/ui/renderers/renderSetting.js",
+          "fanIn": 2,
+          "fanOut": 5
         },
         {
           "path": "src/services/storageReadiness.js",
@@ -726,6 +726,11 @@
           "fanOut": 2
         },
         {
+          "path": "src/features/latest-overlay/markers.js",
+          "fanIn": 2,
+          "fanOut": 3
+        },
+        {
           "path": "src/features/latest-overlay/tilePatcher.js",
           "fanIn": 2,
           "fanOut": 5
@@ -741,19 +746,14 @@
           "fanOut": 1
         },
         {
-          "path": "src/config/latestOverlayScoring.js",
-          "fanIn": 2,
-          "fanOut": 0
-        },
-        {
           "path": "src/features/latest-overlay/capture/fastCaptureStore.js",
           "fanIn": 2,
           "fanOut": 2
         },
         {
-          "path": "src/features/latest-overlay/markers.js",
+          "path": "src/config/latestOverlayScoring.js",
           "fanIn": 2,
-          "fanOut": 3
+          "fanOut": 0
         },
         {
           "path": "src/features/latest-overlay/hoverTagHandler.js",
@@ -786,14 +786,24 @@
           "fanOut": 1
         },
         {
-          "path": "src/config/defaults.js",
-          "fanIn": 3,
+          "path": "src/features/latest-overlay/markerLifecycle.js",
+          "fanIn": 1,
           "fanOut": 0
+        },
+        {
+          "path": "src/core/routeState.js",
+          "fanIn": 4,
+          "fanOut": 1
         },
         {
           "path": "src/ui/configTransfer/transferIO.js",
           "fanIn": 1,
           "fanOut": 2
+        },
+        {
+          "path": "src/config/defaults.js",
+          "fanIn": 3,
+          "fanOut": 0
         },
         {
           "path": "src/features/latest-overlay/latestDataIndex.js",
@@ -806,27 +816,12 @@
           "fanOut": 2
         },
         {
-          "path": "src/core/routeState.js",
-          "fanIn": 4,
-          "fanOut": 1
-        },
-        {
           "path": "src/features/wide-latest/style.css",
           "fanIn": 1,
           "fanOut": 0
         },
         {
           "path": "src/features/latest-overlay/capture/sandboxCaptureTransport.js",
-          "fanIn": 1,
-          "fanOut": 0
-        },
-        {
-          "path": "src/core/routeObserver.js",
-          "fanIn": 1,
-          "fanOut": 3
-        },
-        {
-          "path": "src/features/latest-overlay/markerLifecycle.js",
           "fanIn": 1,
           "fanOut": 0
         },
@@ -841,19 +836,24 @@
           "fanOut": 0
         },
         {
+          "path": "src/core/routeObserver.js",
+          "fanIn": 1,
+          "fanOut": 3
+        },
+        {
           "path": "src/core/pageBridge.js",
           "fanIn": 2,
           "fanOut": 0
         },
         {
-          "path": "src/ui/settings/colorSettings.js",
-          "fanIn": 2,
-          "fanOut": 4
-        },
-        {
           "path": "src/ui/settings/tagsSettings.js",
           "fanIn": 1,
           "fanOut": 8
+        },
+        {
+          "path": "src/ui/settings/colorSettings.js",
+          "fanIn": 2,
+          "fanOut": 4
         },
         {
           "path": "src/ui/settingsRuntime/sectionsRegistry.js",
@@ -866,14 +866,14 @@
           "fanOut": 1
         },
         {
-          "path": "src/services/safetyService.js",
-          "fanIn": 4,
-          "fanOut": 1
-        },
-        {
           "path": "src/config/state.js",
           "fanIn": 3,
           "fanOut": 3
+        },
+        {
+          "path": "src/services/safetyService.js",
+          "fanIn": 4,
+          "fanOut": 1
         },
         {
           "path": "src/core/frameBudget.js",
@@ -906,6 +906,11 @@
           "fanOut": 4
         },
         {
+          "path": "src/features/latest-overlay/capture/captureQueue.js",
+          "fanIn": 1,
+          "fanOut": 1
+        },
+        {
           "path": "src/features/latest-overlay/overlayOrder.js",
           "fanIn": 4,
           "fanOut": 0
@@ -919,11 +924,6 @@
           "path": "src/config/persistence.js",
           "fanIn": 4,
           "fanOut": 0
-        },
-        {
-          "path": "src/features/latest-overlay/capture/captureQueue.js",
-          "fanIn": 1,
-          "fanOut": 1
         },
         {
           "path": "src/ui/settings/index.js",
@@ -951,11 +951,6 @@
           "fanOut": 2
         },
         {
-          "path": "src/ui/renderers/coerceSettingValue.js",
-          "fanIn": 1,
-          "fanOut": 0
-        },
-        {
           "path": "src/features/latest-overlay/index.js",
           "fanIn": 1,
           "fanOut": 4
@@ -968,6 +963,11 @@
         {
           "path": "src/ui/settings/metaFactory.js",
           "fanIn": 9,
+          "fanOut": 0
+        },
+        {
+          "path": "src/ui/renderers/coerceSettingValue.js",
+          "fanIn": 1,
           "fanOut": 0
         },
         {
@@ -986,14 +986,14 @@
           "fanOut": 3
         },
         {
-          "path": "src/config/selectors.js",
-          "fanIn": 8,
-          "fanOut": 0
-        },
-        {
           "path": "src/core/pageLifecycle.js",
           "fanIn": 0,
           "fanOut": 1
+        },
+        {
+          "path": "src/config/selectors.js",
+          "fanIn": 8,
+          "fanOut": 0
         },
         {
           "path": "src/services/configWriteLock.js",
@@ -1592,14 +1592,14 @@
   "bundle": {
     "readable": {
       "mode": "regular",
-      "bytes": 660936,
-      "gzipBytes": 142656,
-      "coreBytes": 418548,
-      "excludedBytes": 235105,
+      "bytes": 671044,
+      "gzipBytes": 144115,
+      "coreBytes": 424804,
+      "excludedBytes": 238957,
       "contributors": [
         {
           "path": "src/services/settingsService.js",
-          "bytes": 34727
+          "bytes": 35925
         },
         {
           "path": "src/ui/assets/css.css",
@@ -1607,19 +1607,19 @@
         },
         {
           "path": "src/config/schema.js",
-          "bytes": 19335
+          "bytes": 20751
         },
         {
           "path": "src/services/addons/uiHost.js",
           "bytes": 16256
         },
         {
-          "path": "src/services/addons/idbStore.js",
-          "bytes": 14050
+          "path": "src/features/latest-overlay/settings.js",
+          "bytes": 14379
         },
         {
-          "path": "src/features/latest-overlay/settings.js",
-          "bytes": 13819
+          "path": "src/services/addons/idbStore.js",
+          "bytes": 14050
         },
         {
           "path": "src/ui/components/addons/settingsController.js",
@@ -1631,23 +1631,23 @@
         },
         {
           "path": "src/services/configTransfer/index.js",
-          "bytes": 12615
+          "bytes": 13135
         },
         {
           "path": "src/services/addons/bridgeServer.js",
-          "bytes": 11613
+          "bytes": 12579
+        },
+        {
+          "path": "src/services/addons/state.js",
+          "bytes": 11651
         },
         {
           "path": "src/services/addons/registry.js",
           "bytes": 11448
         },
         {
-          "path": "src/services/addons/state.js",
-          "bytes": 11401
-        },
-        {
           "path": "src/features/latest-overlay/capture/latestCaptureService.js",
-          "bytes": 11399
+          "bytes": 11423
         },
         {
           "path": "src/features/latest-overlay/scoreCalculator.js",
@@ -1655,7 +1655,7 @@
         },
         {
           "path": "src/ui/components/featureHealth/index.js",
-          "bytes": 10480
+          "bytes": 10488
         },
         {
           "path": "src/services/addons/knownAddons.js",
@@ -1663,15 +1663,15 @@
         },
         {
           "path": "src/ui/components/tag-search/index.js",
-          "bytes": 10229
+          "bytes": 10073
         },
         {
           "path": "src/services/tagsService.js",
-          "bytes": 8971
+          "bytes": 9001
         },
         {
           "path": "src/core/featureFactory.js",
-          "bytes": 8516
+          "bytes": 8676
         },
         {
           "path": "src/ui/components/dialog.js",
@@ -1681,7 +1681,7 @@
       "coreContributors": [
         {
           "path": "src/services/settingsService.js",
-          "bytes": 34727
+          "bytes": 35925
         },
         {
           "path": "src/ui/assets/css.css",
@@ -1689,11 +1689,11 @@
         },
         {
           "path": "src/config/schema.js",
-          "bytes": 19335
+          "bytes": 20751
         },
         {
           "path": "src/features/latest-overlay/settings.js",
-          "bytes": 13819
+          "bytes": 14379
         },
         {
           "path": "src/ui/components/tag-search/tagDrag.js",
@@ -1701,11 +1701,11 @@
         },
         {
           "path": "src/services/configTransfer/index.js",
-          "bytes": 12615
+          "bytes": 13135
         },
         {
           "path": "src/features/latest-overlay/capture/latestCaptureService.js",
-          "bytes": 11399
+          "bytes": 11423
         },
         {
           "path": "src/features/latest-overlay/scoreCalculator.js",
@@ -1713,19 +1713,19 @@
         },
         {
           "path": "src/ui/components/featureHealth/index.js",
-          "bytes": 10480
+          "bytes": 10488
         },
         {
           "path": "src/ui/components/tag-search/index.js",
-          "bytes": 10229
+          "bytes": 10073
         },
         {
           "path": "src/services/tagsService.js",
-          "bytes": 8971
+          "bytes": 9001
         },
         {
           "path": "src/core/featureFactory.js",
-          "bytes": 8516
+          "bytes": 8676
         },
         {
           "path": "src/ui/components/dialog.js",
@@ -1733,51 +1733,55 @@
         },
         {
           "path": "src/core/featureHealth.js",
-          "bytes": 7953
+          "bytes": 8127
+        },
+        {
+          "path": "src/core/bootstrap.js",
+          "bytes": 7992
         },
         {
           "path": "src/core/observer.js",
           "bytes": 7591
         },
         {
-          "path": "src/core/bootstrap.js",
-          "bytes": 7374
-        },
-        {
           "path": "src/features/latest-overlay/handler.js",
-          "bytes": 5656
-        },
-        {
-          "path": "src/features/latest-overlay/ratingEngagementHighlight.js",
-          "bytes": 5123
+          "bytes": 5694
         },
         {
           "path": "src/core/teardown.js",
-          "bytes": 5093
+          "bytes": 5253
         },
         {
           "path": "src/services/storageBootstrapService.js",
-          "bytes": 5052
+          "bytes": 5226
         },
         {
-          "path": "src/features/latest-overlay/tileProcessor.js",
-          "bytes": 5047
+          "path": "src/features/latest-overlay/ratingEngagementHighlight.js",
+          "bytes": 5099
         },
         {
           "path": "src/core/resourceManager.js",
-          "bytes": 5015
+          "bytes": 5087
+        },
+        {
+          "path": "src/features/latest-overlay/tileProcessor.js",
+          "bytes": 5057
         },
         {
           "path": "src/ui/settings/metaRegistry.js",
-          "bytes": 4983
+          "bytes": 5039
         },
         {
           "path": "src/features/thread-overlay/index.js",
-          "bytes": 4918
+          "bytes": 4948
         },
         {
           "path": "src/features/latest-overlay/overlayEvaluator.js",
           "bytes": 4496
+        },
+        {
+          "path": "src/services/configChangeApplication.js",
+          "bytes": 4337
         },
         {
           "path": "src/ui/assets/ui.html",
@@ -1785,15 +1789,11 @@
         },
         {
           "path": "src/core/featureCatalog.js",
-          "bytes": 4202
-        },
-        {
-          "path": "src/services/configChangeApplication.js",
-          "bytes": 4187
+          "bytes": 4244
         },
         {
           "path": "src/services/storageAdapter.js",
-          "bytes": 4187
+          "bytes": 4219
         },
         {
           "path": "src/ui/settings/panelNavigation.js",
@@ -1804,16 +1804,16 @@
           "bytes": 3980
         },
         {
+          "path": "src/ui/components/tag-search/tagMutations.js",
+          "bytes": 3903
+        },
+        {
           "path": "src/features/latest-control/index.js",
           "bytes": 3871
         },
         {
-          "path": "src/ui/components/tag-search/tagMutations.js",
-          "bytes": 3757
-        },
-        {
           "path": "src/services/prefixService.js",
-          "bytes": 3626
+          "bytes": 3632
         },
         {
           "path": "src/core/StateManager.js",
@@ -1829,7 +1829,7 @@
         },
         {
           "path": "src/services/storageReadiness.js",
-          "bytes": 3446
+          "bytes": 3506
         },
         {
           "path": "src/features/latest-overlay/capture/pageCaptureTransport.js",
@@ -1844,6 +1844,10 @@
           "bytes": 2979
         },
         {
+          "path": "src/features/latest-overlay/markers.js",
+          "bytes": 2968
+        },
+        {
           "path": "src/ui/assets/startup.css",
           "bytes": 2948
         },
@@ -1856,20 +1860,20 @@
           "bytes": 2853
         },
         {
-          "path": "src/features/latest-overlay/markers.js",
-          "bytes": 2836
-        },
-        {
           "path": "src/ui/components/toast.js",
           "bytes": 2779
         },
         {
           "path": "src/features/latest-overlay/overlayCache.js",
-          "bytes": 2725
+          "bytes": 2749
         },
         {
           "path": "src/core/styleRegistry.js",
           "bytes": 2681
+        },
+        {
+          "path": "src/features/latest-overlay/markerLifecycle.js",
+          "bytes": 2652
         },
         {
           "path": "src/config/defaults.js",
@@ -1888,10 +1892,6 @@
           "bytes": 2411
         },
         {
-          "path": "src/features/latest-overlay/markerLifecycle.js",
-          "bytes": 2402
-        },
-        {
           "path": "src/core/pageDetection.js",
           "bytes": 2400
         },
@@ -1901,18 +1901,22 @@
         },
         {
           "path": "src/ui/configTransfer/index.js",
-          "bytes": 2313
+          "bytes": 2329
         },
         {
           "path": "src/core/routeObserver.js",
-          "bytes": 2261
+          "bytes": 2269
         },
         {
           "path": "src/ui/configTransfer/transferIO.js",
-          "bytes": 2214
+          "bytes": 2226
         },
         {
           "path": "src/services/configMigrationService.js",
+          "bytes": 2224
+        },
+        {
+          "path": "src/core/routeState.js",
           "bytes": 2190
         },
         {
@@ -1922,10 +1926,6 @@
         {
           "path": "src/features/latest-overlay/hoverTagHandler.js",
           "bytes": 2136
-        },
-        {
-          "path": "src/core/routeState.js",
-          "bytes": 2124
         },
         {
           "path": "src/core/pageBridge.js",
@@ -1956,32 +1956,36 @@
           "bytes": 1689
         },
         {
+          "path": "src/ui/settings/modalLifecycle.js",
+          "bytes": 1600
+        },
+        {
+          "path": "src/config/state.js",
+          "bytes": 1591
+        },
+        {
           "path": "src/features/latest-overlay/capture/captureQueue.js",
           "bytes": 1590
+        },
+        {
+          "path": "src/ui/settings/tagsSettings.js",
+          "bytes": 1580
         },
         {
           "path": "src/services/safetyService.js",
           "bytes": 1577
         },
         {
-          "path": "src/config/state.js",
-          "bytes": 1569
-        },
-        {
           "path": "src/features/latest-overlay/overlayOrder.js",
           "bytes": 1563
         },
         {
-          "path": "src/ui/settings/tagsSettings.js",
-          "bytes": 1548
-        },
-        {
-          "path": "src/ui/settings/modalLifecycle.js",
-          "bytes": 1544
-        },
-        {
           "path": "src/features/wideForum/index.js",
           "bytes": 1464
+        },
+        {
+          "path": "src/core/taskQueue.js",
+          "bytes": 1416
         },
         {
           "path": "src/ui/configTransfer/dialogError.js",
@@ -1990,10 +1994,6 @@
         {
           "path": "src/config/persistence.js",
           "bytes": 1382
-        },
-        {
-          "path": "src/core/taskQueue.js",
-          "bytes": 1366
         },
         {
           "path": "src/ui/settingsRuntime/prefs.js",
@@ -2053,7 +2053,7 @@
         },
         {
           "path": "src/services/configWriteLock.js",
-          "bytes": 814
+          "bytes": 810
         },
         {
           "path": "src/ui/components/listeners.js",
@@ -2069,7 +2069,7 @@
         },
         {
           "path": "src/ui/components/settingsActions.js",
-          "bytes": 592
+          "bytes": 614
         },
         {
           "path": "src/features/latest-overlay/capture/limits.js",
@@ -2084,15 +2084,15 @@
           "bytes": 524
         },
         {
+          "path": "src/ui/index.js",
+          "bytes": 510
+        },
+        {
           "path": "src/ui/assets/document.css",
           "bytes": 494
         },
         {
           "path": "src/ui/helpers/cssInjector.js",
-          "bytes": 494
-        },
-        {
-          "path": "src/ui/index.js",
           "bytes": 494
         },
         {
@@ -2117,7 +2117,7 @@
         },
         {
           "path": "src/ui/storageUpgradeNotice.js",
-          "bytes": 356
+          "bytes": 372
         },
         {
           "path": "src/core/featureScope.js",
@@ -2167,47 +2167,47 @@
         },
         {
           "path": "src/services/addons/bridgeServer.js",
-          "bytes": 11613
+          "bytes": 12579
+        },
+        {
+          "path": "src/services/addons/state.js",
+          "bytes": 11651
         },
         {
           "path": "src/services/addons/registry.js",
           "bytes": 11448
         },
         {
-          "path": "src/services/addons/state.js",
-          "bytes": 11401
-        },
-        {
           "path": "src/services/addons/knownAddons.js",
           "bytes": 10436
         },
         {
-          "path": "src/services/addons/observer.js",
-          "bytes": 7714
+          "path": "src/services/addons/catalog.js",
+          "bytes": 7762
         },
         {
-          "path": "src/services/addons/catalog.js",
-          "bytes": 7594
+          "path": "src/services/addons/observer.js",
+          "bytes": 7758
         },
         {
           "path": "src/services/addons/uiSanitizer.js",
-          "bytes": 7452
+          "bytes": 7664
+        },
+        {
+          "path": "src/services/addons/latestMarkerBroker.js",
+          "bytes": 7489
         },
         {
           "path": "src/ui/renderers/addonsRenderer.js",
           "bytes": 7427
         },
         {
-          "path": "src/services/addons/latestMarkerBroker.js",
-          "bytes": 7063
-        },
-        {
           "path": "src/services/addons/actions/families/ui.js",
-          "bytes": 6705
+          "bytes": 7253
         },
         {
           "path": "src/services/addons/invocation.js",
-          "bytes": 6679
+          "bytes": 6881
         },
         {
           "path": "src/services/addons/lifecycle.js",
@@ -2215,11 +2215,11 @@
         },
         {
           "path": "src/services/addons/scope.js",
-          "bytes": 5956
+          "bytes": 5954
         },
         {
           "path": "src/services/addons/settingsUi.js",
-          "bytes": 5756
+          "bytes": 5822
         },
         {
           "path": "src/ui/components/addons/addonCard.js",
@@ -2227,7 +2227,7 @@
         },
         {
           "path": "src/services/addons/actions/families/storage.js",
-          "bytes": 4750
+          "bytes": 4782
         },
         {
           "path": "src/ui/components/addons/addonDialog.js",
@@ -2911,8 +2911,8 @@
         "paths": [
           "src/ui/components/featureHealth/index.js"
         ],
-        "authoredBytes": 10608,
-        "readableBundleBytes": 10480,
+        "authoredBytes": 10614,
+        "readableBundleBytes": 10488,
         "uglifiedBundleBytes": 5755,
         "cssRules": {
           "ruleCount": 7,
@@ -2932,7 +2932,7 @@
         "paths": [
           "src/ui/components/dialog.js"
         ],
-        "authoredBytes": 11307,
+        "authoredBytes": 11317,
         "readableBundleBytes": 8230,
         "uglifiedBundleBytes": 3929,
         "cssRules": {
@@ -2978,16 +2978,16 @@
           "src/features/latest-overlay/tileProcessor.js",
           "src/features/latest-overlay/tileStateFactory.js"
         ],
-        "authoredBytes": 82636,
-        "readableBundleBytes": 69852,
+        "authoredBytes": 83275,
+        "readableBundleBytes": 70842,
         "uglifiedBundleBytes": 34859
       },
       "storageMigration": {
         "paths": [
           "src/services/configMigrationService.js"
         ],
-        "authoredBytes": 2337,
-        "readableBundleBytes": 2190,
+        "authoredBytes": 2369,
+        "readableBundleBytes": 2224,
         "uglifiedBundleBytes": 1175
       },
       "configTransfer": {
@@ -2998,8 +2998,8 @@
           "src/ui/configTransfer/index.js",
           "src/ui/configTransfer/transferIO.js"
         ],
-        "authoredBytes": 19465,
-        "readableBundleBytes": 18707,
+        "authoredBytes": 20002,
+        "readableBundleBytes": 19255,
         "uglifiedBundleBytes": 9153
       },
       "optionalFeatures": {
@@ -3026,8 +3026,8 @@
           "src/ui/components/tag-search/tagDrag.js",
           "src/ui/components/tag-search/tagMutations.js"
         ],
-        "authoredBytes": 36329,
-        "readableBundleBytes": 36107,
+        "authoredBytes": 36381,
+        "readableBundleBytes": 36127,
         "uglifiedBundleBytes": 17120
       },
       "fastCapture": {
@@ -3040,15 +3040,15 @@
           "src/features/latest-overlay/capture/pageCaptureTransport.js",
           "src/features/latest-overlay/capture/sandboxCaptureTransport.js"
         ],
-        "authoredBytes": 23203,
-        "readableBundleBytes": 22225,
+        "authoredBytes": 23406,
+        "readableBundleBytes": 22249,
         "uglifiedBundleBytes": 9623
       },
       "notificationService": {
         "paths": [
           "src/services/notificationService.js"
         ],
-        "authoredBytes": 669,
+        "authoredBytes": 665,
         "readableBundleBytes": 0,
         "uglifiedBundleBytes": 0
       }
@@ -3056,24 +3056,24 @@
   },
   "comparison": {
     "authoredBytes": {
-      "current": 477754,
+      "current": 484089,
       "baseline": 476860,
-      "delta": 894
+      "delta": 7229
     },
     "readableBytes": {
-      "current": 660936,
+      "current": 671044,
       "baseline": 644346,
-      "delta": 16590
+      "delta": 26698
     },
     "readableCoreBytes": {
-      "current": 418548,
+      "current": 424804,
       "baseline": 415202,
-      "delta": 3346
+      "delta": 9602
     },
     "readableGzipBytes": {
-      "current": 142656,
+      "current": 144115,
       "baseline": 137635,
-      "delta": 5021
+      "delta": 6480
     },
     "uglifiedBytes": {
       "current": 334044,
@@ -3127,14 +3127,14 @@
       },
       "featureHealthUi": {
         "authoredBytes": {
-          "current": 10608,
+          "current": 10614,
           "baseline": 11712,
-          "delta": -1104
+          "delta": -1098
         },
         "readableBundleBytes": {
-          "current": 10480,
+          "current": 10488,
           "baseline": 11483,
-          "delta": -1003
+          "delta": -995
         },
         "uglifiedBundleBytes": {
           "current": 5755,
@@ -3144,9 +3144,9 @@
       },
       "dialogs": {
         "authoredBytes": {
-          "current": 11307,
+          "current": 11317,
           "baseline": 11564,
-          "delta": -257
+          "delta": -247
         },
         "readableBundleBytes": {
           "current": 8230,
@@ -3161,14 +3161,14 @@
       },
       "latestOverlay": {
         "authoredBytes": {
-          "current": 82636,
+          "current": 83275,
           "baseline": 77709,
-          "delta": 4927
+          "delta": 5566
         },
         "readableBundleBytes": {
-          "current": 69852,
+          "current": 70842,
           "baseline": 65032,
-          "delta": 4820
+          "delta": 5810
         },
         "uglifiedBundleBytes": {
           "current": 34859,
@@ -3178,14 +3178,14 @@
       },
       "storageMigration": {
         "authoredBytes": {
-          "current": 2337,
+          "current": 2369,
           "baseline": 7917,
-          "delta": -5580
+          "delta": -5548
         },
         "readableBundleBytes": {
-          "current": 2190,
+          "current": 2224,
           "baseline": 7381,
-          "delta": -5191
+          "delta": -5157
         },
         "uglifiedBundleBytes": {
           "current": 1175,
@@ -3195,14 +3195,14 @@
       },
       "configTransfer": {
         "authoredBytes": {
-          "current": 19465,
+          "current": 20002,
           "baseline": 18976,
-          "delta": 489
+          "delta": 1026
         },
         "readableBundleBytes": {
-          "current": 18707,
+          "current": 19255,
           "baseline": 18550,
-          "delta": 157
+          "delta": 705
         },
         "uglifiedBundleBytes": {
           "current": 9153,
@@ -3229,14 +3229,14 @@
       },
       "tagManagement": {
         "authoredBytes": {
-          "current": 36329,
+          "current": 36381,
           "baseline": 36317,
-          "delta": 12
+          "delta": 64
         },
         "readableBundleBytes": {
-          "current": 36107,
+          "current": 36127,
           "baseline": 35236,
-          "delta": 871
+          "delta": 891
         },
         "uglifiedBundleBytes": {
           "current": 17120,
@@ -3246,14 +3246,14 @@
       },
       "fastCapture": {
         "authoredBytes": {
-          "current": 23203,
+          "current": 23406,
           "baseline": 33985,
-          "delta": -10782
+          "delta": -10579
         },
         "readableBundleBytes": {
-          "current": 22225,
+          "current": 22249,
           "baseline": 31641,
-          "delta": -9416
+          "delta": -9392
         },
         "uglifiedBundleBytes": {
           "current": 9623,
@@ -3263,9 +3263,9 @@
       },
       "notificationService": {
         "authoredBytes": {
-          "current": 669,
+          "current": 665,
           "baseline": 669,
-          "delta": 0
+          "delta": -4
         },
         "readableBundleBytes": {
           "current": 0,

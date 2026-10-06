@@ -13,11 +13,12 @@ function installPageCaptureBridge({ resultEvent, readyMarker }) {
 
   const matches = (url) => String(url || "").includes("latest_data.php");
   const emit = (detail) => window.dispatchEvent(new CustomEvent(resultEvent, { detail }));
-  const emitError = (transport, url, error) => emit({
-    transport,
-    url,
-    errorMessage: error?.message ? String(error.message) : String(error || "capture_failed"),
-  });
+  const emitError = (transport, url, error) =>
+    emit({
+      transport,
+      url,
+      errorMessage: error?.message ? String(error.message) : String(error || "capture_failed"),
+    });
   const xhrText = (xhr) => {
     try {
       if (typeof xhr.responseText === "string") return xhr.responseText;
@@ -33,7 +34,9 @@ function installPageCaptureBridge({ resultEvent, readyMarker }) {
       const input = args[0];
       const url = String(response?.url || (typeof input === "string" ? input : input?.url) || "");
       if (matches(url) && response?.clone) {
-        response.clone().text()
+        response
+          .clone()
+          .text()
           .then((responseText) => emit({ transport: "fetch", url, responseText }))
           .catch((error) => emitError("fetch", url, error));
       }
@@ -55,8 +58,11 @@ function installPageCaptureBridge({ resultEvent, readyMarker }) {
         this.addEventListener("loadend", () => {
           const url = String(this.responseURL || this.__f95ueLatestCaptureUrl || "");
           if (!matches(url)) return;
-          try { emit({ transport: "xhr", url, responseText: xhrText(this) }); }
-          catch (error) { emitError("xhr", url, error); }
+          try {
+            emit({ transport: "xhr", url, responseText: xhrText(this) });
+          } catch (error) {
+            emitError("xhr", url, error);
+          }
         });
       }
       return originalSend.apply(this, args);

@@ -41,11 +41,15 @@ export function createJsonFilePicker() {
   document.body.appendChild(input);
 
   const { reg, dispose } = createRegistrar("config-transfer-picker");
-  const owner = createResourceOwner(`ui:config-transfer-picker:${Date.now()}:${Math.random().toString(16).slice(2)}`);
+  const owner = createResourceOwner(
+    `ui:config-transfer-picker:${Date.now()}:${Math.random().toString(16).slice(2)}`,
+  );
   let settled = false;
   let focusTimer = 0;
   let resolvePromise;
-  const promise = new Promise((resolve) => { resolvePromise = resolve; });
+  const promise = new Promise((resolve) => {
+    resolvePromise = resolve;
+  });
 
   const finish = (file) => {
     if (settled) return;

@@ -1,12 +1,7 @@
-import {
-  defaultAddonsApiThrottleSettings,
-} from "../../config.js";
+import { defaultAddonsApiThrottleSettings } from "../../config.js";
 import { openConfirmDialog, openSettingsDialog } from "../../ui/components/dialog.js";
 import { showToast } from "../../ui/components/toast.js";
-import {
-  createEnabledDisabledToast,
-  createToggleSetting,
-} from "../../ui/settings/metaFactory.js";
+import { createEnabledDisabledToast, createToggleSetting } from "../../ui/settings/metaFactory.js";
 import { contributeToSection } from "../../ui/settingsRuntime/sectionsRegistry.js";
 import { updateConfig } from "../settingsService.js";
 import {
@@ -127,14 +122,19 @@ async function resetAddonsApiThrottleDefaults() {
   }
 
   resetThrottleConfirmUntil = 0;
-  const persisted = await updateConfig((draft) => {
-    const serviceConfig = draft.addons.service && typeof draft.addons.service === "object"
-      ? draft.addons.service : {};
-    draft.addons.service = {
-      ...serviceConfig,
-      apiThrottle: { ...defaultAddonsApiThrottleSettings },
-    };
-  }, { origin: "addons:reset-api-throttle" });
+  const persisted = await updateConfig(
+    (draft) => {
+      const serviceConfig =
+        draft.addons.service && typeof draft.addons.service === "object"
+          ? draft.addons.service
+          : {};
+      draft.addons.service = {
+        ...serviceConfig,
+        apiThrottle: { ...defaultAddonsApiThrottleSettings },
+      };
+    },
+    { origin: "addons:reset-api-throttle" },
+  );
   if (!persisted.committed) return;
   addonsServiceSettingsDialog?.close();
   addonsServiceSettingsDialog = null;
@@ -171,14 +171,18 @@ function openAddonsServiceSettingsDialog() {
   });
 }
 
-contributeToSection("global", {
-  addonsServiceSettings: {
-    type: "button",
-    text: "Add-ons service settings",
-    buttonText: "Open",
-    tooltip: "Configure add-ons bridge access and request throttling",
-    effects: {
-      custom: openAddonsServiceSettingsDialog,
+contributeToSection(
+  "global",
+  {
+    addonsServiceSettings: {
+      type: "button",
+      text: "Add-ons service settings",
+      buttonText: "Open",
+      tooltip: "Configure add-ons bridge access and request throttling",
+      effects: {
+        custom: openAddonsServiceSettingsDialog,
+      },
     },
   },
-}, "addons:service-settings");
+  "addons:service-settings",
+);

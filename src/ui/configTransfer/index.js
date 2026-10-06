@@ -1,14 +1,7 @@
-import {
-  buildConfigExport,
-  commitConfigImport,
-} from "../../services/configTransfer/index.js";
+import { buildConfigExport, commitConfigImport } from "../../services/configTransfer/index.js";
 import { openSettingsDialog } from "../components/dialog.js";
 import { showToast } from "../components/toast.js";
-import {
-  downloadJsonFile,
-  formatDateForFilename,
-  createJsonFilePicker,
-} from "./transferIO.js";
+import { downloadJsonFile, formatDateForFilename, createJsonFilePicker } from "./transferIO.js";
 import {
   clearConfigTransferError,
   ensureConfigTransferErrorElement,
@@ -54,7 +47,9 @@ async function importSettingsFromFile() {
   const result = await commitConfigImport(await file.text());
   if (!result.ok || !result.committed) {
     const error = result.issues?.[0];
-    showConfigTransferError(`Import failed: ${error ? `${error.path}: ${error.code}` : "could not persist configuration."}`);
+    showConfigTransferError(
+      `Import failed: ${error ? `${error.path}: ${error.code}` : "could not persist configuration."}`,
+    );
     return;
   }
 

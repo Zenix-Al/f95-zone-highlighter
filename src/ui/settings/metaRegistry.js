@@ -42,7 +42,9 @@ function validateRegistration(sectionId, metaMap, ownerId) {
       throw new Error(`Settings metadata '${id}' must be an object.`);
     }
     if (Object.hasOwn(meta, "custom") || Object.hasOwn(meta, "toast")) {
-      throw new Error(`Settings metadata '${id}' must place custom and toast callbacks under 'effects'.`);
+      throw new Error(
+        `Settings metadata '${id}' must place custom and toast callbacks under 'effects'.`,
+      );
     }
     if (entriesById.has(id) || incomingIds.has(id)) {
       throw new Error(`Duplicate settings metadata ID '${id}'.`);
@@ -102,7 +104,10 @@ export function registerSettingsMetadata(sectionId, metaMap, ownerId = "base") {
   return () => {
     if (released) return 0;
     released = true;
-    return unregisterSettingsMetadata(normalizedOwnerId, entries.map((entry) => entry.id));
+    return unregisterSettingsMetadata(
+      normalizedOwnerId,
+      entries.map((entry) => entry.id),
+    );
   };
 }
 
@@ -111,11 +116,12 @@ export function unregisterSettingsMetadata(ownerId, metadataIds = null) {
   const normalizedOwnerId = normalizeId(ownerId);
   if (!normalizedOwnerId) return 0;
   const allowedIds = new Set(getEntryIdsForOwner(normalizedOwnerId));
-  const ids = metadataIds == null
-    ? [...allowedIds]
-    : (Array.isArray(metadataIds) ? metadataIds : [metadataIds])
-      .map(normalizeId)
-      .filter((id) => allowedIds.has(id));
+  const ids =
+    metadataIds == null
+      ? [...allowedIds]
+      : (Array.isArray(metadataIds) ? metadataIds : [metadataIds])
+          .map(normalizeId)
+          .filter((id) => allowedIds.has(id));
 
   for (const id of ids) {
     const entry = entriesById.get(id);
@@ -126,9 +132,11 @@ export function unregisterSettingsMetadata(ownerId, metadataIds = null) {
 
 export function getSettingsMetadataBySection(sectionId) {
   const entries = entriesBySection.get(normalizeId(sectionId));
-  return Object.freeze(Object.fromEntries(
-    [...(entries?.entries() || [])].map(([id, entry]) => [id, readonlyEntry(entry)]),
-  ));
+  return Object.freeze(
+    Object.fromEntries(
+      [...(entries?.entries() || [])].map(([id, entry]) => [id, readonlyEntry(entry)]),
+    ),
+  );
 }
 
 export function getSettingsMetadataById(metadataId) {
@@ -155,19 +163,23 @@ export function getMetadataByConfigPath(path) {
 }
 
 export function getSettingsMetadataByOwner(ownerId) {
-  return Object.freeze(getEntryIdsForOwner(ownerId)
-    .map((id) => entriesById.get(id))
-    .filter(Boolean)
-    .map(readonlyEntry));
+  return Object.freeze(
+    getEntryIdsForOwner(ownerId)
+      .map((id) => entriesById.get(id))
+      .filter(Boolean)
+      .map(readonlyEntry),
+  );
 }
 
 export function getSettingsMetadataSnapshot() {
-  return Object.freeze(Object.fromEntries(
-    [...entriesBySection.keys()].map((sectionId) => [
-      sectionId,
-      getSettingsMetadataBySection(sectionId),
-    ]),
-  ));
+  return Object.freeze(
+    Object.fromEntries(
+      [...entriesBySection.keys()].map((sectionId) => [
+        sectionId,
+        getSettingsMetadataBySection(sectionId),
+      ]),
+    ),
+  );
 }
 
 export function resetSettingsMetadataForTests() {

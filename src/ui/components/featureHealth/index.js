@@ -164,7 +164,9 @@ export function formatFeatureHealthReport(
       ];
       if (addon.blocked) statusBits.push("blocked");
       const details = addon.statusMessage ? ` - ${addon.statusMessage}` : "";
-      lines.push(`${addon.name} (${addon.id}): ${addon.status} [${statusBits.join(", ")}]${details}`);
+      lines.push(
+        `${addon.name} (${addon.id}): ${addon.status} [${statusBits.join(", ")}]${details}`,
+      );
     }
   }
   return lines.join("\n");
@@ -190,10 +192,7 @@ function ensureBox(root, container) {
   });
   const header = createEl("div", {
     className: "feature-health-header",
-    children: [
-      createEl("div", { className: "feature-health-title", text: "Diagnostic" }),
-      actions,
-    ],
+    children: [createEl("div", { className: "feature-health-title", text: "Diagnostic" }), actions],
   });
   const content = createEl("pre", { className: "feature-health-content" });
   box = createEl("div", { className: "feature-health-box", children: [header, content] });
@@ -242,11 +241,13 @@ function updateFeatureHealthBox(box, providedStatuses, providedReportText) {
   const counts = summarizeFeatureStatuses(statuses);
   const addonCounts = summarizeAddons(addonEntries);
   const diagnostics = getHealthDiagnostics();
-  const reportText = providedReportText
-    || formatFeatureHealthReport(statuses, counts, addonEntries, addonCounts, { diagnostics });
+  const reportText =
+    providedReportText ||
+    formatFeatureHealthReport(statuses, counts, addonEntries, addonCounts, { diagnostics });
   box.querySelector(".feature-health-content").textContent = reportText;
-  const retryBtn = [...box.querySelectorAll("button")]
-    .find((button) => button.textContent === "Retry storage");
+  const retryBtn = [...box.querySelectorAll("button")].find(
+    (button) => button.textContent === "Retry storage",
+  );
   if (retryBtn) retryBtn.hidden = diagnostics.snapshots?.storage?.state !== "unavailable";
   return { counts, addonCounts };
 }

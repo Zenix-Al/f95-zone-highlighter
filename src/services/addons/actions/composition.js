@@ -20,7 +20,10 @@ export const ACTION_FAMILIES = Object.freeze({
 });
 
 export const PUBLIC_ACTION_IDS = Object.freeze(
-  Object.values(ACTION_FAMILIES).flat().map((descriptor) => descriptor.id).sort(),
+  Object.values(ACTION_FAMILIES)
+    .flat()
+    .map((descriptor) => descriptor.id)
+    .sort(),
 );
 
 let composed = false;
@@ -29,10 +32,15 @@ let composedSnapshot = null;
 export function assertActionCompositionComplete(snapshot = getActionSnapshot()) {
   const registered = snapshot.map((entry) => entry.id).sort();
   const unique = new Set(PUBLIC_ACTION_IDS);
-  if (unique.size !== PUBLIC_ACTION_IDS.length) throw new Error("Duplicate public add-on action ID in composition.");
-  if (registered.length !== PUBLIC_ACTION_IDS.length
-    || registered.some((id, index) => id !== PUBLIC_ACTION_IDS[index])) {
-    throw new Error(`Incomplete add-on action composition: expected ${PUBLIC_ACTION_IDS.join(",")}; registered ${registered.join(",")}.`);
+  if (unique.size !== PUBLIC_ACTION_IDS.length)
+    throw new Error("Duplicate public add-on action ID in composition.");
+  if (
+    registered.length !== PUBLIC_ACTION_IDS.length ||
+    registered.some((id, index) => id !== PUBLIC_ACTION_IDS[index])
+  ) {
+    throw new Error(
+      `Incomplete add-on action composition: expected ${PUBLIC_ACTION_IDS.join(",")}; registered ${registered.join(",")}.`,
+    );
   }
   return true;
 }

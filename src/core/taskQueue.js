@@ -8,7 +8,12 @@ const taskQueues = new Map();
 
 export function getTaskQueueDiagnostics() {
   const queues = [...taskQueues.values()].map((queue) => queue.snapshot());
-  return { queueCount: queues.length, pendingCount: queues.reduce((total, queue) => total + queue.pendingCount, 0), runningCount: queues.filter((queue) => queue.runningKey).length, queues };
+  return {
+    queueCount: queues.length,
+    pendingCount: queues.reduce((total, queue) => total + queue.pendingCount, 0),
+    runningCount: queues.filter((queue) => queue.runningKey).length,
+    queues,
+  };
 }
 
 export function pauseAllTaskQueues(reason = "runtime suspended") {
@@ -64,9 +69,12 @@ export function createTaskQueue({
   generation = 0,
   routeContext = null,
 } = {}) {
-  if (!DUPLICATE_POLICIES.has(duplicatePolicy)) throw new Error(`Unknown duplicate policy '${duplicatePolicy}'`);
-  if (!OVERFLOW_POLICIES.has(overflowPolicy)) throw new Error(`Unknown overflow policy '${overflowPolicy}'`);
-  if (!String(name).trim() || !String(ownerId).trim()) throw new Error("Task queues require name and ownerId");
+  if (!DUPLICATE_POLICIES.has(duplicatePolicy))
+    throw new Error(`Unknown duplicate policy '${duplicatePolicy}'`);
+  if (!OVERFLOW_POLICIES.has(overflowPolicy))
+    throw new Error(`Unknown overflow policy '${overflowPolicy}'`);
+  if (!String(name).trim() || !String(ownerId).trim())
+    throw new Error("Task queues require name and ownerId");
 
   const pending = new Map();
   const idleWaiters = new Set();
@@ -80,7 +88,11 @@ export function createTaskQueue({
   let lastFailure = null;
 
   function settleCancelled(entry, reason) {
-    entry.deferred.resolve({ status: "cancelled", key: entry.key, reason: String(reason || "cancelled") });
+    entry.deferred.resolve({
+      status: "cancelled",
+      key: entry.key,
+      reason: String(reason || "cancelled"),
+    });
   }
 
   function snapshot() {
@@ -121,10 +133,13 @@ export function createTaskQueue({
 
   function schedule() {
     if (disposed || paused || processing || timer || pending.size === 0) return;
-    timer = setTimeout(() => {
-      timer = null;
-      void processNext();
-    }, Math.max(0, Number(delay) || 0));
+    timer = setTimeout(
+      () => {
+        timer = null;
+        void processNext();
+      },
+      Math.max(0, Number(delay) || 0),
+    );
   }
 
   async function processNext() {
@@ -145,7 +160,12 @@ export function createTaskQueue({
     processing = true;
     const controller = new AbortController();
     if (entry.routeSignal?.aborted) controller.abort(entry.routeSignal.reason);
-    else entry.routeSignal?.addEventListener("abort", () => controller.abort(entry.routeSignal.reason), { once: true });
+    else
+      entry.routeSignal?.addEventListener(
+        "abort",
+        () => controller.abort(entry.routeSignal.reason),
+        { once: true },
+      );
     const startedAt = Date.now();
     running = { ...entry, controller, startedAt };
     let timeoutId;
@@ -226,9 +246,13 @@ export function createTaskQueue({
 
   function add(key, task, taskGeneration = currentGeneration, taskTimeoutMs = timeoutMs) {
     if (disposed) return Promise.resolve({ status: "cancelled", key, reason: "queue disposed" });
-    if (typeof task !== "function") return Promise.reject(new TypeError("Task queue task must be a function"));
-    const suppliedRouteContext = taskGeneration && typeof taskGeneration === "object" ? taskGeneration : null;
-    const resolvedGeneration = suppliedRouteContext ? Number(suppliedRouteContext.generation) || 0 : taskGeneration;
+    if (typeof task !== "function")
+      return Promise.reject(new TypeError("Task queue task must be a function"));
+    const suppliedRouteContext =
+      taskGeneration && typeof taskGeneration === "object" ? taskGeneration : null;
+    const resolvedGeneration = suppliedRouteContext
+      ? Number(suppliedRouteContext.generation) || 0
+      : taskGeneration;
     if (resolvedGeneration !== undefined && resolvedGeneration !== currentGeneration) {
       return Promise.resolve({ status: "cancelled", key, reason: "stale generation" });
     }
@@ -251,7 +275,8 @@ export function createTaskQueue({
     }
 
     if (pending.size >= Math.max(1, Number(maxPending) || 1)) {
-      if (overflowPolicy === "reject") return Promise.reject(new Error(`Task queue '${name}' is full`));
+      if (overflowPolicy === "reject")
+        return Promise.reject(new Error(`Task queue '${name}' is full`));
       if (overflowPolicy === "drop-new") {
         reportQueueWarning("task dropped due to queue overflow", "overflow");
         return Promise.resolve({ status: "cancelled", key, reason: "queue overflow" });
@@ -358,7 +383,11 @@ export function createTaskQueue({
 
 registerDiagnosticsProvider("queues", () => {
   const diagnostic = getTaskQueueDiagnostics();
-  return { queueCount: diagnostic.queueCount, pendingCount: diagnostic.pendingCount, runningCount: diagnostic.runningCount };
+  return {
+    queueCount: diagnostic.queueCount,
+    pendingCount: diagnostic.pendingCount,
+    runningCount: diagnostic.runningCount,
+  };
 });
 
 export function createDebouncedTask(task, delay = 100) {

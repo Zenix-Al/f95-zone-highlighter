@@ -146,10 +146,7 @@ export function initAddonsRegistryBridge({ onRegistryUpdate } = {}) {
   });
 }
 
-export function initAddinsPanelActions(
-  shadowRoot,
-  { setActivePanel, refreshAddonsUi },
-) {
+export function initAddinsPanelActions(shadowRoot, { setActivePanel, refreshAddonsUi }) {
   const addinsPanel = shadowRoot.getElementById("settings-panel-addins");
   const settingsMain = shadowRoot.querySelector(".settings-main");
   if (!addinsPanel || !settingsMain || settingsMain.dataset.addinsActionsBound) return;

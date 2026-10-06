@@ -78,32 +78,11 @@ function createTagResultItem(tag) {
   const actions = document.createElement("div");
   actions.className = "tag-actions";
 
-  actions.appendChild(
-    createActionButton(
-      "✓",
-      "Add to preferred",
-      "preferred",
-      tag.id,
-    ),
-  );
+  actions.appendChild(createActionButton("✓", "Add to preferred", "preferred", tag.id));
 
-  actions.appendChild(
-    createActionButton(
-      "✗",
-      "Add to excluded",
-      "excluded",
-      tag.id,
-    ),
-  );
+  actions.appendChild(createActionButton("✗", "Add to excluded", "excluded", tag.id));
 
-  actions.appendChild(
-    createActionButton(
-      "◈",
-      "Add to marked",
-      "marked",
-      tag.id,
-    ),
-  );
+  actions.appendChild(createActionButton("◈", "Add to marked", "marked", tag.id));
 
   li.appendChild(nameSpan);
   li.appendChild(actions);
@@ -382,5 +361,4 @@ export function initTagSearchListeners() {
 
     syncState();
   }
-
 }

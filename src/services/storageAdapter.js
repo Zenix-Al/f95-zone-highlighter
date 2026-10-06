@@ -6,7 +6,11 @@ function storageReason(step, suffix) {
 
 function boundedManagerName(api) {
   const value = api?.info?.scriptHandler || globalThis.GM_info?.scriptHandler || "unknown";
-  return String(value || "unknown").trim().slice(0, 80) || "unknown";
+  return (
+    String(value || "unknown")
+      .trim()
+      .slice(0, 80) || "unknown"
+  );
 }
 
 function createProbeId() {
@@ -29,7 +33,10 @@ export function getStorageCapabilities(api = globalThis.GM) {
   });
 }
 
-export async function probeStorageCapabilities(api = globalThis.GM, { probeId = createProbeId() } = {}) {
+export async function probeStorageCapabilities(
+  api = globalThis.GM,
+  { probeId = createProbeId() } = {},
+) {
   const capabilities = getStorageCapabilities(api);
   const source = api || globalThis.GM;
   const key = `${STORAGE_PROBE_PREFIX}${String(probeId || createProbeId()).slice(0, 80)}`;
@@ -70,7 +77,8 @@ export async function probeStorageCapabilities(api = globalThis.GM, { probeId = 
       try {
         operationResult(await source.deleteValue(key), "delete");
         const remaining = await source.getValue(key, null);
-        if (remaining !== null && remaining !== undefined) throw new Error("delete_verification_failed");
+        if (remaining !== null && remaining !== undefined)
+          throw new Error("delete_verification_failed");
       } catch (error) {
         cleanupReason = String(error?.message || "delete_failed").slice(0, 120);
       }
@@ -99,7 +107,12 @@ export async function probeStorageCapabilities(api = globalThis.GM, { probeId = 
 }
 
 export function createStorageAdapter(api = globalThis.GM) {
-  const getApi = () => api || globalThis.GM || (() => { throw new Error("Userscript storage API is unavailable"); })();
+  const getApi = () =>
+    api ||
+    globalThis.GM ||
+    (() => {
+      throw new Error("Userscript storage API is unavailable");
+    })();
   return {
     get: (key, fallback) => getApi().getValue(key, fallback),
     set: (key, value) => getApi().setValue(key, value),
@@ -110,7 +123,9 @@ export function createStorageAdapter(api = globalThis.GM) {
     },
     async getMany(keys) {
       if (typeof getApi().getValues === "function") return (await getApi().getValues(keys)) || {};
-      return Object.fromEntries(await Promise.all(keys.map(async (key) => [key, await getApi().getValue(key)])));
+      return Object.fromEntries(
+        await Promise.all(keys.map(async (key) => [key, await getApi().getValue(key)])),
+      );
     },
     capabilities: () => getStorageCapabilities(getApi()),
     probe: (options) => probeStorageCapabilities(getApi(), options),

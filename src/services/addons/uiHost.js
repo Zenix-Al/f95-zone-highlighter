@@ -548,9 +548,13 @@ export function getAddonUiPolicySnapshot() {
 
 export function resetAddonUiHostForTests() {
   for (const addonId of new Set([
-    ...addonDockButtonsState.keys(), ...addonDialogRegistry.keys(), ...addonMountRegistry.keys(),
-    ...addonStyleRegistry.keys(), ...[...pendingAddonMounts.values()].map((entry) => entry.addonId),
-  ])) cleanupAddonUi(addonId);
+    ...addonDockButtonsState.keys(),
+    ...addonDialogRegistry.keys(),
+    ...addonMountRegistry.keys(),
+    ...addonStyleRegistry.keys(),
+    ...[...pendingAddonMounts.values()].map((entry) => entry.addonId),
+  ]))
+    cleanupAddonUi(addonId);
   pendingAddonMounts.clear();
   if (addonDockFlushTimer) window.clearTimeout(addonDockFlushTimer);
   if (addonMountFlushTimer) window.clearTimeout(addonMountFlushTimer);

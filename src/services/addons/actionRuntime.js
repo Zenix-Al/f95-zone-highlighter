@@ -101,7 +101,12 @@ export function getAddonActionDependencies(action) {
 }
 
 export function getAddonActionDependencySnapshot() {
-  return Object.freeze(Object.fromEntries(
-    Object.entries(FAMILY_DEPS).map(([family, deps]) => [family, Object.freeze(Object.keys(deps).sort())]),
-  ));
+  return Object.freeze(
+    Object.fromEntries(
+      Object.entries(FAMILY_DEPS).map(([family, deps]) => [
+        family,
+        Object.freeze(Object.keys(deps).sort()),
+      ]),
+    ),
+  );
 }

@@ -7,7 +7,8 @@ import { defineAction } from "../contract.js";
 
 export const pageActions = Object.freeze([
   defineAction({
-    id: "page.getContext", requiredCapabilities: ["page"],
+    id: "page.getContext",
+    requiredCapabilities: ["page"],
     validatePayload: validatePageContextPayload,
     validateResult: validatePageContextResult,
     ownership: "request-scoped-read-only",

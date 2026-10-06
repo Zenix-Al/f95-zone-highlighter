@@ -20,7 +20,11 @@ export function isAddonsServiceDisabled() {
   return Boolean(config.globalSettings?.disableAddonsService);
 }
 
-export function clampAddonsServiceNumber(value, fallback, { min = 0, max = Number.MAX_SAFE_INTEGER } = {}) {
+export function clampAddonsServiceNumber(
+  value,
+  fallback,
+  { min = 0, max = Number.MAX_SAFE_INTEGER } = {},
+) {
   const parsed = Number(value);
   if (!Number.isFinite(parsed)) return fallback;
   if (parsed < min) return min;

@@ -1,9 +1,14 @@
 import { runFrameBudgeted } from "../../core/frameBudget.js";
-import { latestMarkerBroker, subscribeLatestMarkerProviders } from "../../services/addons/latestMarkerRuntime.js";
+import {
+  latestMarkerBroker,
+  subscribeLatestMarkerProviders,
+} from "../../services/addons/latestMarkerRuntime.js";
 import { createMarkerLifecycle } from "./markerLifecycle.js";
 import { config } from "../../config/state.js";
 
-export function clearLatestMarkers(tile) { tile.querySelector(".f95ue-latest-markers")?.remove(); }
+export function clearLatestMarkers(tile) {
+  tile.querySelector(".f95ue-latest-markers")?.remove();
+}
 export function paintLatestMarker(tile, provider, marker) {
   const thumb = tile.querySelector(".resource-tile_thumb-wrap");
   if (!thumb) return;
@@ -26,13 +31,26 @@ export function paintLatestMarker(tile, provider, marker) {
   chip.title = marker.description;
   chip.setAttribute("aria-label", marker.description || marker.label);
   slot.querySelector(".f95ue-latest-marker-more")?.remove();
-  const chips = [...slot.children].sort((a, b) => Number(a.dataset.priority) - Number(b.dataset.priority) || a.dataset.providerId.localeCompare(b.dataset.providerId));
-  chips.forEach((child, index) => { child.hidden = index > 0; slot.append(child); });
+  const chips = [...slot.children].sort(
+    (a, b) =>
+      Number(a.dataset.priority) - Number(b.dataset.priority) ||
+      a.dataset.providerId.localeCompare(b.dataset.providerId),
+  );
+  chips.forEach((child, index) => {
+    child.hidden = index > 0;
+    slot.append(child);
+  });
   if (chips.length > 1) {
     const more = document.createElement("span");
     more.className = "f95ue-latest-marker-more";
     more.textContent = `+${chips.length - 1}`;
-    more.setAttribute("aria-label", chips.slice(1).map((child) => child.getAttribute("aria-label")).join("; "));
+    more.setAttribute(
+      "aria-label",
+      chips
+        .slice(1)
+        .map((child) => child.getAttribute("aria-label"))
+        .join("; "),
+    );
     slot.append(more);
   }
 }
@@ -41,11 +59,24 @@ const markerLifecycle = createMarkerLifecycle({
   broker: latestMarkerBroker,
   subscribe: subscribeLatestMarkerProviders,
   getTiles: () => {
-    document.documentElement.classList.toggle("f95ue-library-replaces-watch", config.latestSettings?.latestMarkerProviders?.["library-status"]?.enabled === true && latestMarkerBroker.list().some((provider) => provider.id === "library-status"));
-    return [...document.querySelectorAll(".resource-tile")].filter((tile) => tile.getClientRects().length && !tile.hidden);
+    document.documentElement.classList.toggle(
+      "f95ue-library-replaces-watch",
+      config.latestSettings?.latestMarkerProviders?.["library-status"]?.enabled === true &&
+        latestMarkerBroker.list().some((provider) => provider.id === "library-status"),
+    );
+    return [...document.querySelectorAll(".resource-tile")].filter(
+      (tile) => tile.getClientRects().length && !tile.hidden,
+    );
   },
-  paint: paintLatestMarker, clear: clearLatestMarkers,
-  budgeted: (items, apply, shouldContinue) => runFrameBudgeted(items, apply, { budgetMs: 4, minChunk: 1, shouldContinue, startOnNextFrame: true }),
+  paint: paintLatestMarker,
+  clear: clearLatestMarkers,
+  budgeted: (items, apply, shouldContinue) =>
+    runFrameBudgeted(items, apply, {
+      budgetMs: 4,
+      minChunk: 1,
+      shouldContinue,
+      startOnNextFrame: true,
+    }),
 });
 export const latestMarkers = {
   ...markerLifecycle,
@@ -56,5 +87,11 @@ export const latestMarkers = {
 };
 
 export function hasMarkerTileChanges(mutations) {
-  return mutations.some((mutation) => [...(mutation.addedNodes || []), ...(mutation.removedNodes || [])].some((node) => node.nodeType === 1 && (node.matches?.(".resource-tile") || node.querySelector?.(".resource-tile"))));
+  return mutations.some((mutation) =>
+    [...(mutation.addedNodes || []), ...(mutation.removedNodes || [])].some(
+      (node) =>
+        node.nodeType === 1 &&
+        (node.matches?.(".resource-tile") || node.querySelector?.(".resource-tile")),
+    ),
+  );
 }

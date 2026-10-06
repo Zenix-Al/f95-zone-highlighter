@@ -64,7 +64,11 @@ export function cleanupAddonRuntimeResources(addonId, reason = "disable") {
   cleanupAddonObserverSubscriptions(addonId);
   cleanupAddonUi(addonId);
   const after = getAddonUiPolicySnapshot().owners;
-  debugLog("addonsService", `Cleaned core-owned add-on resources (id=${addonId}, reason=${reason}).`, {
-    data: { before, after },
-  });
+  debugLog(
+    "addonsService",
+    `Cleaned core-owned add-on resources (id=${addonId}, reason=${reason}).`,
+    {
+      data: { before, after },
+    },
+  );
 }

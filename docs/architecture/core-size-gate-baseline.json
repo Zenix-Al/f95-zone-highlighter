@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "sourceReport": "docs/architecture/core-size-baseline.json",
-  "sourceReportSha256": "62f33107717ba8ddad635fee0fcca00b7723004abc4879e66714df3fde858bf6",
+  "sourceReportSha256": "36e41d8d17e019b1717c425d3d1654cc3d8aea867151f91e14f63cb592a9ec8b",
   "thresholds": {
     "authoredArea": {
       "absoluteBytes": 1024,
@@ -22,6 +22,6 @@
   },
   "rationale": {
     "type": "commit-note",
-    "text": "Retain the latest bounded capture through overlay toggles and invalidate on route exit/change."
+    "text": "Merge PR #81 Prettier formatting with current main; refresh accepted source-size baseline without changing runtime behavior."
   }
 }

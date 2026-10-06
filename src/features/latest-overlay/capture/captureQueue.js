@@ -1,6 +1,9 @@
 import { nextFrame } from "../../../core/frameBudget.js";
 
-export function createCaptureQueue(processJob, { limit = 20, budgetMs = 4, shouldProcess = () => true, onDrop = () => {} } = {}) {
+export function createCaptureQueue(
+  processJob,
+  { limit = 20, budgetMs = 4, shouldProcess = () => true, onDrop = () => {} } = {},
+) {
   const jobs = new Map();
   let draining = false;
   let dropped = 0;
@@ -12,7 +15,10 @@ export function createCaptureQueue(processJob, { limit = 20, budgetMs = 4, shoul
       const job = jobs.get(key);
       jobs.delete(key);
       if (shouldProcess(job)) processJob(job);
-      else { dropped += 1; onDrop(job, "stale_route"); }
+      else {
+        dropped += 1;
+        onDrop(job, "stale_route");
+      }
       if (Date.now() - frameStartedAt >= budgetMs && jobs.size > 0) {
         await nextFrame();
         frameStartedAt = Date.now();
@@ -35,10 +41,16 @@ export function createCaptureQueue(processJob, { limit = 20, budgetMs = 4, shoul
       }
       if (draining) return;
       draining = true;
-      const schedule = typeof requestAnimationFrame === "function" ? requestAnimationFrame : setTimeout;
+      const schedule =
+        typeof requestAnimationFrame === "function" ? requestAnimationFrame : setTimeout;
       schedule(() => void drain());
     },
-    clear() { jobs.clear(); draining = false; },
-    getSnapshot() { return Object.freeze({ pendingItems: jobs.size, maxPendingItems: limit, draining, dropped }); },
+    clear() {
+      jobs.clear();
+      draining = false;
+    },
+    getSnapshot() {
+      return Object.freeze({ pendingItems: jobs.size, maxPendingItems: limit, draining, dropped });
+    },
   };
 }

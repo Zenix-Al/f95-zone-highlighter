@@ -15,9 +15,12 @@ export async function resetColor() {
   }
 
   resetColorConfirmUntil = 0;
-  const persisted = await updateConfig((draft) => {
-    draft.color = { ...defaultColors };
-  }, { origin: "settings:reset-color" });
+  const persisted = await updateConfig(
+    (draft) => {
+      draft.color = { ...defaultColors };
+    },
+    { origin: "settings:reset-color" },
+  );
   if (!persisted.committed) return;
 
   reRenderSettingsSection("color-container", colorSettingsMeta);

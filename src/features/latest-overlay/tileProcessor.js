@@ -129,7 +129,8 @@ export function processMutations(mutations, expectedGeneration) {
   for (const mutation of mutations) {
     for (const node of mutation.addedNodes || []) {
       if (node.nodeType !== 1) continue;
-      if (node.classList?.contains(SELECTORS.TILE.CLASS)) pendingTiles.set(node, expectedGeneration);
+      if (node.classList?.contains(SELECTORS.TILE.CLASS))
+        pendingTiles.set(node, expectedGeneration);
       else {
         node
           .querySelectorAll?.(SELECTORS.TILE.ROOT)

@@ -1,8 +1,14 @@
 import { reportFeatureFailure } from "./featureHealth.js";
 
 export function createPageLifecycleHandlers({
-  suspendRuntime, teardownAll, resumeRuntime, beginRoute, detectPage,
-  refreshFastBootstrapFeatures, reconcileFeatures, refreshAddonSecurityPolicies,
+  suspendRuntime,
+  teardownAll,
+  resumeRuntime,
+  beginRoute,
+  detectPage,
+  refreshFastBootstrapFeatures,
+  reconcileFeatures,
+  refreshAddonSecurityPolicies,
 } = {}) {
   return {
     handlePageHide(event) {

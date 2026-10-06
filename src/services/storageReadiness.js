@@ -34,7 +34,11 @@ export function getStorageReadinessSnapshot() {
 export function publishStorageReadiness(next) {
   snapshot = createStorageReadinessSnapshot(next);
   for (const subscriber of [...subscribers]) {
-    try { subscriber(snapshot); } catch { /* readiness publication must remain authoritative */ }
+    try {
+      subscriber(snapshot);
+    } catch {
+      /* readiness publication must remain authoritative */
+    }
   }
   if (isTerminalStorageState(snapshot.state)) {
     for (const resolve of waiters) resolve(snapshot);
@@ -51,10 +55,14 @@ export function subscribeStorageReadiness(subscriber) {
 
 function writeDecision(current) {
   if (current.state === "ready") return { ok: true, reason: "", snapshot: current };
-  if (current.state === "upgrade-required") return { ok: false, reason: "upgrade_required", snapshot: current };
-  if (current.state === "unavailable") return { ok: false, reason: "storage_unavailable", snapshot: current };
-  if (current.state === "degraded-readonly") return { ok: false, reason: "storage_read_only", snapshot: current };
-  if (current.state === "idle") return { ok: false, reason: "storage_not_ready", snapshot: current };
+  if (current.state === "upgrade-required")
+    return { ok: false, reason: "upgrade_required", snapshot: current };
+  if (current.state === "unavailable")
+    return { ok: false, reason: "storage_unavailable", snapshot: current };
+  if (current.state === "degraded-readonly")
+    return { ok: false, reason: "storage_read_only", snapshot: current };
+  if (current.state === "idle")
+    return { ok: false, reason: "storage_not_ready", snapshot: current };
   return null;
 }
 
@@ -67,12 +75,18 @@ export async function waitForStorageWriteAccess() {
 
 export function getStorageFailureMessage(reason) {
   if (reason === "config_https_required") return "Settings can only be written on HTTPS pages.";
-  if (reason === "config_lock_unavailable") return "Cross-tab-safe settings storage is unavailable in this browser. Settings are read-only.";
-  if (reason === "config_stale_canonical_invalid") return "Settings changed in another tab, but the stored configuration is invalid. No changes were written.";
-  if (reason === "storage_read_only") return "Settings are read-only because storage recovery did not finish. Open Feature Health for details.";
-  if (reason === "storage_unavailable") return "Userscript storage is unavailable. Open Feature Health and check the manager grants and storage permissions.";
-  if (reason === "upgrade_required") return "This stored configuration requires the supported bridge version. Open Feature Health for details.";
-  if (reason === "storage_write_failed") return "The userscript manager rejected the storage write.";
+  if (reason === "config_lock_unavailable")
+    return "Cross-tab-safe settings storage is unavailable in this browser. Settings are read-only.";
+  if (reason === "config_stale_canonical_invalid")
+    return "Settings changed in another tab, but the stored configuration is invalid. No changes were written.";
+  if (reason === "storage_read_only")
+    return "Settings are read-only because storage recovery did not finish. Open Feature Health for details.";
+  if (reason === "storage_unavailable")
+    return "Userscript storage is unavailable. Open Feature Health and check the manager grants and storage permissions.";
+  if (reason === "upgrade_required")
+    return "This stored configuration requires the supported bridge version. Open Feature Health for details.";
+  if (reason === "storage_write_failed")
+    return "The userscript manager rejected the storage write.";
   return "Storage initialization has not finished yet. Open Feature Health for details.";
 }
 

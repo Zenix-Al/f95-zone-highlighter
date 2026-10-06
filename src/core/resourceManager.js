@@ -85,7 +85,9 @@ class ResourceManager {
           (resource) => resource.ownerId === ownerId && resource.id === resourceId,
         );
         if (existing) {
-          throw new Error(`ResourceManager: Resource '${resourceId}' already registered for owner '${ownerId}'.`);
+          throw new Error(
+            `ResourceManager: Resource '${resourceId}' already registered for owner '${ownerId}'.`,
+          );
         }
         return this.register(resourceId, cleanup, ownerId);
       },
@@ -114,7 +116,9 @@ class ResourceManager {
           (resource) => resource.ownerId === ownerId && resource.id === resourceId,
         );
         if (existing) {
-          throw new Error(`ResourceManager: Resource '${resourceId}' already registered for owner '${ownerId}'.`);
+          throw new Error(
+            `ResourceManager: Resource '${resourceId}' already registered for owner '${ownerId}'.`,
+          );
         }
         return this.register(resourceId, cleanup, ownerId);
       },
@@ -170,15 +174,23 @@ export function getResourceSnapshot() {
 export function assertNoResourceLeaks(ownerId) {
   const snapshot = resourceManager.getSnapshot();
   const leaked = snapshot.owners[String(ownerId || "")]?.resources || [];
-  if (leaked.length > 0) throw new Error(`Resource leak for '${ownerId}': ${leaked.map((entry) => entry.id).join(", ")}`);
+  if (leaked.length > 0)
+    throw new Error(
+      `Resource leak for '${ownerId}': ${leaked.map((entry) => entry.id).join(", ")}`,
+    );
   return true;
 }
 
-export function resetResourceManagerForTests() { resourceManager.cleanupAll(); }
+export function resetResourceManagerForTests() {
+  resourceManager.cleanupAll();
+}
 
 export const resourceManager = new ResourceManager();
 
 registerDiagnosticsProvider("resources", () => {
   const snapshot = getResourceSnapshot();
-  return { totalResources: snapshot.totalResources, ownerCount: Object.keys(snapshot.owners).length };
+  return {
+    totalResources: snapshot.totalResources,
+    ownerCount: Object.keys(snapshot.owners).length,
+  };
 });

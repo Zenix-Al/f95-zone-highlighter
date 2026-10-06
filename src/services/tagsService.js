@@ -5,10 +5,7 @@ import { renderList } from "../ui/components/tag-search";
 
 import { checkTags } from "./safetyService";
 import { saveConfigKeys } from "./settingsService";
-import {
-  normalizePrefixesFromLatestUpdatesBudgeted,
-  updatePrefixes,
-} from "./prefixService.js";
+import { normalizePrefixesFromLatestUpdatesBudgeted, updatePrefixes } from "./prefixService.js";
 import { debugLog } from "../core/logger";
 
 const LATEST_CATALOG_BRIDGE_REQUEST_EVENT = "f95ue:latest-catalog-request";
@@ -125,7 +122,11 @@ function readLatestCatalogFromWindow() {
 async function readLatestCatalogViaPageBridge(timeoutMs = 1200) {
   const bridgeReady = ensureLatestCatalogPageBridge();
   if (!bridgeReady) {
-    return { tags: null, prefixes: null, reasons: { tags: "bridge_inject_failed", prefixes: "bridge_inject_failed" } };
+    return {
+      tags: null,
+      prefixes: null,
+      reasons: { tags: "bridge_inject_failed", prefixes: "bridge_inject_failed" },
+    };
   }
 
   const result = await requestPageBridge({
@@ -151,7 +152,9 @@ async function readLatestCatalogs() {
     bridge = await readLatestCatalogViaPageBridge();
     const normalized = await Promise.all([
       tags.length ? tags : normalizeTagsFromLatestUpdatesBudgeted(bridge.tags),
-      prefixes.items.length ? prefixes : normalizePrefixesFromLatestUpdatesBudgeted(bridge.prefixes),
+      prefixes.items.length
+        ? prefixes
+        : normalizePrefixesFromLatestUpdatesBudgeted(bridge.prefixes),
     ]);
     [tags, prefixes] = normalized;
   }

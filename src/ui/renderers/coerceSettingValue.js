@@ -42,4 +42,3 @@ export function coerceSettingValue(meta, rawValue, previousValue) {
       return rawValue;
   }
 }
-

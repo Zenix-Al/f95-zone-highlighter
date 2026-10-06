@@ -5,7 +5,8 @@ export function actionUiDockSetButtons(addonId, payload, sanitizeDockButtons, se
   return { ok: true, value: setAddonDockButtons(addonId, sanitizeDockButtons(payload?.buttons)) };
 }
 export function actionUiDockRemoveButtons(addonId, removeAddonDockButtons) {
-  removeAddonDockButtons(addonId); return { ok: true };
+  removeAddonDockButtons(addonId);
+  return { ok: true };
 }
 export function actionUiMount(addonId, payload, maxBytes, sanitizeId, mount, allowed = null) {
   const mountId = sanitizeId(payload?.mountId || payload?.id || "");
@@ -43,7 +44,11 @@ export function actionUiDialogOpen(addonId, payload, maxBytes, sanitizeId, open)
   return open(addonId, { ...payload, dialogId, html });
 }
 export function actionUiDialogClose(addonId, payload, close) {
-  return close(addonId, String(payload?.dialogId || payload?.id || ""), String(payload?.reason || "addon-request"));
+  return close(
+    addonId,
+    String(payload?.dialogId || payload?.id || ""),
+    String(payload?.reason || "addon-request"),
+  );
 }
 export function actionUiDialogUpdate(addonId, payload, maxBytes, sanitizeId, update) {
   const dialogId = sanitizeId(payload?.dialogId || payload?.id || "");
@@ -75,24 +80,85 @@ export function actionUiStyleUnregister(addonId, payload, unregister) {
   return unregister(addonId, String(payload?.styleId || payload?.id || ""));
 }
 
-const ui = (id, capabilities, execute, extension = {}) => defineAction({
-  id, requiredCapabilities: capabilities, execute, ...extension,
-});
+const ui = (id, capabilities, execute, extension = {}) =>
+  defineAction({
+    id,
+    requiredCapabilities: capabilities,
+    execute,
+    ...extension,
+  });
 const caps = (name) => ["ui", `ui.${name}`];
 
 export const uiActions = Object.freeze([
-  ui("ui.dock.setButtons", caps("dock"), ({ addonId, payload, deps }) => actionUiDockSetButtons(addonId, payload, deps.sanitizeDockButtons, deps.setAddonDockButtons)),
-  ui("ui.dock.removeButtons", caps("dock"), ({ addonId, deps }) => actionUiDockRemoveButtons(addonId, deps.removeAddonDockButtons)),
-  ui("ui.mount", caps("mount"), ({ addonId, payload, deps, limits, allowed }) => actionUiMount(addonId, payload, limits.maxAddonUiHtmlBytes, deps.sanitizeAddonMountId, deps.mountAddonUi, allowed)),
-  ui("ui.update", caps("mount"), ({ addonId, payload, deps, limits }) => actionUiUpdate(addonId, payload, limits.maxAddonUiHtmlBytes, deps.sanitizeAddonMountId, deps.updateAddonUi)),
-  ui("ui.unmount", caps("mount"), ({ addonId, payload, deps }) => actionUiUnmount(addonId, payload, deps.unmountAddonUi)),
-  ui("ui.dialog.open", caps("dialog"), ({ addonId, payload, deps, limits }) => actionUiDialogOpen(addonId, payload, limits.maxAddonUiHtmlBytes, deps.sanitizeAddonDialogId, deps.openAddonDialog)),
-  ui("ui.dialog.close", caps("dialog"), ({ addonId, payload, deps }) => actionUiDialogClose(addonId, payload, deps.closeAddonDialog)),
-  ui("ui.dialog.update", caps("dialog"), ({ addonId, payload, deps, limits }) => actionUiDialogUpdate(addonId, payload, limits.maxAddonUiHtmlBytes, deps.sanitizeAddonDialogId, deps.updateAddonDialog), {
-    ownership: "addon-owned dialog content",
-    cleanup: "dialog teardown removes the owned entry; update fails after ownership ends",
-  }),
-  ui("ui.confirm", caps("dialog"), ({ payload, deps }) => actionUiConfirm(payload, deps.openConfirmDialog)),
-  ui("ui.style.register", caps("style"), ({ addonId, payload, deps, limits }) => actionUiStyleRegister(addonId, payload, limits.maxAddonStyleTextBytes, deps.sanitizeAddonStyleId, deps.registerAddonStyle)),
-  ui("ui.style.unregister", caps("style"), ({ addonId, payload, deps }) => actionUiStyleUnregister(addonId, payload, deps.unregisterAddonStyle)),
+  ui("ui.dock.setButtons", caps("dock"), ({ addonId, payload, deps }) =>
+    actionUiDockSetButtons(addonId, payload, deps.sanitizeDockButtons, deps.setAddonDockButtons),
+  ),
+  ui("ui.dock.removeButtons", caps("dock"), ({ addonId, deps }) =>
+    actionUiDockRemoveButtons(addonId, deps.removeAddonDockButtons),
+  ),
+  ui("ui.mount", caps("mount"), ({ addonId, payload, deps, limits, allowed }) =>
+    actionUiMount(
+      addonId,
+      payload,
+      limits.maxAddonUiHtmlBytes,
+      deps.sanitizeAddonMountId,
+      deps.mountAddonUi,
+      allowed,
+    ),
+  ),
+  ui("ui.update", caps("mount"), ({ addonId, payload, deps, limits }) =>
+    actionUiUpdate(
+      addonId,
+      payload,
+      limits.maxAddonUiHtmlBytes,
+      deps.sanitizeAddonMountId,
+      deps.updateAddonUi,
+    ),
+  ),
+  ui("ui.unmount", caps("mount"), ({ addonId, payload, deps }) =>
+    actionUiUnmount(addonId, payload, deps.unmountAddonUi),
+  ),
+  ui("ui.dialog.open", caps("dialog"), ({ addonId, payload, deps, limits }) =>
+    actionUiDialogOpen(
+      addonId,
+      payload,
+      limits.maxAddonUiHtmlBytes,
+      deps.sanitizeAddonDialogId,
+      deps.openAddonDialog,
+    ),
+  ),
+  ui("ui.dialog.close", caps("dialog"), ({ addonId, payload, deps }) =>
+    actionUiDialogClose(addonId, payload, deps.closeAddonDialog),
+  ),
+  ui(
+    "ui.dialog.update",
+    caps("dialog"),
+    ({ addonId, payload, deps, limits }) =>
+      actionUiDialogUpdate(
+        addonId,
+        payload,
+        limits.maxAddonUiHtmlBytes,
+        deps.sanitizeAddonDialogId,
+        deps.updateAddonDialog,
+      ),
+    {
+      ownership: "addon-owned dialog content",
+      cleanup: "dialog teardown removes the owned entry; update fails after ownership ends",
+    },
+  ),
+  ui("ui.confirm", caps("dialog"), ({ payload, deps }) =>
+    actionUiConfirm(payload, deps.openConfirmDialog),
+  ),
+  ui("ui.style.register", caps("style"), ({ addonId, payload, deps, limits }) =>
+    actionUiStyleRegister(
+      addonId,
+      payload,
+      limits.maxAddonStyleTextBytes,
+      deps.sanitizeAddonStyleId,
+      deps.registerAddonStyle,
+    ),
+  ),
+  ui("ui.style.unregister", caps("style"), ({ addonId, payload, deps }) =>
+    actionUiStyleUnregister(addonId, payload, deps.unregisterAddonStyle),
+  ),
 ]);

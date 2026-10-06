@@ -40,8 +40,14 @@ async function startRequiredStorageBootstrap() {
 }
 
 const { handlePageHide, handlePageShow } = createPageLifecycleHandlers({
-  suspendRuntime, teardownAll, resumeRuntime, beginRoute, detectPage,
-  refreshFastBootstrapFeatures, reconcileFeatures, refreshAddonSecurityPolicies,
+  suspendRuntime,
+  teardownAll,
+  resumeRuntime,
+  beginRoute,
+  detectPage,
+  refreshFastBootstrapFeatures,
+  reconcileFeatures,
+  refreshAddonSecurityPolicies,
 });
 
 registerTeardownResetter(() => {
@@ -115,7 +121,7 @@ async function runFastBootstrap() {
       classification: "optional",
       timeoutMs: 5000,
       run: () => initAddonsConsoleBridge(),
-    }
+    },
   ]);
 }
 

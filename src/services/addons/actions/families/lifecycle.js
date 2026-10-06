@@ -16,7 +16,10 @@ export async function actionFeatureEnableDisable(
   const enabled = action === "feature.enable";
   const nextStatus = enabled ? "installed" : "disabled";
   const nextMessage = enabled ? "Feature is active." : "";
-  debugLog("addonsService", `Applying add-on lifecycle toggle (id=${addonId}, enabled=${enabled}).`);
+  debugLog(
+    "addonsService",
+    `Applying add-on lifecycle toggle (id=${addonId}, enabled=${enabled}).`,
+  );
   let persisted;
   let persistedMeta = { ok: true };
   if (typeof setAddonEnabledState === "function") {
@@ -28,10 +31,18 @@ export async function actionFeatureEnableDisable(
     persistedMeta = await upsertInstalledAddonMeta(addonId, { statusMessage: nextMessage });
   }
   if (!persisted.ok || !persistedMeta.ok) {
-    debugLog("addonsService", `Add-on lifecycle toggle persistence failed (id=${addonId}, enabled=${enabled}).`, {
-      level: "error", data: { persisted, persistedMeta },
-    });
-    return { ok: false, reason: persisted.reason || persistedMeta.reason || "storage_write_failed" };
+    debugLog(
+      "addonsService",
+      `Add-on lifecycle toggle persistence failed (id=${addonId}, enabled=${enabled}).`,
+      {
+        level: "error",
+        data: { persisted, persistedMeta },
+      },
+    );
+    return {
+      ok: false,
+      reason: persisted.reason || persistedMeta.reason || "storage_write_failed",
+    };
   }
   updateAddonStatus(addonId, nextStatus, nextMessage);
   if (!enabled) {
@@ -39,7 +50,10 @@ export async function actionFeatureEnableDisable(
     cleanupAddonRuntimeResources?.(addonId, "disable");
   } else cancelAddonTeardown?.(addonId);
   emitAddonLifecycleCommand(addonId, enabled ? "enable" : "disable");
-  debugLog("addonsService", `Add-on lifecycle command dispatched (id=${addonId}, command=${enabled ? "enable" : "disable"}).`);
+  debugLog(
+    "addonsService",
+    `Add-on lifecycle command dispatched (id=${addonId}, command=${enabled ? "enable" : "disable"}).`,
+  );
   return { ok: true };
 }
 
@@ -50,12 +64,21 @@ export function actionFeatureRefresh(addonId, emitAddonCommand) {
 
 function toggle(id) {
   return defineAction({
-    id, requiredCapabilities: ["feature"],
-    execute: ({ addonId, deps }) => actionFeatureEnableDisable(
-      addonId, id, deps.updateAddonStatus, deps.emitAddonLifecycleCommand,
-      deps.ensureAddonStateBucket, deps.persistAddonsState, deps.upsertInstalledAddonMeta,
-      deps.cancelAddonTeardown, deps.setAddonEnabledState, deps.cleanupAddonRuntimeResources,
-    ),
+    id,
+    requiredCapabilities: ["feature"],
+    execute: ({ addonId, deps }) =>
+      actionFeatureEnableDisable(
+        addonId,
+        id,
+        deps.updateAddonStatus,
+        deps.emitAddonLifecycleCommand,
+        deps.ensureAddonStateBucket,
+        deps.persistAddonsState,
+        deps.upsertInstalledAddonMeta,
+        deps.cancelAddonTeardown,
+        deps.setAddonEnabledState,
+        deps.cleanupAddonRuntimeResources,
+      ),
   });
 }
 
@@ -63,7 +86,8 @@ export const lifecycleActions = Object.freeze([
   toggle("feature.enable"),
   toggle("feature.disable"),
   defineAction({
-    id: "feature.refresh", requiredCapabilities: ["feature"],
+    id: "feature.refresh",
+    requiredCapabilities: ["feature"],
     execute: ({ addonId, deps }) => actionFeatureRefresh(addonId, deps.emitAddonCommand),
   }),
 ]);

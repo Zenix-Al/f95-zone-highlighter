@@ -2,7 +2,13 @@ import { config } from "../../../../config.js";
 import { storageAdapter } from "../../../storageAdapter.js";
 import { defineAction } from "../contract.js";
 
-export async function actionStorageGet(addonId, payload, ensureAddonStateBucket, persistAddonsState, reauthorize) {
+export async function actionStorageGet(
+  addonId,
+  payload,
+  ensureAddonStateBucket,
+  persistAddonsState,
+  reauthorize,
+) {
   const key = String(payload?.key || "").trim();
   if (!key) return { ok: false, reason: "key_required" };
   const stateBucket = ensureAddonStateBucket(addonId);
@@ -24,13 +30,19 @@ export async function actionStorageGet(addonId, payload, ensureAddonStateBucket,
 }
 
 export async function actionStorageSet(
-  addonId, payload, measurePayloadBytes, maxValueBytes, maxTotalBytes,
-  ensureAddonStateBucket, persistAddonsState,
+  addonId,
+  payload,
+  measurePayloadBytes,
+  maxValueBytes,
+  maxTotalBytes,
+  ensureAddonStateBucket,
+  persistAddonsState,
 ) {
   const key = String(payload?.key || "").trim();
   if (!key) return { ok: false, reason: "key_required" };
   const newValue = payload?.value ?? null;
-  if (measurePayloadBytes(newValue) > maxValueBytes) return { ok: false, reason: "payload_too_large" };
+  if (measurePayloadBytes(newValue) > maxValueBytes)
+    return { ok: false, reason: "payload_too_large" };
   const stateBucket = ensureAddonStateBucket(addonId);
   const hadKey = Object.hasOwn(stateBucket, key);
   const previousValue = hadKey ? stateBucket[key] : undefined;
@@ -49,17 +61,30 @@ export async function actionStorageSet(
   return { ok: true };
 }
 
-export function actionStorageGetUsage(addonId, measurePayloadBytes, valueLimit, totalLimit, ensureAddonStateBucket) {
+export function actionStorageGetUsage(
+  addonId,
+  measurePayloadBytes,
+  valueLimit,
+  totalLimit,
+  ensureAddonStateBucket,
+) {
   const stateBucket = ensureAddonStateBucket(addonId);
-  return { ok: true, value: {
-    valueCount: Object.keys(stateBucket).length,
-    estimatedBytes: measurePayloadBytes(stateBucket),
-    valueLimitBytes: valueLimit,
-    totalLimitBytes: totalLimit,
-  } };
+  return {
+    ok: true,
+    value: {
+      valueCount: Object.keys(stateBucket).length,
+      estimatedBytes: measurePayloadBytes(stateBucket),
+      valueLimitBytes: valueLimit,
+      totalLimitBytes: totalLimit,
+    },
+  };
 }
 
-export async function actionConfigGetTagPrefs(measurePayloadBytes, maxPayloadBytes, getConfig = () => config) {
+export async function actionConfigGetTagPrefs(
+  measurePayloadBytes,
+  maxPayloadBytes,
+  getConfig = () => config,
+) {
   try {
     const currentConfig = getConfig?.() || {};
     const value = {
@@ -67,7 +92,8 @@ export async function actionConfigGetTagPrefs(measurePayloadBytes, maxPayloadByt
       preferredTags: Array.isArray(currentConfig.preferredTags) ? currentConfig.preferredTags : [],
       excludedTags: Array.isArray(currentConfig.excludedTags) ? currentConfig.excludedTags : [],
       markedTags: Array.isArray(currentConfig.markedTags) ? currentConfig.markedTags : [],
-      color: currentConfig.color && typeof currentConfig.color === "object" ? currentConfig.color : {},
+      color:
+        currentConfig.color && typeof currentConfig.color === "object" ? currentConfig.color : {},
     };
     return measurePayloadBytes(value) > maxPayloadBytes
       ? { ok: false, reason: "payload_too_large" }
@@ -79,27 +105,47 @@ export async function actionConfigGetTagPrefs(measurePayloadBytes, maxPayloadByt
 
 export const storageActions = Object.freeze([
   defineAction({
-    id: "storage.get", requiredCapabilities: ["storage"],
-    execute: ({ addonId, payload, deps, reauthorize }) => actionStorageGet(
-      addonId, payload, deps.ensureAddonStateBucket, deps.persistAddonsState, reauthorize,
-    ),
+    id: "storage.get",
+    requiredCapabilities: ["storage"],
+    execute: ({ addonId, payload, deps, reauthorize }) =>
+      actionStorageGet(
+        addonId,
+        payload,
+        deps.ensureAddonStateBucket,
+        deps.persistAddonsState,
+        reauthorize,
+      ),
   }),
   defineAction({
-    id: "storage.set", requiredCapabilities: ["storage"],
-    execute: ({ addonId, payload, deps, limits }) => actionStorageSet(
-      addonId, payload, deps.measurePayloadBytes, limits.maxAddonStorageValueBytes,
-      limits.maxAddonStorageTotalBytes, deps.ensureAddonStateBucket, deps.persistAddonsState,
-    ),
+    id: "storage.set",
+    requiredCapabilities: ["storage"],
+    execute: ({ addonId, payload, deps, limits }) =>
+      actionStorageSet(
+        addonId,
+        payload,
+        deps.measurePayloadBytes,
+        limits.maxAddonStorageValueBytes,
+        limits.maxAddonStorageTotalBytes,
+        deps.ensureAddonStateBucket,
+        deps.persistAddonsState,
+      ),
   }),
   defineAction({
-    id: "storage.getUsage", requiredCapabilities: ["storage"],
-    execute: ({ addonId, deps, limits }) => actionStorageGetUsage(
-      addonId, deps.measurePayloadBytes, limits.maxAddonStorageValueBytes,
-      limits.maxAddonStorageTotalBytes, deps.ensureAddonStateBucket,
-    ),
+    id: "storage.getUsage",
+    requiredCapabilities: ["storage"],
+    execute: ({ addonId, deps, limits }) =>
+      actionStorageGetUsage(
+        addonId,
+        deps.measurePayloadBytes,
+        limits.maxAddonStorageValueBytes,
+        limits.maxAddonStorageTotalBytes,
+        deps.ensureAddonStateBucket,
+      ),
   }),
   defineAction({
-    id: "config.getTagPrefs", requiredCapabilities: ["storage"],
-    execute: ({ deps, limits }) => actionConfigGetTagPrefs(deps.measurePayloadBytes, limits.maxAddonStorageValueBytes),
+    id: "config.getTagPrefs",
+    requiredCapabilities: ["storage"],
+    execute: ({ deps, limits }) =>
+      actionConfigGetTagPrefs(deps.measurePayloadBytes, limits.maxAddonStorageValueBytes),
   }),
 ]);

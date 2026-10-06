@@ -39,15 +39,26 @@ export function beginRoute(locationLike = globalThis.location, { force = false }
   currentUrl = url;
   routeGeneration += 1;
   correlationId = createCorrelationId();
-  recordHealthEvent({ code: "ROUTE_TRANSITION", severity: "info", ownerId: `route:${routeGeneration}`, subsystem: "route", message: "Route changed", correlationId, routeGeneration, details: { changed: true } });
+  recordHealthEvent({
+    code: "ROUTE_TRANSITION",
+    severity: "info",
+    ownerId: `route:${routeGeneration}`,
+    subsystem: "route",
+    message: "Route changed",
+    correlationId,
+    routeGeneration,
+    details: { changed: true },
+  });
   return { ...getRouteContext(), changed: true };
 }
 
 export function isRouteContextCurrent(routeContext) {
-  return Boolean(routeContext)
-    && Number(routeContext.generation) === routeGeneration
-    && String(routeContext.url || "") === currentUrl
-    && !routeContext.signal?.aborted;
+  return (
+    Boolean(routeContext) &&
+    Number(routeContext.generation) === routeGeneration &&
+    String(routeContext.url || "") === currentUrl &&
+    !routeContext.signal?.aborted
+  );
 }
 
 export function setRoutePageFlags(pageFlags) {
@@ -68,4 +79,8 @@ export function resetRouteStateForTests() {
   controller = new AbortController();
 }
 
-registerDiagnosticsProvider("route", () => ({ generation: routeGeneration, correlationId, pageFlags: { ...currentPageFlags } }));
+registerDiagnosticsProvider("route", () => ({
+  generation: routeGeneration,
+  correlationId,
+  pageFlags: { ...currentPageFlags },
+}));

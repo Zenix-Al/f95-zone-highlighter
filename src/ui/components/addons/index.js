@@ -1,6 +1,10 @@
 export { createActionButton } from "./actionButton.js";
 export { createAddonCard } from "./addonCard.js";
-export { createAddonDialogElements, focusAddonDialog, trapAddonDialogFocus } from "./addonDialog.js";
+export {
+  createAddonDialogElements,
+  focusAddonDialog,
+  trapAddonDialogFocus,
+} from "./addonDialog.js";
 export { createAddonDockGroup, buildAddonDockGroupId } from "./addonDockGroup.js";
 export {
   ADDON_DIALOG_HOST_ID,

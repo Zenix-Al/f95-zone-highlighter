@@ -1,14 +1,6 @@
-export const SUPPORTED_ADDON_PAGE_SCOPES = Object.freeze([
-  "f95zone",
-  "thread",
-  "latest",
-]);
+export const SUPPORTED_ADDON_PAGE_SCOPES = Object.freeze(["f95zone", "thread", "latest"]);
 
-export const ADDON_RUNTIME_MODES = Object.freeze([
-  "core-required",
-  "standalone",
-  "hybrid",
-]);
+export const ADDON_RUNTIME_MODES = Object.freeze(["core-required", "standalone", "hybrid"]);
 
 const SUPPORTED_SCOPE_SET = new Set(SUPPORTED_ADDON_PAGE_SCOPES);
 const RUNTIME_MODE_SET = new Set(ADDON_RUNTIME_MODES);
@@ -63,13 +55,19 @@ export function matchesUserscriptPattern(url, pattern) {
 }
 
 export function matchesAnyUserscriptPattern(url, patterns) {
-  return Array.isArray(patterns) && patterns.some((pattern) => matchesUserscriptPattern(url, pattern));
+  return (
+    Array.isArray(patterns) && patterns.some((pattern) => matchesUserscriptPattern(url, pattern))
+  );
 }
 
 export function normalizeAddonPageScopes(value) {
   const values = value instanceof Set ? [...value] : value;
   if (!Array.isArray(values)) return [];
-  return values.map((scope) => String(scope || "").trim().toLowerCase());
+  return values.map((scope) =>
+    String(scope || "")
+      .trim()
+      .toLowerCase(),
+  );
 }
 
 export function resolveScopeIntersection(pageScopes, currentScopes) {
@@ -85,19 +83,24 @@ export function scopeAppliesToCurrentPage(pageScopes, currentScopes) {
 }
 
 export function hasF95ZoneActivationMatch(matches) {
-  return Array.isArray(matches) && F95ZONE_SAMPLE_URLS.some((url) => matchesAnyUserscriptPattern(url, matches));
+  return (
+    Array.isArray(matches) &&
+    F95ZONE_SAMPLE_URLS.some((url) => matchesAnyUserscriptPattern(url, matches))
+  );
 }
 
 export function hasStandaloneActivationMatch(matches) {
   if (!Array.isArray(matches)) return false;
-  return matches.some((pattern) =>
-    !F95ZONE_SAMPLE_URLS.some((url) => matchesUserscriptPattern(url, pattern)),
+  return matches.some(
+    (pattern) => !F95ZONE_SAMPLE_URLS.some((url) => matchesUserscriptPattern(url, pattern)),
   );
 }
 
 export function validateAddonRuntimeMetadata(addon, { registration = false } = {}) {
   const errors = [];
-  const runtimeMode = String(addon?.runtimeMode || "").trim().toLowerCase();
+  const runtimeMode = String(addon?.runtimeMode || "")
+    .trim()
+    .toLowerCase();
   const pageScopes = normalizeAddonPageScopes(addon?.pageScopes);
   const matches = Array.isArray(addon?.matches) ? addon.matches.map(normalizeMatchPattern) : [];
 
@@ -111,7 +114,8 @@ export function validateAddonRuntimeMetadata(addon, { registration = false } = {
 
   if (pageScopes.some((scope) => !scope)) errors.push("empty_page_scope");
   if (new Set(pageScopes).size !== pageScopes.length) errors.push("duplicate_page_scope");
-  if (pageScopes.some((scope) => !SUPPORTED_SCOPE_SET.has(scope))) errors.push("unknown_page_scope");
+  if (pageScopes.some((scope) => !SUPPORTED_SCOPE_SET.has(scope)))
+    errors.push("unknown_page_scope");
 
   if (runtimeMode !== "standalone" && pageScopes.length === 0) {
     errors.push("missing_core_page_scope");
@@ -149,9 +153,9 @@ const CORE_PAGE_SCOPE_FLAGS = Object.freeze([
 ]);
 
 export function getCurrentAddonPageScopes(stateManager) {
-  return CORE_PAGE_SCOPE_FLAGS
-    .filter(([, stateKey]) => stateManager.get(stateKey))
-    .map(([scope]) => scope);
+  return CORE_PAGE_SCOPE_FLAGS.filter(([, stateKey]) => stateManager.get(stateKey)).map(
+    ([scope]) => scope,
+  );
 }
 
 export function getAddonAvailabilityBlockReason(access) {

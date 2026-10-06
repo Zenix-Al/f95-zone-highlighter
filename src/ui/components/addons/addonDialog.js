@@ -157,10 +157,10 @@ export function createAddonDialogElements({
     },
     style: addonOwnsScroll
       ? {
-        width: "100%",
-        minHeight: "0",
-        overflow: "hidden",
-      }
+          width: "100%",
+          minHeight: "0",
+          overflow: "hidden",
+        }
       : undefined,
   });
   contentEl.innerHTML = html;

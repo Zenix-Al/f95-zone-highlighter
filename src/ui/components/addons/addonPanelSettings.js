@@ -84,7 +84,9 @@ export async function renderAddonPanelSettings(container, addon) {
   settings.forEach((entry) => {
     const path = String(entry?.path || "").trim();
     const label = String(entry?.text || "").trim();
-    const settingType = String(entry?.type || "toggle").trim().toLowerCase();
+    const settingType = String(entry?.type || "toggle")
+      .trim()
+      .toLowerCase();
     if (!path || !label) return;
 
     const row = createEl("div", {
