@@ -16,7 +16,7 @@ jobs:
         with:
           node-version: 24
       - name: Install dependencies
-        run: npm install --no-package-lock
+        run: npm ci
       - name: Lint source
         run: npm run lint
       - name: Run tests
