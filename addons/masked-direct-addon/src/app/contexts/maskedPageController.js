@@ -48,7 +48,11 @@ export function createMaskedPageController({
     if (disposed || owner !== generation) return;
     state = "failed";
     if (nodes.error) {
-      nodes.error.innerHTML = `<h2>${title}</h2><p>${message}</p>`;
+      const heading = document.createElement("h2");
+      heading.textContent = title;
+      const body = document.createElement("p");
+      body.textContent = message;
+      nodes.error.replaceChildren(heading, body);
       nodes.error.style.display = "block";
     }
     if (nodes.loading) nodes.loading.style.display = "none";
