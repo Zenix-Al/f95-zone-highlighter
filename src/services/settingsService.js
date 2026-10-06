@@ -45,6 +45,9 @@ const CACHE_CONFIG_KEYS = Object.freeze({
 const MIGRATION_LOCK_TTL_MS = 15000;
 const INITIALIZATION_WAIT_MS = 15000;
 let configLoadPromise = null;
+// Revision of the stored envelope this tab last loaded or wrote. Another tab saving
+// advances the stored revision past it, which tells us our in-memory config is stale.
+let knownRevision = 0;
 let configUpdateQueue = Promise.resolve();
 
 function cloneConfig(value) {
@@ -202,6 +205,7 @@ function makeLoadResult(data, details = {}) {
 }
 
 async function applyLoadedConfig(result) {
+  if (Number.isInteger(result?.envelope?.revision)) knownRevision = result.envelope.revision;
   if (result?.data && isRecord(result.data)) {
     const applied = applyConfigChange(result.data, {
       origin: `load:${result.source}`,
@@ -468,17 +472,28 @@ async function loadFastPath(canonicalRaw) {
     if (backup.valid) {
       const recoveredData = migrateConfigSchema(backup.data, backup.envelope.schemaVersion);
       const recoveredEnvelope = buildEnvelope(recoveredData, Math.max(Number(canonicalRaw?.revision) || 0, backup.envelope.revision) + 1);
-      await persistEnvelope(recoveredEnvelope);
-      await verifyCanonicalEnvelope(recoveredEnvelope);
+      // The backup is readable even if writing it back fails; keep the recovered settings
+      // in use (read-only) rather than discarding them for defaults.
+      let persisted = true;
+      try {
+        await persistEnvelope(recoveredEnvelope);
+        await verifyCanonicalEnvelope(recoveredEnvelope);
+      } catch (error) {
+        persisted = false;
+        reportPersistenceHealth("SAVE_FAILED", "Recovered configuration could not be written back.", {
+          source: "backup",
+          reason: error?.message || "recovery_write_failed",
+        });
+      }
       const caches = await readCachePayloads();
       return applyLoadedConfig(makeLoadResult(mergeRuntimeCaches(recoveredData, caches), {
         source: "backup",
         status: "recovered",
         recovered: true,
         degraded: true,
-        persisted: true,
+        persisted,
         issues: canonical.issues,
-        envelope: recoveredEnvelope,
+        envelope: persisted ? recoveredEnvelope : null,
       }));
     }
     const defaults = getDefaultConfig();
@@ -583,6 +598,23 @@ export async function loadConfig() {
   return configLoadPromise;
 }
 
+// Pull in a newer envelope written by another tab before building a change on top of
+// the live config, so a save here cannot overwrite that tab's changes with stale data.
+async function refreshConfigIfStale() {
+  const latestRaw = await storageAdapter.get(CONFIG_ENVELOPE_KEY, null);
+  const latestRevision = Number(latestRaw?.revision) || 0;
+  if (latestRevision <= knownRevision) return;
+  const stored = validateStoredEnvelope(latestRaw);
+  if (!stored.valid || stored.envelope.schemaVersion !== CONFIG_SCHEMA_VERSION) return;
+  const caches = await readCachePayloads();
+  const applied = applyConfigChange(mergeRuntimeCaches(stored.data, caches), {
+    origin: "cross-tab-refresh",
+    notify: false,
+  });
+  await applied.effects;
+  knownRevision = latestRevision;
+}
+
 async function ensureConfigReady() {
   await loadConfig();
   return waitForStorageWriteAccess();
@@ -656,6 +688,7 @@ async function commitConfigNow(candidate, {
 
     const applied = applyConfigChange(validation.data, { origin });
     await applied.effects;
+    knownRevision = envelope.revision;
     await clearRecoveryMarker();
     return {
       committed: true,
@@ -720,6 +753,7 @@ export function updateConfig(updater, { origin = "local", persistRuntimeCatalogs
     const storageAccess = await ensureConfigReady();
     if (!storageAccess.ok) return notReadyResult(origin, storageAccess);
 
+    await refreshConfigIfStale();
     const previousConfig = cloneRuntimeSnapshot(config);
     const draft = cloneRuntimeSnapshot(config);
     const changed = updater(draft);
@@ -748,6 +782,7 @@ export function updateConfig(updater, { origin = "local", persistRuntimeCatalogs
 async function saveConfigKeysNow(updates, { origin = "local" } = {}) {
   const storageAccess = await ensureConfigReady();
   if (!storageAccess.ok) return notReadyResult(origin, storageAccess);
+  await refreshConfigIfStale();
   const patch = isRecord(updates) ? cloneConfig(updates) : {};
   const cachePatch = {};
   const corePatch = {};
