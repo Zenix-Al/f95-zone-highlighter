@@ -389,16 +389,3 @@ registerDiagnosticsProvider("queues", () => {
     runningCount: diagnostic.runningCount,
   };
 });
-
-export function createDebouncedTask(task, delay = 100) {
-  let timeoutId = null;
-  const debouncedTask = function (...args) {
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => task.apply(this, args), delay);
-  };
-  debouncedTask.cancel = () => {
-    clearTimeout(timeoutId);
-    timeoutId = null;
-  };
-  return debouncedTask;
-}
