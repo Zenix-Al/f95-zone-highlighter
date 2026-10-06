@@ -31,6 +31,37 @@ the runtime kit remains tree-shaken to the wrappers each bundle uses. Masked + D
 - Actions must declare required scopes; the service enforces scope checks at execution time, not just at registration.
 - Sensitive actions must be denied for `untrusted` add-ons and audited/logged when executed for `trusted` add-ons.
 
+### Caller identity (accepted risk)
+
+Trust applies to an add-on ID, not to the script that sends a request. Core and
+add-ons are separate userscripts, and their only shared channel is the page:
+requests are `CustomEvent`s dispatched on `window` (`f95ue:addons-dev-command`),
+and replies go to a caller-chosen event name on `window`. The `marker` field in
+a request is a public constant, also written into the page-context bridge
+script, so it identifies the protocol, not the sender. `resolveAddonAccess`
+resolves trust from the ID the request carries.
+
+As a result, any script running in the f95zone.to page context can register as
+an add-on ID that has no running registration, or invoke core actions as an
+add-on that is already registered, and read the replies. That includes site
+scripts, third-party scripts in the top frame, and injected content if the site
+has an XSS bug. Within that add-on's capabilities it can read and write the
+add-on's storage, read tag preferences, toggle features, mount sanitized UI,
+and unregister add-ons. It can also send `f95ue:addon-command` events to
+add-ons. IndexedDB data is not newly exposed, because page scripts already
+share the f95zone.to origin.
+
+This is accepted for now because the userscripts have no private channel to
+authenticate with. Open questions before changing it:
+
+- Whether the userscript manager runs all scripts in one isolated world (for
+  example Tampermonkey's MV3 `userScripts` world), which would allow a channel
+  page scripts cannot observe.
+- Whether sensitive actions should be refused over the page channel instead.
+
+Request rate limits, replay rejection, payload validation, and HTML/CSS
+sanitization still apply to forged requests.
+
 ## Bridge and mount contracts
 
 - The add-on bridge uses structured messages (action, payload, requestId, timeout).
