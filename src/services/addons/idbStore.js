@@ -257,11 +257,35 @@ async function withStore(addonId, payload, mode, cb) {
     tx.onabort = () => fail(tx.error || new Error("indexeddb_tx_aborted"));
     tx.onerror = () => fail(tx.error || new Error("indexeddb_tx_failed"));
 
-    Promise.resolve(cb(tx.objectStore(storeName), tx))
+    let result;
+    let hasResult = false;
+    let committed = false;
+    const settle = () => {
+      if (hasResult && committed) complete(result);
+    };
+    const abortAndFail = (error) => {
+      try { tx.abort(); } catch { /* transaction already finished */ }
+      fail(error);
+    };
+    tx.oncomplete = () => {
+      committed = true;
+      settle();
+    };
+
+    let pending;
+    try {
+      pending = Promise.resolve(cb(tx.objectStore(storeName), tx));
+    } catch (error) {
+      abortAndFail(error);
+      return;
+    }
+    pending
       .then((value) => {
-        tx.oncomplete = () => complete(value);
+        result = value;
+        hasResult = true;
+        settle();
       })
-      .catch((error) => fail(error));
+      .catch(abortAndFail);
   });
 }
 

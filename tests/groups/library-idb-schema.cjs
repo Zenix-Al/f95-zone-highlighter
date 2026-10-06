@@ -194,6 +194,63 @@ module.exports = function registerLibraryIdbSchemaGroup(context) {
     assert.strictEqual(JSON.stringify(stores.get("records").records[0]), before);
   });
 
+  runTest("LIBRARY-IDB-SCHEMA-02 aborts the transaction when a bulk write throws part-way", async () => {
+    const { idbBulkPutForAddon, resetAddonDatabaseCacheForTests } = loadModule(
+      "src/services/addons/idbStore.js",
+    );
+    const previousIndexedDb = global.indexedDB;
+    const puts = [];
+    let aborted = 0;
+    const makeTx = () => {
+      const tx = {
+        aborted: false,
+        objectStore: () => ({
+          keyPath: "id",
+          put(value) {
+            if (value.bad) throw new Error("DataCloneError");
+            puts.push(value.id);
+            const request = {};
+            setTimeout(() => request.onsuccess?.(), 0);
+            return request;
+          },
+        }),
+        abort() {
+          aborted += 1;
+          tx.aborted = true;
+          setTimeout(() => tx.onabort?.(), 0);
+        },
+      };
+      setTimeout(() => { if (!tx.aborted) tx.oncomplete?.(); }, 10);
+      return tx;
+    };
+    global.indexedDB = {
+      open() {
+        const request = { result: { transaction: () => makeTx(), close() {} } };
+        setTimeout(() => request.onsuccess?.(), 0);
+        return request;
+      },
+    };
+    try {
+      resetAddonDatabaseCacheForTests();
+      await assert.rejects(
+        idbBulkPutForAddon("tx-abort-addon", {
+          entries: [{ value: { id: 1 } }, { value: { id: 2, bad: true } }],
+        }),
+        /DataCloneError/,
+      );
+      assert.strictEqual(aborted, 1);
+      assert.deepStrictEqual(puts, [1]);
+      const ok = await idbBulkPutForAddon("tx-abort-addon", {
+        entries: [{ value: { id: 3 } }, { value: { id: 4 } }],
+      });
+      assert.deepStrictEqual(ok.length, 2);
+      assert.strictEqual(aborted, 1);
+    } finally {
+      resetAddonDatabaseCacheForTests();
+      global.indexedDB = previousIndexedDb;
+    }
+  });
+
   runTest("LIBRARY-IDB-SCHEMA-02 omits explicit keys for inline-key stores", () => {
     const { putValueInStore } = loadModule("src/services/addons/idbStore.js");
     const calls = [];
