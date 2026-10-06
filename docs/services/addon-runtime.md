@@ -52,12 +52,22 @@ add-ons. IndexedDB data is not newly exposed, because page scripts already
 share the f95zone.to origin.
 
 This is accepted for now because the userscripts have no private channel to
-authenticate with. Open questions before changing it:
+authenticate with. Research (October 2026) on whether one exists:
 
-- Whether the userscript manager runs all scripts in one isolated world (for
-  example Tampermonkey's MV3 `userScripts` world), which would allow a channel
-  page scripts cannot observe.
-- Whether sensitive actions should be refused over the page channel instead.
+- Tampermonkey runs a script in the page's `MAIN_WORLD` when `@sandbox` is
+  omitted (`raw`), so core and add-ons usually share the page's JavaScript
+  world with every page script.
+- Chrome's `userScripts` API (Chrome 133+) lets an extension run scripts in a
+  shared `USER_SCRIPT` world or give each its own via `worldId`. Which world a
+  given userscript lands in is the manager's internal choice; neither
+  Tampermonkey nor Violentmonkey documents it as a channel between scripts,
+  and both run raw/`MAIN_WORLD` scripts outside it.
+- Per-script storage (`GM_setValue`) is not shared between userscripts.
+
+There is therefore no portable private channel. The remaining option is to
+refuse the most sensitive actions over the page channel (for example add-on
+storage reads and `config.getTagPrefs`), which would break add-ons that use
+them and needs a deliberate decision.
 
 Request rate limits, replay rejection, payload validation, and HTML/CSS
 sanitization still apply to forged requests.
