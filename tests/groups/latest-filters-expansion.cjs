@@ -315,8 +315,14 @@ module.exports = function registerLatestFiltersExpansionGroup(context) {
       assert.match(dialogContent.innerHTML, /data-state="(?:preferred|marked)"/);
       assert.match(dialogContent.innerHTML, /background:#123456/);
 
-      location.hash = "#/cat=mods/tags=2";
-      window.dispatchEvent(new window.Event("hashchange"));
+      // happy-dom 20 dispatches hashchange itself through window.setTimeout,
+      // which this test routes through the fake clock.
+      const navigateTo = async (hash) => {
+        location.hash = hash;
+        await clock.tick(0);
+      };
+
+      await navigateTo("#/cat=mods/tags=2");
       await settle();
       await settle();
       await clock.tick(0);
@@ -335,8 +341,7 @@ module.exports = function registerLatestFiltersExpansionGroup(context) {
       await settle();
       assert.match(values.presets[0].url, /cat=mods/);
 
-      location.hash = "#/cat=games";
-      window.dispatchEvent(new window.Event("hashchange"));
+      await navigateTo("#/cat=games");
       await settle();
       await settle();
       await clock.tick(0);
@@ -345,7 +350,7 @@ module.exports = function registerLatestFiltersExpansionGroup(context) {
       dialogContent.querySelector("[data-action='apply']").click();
       assert.match(location.hash, /cat=mods/);
 
-      window.dispatchEvent(new window.Event("hashchange"));
+      await clock.tick(0);
       await settle();
       await settle();
       await clock.tick(0);
