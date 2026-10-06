@@ -368,4 +368,60 @@ module.exports = function registerMaskedDirectMaskedStandaloneRuntime(context) {
       assert.deepStrictEqual(bare, ["https://pixeldrain.com/u/bare"]);
     },
   );
+
+  runTest(
+    "MASKED-DIRECT-CAPTCHA-01 dispose ends an unsolved captcha and re-enable renders a new widget",
+    async () => {
+      const sandbox = createDomSandbox("https://f95zone.to/masked/example");
+      try {
+        preparePage(sandbox);
+        const rendered = new Set();
+        const callbacks = [];
+        const destinations = [];
+        const { createMaskedPageController } = loadModule(
+          "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
+        );
+        const controller = createMaskedPageController({
+          addTeardown() {},
+          readThreadFlags: async () => ({ skipMaskedLink: true }),
+          normalizeUrl: (value) => value,
+          resolveMaskedLink: async (_url, options = {}) =>
+            options.token
+              ? { status: "ok", msg: "https://pixeldrain.com/u/a" }
+              : { status: "captcha" },
+          getCaptchaApi: () => ({
+            render: (element, options) => {
+              if (rendered.has(element)) throw new Error("reCAPTCHA has already been rendered in this element");
+              rendered.add(element);
+              callbacks.push(options.callback);
+            },
+          }),
+          deliverDestination: async (url) => destinations.push(url),
+        });
+        const waitForWidget = async (count) => {
+          for (let attempt = 0; attempt < 10 && callbacks.length < count; attempt += 1) {
+            await Promise.resolve();
+          }
+        };
+
+        const unsolved = controller.enableMaskedPageHooks({ isEnabled: true, isBlockedByCore: false });
+        await waitForWidget(1);
+        assert.strictEqual(callbacks.length, 1);
+        controller.dispose();
+        await unsolved;
+        assert.strictEqual(document.querySelector("#captcha").children.length, 0);
+
+        const retried = controller.enableMaskedPageHooks({ isEnabled: true, isBlockedByCore: false });
+        await waitForWidget(2);
+        assert.strictEqual(callbacks.length, 2);
+        assert.strictEqual(document.querySelector("#error").style.display, "none");
+        await callbacks[1]("token");
+        await retried;
+        assert.deepStrictEqual(destinations, ["https://pixeldrain.com/u/a"]);
+        assert.strictEqual(document.querySelector("#captcha").children.length, 0);
+      } finally {
+        sandbox.restore();
+      }
+    },
+  );
 };
