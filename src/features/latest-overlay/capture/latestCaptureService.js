@@ -3,6 +3,7 @@ import { registerDiagnosticsProvider } from "../../../core/featureHealth.js";
 import { getRouteContext } from "../../../core/routeState.js";
 import { createCaptureQueue } from "./captureQueue.js";
 import {
+  clearLatestCaptureSnapshot,
   getLatestCaptureStoreDiagnostics,
   hasLatestCaptureData,
   setLatestCaptureCaptured,
@@ -312,14 +313,17 @@ function applyRouteContext(routeContext) {
 }
 
 export function startLatestCapture(routeContext = null, { active = true } = {}) {
+  const previousGeneration = routeGeneration;
   applyRouteContext(routeContext);
   captureActive = Boolean(active);
+  if (!captureActive || (previousGeneration > 0 && routeGeneration !== previousGeneration)) {
+    clearLatestCaptureSnapshot();
+  }
   if (captureActive || transportInitialized) initLatestCaptureAdapter();
   return captureActive;
 }
 
 export function refreshLatestCapture(routeContext = null, { active = true } = {}) {
-  applyRouteContext(routeContext);
   queue.clear();
   recoveryAttempted = false;
   stopInitialRecoveryWatch();

@@ -1,8 +1,10 @@
+import { debugLog } from "./debugLog.js";
+
 const CORE_EVENT = "f95ue:addons-dev-command";
 const ADDON_COMMAND_EVENT = "f95ue:addon-command";
 const CORE_PROTOCOL_VERSION = "0.1.0";
 const CORE_MARKER = "f95ue_addons_dev_bridge_installed";
-const PING_TIMEOUT_MS = 1500;
+const PING_TIMEOUT_MS = 3000;
 const CORE_ACTION_TIMEOUT_MS = 2500;
 
 function randomId(prefix) {
@@ -19,6 +21,7 @@ export function createCoreBridge(addonId) {
 
   function waitForCorePing(timeoutMs = PING_TIMEOUT_MS) {
     return new Promise((resolve) => {
+      debugLog(normalizedAddonId, "Core handshake started.", { data: { timeoutMs } });
       const replyEvent = randomId(`f95ue-${normalizedAddonId || "addon"}-ping`);
       let settled = false;
       const finish = (result) => {
@@ -30,9 +33,18 @@ export function createCoreBridge(addonId) {
       };
       const onReply = (event) => {
         const detail = event?.detail || {};
+        debugLog(normalizedAddonId, "Core handshake replied.", {
+          level: detail.ok ? "log" : "warn",
+          data: { ok: Boolean(detail.ok), reason: String(detail.reason || ""), apiVersion: String(detail.apiVersion || "") },
+        });
         finish({ ok: Boolean(detail.ok), apiVersion: String(detail.apiVersion || "") });
       };
-      const timer = window.setTimeout(() => finish({ ok: false, apiVersion: "" }), timeoutMs);
+      const timer = window.setTimeout(() => {
+        debugLog(normalizedAddonId, "Core handshake timed out; core-required add-on will not boot.", {
+          level: "warn", data: { timeoutMs },
+        });
+        finish({ ok: false, apiVersion: "" });
+      }, timeoutMs);
       window.addEventListener(replyEvent, onReply);
       dispatchCoreCommand("ping", { replyEvent });
     });
@@ -76,6 +88,9 @@ export function createCoreBridge(addonId) {
   }
 
   function registerAddon(addon) {
+    debugLog(normalizedAddonId, "Sending add-on registration to core.", {
+      data: { id: String(addon?.id || ""), version: String(addon?.version || "") },
+    });
     dispatchCoreCommand("register", { addon });
   }
 

@@ -9,13 +9,13 @@
   "authoredBytes": 28602,
   "bundle": {
     "readable": {
-      "fullBytes": 652819,
-      "gzipBytes": 140883,
+      "fullBytes": 660936,
+      "gzipBytes": 142656,
       "contributionBytes": 21749
     },
     "uglified": {
-      "fullBytes": 331093,
-      "gzipBytes": 99192,
+      "fullBytes": 334044,
+      "gzipBytes": 100193,
       "contributionBytes": 24665
     }
   },
@@ -1329,7 +1329,7 @@
         },
         {
           "file": "src/ui/components/addons/settingsController.js",
-          "line": 163,
+          "line": 153,
           "excerpt": "const addinsPanel = shadowRoot.getElementById(\"settings-panel-addins\");"
         }
       ],
@@ -1514,7 +1514,7 @@
         },
         {
           "file": "tests/groups/addon-service.cjs",
-          "line": 380,
+          "line": 403,
           "excerpt": "const container = docWithBody.getElementById(\"toast-container\");"
         }
       ],
@@ -4596,13 +4596,13 @@
     },
     "readableBundleFullBytes": {
       "before": 586580,
-      "after": 652819,
-      "delta": 66239
+      "after": 660936,
+      "delta": 74356
     },
     "readableBundleGzipBytes": {
       "before": 124202,
-      "after": 140883,
-      "delta": 16681
+      "after": 142656,
+      "delta": 18454
     },
     "uglifiedBundleContributionBytes": {
       "before": 27380,
@@ -4611,13 +4611,13 @@
     },
     "uglifiedBundleFullBytes": {
       "before": 302505,
-      "after": 331093,
-      "delta": 28588
+      "after": 334044,
+      "delta": 31539
     },
     "uglifiedBundleGzipBytes": {
       "before": 88402,
-      "after": 99192,
-      "delta": 10790
+      "after": 100193,
+      "delta": 11791
     },
     "selectorCount": {
       "before": 252,

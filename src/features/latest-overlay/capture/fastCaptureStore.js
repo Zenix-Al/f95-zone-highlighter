@@ -12,7 +12,6 @@ function createIdleSnapshot() {
     sourceUrl: "",
     transport: "",
     capturedAt: 0,
-    expiresAt: 0,
     generation: 0,
     errorMessage: "",
     byteSize: 0,
@@ -30,13 +29,6 @@ function cloneSnapshot(value = snapshot) {
     generation: value.generation,
     errorMessage: value.errorMessage,
   };
-}
-
-function evictExpired(now = Date.now()) {
-  if (snapshot.expiresAt > 0 && snapshot.expiresAt <= now) {
-    snapshot = createIdleSnapshot();
-    evictedEntries += 1;
-  }
 }
 
 function notifyConsumer() {
@@ -60,7 +52,6 @@ export function setLatestCaptureCaptured({
     sourceUrl: String(sourceUrl || "").trim(),
     transport: String(transport || "").trim(),
     capturedAt: normalizedCapturedAt,
-    expiresAt: normalizedCapturedAt + FAST_CAPTURE_LIMITS.entryTtlMs,
     generation: Math.max(0, Number(generation) || 0),
     errorMessage: "",
     byteSize: Math.max(0, Number(byteSize) || 0),
@@ -74,7 +65,10 @@ export function setLatestCaptureError({
   errorMessage = "",
   capturedAt = Date.now(),
 } = {}) {
-  evictExpired();
+  if (snapshot.status === "captured") {
+    snapshot = { ...snapshot, errorMessage: String(errorMessage || "").trim() };
+    return;
+  }
   snapshot = {
     ...snapshot,
     status: "error",
@@ -87,13 +81,17 @@ export function setLatestCaptureError({
 }
 
 export function getLatestCaptureSnapshot() {
-  evictExpired();
   return cloneSnapshot();
 }
 
 export function hasLatestCaptureData() {
-  evictExpired();
   return snapshot.status === "captured";
+}
+
+export function clearLatestCaptureSnapshot() {
+  if (snapshot.status !== "idle") evictedEntries += 1;
+  snapshot = createIdleSnapshot();
+  notifyConsumer();
 }
 
 export function setLatestCaptureConsumer(callback) {
@@ -104,7 +102,6 @@ export function setLatestCaptureConsumer(callback) {
 }
 
 export function getLatestCaptureStoreDiagnostics() {
-  evictExpired();
   return Object.freeze({
     entryCount: snapshot.status === "idle" ? 0 : 1,
     retainedBytes: snapshot.status === "idle" ? 0 : snapshot.byteSize,

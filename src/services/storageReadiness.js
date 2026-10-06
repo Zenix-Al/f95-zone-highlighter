@@ -66,6 +66,9 @@ export async function waitForStorageWriteAccess() {
 }
 
 export function getStorageFailureMessage(reason) {
+  if (reason === "config_https_required") return "Settings can only be written on HTTPS pages.";
+  if (reason === "config_lock_unavailable") return "Cross-tab-safe settings storage is unavailable in this browser. Settings are read-only.";
+  if (reason === "config_stale_canonical_invalid") return "Settings changed in another tab, but the stored configuration is invalid. No changes were written.";
   if (reason === "storage_read_only") return "Settings are read-only because storage recovery did not finish. Open Feature Health for details.";
   if (reason === "storage_unavailable") return "Userscript storage is unavailable. Open Feature Health and check the manager grants and storage permissions.";
   if (reason === "upgrade_required") return "This stored configuration requires the supported bridge version. Open Feature Health for details.";

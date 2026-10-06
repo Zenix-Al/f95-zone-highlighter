@@ -104,6 +104,27 @@ module.exports = function registerLibraryManualUpdateGroup(context) {
     assert.strictEqual(fetchedThreadTitle.value.currentVersion, "v0.9.4");
   });
 
+  runTest("Library treats demo separator spelling as the same version", async () => {
+    const { checkLibraryRecords } = loadModule(
+      "addons/library-addon/src/library/manualUpdateChecker.js",
+    );
+    const { diffThreadFacts, normalizeVersionIdentity } = loadModule(
+      "addons/library-addon/src/library/updateEventModel.js",
+    );
+    assert.strictEqual(normalizeVersionIdentity("Demo - 0.46"), normalizeVersionIdentity("Demo v0.46"));
+    assert.notStrictEqual(normalizeVersionIdentity("Demo - 0.47"), normalizeVersionIdentity("Demo v0.46"));
+    const record = {
+      threadId: "1",
+      thread: { url: "https://f95zone.to/threads/emberbound.1/", title: "EMBERBOUND", currentVersion: "Demo v0.46" },
+    };
+    const request = async () => ({ ok: true, html: html({ title: "EMBERBOUND [Demo v0.46]", body: "Version: Demo - 0.46" }) });
+    const checked = await checkLibraryRecords([record], request, { spacingMs: 0 });
+    assert.strictEqual(checked.results[0].changed, false);
+    const next = { thread: { ...record.thread, currentVersion: "Demo - 0.46" } };
+    assert.strictEqual(diffThreadFacts(record, next).changed, false);
+    assert.strictEqual(diffThreadFacts(record, { thread: { ...record.thread, currentVersion: "Demo - 0.47" } }).versionChanged, true);
+  });
+
   runTest("LIBRARY-MANUAL-UPDATE-CHECK-01 shares live and fetched title normalization", () => {
     const { decodeHtmlText, normalizeThreadTitleText } = loadModule(
       "addons/library-addon/src/thread/title.js",

@@ -127,6 +127,18 @@ module.exports = function registerLibraryActivityGroup(context) {
     assert.strictEqual(snapshot.updates.length, 1);
   });
 
+  runTest("Library read-cache reset sees another tab's saved status", async () => {
+    const { createLibraryService } = loadModule("addons/library-addon/src/library/service.js");
+    const memory = createMemoryBridge();
+    const firstTab = createLibraryService(memory.bridge, {});
+    const secondTab = createLibraryService(memory.bridge, {});
+    assert.strictEqual((await firstTab.getEntry("42")).personal.status, "saved");
+    assert.strictEqual((await secondTab.setPersonalStatus("42", "playing", { commandId: "other-tab" })).ok, true);
+    assert.strictEqual((await firstTab.getEntry("42")).personal.status, "saved");
+    firstTab.clearEntryCache();
+    assert.strictEqual((await firstTab.getEntry("42")).personal.status, "playing");
+  });
+
   runTest("LIBRARY-STATE-VERSION-SEMANTICS-01 keeps acknowledgement and played-version writes independent", async () => {
     const { createLibraryService } = loadModule("addons/library-addon/src/library/service.js");
     const memory = createMemoryBridge();

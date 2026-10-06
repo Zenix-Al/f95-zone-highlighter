@@ -2,7 +2,6 @@ export const FAST_CAPTURE_LIMITS = Object.freeze({
   maxResponseBytes: 512 * 1024,
   maxPendingQueueItems: 20,
   maxRetainedBytes: 2 * 1024 * 1024,
-  entryTtlMs: 30_000,
   maxEntriesPerKey: 1,
 });
 

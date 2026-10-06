@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+- Fixed Latest overlays losing their fast-captured data after 30 seconds. The newest capture now remains available until it is replaced, the route changes, or capture is disabled.
+- Hardened cross-tab configuration writes against lost updates and preserved recovered backups when a write fails. Add-on state writes now merge their changes without erasing a newer installation sighting; temporary missing registration no longer deletes pinned add-on shortcuts.
+- Improved add-on startup diagnostics and extended the core handshake wait from 1.5 to 3 seconds for slow pages.
+- Fixed Library update checks treating equivalent version labels such as `Demo - 0.46` and `Demo v0.46` as different versions.
+- Prevented visits to private, missing, or error thread pages from overwriting a saved Library entry with error-page details.
+- Refreshed Library records and My Rating on Manager open, including reopening an already-open Manager, and added a manual Refresh button for changes made in another tab.
+- Integrated xBandaku's robustness fixes: safer Latest overlay teardown and control timers, more reliable configuration-transfer file handling, UI text/element/scroll fixes, and stricter add-on URL validation.
+- Integrated xBandaku's add-on fixes: Library update-queue recovery and retry accounting, accurate cancelled-import progress, safer IndexedDB write aborts, Site Repair Ajax teardown, and Masked/Direct page-controller error and hang handling. Removed the ineffective Datanodes timer patch.
+
+These changes are not released yet; add-on distributions and release versions remain independent.
+
 ## [5.4.3 - Configuration import reliability]
 
 - Fixed imported settings not consistently taking effect until a manual refresh; a successful import now reloads the page.

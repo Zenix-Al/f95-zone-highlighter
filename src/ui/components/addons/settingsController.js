@@ -129,18 +129,8 @@ export function movePinnedAddon(addonId, direction) {
 export function updateRegisteredAddons(addons, { refreshAddonsUi } = {}) {
   const source = Array.isArray(addons) && addons.length > 0 ? addons : listKnownAddons();
   const normalized = source.map(normalizeAddonEntry).filter(Boolean);
-  const byId = new Map(normalized.map((addon) => [addon.id, addon]));
-
-  const validIds = new Set(normalized.map((addon) => addon.id));
-  const nextPins = getPinnedAddonIds().filter((id) => {
-    if (!validIds.has(id)) return false;
-    const addon = byId.get(id);
-    return addon?.status !== "not-installed";
-  });
 
   stateManager.set("registeredAddons", normalized);
-  stateManager.set("settingsPinnedAddonIds", nextPins);
-  void persistSettingsUiValue(SETTINGS_PINNED_ADDONS_STORAGE_KEY, nextPins);
 
   if (typeof refreshAddonsUi === "function") {
     refreshAddonsUi();
