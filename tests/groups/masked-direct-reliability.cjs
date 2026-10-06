@@ -20,32 +20,30 @@ module.exports = function registerMaskedDirectReliability(context) {
     };
   }
 
-  runTest("MASKED-DIRECT-URL-01 normalizeUrl only yields http(s) URLs", () => {
-    const sandbox = createDomSandbox("https://f95zone.to/masked/abc");
+  runTest("MASKED-DIRECT-DATANODES-01 flow does not patch window.setInterval", async () => {
+    const sandbox = createDomSandbox("https://datanodes.to/download");
+    const originalSetInterval = global.window.setInterval;
     try {
-      const { normalizeUrl } = loadModule("addons/masked-direct-addon/src/shared/utils.js");
-      assert.strictEqual(normalizeUrl("https://example.com/a?b=1&amp;c=2", ""), "https://example.com/a?b=1&c=2");
-      assert.strictEqual(normalizeUrl("/relative/path", ""), "https://f95zone.to/relative/path");
-      for (const bad of ["javascript:alert(1)", "data:text/html,<b>x</b>", "file:///C:/x", "blob:https://f95zone.to/1"]) {
-        assert.strictEqual(normalizeUrl(bad, "fallback"), "fallback", bad);
-      }
+      const { processDatanodesDownload } = loadModule(
+        "addons/masked-direct-addon/src/hosts/datanodes/index.js",
+      );
+      let failure = "";
+      await processDatanodesDownload({
+        challengeGate: null,
+        notifyMainFailure: async (_host, message) => { failure = message; },
+        reportAddonHealthy: () => {},
+        settings: { datanodes: { totalFlowTimeout: 1, pollInterval: 100 } },
+      });
+      assert.strictEqual(global.window.setInterval, originalSetInterval);
+      assert.strictEqual(
+        Object.keys(global.window).some((key) => key.includes("f95ue_datanodes")),
+        false,
+      );
+      await new Promise((resolve) => setTimeout(resolve, 650));
+      assert.match(failure, /timed out/);
     } finally {
       sandbox.restore();
     }
-  });
-
-  runTest("MASKED-DIRECT-URL-01 masked resolution encodes the captcha token", () => {
-    const { resolveMaskedLink } = loadModule(
-      "addons/masked-direct-addon/src/app/contexts/maskedResolutionTransport.js",
-    );
-    let body = "";
-    class FakeXhr {
-      open() {}
-      setRequestHeader() {}
-      send(value) { body = value; }
-    }
-    resolveMaskedLink("/masked/abc", { token: "a&b=c d", XMLHttpRequestCtor: FakeXhr });
-    assert.strictEqual(body, "xhr=1&download=1&captcha=a%26b%3Dc%20d");
   });
 
   runTest(

@@ -2,7 +2,6 @@ import { TIMINGS } from "../../constants.js";
 import { clickElement, isElementReadyForClick } from "../shared/dom.js";
 
 const HOST_LABEL = "datanodes.to";
-const TIMER_PATCH_MARKER = "__f95ue_datanodes_timer_patch";
 const CLICK_MARKER = "data-f95ue-datanodes-clicked";
 const CLICK_COOLDOWN_MS = 900;
 const SCAN_FRAME_BUDGET_MS = 5;
@@ -57,45 +56,6 @@ function getDatanodesTiming(settings = {}) {
     ),
     scanFrameBudgetMs: numberValue("scanFrameBudgetMs", SCAN_FRAME_BUDGET_MS),
   };
-}
-
-function patchDatanodesTimers() {
-  try {
-    if (window[TIMER_PATCH_MARKER]) return;
-    window[TIMER_PATCH_MARKER] = true;
-
-    for (const key of ["downloadCountdown", "seconds", "count"]) {
-      if (typeof window[key] !== "undefined") {
-        window[key] = 0;
-      }
-    }
-
-    const originalSetInterval = window.setInterval;
-    window.setInterval = function f95ueDatanodesSetInterval(
-      fn,
-      delay,
-      ...rest
-    ) {
-      let nextDelay = delay;
-      try {
-        const source = String(fn || "").toLowerCase();
-        if (
-          source.includes("preparing") ||
-          source.includes("countdown") ||
-          source.includes("timer") ||
-          source.includes("downloadcountdown") ||
-          source.includes("seconds")
-        ) {
-          nextDelay = Math.min(Number(delay) || 1, 25);
-        }
-      } catch {
-        // keep original delay
-      }
-      return originalSetInterval.call(this, fn, nextDelay, ...rest);
-    };
-  } catch {
-    // best effort
-  }
 }
 
 function getControlText(element) {
@@ -218,8 +178,6 @@ export async function processDatanodesDownload({
   settings = {},
 }) {
   console.info("Starting datanodes.to opportunistic download flow...");
-
-  patchDatanodesTimers();
 
   const timing = getDatanodesTiming(settings);
   const clickedAt = new WeakMap();
