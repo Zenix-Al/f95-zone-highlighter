@@ -15,8 +15,11 @@ export const latestMarkerBroker = createLatestMarkerBroker({
     if (!addon || !addon.capabilities?.includes("latest.markers")) return false;
     const state = getAddonState(owner);
     const access = resolveAddonAccess({
-      id: owner, addon, catalogEntry: getTrustedCatalogEntry(owner),
-      trustedIds: config.addons?.trustedIds, allowUntrusted: false,
+      id: owner,
+      addon,
+      catalogEntry: getTrustedCatalogEntry(owner),
+      trustedIds: config.addons?.trustedIds,
+      allowUntrusted: false,
       desiredEnabled: state.enabled,
       currentScopes: getCurrentAddonPageScopes(stateManager),
       currentUrl: typeof window === "undefined" ? "" : window.location.href,
@@ -25,11 +28,16 @@ export const latestMarkerBroker = createLatestMarkerBroker({
   },
   enabled: (id) => config.latestSettings?.latestMarkerProviders?.[id]?.enabled === true,
   dispatch: (owner, detail) => emitAddonCommand(owner, detail.command, detail),
-  onChange: (id) => { for (const listener of listeners) listener(id); },
+  onChange: (id) => {
+    for (const listener of listeners) listener(id);
+  },
 });
 
 subscribeAddonsRegistry(() => latestMarkerBroker.prune());
-registerDiagnosticsProvider("latestMarkerProviders", () => ({ ...latestMarkerBroker.getSnapshot(), subscribers: listeners.size }));
+registerDiagnosticsProvider("latestMarkerProviders", () => ({
+  ...latestMarkerBroker.getSnapshot(),
+  subscribers: listeners.size,
+}));
 
 export function subscribeLatestMarkerProviders(listener) {
   listeners.add(listener);

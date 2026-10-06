@@ -41,8 +41,11 @@ function evictExpired(now = Date.now()) {
 
 function notifyConsumer() {
   if (!consumer) return;
-  try { consumer(cloneSnapshot()); }
-  catch (error) { reportFeatureWarning("Latest Overlay", error, "latestCapture.consumer"); }
+  try {
+    consumer(cloneSnapshot());
+  } catch (error) {
+    reportFeatureWarning("Latest Overlay", error, "latestCapture.consumer");
+  }
 }
 
 export function setLatestCaptureCaptured({

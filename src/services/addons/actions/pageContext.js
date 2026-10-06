@@ -6,7 +6,10 @@ const MAX_IMAGE_URL_LENGTH = 512;
 const THREAD_ID_PATTERN = /(?:\/threads\/|\.)([0-9]+)(?:\/|$)/i;
 
 function boundedText(value, maxLength = MAX_TEXT_LENGTH) {
-  return String(value || "").replace(/\s+/g, " ").trim().slice(0, maxLength);
+  return String(value || "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, maxLength);
 }
 
 function getThreadId(pathname) {
@@ -14,9 +17,8 @@ function getThreadId(pathname) {
 }
 
 function getThreadTitle() {
-  const titleNode = typeof document !== "undefined"
-    ? document.querySelector("h1.p-title-value")
-    : null;
+  const titleNode =
+    typeof document !== "undefined" ? document.querySelector("h1.p-title-value") : null;
   const title = boundedText(titleNode?.textContent || "");
   if (title) return title;
   return boundedText(typeof document !== "undefined" ? document.title : "");
@@ -38,19 +40,24 @@ function normalizePageContext() {
     parsed = null;
   }
 
-  const pageFlags = route.pageFlags && typeof route.pageFlags === "object"
-    ? route.pageFlags
-    : {};
+  const pageFlags = route.pageFlags && typeof route.pageFlags === "object" ? route.pageFlags : {};
   const pageScopes = [
     ["f95zone", "isF95Zone"],
     ["thread", "isThread"],
     ["latest", "isLatest"],
-  ].filter(([, key]) => pageFlags[key] === true || stateManager.get(key) === true)
+  ]
+    .filter(([, key]) => pageFlags[key] === true || stateManager.get(key) === true)
     .map(([scope]) => scope);
 
   return {
-    hostname: boundedText(parsed?.hostname || (typeof location !== "undefined" ? location.hostname : ""), 120),
-    pathname: boundedText(parsed?.pathname || (typeof location !== "undefined" ? location.pathname : ""), 512),
+    hostname: boundedText(
+      parsed?.hostname || (typeof location !== "undefined" ? location.hostname : ""),
+      120,
+    ),
+    pathname: boundedText(
+      parsed?.pathname || (typeof location !== "undefined" ? location.pathname : ""),
+      512,
+    ),
     search: boundedText(parsed?.search || "", 512),
     hash: boundedText(parsed?.hash || "", 512),
     url: boundedText(route.url || parsed?.href || "", 1024),
@@ -90,15 +97,25 @@ export function validatePageContextResult(result) {
     threadTitle: MAX_TEXT_LENGTH,
     threadImageUrl: MAX_IMAGE_URL_LENGTH,
   };
-  if (!Object.entries(stringLimits).every(([key, limit]) => typeof value[key] === "string" && value[key].length <= limit)) {
+  if (
+    !Object.entries(stringLimits).every(
+      ([key, limit]) => typeof value[key] === "string" && value[key].length <= limit,
+    )
+  ) {
     return { ok: false, reason: "invalid_action_result" };
   }
-  if (!Array.isArray(value.pageScopes) || value.pageScopes.length > 3
-    || value.pageScopes.some((scope) => !["f95zone", "thread", "latest"].includes(scope))) {
+  if (
+    !Array.isArray(value.pageScopes) ||
+    value.pageScopes.length > 3 ||
+    value.pageScopes.some((scope) => !["f95zone", "thread", "latest"].includes(scope))
+  ) {
     return { ok: false, reason: "invalid_action_result" };
   }
-  if (!["f95zone", "thread", "latest", "unknown"].includes(value.pageType)
-    || !Number.isInteger(value.routeGeneration) || value.routeGeneration < 0) {
+  if (
+    !["f95zone", "thread", "latest", "unknown"].includes(value.pageType) ||
+    !Number.isInteger(value.routeGeneration) ||
+    value.routeGeneration < 0
+  ) {
     return { ok: false, reason: "invalid_action_result" };
   }
   return true;

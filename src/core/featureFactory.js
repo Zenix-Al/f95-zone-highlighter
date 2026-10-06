@@ -1,10 +1,6 @@
 import { debugLog } from "./logger.js";
 import { stateManager, config } from "../config.js";
-import {
-  setFeatureStatus,
-  reportFeatureFailure,
-  reportRuntimeError,
-} from "./featureHealth.js";
+import { setFeatureStatus, reportFeatureFailure, reportRuntimeError } from "./featureHealth.js";
 import { showToast } from "../ui/components/toast.js";
 import { getByPath } from "../utils/objectPath.js";
 import { addListener } from "./listenerRegistry.js";
@@ -14,12 +10,26 @@ export function initGlobalErrorListeners() {
   if (globalListenerRegistered) return;
   globalListenerRegistered = true;
 
-  addListener("global-error", window, "error", (event) => {
-    reportRuntimeError(event?.error || event?.message || "Unknown error", "window.error");
-  }, undefined, "core:runtime");
-  addListener("global-unhandledrejection", window, "unhandledrejection", (event) => {
-    reportRuntimeError(event?.reason ?? "Unknown rejection", "unhandledrejection");
-  }, undefined, "core:runtime");
+  addListener(
+    "global-error",
+    window,
+    "error",
+    (event) => {
+      reportRuntimeError(event?.error || event?.message || "Unknown error", "window.error");
+    },
+    undefined,
+    "core:runtime",
+  );
+  addListener(
+    "global-unhandledrejection",
+    window,
+    "unhandledrejection",
+    (event) => {
+      reportRuntimeError(event?.reason ?? "Unknown rejection", "unhandledrejection");
+    },
+    undefined,
+    "core:runtime",
+  );
 }
 
 export function resetGlobalErrorListeners() {
@@ -29,7 +39,13 @@ export function resetGlobalErrorListeners() {
 const OP_TIMEOUT = 15000;
 const ABORT_GRACE_MS = 250;
 const FEATURE_BOOTSTRAP_MODES = new Set(["waitForBody", "fast"]);
-const LIFECYCLE_REASONS = new Set(["startup", "config-change", "route-change", "teardown", "retry"]);
+const LIFECYCLE_REASONS = new Set([
+  "startup",
+  "config-change",
+  "route-change",
+  "teardown",
+  "retry",
+]);
 
 function getErrorMessage(error) {
   return error?.message || String(error);
@@ -62,16 +78,23 @@ function reportLifecycleFailure(featureId, name, action, error, context = {}) {
   } catch {}
 }
 
-export function createLifecycleContext(featureId, action, {
-  generation = 0,
-  routeGeneration = 0,
-  correlationId = "",
-  reason = "startup",
-  routeSignal = null,
-} = {}) {
+export function createLifecycleContext(
+  featureId,
+  action,
+  {
+    generation = 0,
+    routeGeneration = 0,
+    correlationId = "",
+    reason = "startup",
+    routeSignal = null,
+  } = {},
+) {
   const controller = new AbortController();
   if (routeSignal?.aborted) controller.abort(routeSignal.reason);
-  else routeSignal?.addEventListener("abort", () => controller.abort(routeSignal.reason), { once: true });
+  else
+    routeSignal?.addEventListener("abort", () => controller.abort(routeSignal.reason), {
+      once: true,
+    });
   return {
     signal: controller.signal,
     operationId: `${featureId}:${action}:${Date.now()}:${Math.random().toString(16).slice(2)}`,
@@ -94,7 +117,12 @@ function slugifyFeatureKey(value) {
 }
 
 export function resolveFeatureId(name, explicitId = "", settingsUi = null) {
-  return slugifyFeatureKey(explicitId) || slugifyFeatureKey(settingsUi?.id) || slugifyFeatureKey(name) || "unnamed-feature";
+  return (
+    slugifyFeatureKey(explicitId) ||
+    slugifyFeatureKey(settingsUi?.id) ||
+    slugifyFeatureKey(name) ||
+    "unnamed-feature"
+  );
 }
 
 // This remains lenient for callers which only need a safe display default.
@@ -104,17 +132,20 @@ export function normalizeFeatureBootstrapMode(value) {
 }
 
 /** Create a cancellable, awaitable feature lifecycle wrapper. */
-export function createFeature(name, {
-  id,
-  enable,
-  disable,
-  configPath,
-  isEnabled: customIsEnabled,
-  isApplicable,
-  settingsUi = null,
-  bootstrapMode = "waitForBody",
-  pageScopes = [],
-} = {}) {
+export function createFeature(
+  name,
+  {
+    id,
+    enable,
+    disable,
+    configPath,
+    isEnabled: customIsEnabled,
+    isApplicable,
+    settingsUi = null,
+    bootstrapMode = "waitForBody",
+    pageScopes = [],
+  } = {},
+) {
   let lifecycleGeneration = 0;
   let activeOperation = null;
   let pendingTransition = null;
@@ -150,49 +181,51 @@ export function createFeature(name, {
     pendingTransition = transition;
     if (activeOperation) activeOperation.context.abort(createAbortError("operation superseded"));
 
-    const queued = transitionChain.catch(() => undefined).then(async () => {
-      if (pendingTransition !== transition) throw createAbortError("operation superseded");
-      pendingTransition = null;
+    const queued = transitionChain
+      .catch(() => undefined)
+      .then(async () => {
+        if (pendingTransition !== transition) throw createAbortError("operation superseded");
+        pendingTransition = null;
 
-      const previous = activeOperation;
-      if (previous) {
-        previous.context.abort(createAbortError("operation superseded"));
-        await waitForAbortGrace(previous.settled);
-      }
-
-      const context = createOperationContext(action, suppliedContext);
-      const operation = { action, context, settled: null };
-      activeOperation = operation;
-      const handler = action === "enable" ? enable : disable;
-      const successStatus = action === "enable" ? "running" : "disabled";
-      let timeoutId;
-      const handlerResult = Promise.resolve().then(() => (handler ? handler(context) : null));
-      handlerResult.catch(() => undefined);
-      const timeoutResult = new Promise((_, reject) => {
-        timeoutId = setTimeout(() => {
-          context.abort(createAbortError(`${action} timeout`));
-          reject(createAbortError(`${action} timeout`));
-        }, OP_TIMEOUT);
-      });
-      operation.settled = Promise.race([handlerResult, timeoutResult]);
-
-      try {
-        await operation.settled;
-        if (context.signal.aborted || activeOperation !== operation) throw createAbortError();
-        setFeatureStatus(name, successStatus);
-        return true;
-      } catch (error) {
-        if (isAbortError(error) || context.signal.aborted) {
-          if (activeOperation === operation) setFeatureStatus(name, "disabled", "cancelled");
-          throw createAbortError(getErrorMessage(error));
+        const previous = activeOperation;
+        if (previous) {
+          previous.context.abort(createAbortError("operation superseded"));
+          await waitForAbortGrace(previous.settled);
         }
-        reportLifecycleFailure(featureId, name, action, error, context);
-        throw error;
-      } finally {
-        clearTimeout(timeoutId);
-        if (activeOperation === operation) activeOperation = null;
-      }
-    });
+
+        const context = createOperationContext(action, suppliedContext);
+        const operation = { action, context, settled: null };
+        activeOperation = operation;
+        const handler = action === "enable" ? enable : disable;
+        const successStatus = action === "enable" ? "running" : "disabled";
+        let timeoutId;
+        const handlerResult = Promise.resolve().then(() => (handler ? handler(context) : null));
+        handlerResult.catch(() => undefined);
+        const timeoutResult = new Promise((_, reject) => {
+          timeoutId = setTimeout(() => {
+            context.abort(createAbortError(`${action} timeout`));
+            reject(createAbortError(`${action} timeout`));
+          }, OP_TIMEOUT);
+        });
+        operation.settled = Promise.race([handlerResult, timeoutResult]);
+
+        try {
+          await operation.settled;
+          if (context.signal.aborted || activeOperation !== operation) throw createAbortError();
+          setFeatureStatus(name, successStatus);
+          return true;
+        } catch (error) {
+          if (isAbortError(error) || context.signal.aborted) {
+            if (activeOperation === operation) setFeatureStatus(name, "disabled", "cancelled");
+            throw createAbortError(getErrorMessage(error));
+          }
+          reportLifecycleFailure(featureId, name, action, error, context);
+          throw error;
+        } finally {
+          clearTimeout(timeoutId);
+          if (activeOperation === operation) activeOperation = null;
+        }
+      });
     transitionChain = queued;
     return queued;
   }
@@ -203,7 +236,9 @@ export function createFeature(name, {
     name,
     bootstrapMode: normalizeFeatureBootstrapMode(bootstrapMode),
     _declaredBootstrapMode: bootstrapMode,
-    pageScopes: Array.isArray(pageScopes) ? pageScopes.map((scope) => String(scope || "").trim()).filter(Boolean) : pageScopes,
+    pageScopes: Array.isArray(pageScopes)
+      ? pageScopes.map((scope) => String(scope || "").trim()).filter(Boolean)
+      : pageScopes,
     settingsUi: settingsUi && typeof settingsUi === "object" ? settingsUi : null,
     enable(context = null) {
       if (!canRunOnCurrentPage()) {
@@ -241,6 +276,10 @@ export function createFeature(name, {
   };
 
   const desired = feature.isEnabled();
-  setFeatureStatus(name, desired && canRunOnCurrentPage() ? "unknown" : "disabled", desired ? "page mismatch" : null);
+  setFeatureStatus(
+    name,
+    desired && canRunOnCurrentPage() ? "unknown" : "disabled",
+    desired ? "page mismatch" : null,
+  );
   return feature;
 }

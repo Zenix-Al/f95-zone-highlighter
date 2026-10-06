@@ -9,13 +9,13 @@
   "authoredBytes": 28602,
   "bundle": {
     "readable": {
-      "fullBytes": 652819,
-      "gzipBytes": 140883,
+      "fullBytes": 663980,
+      "gzipBytes": 142670,
       "contributionBytes": 21749
     },
     "uglified": {
-      "fullBytes": 331093,
-      "gzipBytes": 99192,
+      "fullBytes": 331453,
+      "gzipBytes": 99370,
       "contributionBytes": 24665
     }
   },
@@ -1272,12 +1272,12 @@
       "callSites": [
         {
           "file": "src/services/tagsService.js",
-          "line": 21,
+          "line": 18,
           "excerpt": "const results = stateManager.get(\"shadowRoot\").getElementById(\"search-results\");"
         },
         {
           "file": "src/services/tagsService.js",
-          "line": 37,
+          "line": 34,
           "excerpt": "const results = stateManager.get(\"shadowRoot\").getElementById(\"search-results\");"
         },
         {
@@ -1302,12 +1302,12 @@
         },
         {
           "file": "src/ui/components/tag-search/index.js",
-          "line": 130,
+          "line": 109,
           "excerpt": "export function hideTagSearchResults(results = getShadowRoot()?.getElementById(\"search-results\")) {"
         },
         {
           "file": "src/ui/components/tag-search/index.js",
-          "line": 293,
+          "line": 272,
           "excerpt": "const results = shadowRoot?.getElementById(\"search-results\");"
         }
       ],
@@ -1329,7 +1329,7 @@
         },
         {
           "file": "src/ui/components/addons/settingsController.js",
-          "line": 163,
+          "line": 160,
           "excerpt": "const addinsPanel = shadowRoot.getElementById(\"settings-panel-addins\");"
         }
       ],
@@ -1405,7 +1405,7 @@
         },
         {
           "file": "src/ui/settings/modalLifecycle.js",
-          "line": 53,
+          "line": 50,
           "excerpt": "const modal = shadowRoot.getElementById(\"tag-config-modal\");"
         },
         {
@@ -1452,22 +1452,22 @@
         },
         {
           "file": "src/ui/components/tag-search/index.js",
-          "line": 294,
+          "line": 273,
           "excerpt": "const input = shadowRoot?.getElementById(\"tags-search\");"
         },
         {
           "file": "src/ui/components/tag-search/index.js",
-          "line": 348,
+          "line": 327,
           "excerpt": "const input = shadowRoot?.getElementById(\"tags-search\");"
         },
         {
           "file": "src/ui/components/tag-search/index.js",
-          "line": 350,
+          "line": 329,
           "excerpt": "const clearBtn = shadowRoot?.getElementById(\"tags-search-clear\");"
         },
         {
           "file": "src/ui/settings/tagsSettings.js",
-          "line": 37,
+          "line": 38,
           "excerpt": "const searchInput = shadowRoot.getElementById(\"tags-search\");"
         }
       ],
@@ -1514,7 +1514,7 @@
         },
         {
           "file": "tests/groups/addon-service.cjs",
-          "line": 380,
+          "line": 382,
           "excerpt": "const container = docWithBody.getElementById(\"toast-container\");"
         }
       ],
@@ -1908,7 +1908,7 @@
       "callSites": [
         {
           "file": "src/ui/components/addons/addonPanelSettings.js",
-          "line": 91,
+          "line": 93,
           "excerpt": "className: \"config-row addins-setting-row\","
         }
       ],
@@ -2284,7 +2284,7 @@
       "callSites": [
         {
           "file": "src/ui/components/addons/addonPanelSettings.js",
-          "line": 91,
+          "line": 93,
           "excerpt": "className: \"config-row addins-setting-row\","
         },
         {
@@ -2552,7 +2552,7 @@
       "callSites": [
         {
           "file": "src/ui/components/featureHealth/index.js",
-          "line": 188,
+          "line": 190,
           "excerpt": "className: \"feature-health-actions\","
         }
       ],
@@ -2564,7 +2564,7 @@
       "callSites": [
         {
           "file": "src/ui/components/featureHealth/index.js",
-          "line": 199,
+          "line": 198,
           "excerpt": "box = createEl(\"div\", { className: \"feature-health-box\", children: [header, content] });"
         }
       ],
@@ -2576,17 +2576,17 @@
       "callSites": [
         {
           "file": "src/ui/components/featureHealth/index.js",
-          "line": 177,
+          "line": 179,
           "excerpt": "const copyBtn = createEl(\"button\", { className: \"feature-health-close\", text: \"Copy\" });"
         },
         {
           "file": "src/ui/components/featureHealth/index.js",
-          "line": 180,
+          "line": 182,
           "excerpt": "const retryBtn = createEl(\"button\", { className: \"feature-health-close\", text: \"Retry storage\" });"
         },
         {
           "file": "src/ui/components/featureHealth/index.js",
-          "line": 184,
+          "line": 186,
           "excerpt": "const closeBtn = createEl(\"button\", { className: \"feature-health-close\", text: \"Close\" });"
         }
       ],
@@ -2598,7 +2598,7 @@
       "callSites": [
         {
           "file": "src/ui/components/featureHealth/index.js",
-          "line": 198,
+          "line": 197,
           "excerpt": "const content = createEl(\"pre\", { className: \"feature-health-content\" });"
         }
       ],
@@ -2610,7 +2610,7 @@
       "callSites": [
         {
           "file": "src/ui/components/featureHealth/index.js",
-          "line": 192,
+          "line": 194,
           "excerpt": "className: \"feature-health-header\","
         }
       ],
@@ -2627,8 +2627,8 @@
         },
         {
           "file": "src/ui/components/featureHealth/index.js",
-          "line": 194,
-          "excerpt": "createEl(\"div\", { className: \"feature-health-title\", text: \"Diagnostic\" }),"
+          "line": 195,
+          "excerpt": "children: [createEl(\"div\", { className: \"feature-health-title\", text: \"Diagnostic\" }), actions],"
         }
       ],
       "protectedReason": null
@@ -2906,7 +2906,7 @@
       "callSites": [
         {
           "file": "src/ui/components/addons/addonPanelSettings.js",
-          "line": 103,
+          "line": 105,
           "excerpt": "className: \"setting-tooltip-badge\","
         },
         {
@@ -3701,12 +3701,12 @@
       "callSites": [
         {
           "file": "src/ui/components/tag-search/index.js",
-          "line": 115,
+          "line": 94,
           "excerpt": "li.className = \"tag-search-load-more-row\";"
         },
         {
           "file": "src/ui/components/tag-search/index.js",
-          "line": 118,
+          "line": 97,
           "excerpt": "button.className = \"tag-search-load-more\";"
         }
       ],
@@ -3718,7 +3718,7 @@
       "callSites": [
         {
           "file": "src/ui/components/tag-search/index.js",
-          "line": 115,
+          "line": 94,
           "excerpt": "li.className = \"tag-search-load-more-row\";"
         }
       ],
@@ -4596,13 +4596,13 @@
     },
     "readableBundleFullBytes": {
       "before": 586580,
-      "after": 652819,
-      "delta": 66239
+      "after": 663980,
+      "delta": 77400
     },
     "readableBundleGzipBytes": {
       "before": 124202,
-      "after": 140883,
-      "delta": 16681
+      "after": 142670,
+      "delta": 18468
     },
     "uglifiedBundleContributionBytes": {
       "before": 27380,
@@ -4611,13 +4611,13 @@
     },
     "uglifiedBundleFullBytes": {
       "before": 302505,
-      "after": 331093,
-      "delta": 28588
+      "after": 331453,
+      "delta": 28948
     },
     "uglifiedBundleGzipBytes": {
       "before": 88402,
-      "after": 99192,
-      "delta": 10790
+      "after": 99370,
+      "delta": 10968
     },
     "selectorCount": {
       "before": 252,

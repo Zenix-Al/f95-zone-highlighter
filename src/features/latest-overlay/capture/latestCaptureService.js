@@ -57,8 +57,11 @@ function normalizeResponseText(value) {
 function validateCaptureInput(transport, url, responseText, generation = routeGeneration) {
   if (transport !== "xhr" && transport !== "fetch") return "invalid_transport";
   let parsedUrl;
-  try { parsedUrl = new URL(String(url || ""), globalThis.location?.href); }
-  catch { return "invalid_url"; }
+  try {
+    parsedUrl = new URL(String(url || ""), globalThis.location?.href);
+  } catch {
+    return "invalid_url";
+  }
   if (!/^https?:$/.test(parsedUrl.protocol)) return "invalid_url";
   const currentOrigin = globalThis.location?.origin;
   if (currentOrigin && parsedUrl.origin !== currentOrigin) return "foreign_origin";
@@ -70,9 +73,9 @@ function validateCaptureInput(transport, url, responseText, generation = routeGe
 }
 
 function shouldCapture(transport, url) {
-  return captureActive
-    && (transport === "xhr" || transport === "fetch")
-    && matchesLatestCaptureUrl(url);
+  return (
+    captureActive && (transport === "xhr" || transport === "fetch") && matchesLatestCaptureUrl(url)
+  );
 }
 
 function reportError(url, transport, errorMessage, { updateSnapshot = true } = {}) {
@@ -137,8 +140,9 @@ export function processCompletedLatestCapture(
   }
 
   let payload;
-  try { payload = JSON.parse(normalizedResponseText); }
-  catch {
+  try {
+    payload = JSON.parse(normalizedResponseText);
+  } catch {
     reportError(normalizedUrl, normalizedTransport, "invalid_json_response", {
       updateSnapshot: false,
     });
@@ -151,12 +155,7 @@ export function processCompletedLatestCapture(
     });
     return false;
   }
-  reportSuccess(
-    normalizedUrl,
-    normalizedTransport,
-    data,
-    measureCaptureBytes(responseText),
-  );
+  reportSuccess(normalizedUrl, normalizedTransport, data, measureCaptureBytes(responseText));
   return true;
 }
 
@@ -168,25 +167,28 @@ export function processCompletedLatestCaptureError(transport, url, error) {
   return true;
 }
 
-const queue = createCaptureQueue(({ transport, url, responseText, enqueuedAt, generation }) => {
-  const startedAt = monotonicNow();
-  const captured = processCompletedLatestCapture(transport, url, responseText, { generation });
-  debugLog(LOG_CHANNEL, "Response processed", {
-    data: {
-      transport,
-      url,
-      responseBytes: typeof responseText === "string" ? responseText.length : 0,
-      captured,
-      queueDelayMs: Number(Math.max(0, startedAt - Number(enqueuedAt || startedAt)).toFixed(2)),
-      processingMs: Number(Math.max(0, monotonicNow() - startedAt).toFixed(2)),
-      navigationElapsedMs: Number(monotonicNow().toFixed(2)),
-    },
-  });
-}, {
-  limit: FAST_CAPTURE_LIMITS.maxPendingQueueItems,
-  shouldProcess: (job) => job?.generation === routeGeneration,
-  onDrop: (_job, reason) => recordDropped(reason),
-});
+const queue = createCaptureQueue(
+  ({ transport, url, responseText, enqueuedAt, generation }) => {
+    const startedAt = monotonicNow();
+    const captured = processCompletedLatestCapture(transport, url, responseText, { generation });
+    debugLog(LOG_CHANNEL, "Response processed", {
+      data: {
+        transport,
+        url,
+        responseBytes: typeof responseText === "string" ? responseText.length : 0,
+        captured,
+        queueDelayMs: Number(Math.max(0, startedAt - Number(enqueuedAt || startedAt)).toFixed(2)),
+        processingMs: Number(Math.max(0, monotonicNow() - startedAt).toFixed(2)),
+        navigationElapsedMs: Number(monotonicNow().toFixed(2)),
+      },
+    });
+  },
+  {
+    limit: FAST_CAPTURE_LIMITS.maxPendingQueueItems,
+    shouldProcess: (job) => job?.generation === routeGeneration,
+    onDrop: (_job, reason) => recordDropped(reason),
+  },
+);
 
 export function enqueueLatestCaptureProcessing(transport, url, responseText) {
   const normalizedTransport = String(transport || "").toLowerCase();
@@ -266,13 +268,19 @@ function scheduleRecoveryForResources(resources) {
 }
 
 function armInitialRecoveryWatch() {
-  if (!captureActive || recoveryObserver || hasLatestCaptureData()
-    || typeof PerformanceObserver === "undefined") return;
+  if (
+    !captureActive ||
+    recoveryObserver ||
+    hasLatestCaptureData() ||
+    typeof PerformanceObserver === "undefined"
+  )
+    return;
   recoveryObserver = new PerformanceObserver((list) => {
     scheduleRecoveryForResources(list.getEntries());
   });
-  try { recoveryObserver.observe({ type: "resource", buffered: true }); }
-  catch {
+  try {
+    recoveryObserver.observe({ type: "resource", buffered: true });
+  } catch {
     recoveryObserver.observe({ entryTypes: ["resource"] });
     if (typeof performance !== "undefined") {
       scheduleRecoveryForResources(performance.getEntriesByType?.("resource") || []);

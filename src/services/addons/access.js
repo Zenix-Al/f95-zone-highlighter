@@ -43,7 +43,9 @@ export function resolveAddonAccess({
 } = {}) {
   const source = addon || registered || {};
   const id = getCanonicalAddonId(providedId || source.id);
-  const normalizedTrustedIds = new Set(sanitizeAddonIdList(trustedIds).map((value) => getCanonicalAddonId(value)));
+  const normalizedTrustedIds = new Set(
+    sanitizeAddonIdList(trustedIds).map((value) => getCanonicalAddonId(value)),
+  );
   const catalogIdentity = getCatalogIdentity(catalogEntry, id);
   const trustedByUser = Boolean(id && normalizedTrustedIds.has(id));
   const trustedByCatalog = !catalogIdentity.mismatch && Boolean(catalogEntry?.trusted === true);
@@ -54,11 +56,11 @@ export function resolveAddonAccess({
       ? TRUST_SOURCE.CATALOG
       : TRUST_SOURCE.NONE;
 
-  const requestedStatus = String(source.status || "installed").trim().toLowerCase();
+  const requestedStatus = String(source.status || "installed")
+    .trim()
+    .toLowerCase();
   const isEnabled =
-    typeof desiredEnabled === "boolean"
-      ? desiredEnabled
-      : requestedStatus !== "disabled";
+    typeof desiredEnabled === "boolean" ? desiredEnabled : requestedStatus !== "disabled";
   const pageScopes = Array.isArray(source.pageScopes) ? source.pageScopes : [];
   const matches = Array.isArray(source.matches) ? source.matches : [];
   const hasCurrentScopeContext = Array.isArray(currentScopes);
@@ -66,9 +68,10 @@ export function resolveAddonAccess({
   const scopeApplies = hasCurrentScopeContext
     ? scopeAppliesToCurrentPage(pageScopes, currentScopes)
     : true;
-  const matchesCurrentPage = hasCurrentUrlContext && matches.length > 0
-    ? matchesAnyUserscriptPattern(currentUrl, matches)
-    : true;
+  const matchesCurrentPage =
+    hasCurrentUrlContext && matches.length > 0
+      ? matchesAnyUserscriptPattern(currentUrl, matches)
+      : true;
   const supportsCurrentPage = matchesCurrentPage && scopeApplies;
 
   let blockReason = null;

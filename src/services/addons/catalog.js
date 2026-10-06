@@ -14,22 +14,26 @@ const CATALOG_FILE_PATTERN = /^trusted-addon-catalog\.[a-f0-9]{16}\.json$/;
 let trustedCatalog = [];
 let normalizedCatalog = [];
 let catalogById = new Map();
-const staticAliases = new Map(Object.entries(generatedAliases || {}).map(([legacyId, id]) => [
-  sanitizeAddonId(legacyId), sanitizeAddonId(id),
-]).filter(([legacyId, id]) => legacyId && id));
+const staticAliases = new Map(
+  Object.entries(generatedAliases || {})
+    .map(([legacyId, id]) => [sanitizeAddonId(legacyId), sanitizeAddonId(id)])
+    .filter(([legacyId, id]) => legacyId && id),
+);
 let catalogAliases = new Map(staticAliases);
 let catalogFresh = false;
 let initializationPromise = null;
 
 function rebuildCatalogCache(catalog) {
   trustedCatalog = Object.freeze(catalog.map((entry) => Object.freeze({ ...entry })));
-  normalizedCatalog = trustedCatalog.map((entry) => ({
-    ...entry,
-    id: sanitizeAddonId(entry.id),
-    legacyIds: Array.isArray(entry.legacyIds)
-      ? [...new Set(entry.legacyIds.map(sanitizeAddonId).filter(Boolean))]
-      : [],
-  })).filter((entry) => entry.id);
+  normalizedCatalog = trustedCatalog
+    .map((entry) => ({
+      ...entry,
+      id: sanitizeAddonId(entry.id),
+      legacyIds: Array.isArray(entry.legacyIds)
+        ? [...new Set(entry.legacyIds.map(sanitizeAddonId).filter(Boolean))]
+        : [],
+    }))
+    .filter((entry) => entry.id);
   catalogById = new Map(normalizedCatalog.map((entry) => [entry.id, entry]));
   catalogAliases = new Map(staticAliases);
   for (const entry of normalizedCatalog) {
@@ -48,8 +52,12 @@ function isCatalogArray(value) {
     const id = sanitizeAddonId(entry?.id);
     if (!id || ids.has(id) || entry?.trusted !== true) return false;
     ids.add(id);
-    return typeof entry.name === "string" && Array.isArray(entry.pageScopes)
-      && Array.isArray(entry.matches) && Array.isArray(entry.capabilities);
+    return (
+      typeof entry.name === "string" &&
+      Array.isArray(entry.pageScopes) &&
+      Array.isArray(entry.matches) &&
+      Array.isArray(entry.capabilities)
+    );
   });
 }
 
@@ -57,7 +65,8 @@ function normalizeStoredCache(value) {
   if (!value || typeof value !== "object" || value.schemaVersion !== 1) return null;
   const identifier = String(value.identifier || "").toLowerCase();
   const hasCatalog = isCatalogArray(value.catalog) && /^[a-f0-9]{64}$/.test(identifier);
-  if (!hasCatalog && (identifier || !Array.isArray(value.catalog) || value.catalog.length > 0)) return null;
+  if (!hasCatalog && (identifier || !Array.isArray(value.catalog) || value.catalog.length > 0))
+    return null;
   return {
     schemaVersion: 1,
     identifier,
@@ -102,7 +111,10 @@ export function createTrustedCatalogRepository({
       try {
         if (typeof fetchImpl !== "function") throw new Error("catalog_fetch_unavailable");
         const checkToken = Math.floor(currentTime / TRUSTED_CATALOG_CHECK_INTERVAL_MS);
-        const metadata = await fetchJson(fetchImpl, `${TRUSTED_CATALOG_META_URL}?check=${checkToken}`);
+        const metadata = await fetchJson(
+          fetchImpl,
+          `${TRUSTED_CATALOG_META_URL}?check=${checkToken}`,
+        );
         const identifier = String(metadata?.identifier || "").toLowerCase();
         const catalogFile = String(metadata?.catalogFile || "");
         if (!/^[a-f0-9]{64}$/.test(identifier) || !CATALOG_FILE_PATTERN.test(catalogFile)) {
@@ -116,10 +128,15 @@ export function createTrustedCatalogRepository({
         }
 
         const document = await fetchJson(fetchImpl, `${TRUSTED_CATALOG_BASE_URL}${catalogFile}`);
-        if (document?.schemaVersion !== 1 || document?.identifier !== identifier || !isCatalogArray(document.catalog)) {
+        if (
+          document?.schemaVersion !== 1 ||
+          document?.identifier !== identifier ||
+          !isCatalogArray(document.catalog)
+        ) {
           throw new Error("catalog_document_invalid");
         }
-        if (await hashCatalog(document.catalog) !== identifier) throw new Error("catalog_hash_mismatch");
+        if ((await hashCatalog(document.catalog)) !== identifier)
+          throw new Error("catalog_hash_mismatch");
 
         const next = {
           schemaVersion: 1,
@@ -133,9 +150,18 @@ export function createTrustedCatalogRepository({
         catalogFresh = true;
         return { ok: true, source: "remote", changed: true, cache: next };
       } catch (error) {
-        await storage.set(TRUSTED_CATALOG_CACHE_KEY, stored
-          ? { ...stored, checkedAt: currentTime }
-          : { schemaVersion: 1, identifier: "", catalog: [], checkedAt: currentTime, updatedAt: 0 });
+        await storage.set(
+          TRUSTED_CATALOG_CACHE_KEY,
+          stored
+            ? { ...stored, checkedAt: currentTime }
+            : {
+                schemaVersion: 1,
+                identifier: "",
+                catalog: [],
+                checkedAt: currentTime,
+                updatedAt: 0,
+              },
+        );
         debugLog("addonsCatalog", "Trusted add-on catalog refresh failed.", {
           level: "warn",
           data: { reason: String(error?.message || "catalog_refresh_failed") },

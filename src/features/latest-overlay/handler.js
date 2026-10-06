@@ -1,10 +1,7 @@
 import { stateManager } from "../../config.js";
 import { debugLog } from "../../core/logger";
 import { addObserverCallback, removeObserverCallback } from "../../core/observer";
-import {
-  getLatestCaptureSnapshot,
-  setLatestCaptureConsumer,
-} from "./capture/index.js";
+import { getLatestCaptureSnapshot, setLatestCaptureConsumer } from "./capture/index.js";
 import {
   getCurrentGeneration,
   incrementGeneration,
@@ -133,7 +130,7 @@ function hasRelevantLatestOverlayChanges(mutationsList) {
 
 export function enableLatestOverlay() {
   const currentStatus = stateManager.get("latestOverlayStatus");
-  
+
   // If tearing down, wait for it to complete before enabling
   if (currentStatus === "TEARING_DOWN") {
     debugLog("latest-overlay", "Enable requested while tearing down - deferring...");
@@ -172,16 +169,22 @@ export function enableLatestOverlay() {
 
   setupHoverListener();
   latestMarkers.enable();
-  addObserverCallback("latest-overlay-markers", () => latestMarkers.refresh(), { filter: hasMarkerTileChanges, healthId: "Latest Overlay" });
+  addObserverCallback("latest-overlay-markers", () => latestMarkers.refresh(), {
+    filter: hasMarkerTileChanges,
+    healthId: "Latest Overlay",
+  });
   stateManager.set("latestOverlayStatus", "ACTIVE");
   debugLog("latest-overlay", "Enable completed", {
-    data: { generation: currentGeneration, navigationElapsedMs: Number(performance.now().toFixed(2)) },
+    data: {
+      generation: currentGeneration,
+      navigationElapsedMs: Number(performance.now().toFixed(2)),
+    },
   });
 }
 
 export function disableLatestOverlay() {
   const currentStatus = stateManager.get("latestOverlayStatus");
-  
+
   // Allow disable from any active state (idempotent)
   if (currentStatus === "IDLE" || currentStatus === "TEARING_DOWN") {
     return;

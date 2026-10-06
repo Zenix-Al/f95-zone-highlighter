@@ -21,7 +21,8 @@ function errorMessage(error) {
 function validateStep(step) {
   if (!step || typeof step !== "object") return "bootstrap step must be an object";
   if (!String(step.id || "").trim()) return "bootstrap step id is required";
-  if (!BOOTSTRAP_CLASSIFICATIONS.has(step.classification)) return `bootstrap step '${step.id}' has invalid classification`;
+  if (!BOOTSTRAP_CLASSIFICATIONS.has(step.classification))
+    return `bootstrap step '${step.id}' has invalid classification`;
   if (typeof step.run !== "function") return `bootstrap step '${step.id}' must provide run()`;
   if (step.classification === "recoverable" && typeof step.fallback !== "function") {
     return `recoverable bootstrap step '${step.id}' must provide fallback()`;
@@ -35,7 +36,10 @@ function validateStep(step) {
 function createStepController(parentSignal) {
   const controller = new AbortController();
   if (parentSignal?.aborted) controller.abort(parentSignal.reason);
-  else parentSignal?.addEventListener("abort", () => controller.abort(parentSignal.reason), { once: true });
+  else
+    parentSignal?.addEventListener("abort", () => controller.abort(parentSignal.reason), {
+      once: true,
+    });
   return controller;
 }
 
@@ -53,7 +57,16 @@ export async function runBootstrapStep(step, context = {}) {
     : "required";
   const startedAt = Date.now();
   if (validationError) {
-    return { id, classification, status: "failed", errorMessage: validationError, startedAt, completedAt: Date.now(), durationMs: 0, timedOut: false };
+    return {
+      id,
+      classification,
+      status: "failed",
+      errorMessage: validationError,
+      startedAt,
+      completedAt: Date.now(),
+      durationMs: 0,
+      timedOut: false,
+    };
   }
 
   const controller = createStepController(context.signal);
@@ -74,12 +87,35 @@ export async function runBootstrapStep(step, context = {}) {
       Promise.resolve().then(() => step.run({ ...context, signal: controller.signal, stepId: id })),
       timeout,
     ]);
-    return { id, classification, status: "ok", value, startedAt, completedAt: Date.now(), durationMs: Date.now() - startedAt, timedOut: false };
+    return {
+      id,
+      classification,
+      status: "ok",
+      value,
+      startedAt,
+      completedAt: Date.now(),
+      durationMs: Date.now() - startedAt,
+      timedOut: false,
+    };
   } catch (error) {
-    const result = { id, classification, status: "failed", errorMessage: errorMessage(error), startedAt, completedAt: Date.now(), durationMs: Date.now() - startedAt, timedOut };
+    const result = {
+      id,
+      classification,
+      status: "failed",
+      errorMessage: errorMessage(error),
+      startedAt,
+      completedAt: Date.now(),
+      durationMs: Date.now() - startedAt,
+      timedOut,
+    };
     if (classification === "recoverable") {
       try {
-        result.value = await step.fallback({ ...context, signal: context.signal, stepId: id, error });
+        result.value = await step.fallback({
+          ...context,
+          signal: context.signal,
+          stepId: id,
+          error,
+        });
         result.status = "degraded";
         result.fallbackApplied = true;
       } catch (fallbackError) {
@@ -97,7 +133,10 @@ export async function runBootstrapPipeline(steps = [], context = {}) {
   const controller = new AbortController();
   activeBootstrapControllers.add(controller);
   if (context.signal?.aborted) controller.abort(context.signal.reason);
-  else context.signal?.addEventListener("abort", () => controller.abort(context.signal.reason), { once: true });
+  else
+    context.signal?.addEventListener("abort", () => controller.abort(context.signal.reason), {
+      once: true,
+    });
   const startedAt = Date.now();
   const summary = {
     correlationId: String(context.correlationId || createCorrelationId()),
@@ -113,10 +152,14 @@ export async function runBootstrapPipeline(steps = [], context = {}) {
   try {
     for (const step of Array.isArray(steps) ? steps : []) {
       if (controller.signal.aborted) break;
-      const result = await runBootstrapStep(step, { correlationId: summary.correlationId, signal: controller.signal });
+      const result = await runBootstrapStep(step, {
+        correlationId: summary.correlationId,
+        signal: controller.signal,
+      });
       if (result.status === "ok" && !controller.signal.aborted) {
-        try { step.onResult?.(result.value); }
-        catch (error) {
+        try {
+          step.onResult?.(result.value);
+        } catch (error) {
           result.status = "failed";
           result.errorMessage = errorMessage(error);
         }
@@ -124,24 +167,46 @@ export async function runBootstrapPipeline(steps = [], context = {}) {
       summary.steps.push(copyStepResult(result));
       if (result.status === "ok") continue;
 
-      const eventContext = { correlationId: summary.correlationId, details: { stepId: result.id, classification: result.classification, timedOut: result.timedOut } };
+      const eventContext = {
+        correlationId: summary.correlationId,
+        details: {
+          stepId: result.id,
+          classification: result.classification,
+          timedOut: result.timedOut,
+        },
+      };
       if (result.status === "degraded") {
         summary.status = "degraded";
         summary.degradedSteps.push(result.id);
-        reportFeatureWarning("Bootstrap", result.errorMessage, `BOOT_STEP_${result.id}`, eventContext);
+        reportFeatureWarning(
+          "Bootstrap",
+          result.errorMessage,
+          `BOOT_STEP_${result.id}`,
+          eventContext,
+        );
         continue;
       }
 
       summary.failedSteps.push(result.id);
       if (result.classification === "required") {
         summary.status = "failed";
-        reportFeatureFailure("Bootstrap", result.errorMessage, `BOOT_STEP_${result.id}`, eventContext);
+        reportFeatureFailure(
+          "Bootstrap",
+          result.errorMessage,
+          `BOOT_STEP_${result.id}`,
+          eventContext,
+        );
         controller.abort(new Error(`required bootstrap step '${result.id}' failed`));
         break;
       }
       summary.status = "degraded";
       summary.degradedSteps.push(result.id);
-      reportFeatureWarning("Bootstrap", result.errorMessage, `BOOT_STEP_${result.id}`, eventContext);
+      reportFeatureWarning(
+        "Bootstrap",
+        result.errorMessage,
+        `BOOT_STEP_${result.id}`,
+        eventContext,
+      );
     }
   } finally {
     activeBootstrapControllers.delete(controller);
@@ -155,7 +220,15 @@ export async function runBootstrapPipeline(steps = [], context = {}) {
   summary.durationMs = summary.completedAt - startedAt;
   if (!summary.cancelled) {
     lastBootstrapSummary = summary;
-    setFeatureStatus("Bootstrap", summary.status === "healthy" ? "running" : summary.status === "degraded" ? "degraded" : "failing", `${summary.status} startup`);
+    setFeatureStatus(
+      "Bootstrap",
+      summary.status === "healthy"
+        ? "running"
+        : summary.status === "degraded"
+          ? "degraded"
+          : "failing",
+      `${summary.status} startup`,
+    );
   }
   return getLastBootstrapSummary() || JSON.parse(JSON.stringify(summary));
 }
@@ -169,7 +242,8 @@ export function clearBootstrapSummary() {
 }
 
 export function abortActiveBootstrap(reason = "bootstrap cancelled") {
-  const abortReason = reason instanceof Error ? reason : new DOMException(String(reason), "AbortError");
+  const abortReason =
+    reason instanceof Error ? reason : new DOMException(String(reason), "AbortError");
   for (const controller of activeBootstrapControllers) {
     controller._f95ueTeardownAbort = true;
     controller.abort(abortReason);

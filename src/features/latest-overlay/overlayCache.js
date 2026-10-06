@@ -37,10 +37,17 @@ export function buildPrefixStatusMap(prefixCatalog) {
     : [];
 
   for (const group of groups) {
-    if (String(group?.name || "").trim().toLowerCase() !== "status") continue;
+    if (
+      String(group?.name || "")
+        .trim()
+        .toLowerCase() !== "status"
+    )
+      continue;
     const prefixes = Array.isArray(group.prefixes)
       ? group.prefixes
-      : (Array.isArray(group.prefixIds) ? group.prefixIds : []).map((id) => itemsById.get(Number(id)));
+      : (Array.isArray(group.prefixIds) ? group.prefixIds : []).map((id) =>
+          itemsById.get(Number(id)),
+        );
     for (const prefix of prefixes) {
       const id = Number(prefix?.id);
       const status = normalizeStatusName(prefix?.name);

@@ -1,13 +1,7 @@
-import {
-  config,
-  defaultAddonsApiThrottleSettings,
-} from "../../config.js";
+import { config, defaultAddonsApiThrottleSettings } from "../../config.js";
 import { openConfirmDialog, openSettingsDialog } from "../../ui/components/dialog.js";
 import { showToast } from "../../ui/components/toast.js";
-import {
-  createEnabledDisabledToast,
-  createToggleSetting,
-} from "../../ui/settings/metaFactory.js";
+import { createEnabledDisabledToast, createToggleSetting } from "../../ui/settings/metaFactory.js";
 import { contributeToSection } from "../../ui/settingsRuntime/sectionsRegistry.js";
 import { saveConfigKeys } from "../settingsService.js";
 import {
@@ -171,14 +165,18 @@ function openAddonsServiceSettingsDialog() {
   });
 }
 
-contributeToSection("global", {
-  addonsServiceSettings: {
-    type: "button",
-    text: "Add-ons service settings",
-    buttonText: "Open",
-    tooltip: "Configure add-ons bridge access and request throttling",
-    effects: {
-      custom: openAddonsServiceSettingsDialog,
+contributeToSection(
+  "global",
+  {
+    addonsServiceSettings: {
+      type: "button",
+      text: "Add-ons service settings",
+      buttonText: "Open",
+      tooltip: "Configure add-ons bridge access and request throttling",
+      effects: {
+        custom: openAddonsServiceSettingsDialog,
+      },
     },
   },
-}, "addons:service-settings");
+  "addons:service-settings",
+);

@@ -364,11 +364,11 @@
     }
   ],
   "build": {
-    "authoredBytes": 413542,
+    "authoredBytes": 414201,
     "fileCount": 102,
     "regular": {
       "mode": "regular",
-      "bytes": 425975,
+      "bytes": 426484,
       "contributors": [
         {
           "path": "addons/library-addon/src/library/service.js",
@@ -454,7 +454,7 @@
     },
     "release": {
       "mode": "release",
-      "bytes": 384188,
+      "bytes": 384764,
       "contributors": [
         {
           "path": "addons/library-addon/src/ui/assets/manager.css",

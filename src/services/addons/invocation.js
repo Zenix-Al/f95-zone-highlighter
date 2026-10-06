@@ -21,11 +21,7 @@ import {
   scopeAppliesToCurrentPage,
 } from "./scope.js";
 import { sanitizeAddonId } from "./shared.js";
-import {
-  getAddonState,
-  getInstalledAddonMeta,
-  setAddonEnabledState,
-} from "./state.js";
+import { getAddonState, getInstalledAddonMeta, setAddonEnabledState } from "./state.js";
 
 const DISABLED_ADDON_CLEANUP_ACTIONS = new Set([
   "observer.unwatch",
@@ -56,7 +52,8 @@ export function resolveAddonAccessForAddon(addon, currentScopes = undefined) {
       isBlocked: Boolean(blockReason),
       blockReason,
       scopeApplies,
-      availabilityReason: addon.status === "disabled" ? "disabled" : scopeApplies ? null : "out_of_scope",
+      availabilityReason:
+        addon.status === "disabled" ? "disabled" : scopeApplies ? null : "out_of_scope",
     };
   }
 
@@ -85,50 +82,74 @@ export function getAddonExecutionBlockReason(addon, currentScopes = getCurrentPa
 
 export function getAddonActionBlockReason(addon, action) {
   const reason = getAddonExecutionBlockReason(addon);
-  if (reason === "addon_disabled" && (action === "feature.enable" || action === "feature.disable")) return null;
+  if (reason === "addon_disabled" && (action === "feature.enable" || action === "feature.disable"))
+    return null;
   if (reason === "addon_disabled" && DISABLED_ADDON_CLEANUP_ACTIONS.has(action)) return null;
-  return reason === "addon_out_of_scope" && getAddonActionScopePolicy(action) === "management" ? null : reason;
+  return reason === "addon_out_of_scope" && getAddonActionScopePolicy(action) === "management"
+    ? null
+    : reason;
 }
 
 function getAddonPermissions(addon, access = resolveAddonAccessForAddon(addon)) {
   if (access.isBlocked) return new Set();
-  const source = Array.isArray(addon.requestedCapabilities) ? addon.requestedCapabilities : addon.capabilities;
+  const source = Array.isArray(addon.requestedCapabilities)
+    ? addon.requestedCapabilities
+    : addon.capabilities;
   return new Set(Array.isArray(source) ? source : []);
 }
 
 function getAddonThrottleResponse() {
   const coreAction = getAddonsCoreActionThrottleConfig();
-  return { ok: true, value: {
-    coreAction: {
-      ...coreAction,
-      sustainedRequestsPerSecond: coreAction.windowMs > 0
-        ? Number(((coreAction.maxCount / coreAction.windowMs) * 1000).toFixed(3))
-        : 0,
-      suggestedMinIntervalMs: coreAction.maxCount > 0
-        ? Math.ceil(coreAction.windowMs / coreAction.maxCount)
-        : 0,
+  return {
+    ok: true,
+    value: {
+      coreAction: {
+        ...coreAction,
+        sustainedRequestsPerSecond:
+          coreAction.windowMs > 0
+            ? Number(((coreAction.maxCount / coreAction.windowMs) * 1000).toFixed(3))
+            : 0,
+        suggestedMinIntervalMs:
+          coreAction.maxCount > 0 ? Math.ceil(coreAction.windowMs / coreAction.maxCount) : 0,
+      },
+      payloadLimits: {
+        storage: {
+          maxValueBytes: MAX_ADDON_STORAGE_VALUE_BYTES,
+          maxTotalBytes: MAX_ADDON_STORAGE_TOTAL_BYTES,
+          maxTagPrefsPayloadBytes: MAX_ADDON_STORAGE_VALUE_BYTES,
+        },
+        idb: {
+          maxPayloadBytes: MAX_ADDON_IDB_PAYLOAD_BYTES,
+          maxBulkItems: MAX_ADDON_IDB_BULK_ITEMS,
+        },
+        ui: {
+          maxHtmlBytes: MAX_ADDON_UI_HTML_BYTES,
+          maxStyleTextBytes: MAX_ADDON_STYLE_TEXT_BYTES,
+        },
+      },
     },
-    payloadLimits: {
-      storage: { maxValueBytes: MAX_ADDON_STORAGE_VALUE_BYTES, maxTotalBytes: MAX_ADDON_STORAGE_TOTAL_BYTES, maxTagPrefsPayloadBytes: MAX_ADDON_STORAGE_VALUE_BYTES },
-      idb: { maxPayloadBytes: MAX_ADDON_IDB_PAYLOAD_BYTES, maxBulkItems: MAX_ADDON_IDB_BULK_ITEMS },
-      ui: { maxHtmlBytes: MAX_ADDON_UI_HTML_BYTES, maxStyleTextBytes: MAX_ADDON_STYLE_TEXT_BYTES },
-    },
-  } };
+  };
 }
 
 function getAddonAccessResponse(addon) {
   const access = resolveAddonAccessForAddon(addon);
-  return { ok: true, value: {
-    blocked: access.isBlocked,
-    blockReason: access.blockReason,
-    enabled: access.isEnabled,
-    trusted: access.isTrusted,
-    capabilities: [...getAddonPermissions(addon, access)],
-  } };
+  return {
+    ok: true,
+    value: {
+      blocked: access.isBlocked,
+      blockReason: access.blockReason,
+      enabled: access.isEnabled,
+      trusted: access.isTrusted,
+      capabilities: [...getAddonPermissions(addon, access)],
+    },
+  };
 }
 
 async function processDeferredManagementAction(addonId, action, installedMeta) {
-  if (getAddonActionScopePolicy(action) !== "management" || !["feature.enable", "feature.disable"].includes(action)) {
+  if (
+    getAddonActionScopePolicy(action) !== "management" ||
+    !["feature.enable", "feature.disable"].includes(action)
+  ) {
     return { ok: false, reason: "addon_not_registered" };
   }
   if (!installedMeta?.installedSeenAt) return { ok: false, reason: "addon_not_registered" };
@@ -152,8 +173,10 @@ export async function invokeAddonCoreAction(addonId, action, payload = {}) {
   if (action === "addon.access") return getAddonAccessResponse(addon);
 
   const access = resolveAddonAccessForAddon(addon);
-  if (["activation_mismatch", "out_of_scope"].includes(access.availabilityReason)
-      && ["feature.enable", "feature.disable"].includes(action)) {
+  if (
+    ["activation_mismatch", "out_of_scope"].includes(access.availabilityReason) &&
+    ["feature.enable", "feature.disable"].includes(action)
+  ) {
     return processDeferredManagementAction(normalizedId, action, installedMeta);
   }
 
@@ -173,12 +196,16 @@ export async function invokeAddonCoreAction(addonId, action, payload = {}) {
       const current = getRegisteredAddon(normalizedId);
       const reason = getAddonActionBlockReason(current, action);
       if (reason) return reason;
-      return isAddonActionAllowed(getAddonPermissions(current), action) ? null : "permission_denied";
+      return isAddonActionAllowed(getAddonPermissions(current), action)
+        ? null
+        : "permission_denied";
     },
   });
 
   if (result?.reason === "unsupported_action" && action.startsWith("ui.")) {
-    console.warn(`[addonsService] Addon "${normalizedId}" called unrecognized UI action "${action}".`);
+    console.warn(
+      `[addonsService] Addon "${normalizedId}" called unrecognized UI action "${action}".`,
+    );
   }
   return result;
 }

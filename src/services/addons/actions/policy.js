@@ -8,4 +8,3 @@ export const ACTION_SCOPE_POLICIES = Object.freeze({
 export function getAddonActionScopePolicy(action) {
   return ACTION_SCOPE_POLICIES[action] || "runtime";
 }
-

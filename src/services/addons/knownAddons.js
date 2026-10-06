@@ -1,7 +1,4 @@
-import {
-  matchesAnyUserscriptPattern,
-  scopeAppliesToCurrentPage,
-} from "./scope.js";
+import { matchesAnyUserscriptPattern, scopeAppliesToCurrentPage } from "./scope.js";
 import { resolveAddonAccess } from "./access.js";
 import { sanitizeAddonId } from "./shared.js";
 import { getCanonicalAddonId } from "./catalog.js";
@@ -177,9 +174,10 @@ export function buildKnownAddonsSnapshot({
       status = "disabled";
       statusMessage = getAccessStatusMessage(access.blockReason, statusMessage);
     } else if (/^Blocked(?: by main settings|:)/i.test(String(statusMessage || "").trim())) {
-      statusMessage = status === "disabled"
-        ? "Disabled from core. It will remain off when the add-on loads."
-        : "";
+      statusMessage =
+        status === "disabled"
+          ? "Disabled from core. It will remain off when the add-on loads."
+          : "";
     }
 
     // When catalog is stale, fields that only come from the remote catalog show
@@ -229,9 +227,9 @@ export function buildKnownAddonsSnapshot({
           ? [...runtimeEntry.requestedCapabilities]
           : Array.isArray(runtimeEntry?.capabilities)
             ? [...runtimeEntry.capabilities]
-          : Array.isArray(metaEntry?.capabilities)
-            ? [...metaEntry.capabilities]
-            : [],
+            : Array.isArray(metaEntry?.capabilities)
+              ? [...metaEntry.capabilities]
+              : [],
       trusted: access.isTrusted,
       blocked: access.isBlocked,
       isTrusted: access.isTrusted,
@@ -242,7 +240,8 @@ export function buildKnownAddonsSnapshot({
       blockReason: access.blockReason,
       canEnable: access.canEnable,
       activeOnPage: Boolean(runtimeEntry),
-      runtimeMode: runtimeEntry?.runtimeMode || metaEntry?.runtimeMode || catalogEntry?.runtimeMode || "",
+      runtimeMode:
+        runtimeEntry?.runtimeMode || metaEntry?.runtimeMode || catalogEntry?.runtimeMode || "",
       matches: activationMatches,
       matchesCurrentPage,
       scopeApplies,
@@ -269,8 +268,10 @@ function getAccessStatusMessage(blockReason, previousMessage = "") {
   if (blockReason === "out_of_scope") {
     return "Blocked: this add-on is outside the current page scope.";
   }
-  return String(previousMessage || "").trim() ||
-    "Blocked: enable 'Allow untrusted add-ons' in settings to allow full API access.";
+  return (
+    String(previousMessage || "").trim() ||
+    "Blocked: enable 'Allow untrusted add-ons' in settings to allow full API access."
+  );
 }
 
 export function listKnownAddons() {

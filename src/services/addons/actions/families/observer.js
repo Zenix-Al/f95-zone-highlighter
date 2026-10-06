@@ -22,15 +22,21 @@ function waitPayload(payload) {
 
 export const observerActions = Object.freeze([
   defineAction({
-    id: "observer.watch", requiredCapabilities: ["observer"],
-    execute: ({ addonId, payload, deps }) => actionObserverWatch(addonId, payload, deps.watchAddonObserver),
+    id: "observer.watch",
+    requiredCapabilities: ["observer"],
+    execute: ({ addonId, payload, deps }) =>
+      actionObserverWatch(addonId, payload, deps.watchAddonObserver),
   }),
   defineAction({
-    id: "observer.unwatch", requiredCapabilities: ["observer"],
-    execute: ({ addonId, payload, deps }) => actionObserverUnwatch(addonId, payload, deps.unwatchAddonObserver),
+    id: "observer.unwatch",
+    requiredCapabilities: ["observer"],
+    execute: ({ addonId, payload, deps }) =>
+      actionObserverUnwatch(addonId, payload, deps.unwatchAddonObserver),
   }),
   defineAction({
-    id: "observer.waitFor", requiredCapabilities: ["observer"], validatePayload: waitPayload,
+    id: "observer.waitFor",
+    requiredCapabilities: ["observer"],
+    validatePayload: waitPayload,
     ownership: "addon-scoped one-shot observer subscription",
     cleanup: "remove on match, timeout, unwatch, or addon teardown",
     execute: ({ addonId, payload }) => waitForAddonObserver(addonId, payload),

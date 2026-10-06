@@ -28,17 +28,20 @@ function hasValue(source, key) {
 }
 
 export function hasRecognizedHistoricalData(values) {
-  return LEGACY_SURFACE_KEYS.some((key) => hasValue(values, key))
-    || hasValue(values, "configVisibility");
+  return (
+    LEGACY_SURFACE_KEYS.some((key) => hasValue(values, key)) || hasValue(values, "configVisibility")
+  );
 }
 
 function isLegacyConfigRoot(value) {
-  return isRecord(value)
-    && !Object.hasOwn(value, "data")
-    && hasRecognizedHistoricalData(value);
+  return isRecord(value) && !Object.hasOwn(value, "data") && hasRecognizedHistoricalData(value);
 }
 
-export function classifyLegacyUpgrade({ canonical = null, backup = null, surfaceValues = {} } = {}) {
+export function classifyLegacyUpgrade({
+  canonical = null,
+  backup = null,
+  surfaceValues = {},
+} = {}) {
   const sources = [];
   if (isLegacyConfigRoot(canonical)) sources.push("canonical-root");
   if (isLegacyConfigRoot(backup)) sources.push("backup-root");
@@ -57,14 +60,18 @@ export function getLegacyUpgradeMessage() {
 
 export function getCanonicalData(configValue) {
   const source = isRecord(configValue) ? configValue : {};
-  return JSON.parse(JSON.stringify({
-    ...source,
-    tags: [],
-    prefixes: { items: [], categories: {} },
-  }));
+  return JSON.parse(
+    JSON.stringify({
+      ...source,
+      tags: [],
+      prefixes: { items: [], categories: {} },
+    }),
+  );
 }
 
 export function isCurrentMigrationMarker(value) {
-  return value === CONFIG_MIGRATION_VERSION
-    || (isRecord(value) && value.version === CONFIG_MIGRATION_VERSION && value.completed === true);
+  return (
+    value === CONFIG_MIGRATION_VERSION ||
+    (isRecord(value) && value.version === CONFIG_MIGRATION_VERSION && value.completed === true)
+  );
 }

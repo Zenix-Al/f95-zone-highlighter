@@ -13,10 +13,7 @@ import {
   reprocessLatestTilesAfterSettingsChange,
   refreshThreadOverlayAfterSettingsChange,
 } from "../settingsRuntime/effectTasks.js";
-import {
-  getSettingsMetadataByOwner,
-  registerSettingsMetadata,
-} from "../settings/metaRegistry.js";
+import { getSettingsMetadataByOwner, registerSettingsMetadata } from "../settings/metaRegistry.js";
 
 function applyTagConfigEffects() {
   reprocessLatestTilesAfterSettingsChange();
@@ -24,11 +21,15 @@ function applyTagConfigEffects() {
 }
 
 if (getSettingsMetadataByOwner("base:tags").length === 0) {
-  registerSettingsMetadata("tags", {
-    preferredTags: { config: "preferredTags", effects: { custom: applyTagConfigEffects } },
-    excludedTags: { config: "excludedTags", effects: { custom: applyTagConfigEffects } },
-    markedTags: { config: "markedTags", effects: { custom: applyTagConfigEffects } },
-  }, "base:tags");
+  registerSettingsMetadata(
+    "tags",
+    {
+      preferredTags: { config: "preferredTags", effects: { custom: applyTagConfigEffects } },
+      excludedTags: { config: "excludedTags", effects: { custom: applyTagConfigEffects } },
+      markedTags: { config: "markedTags", effects: { custom: applyTagConfigEffects } },
+    },
+    "base:tags",
+  );
 }
 
 export function initTagsPanelUi(shadowRoot) {

@@ -57,23 +57,28 @@ async function openOverlayColorOrderEditor() {
 
   if (result === null) return;
 
-  const persisted = await updateConfig((draft) => {
-    draft.latestSettings.latestOverlayColorOrder = [...result];
-  }, { origin: "latest-overlay:color-order" });
+  const persisted = await updateConfig(
+    (draft) => {
+      draft.latestSettings.latestOverlayColorOrder = [...result];
+    },
+    { origin: "latest-overlay:color-order" },
+  );
   if (!persisted.committed) return;
   showToast("Overlay color order updated.");
 }
 
 function openLatestOverlaySettingsDialog() {
-  const providerSettings = Object.fromEntries(latestMarkerBroker.list().map((provider) => [
-    `marker-provider-${provider.id}`,
-    createToggleSetting({
-      text: provider.name,
-      tooltip: provider.description || "Show this add-on's marker on Latest cards",
-      config: `latestSettings.latestMarkerProviders.${provider.id}.enabled`,
-      custom: () => reprocessTilesEffect(),
-    }),
-  ]));
+  const providerSettings = Object.fromEntries(
+    latestMarkerBroker.list().map((provider) => [
+      `marker-provider-${provider.id}`,
+      createToggleSetting({
+        text: provider.name,
+        tooltip: provider.description || "Show this add-on's marker on Latest cards",
+        config: `latestSettings.latestMarkerProviders.${provider.id}.enabled`,
+        custom: () => reprocessTilesEffect(),
+      }),
+    ]),
+  );
   latestOverlaySettingsDialog = openSettingsDialog({
     title: "Latest Overlay Settings",
     description: "Configure overlay toggle, labels, filters, and color order.",
@@ -102,10 +107,13 @@ async function resetConfigToDefaults() {
     priorityWeights: { ...defaultLatestSettings.priorityWeights },
     tagModifiers: { ...defaultLatestSettings.tagModifiers },
   };
-  const persisted = await updateConfig((draft) => {
-    draft.latestSettings = nextLatestSettings;
-    draft.overlaySettings = { ...defaultOverlaySettings };
-  }, { origin: "latest-overlay:reset" });
+  const persisted = await updateConfig(
+    (draft) => {
+      draft.latestSettings = nextLatestSettings;
+      draft.overlaySettings = { ...defaultOverlaySettings };
+    },
+    { origin: "latest-overlay:reset" },
+  );
   if (!persisted.committed) return;
   latestOverlaySettingsDialog?.close();
   latestOverlaySettingsDialog = null;
@@ -119,29 +127,56 @@ const visibilityToggleDefinitions = [
   ["completed", "Completed", "Show overlay for completed threads", "Completed"],
   ["onhold", "On Hold", "Show overlay for threads on hold", "On Hold"],
   ["abandoned", "Abandoned", "Show overlay for abandoned threads", "Abandoned"],
-  ["highVersion", "High Version tag", "Show overlay for game threads with higher version than your set minimum", "High Version"],
-  ["invalidVersion", "Invalid Version tag", "Show overlay for threads with invalid version format", "Invalid Version"],
+  [
+    "highVersion",
+    "High Version tag",
+    "Show overlay for game threads with higher version than your set minimum",
+    "High Version",
+  ],
+  [
+    "invalidVersion",
+    "Invalid Version tag",
+    "Show overlay for threads with invalid version format",
+    "Invalid Version",
+  ],
   ["preferred", "Preferred", "Show overlay for threads you've marked as preferred", "Preferred"],
   ["excluded", "Excluded", "Show overlay for threads you've marked as excluded", "Excluded"],
-  ["overlayText", "Text overlay on tiles", "Display status text directly over the thread thumbnail", "Overlay Text"],
+  [
+    "overlayText",
+    "Text overlay on tiles",
+    "Display status text directly over the thread thumbnail",
+    "Overlay Text",
+  ],
 ];
 
 const highlightToggleDefinitions = [
-  ["ratingHighlight", "Highlight rating", "Color-code thread ratings based on threshold (green = above, yellow = medium, red = low)", "Rating Highlight"],
-  ["engagementHighlight", "Highlight engagement ratio", "Color-code engagement based on likes-to-views ratio (likes per 1000 views) using the threshold below", "Engagement Highlight"],
+  [
+    "ratingHighlight",
+    "Highlight rating",
+    "Color-code thread ratings based on threshold (green = above, yellow = medium, red = low)",
+    "Rating Highlight",
+  ],
+  [
+    "engagementHighlight",
+    "Highlight engagement ratio",
+    "Color-code engagement based on likes-to-views ratio (likes per 1000 views) using the threshold below",
+    "Engagement Highlight",
+  ],
 ];
 
 function buildOverlayToggles(definitions) {
-  return Object.fromEntries(definitions.map(([key, text, tooltip, toast]) => [
-    key,
-    createToggleSetting({
-      text,
-      tooltip,
-      config: `overlaySettings.${key}`,
-      custom: reprocessTilesEffect,
-      toast: createEnabledDisabledToast(toast),
-    }),
-  ]));
+  return Object.fromEntries(
+    definitions.map(([key, text, tooltip, toast]) => [
+      key,
+      createToggleSetting({
+        text,
+        tooltip,
+        config: `overlaySettings.${key}`,
+        custom: reprocessTilesEffect,
+        toast: createEnabledDisabledToast(toast),
+      }),
+    ]),
+  );
 }
 
 export const overlaySettingsMeta = {
@@ -266,9 +301,24 @@ function createNumberSettings(path, input, definitions) {
 
 export const [ratingWeightSetting, engagementWeightSetting, tagWeightSetting] =
   createNumberSettings("priorityWeights", { min: 0, step: 1 }, [
-    ["rating", "Rating Pillar Weight", "Importance of Site Rating in the final 0-10 score calculation.", "Rating weight set to "],
-    ["engagement", "Engagement Pillar Weight", "Importance of Community Engagement in the final 0-10 score calculation.", "Engagement weight set to "],
-    ["tags", "Tags Pillar Weight", "Importance of Tag states (preferred, excluded, etc.) in the final 0-10 score calculation.", "Tags weight set to "],
+    [
+      "rating",
+      "Rating Pillar Weight",
+      "Importance of Site Rating in the final 0-10 score calculation.",
+      "Rating weight set to ",
+    ],
+    [
+      "engagement",
+      "Engagement Pillar Weight",
+      "Importance of Community Engagement in the final 0-10 score calculation.",
+      "Engagement weight set to ",
+    ],
+    [
+      "tags",
+      "Tags Pillar Weight",
+      "Importance of Tag states (preferred, excluded, etc.) in the final 0-10 score calculation.",
+      "Tags weight set to ",
+    ],
   ]);
 
 export const [
@@ -280,13 +330,43 @@ export const [
   modifierExcludedSetting,
   modifierInvalidVersionSetting,
 ] = createNumberSettings("tagModifiers", { step: 0.1 }, [
-  ["preferred", "Preferred Tag Modifier", "Score increase added for each matching preferred tag.", "Preferred modifier: "],
-  ["completed", "Completed Tag Modifier", "Score increase added for each completed tag.", "Completed modifier: "],
-  ["highVersion", "High Version Tag Modifier", "Score increase added for high version tags.", "High version modifier: "],
+  [
+    "preferred",
+    "Preferred Tag Modifier",
+    "Score increase added for each matching preferred tag.",
+    "Preferred modifier: ",
+  ],
+  [
+    "completed",
+    "Completed Tag Modifier",
+    "Score increase added for each completed tag.",
+    "Completed modifier: ",
+  ],
+  [
+    "highVersion",
+    "High Version Tag Modifier",
+    "Score increase added for high version tags.",
+    "High version modifier: ",
+  ],
   ["onhold", "On-Hold Tag Modifier", "Score penalty added for on-hold tags.", "On-hold modifier: "],
-  ["abandoned", "Abandoned Tag Modifier", "Score penalty added for abandoned tags.", "Abandoned modifier: "],
-  ["excluded", "Excluded Tag Modifier", "Heavy score penalty added for excluded tags.", "Excluded modifier: "],
-  ["invalidVersion", "Invalid Version Modifier", "Modifier for invalid versions (usually 0.0).", "Invalid version modifier: "],
+  [
+    "abandoned",
+    "Abandoned Tag Modifier",
+    "Score penalty added for abandoned tags.",
+    "Abandoned modifier: ",
+  ],
+  [
+    "excluded",
+    "Excluded Tag Modifier",
+    "Heavy score penalty added for excluded tags.",
+    "Excluded modifier: ",
+  ],
+  [
+    "invalidVersion",
+    "Invalid Version Modifier",
+    "Modifier for invalid versions (usually 0.0).",
+    "Invalid version modifier: ",
+  ],
 ]);
 
 export const resetLatestOverlaySettingsButton = {
@@ -374,8 +454,10 @@ function registerLatestOverlaySettingsMetadata() {
     registerSettingsMetadata(
       "latest-overlay-dialog",
       Object.fromEntries(
-        Object.entries(latestOverlaySettingsDialogMeta)
-          .map(([key, meta]) => [`latestOverlay.${key}`, meta]),
+        Object.entries(latestOverlaySettingsDialogMeta).map(([key, meta]) => [
+          `latestOverlay.${key}`,
+          meta,
+        ]),
       ),
       "feature:latest-overlay-dialog",
     );

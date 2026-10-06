@@ -50,23 +50,23 @@ function diffPaths(before, after, prefix = "") {
   if (Object.is(before, after)) return [];
   const beforeObject = before && typeof before === "object";
   const afterObject = after && typeof after === "object";
-  if (!beforeObject || !afterObject || Array.isArray(before) !== Array.isArray(after)) return [prefix];
+  if (!beforeObject || !afterObject || Array.isArray(before) !== Array.isArray(after))
+    return [prefix];
 
   const keys = new Set([...Object.keys(before), ...Object.keys(after)]);
-  return [...keys].flatMap((key) => diffPaths(
-    before[key],
-    after[key],
-    prefix ? `${prefix}.${key}` : key,
-  ));
+  return [...keys].flatMap((key) =>
+    diffPaths(before[key], after[key], prefix ? `${prefix}.${key}` : key),
+  );
 }
 
 function mergePartial(previous, next) {
   if (!isPlainObject(previous) || !isPlainObject(next)) return clone(next);
   const merged = clone(previous);
   for (const [key, value] of Object.entries(next)) {
-    merged[key] = isPlainObject(merged[key]) && isPlainObject(value)
-      ? mergePartial(merged[key], value)
-      : clone(value);
+    merged[key] =
+      isPlainObject(merged[key]) && isPlainObject(value)
+        ? mergePartial(merged[key], value)
+        : clone(value);
   }
   return merged;
 }
@@ -132,7 +132,9 @@ function normalizeLegacyTransferSettings(settings) {
   const normalized = normalizeImportSettings(settings);
   if (!isPlainObject(normalized)) return normalized;
   if (typeof normalized.minVersion === "number") {
-    const latestSettings = isPlainObject(normalized.latestSettings) ? normalized.latestSettings : {};
+    const latestSettings = isPlainObject(normalized.latestSettings)
+      ? normalized.latestSettings
+      : {};
     if (!Object.hasOwn(latestSettings, "minVersion")) {
       normalized.latestSettings = { ...latestSettings, minVersion: normalized.minVersion };
     }
@@ -169,18 +171,35 @@ function readDocument(input) {
     if (Object.hasOwn(source, key)) metadata[key] = source[key];
   }
 
-  const allowedRootKeys = new Set(hasSettingsRoot
-    ? ["settings", ...DOCUMENT_METADATA_KEYS]
-    : [...DOCUMENT_METADATA_KEYS, ...getExportableConfigKeys(), ...LEGACY_IMPORT_KEYS]);
+  const allowedRootKeys = new Set(
+    hasSettingsRoot
+      ? ["settings", ...DOCUMENT_METADATA_KEYS]
+      : [...DOCUMENT_METADATA_KEYS, ...getExportableConfigKeys(), ...LEGACY_IMPORT_KEYS],
+  );
   for (const key of Object.keys(source)) {
-    if (!allowedRootKeys.has(key)) issues.push(issue(key, "unsupported", "supported transfer field", source[key]));
+    if (!allowedRootKeys.has(key))
+      issues.push(issue(key, "unsupported", "supported transfer field", source[key]));
   }
 
   const formatVersion = Object.hasOwn(metadata, "formatVersion") ? metadata.formatVersion : 0;
   if (!Number.isInteger(formatVersion) || formatVersion < 0) {
-    issues.push(issue("formatVersion", "version", `integer between 0 and ${CONFIG_TRANSFER_FORMAT_VERSION}`, formatVersion));
+    issues.push(
+      issue(
+        "formatVersion",
+        "version",
+        `integer between 0 and ${CONFIG_TRANSFER_FORMAT_VERSION}`,
+        formatVersion,
+      ),
+    );
   } else if (formatVersion > CONFIG_TRANSFER_FORMAT_VERSION) {
-    issues.push(issue("formatVersion", "unsupported", `version <= ${CONFIG_TRANSFER_FORMAT_VERSION}`, formatVersion));
+    issues.push(
+      issue(
+        "formatVersion",
+        "unsupported",
+        `version <= ${CONFIG_TRANSFER_FORMAT_VERSION}`,
+        formatVersion,
+      ),
+    );
   }
   if (formatVersion >= CONFIG_TRANSFER_FORMAT_VERSION && Object.hasOwn(source, "minVersion")) {
     issues.push(issue("minVersion", "unsupported", "supported transfer field", source.minVersion));
@@ -188,34 +207,55 @@ function readDocument(input) {
 
   const schemaVersion = Object.hasOwn(metadata, "schemaVersion") ? metadata.schemaVersion : 0;
   if (!Number.isInteger(schemaVersion) || schemaVersion < 0) {
-    issues.push(issue("schemaVersion", "version", `integer between 0 and ${CONFIG_SCHEMA_VERSION}`, schemaVersion));
+    issues.push(
+      issue(
+        "schemaVersion",
+        "version",
+        `integer between 0 and ${CONFIG_SCHEMA_VERSION}`,
+        schemaVersion,
+      ),
+    );
   } else if (schemaVersion > CONFIG_SCHEMA_VERSION) {
-    issues.push(issue("schemaVersion", "unsupported", `version <= ${CONFIG_SCHEMA_VERSION}`, schemaVersion));
+    issues.push(
+      issue("schemaVersion", "unsupported", `version <= ${CONFIG_SCHEMA_VERSION}`, schemaVersion),
+    );
   }
 
   if (Object.hasOwn(metadata, "exportedAt") && typeof metadata.exportedAt !== "string") {
     issues.push(issue("exportedAt", "type", "ISO date string", metadata.exportedAt));
   }
-  if (Object.hasOwn(metadata, "exportedAt") && typeof metadata.exportedAt === "string" && Number.isNaN(Date.parse(metadata.exportedAt))) {
+  if (
+    Object.hasOwn(metadata, "exportedAt") &&
+    typeof metadata.exportedAt === "string" &&
+    Number.isNaN(Date.parse(metadata.exportedAt))
+  ) {
     issues.push(issue("exportedAt", "format", "ISO date string", metadata.exportedAt));
   }
-  if (Object.hasOwn(metadata, "applicationVersion") && typeof metadata.applicationVersion !== "string") {
+  if (
+    Object.hasOwn(metadata, "applicationVersion") &&
+    typeof metadata.applicationVersion !== "string"
+  ) {
     issues.push(issue("applicationVersion", "type", "version string", metadata.applicationVersion));
   }
 
-  const settings = hasSettingsRoot ? source.settings : Object.fromEntries(
-    getExportableConfigKeys()
-      .filter((key) => Object.hasOwn(source, key))
-      .map((key) => [key, source[key]]),
-  );
-  if (!hasSettingsRoot && formatVersion === 0 && Object.hasOwn(source, "minVersion")) settings.minVersion = source.minVersion;
+  const settings = hasSettingsRoot
+    ? source.settings
+    : Object.fromEntries(
+        getExportableConfigKeys()
+          .filter((key) => Object.hasOwn(source, key))
+          .map((key) => [key, source[key]]),
+      );
+  if (!hasSettingsRoot && formatVersion === 0 && Object.hasOwn(source, "minVersion"))
+    settings.minVersion = source.minVersion;
   if (!isPlainObject(settings)) issues.push(issue("settings", "type", "object", settings));
 
   const exportable = new Set(getExportableConfigKeys());
   if (isPlainObject(settings)) {
     for (const key of Object.keys(settings)) {
       if (!exportable.has(key) && !(formatVersion === 0 && LEGACY_IMPORT_KEYS.includes(key))) {
-        issues.push(issue(`settings.${key}`, "not_exportable", "schema-exportable setting", settings[key]));
+        issues.push(
+          issue(`settings.${key}`, "not_exportable", "schema-exportable setting", settings[key]),
+        );
       }
     }
   }
@@ -227,7 +267,8 @@ function readDocument(input) {
     formatVersion,
     schemaVersion,
     settings: normalizeImportSettings(settings),
-    migrated: formatVersion < CONFIG_TRANSFER_FORMAT_VERSION || schemaVersion < CONFIG_SCHEMA_VERSION,
+    migrated:
+      formatVersion < CONFIG_TRANSFER_FORMAT_VERSION || schemaVersion < CONFIG_SCHEMA_VERSION,
   };
 }
 
@@ -244,7 +285,9 @@ function reloadRequired(changedPaths) {
 }
 
 export function buildConfigExport({ exportedAt = new Date() } = {}) {
-  const settings = Object.fromEntries(getExportableConfigKeys().map((key) => [key, clone(config[key])]));
+  const settings = Object.fromEntries(
+    getExportableConfigKeys().map((key) => [key, clone(config[key])]),
+  );
   return {
     formatVersion: CONFIG_TRANSFER_FORMAT_VERSION,
     schemaVersion: CONFIG_SCHEMA_VERSION,
@@ -258,23 +301,47 @@ export function previewConfigImport(input) {
   const document = readDocument(input);
   if (!document.ok) return { ok: false, issues: document.issues, warnings: document.warnings };
   if (Object.keys(document.settings).length === 0) {
-    return { ok: false, issues: [issue("settings", "empty", "at least one exportable setting", document.settings)], warnings: document.warnings };
+    return {
+      ok: false,
+      issues: [issue("settings", "empty", "at least one exportable setting", document.settings)],
+      warnings: document.warnings,
+    };
   }
 
   let settings = document.settings;
   const warnings = [...document.warnings];
-  if (document.schemaVersion < CONFIG_SCHEMA_VERSION || document.formatVersion < CONFIG_TRANSFER_FORMAT_VERSION) {
+  if (
+    document.schemaVersion < CONFIG_SCHEMA_VERSION ||
+    document.formatVersion < CONFIG_TRANSFER_FORMAT_VERSION
+  ) {
     const legacyValidationInput = normalizeLegacyTransferSettings(settings);
     if (isPlainObject(legacyValidationInput)) {
       for (const key of LEGACY_IMPORT_KEYS) delete legacyValidationInput[key];
     }
-    const legacyValidation = validateConfig(legacyValidationInput, { mode: "strict", partial: true });
+    const legacyValidation = validateConfig(legacyValidationInput, {
+      mode: "strict",
+      partial: true,
+    });
     if (!legacyValidation.valid) return { ok: false, issues: legacyValidation.issues, warnings };
     try {
       settings = normalizeLegacyTransferSettings(settings);
-      warnings.push({ code: "migrated", message: "A supported legacy configuration format was normalized." });
+      warnings.push({
+        code: "migrated",
+        message: "A supported legacy configuration format was normalized.",
+      });
     } catch {
-      return { ok: false, issues: [issue("schemaVersion", "migration_failed", "supported configuration format", document.schemaVersion)], warnings };
+      return {
+        ok: false,
+        issues: [
+          issue(
+            "schemaVersion",
+            "migration_failed",
+            "supported configuration format",
+            document.schemaVersion,
+          ),
+        ],
+        warnings,
+      };
     }
   }
 
@@ -284,7 +351,9 @@ export function previewConfigImport(input) {
   const completeValidation = validateConfig(candidate, { mode: "strict" });
   if (!completeValidation.valid) return { ok: false, issues: completeValidation.issues, warnings };
 
-  const changedPaths = [...new Set(diffPaths(config, completeValidation.data).filter(Boolean))].sort();
+  const changedPaths = [
+    ...new Set(diffPaths(config, completeValidation.data).filter(Boolean)),
+  ].sort();
   return {
     ok: true,
     candidate: completeValidation.data,
@@ -301,11 +370,14 @@ export function previewConfigImport(input) {
 export async function commitConfigImport(input) {
   const preview = previewConfigImport(input);
   if (!preview.ok) return preview;
-  const result = await updateConfig((draft) => {
-    for (const section of preview.changedSections || []) {
-      draft[section] = clone(preview.candidate[section]);
-    }
-  }, { origin: "import", persistRuntimeCatalogs: ["tags"] });
+  const result = await updateConfig(
+    (draft) => {
+      for (const section of preview.changedSections || []) {
+        draft[section] = clone(preview.candidate[section]);
+      }
+    },
+    { origin: "import", persistRuntimeCatalogs: ["tags"] },
+  );
   if (!result.committed) return { ...preview, ...result, ok: false };
   return {
     ...preview,

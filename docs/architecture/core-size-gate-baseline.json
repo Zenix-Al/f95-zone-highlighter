@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "sourceReport": "docs/architecture/core-size-baseline.json",
-  "sourceReportSha256": "15143b37714537bd898bb0219c35a6756cd404eb9ef011e29f6afd6168a7a130",
+  "sourceReportSha256": "27a2fa1cc2a041f5adc4373bed5e6cda30dc6004400108f755ec4dd02f8a1ff2",
   "thresholds": {
     "authoredArea": {
       "absoluteBytes": 1024,
@@ -22,6 +22,6 @@
   },
   "rationale": {
     "type": "commit-note",
-    "text": "Config cross-tab refresh before save and backup-recovery fallback in settingsService.js add about 1.4 KB of source; intentional, no other core size change."
+    "text": "Prettier reformat of src (printWidth 100). Authored growth is formatting; also refreshes reports that went stale in the merged PRs #73-#78."
   }
 }

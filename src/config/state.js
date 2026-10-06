@@ -15,7 +15,11 @@ import {
 
 export let config = {
   tags: [...defaultTags],
-  prefixes: { ...defaultPrefixes, items: [...defaultPrefixes.items], categories: { ...defaultPrefixes.categories } },
+  prefixes: {
+    ...defaultPrefixes,
+    items: [...defaultPrefixes.items],
+    categories: { ...defaultPrefixes.categories },
+  },
   preferredTags: [],
   excludedTags: [],
   markedTags: [],

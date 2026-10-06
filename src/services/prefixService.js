@@ -136,7 +136,8 @@ export async function updatePrefixes(result) {
   if (previous === next) return { updated: false, count: newPrefixes.items.length };
 
   const persisted = await saveConfigKeys({ prefixes: newPrefixes });
-  if (!persisted.committed) return { updated: false, count: Number(config.prefixes?.items?.length || 0) };
+  if (!persisted.committed)
+    return { updated: false, count: Number(config.prefixes?.items?.length || 0) };
   debugLog(
     "Prefix Update",
     `Prefixes updated from latestUpdates.prefixes (${result.source}): ${newPrefixes.items.length} unique prefixes stored.`,

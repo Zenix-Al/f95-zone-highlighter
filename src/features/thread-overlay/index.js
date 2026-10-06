@@ -128,8 +128,10 @@ if (getSettingsMetadataByOwner("feature:thread-overlay-dialog").length === 0) {
   registerSettingsMetadata(
     "thread-overlay-dialog",
     Object.fromEntries(
-      Object.entries(threadOverlaySettingsMeta)
-        .map(([key, meta]) => [`threadOverlay.${key}`, meta]),
+      Object.entries(threadOverlaySettingsMeta).map(([key, meta]) => [
+        `threadOverlay.${key}`,
+        meta,
+      ]),
     ),
     "feature:thread-overlay-dialog",
   );

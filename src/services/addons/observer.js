@@ -102,7 +102,8 @@ export function waitForAddonObserver(addonId, payload = {}) {
   if (!selector) return Promise.resolve({ ok: false, reason: "selector_not_allowed" });
 
   const timeoutMs = Number(payload?.timeoutMs);
-  if (!Number.isFinite(timeoutMs)) return Promise.resolve({ ok: false, reason: "timeout_required" });
+  if (!Number.isFinite(timeoutMs))
+    return Promise.resolve({ ok: false, reason: "timeout_required" });
   const boundedTimeout = Math.max(MIN_WAIT_TIMEOUT_MS, Math.min(MAX_WAIT_TIMEOUT_MS, timeoutMs));
   const key = waitSubscriptionKey(normalizedId, observerId);
   if (WAIT_SUBSCRIPTIONS.has(key)) {
@@ -128,9 +129,15 @@ export function waitForAddonObserver(addonId, payload = {}) {
     const finishMatched = () => {
       if (findMatch()) finishWait(key, { ok: true, value: { observerId, matched: true } });
     };
-    const filter = (mutationsList) => mutationsList.some((mutation) => mutation.type === "childList");
+    const filter = (mutationsList) =>
+      mutationsList.some((mutation) => mutation.type === "childList");
     const timer = setTimeout(
-      () => finishWait(key, { ok: false, reason: "observer_timeout", value: { observerId, matched: false } }),
+      () =>
+        finishWait(key, {
+          ok: false,
+          reason: "observer_timeout",
+          value: { observerId, matched: false },
+        }),
       boundedTimeout,
     );
 

@@ -30,7 +30,9 @@ runTest("ADDON-ACTIONS-02 has one composition root and no action registration cy
   const facade = fs.readFileSync(path.join(ROOT, "src/services/addons/coreActions.js"), "utf8");
   const composition = fs.readFileSync(path.join(root, "composition.js"), "utf8");
   const families = collectJavaScriptFiles(path.join(root, "families"));
-  assert.ok(facade.split(/\r?\n/).length < 40);
+  // Minified so the size bound tracks code, not Prettier's line wrapping.
+  const minifiedFacade = esbuild.transformSync(facade, { format: "esm", minifyWhitespace: true }).code;
+  assert.ok(minifiedFacade.length < 1600);
   assert.doesNotMatch(facade, /registerAction|createLegacyActionHandlers|action[A-Z].*\(/);
   assert.match(composition, /registerAction\(descriptor\)/);
   for (const file of families) {

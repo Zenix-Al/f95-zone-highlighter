@@ -1,0 +1,6 @@
+dist/
+addons/*/dist/
+src/generated/
+node_modules/
+package-lock.json
+playwright-report/

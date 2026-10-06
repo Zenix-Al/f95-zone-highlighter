@@ -381,7 +381,9 @@ export function openSettingsDialog({
     done = true;
     disposeSettings();
     backdrop.remove();
-    try { onClose?.(); } catch {}
+    try {
+      onClose?.();
+    } catch {}
   };
 
   backdrop.__f95ueOnClose = onClose;

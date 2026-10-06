@@ -3,11 +3,7 @@ import { getAddonsCoreActionThrottleConfig, isAddonsServiceDisabled } from "./ap
 import { initAddonsBridgeServer } from "./bridgeServer.js";
 import { getCanonicalAddonId, initTrustedAddonCatalog } from "./catalog.js";
 import { invokeAddonCoreAction } from "./invocation.js";
-import {
-  registerAddon,
-  updateAddonStatus,
-  validateAddonRegistration,
-} from "./registry.js";
+import { registerAddon, updateAddonStatus, validateAddonRegistration } from "./registry.js";
 import { addonLifecycle, unregisterAddon } from "./runtimeLifecycle.js";
 import {
   ADDONS_API_VERSION,
@@ -19,19 +15,25 @@ import {
 import { getAddonState, upsertInstalledAddonMeta } from "./state.js";
 
 function dispatchAddonCommand(addonId, command, detail = {}) {
-  window.dispatchEvent(new CustomEvent(ADDON_COMMAND_EVENT, {
-    detail: { addonId, command, ...detail },
-  }));
+  window.dispatchEvent(
+    new CustomEvent(ADDON_COMMAND_EVENT, {
+      detail: { addonId, command, ...detail },
+    }),
+  );
 }
 
 function handleRegistration(addon) {
   const registration = validateAddonRegistration(addon || {});
   const addonId = sanitizeAddonId(addon?.id);
   if (!registration.ok) {
-    debugLog("addonsService", `Rejected add-on registration (id=${addonId}, reason=${registration.reason}).`, {
-      level: "warn",
-      data: { addonId, reason: registration.reason, errors: registration.errors },
-    });
+    debugLog(
+      "addonsService",
+      `Rejected add-on registration (id=${addonId}, reason=${registration.reason}).`,
+      {
+        level: "warn",
+        data: { addonId, reason: registration.reason, errors: registration.errors },
+      },
+    );
     if (addonId) dispatchAddonCommand(addonId, "disable", { reason: registration.reason });
     return;
   }
@@ -41,11 +43,13 @@ function handleRegistration(addon) {
   const desiredEnabled = hasPersistedEnabled
     ? persistedState.enabled !== false
     : String(addon?.status || "installed") !== "disabled";
-  const effectiveAddon = desiredEnabled ? addon : {
-    ...addon,
-    status: "disabled",
-    statusMessage: String(addon?.statusMessage || "Disabled from core.").trim(),
-  };
+  const effectiveAddon = desiredEnabled
+    ? addon
+    : {
+        ...addon,
+        status: "disabled",
+        statusMessage: String(addon?.statusMessage || "Disabled from core.").trim(),
+      };
   const snapshot = registerAddon(effectiveAddon);
   const registered = snapshot.find((entry) => entry.id === getCanonicalAddonId(addonId));
   if (!registered) return;
@@ -87,9 +91,11 @@ export async function initAddonsConsoleBridge() {
     getCoreActionThrottleConfig: getAddonsCoreActionThrottleConfig,
     onRegister: handleRegistration,
     onUnregister: unregisterAddon,
-    onUpdateStatus: (addonId, status, statusMessage) => updateAddonStatus(addonId, status, statusMessage || ""),
+    onUpdateStatus: (addonId, status, statusMessage) =>
+      updateAddonStatus(addonId, status, statusMessage || ""),
     onTeardownComplete: (addonId) => addonLifecycle.acknowledgeTeardown(addonId),
-    onInvokeCoreAction: (addonId, action, payload) => invokeAddonCoreAction(addonId, action, payload || {}),
+    onInvokeCoreAction: (addonId, action, payload) =>
+      invokeAddonCoreAction(addonId, action, payload || {}),
   });
 }
 

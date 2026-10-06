@@ -44,12 +44,17 @@ function classifyLoadResult(loaded, context) {
       settledAt: Date.now(),
     });
     setFeatureStatus("Storage", "failing", "upgrade required");
-    recordStorageHealth("UPGRADE_REQUIRED", "error", "Stored configuration requires the supported bridge release.", {
-      state: blocked.state,
-      source: blocked.source,
-      reason: blocked.reason,
-      attempt: blocked.attempt,
-    });
+    recordStorageHealth(
+      "UPGRADE_REQUIRED",
+      "error",
+      "Stored configuration requires the supported bridge release.",
+      {
+        state: blocked.state,
+        source: blocked.source,
+        reason: blocked.reason,
+        attempt: blocked.attempt,
+      },
+    );
     throw Object.assign(new Error("upgrade_required"), {
       code: "upgrade_required",
       storageSnapshot: blocked,
@@ -62,19 +67,26 @@ function classifyLoadResult(loaded, context) {
     source: String(loaded?.source || "unknown"),
     schemaVersion: Number.isInteger(loaded?.envelope?.schemaVersion)
       ? loaded.envelope.schemaVersion
-      : degraded ? null : CONFIG_SCHEMA_VERSION,
+      : degraded
+        ? null
+        : CONFIG_SCHEMA_VERSION,
     usingFallback: Boolean(loaded?.recovered || degraded),
     reason: degraded ? String(loaded?.status || "configuration_not_persisted") : "",
     settledAt: Date.now(),
   });
   if (degraded) {
     setFeatureStatus("Storage", "degraded", next.reason);
-    recordStorageHealth("DEGRADED", "warning", "Configuration loaded without verified writable persistence.", {
-      state: next.state,
-      source: next.source,
-      reason: next.reason,
-      attempt: next.attempt,
-    });
+    recordStorageHealth(
+      "DEGRADED",
+      "warning",
+      "Configuration loaded without verified writable persistence.",
+      {
+        state: next.state,
+        source: next.source,
+        reason: next.reason,
+        attempt: next.attempt,
+      },
+    );
   } else {
     setFeatureStatus("Storage", "running", "ready");
   }
@@ -103,13 +115,18 @@ async function executeBootstrap({ force = false } = {}) {
       settledAt: Date.now(),
     });
     setFeatureStatus("Storage", "failing", unavailable.reason);
-    recordStorageHealth("UNAVAILABLE", "error", "Userscript storage capability verification failed.", {
-      manager: unavailable.manager,
-      failedStep: unavailable.failedStep,
-      reason: unavailable.reason,
-      cleanupReason: probe.cleanupReason,
-      attempt: unavailable.attempt,
-    });
+    recordStorageHealth(
+      "UNAVAILABLE",
+      "error",
+      "Userscript storage capability verification failed.",
+      {
+        manager: unavailable.manager,
+        failedStep: unavailable.failedStep,
+        reason: unavailable.reason,
+        cleanupReason: probe.cleanupReason,
+        attempt: unavailable.attempt,
+      },
+    );
     throw Object.assign(new Error(unavailable.reason), { storageSnapshot: unavailable });
   }
 
@@ -141,13 +158,17 @@ export function startStorageBootstrap(options = {}) {
   if (activePromise) return activePromise;
   const current = getStorageReadinessSnapshot();
   if (!options.force && current.state === "upgrade-required") {
-    return Promise.reject(Object.assign(new Error("upgrade_required"), {
-      code: "upgrade_required",
-      storageSnapshot: current,
-    }));
+    return Promise.reject(
+      Object.assign(new Error("upgrade_required"), {
+        code: "upgrade_required",
+        storageSnapshot: current,
+      }),
+    );
   }
   if (!options.force && isTerminalStorageState(current.state)) return Promise.resolve(current);
-  activePromise = executeBootstrap(options).finally(() => { activePromise = null; });
+  activePromise = executeBootstrap(options).finally(() => {
+    activePromise = null;
+  });
   return activePromise;
 }
 

@@ -117,7 +117,9 @@ function normalizeAddonEntry(addon, existingAddon = null) {
     : Array.isArray(existingAddon?.pageScopes)
       ? existingAddon.pageScopes
       : [];
-  const runtimeMode = String(addon.runtimeMode || existingAddon?.runtimeMode || "").trim().toLowerCase();
+  const runtimeMode = String(addon.runtimeMode || existingAddon?.runtimeMode || "")
+    .trim()
+    .toLowerCase();
   const matches = Array.isArray(addon.matches)
     ? addon.matches.map((entry) => String(entry || "").trim()).filter(Boolean)
     : Array.isArray(existingAddon?.matches)
@@ -227,7 +229,9 @@ function emitRegistryChange() {
 }
 
 function replaceRegistry(addons) {
-  addonsRuntimeRegistry = Array.isArray(addons) ? addons.map((addon) => cloneAddonEntry(addon)) : [];
+  addonsRuntimeRegistry = Array.isArray(addons)
+    ? addons.map((addon) => cloneAddonEntry(addon))
+    : [];
   runtimeRegistrationSources = new Map(addonsRuntimeRegistry.map((addon) => [addon.id, addon.id]));
   emitRegistryChange();
   return createRegistrySnapshot();
@@ -262,7 +266,12 @@ export function registerAddon(addon) {
   // A canonical registration supersedes an old runtime alias. Two different
   // aliases cannot race into two cards; the first source remains authoritative
   // until the canonical runtime appears.
-  if (existingIndex >= 0 && existingSource && existingSource !== sourceId && sourceId !== normalizedId) {
+  if (
+    existingIndex >= 0 &&
+    existingSource &&
+    existingSource !== sourceId &&
+    sourceId !== normalizedId
+  ) {
     return createRegistrySnapshot();
   }
 

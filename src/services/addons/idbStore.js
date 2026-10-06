@@ -264,7 +264,11 @@ async function withStore(addonId, payload, mode, cb) {
       if (hasResult && committed) complete(result);
     };
     const abortAndFail = (error) => {
-      try { tx.abort(); } catch { /* transaction already finished */ }
+      try {
+        tx.abort();
+      } catch {
+        /* transaction already finished */
+      }
       fail(error);
     };
     tx.oncomplete = () => {

@@ -13,7 +13,9 @@ export function createTileState(tile, record, capturedAt, pageCategory = "games"
     threadId: record.thread_id,
     tags: record.tags,
     statuses: resolvePrefixStatuses(record.prefixes),
-    versionText: String(record.version || "").toLowerCase().trim(),
+    versionText: String(record.version || "")
+      .toLowerCase()
+      .trim(),
     ratingClass: highlights.ratingClass,
     engagementClass: highlights.engagementClass,
     views: highlights.views,

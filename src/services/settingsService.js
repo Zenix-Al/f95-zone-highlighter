@@ -22,10 +22,7 @@ import {
   isCurrentMigrationMarker,
 } from "./configMigrationService.js";
 import { storageAdapter } from "./storageAdapter.js";
-import {
-  getStorageFailureMessage,
-  waitForStorageWriteAccess,
-} from "./storageReadiness.js";
+import { getStorageFailureMessage, waitForStorageWriteAccess } from "./storageReadiness.js";
 
 export const CONFIG_ENVELOPE_KEY = CONFIG_STORAGE_KEYS.current;
 export const CONFIG_BACKUP_KEY = CONFIG_STORAGE_KEYS.backup;
@@ -59,7 +56,9 @@ function storageValuesEqual(left, right) {
     if (Array.isArray(value)) return value.map(normalize);
     if (!isRecord(value)) return value;
     return Object.fromEntries(
-      Object.keys(value).sort().map((key) => [key, normalize(value[key])]),
+      Object.keys(value)
+        .sort()
+        .map((key) => [key, normalize(value[key])]),
     );
   };
   return JSON.stringify(normalize(left)) === JSON.stringify(normalize(right));
@@ -108,10 +107,14 @@ function reportPersistenceHealth(code, message, details = {}) {
 function envelopeStructureIssues(envelope) {
   const issues = [];
   if (!isRecord(envelope)) return [{ path: "", code: "type" }];
-  if (!Number.isInteger(envelope.schemaVersion) || envelope.schemaVersion < 0) issues.push({ path: "schemaVersion", code: "version" });
-  if (!Number.isInteger(envelope.revision) || envelope.revision < 0) issues.push({ path: "revision", code: "revision" });
-  if (typeof envelope.writerId !== "string" || envelope.writerId.trim() === "") issues.push({ path: "writerId", code: "required" });
-  if (!Number.isFinite(envelope.updatedAt) || envelope.updatedAt < 0) issues.push({ path: "updatedAt", code: "timestamp" });
+  if (!Number.isInteger(envelope.schemaVersion) || envelope.schemaVersion < 0)
+    issues.push({ path: "schemaVersion", code: "version" });
+  if (!Number.isInteger(envelope.revision) || envelope.revision < 0)
+    issues.push({ path: "revision", code: "revision" });
+  if (typeof envelope.writerId !== "string" || envelope.writerId.trim() === "")
+    issues.push({ path: "writerId", code: "required" });
+  if (!Number.isFinite(envelope.updatedAt) || envelope.updatedAt < 0)
+    issues.push({ path: "updatedAt", code: "timestamp" });
   if (!isRecord(envelope.data)) issues.push({ path: "data", code: "type" });
   return issues;
 }
@@ -185,7 +188,11 @@ async function markRecovery(marker) {
 }
 
 async function clearRecoveryMarker() {
-  try { await storageAdapter.delete(CONFIG_RECOVERY_MARKER_KEY); } catch { /* best effort */ }
+  try {
+    await storageAdapter.delete(CONFIG_RECOVERY_MARKER_KEY);
+  } catch {
+    /* best effort */
+  }
 }
 
 function makeLoadResult(data, details = {}) {
@@ -252,7 +259,11 @@ async function acquireMigrationLock() {
 async function releaseMigrationLock() {
   const current = await storageAdapter.get(CONFIG_MIGRATION_LOCK_KEY, null);
   if (current?.owner !== CONFIG_WRITER_ID) return;
-  try { await storageAdapter.delete(CONFIG_MIGRATION_LOCK_KEY); } catch { /* stale lock expiry is the fallback */ }
+  try {
+    await storageAdapter.delete(CONFIG_MIGRATION_LOCK_KEY);
+  } catch {
+    /* stale lock expiry is the fallback */
+  }
 }
 
 async function acquireInitializationLock() {
@@ -270,7 +281,11 @@ async function acquireInitializationLock() {
 async function releaseInitializationLock() {
   const current = await storageAdapter.get(CONFIG_INITIALIZATION_LOCK_KEY, null);
   if (current?.owner !== CONFIG_WRITER_ID) return;
-  try { await storageAdapter.delete(CONFIG_INITIALIZATION_LOCK_KEY); } catch { /* stale lock expiry is the fallback */ }
+  try {
+    await storageAdapter.delete(CONFIG_INITIALIZATION_LOCK_KEY);
+  } catch {
+    /* stale lock expiry is the fallback */
+  }
 }
 
 async function hasFreshInstallEvidence(canonicalRaw) {
@@ -323,20 +338,25 @@ async function initializeFreshStorage() {
     if (!validation.valid) throw new Error("fresh_defaults_invalid");
     const envelope = buildEnvelope(validation.data, 1);
     await runMigrationStorageStep("fresh-canonical-write", () => persistEnvelope(envelope));
-    const verified = await runMigrationStorageStep("fresh-canonical-verify", () => verifyCanonicalEnvelope(envelope));
-    await runMigrationStorageStep("fresh-completion-marker-write", () => (
-      writeStorageValue(CONFIG_MIGRATION_VERSION_KEY, CONFIG_MIGRATION_VERSION)
-    ));
+    const verified = await runMigrationStorageStep("fresh-canonical-verify", () =>
+      verifyCanonicalEnvelope(envelope),
+    );
+    await runMigrationStorageStep("fresh-completion-marker-write", () =>
+      writeStorageValue(CONFIG_MIGRATION_VERSION_KEY, CONFIG_MIGRATION_VERSION),
+    );
     const marker = await storageAdapter.get(CONFIG_MIGRATION_VERSION_KEY, null);
-    if (!isCurrentMigrationMarker(marker)) throw new Error("fresh_completion_marker_verification_failed");
+    if (!isCurrentMigrationMarker(marker))
+      throw new Error("fresh_completion_marker_verification_failed");
     await clearRecoveryMarker();
     const caches = await readCachePayloads();
-    return applyLoadedConfig(makeLoadResult(mergeRuntimeCaches(validation.data, caches), {
-      source: "fresh",
-      status: "initialized",
-      persisted: true,
-      envelope: verified,
-    }));
+    return applyLoadedConfig(
+      makeLoadResult(mergeRuntimeCaches(validation.data, caches), {
+        source: "fresh",
+        status: "initialized",
+        persisted: true,
+        envelope: verified,
+      }),
+    );
   } finally {
     await releaseInitializationLock();
   }
@@ -375,14 +395,16 @@ async function migrateSupportedSchema(canonicalRaw, canonical) {
   if (!acquired) {
     const settled = await waitForSchemaMigration();
     if (settled) return settled;
-    return applyLoadedConfig(makeLoadResult(canonical.data, {
-      source: "schema-migration-busy",
-      status: "migration-busy",
-      recovered: true,
-      degraded: true,
-      persisted: false,
-      issues: canonical.issues,
-    }));
+    return applyLoadedConfig(
+      makeLoadResult(canonical.data, {
+        source: "schema-migration-busy",
+        status: "migration-busy",
+        recovered: true,
+        degraded: true,
+        persisted: false,
+        issues: canonical.issues,
+      }),
+    );
   }
 
   try {
@@ -391,79 +413,100 @@ async function migrateSupportedSchema(canonicalRaw, canonical) {
     if (settled.valid && settled.envelope.schemaVersion === CONFIG_SCHEMA_VERSION) {
       return loadFastPath(settledRaw);
     }
-    if (!settled.valid || settled.envelope.schemaVersion !== 1) throw new Error("unsupported_config_schema");
+    if (!settled.valid || settled.envelope.schemaVersion !== 1)
+      throw new Error("unsupported_config_schema");
 
     const migratedData = migrateConfigSchema(settled.data, settled.envelope.schemaVersion);
     const strict = validateConfig(migratedData, { mode: "strict" });
     if (!strict.valid) throw new Error("schema_migration_candidate_invalid");
     const envelope = buildEnvelope(strict.data, settled.envelope.revision + 1);
     if (settled.sanitized) {
-      reportPersistenceHealth("SANITIZED", "Configuration migrated after dropping invalid or unknown fields.", {
-        source: "schema-migration",
-        issues: safeIssueSummary(settled.issues),
-      });
+      reportPersistenceHealth(
+        "SANITIZED",
+        "Configuration migrated after dropping invalid or unknown fields.",
+        {
+          source: "schema-migration",
+          issues: safeIssueSummary(settled.issues),
+        },
+      );
     }
-    await runMigrationStorageStep("schema-backup-write", () => (
-      writeStorageValue(CONFIG_BACKUP_KEY, cloneConfig(settled.envelope))
-    ));
-    await runMigrationStorageStep("schema-canonical-write", () => (
-      writeStorageValue(CONFIG_ENVELOPE_KEY, cloneConfig(envelope))
-    ));
-    const verified = await runMigrationStorageStep("schema-canonical-verify", () => verifyCanonicalEnvelope(envelope));
+    await runMigrationStorageStep("schema-backup-write", () =>
+      writeStorageValue(CONFIG_BACKUP_KEY, cloneConfig(settled.envelope)),
+    );
+    await runMigrationStorageStep("schema-canonical-write", () =>
+      writeStorageValue(CONFIG_ENVELOPE_KEY, cloneConfig(envelope)),
+    );
+    const verified = await runMigrationStorageStep("schema-canonical-verify", () =>
+      verifyCanonicalEnvelope(envelope),
+    );
     await runMigrationStorageStep("schema-backup-verify", async () => {
       const backup = await storageAdapter.get(CONFIG_BACKUP_KEY, null);
-      if (!storageValuesEqual(backup, settled.envelope)) throw new Error("schema_backup_verification_failed");
+      if (!storageValuesEqual(backup, settled.envelope))
+        throw new Error("schema_backup_verification_failed");
     });
     await clearRecoveryMarker();
     const caches = await readCachePayloads();
-    return applyLoadedConfig(makeLoadResult(mergeRuntimeCaches(strict.data, caches), {
-      source: "schema-migration",
-      status: "migrated",
-      migrated: true,
-      persisted: true,
-      degraded: settled.sanitized,
-      issues: settled.issues,
-      envelope: verified,
-    }));
+    return applyLoadedConfig(
+      makeLoadResult(mergeRuntimeCaches(strict.data, caches), {
+        source: "schema-migration",
+        status: "migrated",
+        migrated: true,
+        persisted: true,
+        degraded: settled.sanitized,
+        issues: settled.issues,
+        envelope: verified,
+      }),
+    );
   } catch (error) {
-    reportPersistenceHealth("SCHEMA_MIGRATION_FAILED", "Configuration schema migration could not be verified.", {
-      source: "schema-migration",
-      reason: error?.message || "schema_migration_failed",
-      storageStep: error?.storageStep || "schema-migration",
-    });
+    reportPersistenceHealth(
+      "SCHEMA_MIGRATION_FAILED",
+      "Configuration schema migration could not be verified.",
+      {
+        source: "schema-migration",
+        reason: error?.message || "schema_migration_failed",
+        storageStep: error?.storageStep || "schema-migration",
+      },
+    );
     await markRecovery({
       kind: "schema-migration-failed",
       source: "schema-migration",
       issues: error?.storageStep ? [{ path: "storage", code: error.storageStep }] : [],
     });
     const caches = await readCachePayloads();
-    return applyLoadedConfig(makeLoadResult(mergeRuntimeCaches(canonical.data, caches), {
-      source: "schema-migration",
-      status: "migration-failed",
-      recovered: true,
-      degraded: true,
-      persisted: false,
-      issues: canonical.issues,
-      envelope: canonicalRaw,
-    }));
+    return applyLoadedConfig(
+      makeLoadResult(mergeRuntimeCaches(canonical.data, caches), {
+        source: "schema-migration",
+        status: "migration-failed",
+        recovered: true,
+        degraded: true,
+        persisted: false,
+        issues: canonical.issues,
+        envelope: canonicalRaw,
+      }),
+    );
   } finally {
     await releaseMigrationLock();
   }
 }
 
 async function loadFastPath(canonicalRaw) {
-  if (Number.isInteger(canonicalRaw?.schemaVersion) && canonicalRaw.schemaVersion > CONFIG_SCHEMA_VERSION) {
+  if (
+    Number.isInteger(canonicalRaw?.schemaVersion) &&
+    canonicalRaw.schemaVersion > CONFIG_SCHEMA_VERSION
+  ) {
     const future = sanitizeConfig(canonicalRaw.data, { mode: "tolerant" });
     const caches = await readCachePayloads();
-    return applyLoadedConfig(makeLoadResult(mergeRuntimeCaches(future.data, caches), {
-      source: "canonical",
-      status: "unsupported-newer",
-      recovered: true,
-      degraded: true,
-      persisted: false,
-      issues: [{ path: "schemaVersion", code: "unsupported" }],
-      envelope: canonicalRaw,
-    }));
+    return applyLoadedConfig(
+      makeLoadResult(mergeRuntimeCaches(future.data, caches), {
+        source: "canonical",
+        status: "unsupported-newer",
+        recovered: true,
+        degraded: true,
+        persisted: false,
+        issues: [{ path: "schemaVersion", code: "unsupported" }],
+        envelope: canonicalRaw,
+      }),
+    );
   }
   const canonical = validateStoredEnvelope(canonicalRaw);
   if (!canonical.valid) {
@@ -471,7 +514,10 @@ async function loadFastPath(canonicalRaw) {
     const backup = validateStoredEnvelope(backupRaw);
     if (backup.valid) {
       const recoveredData = migrateConfigSchema(backup.data, backup.envelope.schemaVersion);
-      const recoveredEnvelope = buildEnvelope(recoveredData, Math.max(Number(canonicalRaw?.revision) || 0, backup.envelope.revision) + 1);
+      const recoveredEnvelope = buildEnvelope(
+        recoveredData,
+        Math.max(Number(canonicalRaw?.revision) || 0, backup.envelope.revision) + 1,
+      );
       // The backup is readable even if writing it back fails; keep the recovered settings
       // in use (read-only) rather than discarding them for defaults.
       let persisted = true;
@@ -480,32 +526,44 @@ async function loadFastPath(canonicalRaw) {
         await verifyCanonicalEnvelope(recoveredEnvelope);
       } catch (error) {
         persisted = false;
-        reportPersistenceHealth("SAVE_FAILED", "Recovered configuration could not be written back.", {
-          source: "backup",
-          reason: error?.message || "recovery_write_failed",
-        });
+        reportPersistenceHealth(
+          "SAVE_FAILED",
+          "Recovered configuration could not be written back.",
+          {
+            source: "backup",
+            reason: error?.message || "recovery_write_failed",
+          },
+        );
       }
       const caches = await readCachePayloads();
-      return applyLoadedConfig(makeLoadResult(mergeRuntimeCaches(recoveredData, caches), {
-        source: "backup",
-        status: "recovered",
-        recovered: true,
-        degraded: true,
-        persisted,
-        issues: canonical.issues,
-        envelope: persisted ? recoveredEnvelope : null,
-      }));
+      return applyLoadedConfig(
+        makeLoadResult(mergeRuntimeCaches(recoveredData, caches), {
+          source: "backup",
+          status: "recovered",
+          recovered: true,
+          degraded: true,
+          persisted,
+          issues: canonical.issues,
+          envelope: persisted ? recoveredEnvelope : null,
+        }),
+      );
     }
     const defaults = getDefaultConfig();
-    await markRecovery({ kind: "canonical-missing-after-migration", source: "defaults", issues: canonical.issues });
-    return applyLoadedConfig(makeLoadResult(defaults, {
+    await markRecovery({
+      kind: "canonical-missing-after-migration",
       source: "defaults",
-      status: "defaults",
-      recovered: true,
-      degraded: true,
-      persisted: false,
       issues: canonical.issues,
-    }));
+    });
+    return applyLoadedConfig(
+      makeLoadResult(defaults, {
+        source: "defaults",
+        status: "defaults",
+        recovered: true,
+        degraded: true,
+        persisted: false,
+        issues: canonical.issues,
+      }),
+    );
   }
 
   if (canonical.envelope.schemaVersion < CONFIG_SCHEMA_VERSION) {
@@ -515,19 +573,25 @@ async function loadFastPath(canonicalRaw) {
   const caches = await readCachePayloads();
   const runtime = mergeRuntimeCaches(canonical.data, caches);
   if (canonical.sanitized) {
-    reportPersistenceHealth("SANITIZED", "Configuration loaded after dropping invalid or unknown fields.", {
-      source: "canonical",
-      issues: safeIssueSummary(canonical.issues),
-    });
+    reportPersistenceHealth(
+      "SANITIZED",
+      "Configuration loaded after dropping invalid or unknown fields.",
+      {
+        source: "canonical",
+        issues: safeIssueSummary(canonical.issues),
+      },
+    );
   }
-  return applyLoadedConfig(makeLoadResult(runtime, {
-    source: "canonical",
-    status: canonical.sanitized ? "sanitized" : "loaded",
-    degraded: canonical.sanitized,
-    persisted: true,
-    issues: canonical.issues,
-    envelope: canonical.envelope,
-  }));
+  return applyLoadedConfig(
+    makeLoadResult(runtime, {
+      source: "canonical",
+      status: canonical.sanitized ? "sanitized" : "loaded",
+      degraded: canonical.sanitized,
+      persisted: true,
+      issues: canonical.issues,
+      envelope: canonical.envelope,
+    }),
+  );
 }
 
 async function loadConfigInternal() {
@@ -536,24 +600,29 @@ async function loadConfigInternal() {
   try {
     const marker = await storageAdapter.get(CONFIG_MIGRATION_VERSION_KEY, null);
     canonicalRaw = await storageAdapter.get(CONFIG_ENVELOPE_KEY, null);
-    if (Number.isInteger(canonicalRaw?.schemaVersion) && canonicalRaw.schemaVersion > CONFIG_SCHEMA_VERSION) {
+    if (
+      Number.isInteger(canonicalRaw?.schemaVersion) &&
+      canonicalRaw.schemaVersion > CONFIG_SCHEMA_VERSION
+    ) {
       return loadFastPath(canonicalRaw);
     }
     if (isCurrentMigrationMarker(marker)) return loadFastPath(canonicalRaw);
 
     const legacyEvidence = await readLegacyUpgradeEvidence(canonicalRaw);
     if (legacyEvidence.classification.required) {
-      return applyLoadedConfig(makeLoadResult(defaults, {
-        source: "legacy-surface",
-        status: "upgrade-required",
-        recovered: true,
-        degraded: true,
-        persisted: false,
-        issues: legacyEvidence.classification.sources.map((source) => ({
-          path: "storage",
-          code: source,
-        })),
-      }));
+      return applyLoadedConfig(
+        makeLoadResult(defaults, {
+          source: "legacy-surface",
+          status: "upgrade-required",
+          recovered: true,
+          degraded: true,
+          persisted: false,
+          issues: legacyEvidence.classification.sources.map((source) => ({
+            path: "storage",
+            code: source,
+          })),
+        }),
+      );
     }
 
     const canonical = validateStoredEnvelope(canonicalRaw);
@@ -565,31 +634,39 @@ async function loadConfigInternal() {
       if (initialized) return initialized;
     }
 
-    return applyLoadedConfig(makeLoadResult(defaults, {
-      source: "unknown-storage",
-      status: "unrecoverable",
-      recovered: true,
-      degraded: true,
-      persisted: false,
-    }));
+    return applyLoadedConfig(
+      makeLoadResult(defaults, {
+        source: "unknown-storage",
+        status: "unrecoverable",
+        recovered: true,
+        degraded: true,
+        persisted: false,
+      }),
+    );
   } catch (error) {
-    reportPersistenceHealth("LOAD_FAILED", "Configuration loading failed; sanitized defaults were loaded.", {
-      source: "defaults",
-      reason: error?.message || "load_failed",
-      storageStep: error?.storageStep || "load",
-    });
+    reportPersistenceHealth(
+      "LOAD_FAILED",
+      "Configuration loading failed; sanitized defaults were loaded.",
+      {
+        source: "defaults",
+        reason: error?.message || "load_failed",
+        storageStep: error?.storageStep || "load",
+      },
+    );
     await markRecovery({
       kind: "load-failed",
       source: "defaults",
       issues: error?.storageStep ? [{ path: "storage", code: error.storageStep }] : [],
     });
-    return applyLoadedConfig(makeLoadResult(defaults, {
-      source: "defaults",
-      status: "defaults",
-      recovered: true,
-      degraded: true,
-      persisted: false,
-    }));
+    return applyLoadedConfig(
+      makeLoadResult(defaults, {
+        source: "defaults",
+        status: "defaults",
+        recovered: true,
+        degraded: true,
+        persisted: false,
+      }),
+    );
   }
 }
 
@@ -639,11 +716,10 @@ function notReadyResult(origin, access = {}) {
   };
 }
 
-async function commitConfigNow(candidate, {
-  origin = "local",
-  preserveRuntimeCatalogs = false,
-  persistRuntimeCatalogs = [],
-} = {}) {
+async function commitConfigNow(
+  candidate,
+  { origin = "local", preserveRuntimeCatalogs = false, persistRuntimeCatalogs = [] } = {},
+) {
   const storageAccess = await ensureConfigReady();
   if (!storageAccess.ok) return notReadyResult(origin, storageAccess);
   const validationInput = preserveRuntimeCatalogs
@@ -659,7 +735,13 @@ async function commitConfigNow(candidate, {
       origin,
       issues: safeIssueSummary(validation.issues),
     });
-    return { committed: false, saved: [], failed: [{ code: "validation", issues: safeIssueSummary(validation.issues) }], issues: validation.issues, origin };
+    return {
+      committed: false,
+      saved: [],
+      failed: [{ code: "validation", issues: safeIssueSummary(validation.issues) }],
+      issues: validation.issues,
+      origin,
+    };
   }
 
   if (preserveRuntimeCatalogs) {
@@ -719,15 +801,28 @@ async function commitConfigNow(candidate, {
         });
       }
     }
-    reportPersistenceHealth("SAVE_FAILED", "Configuration commit failed before the live state was updated.", {
-      origin,
-      reason: error?.message || "storage_write_failed",
-    });
+    reportPersistenceHealth(
+      "SAVE_FAILED",
+      "Configuration commit failed before the live state was updated.",
+      {
+        origin,
+        reason: error?.message || "storage_write_failed",
+      },
+    );
     return {
       committed: false,
       saved: [],
-      failed: [{ code: "storage_write_failed", message: getStorageFailureMessage("storage_write_failed") }],
-      issues: [{ path: "", code: "storage_write_failed", expected: "persisted config", received: "storage_write_failed" }],
+      failed: [
+        { code: "storage_write_failed", message: getStorageFailureMessage("storage_write_failed") },
+      ],
+      issues: [
+        {
+          path: "",
+          code: "storage_write_failed",
+          expected: "persisted config",
+          received: "storage_write_failed",
+        },
+      ],
       origin,
       previousConfig: previousLiveConfig,
       config: previousLiveConfig,
@@ -814,7 +909,12 @@ async function saveConfigKeysNow(updates, { origin = "local" } = {}) {
         return {
           committed: false,
           saved: [],
-          failed: [{ code: "storage_write_failed", message: getStorageFailureMessage("storage_write_failed") }],
+          failed: [
+            {
+              code: "storage_write_failed",
+              message: getStorageFailureMessage("storage_write_failed"),
+            },
+          ],
           issues: [{ path: section, code: "storage_write_failed", expected: "persisted cache" }],
           origin,
           previousConfig: cloneRuntimeSnapshot(config),
@@ -822,7 +922,15 @@ async function saveConfigKeysNow(updates, { origin = "local" } = {}) {
         };
       }
     }
-    const next = { ...cloneRuntimeSnapshot(config), ...Object.fromEntries(Object.entries(cachePatch).map(([section, value]) => [section, validateCachePayload(section, value).data[section]])) };
+    const next = {
+      ...cloneRuntimeSnapshot(config),
+      ...Object.fromEntries(
+        Object.entries(cachePatch).map(([section, value]) => [
+          section,
+          validateCachePayload(section, value).data[section],
+        ]),
+      ),
+    };
     const applied = applyConfigChange(next, { origin });
     await applied.effects;
     if (Object.keys(corePatch).length === 0) {

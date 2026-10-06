@@ -16,10 +16,7 @@ import {
   setActivePanel,
   syncActiveSettingsPanel,
 } from "./panelNavigation.js";
-import {
-  bindStorageReadOnlyState,
-  syncStorageReadOnlyState,
-} from "./storageReadOnly.js";
+import { bindStorageReadOnlyState, syncStorageReadOnlyState } from "./storageReadOnly.js";
 
 export function ensureModalSkeletonInjected() {
   if (stateManager.get("modalInjected")) return stateManager.get("shadowRoot");
@@ -52,7 +49,14 @@ export function bindModalUiOnce(shadowRoot) {
 
   const modal = shadowRoot.getElementById("tag-config-modal");
   if (modal) {
-    addListener("modal-delegated-click", modal, "click", handleModalClick, undefined, "ui:settings-modal");
+    addListener(
+      "modal-delegated-click",
+      modal,
+      "click",
+      handleModalClick,
+      undefined,
+      "ui:settings-modal",
+    );
   }
 
   addListener(

@@ -31,11 +31,14 @@ function getEffectiveBootstrapMode(feature) {
  * factory preserves the originally declared bootstrap value on
  * _declaredBootstrapMode so invalid declarations cannot be normalized away.
  */
-export function validateFeatureDescriptor(feature, {
-  featureKeys = registeredFeatureKeys,
-  featureIds = registeredFeatureIds,
-  contributionIds = settingsContributionIds,
-} = {}) {
+export function validateFeatureDescriptor(
+  feature,
+  {
+    featureKeys = registeredFeatureKeys,
+    featureIds = registeredFeatureIds,
+    contributionIds = settingsContributionIds,
+  } = {},
+) {
   const errors = [];
   if (!feature || typeof feature !== "object") return ["feature descriptor must be an object"];
 
@@ -64,9 +67,13 @@ export function validateFeatureDescriptor(feature, {
   }
   const localContributionIds = new Set();
   for (const contributionId of getSettingsContributionIds(feature)) {
-    if (localContributionIds.has(contributionId)) errors.push(`duplicate settings contribution '${contributionId}' within feature '${id || key}'`);
+    if (localContributionIds.has(contributionId))
+      errors.push(
+        `duplicate settings contribution '${contributionId}' within feature '${id || key}'`,
+      );
     localContributionIds.add(contributionId);
-    if (contributionIds.has(contributionId)) errors.push(`duplicate settings contribution '${contributionId}'`);
+    if (contributionIds.has(contributionId))
+      errors.push(`duplicate settings contribution '${contributionId}'`);
   }
   return errors;
 }
@@ -88,7 +95,8 @@ export function registerFeature(feature) {
   registeredFeatures.push(feature);
   registeredFeatureKeys.add(key);
   registeredFeatureIds.add(id);
-  for (const contributionId of getSettingsContributionIds(feature)) settingsContributionIds.add(contributionId);
+  for (const contributionId of getSettingsContributionIds(feature))
+    settingsContributionIds.add(contributionId);
   featureBuckets[bootstrapMode].push(feature);
   return feature;
 }

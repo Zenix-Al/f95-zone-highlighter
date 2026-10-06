@@ -7,7 +7,10 @@ import { createEl } from "../utils/dom.js";
 
 function initShadowDOM() {
   if (stateManager.get("shadowRoot")) return; // Already initialized
-  const shadowHost = createEl("div", { attrs: { id: "latest-highlighter-host" }, mount: document.body });
+  const shadowHost = createEl("div", {
+    attrs: { id: "latest-highlighter-host" },
+    mount: document.body,
+  });
 
   stateManager.set("shadowRoot", shadowHost.attachShadow({ mode: "open" }));
 }
