@@ -193,6 +193,43 @@ runTest("CONFIG-01 tolerant mode preserves valid data and recovers invalid input
   assert.strictEqual(section.data.color.completed, "#abc");
 });
 
+runTest("CONFIG-NOTICES-01 dismissedNoticeIds is a private list of unique notice IDs", () => {
+  assert.deepStrictEqual(getDefaultConfig().dismissedNoticeIds, []);
+  assert.strictEqual(getExportableConfigKeys().includes("dismissedNoticeIds"), false);
+
+  const strict = validateConfig({ dismissedNoticeIds: [3, 7], savedNotifID: 2 }, { mode: "strict", partial: true });
+  assert.strictEqual(strict.valid, true);
+  assert.deepStrictEqual(strict.data.dismissedNoticeIds, [3, 7]);
+  for (const invalid of [[0], [3, 3], ["3"], [1.5], 3]) {
+    assert.strictEqual(
+      validateConfig({ dismissedNoticeIds: invalid }, { mode: "strict", partial: true }).valid,
+      false,
+      JSON.stringify(invalid),
+    );
+  }
+
+  const tolerant = sanitizeConfig({ dismissedNoticeIds: [3, 3, "bad", -1, 9] }, { partial: true });
+  assert.deepStrictEqual(tolerant.data.dismissedNoticeIds, [3, 9]);
+});
+
+runTest("CONFIG-NOTICES-01 remembers every dismissed notice and can forget them", async () => {
+  const previousGM = global.GM;
+  const sandbox = createDomSandbox();
+  global.GM = createFakeGM();
+  try {
+    const result = await loadModule("tests/fixtures/noticeDismissalHarness.js").runNoticeDismissalScenario();
+    assert.deepStrictEqual(result.afterDismiss, [11, 12]);
+    assert.deepStrictEqual(result.collapsedOnReload, [11, 12]);
+    assert.strictEqual(result.forgotten, true);
+    assert.deepStrictEqual(result.afterForget, []);
+    assert.strictEqual(result.savedNotifIDAfterForget, null);
+    assert.deepStrictEqual(result.collapsedAfterForget, []);
+  } finally {
+    global.GM = previousGM;
+    sandbox.restore();
+  }
+});
+
 runTest("MANIFEST-01 feature catalog rejects invalid descriptors before registration", () => {
   resetFeatureCatalogForTests();
   const invalid = {

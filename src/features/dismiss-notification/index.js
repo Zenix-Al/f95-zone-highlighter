@@ -1,6 +1,10 @@
 import { createStyledFeature } from "../../core/createStyledFeature.js";
 import { createEnabledDisabledToast, createToggleSetting } from "../../ui/settings/metaFactory.js";
-import { enableNoticeDismissal, disableNoticeDismissal } from "./handler.js";
+import {
+  enableNoticeDismissal,
+  disableNoticeDismissal,
+  forgetDismissedNotices,
+} from "./handler.js";
 import featureCss from "./style.css";
 
 /**
@@ -32,6 +36,15 @@ export const dismissNotificationFeature = createStyledFeature("Dismiss Notificat
           },
           toast: createEnabledDisabledToast("Notification dismissal"),
         }),
+        restoreDismissedNotices: {
+          type: "button",
+          text: "Dismissed notifications",
+          buttonText: "Show again",
+          tooltip: "Forget every dismissed notification so they appear again.",
+          effects: {
+            custom: forgetDismissedNotices,
+          },
+        },
       },
     ],
   },

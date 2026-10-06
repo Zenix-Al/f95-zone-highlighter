@@ -38,6 +38,8 @@ The repository history was checked at `10a0e54`, `e51cf89`, and `b1f737f`, as we
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | Core preference sections | Settings UI/features | Runtime/settings/sync | Yes | No | Yes | Validate and overlay historical value | Delete old surface key after verification |
 | `preferredTags`, `excludedTags`, `markedTags` | Tag UI | Tag UI/overlay | Yes | No | Yes | Validate arrays | Delete old surface key after verification |
+| `dismissedNoticeIds` | Dismiss Notification (last 50 IDs) | Dismiss Notification | Yes | No | Yes; not exported | Defaults to an empty list; no migration | Cleared by the "Show again" setting |
+| `savedNotifID` | None since `dismissedNoticeIds` | Dismiss Notification | Yes | No | Yes; not exported | Still honored as one dismissed ID | Cleared by the "Show again" setting |
 | `tags` | `tagsService` | Tag UI/overlay | No | Yes | No; cache only | Validate into tag cache | Delete old surface key after verification |
 | `prefixes` | `prefixService` | Overlay/tag UI | No | Yes | No; cache only | Validate into prefix cache | Delete old surface key after verification |
 | `addons.byAddon` | Add-on state repository | Add-on service/UI | Partly | Partly | Yes | Add-on-owned merge/normalization | Delete old root only after verified migration |

@@ -10,6 +10,7 @@ import {
   defaultAddonsServiceSettings,
   defaultPrefixes,
   defaultSavedNotifID,
+  defaultDismissedNoticeIds,
   defaultTags,
 } from "./defaults.js";
 
@@ -37,6 +38,7 @@ export let config = {
     },
   },
   savedNotifID: defaultSavedNotifID,
+  dismissedNoticeIds: [...defaultDismissedNoticeIds],
 };
 
 const runtimeState = {

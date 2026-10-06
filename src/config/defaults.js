@@ -109,3 +109,4 @@ export const defaultAddonsSettings = {
 export const defaultTags = [];
 export const defaultPrefixes = { items: [], categories: {} };
 export const defaultSavedNotifID = null;
+export const defaultDismissedNoticeIds = [];
