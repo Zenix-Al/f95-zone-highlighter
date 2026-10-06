@@ -4663,7 +4663,7 @@
     },
     "uiIntegration": {
       "fileCount": 16,
-      "authoredBytes": 44346,
+      "authoredBytes": 44328,
       "physicalLines": 1428,
       "nonblankLines": 1244,
       "files": [
@@ -4759,7 +4759,7 @@
         },
         {
           "path": "src/ui/renderers/addonsRenderer.js",
-          "bytes": 7701,
+          "bytes": 7683,
           "physicalLines": 240,
           "nonblankLines": 206
         }
