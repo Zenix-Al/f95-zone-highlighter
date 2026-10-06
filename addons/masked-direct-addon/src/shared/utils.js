@@ -17,7 +17,8 @@ export function normalizeUrl(url, fallback = "") {
     .replace(/&amp;/gi, "&");
   if (!raw) return fallback;
   try {
-    return new URL(raw, location.href).href;
+    const parsed = new URL(raw, location.href);
+    return parsed.protocol === "http:" || parsed.protocol === "https:" ? parsed.href : fallback;
   } catch {
     return fallback;
   }

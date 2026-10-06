@@ -388,7 +388,7 @@
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-          "bytes": 12918
+          "bytes": 13079
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
@@ -420,7 +420,7 @@
         },
         {
           "path": "addons/library-addon/src/library/importWorkflow.js",
-          "bytes": 9263
+          "bytes": 9289
         },
         {
           "path": "addons/shared/runtimeLifecycle.js",
@@ -448,7 +448,7 @@
         },
         {
           "path": "addons/library-addon/src/ui/application/importExportWorkflow.js",
-          "bytes": 6247
+          "bytes": 6569
         }
       ]
     },
@@ -474,7 +474,7 @@
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-          "bytes": 8723
+          "bytes": 8809
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
@@ -518,7 +518,7 @@
         },
         {
           "path": "addons/library-addon/src/library/importWorkflow.js",
-          "bytes": 6284
+          "bytes": 6308
         },
         {
           "path": "addons/library-addon/src/app/dockController.js",

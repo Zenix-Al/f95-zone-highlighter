@@ -5,6 +5,7 @@ import { resolveMaskedLink as resolveMaskedLinkTransport } from "./maskedResolut
 
 const CAPTCHA_READY_TIMEOUT_MS = 5000;
 const CAPTCHA_READY_POLL_MS = 100;
+const RECAPTCHA_CLICK_TIMEOUT_MS = 30000;
 
 export function createMaskedPageController({
   addTeardown,
@@ -25,6 +26,7 @@ export function createMaskedPageController({
   let disposed = false;
   let teardownRegistered = false;
   let generation = 0;
+  const captchaWaiters = new Set();
 
   function isMaskedPage() {
     return location.hostname.includes("f95zone.to") && location.pathname.startsWith("/masked");
@@ -48,7 +50,11 @@ export function createMaskedPageController({
     if (disposed || owner !== generation) return;
     state = "failed";
     if (nodes.error) {
-      nodes.error.innerHTML = `<h2>${title}</h2><p>${message}</p>`;
+      const heading = document.createElement("h2");
+      heading.textContent = title;
+      const body = document.createElement("p");
+      body.textContent = message;
+      nodes.error.replaceChildren(heading, body);
       nodes.error.style.display = "block";
     }
     if (nodes.loading) nodes.loading.style.display = "none";
@@ -98,6 +104,7 @@ export function createMaskedPageController({
     nodes.captcha.style.display = "block";
     await new Promise((resolve) => {
       let accepted = false;
+      captchaWaiters.add(resolve);
       api.render("captcha", {
         theme: "dark",
         sitekey: F95_CAPTCHA_SITEKEY,
@@ -111,6 +118,7 @@ export function createMaskedPageController({
           } catch {
             showError(nodes, undefined, undefined, owner);
           }
+          captchaWaiters.delete(resolve);
           resolve();
         },
       });
@@ -158,6 +166,8 @@ export function createMaskedPageController({
     generation += 1;
     state = "disposed";
     activeRequest?.abort?.();
+    for (const release of captchaWaiters) release();
+    captchaWaiters.clear();
     teardownRegistered = false;
   }
 
@@ -177,7 +187,12 @@ export function createMaskedPageController({
 
   function handleRecaptcha() {
     if (!location.href.includes(F95_CAPTCHA_SITEKEY)) return;
+    const startedAt = now();
     const timer = setInterval(() => {
+      if (now() - startedAt > RECAPTCHA_CLICK_TIMEOUT_MS) {
+        clearInterval(timer);
+        return;
+      }
       const checkbox =
         document.querySelector(".recaptcha-checkbox-checkmark") ||
         document.querySelector(".recaptcha-checkbox-border");

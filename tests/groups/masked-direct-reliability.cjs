@@ -20,6 +20,32 @@ module.exports = function registerMaskedDirectReliability(context) {
     };
   }
 
+  runTest("MASKED-DIRECT-DATANODES-01 flow does not patch window.setInterval", async () => {
+    const sandbox = createDomSandbox("https://datanodes.to/download");
+    const originalSetInterval = global.window.setInterval;
+    try {
+      const { processDatanodesDownload } = loadModule(
+        "addons/masked-direct-addon/src/hosts/datanodes/index.js",
+      );
+      let failure = "";
+      await processDatanodesDownload({
+        challengeGate: null,
+        notifyMainFailure: async (_host, message) => { failure = message; },
+        reportAddonHealthy: () => {},
+        settings: { datanodes: { totalFlowTimeout: 1, pollInterval: 100 } },
+      });
+      assert.strictEqual(global.window.setInterval, originalSetInterval);
+      assert.strictEqual(
+        Object.keys(global.window).some((key) => key.includes("f95ue_datanodes")),
+        false,
+      );
+      await new Promise((resolve) => setTimeout(resolve, 650));
+      assert.match(failure, /timed out/);
+    } finally {
+      sandbox.restore();
+    }
+  });
+
   runTest(
     "MASKED-DIRECT-RELIABILITY-VERIFY-01 covers every runtime context",
     () => {

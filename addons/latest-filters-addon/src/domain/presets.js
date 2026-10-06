@@ -12,11 +12,24 @@ const LATEST_PATH = "/sam/latest_alpha";
 
 // ─── Page detection ───────────────────────────────────────────────────────────
 
+function isLatestHostname(hostname) {
+  const host = String(hostname || "").toLowerCase();
+  return host === LATEST_HOSTNAME || host.endsWith(`.${LATEST_HOSTNAME}`);
+}
+
 export function isLatestPage() {
-  return location.hostname.includes(LATEST_HOSTNAME) && location.pathname.startsWith(LATEST_PATH);
+  return isLatestHostname(location.hostname) && location.pathname.startsWith(LATEST_PATH);
 }
 
 // ─── URL helpers ──────────────────────────────────────────────────────────────
+
+function safeDecode(value) {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
 
 function prettifyKey(key) {
   return String(key || "")
@@ -69,7 +82,7 @@ function buildNormalizedHash(rawHash) {
 export function normalizeLatestUrl(rawUrl) {
   try {
     const url = new URL(rawUrl, location.origin);
-    if (!url.hostname.includes(LATEST_HOSTNAME) || !url.pathname.startsWith(LATEST_PATH)) {
+    if (!isLatestHostname(url.hostname) || !url.pathname.startsWith(LATEST_PATH)) {
       return "";
     }
 
@@ -113,7 +126,7 @@ export function summarizeUrlParts(rawUrl) {
       const label = prettifyKey(key);
       const normalizedValues = values
         .flatMap((value) => (key === "tags" ? String(value || "").split(",") : [value]))
-        .map((v) => decodeURIComponent(String(v || "")).replace(/\+/g, " ").trim())
+        .map((v) => String(v || "").trim())
         .filter(Boolean);
       items.push({ key, label, values: normalizedValues });
     }
@@ -129,7 +142,7 @@ export function summarizeUrlParts(rawUrl) {
       }
       const values = String(segment.value)
         .split(",")
-        .map((v) => decodeURIComponent(v).replace(/\+/g, " ").trim())
+        .map((v) => safeDecode(v).replace(/\+/g, " ").trim())
         .filter(Boolean);
       items.push({ key: segment.key, label, values });
     }

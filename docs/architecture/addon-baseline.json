@@ -2609,8 +2609,8 @@
           },
           {
             "path": "addons/library-addon/src/library/importWorkflow.js",
-            "bytes": 8731,
-            "physicalLines": 342,
+            "bytes": 8844,
+            "physicalLines": 344,
             "nonblankLines": 304
           },
           {
@@ -2705,9 +2705,9 @@
           },
           {
             "path": "addons/library-addon/src/ui/application/importExportWorkflow.js",
-            "bytes": 6475,
-            "physicalLines": 194,
-            "nonblankLines": 176
+            "bytes": 6868,
+            "physicalLines": 203,
+            "nonblankLines": 184
           },
           {
             "path": "addons/library-addon/src/ui/application/importProgressController.js",
@@ -3043,7 +3043,7 @@
             },
             {
               "path": "addons/library-addon/src/library/importWorkflow.js",
-              "bytes": 9263
+              "bytes": 9289
             },
             {
               "path": "addons/shared/runtimeLifecycle.js",
@@ -3071,7 +3071,7 @@
             },
             {
               "path": "addons/library-addon/src/ui/application/importExportWorkflow.js",
-              "bytes": 6247
+              "bytes": 6569
             }
           ]
         },
@@ -3142,7 +3142,7 @@
             },
             {
               "path": "addons/library-addon/src/library/importWorkflow.js",
-              "bytes": 6284
+              "bytes": 6308
             },
             {
               "path": "addons/library-addon/src/app/dockController.js",
@@ -3703,9 +3703,9 @@
       "id": "site-repair-addon",
       "source": {
         "fileCount": 19,
-        "authoredBytes": 36892,
-        "physicalLines": 984,
-        "nonblankLines": 933,
+        "authoredBytes": 37102,
+        "physicalLines": 987,
+        "nonblankLines": 934,
         "files": [
           {
             "path": "addons/site-repair-addon/src/api/bridge.js",
@@ -3805,9 +3805,9 @@
           },
           {
             "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-            "bytes": 13928,
-            "physicalLines": 413,
-            "nonblankLines": 382
+            "bytes": 14138,
+            "physicalLines": 416,
+            "nonblankLines": 383
           },
           {
             "path": "addons/site-repair-addon/src/repairs/latestAjax/policy.js",
@@ -3826,12 +3826,12 @@
       "builds": {
         "regular": {
           "mode": "regular",
-          "bytes": 51398,
-          "gzipBytes": 12346,
+          "bytes": 51608,
+          "gzipBytes": 12468,
           "contributors": [
             {
               "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-              "bytes": 14070
+              "bytes": 14280
             },
             {
               "path": "addons/shared/runtimeLifecycle.js",
@@ -3913,12 +3913,12 @@
         },
         "release": {
           "mode": "release",
-          "bytes": 44473,
-          "gzipBytes": 10294,
+          "bytes": 44686,
+          "gzipBytes": 10405,
           "contributors": [
             {
               "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-              "bytes": 10315
+              "bytes": 10525
             },
             {
               "path": "addons/shared/runtimeLifecycle.js",
@@ -4433,9 +4433,9 @@
     },
     "servicesAddons": {
       "fileCount": 37,
-      "authoredBytes": 194268,
-      "physicalLines": 5237,
-      "nonblankLines": 4592,
+      "authoredBytes": 194767,
+      "physicalLines": 5261,
+      "nonblankLines": 4615,
       "files": [
         {
           "path": "src/services/addons/access.js",
@@ -4559,9 +4559,9 @@
         },
         {
           "path": "src/services/addons/idbStore.js",
-          "bytes": 13381,
-          "physicalLines": 408,
-          "nonblankLines": 358
+          "bytes": 13880,
+          "physicalLines": 432,
+          "nonblankLines": 381
         },
         {
           "path": "src/services/addons/invocation.js",

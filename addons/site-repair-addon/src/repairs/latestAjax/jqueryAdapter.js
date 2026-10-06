@@ -91,14 +91,17 @@ function createLatestAjaxPageScript({
     if (candidate.ajax === state.patchedAjax) return true;
     if (candidate.ajax[marker]) return true;
 
-    state.originalAjax = candidate.ajax;
+    const originalAjax = candidate.ajax;
+    state.originalAjax = originalAjax;
     state.patchedOwner = candidate;
     state.patchedAjax = function siteRepairLatestAjax(urlOrSettings, maybeSettings) {
       const objectCall = Boolean(urlOrSettings && typeof urlOrSettings === "object");
       const settings = objectCall
         ? { ...urlOrSettings }
         : { ...(maybeSettings || {}), url: urlOrSettings };
-      if (!isLatestDataRequest(settings)) return state.originalAjax.apply(this, arguments);
+      // Use the closure's original, not state: a stale wrapper that outlives disable()
+      // (another script wrapped on top, or a cached reference) must still pass calls through.
+      if (!state.enabled || !isLatestDataRequest(settings)) return originalAjax.apply(this, arguments);
       if (state.siteRetryPending) {
         state.siteRetryPending = false;
         settings.__f95ueSiteRepairRetried = true;
@@ -143,7 +146,7 @@ function createLatestAjaxPageScript({
               currentGeneration: state.generation,
               enabled: state.enabled,
             });
-            if (!state.enabled || state.generation !== retryGeneration || !state.originalAjax) {
+            if (!state.enabled || state.generation !== retryGeneration || !originalAjax) {
               debugLog("Cancelled stale Latest Ajax retry.", { retryGeneration });
               emit("retry-cancelled");
               return;
@@ -180,7 +183,7 @@ function createLatestAjaxPageScript({
                 url: settings.url,
               });
               settings.__f95ueSiteRepairRetried = true;
-              state.originalAjax.call(ajaxThis, {
+              originalAjax.call(ajaxThis, {
                 ...settings,
                 __f95ueSiteRepairRetried: true,
               });
@@ -206,8 +209,8 @@ function createLatestAjaxPageScript({
       };
 
       return objectCall
-        ? state.originalAjax.call(this, settings)
-        : state.originalAjax.call(this, settings.url, settings);
+        ? originalAjax.call(this, settings)
+        : originalAjax.call(this, settings.url, settings);
     };
     try { Object.assign(state.patchedAjax, state.originalAjax); } catch {}
     state.patchedAjax[marker] = true;
