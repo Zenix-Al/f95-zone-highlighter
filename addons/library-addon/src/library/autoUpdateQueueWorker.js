@@ -8,11 +8,15 @@ import {
 
 function wait(ms, signal) {
   return new Promise((resolve) => {
-    const timer = setTimeout(resolve, Math.max(0, Number(ms) || 0));
-    signal?.addEventListener("abort", () => {
+    const onAbort = () => {
       clearTimeout(timer);
       resolve();
-    }, { once: true });
+    };
+    const timer = setTimeout(() => {
+      signal?.removeEventListener("abort", onAbort);
+      resolve();
+    }, Math.max(0, Number(ms) || 0));
+    signal?.addEventListener("abort", onAbort, { once: true });
   });
 }
 
@@ -141,6 +145,8 @@ export function createAutoUpdateQueueWorker({
           );
           if (refreshed?.ok) activeItem = refreshed.value;
           else claimLost = true;
+        } catch {
+          claimLost = true;
         } finally {
           heartbeatBusy = false;
         }
@@ -308,7 +314,7 @@ export function createAutoUpdateQueueWorker({
           failed: cycle.failed + (terminal ? 1 : 0),
           retryPending: Math.max(
             0,
-            cycle.retryPending + (wasRetry ? 0 : 1) - (terminal && wasRetry ? 1 : 0),
+            cycle.retryPending + (terminal ? (wasRetry ? -1 : 0) : (wasRetry ? 0 : 1)),
           ),
           networkRetries: cycle.networkRetries + requestAttempts - 1,
           currentThreadId: "",

@@ -364,11 +364,11 @@
     }
   ],
   "build": {
-    "authoredBytes": 412657,
+    "authoredBytes": 412810,
     "fileCount": 102,
     "regular": {
       "mode": "regular",
-      "bytes": 425222,
+      "bytes": 425383,
       "contributors": [
         {
           "path": "addons/library-addon/src/library/service.js",
@@ -388,7 +388,7 @@
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-          "bytes": 12918
+          "bytes": 13079
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
@@ -454,7 +454,7 @@
     },
     "release": {
       "mode": "release",
-      "bytes": 383485,
+      "bytes": 383655,
       "contributors": [
         {
           "path": "addons/library-addon/src/ui/assets/manager.css",
@@ -474,7 +474,7 @@
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-          "bytes": 8723
+          "bytes": 8809
         },
         {
           "path": "addons/library-addon/src/library/recordModel.js",
