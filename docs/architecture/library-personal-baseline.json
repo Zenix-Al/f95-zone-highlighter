@@ -364,11 +364,11 @@
     }
   ],
   "build": {
-    "authoredBytes": 412810,
+    "authoredBytes": 413163,
     "fileCount": 102,
     "regular": {
       "mode": "regular",
-      "bytes": 425383,
+      "bytes": 425570,
       "contributors": [
         {
           "path": "addons/library-addon/src/library/service.js",
@@ -420,7 +420,7 @@
         },
         {
           "path": "addons/library-addon/src/library/importWorkflow.js",
-          "bytes": 9263
+          "bytes": 9289
         },
         {
           "path": "addons/shared/runtimeLifecycle.js",
@@ -448,13 +448,13 @@
         },
         {
           "path": "addons/library-addon/src/ui/application/importExportWorkflow.js",
-          "bytes": 6247
+          "bytes": 6569
         }
       ]
     },
     "release": {
       "mode": "release",
-      "bytes": 383655,
+      "bytes": 383891,
       "contributors": [
         {
           "path": "addons/library-addon/src/ui/assets/manager.css",
@@ -518,7 +518,7 @@
         },
         {
           "path": "addons/library-addon/src/library/importWorkflow.js",
-          "bytes": 6284
+          "bytes": 6308
         },
         {
           "path": "addons/library-addon/src/app/dockController.js",

@@ -3437,6 +3437,88 @@ module.exports = function registerGroup(context) {
   );
 
   runTest(
+    "ADDON-LIBRARY-02 counts a batch that was written before a cancellation took effect",
+    async () => {
+      const { executeLibraryImport } = loadModule(
+        "addons/library-addon/src/library/importWorkflow.js",
+      );
+      let cancelled = false;
+      const result = await executeLibraryImport({
+        records: [{ threadId: "1" }, { threadId: "2" }, { threadId: "3" }],
+        plan: {
+          total: 3,
+          skipped: 0,
+          totalBatches: 2,
+          throttleInfo: {},
+          batches: [
+            [
+              { mode: "add", value: { threadId: "1" } },
+              { mode: "update", value: { threadId: "2" } },
+            ],
+            [{ mode: "add", value: { threadId: "3" } }],
+          ],
+        },
+        shouldCancel: () => cancelled,
+        onProgress: () => {},
+        bulkPutEntries: async () => {
+          cancelled = true;
+          return { ok: true };
+        },
+        saveOperation: async () => ({ ok: true }),
+      });
+      assert.strictEqual(result.cancelled, true);
+      assert.strictEqual(result.added, 1);
+      assert.strictEqual(result.updated, 1);
+      assert.strictEqual(result.imported, 2);
+      assert.strictEqual(result.processed, 2);
+      assert.strictEqual(result.completedBatches, 0);
+    },
+  );
+
+  runTest(
+    "ADDON-LIBRARY-02 refreshes the table after a cancelled import that wrote records",
+    async () => {
+      const { handleImportFile } = loadModule(
+        "addons/library-addon/src/ui/application/importExportWorkflow.js",
+      );
+      const run = async (imported) => {
+        let reloads = 0;
+        let mutated = 0;
+        const inputEl = {
+          value: "x",
+          files: [{ text: async () => JSON.stringify({ records: [{ threadId: "1" }] }) }],
+        };
+        await handleImportFile(
+          inputEl,
+          { querySelector: () => null },
+          {},
+          {
+            previewImport: async () => ({
+              valid: true,
+              added: 1,
+              updated: 0,
+              skippedExisting: 0,
+              skippedNotNewer: 0,
+              skippedInvalid: 0,
+              skippedDuplicateInFile: 0,
+              totalBatches: 1,
+              total: 1,
+              sections: { updates: { total: 0, writeCount: 0 }, activity: { total: 0, writeCount: 0 } },
+            }),
+            importEntries: async () => ({ cancelled: true, imported, ok: true, failed: 0 }),
+          },
+          async () => { reloads += 1; return true; },
+          () => { mutated += 1; },
+          async () => true,
+        );
+        return { reloads, mutated, cleared: inputEl.value === "" };
+      };
+      assert.deepStrictEqual(await run(2), { reloads: 1, mutated: 1, cleared: true });
+      assert.deepStrictEqual(await run(0), { reloads: 0, mutated: 0, cleared: true });
+    },
+  );
+
+  runTest(
     "ADDON-MASKED-DIRECT-01 classifies core, standalone, and unsupported contexts",
     () => {
       const externalHosts = new Set([
@@ -4038,6 +4120,46 @@ module.exports = function registerGroup(context) {
         attempts: 3,
       });
       assert.deepStrictEqual(delays, [7, 7]);
+    },
+  );
+
+  runTest(
+    "SITE-REPAIR-02 a wrapper that outlives disable still passes calls through",
+    () => {
+      const { createLatestAjaxJqueryAdapter } = loadModule(
+        "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+      );
+      const calls = [];
+      function originalAjax(settingsOrUrl, maybeSettings) {
+        calls.push(settingsOrUrl);
+        return maybeSettings || settingsOrUrl;
+      }
+      const { windowLike, documentLike } = createLatestAjaxPageBridgeHarness({
+        jQuery: { ajax: originalAjax },
+      });
+      windowLike.setTimeout = () => 1;
+      windowLike.clearTimeout = () => {};
+      windowLike.setInterval = () => {
+        throw new Error("unexpected polling");
+      };
+      windowLike.clearInterval = () => {};
+      const adapter = createLatestAjaxJqueryAdapter({
+        window: windowLike,
+        document: documentLike,
+      });
+      adapter.enable({ allowRetry: false });
+      const stale = windowLike.jQuery.ajax;
+      assert.notStrictEqual(stale, originalAjax);
+      // Another script wraps ajax on top, so disable cannot restore the original.
+      const thirdParty = function thirdPartyAjax(...args) {
+        return stale.apply(this, args);
+      };
+      windowLike.jQuery.ajax = thirdParty;
+      adapter.disable();
+      assert.strictEqual(windowLike.jQuery.ajax, thirdParty);
+      assert.doesNotThrow(() => stale({ url: "/other.php" }));
+      assert.doesNotThrow(() => stale({ url: "/sam/latest_data.php" }));
+      assert.strictEqual(calls.length, 2);
     },
   );
 
