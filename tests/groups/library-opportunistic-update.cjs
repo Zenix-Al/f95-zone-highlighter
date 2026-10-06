@@ -31,6 +31,26 @@ module.exports = function registerLibraryOpportunisticUpdateGroup(context) {
     assert.strictEqual(observations, 0);
   });
 
+  runTest("LIBRARY-OPPORTUNISTIC-UPDATE-01 ignores private and error thread pages", async () => {
+    const sandbox = createDomSandbox("https://f95zone.to/threads/private-game.123/");
+    try {
+      const { getThreadSnapshot } = loadModule("addons/library-addon/src/thread/detector.js");
+      sandbox.document.title = "Oops! We ran into some problems. | F95zone";
+      sandbox.document.body.innerHTML = '<h1 class="p-title-value">Oops! We ran into some problems.</h1><div class="blockMessage">The requested thread could not be found.</div>';
+      assert.strictEqual(getThreadSnapshot(), null);
+
+      sandbox.document.body.innerHTML = '<h1 class="p-title-value">Private Game [v1.0] [Dev]</h1>';
+      assert.strictEqual(getThreadSnapshot(), null);
+
+      sandbox.document.body.innerHTML += '<article class="message-threadStarterPost">Version: v1.0</article>';
+      const valid = getThreadSnapshot();
+      assert.strictEqual(valid.threadId, "123");
+      assert.strictEqual(valid.title, "Private Game");
+    } finally {
+      sandbox.restore();
+    }
+  });
+
   runTest("LIBRARY-OPPORTUNISTIC-UPDATE-01 observes saved snapshots through history service", async () => {
     const { createOpportunisticObserver } = loadModule(
       "addons/library-addon/src/app/opportunisticObserver.js",

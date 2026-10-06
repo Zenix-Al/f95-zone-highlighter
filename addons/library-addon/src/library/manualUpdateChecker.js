@@ -1,4 +1,5 @@
 import { parseLibraryThreadHtml } from "./threadUpdateParser.js";
+import { normalizeVersionIdentity } from "./updateEventModel.js";
 import { debugLog } from "../../../shared/debugLog.js";
 
 const RETRYABLE = new Set(["timeout", "network_error", "http_500", "http_502", "http_503", "http_504"]);
@@ -78,8 +79,8 @@ export async function checkLibraryRecords(records, requestHtml, options = {}) {
       changed:
         Boolean(parsed.ok) &&
         (
-          String(parsed.value.currentVersion || "").trim().toLowerCase() !==
-            String(record.thread?.currentVersion || record.gameVersion || "").trim().toLowerCase() ||
+          normalizeVersionIdentity(parsed.value.currentVersion) !==
+            normalizeVersionIdentity(record.thread?.currentVersion || record.gameVersion) ||
           String(parsed.value.title || "").trim().toLowerCase() !==
             String(record.thread?.title || record.title || "").trim().toLowerCase()
         ),

@@ -20,14 +20,23 @@ atomic persistence.
 
 ## Persistence contract
 
-- `src/config/persistence.js` owns the canonical storage keys and schema version `1`.
-- `CONFIG_MIGRATIONS` is intentionally empty (`CONFIG_MIGRATION_COUNT === 0`); the active
-  `configMigrationService` is only the bounded read-only detector for historical surface-key storage and the proven v5.1.2 bridge boundary.
+- `src/config/persistence.js` owns the canonical storage keys and schema version `2`.
+- `CONFIG_MIGRATIONS` contains the bounded version-1-to-2 migration; the active
+  `configMigrationService` also detects historical surface-key storage and the proven v5.1.2 bridge boundary.
 - `storageAdapter` performs raw storage I/O only. It does not know config defaults, schema,
   migrations, revisions, or effects.
 - `settingsService.commitConfig()` reads the latest envelope, increments its revision, stores the
   previous valid envelope as last-known-good, then writes the new envelope before updating live
   config.
+- `configWriteLock` holds one exclusive Web Lock around startup recovery/migration and every
+  complete runtime config read/modify/write sequence. All updated HTTPS tabs on the same origin
+  therefore serialize writes to the shared GM keys. HTTP is no longer a matched core page;
+  if Web Locks are unavailable, config loads read-only and writes fail closed.
+- A whole-section `saveConfigKeys()` candidate or direct `commitConfig()` candidate prepared in
+  a stale tab is rejected rather than overwriting a newer revision. Cache-only tag/prefix writes
+  also compare the current cache with the tab's last loaded value while holding the lock.
+- Updater-based saves refresh changed tag/prefix caches under that lock even when the canonical
+  revision is unchanged, so another tab's cache-only save is included in the updater draft.
 - `updateConfig(updater, options)` is the serialized mutation boundary for interactive updates.
   The repository clones canonical settings while retaining the unchanged runtime tag/prefix
   cache references, validates with empty catalog placeholders, persists, applies the shared
@@ -46,6 +55,12 @@ Core no longer observes canonical config writes through `GM_addValueChangeListen
 remote configuration lifecycle changes. The unreleased `globalSettings.enableCrossTabSync` field
 is no longer part of defaults or the schema.
 
+The write lock does not live-sync open Settings panels. A stale tab refreshes on an updater-based
+save, or receives a stale-candidate error for whole-section writes. The guarantee applies after
+all writing tabs have loaded this HTTPS-only build; an older userscript still writing without the
+lock cannot participate in the protocol. Validate Web Locks availability in each supported
+userscript manager before release.
+
 Existing version-1 data containing that field is handled by the existing tolerant sanitization and
 bounded historical recovery path: the unknown field is dropped from the candidate, valid sibling
 settings remain, and a marked fast load performs no storage rewrite. This does not add a schema
@@ -58,8 +73,8 @@ runtime behavior are not core configuration synchronization.
 ## Backups and recovery
 
 Keep a `lastKnownGood` snapshot in storage after successful commits and use it for bounded recovery
-from corrupt canonical data. Revision and writer metadata remain persistence diagnostics and do not
-constitute a core synchronization protocol.
+from corrupt canonical data. Startup recovery writes hold the same lock as ordinary saves. Revision
+and writer metadata are used for stale-candidate detection, not live UI synchronization.
 
 ## Checks
 

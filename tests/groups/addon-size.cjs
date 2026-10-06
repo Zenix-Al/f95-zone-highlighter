@@ -26,8 +26,8 @@ module.exports = function registerAddonSizeTests(context) {
     const manifest = JSON.parse(fs.readFileSync(path.join(ROOT, "addons/addons.manifest.json"), "utf8")).addons;
     assert.strictEqual(report.addons.length, manifest.length);
     assert.deepStrictEqual(report.addons.map((entry) => entry.addonId).sort(), manifest.map((entry) => entry.id).sort());
-    assert.strictEqual(report.publicApiConsumers.allActions.length, 30);
-    assert.strictEqual(new Set(report.publicApiConsumers.allActions.map((entry) => entry.action)).size, 30);
+    assert.strictEqual(report.publicApiConsumers.allActions.length, 34);
+    assert.strictEqual(new Set(report.publicApiConsumers.allActions.map((entry) => entry.action)).size, 34);
     assert.ok(report.helperConsumers.every((helper) => Array.isArray(helper.consumers)));
     assert.strictEqual(report.summary.testsExcludedFromProductionTotals, true);
     const productionPaths = report.coreAddOnService.source.files.map((file) => file.path).concat(

@@ -281,6 +281,29 @@ runTest("CORE-SIZE-LATEST-CAPTURE-01 keeps the newest valid Latest snapshot", ()
   assert.deepStrictEqual(capture.getLatestCaptureSnapshot().data, [{ thread_id: 2 }]);
 });
 
+runTest("Latest capture survives overlay toggles and age, but not a route change", () => {
+  const capture = loadModule("src/features/latest-overlay/capture/index.js");
+  capture.resetLatestCaptureForTests();
+  capture.resetLatestCaptureStoreForTests();
+  capture.startLatestCapture({ generation: 20 }, { active: true });
+  const url = "https://f95zone.to/sam/latest_data.php";
+  const payload = (id) => JSON.stringify({ msg: { data: [{ thread_id: id }] } });
+  assert.strictEqual(capture.processCompletedLatestCapture("fetch", url, payload(1)), true);
+  const originalNow = Date.now;
+  Date.now = () => originalNow() + 31_000;
+  try { assert.strictEqual(capture.getLatestCaptureSnapshot().status, "captured"); }
+  finally { Date.now = originalNow; }
+  capture.processCompletedLatestCaptureError("fetch", url, "temporary network failure");
+  assert.deepStrictEqual(capture.getLatestCaptureSnapshot().data, [{ thread_id: 1 }]);
+  capture.startLatestCapture({ generation: 20 }, { active: true });
+  assert.deepStrictEqual(capture.getLatestCaptureSnapshot().data, [{ thread_id: 1 }]);
+  capture.refreshLatestCapture({ generation: 21 }, { active: true });
+  assert.strictEqual(capture.getLatestCaptureSnapshot().status, "idle");
+  assert.strictEqual(capture.processCompletedLatestCapture("fetch", url, payload(2)), true);
+  capture.startLatestCapture({ generation: 21 }, { active: false });
+  assert.strictEqual(capture.getLatestCaptureSnapshot().status, "idle");
+});
+
 runTest("CORE-SIZE-LATEST-CAPTURE-01 exposes one private consumer plus an immediate read", () => {
   const capture = loadModule("src/features/latest-overlay/capture/index.js");
   capture.resetLatestCaptureForTests();

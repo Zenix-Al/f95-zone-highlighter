@@ -168,7 +168,7 @@
         "globalEventListeners": [
           {
             "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-            "line": 281,
+            "line": 284,
             "text": "window.addEventListener(commandEvent, onCommand);"
           }
         ],
@@ -218,12 +218,12 @@
           },
           {
             "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-            "line": 138,
+            "line": 141,
             "text": "const timer = window.setTimeout(() => {"
           },
           {
             "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-            "line": 234,
+            "line": 237,
             "text": "state.pollTimer = window.setInterval(() => {"
           }
         ],
@@ -267,17 +267,17 @@
         "coreDomAssumptions": [
           {
             "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-            "line": 151,
+            "line": 154,
             "text": "const retryButton = document.querySelector(\"#error-box_retry-btn\");"
           },
           {
             "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-            "line": 222,
+            "line": 225,
             "text": "return patch(window.jQuery) || patch(window.$);"
           },
           {
             "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-            "line": 251,
+            "line": 254,
             "text": "const candidates = new Set([state.patchedOwner, window.jQuery, window.$].filter(Boolean));"
           },
           {
@@ -440,132 +440,137 @@
           },
           {
             "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-            "line": 105,
+            "line": 102,
+            "text": "// Use the closure's original, not state: a stale wrapper that outlives disable()"
+          },
+          {
+            "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+            "line": 108,
             "text": "debugLog(\"Claimed site-owned Latest retry request.\", { url: settings.url });"
           },
           {
             "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-            "line": 128,
+            "line": 131,
             "text": "const retryGeneration = state.generation;"
           },
           {
             "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-            "line": 140,
+            "line": 143,
             "text": "debugLog(\"Latest retry timer fired; locating the site's Retry control.\", {"
           },
           {
             "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-            "line": 143,
+            "line": 146,
             "text": "currentGeneration: state.generation,"
           },
           {
             "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-            "line": 146,
-            "text": "if (!state.enabled || state.generation !== retryGeneration || !state.originalAjax) {"
+            "line": 149,
+            "text": "if (!state.enabled || state.generation !== retryGeneration || !originalAjax) {"
           },
           {
             "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-            "line": 147,
+            "line": 150,
             "text": "debugLog(\"Cancelled stale Latest Ajax retry.\", { retryGeneration });"
           },
           {
             "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-            "line": 148,
+            "line": 151,
             "text": "emit(\"retry-cancelled\");"
           },
           {
             "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-            "line": 152,
+            "line": 155,
             "text": "debugLog(\"Latest Retry control lookup completed.\", {"
           },
           {
             "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-            "line": 161,
+            "line": 164,
             "text": "debugLog(\"Clicking the site's Latest Retry control.\", {"
           },
           {
             "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-            "line": 169,
+            "line": 172,
             "text": "debugLog(\"Latest Retry control click returned.\", {"
           },
           {
             "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-            "line": 174,
+            "line": 177,
             "text": "debugLog(\"Site Retry control did not dispatch a Latest request.\", {});"
           },
           {
             "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-            "line": 175,
+            "line": 178,
             "text": "emit(\"retry-unavailable\");"
           },
           {
             "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-            "line": 179,
+            "line": 182,
             "text": "debugLog(\"Site Retry control unavailable; replaying the request as fallback.\", {"
           },
           {
             "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-            "line": 188,
+            "line": 191,
             "text": "emit(\"retry-dispatched\");"
           },
           {
             "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-            "line": 193,
+            "line": 196,
             "text": "debugLog(\"Scheduled one site-owned Latest retry.\", {"
           },
           {
             "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-            "line": 199,
+            "line": 202,
             "text": "emit(\"retry-scheduled\");"
           },
           {
             "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-            "line": 237,
+            "line": 240,
             "text": "window.clearInterval(state.pollTimer);"
           },
           {
             "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-            "line": 245,
+            "line": 248,
             "text": "function disable() {"
           },
           {
             "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-            "line": 249,
+            "line": 252,
             "text": "state.generation += 1;"
           },
           {
             "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-            "line": 260,
+            "line": 263,
             "text": "debugLog(\"Restored page-world jQuery.ajax.\", { generation: state.generation });"
           },
           {
             "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-            "line": 267,
+            "line": 270,
             "text": "disable();"
           },
           {
             "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-            "line": 274,
+            "line": 277,
             "text": "if (detail.action === \"disable\") {"
           },
           {
             "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-            "line": 275,
+            "line": 278,
             "text": "disable();"
           },
           {
             "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-            "line": 386,
+            "line": 389,
             "text": "function disable() {"
           },
           {
             "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-            "line": 389,
+            "line": 392,
             "text": "if (installed) dispatch(\"disable\");"
           },
           {
             "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-            "line": 412,
+            "line": 415,
             "text": "return { enable, disable, destroy, configure, getSnapshot };"
           }
         ],
@@ -975,12 +980,12 @@
         "pollingAndTimers": [
           {
             "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-            "line": 19,
+            "line": 20,
             "text": "sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay)),"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-            "line": 180,
+            "line": 191,
             "text": "const timer = setInterval(() => {"
           },
           {
@@ -990,27 +995,27 @@
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-            "line": 184,
+            "line": 144,
             "text": "setTimeout(resolve, 16);"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-            "line": 310,
+            "line": 268,
             "text": "timeoutTimer = setTimeout(() => {"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-            "line": 320,
+            "line": 278,
             "text": "observer = new MutationObserver(scheduleScan);"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-            "line": 330,
+            "line": 288,
             "text": "pollTimer = setInterval("
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-            "line": 335,
+            "line": 293,
             "text": "setTimeout(scheduleScan, 500);"
           },
           {
@@ -1045,7 +1050,7 @@
           },
           {
             "path": "addons/masked-direct-addon/src/shared/utils.js",
-            "line": 90,
+            "line": 91,
             "text": "return new Promise((resolve) => setTimeout(resolve, ms));"
           }
         ],
@@ -1287,32 +1292,32 @@
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-            "line": 14,
+            "line": 15,
             "text": "location.href = url;"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-            "line": 30,
+            "line": 32,
             "text": "return location.hostname.includes(\"f95zone.to\") && location.pathname.startsWith(\"/masked\");"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-            "line": 35,
+            "line": 37,
             "text": "location.hostname.includes(\"google.com\") || location.hostname.includes(\"recaptcha.net\");"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-            "line": 36,
+            "line": 38,
             "text": "return isRecaptchaHost && location.pathname.startsWith(\"/recaptcha/\");"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-            "line": 58,
+            "line": 64,
             "text": "activeRequest = resolveMaskedLink(location.pathname, { token });"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-            "line": 179,
+            "line": 189,
             "text": "if (!location.href.includes(F95_CAPTCHA_SITEKEY)) return;"
           },
           {
@@ -1537,37 +1542,37 @@
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-            "line": 12,
+            "line": 11,
             "text": "export function classifyDatanodesStandaloneEntry(url = location.href) {"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-            "line": 14,
+            "line": 13,
             "text": "const parsed = new URL(url, \"https://datanodes.to/\");"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-            "line": 15,
+            "line": 14,
             "text": "if (parsed.hostname !== HOST_LABEL) return null;"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-            "line": 16,
+            "line": 15,
             "text": "const match = parsed.pathname.match(DATANODES_ENTRY_PATH);"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-            "line": 31,
+            "line": 30,
             "text": "export function isDatanodesStandaloneDownloadPage(url = location.href) {"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-            "line": 33,
+            "line": 32,
             "text": "const parsed = new URL(url, \"https://datanodes.to/\");"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-            "line": 34,
+            "line": 33,
             "text": "return parsed.hostname === HOST_LABEL && parsed.pathname === \"/download\";"
           },
           {
@@ -2238,21 +2243,21 @@
           {
             "path": "addons/masked-direct-addon/src/shared/utils.js",
             "line": 20,
-            "text": "return new URL(raw, location.href).href;"
-          },
-          {
-            "path": "addons/masked-direct-addon/src/shared/utils.js",
-            "line": 30,
-            "text": "const parsed = new URL(safe);"
+            "text": "const parsed = new URL(raw, location.href);"
           },
           {
             "path": "addons/masked-direct-addon/src/shared/utils.js",
             "line": 31,
+            "text": "const parsed = new URL(safe);"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/shared/utils.js",
+            "line": 32,
             "text": "parsed.searchParams.set(AUTOMATION_MARKER_KEY, \"1\");"
           },
           {
             "path": "addons/masked-direct-addon/src/shared/utils.js",
-            "line": 56,
+            "line": 57,
             "text": "const host = new URL(normalized).hostname.toLowerCase();"
           }
         ],
@@ -2269,32 +2274,37 @@
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-            "line": 41,
+            "line": 43,
             "text": "loading: document.getElementById(SELECTORS.MASKED_PAGE.IDS.LOADING),"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-            "line": 42,
+            "line": 44,
             "text": "captcha: document.getElementById(SELECTORS.MASKED_PAGE.IDS.CAPTCHA),"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-            "line": 43,
+            "line": 45,
             "text": "error: document.getElementById(SELECTORS.MASKED_PAGE.IDS.ERROR),"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-            "line": 51,
-            "text": "nodes.error.innerHTML = `<h2>${title}</h2><p>${message}</p>`;"
+            "line": 53,
+            "text": "const heading = document.createElement(\"h2\");"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-            "line": 182,
+            "line": 55,
+            "text": "const body = document.createElement(\"p\");"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
+            "line": 197,
             "text": "document.querySelector(\".recaptcha-checkbox-checkmark\") ||"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-            "line": 183,
+            "line": 198,
             "text": "document.querySelector(\".recaptcha-checkbox-border\");"
           },
           {
@@ -2329,17 +2339,17 @@
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-            "line": 189,
+            "line": 149,
             "text": "const controls = Array.from(document.querySelectorAll(\"a, button, input\"));"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-            "line": 321,
+            "line": 279,
             "text": "if (document.body) {"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-            "line": 322,
+            "line": 280,
             "text": "observer.observe(document.body, {"
           },
           {
@@ -2399,12 +2409,12 @@
           },
           {
             "path": "addons/masked-direct-addon/src/shared/utils.js",
-            "line": 69,
+            "line": 70,
             "text": "const nodes = root.querySelectorAll(selector);"
           },
           {
             "path": "addons/masked-direct-addon/src/shared/utils.js",
-            "line": 83,
+            "line": 84,
             "text": "const node = root.querySelector(selector);"
           },
           {
@@ -2983,57 +2993,62 @@
         "cancellationAndTeardown": [
           {
             "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-            "line": 27,
+            "line": 28,
             "text": "let generation = 0;"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-            "line": 47,
+            "line": 49,
             "text": "function showError(nodes, title = \"Server Error\", message = \"Please try again in a few moments.\", owner = generation) {"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-            "line": 48,
+            "line": 50,
             "text": "if (disposed || owner !== generation) return;"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-            "line": 77,
+            "line": 83,
             "text": "if (disposed || owner !== generation) return;"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-            "line": 94,
+            "line": 100,
             "text": "if (!api || disposed || owner !== generation || !nodes.captcha) {"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-            "line": 105,
+            "line": 112,
             "text": "if (accepted || disposed || owner !== generation) return;"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-            "line": 122,
+            "line": 130,
             "text": "if (disposed || owner !== generation || flags.skipMaskedLink === false) return;"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-            "line": 151,
+            "line": 159,
             "text": "if (!operation) operation = runOperation(generation);"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-            "line": 158,
+            "line": 166,
             "text": "generation += 1;"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-            "line": 186,
+            "line": 193,
             "text": "clearInterval(timer);"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-            "line": 188,
+            "line": 201,
+            "text": "clearInterval(timer);"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
+            "line": 203,
             "text": "addTeardown(() => clearInterval(timer));"
           },
           {
@@ -3088,12 +3103,12 @@
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-            "line": 237,
+            "line": 195,
             "text": "clearInterval(pollTimer);"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-            "line": 238,
+            "line": 196,
             "text": "clearTimeout(timeoutTimer);"
           },
           {
@@ -3831,8 +3846,8 @@
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-            "line": 11,
-            "text": "const timer = setTimeout(resolve, Math.max(0, Number(ms) || 0));"
+            "line": 15,
+            "text": "const timer = setTimeout(() => {"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
@@ -3856,7 +3871,7 @@
           },
           {
             "path": "addons/library-addon/src/library/manualUpdateChecker.js",
-            "line": 9,
+            "line": 10,
             "text": "const timer = setTimeout(resolve, Math.max(0, ms));"
           },
           {
@@ -4003,7 +4018,7 @@
           },
           {
             "path": "addons/library-addon/src/thread/detector.js",
-            "line": 86,
+            "line": 89,
             "text": "url: `${location.origin}${location.pathname}`,"
           }
         ],
@@ -4027,6 +4042,11 @@
             "path": "addons/library-addon/src/thread/detector.js",
             "line": 75,
             "text": "const titleNode = document.querySelector(\"h1.p-title-value\");"
+          },
+          {
+            "path": "addons/library-addon/src/thread/detector.js",
+            "line": 78,
+            "text": "if (!titleNode || !document.querySelector(\".message-threadStarterPost\")) return null;"
           },
           {
             "path": "addons/library-addon/src/thread/quickActions.js",
@@ -4055,7 +4075,7 @@
           },
           {
             "path": "addons/library-addon/src/ui/application/importExportWorkflow.js",
-            "line": 153,
+            "line": 162,
             "text": "const scopeEl = root.querySelector('[data-field=\"exportScope\"]');"
           },
           {
@@ -4340,17 +4360,17 @@
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 202,
+            "line": 219,
             "text": "appContext.dialogRoot = contentId ? document.getElementById(contentId) : null;"
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 209,
+            "line": 226,
             "text": "const importInput = appContext.dialogRoot.querySelector("
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 233,
+            "line": 250,
             "text": "appContext.dialogRoot.querySelector(\".f95ue-library-manager-window\")?.focus();"
           },
           {
@@ -4698,52 +4718,52 @@
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-            "line": 13,
+            "line": 12,
             "text": "clearTimeout(timer);"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-            "line": 27,
+            "line": 31,
             "text": "clearIntervalFn = clearInterval,"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-            "line": 67,
+            "line": 71,
             "text": "// Reconcile retry rows written by older versions without deleting the cycle."
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-            "line": 75,
+            "line": 79,
             "text": "queueStatus: \"retry\","
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-            "line": 87,
+            "line": 91,
             "text": "status: terminal ? \"failed\" : \"retry\","
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-            "line": 99,
+            "line": 103,
             "text": "retryPending: counts.counts.retry,"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-            "line": 173,
+            "line": 179,
             "text": "const unfinished = counts.counts.pending + counts.counts.processing + counts.counts.retry;"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-            "line": 181,
+            "line": 187,
             "text": "retryPending: counts.counts.retry,"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-            "line": 293,
+            "line": 299,
             "text": "const wasRetry = item.status === \"retry\";"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-            "line": 298,
+            "line": 304,
             "text": "status: terminal ? \"failed\" : \"retry\","
           },
           {
@@ -4812,9 +4832,19 @@
             "text": "clearTimeout(timer);"
           },
           {
+            "path": "addons/library-addon/src/library/importWorkflow.js",
+            "line": 300,
+            "text": "// Count work that was actually written, even when a cancel arrived while it ran."
+          },
+          {
             "path": "addons/library-addon/src/library/manualUpdateChecker.js",
-            "line": 11,
+            "line": 12,
             "text": "clearTimeout(timer);"
+          },
+          {
+            "path": "addons/library-addon/src/ui/application/importExportWorkflow.js",
+            "line": 123,
+            "text": "// Batches written before the cancel are already in the library; refresh the view."
           },
           {
             "path": "addons/library-addon/src/ui/application/importProgressController.js",
@@ -4823,17 +4853,17 @@
           },
           {
             "path": "addons/library-addon/src/ui/assets/manager.html",
-            "line": 72,
+            "line": 73,
             "text": "<button type=\"button\" data-action=\"cancel-manual-check\" data-role=\"cancelManualCheck\" hidden>"
           },
           {
             "path": "addons/library-addon/src/ui/assets/manager.html",
-            "line": 73,
+            "line": 74,
             "text": "Cancel check"
           },
           {
             "path": "addons/library-addon/src/ui/assets/manager.html",
-            "line": 93,
+            "line": 94,
             "text": "<option value=\"auto-disable\">Disable auto update</option>"
           },
           {
@@ -5158,42 +5188,42 @@
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 185,
+            "line": 198,
             "text": "const openGeneration = ++generation;"
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 196,
+            "line": 213,
             "text": "if (openGeneration !== generation) {"
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 219,
+            "line": 236,
             "text": "if (openGeneration !== generation) return;"
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 232,
+            "line": 249,
             "text": "if (openGeneration !== generation) return;"
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 246,
+            "line": 263,
             "text": "const closeGeneration = ++generation;"
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 254,
+            "line": 271,
             "text": "// that belongs to that newer generation."
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 255,
+            "line": 272,
             "text": "if (generation !== closeGeneration && getActiveRoot()) {"
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 266,
+            "line": 283,
             "text": "generation,"
           },
           {
@@ -6648,52 +6678,62 @@
           },
           {
             "path": "addons/latest-filters-addon/src/domain/presets.js",
+            "line": 15,
+            "text": "function isLatestHostname(hostname) {"
+          },
+          {
+            "path": "addons/latest-filters-addon/src/domain/presets.js",
             "line": 16,
-            "text": "return location.hostname.includes(LATEST_HOSTNAME) && location.pathname.startsWith(LATEST_PATH);"
+            "text": "const host = String(hostname || \"\").toLowerCase();"
           },
           {
             "path": "addons/latest-filters-addon/src/domain/presets.js",
-            "line": 71,
+            "line": 21,
+            "text": "return isLatestHostname(location.hostname) && location.pathname.startsWith(LATEST_PATH);"
+          },
+          {
+            "path": "addons/latest-filters-addon/src/domain/presets.js",
+            "line": 84,
             "text": "const url = new URL(rawUrl, location.origin);"
-          },
-          {
-            "path": "addons/latest-filters-addon/src/domain/presets.js",
-            "line": 72,
-            "text": "if (!url.hostname.includes(LATEST_HOSTNAME) || !url.pathname.startsWith(LATEST_PATH)) {"
-          },
-          {
-            "path": "addons/latest-filters-addon/src/domain/presets.js",
-            "line": 77,
-            "text": "url.searchParams.delete(\"page\");"
-          },
-          {
-            "path": "addons/latest-filters-addon/src/domain/presets.js",
-            "line": 79,
-            "text": "const entries = [...url.searchParams.entries()].sort((left, right) => {"
           },
           {
             "path": "addons/latest-filters-addon/src/domain/presets.js",
             "line": 85,
-            "text": "const sorted = new URLSearchParams();"
+            "text": "if (!isLatestHostname(url.hostname) || !url.pathname.startsWith(LATEST_PATH)) {"
           },
           {
             "path": "addons/latest-filters-addon/src/domain/presets.js",
             "line": 90,
-            "text": "rawUrl instanceof URL ? rawUrl.hash : new URL(rawUrl, location.origin).hash,"
+            "text": "url.searchParams.delete(\"page\");"
           },
           {
             "path": "addons/latest-filters-addon/src/domain/presets.js",
             "line": 92,
+            "text": "const entries = [...url.searchParams.entries()].sort((left, right) => {"
+          },
+          {
+            "path": "addons/latest-filters-addon/src/domain/presets.js",
+            "line": 98,
+            "text": "const sorted = new URLSearchParams();"
+          },
+          {
+            "path": "addons/latest-filters-addon/src/domain/presets.js",
+            "line": 103,
+            "text": "rawUrl instanceof URL ? rawUrl.hash : new URL(rawUrl, location.origin).hash,"
+          },
+          {
+            "path": "addons/latest-filters-addon/src/domain/presets.js",
+            "line": 105,
             "text": "return `${url.origin}${url.pathname}${search ? `?${search}` : \"\"}${normalizedHash}`;"
           },
           {
             "path": "addons/latest-filters-addon/src/domain/presets.js",
-            "line": 101,
+            "line": 114,
             "text": "const url = new URL(rawUrl, location.origin);"
           },
           {
             "path": "addons/latest-filters-addon/src/domain/presets.js",
-            "line": 104,
+            "line": 117,
             "text": "url.searchParams.forEach((value, key) => {"
           }
         ],
@@ -9682,32 +9722,32 @@
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-          "line": 14,
+          "line": 15,
           "text": "location.href = url;"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-          "line": 30,
+          "line": 32,
           "text": "return location.hostname.includes(\"f95zone.to\") && location.pathname.startsWith(\"/masked\");"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-          "line": 35,
+          "line": 37,
           "text": "location.hostname.includes(\"google.com\") || location.hostname.includes(\"recaptcha.net\");"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-          "line": 36,
+          "line": 38,
           "text": "return isRecaptchaHost && location.pathname.startsWith(\"/recaptcha/\");"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-          "line": 58,
+          "line": 64,
           "text": "activeRequest = resolveMaskedLink(location.pathname, { token });"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-          "line": 179,
+          "line": 189,
           "text": "if (!location.href.includes(F95_CAPTCHA_SITEKEY)) return;"
         },
         {
@@ -9932,37 +9972,37 @@
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-          "line": 12,
+          "line": 11,
           "text": "export function classifyDatanodesStandaloneEntry(url = location.href) {"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-          "line": 14,
+          "line": 13,
           "text": "const parsed = new URL(url, \"https://datanodes.to/\");"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-          "line": 15,
+          "line": 14,
           "text": "if (parsed.hostname !== HOST_LABEL) return null;"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-          "line": 16,
+          "line": 15,
           "text": "const match = parsed.pathname.match(DATANODES_ENTRY_PATH);"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-          "line": 31,
+          "line": 30,
           "text": "export function isDatanodesStandaloneDownloadPage(url = location.href) {"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-          "line": 33,
+          "line": 32,
           "text": "const parsed = new URL(url, \"https://datanodes.to/\");"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-          "line": 34,
+          "line": 33,
           "text": "return parsed.hostname === HOST_LABEL && parsed.pathname === \"/download\";"
         },
         {
@@ -10633,21 +10673,21 @@
         {
           "path": "addons/masked-direct-addon/src/shared/utils.js",
           "line": 20,
-          "text": "return new URL(raw, location.href).href;"
-        },
-        {
-          "path": "addons/masked-direct-addon/src/shared/utils.js",
-          "line": 30,
-          "text": "const parsed = new URL(safe);"
+          "text": "const parsed = new URL(raw, location.href);"
         },
         {
           "path": "addons/masked-direct-addon/src/shared/utils.js",
           "line": 31,
+          "text": "const parsed = new URL(safe);"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/shared/utils.js",
+          "line": 32,
           "text": "parsed.searchParams.set(AUTOMATION_MARKER_KEY, \"1\");"
         },
         {
           "path": "addons/masked-direct-addon/src/shared/utils.js",
-          "line": 56,
+          "line": 57,
           "text": "const host = new URL(normalized).hostname.toLowerCase();"
         },
         {
@@ -10762,7 +10802,7 @@
         },
         {
           "path": "addons/library-addon/src/thread/detector.js",
-          "line": 86,
+          "line": 89,
           "text": "url: `${location.origin}${location.pathname}`,"
         },
         {
@@ -10892,52 +10932,62 @@
         },
         {
           "path": "addons/latest-filters-addon/src/domain/presets.js",
+          "line": 15,
+          "text": "function isLatestHostname(hostname) {"
+        },
+        {
+          "path": "addons/latest-filters-addon/src/domain/presets.js",
           "line": 16,
-          "text": "return location.hostname.includes(LATEST_HOSTNAME) && location.pathname.startsWith(LATEST_PATH);"
+          "text": "const host = String(hostname || \"\").toLowerCase();"
         },
         {
           "path": "addons/latest-filters-addon/src/domain/presets.js",
-          "line": 71,
+          "line": 21,
+          "text": "return isLatestHostname(location.hostname) && location.pathname.startsWith(LATEST_PATH);"
+        },
+        {
+          "path": "addons/latest-filters-addon/src/domain/presets.js",
+          "line": 84,
           "text": "const url = new URL(rawUrl, location.origin);"
-        },
-        {
-          "path": "addons/latest-filters-addon/src/domain/presets.js",
-          "line": 72,
-          "text": "if (!url.hostname.includes(LATEST_HOSTNAME) || !url.pathname.startsWith(LATEST_PATH)) {"
-        },
-        {
-          "path": "addons/latest-filters-addon/src/domain/presets.js",
-          "line": 77,
-          "text": "url.searchParams.delete(\"page\");"
-        },
-        {
-          "path": "addons/latest-filters-addon/src/domain/presets.js",
-          "line": 79,
-          "text": "const entries = [...url.searchParams.entries()].sort((left, right) => {"
         },
         {
           "path": "addons/latest-filters-addon/src/domain/presets.js",
           "line": 85,
-          "text": "const sorted = new URLSearchParams();"
+          "text": "if (!isLatestHostname(url.hostname) || !url.pathname.startsWith(LATEST_PATH)) {"
         },
         {
           "path": "addons/latest-filters-addon/src/domain/presets.js",
           "line": 90,
-          "text": "rawUrl instanceof URL ? rawUrl.hash : new URL(rawUrl, location.origin).hash,"
+          "text": "url.searchParams.delete(\"page\");"
         },
         {
           "path": "addons/latest-filters-addon/src/domain/presets.js",
           "line": 92,
+          "text": "const entries = [...url.searchParams.entries()].sort((left, right) => {"
+        },
+        {
+          "path": "addons/latest-filters-addon/src/domain/presets.js",
+          "line": 98,
+          "text": "const sorted = new URLSearchParams();"
+        },
+        {
+          "path": "addons/latest-filters-addon/src/domain/presets.js",
+          "line": 103,
+          "text": "rawUrl instanceof URL ? rawUrl.hash : new URL(rawUrl, location.origin).hash,"
+        },
+        {
+          "path": "addons/latest-filters-addon/src/domain/presets.js",
+          "line": 105,
           "text": "return `${url.origin}${url.pathname}${search ? `?${search}` : \"\"}${normalizedHash}`;"
         },
         {
           "path": "addons/latest-filters-addon/src/domain/presets.js",
-          "line": 101,
+          "line": 114,
           "text": "const url = new URL(rawUrl, location.origin);"
         },
         {
           "path": "addons/latest-filters-addon/src/domain/presets.js",
-          "line": 104,
+          "line": 117,
           "text": "url.searchParams.forEach((value, key) => {"
         }
       ],
@@ -10997,37 +11047,37 @@
         },
         {
           "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-          "line": 138,
+          "line": 141,
           "text": "const timer = window.setTimeout(() => {"
         },
         {
           "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-          "line": 229,
+          "line": 232,
           "text": "if (tryPatch() || state.pollTimer) {"
         },
         {
           "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-          "line": 234,
+          "line": 237,
           "text": "state.pollTimer = window.setInterval(() => {"
         },
         {
           "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-          "line": 237,
+          "line": 240,
           "text": "window.clearInterval(state.pollTimer);"
         },
         {
           "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-          "line": 238,
+          "line": 241,
           "text": "state.pollTimer = 0;"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-          "line": 19,
+          "line": 20,
           "text": "sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay)),"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-          "line": 180,
+          "line": 191,
           "text": "const timer = setInterval(() => {"
         },
         {
@@ -11037,37 +11087,37 @@
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-          "line": 184,
+          "line": 144,
           "text": "setTimeout(resolve, 16);"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-          "line": 230,
+          "line": 188,
           "text": "let pollTimer = null;"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-          "line": 237,
+          "line": 195,
           "text": "clearInterval(pollTimer);"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-          "line": 310,
+          "line": 268,
           "text": "timeoutTimer = setTimeout(() => {"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-          "line": 320,
+          "line": 278,
           "text": "observer = new MutationObserver(scheduleScan);"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-          "line": 330,
+          "line": 288,
           "text": "pollTimer = setInterval("
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-          "line": 335,
+          "line": 293,
           "text": "setTimeout(scheduleScan, 500);"
         },
         {
@@ -11122,7 +11172,7 @@
         },
         {
           "path": "addons/masked-direct-addon/src/shared/utils.js",
-          "line": 90,
+          "line": 91,
           "text": "return new Promise((resolve) => setTimeout(resolve, ms));"
         },
         {
@@ -11147,8 +11197,8 @@
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-          "line": 11,
-          "text": "const timer = setTimeout(resolve, Math.max(0, Number(ms) || 0));"
+          "line": 15,
+          "text": "const timer = setTimeout(() => {"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
@@ -11172,7 +11222,7 @@
         },
         {
           "path": "addons/library-addon/src/library/manualUpdateChecker.js",
-          "line": 9,
+          "line": 10,
           "text": "const timer = setTimeout(resolve, Math.max(0, ms));"
         },
         {
@@ -11397,12 +11447,12 @@
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 201,
+          "line": 218,
           "text": "const contentId = String(result?.value?.contentId || \"\").trim();"
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 202,
+          "line": 219,
           "text": "appContext.dialogRoot = contentId ? document.getElementById(contentId) : null;"
         },
         {
@@ -11930,17 +11980,17 @@
         },
         {
           "path": "addons/library-addon/src/library/importWorkflow.js",
-          "line": 312,
+          "line": 314,
           "text": "reportProgress();"
         },
         {
           "path": "addons/library-addon/src/library/importWorkflow.js",
-          "line": 321,
+          "line": 323,
           "text": "reportProgress(cancelled ? \"cancelled\" : \"completed\");"
         },
         {
           "path": "addons/library-addon/src/library/manualUpdateChecker.js",
-          "line": 97,
+          "line": 98,
           "text": "options.onProgress?.({ completed: results.length, total: list.length, result: results.at(-1) });"
         },
         {
@@ -11950,72 +12000,72 @@
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 372,
+          "line": 373,
           "text": "const onProgress = typeof options.onProgress === \"function\" ? options.onProgress : () => {};"
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 390,
+          "line": 391,
           "text": "onProgress,"
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 497,
+          "line": 498,
           "text": "\"progressNote\","
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 786,
+          "line": 787,
           "text": "function reportBulkProgress(options, progress) {"
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 787,
+          "line": 788,
           "text": "options?.onProgress?.({ ...progress, processed: progress.updated + progress.removed + progress.skipped });"
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 794,
+          "line": 795,
           "text": "reportBulkProgress(options, { total: ids.length, updated, removed: 0, skipped });"
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 800,
+          "line": 801,
           "text": "reportBulkProgress(options, { total: ids.length, updated, removed: 0, skipped });"
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 815,
+          "line": 816,
           "text": "reportBulkProgress(options, { total: ids.length, updated, removed: 0, skipped });"
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 1085,
+          "line": 1086,
           "text": "reportBulkProgress(options, { total: ids.length, updated, removed: 0, skipped });"
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 1096,
+          "line": 1097,
           "text": "reportBulkProgress(options, { total: ids.length, updated, removed: 0, skipped });"
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 1111,
+          "line": 1112,
           "text": "reportBulkProgress(options, { total: ids.length, updated, removed: 0, skipped });"
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 1117,
+          "line": 1118,
           "text": "reportBulkProgress(options, { total: ids.length, updated, removed: 0, skipped });"
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 1133,
+          "line": 1134,
           "text": "reportBulkProgress(options, { total: ids.length, updated: 0, removed, skipped });"
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 1140,
+          "line": 1141,
           "text": "reportBulkProgress(options, { total: ids.length, updated: 0, removed, skipped });"
         },
         {
@@ -12155,7 +12205,7 @@
         },
         {
           "path": "addons/library-addon/src/ui/assets/manager.html",
-          "line": 20,
+          "line": 21,
           "text": ">?<span id=\"f95ue-library-search-help-text\" role=\"tooltip\">Filters: tag:&quot;male protagonist&quot; status:playing rating&gt;=4 public-rating&gt;=4 developer:&quot;name&quot; version:v1 prefix:completed update:changed check:failed pinned has:note has:progress id:123</span></button>"
         },
         {
@@ -13004,157 +13054,157 @@
         },
         {
           "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-          "line": 105,
+          "line": 108,
           "text": "debugLog(\"Claimed site-owned Latest retry request.\", { url: settings.url });"
         },
         {
           "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-          "line": 128,
+          "line": 131,
           "text": "const retryGeneration = state.generation;"
         },
         {
           "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-          "line": 138,
+          "line": 141,
           "text": "const timer = window.setTimeout(() => {"
         },
         {
           "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-          "line": 140,
+          "line": 143,
           "text": "debugLog(\"Latest retry timer fired; locating the site's Retry control.\", {"
         },
         {
           "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-          "line": 143,
+          "line": 146,
           "text": "currentGeneration: state.generation,"
         },
         {
           "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-          "line": 146,
-          "text": "if (!state.enabled || state.generation !== retryGeneration || !state.originalAjax) {"
+          "line": 149,
+          "text": "if (!state.enabled || state.generation !== retryGeneration || !originalAjax) {"
         },
         {
           "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-          "line": 147,
+          "line": 150,
           "text": "debugLog(\"Cancelled stale Latest Ajax retry.\", { retryGeneration });"
         },
         {
           "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-          "line": 148,
+          "line": 151,
           "text": "emit(\"retry-cancelled\");"
         },
         {
           "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-          "line": 152,
+          "line": 155,
           "text": "debugLog(\"Latest Retry control lookup completed.\", {"
         },
         {
           "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-          "line": 161,
+          "line": 164,
           "text": "debugLog(\"Clicking the site's Latest Retry control.\", {"
         },
         {
           "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-          "line": 169,
+          "line": 172,
           "text": "debugLog(\"Latest Retry control click returned.\", {"
         },
         {
           "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-          "line": 174,
+          "line": 177,
           "text": "debugLog(\"Site Retry control did not dispatch a Latest request.\", {});"
         },
         {
           "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-          "line": 175,
+          "line": 178,
           "text": "emit(\"retry-unavailable\");"
         },
         {
           "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-          "line": 179,
+          "line": 182,
           "text": "debugLog(\"Site Retry control unavailable; replaying the request as fallback.\", {"
         },
         {
           "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-          "line": 188,
+          "line": 191,
           "text": "emit(\"retry-dispatched\");"
         },
         {
           "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-          "line": 193,
+          "line": 196,
           "text": "debugLog(\"Scheduled one site-owned Latest retry.\", {"
         },
         {
           "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-          "line": 199,
+          "line": 202,
           "text": "emit(\"retry-scheduled\");"
         },
         {
           "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-          "line": 234,
+          "line": 237,
           "text": "state.pollTimer = window.setInterval(() => {"
         },
         {
           "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-          "line": 249,
+          "line": 252,
           "text": "state.generation += 1;"
         },
         {
           "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
-          "line": 260,
+          "line": 263,
           "text": "debugLog(\"Restored page-world jQuery.ajax.\", { generation: state.generation });"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-          "line": 19,
+          "line": 20,
           "text": "sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay)),"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-          "line": 27,
+          "line": 28,
           "text": "let generation = 0;"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-          "line": 47,
+          "line": 49,
           "text": "function showError(nodes, title = \"Server Error\", message = \"Please try again in a few moments.\", owner = generation) {"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-          "line": 48,
+          "line": 50,
           "text": "if (disposed || owner !== generation) return;"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-          "line": 77,
+          "line": 83,
           "text": "if (disposed || owner !== generation) return;"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-          "line": 94,
+          "line": 100,
           "text": "if (!api || disposed || owner !== generation || !nodes.captcha) {"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-          "line": 105,
+          "line": 112,
           "text": "if (accepted || disposed || owner !== generation) return;"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-          "line": 122,
+          "line": 130,
           "text": "if (disposed || owner !== generation || flags.skipMaskedLink === false) return;"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-          "line": 151,
+          "line": 159,
           "text": "if (!operation) operation = runOperation(generation);"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-          "line": 158,
+          "line": 166,
           "text": "generation += 1;"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-          "line": 180,
+          "line": 191,
           "text": "const timer = setInterval(() => {"
         },
         {
@@ -13194,32 +13244,22 @@
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-          "line": 73,
-          "text": "const originalSetInterval = window.setInterval;"
-        },
-        {
-          "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-          "line": 74,
-          "text": "window.setInterval = function f95ueDatanodesSetInterval("
-        },
-        {
-          "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-          "line": 184,
+          "line": 144,
           "text": "setTimeout(resolve, 16);"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-          "line": 310,
+          "line": 268,
           "text": "timeoutTimer = setTimeout(() => {"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-          "line": 330,
+          "line": 288,
           "text": "pollTimer = setInterval("
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-          "line": 335,
+          "line": 293,
           "text": "setTimeout(scheduleScan, 500);"
         },
         {
@@ -13249,7 +13289,7 @@
         },
         {
           "path": "addons/masked-direct-addon/src/shared/utils.js",
-          "line": 90,
+          "line": 91,
           "text": "return new Promise((resolve) => setTimeout(resolve, ms));"
         },
         {
@@ -13549,52 +13589,52 @@
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-          "line": 11,
-          "text": "const timer = setTimeout(resolve, Math.max(0, Number(ms) || 0));"
+          "line": 15,
+          "text": "const timer = setTimeout(() => {"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-          "line": 26,
+          "line": 30,
           "text": "setIntervalFn = setInterval,"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-          "line": 67,
+          "line": 71,
           "text": "// Reconcile retry rows written by older versions without deleting the cycle."
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-          "line": 75,
+          "line": 79,
           "text": "queueStatus: \"retry\","
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-          "line": 87,
+          "line": 91,
           "text": "status: terminal ? \"failed\" : \"retry\","
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-          "line": 99,
+          "line": 103,
           "text": "retryPending: counts.counts.retry,"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-          "line": 173,
+          "line": 179,
           "text": "const unfinished = counts.counts.pending + counts.counts.processing + counts.counts.retry;"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-          "line": 181,
+          "line": 187,
           "text": "retryPending: counts.counts.retry,"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-          "line": 293,
+          "line": 299,
           "text": "const wasRetry = item.status === \"retry\";"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-          "line": 298,
+          "line": 304,
           "text": "status: terminal ? \"failed\" : \"retry\","
         },
         {
@@ -13663,14 +13703,24 @@
           "text": "return new Promise((resolve) => setTimeout(resolve, Math.max(0, Number(ms) || 0)));"
         },
         {
+          "path": "addons/library-addon/src/library/importWorkflow.js",
+          "line": 300,
+          "text": "// Count work that was actually written, even when a cancel arrived while it ran."
+        },
+        {
           "path": "addons/library-addon/src/library/manualUpdateChecker.js",
-          "line": 9,
+          "line": 10,
           "text": "const timer = setTimeout(resolve, Math.max(0, ms));"
         },
         {
           "path": "addons/library-addon/src/ui/application/importExportWorkflow.js",
           "line": 17,
           "text": "return new Promise((resolve) => setTimeout(resolve, Math.max(0, Number(ms) || 0)));"
+        },
+        {
+          "path": "addons/library-addon/src/ui/application/importExportWorkflow.js",
+          "line": 123,
+          "text": "// Batches written before the cancel are already in the library; refresh the view."
         },
         {
           "path": "addons/library-addon/src/ui/application/importProgressController.js",
@@ -13684,12 +13734,12 @@
         },
         {
           "path": "addons/library-addon/src/ui/assets/manager.html",
-          "line": 72,
+          "line": 73,
           "text": "<button type=\"button\" data-action=\"cancel-manual-check\" data-role=\"cancelManualCheck\" hidden>"
         },
         {
           "path": "addons/library-addon/src/ui/assets/manager.html",
-          "line": 73,
+          "line": 74,
           "text": "Cancel check"
         },
         {
@@ -13989,42 +14039,42 @@
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 185,
+          "line": 198,
           "text": "const openGeneration = ++generation;"
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 196,
+          "line": 213,
           "text": "if (openGeneration !== generation) {"
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 219,
+          "line": 236,
           "text": "if (openGeneration !== generation) return;"
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 232,
+          "line": 249,
           "text": "if (openGeneration !== generation) return;"
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 246,
+          "line": 263,
           "text": "const closeGeneration = ++generation;"
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 254,
+          "line": 271,
           "text": "// that belongs to that newer generation."
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 255,
+          "line": 272,
           "text": "if (generation !== closeGeneration && getActiveRoot()) {"
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 266,
+          "line": 283,
           "text": "generation,"
         },
         {

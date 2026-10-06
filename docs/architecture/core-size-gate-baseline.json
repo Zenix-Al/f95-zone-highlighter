@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "sourceReport": "docs/architecture/core-size-baseline.json",
-  "sourceReportSha256": "15143b37714537bd898bb0219c35a6756cd404eb9ef011e29f6afd6168a7a130",
+  "sourceReportSha256": "62f33107717ba8ddad635fee0fcca00b7723004abc4879e66714df3fde858bf6",
   "thresholds": {
     "authoredArea": {
       "absoluteBytes": 1024,
@@ -22,6 +22,6 @@
   },
   "rationale": {
     "type": "commit-note",
-    "text": "Config cross-tab refresh before save and backup-recovery fallback in settingsService.js add about 1.4 KB of source; intentional, no other core size change."
+    "text": "Retain the latest bounded capture through overlay toggles and invalidate on route exit/change."
   }
 }
