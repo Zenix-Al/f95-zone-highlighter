@@ -6,16 +6,16 @@
     "src/ui/assets/startup.css",
     "src/ui/assets/css.css"
   ],
-  "authoredBytes": 29892,
+  "authoredBytes": 28602,
   "bundle": {
     "readable": {
-      "fullBytes": 632403,
-      "gzipBytes": 136064,
+      "fullBytes": 651622,
+      "gzipBytes": 140666,
       "contributionBytes": 21749
     },
     "uglified": {
-      "fullBytes": 319747,
-      "gzipBytes": 95542,
+      "fullBytes": 330584,
+      "gzipBytes": 99021,
       "contributionBytes": 24665
     }
   },
@@ -1514,7 +1514,7 @@
         },
         {
           "file": "tests/groups/addon-service.cjs",
-          "line": 379,
+          "line": 380,
           "excerpt": "const container = docWithBody.getElementById(\"toast-container\");"
         }
       ],
@@ -3890,7 +3890,7 @@
           "sourceLine": 439
         },
         {
-          "selectorText": "#tag-config-modal input:focus,\r\n#tag-config-modal textarea:focus,\r\n#tag-config-modal select:focus",
+          "selectorText": "#tag-config-modal input:focus,\n#tag-config-modal textarea:focus,\n#tag-config-modal select:focus",
           "sourceLine": 530
         },
         {
@@ -4093,7 +4093,7 @@
       "sourceLine": 561
     },
     {
-      "selectorText": ".config-row input[type=\"number\"]::-webkit-inner-spin-button,\r\n.config-row input[type=\"number\"]::-webkit-outer-spin-button",
+      "selectorText": ".config-row input[type=\"number\"]::-webkit-inner-spin-button,\n.config-row input[type=\"number\"]::-webkit-outer-spin-button",
       "sourceLine": 752
     }
   ],
@@ -4345,29 +4345,22 @@
       "type": "style",
       "selectorText": "#tag-config-modal .modal-content",
       "atRules": [],
-      "authoredBytes": 558,
+      "authoredBytes": 542,
       "sourceLine": 779
     },
     {
       "type": "style",
       "selectorText": "#search-results",
       "atRules": [],
-      "authoredBytes": 423,
+      "authoredBytes": 408,
       "sourceLine": 505
     },
     {
       "type": "style",
       "selectorText": ".tags-search-clear",
       "atRules": [],
-      "authoredBytes": 418,
+      "authoredBytes": 398,
       "sourceLine": 403
-    },
-    {
-      "type": "style",
-      "selectorText": ".preferred-tag-remove,\r\n.excluded-tag-remove,\r\n.tag-remove-btn",
-      "atRules": [],
-      "authoredBytes": 356,
-      "sourceLine": 488
     },
     {
       "type": "style",
@@ -4378,27 +4371,6 @@
     },
     {
       "type": "style",
-      "selectorText": ".setting-tooltip-badge",
-      "atRules": [],
-      "authoredBytes": 355,
-      "sourceLine": 676
-    },
-    {
-      "type": "style",
-      "selectorText": ".addins-badge",
-      "atRules": [],
-      "authoredBytes": 349,
-      "sourceLine": 1069
-    },
-    {
-      "type": "style",
-      "selectorText": ".settings-nav-item",
-      "atRules": [],
-      "authoredBytes": 348,
-      "sourceLine": 894
-    },
-    {
-      "type": "style",
       "selectorText": "#f95ue-page-dock",
       "atRules": [],
       "authoredBytes": 347,
@@ -4406,51 +4378,79 @@
     },
     {
       "type": "style",
+      "selectorText": ".preferred-tag-remove,\n.excluded-tag-remove,\n.tag-remove-btn",
+      "atRules": [],
+      "authoredBytes": 340,
+      "sourceLine": 488
+    },
+    {
+      "type": "style",
+      "selectorText": ".setting-tooltip-badge",
+      "atRules": [],
+      "authoredBytes": 339,
+      "sourceLine": 676
+    },
+    {
+      "type": "style",
+      "selectorText": ".addins-badge",
+      "atRules": [],
+      "authoredBytes": 335,
+      "sourceLine": 1069
+    },
+    {
+      "type": "style",
+      "selectorText": ".settings-nav-item",
+      "atRules": [],
+      "authoredBytes": 333,
+      "sourceLine": 894
+    },
+    {
+      "type": "style",
       "selectorText": ".config-reorder-btn",
       "atRules": [],
-      "authoredBytes": 343,
+      "authoredBytes": 329,
       "sourceLine": 1480
     },
     {
       "type": "style",
       "selectorText": ".tag-chip",
       "atRules": [],
-      "authoredBytes": 335,
+      "authoredBytes": 323,
       "sourceLine": 206
     },
     {
       "type": "style",
       "selectorText": ".modal-error-notif",
       "atRules": [],
-      "authoredBytes": 332,
+      "authoredBytes": 319,
       "sourceLine": 179
     },
     {
       "type": "style",
       "selectorText": ".config-header",
       "atRules": [],
-      "authoredBytes": 331,
+      "authoredBytes": 314,
       "sourceLine": 1363
     },
     {
       "type": "style",
       "selectorText": ".modal-btn",
       "atRules": [],
-      "authoredBytes": 324,
+      "authoredBytes": 311,
       "sourceLine": 566
     },
     {
       "type": "style",
       "selectorText": ".addins-action-btn",
       "atRules": [],
-      "authoredBytes": 319,
+      "authoredBytes": 305,
       "sourceLine": 1222
     },
     {
       "type": "style",
       "selectorText": ".tag-btn",
       "atRules": [],
-      "authoredBytes": 303,
+      "authoredBytes": 289,
       "sourceLine": 445
     },
     {
@@ -4462,13 +4462,6 @@
     },
     {
       "type": "style",
-      "selectorText": ".config-transfer-dialog-error",
-      "atRules": [],
-      "authoredBytes": 279,
-      "sourceLine": 1508
-    },
-    {
-      "type": "style",
       "selectorText": "*",
       "atRules": [],
       "authoredBytes": 275,
@@ -4476,11 +4469,18 @@
     },
     {
       "type": "style",
+      "selectorText": ".config-transfer-dialog-error",
+      "atRules": [],
+      "authoredBytes": 268,
+      "sourceLine": 1508
+    },
+    {
+      "type": "style",
       "selectorText": ".settings-shell.mobile-show-panel .settings-mobile-panel-header",
       "atRules": [
         "@media (max-width: 760px)"
       ],
-      "authoredBytes": 275,
+      "authoredBytes": 267,
       "sourceLine": 1341
     }
   ],
@@ -4586,8 +4586,8 @@
   "comparison": {
     "authoredBytes": {
       "before": 33564,
-      "after": 29892,
-      "delta": -3672
+      "after": 28602,
+      "delta": -4962
     },
     "readableBundleContributionBytes": {
       "before": 27394,
@@ -4596,13 +4596,13 @@
     },
     "readableBundleFullBytes": {
       "before": 586580,
-      "after": 632403,
-      "delta": 45823
+      "after": 651622,
+      "delta": 65042
     },
     "readableBundleGzipBytes": {
       "before": 124202,
-      "after": 136064,
-      "delta": 11862
+      "after": 140666,
+      "delta": 16464
     },
     "uglifiedBundleContributionBytes": {
       "before": 27380,
@@ -4611,13 +4611,13 @@
     },
     "uglifiedBundleFullBytes": {
       "before": 302505,
-      "after": 319747,
-      "delta": 17242
+      "after": 330584,
+      "delta": 28079
     },
     "uglifiedBundleGzipBytes": {
       "before": 88402,
-      "after": 95542,
-      "delta": 7140
+      "after": 99021,
+      "delta": 10619
     },
     "selectorCount": {
       "before": 252,
