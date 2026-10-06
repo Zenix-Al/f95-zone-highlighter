@@ -51,7 +51,7 @@ export function renderSetting(key, meta) {
     return row;
   }
 
-  // â¬‡ï¸ existing input renderer stays untouched
+  // existing input renderer stays untouched
   const row = createEl("div", { className: "config-row" });
   row.dataset.settingKey = key;
 
