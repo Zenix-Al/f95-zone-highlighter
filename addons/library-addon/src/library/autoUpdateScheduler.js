@@ -310,6 +310,16 @@ export function createAutoUpdateScheduler({
     return result;
   }
 
+  // Lets the user retry before blockedUntil, for example after passing the
+  // browser check in another tab.
+  async function clearSiteBlock() {
+    const cycle = await getDurableState();
+    if (!cycle?.blockedUntil) return { ok: true, value: cycle };
+    const result = await queueRuntime.putCycle({ ...cycle, blockedUntil: 0, blockedReason: "" });
+    if (result?.ok) notify(result.value);
+    return result;
+  }
+
   async function grantNextBatch() {
     const cycle = await getDurableState();
     if (!cycle || cycle.status === "completed") return { ok: false, reason: "cycle_inactive" };
@@ -340,6 +350,7 @@ export function createAutoUpdateScheduler({
     start,
     stop,
     pause,
+    clearSiteBlock,
     grantNextBatch,
     restartCycle,
     getDurableState,
