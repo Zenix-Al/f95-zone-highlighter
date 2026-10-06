@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Tightened Latest URL host checks and handled malformed encoded filter values without breaking saved-filter display.
+
 ## v1.1.1 - Dialog layout fix
 
 - Removed the unnecessary Saved Filters dialog scrollbar exposed by the updated core dialog host sizing.

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "sourceReport": "docs/architecture/core-size-baseline.json",
-  "sourceReportSha256": "27a2fa1cc2a041f5adc4373bed5e6cda30dc6004400108f755ec4dd02f8a1ff2",
+  "sourceReportSha256": "36e41d8d17e019b1717c425d3d1654cc3d8aea867151f91e14f63cb592a9ec8b",
   "thresholds": {
     "authoredArea": {
       "absoluteBytes": 1024,
@@ -22,6 +22,6 @@
   },
   "rationale": {
     "type": "commit-note",
-    "text": "Prettier reformat of src (printWidth 100). Authored growth is formatting; also refreshes reports that went stale in the merged PRs #73-#78."
+    "text": "Merge PR #81 Prettier formatting with current main; refresh accepted source-size baseline without changing runtime behavior."
   }
 }

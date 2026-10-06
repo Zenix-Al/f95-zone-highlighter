@@ -21,6 +21,14 @@ export function createManagerHandlers(state, api, deps) {
     ...createSelectionHandlers(context),
     ...createBulkHandlers(context),
     ...createUpdateCheckHandlers(context),
+    "refresh-library": async (_threadId, _value, button) => {
+      if (button) button.disabled = true;
+      try {
+        return await deps.refreshFromStorageFn();
+      } finally {
+        if (button?.isConnected) button.disabled = false;
+      }
+    },
     "open-updates": async () => deps.openUpdatesFn(),
     ...createWorkflowHandlers(context),
   };

@@ -114,6 +114,7 @@ export function createLibraryService(bridge, _storage, dependencies = {}) {
 
   function clearEntryCache() {
     entryCache.clear();
+    keysetCoverage.clear();
   }
 
   async function getEntry(threadId) {

@@ -25,6 +25,9 @@ function dispatchAddonCommand(addonId, command, detail = {}) {
 function handleRegistration(addon) {
   const registration = validateAddonRegistration(addon || {});
   const addonId = sanitizeAddonId(addon?.id);
+  debugLog("addonsService", "Registration request received.", {
+    data: { addonId, version: String(addon?.version || "") },
+  });
   if (!registration.ok) {
     debugLog(
       "addonsService",
@@ -52,7 +55,16 @@ function handleRegistration(addon) {
       };
   const snapshot = registerAddon(effectiveAddon);
   const registered = snapshot.find((entry) => entry.id === getCanonicalAddonId(addonId));
-  if (!registered) return;
+  if (!registered) {
+    debugLog("addonsService", "Registration did not enter runtime registry.", {
+      level: "warn",
+      data: { addonId },
+    });
+    return;
+  }
+  debugLog("addonsService", "Runtime registration accepted.", {
+    data: { addonId, status: registered.status, blocked: registered.blocked },
+  });
 
   void upsertInstalledAddonMeta(addonId, {
     name: registered.name,
@@ -65,7 +77,19 @@ function handleRegistration(addon) {
     panelTitle: registered.panelTitle,
     panelBody: registered.panelBody,
     statusMessage: registered.statusMessage,
-  });
+  })
+    .then((result) => {
+      debugLog("addonsService", "Installation metadata save settled.", {
+        level: result?.ok ? "log" : "warn",
+        data: { addonId, ok: Boolean(result?.ok), reason: String(result?.reason || "") },
+      });
+    })
+    .catch((error) => {
+      debugLog("addonsService", "Installation metadata save threw.", {
+        level: "error",
+        data: { addonId, error: String(error?.message || error) },
+      });
+    });
 
   if (registered.blocked) {
     dispatchAddonCommand(addonId, "disable");
@@ -81,9 +105,14 @@ function handleRegistration(addon) {
 }
 
 export async function initAddonsConsoleBridge() {
-  if (isAddonsServiceDisabled()) return false;
+  if (isAddonsServiceDisabled()) {
+    debugLog("addonsService", "Add-on bridge skipped: service disabled.", { level: "warn" });
+    return false;
+  }
+  debugLog("addonsService", "Add-on bridge initialization started.");
   await initTrustedAddonCatalog();
-  return initAddonsBridgeServer({
+  debugLog("addonsService", "Trusted catalog initialized; binding add-on bridge.");
+  const initialized = initAddonsBridgeServer({
     marker: ADDONS_DEV_BRIDGE_MARKER,
     devCommandEvent: ADDONS_DEV_COMMAND_EVENT,
     apiVersion: ADDONS_API_VERSION,
@@ -97,6 +126,10 @@ export async function initAddonsConsoleBridge() {
     onInvokeCoreAction: (addonId, action, payload) =>
       invokeAddonCoreAction(addonId, action, payload || {}),
   });
+  debugLog("addonsService", "Add-on bridge initialization settled.", {
+    data: { initialized: Boolean(initialized) },
+  });
+  return initialized;
 }
 
 export function getAddonBootstrapContractSnapshot() {

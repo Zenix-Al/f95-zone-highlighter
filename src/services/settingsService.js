@@ -13,6 +13,7 @@ import {
 } from "../config/schema.js";
 import { recordHealthEvent } from "../core/featureHealth.js";
 import { applyConfigChange } from "./configChangeApplication.js";
+import { ConfigWriteLockError, withConfigWriteLock } from "./configWriteLock.js";
 import {
   classifyLegacyUpgrade,
   CONFIG_MIGRATION_VERSION,
@@ -45,6 +46,7 @@ let configLoadPromise = null;
 // Revision of the stored envelope this tab last loaded or wrote. Another tab saving
 // advances the stored revision past it, which tells us our in-memory config is stale.
 let knownRevision = 0;
+let knownCachePayloads = { tags: null, prefixes: null };
 let configUpdateQueue = Promise.resolve();
 
 function cloneConfig(value) {
@@ -67,6 +69,9 @@ function storageValuesEqual(left, right) {
 async function writeStorageValue(key, value) {
   const result = await storageAdapter.set(key, value);
   if (result === false) throw new Error("storage_write_returned_false");
+  for (const [section, cacheKey] of Object.entries(CACHE_CONFIG_KEYS)) {
+    if (key === cacheKey) knownCachePayloads[section] = cloneConfig(value);
+  }
   return result;
 }
 
@@ -227,11 +232,12 @@ function validateCachePayload(section, value) {
   return validateConfigSection(section, value, { mode: "strict" });
 }
 
-async function readCachePayloads() {
+async function readCachePayloads(track = true) {
   const [tags, prefixes] = await Promise.all([
     storageAdapter.get(CONFIG_TAGS_CACHE_KEY, null),
     storageAdapter.get(CONFIG_PREFIXES_CACHE_KEY, null),
   ]);
+  if (track) knownCachePayloads = { tags, prefixes };
   return { tags, prefixes };
 }
 
@@ -670,8 +676,37 @@ async function loadConfigInternal() {
   }
 }
 
+async function loadConfigReadOnly(reason) {
+  const [canonicalRaw, backupRaw, caches] = await Promise.all([
+    storageAdapter.get(CONFIG_ENVELOPE_KEY, null),
+    storageAdapter.get(CONFIG_BACKUP_KEY, null),
+    readCachePayloads(),
+  ]);
+  const canonical = validateStoredEnvelope(canonicalRaw);
+  const backup = validateStoredEnvelope(backupRaw);
+  const source = canonical.valid ? canonical : backup.valid ? backup : null;
+  const data = source
+    ? migrateConfigSchema(source.data, source.envelope.schemaVersion)
+    : getDefaultConfig();
+  return applyLoadedConfig(
+    makeLoadResult(mergeRuntimeCaches(data, caches), {
+      source: source === canonical ? "canonical" : source === backup ? "backup" : "defaults",
+      status: "read-only",
+      degraded: true,
+      persisted: false,
+      issues: [{ path: "storage", code: reason }],
+      envelope: source?.envelope || null,
+    }),
+  );
+}
+
 export async function loadConfig() {
-  if (!configLoadPromise) configLoadPromise = loadConfigInternal();
+  if (!configLoadPromise) {
+    configLoadPromise = withConfigWriteLock(loadConfigInternal).catch((error) => {
+      if (error instanceof ConfigWriteLockError) return loadConfigReadOnly(error.code);
+      throw error;
+    });
+  }
   return configLoadPromise;
 }
 
@@ -680,16 +715,27 @@ export async function loadConfig() {
 async function refreshConfigIfStale() {
   const latestRaw = await storageAdapter.get(CONFIG_ENVELOPE_KEY, null);
   const latestRevision = Number(latestRaw?.revision) || 0;
-  if (latestRevision <= knownRevision) return;
-  const stored = validateStoredEnvelope(latestRaw);
-  if (!stored.valid || stored.envelope.schemaVersion !== CONFIG_SCHEMA_VERSION) return;
-  const caches = await readCachePayloads();
-  const applied = applyConfigChange(mergeRuntimeCaches(stored.data, caches), {
+  const caches = await readCachePayloads(false);
+  const cacheChanged = Object.keys(CACHE_CONFIG_KEYS).some(
+    (section) => !storageValuesEqual(caches[section], knownCachePayloads[section]),
+  );
+  let next = config;
+  if (latestRevision > knownRevision) {
+    const stored = validateStoredEnvelope(latestRaw);
+    if (!stored.valid || stored.envelope.schemaVersion !== CONFIG_SCHEMA_VERSION) {
+      throw new ConfigWriteLockError("config_stale_canonical_invalid");
+    }
+    next = stored.data;
+  }
+  if (latestRevision <= knownRevision && !cacheChanged) return;
+  const merged = mergeRuntimeCaches(next, caches);
+  const applied = applyConfigChange(merged, {
     origin: "cross-tab-refresh",
     notify: false,
   });
   await applied.effects;
   knownRevision = latestRevision;
+  knownCachePayloads = caches;
 }
 
 async function ensureConfigReady() {
@@ -714,6 +760,34 @@ function notReadyResult(origin, access = {}) {
     previousConfig: cloneRuntimeSnapshot(config),
     config: cloneRuntimeSnapshot(config),
   };
+}
+
+function staleCandidateResult(origin) {
+  const snapshot = cloneRuntimeSnapshot(config);
+  return {
+    committed: false,
+    saved: [],
+    failed: [
+      {
+        code: "config_stale_candidate",
+        message: "Settings changed in another tab. Reload and try again.",
+      },
+    ],
+    issues: [{ path: "", code: "config_stale_candidate", expected: "current persisted settings" }],
+    origin,
+    previousConfig: snapshot,
+    config: snapshot,
+  };
+}
+
+async function runLockedConfigWrite(origin, operation) {
+  try {
+    return await withConfigWriteLock(operation);
+  } catch (error) {
+    if (error instanceof ConfigWriteLockError)
+      return notReadyResult(origin, { reason: error.code });
+    throw error;
+  }
 }
 
 async function commitConfigNow(
@@ -831,7 +905,17 @@ async function commitConfigNow(
 }
 
 export function commitConfig(candidate, { origin = "local" } = {}) {
-  return enqueueConfigUpdate(() => commitConfigNow(candidate, { origin }));
+  return enqueueConfigUpdate(async () => {
+    const storageAccess = await ensureConfigReady();
+    if (!storageAccess.ok) return notReadyResult(origin, storageAccess);
+    return runLockedConfigWrite(origin, async () => {
+      const latest = await storageAdapter.get(CONFIG_ENVELOPE_KEY, null);
+      if (Number(latest?.revision) > knownRevision) {
+        return staleCandidateResult(origin);
+      }
+      return commitConfigNow(candidate, { origin });
+    });
+  });
 }
 
 export function updateConfig(updater, { origin = "local", persistRuntimeCatalogs = [] } = {}) {
@@ -848,28 +932,30 @@ export function updateConfig(updater, { origin = "local", persistRuntimeCatalogs
     const storageAccess = await ensureConfigReady();
     if (!storageAccess.ok) return notReadyResult(origin, storageAccess);
 
-    await refreshConfigIfStale();
-    const previousConfig = cloneRuntimeSnapshot(config);
-    const draft = cloneRuntimeSnapshot(config);
-    const changed = updater(draft);
-    if (changed === false) {
-      return {
-        committed: false,
-        skipped: true,
-        saved: [],
-        failed: [],
-        issues: [],
+    return runLockedConfigWrite(origin, async () => {
+      await refreshConfigIfStale();
+      const previousConfig = cloneRuntimeSnapshot(config);
+      const draft = cloneRuntimeSnapshot(config);
+      const changed = updater(draft);
+      if (changed === false) {
+        return {
+          committed: false,
+          skipped: true,
+          saved: [],
+          failed: [],
+          issues: [],
+          origin,
+          previousConfig,
+          config: previousConfig,
+          changedPaths: [],
+        };
+      }
+      const catalogsReplaced = draft.tags !== config.tags || draft.prefixes !== config.prefixes;
+      return commitConfigNow(draft, {
         origin,
-        previousConfig,
-        config: previousConfig,
-        changedPaths: [],
-      };
-    }
-    const catalogsReplaced = draft.tags !== config.tags || draft.prefixes !== config.prefixes;
-    return commitConfigNow(draft, {
-      origin,
-      preserveRuntimeCatalogs: !catalogsReplaced,
-      persistRuntimeCatalogs,
+        preserveRuntimeCatalogs: !catalogsReplaced,
+        persistRuntimeCatalogs,
+      });
     });
   });
 }
@@ -877,7 +963,6 @@ export function updateConfig(updater, { origin = "local", persistRuntimeCatalogs
 async function saveConfigKeysNow(updates, { origin = "local" } = {}) {
   const storageAccess = await ensureConfigReady();
   if (!storageAccess.ok) return notReadyResult(origin, storageAccess);
-  await refreshConfigIfStale();
   const patch = isRecord(updates) ? cloneConfig(updates) : {};
   const cachePatch = {};
   const corePatch = {};
@@ -885,6 +970,19 @@ async function saveConfigKeysNow(updates, { origin = "local" } = {}) {
     if (Object.hasOwn(CACHE_CONFIG_KEYS, key)) cachePatch[key] = value;
     else corePatch[key] = value;
   }
+
+  // Whole-section callers may have built their candidate before waiting for the lock.
+  // Reject stale candidates instead of silently replacing another tab's completed save.
+  if (Object.keys(corePatch).length > 0) {
+    const latest = await storageAdapter.get(CONFIG_ENVELOPE_KEY, null);
+    if (Number(latest?.revision) > knownRevision) return staleCandidateResult(origin);
+  }
+  for (const section of Object.keys(cachePatch)) {
+    const stored = await storageAdapter.get(CACHE_CONFIG_KEYS[section], null);
+    const current = validateConfigSection(section, stored, { mode: "tolerant" }).data[section];
+    if (!storageValuesEqual(current, config[section])) return staleCandidateResult(origin);
+  }
+  await refreshConfigIfStale();
 
   if (Object.keys(cachePatch).length > 0) {
     for (const [section, value] of Object.entries(cachePatch)) {
@@ -952,7 +1050,11 @@ async function saveConfigKeysNow(updates, { origin = "local" } = {}) {
 }
 
 export function saveConfigKeys(updates, { origin = "local" } = {}) {
-  return enqueueConfigUpdate(() => saveConfigKeysNow(updates, { origin }));
+  return enqueueConfigUpdate(async () => {
+    const storageAccess = await ensureConfigReady();
+    if (!storageAccess.ok) return notReadyResult(origin, storageAccess);
+    return runLockedConfigWrite(origin, () => saveConfigKeysNow(updates, { origin }));
+  });
 }
 
 export async function loadData() {
