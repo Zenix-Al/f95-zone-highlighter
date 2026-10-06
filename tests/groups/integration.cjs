@@ -301,6 +301,14 @@ module.exports = function registerGroup(context) {
         );
         assert.strictEqual(sandbox.document.querySelector("iframe"), null);
         assert.strictEqual(sandbox.document.querySelector("svg"), null);
+
+        sandbox.document.body.innerHTML = sanitizeAddonHtml(
+          '<a class="xf" href="/threads/1/watch" data-xf-click="switch" data-xf-init="tooltip" data-thread-id="1">Watch</a>',
+        );
+        const link = sandbox.document.querySelector("a.xf");
+        assert.strictEqual(link.getAttribute("data-xf-click"), null);
+        assert.strictEqual(link.getAttribute("data-xf-init"), null);
+        assert.strictEqual(link.getAttribute("data-thread-id"), "1");
       } finally {
         sandbox.restore();
       }

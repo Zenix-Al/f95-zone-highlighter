@@ -140,7 +140,9 @@ The UI communicates with the add-on service for: registry and known-add-on lists
 Add-on HTML and CSS are untrusted input, including input from catalog-listed and
 trusted add-ons. The service sanitizes HTML once before every mount, update,
 dialog, and deferred mount assignment. It rejects executable elements,
-event-handler attributes, unsafe URL schemes, `srcdoc`, SVG, and MathML.
+event-handler attributes, unsafe URL schemes, `srcdoc`, SVG, and MathML. It also
+strips `data-xf-*` attributes, because XenForo attaches behavior such as
+`data-xf-click` to them and mounted markup could otherwise trigger site actions.
 
 Page-host CSS is scoped by the service to the add-on-owned mount or dialog root.
 Global selectors and risky CSS constructs are rejected; styles are removed with
