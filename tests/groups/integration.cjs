@@ -2438,6 +2438,127 @@ module.exports = function registerGroup(context) {
   );
 
   runTest(
+    "TRANSFER-LEAN-01 file picker resolves null on the input cancel event and waits before treating focus as cancel",
+    async () => {
+      const sandbox = createDomSandbox();
+      const realSetTimeout = global.setTimeout;
+      try {
+        const transferIO = loadModule("src/ui/configTransfer/transferIO.js");
+        const delays = [];
+        global.setTimeout = (callback, delay) => {
+          delays.push(delay);
+          return realSetTimeout(() => {}, 0);
+        };
+        const picker = transferIO.createJsonFilePicker();
+        window.dispatchEvent(new window.Event("focus"));
+        assert.ok(delays.some((delay) => delay >= 1000), "focus fallback must not race the change event");
+        global.setTimeout = realSetTimeout;
+        document.querySelector('input[type="file"]').dispatchEvent(new window.Event("cancel"));
+        assert.strictEqual(await picker.promise, null);
+        assert.strictEqual(document.querySelectorAll('input[type="file"]').length, 0);
+      } finally {
+        global.setTimeout = realSetTimeout;
+        sandbox.restore();
+      }
+    },
+  );
+
+  runTest(
+    "TRANSFER-LEAN-01 export download keeps the blob URL alive after the click",
+    () => {
+      const sandbox = createDomSandbox();
+      const realSetTimeout = global.setTimeout;
+      const realCreate = URL.createObjectURL;
+      const realRevoke = URL.revokeObjectURL;
+      try {
+        const transferIO = loadModule("src/ui/configTransfer/transferIO.js");
+        const revoked = [];
+        const delays = [];
+        URL.createObjectURL = () => "blob:test";
+        URL.revokeObjectURL = (url) => revoked.push(url);
+        global.setTimeout = (callback, delay) => {
+          delays.push(delay);
+          return 0;
+        };
+        sandbox.window.HTMLAnchorElement.prototype.click = () => {};
+        const revoke = transferIO.downloadJsonFile("x.json", "{}");
+        assert.deepStrictEqual(revoked, []);
+        assert.ok(delays.some((delay) => delay >= 1000));
+        revoke();
+        assert.deepStrictEqual(revoked, ["blob:test"]);
+      } finally {
+        global.setTimeout = realSetTimeout;
+        URL.createObjectURL = realCreate;
+        URL.revokeObjectURL = realRevoke;
+        sandbox.restore();
+      }
+    },
+  );
+
+  runTest(
+    "LATEST-CONTROL-01 disable cancels the delayed web-notification click",
+    async () => {
+      const sandbox = createDomSandbox("https://f95zone.to/sam/latest_alpha/");
+      const realSetTimeout = global.setTimeout;
+      const realClearTimeout = global.clearTimeout;
+      try {
+        const { config, stateManager, SELECTORS, latestControlFeature } = loadModule(
+          "tests/fixtures/latestFeaturesHarness.js",
+        );
+        stateManager.set("isLatest", true);
+        const refresh = document.createElement("div");
+        refresh.id = SELECTORS.LATEST_CONTROL.IDS.AUTO_REFRESH;
+        refresh.className = "selected";
+        const notify = document.createElement("div");
+        notify.id = SELECTORS.LATEST_CONTROL.IDS.NOTIFY;
+        let clicks = 0;
+        notify.click = () => { clicks += 1; };
+        document.body.append(refresh, notify);
+        config.latestSettings.autoRefresh = true;
+        config.latestSettings.webNotif = true;
+        const timers = new Map();
+        const cleared = [];
+        let nextId = 1000;
+        global.setTimeout = (callback) => {
+          const id = nextId++;
+          timers.set(id, callback);
+          return id;
+        };
+        global.clearTimeout = (id) => { cleared.push(id); timers.delete(id); };
+        await latestControlFeature.enable();
+        assert.ok(timers.size >= 1, "web-notification click was scheduled");
+        config.latestSettings.webNotif = false;
+        await latestControlFeature.disable();
+        assert.strictEqual(timers.size, 0);
+        assert.ok(cleared.length >= 1);
+        assert.strictEqual(clicks, 0);
+      } finally {
+        global.setTimeout = realSetTimeout;
+        global.clearTimeout = realClearTimeout;
+        sandbox.restore();
+      }
+    },
+  );
+
+  runTest(
+    "LATEST-OVERLAY-01 a throwing teardown step does not leave the status stuck in TEARING_DOWN",
+    () => {
+      const sandbox = createDomSandbox("https://f95zone.to/sam/latest_alpha/");
+      try {
+        const { stateManager, latestMarkers, disableLatestOverlay } = loadModule(
+          "tests/fixtures/latestFeaturesHarness.js",
+        );
+        stateManager.set("latestOverlayStatus", "ACTIVE");
+        latestMarkers.disable = () => { throw new Error("marker teardown failed"); };
+        assert.throws(() => disableLatestOverlay(), /marker teardown failed/);
+        assert.strictEqual(stateManager.get("latestOverlayStatus"), "IDLE");
+      } finally {
+        sandbox.restore();
+      }
+    },
+  );
+
+  runTest(
     "TRANSFER-LEAN-01 successful commit applies registered effects exactly once",
     async () => {
       const previousGM = global.GM;
@@ -3316,6 +3437,88 @@ module.exports = function registerGroup(context) {
   );
 
   runTest(
+    "ADDON-LIBRARY-02 counts a batch that was written before a cancellation took effect",
+    async () => {
+      const { executeLibraryImport } = loadModule(
+        "addons/library-addon/src/library/importWorkflow.js",
+      );
+      let cancelled = false;
+      const result = await executeLibraryImport({
+        records: [{ threadId: "1" }, { threadId: "2" }, { threadId: "3" }],
+        plan: {
+          total: 3,
+          skipped: 0,
+          totalBatches: 2,
+          throttleInfo: {},
+          batches: [
+            [
+              { mode: "add", value: { threadId: "1" } },
+              { mode: "update", value: { threadId: "2" } },
+            ],
+            [{ mode: "add", value: { threadId: "3" } }],
+          ],
+        },
+        shouldCancel: () => cancelled,
+        onProgress: () => {},
+        bulkPutEntries: async () => {
+          cancelled = true;
+          return { ok: true };
+        },
+        saveOperation: async () => ({ ok: true }),
+      });
+      assert.strictEqual(result.cancelled, true);
+      assert.strictEqual(result.added, 1);
+      assert.strictEqual(result.updated, 1);
+      assert.strictEqual(result.imported, 2);
+      assert.strictEqual(result.processed, 2);
+      assert.strictEqual(result.completedBatches, 0);
+    },
+  );
+
+  runTest(
+    "ADDON-LIBRARY-02 refreshes the table after a cancelled import that wrote records",
+    async () => {
+      const { handleImportFile } = loadModule(
+        "addons/library-addon/src/ui/application/importExportWorkflow.js",
+      );
+      const run = async (imported) => {
+        let reloads = 0;
+        let mutated = 0;
+        const inputEl = {
+          value: "x",
+          files: [{ text: async () => JSON.stringify({ records: [{ threadId: "1" }] }) }],
+        };
+        await handleImportFile(
+          inputEl,
+          { querySelector: () => null },
+          {},
+          {
+            previewImport: async () => ({
+              valid: true,
+              added: 1,
+              updated: 0,
+              skippedExisting: 0,
+              skippedNotNewer: 0,
+              skippedInvalid: 0,
+              skippedDuplicateInFile: 0,
+              totalBatches: 1,
+              total: 1,
+              sections: { updates: { total: 0, writeCount: 0 }, activity: { total: 0, writeCount: 0 } },
+            }),
+            importEntries: async () => ({ cancelled: true, imported, ok: true, failed: 0 }),
+          },
+          async () => { reloads += 1; return true; },
+          () => { mutated += 1; },
+          async () => true,
+        );
+        return { reloads, mutated, cleared: inputEl.value === "" };
+      };
+      assert.deepStrictEqual(await run(2), { reloads: 1, mutated: 1, cleared: true });
+      assert.deepStrictEqual(await run(0), { reloads: 0, mutated: 0, cleared: true });
+    },
+  );
+
+  runTest(
     "ADDON-MASKED-DIRECT-01 classifies core, standalone, and unsupported contexts",
     () => {
       const externalHosts = new Set([
@@ -3917,6 +4120,46 @@ module.exports = function registerGroup(context) {
         attempts: 3,
       });
       assert.deepStrictEqual(delays, [7, 7]);
+    },
+  );
+
+  runTest(
+    "SITE-REPAIR-02 a wrapper that outlives disable still passes calls through",
+    () => {
+      const { createLatestAjaxJqueryAdapter } = loadModule(
+        "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
+      );
+      const calls = [];
+      function originalAjax(settingsOrUrl, maybeSettings) {
+        calls.push(settingsOrUrl);
+        return maybeSettings || settingsOrUrl;
+      }
+      const { windowLike, documentLike } = createLatestAjaxPageBridgeHarness({
+        jQuery: { ajax: originalAjax },
+      });
+      windowLike.setTimeout = () => 1;
+      windowLike.clearTimeout = () => {};
+      windowLike.setInterval = () => {
+        throw new Error("unexpected polling");
+      };
+      windowLike.clearInterval = () => {};
+      const adapter = createLatestAjaxJqueryAdapter({
+        window: windowLike,
+        document: documentLike,
+      });
+      adapter.enable({ allowRetry: false });
+      const stale = windowLike.jQuery.ajax;
+      assert.notStrictEqual(stale, originalAjax);
+      // Another script wraps ajax on top, so disable cannot restore the original.
+      const thirdParty = function thirdPartyAjax(...args) {
+        return stale.apply(this, args);
+      };
+      windowLike.jQuery.ajax = thirdParty;
+      adapter.disable();
+      assert.strictEqual(windowLike.jQuery.ajax, thirdParty);
+      assert.doesNotThrow(() => stale({ url: "/other.php" }));
+      assert.doesNotThrow(() => stale({ url: "/sam/latest_data.php" }));
+      assert.strictEqual(calls.length, 2);
     },
   );
 

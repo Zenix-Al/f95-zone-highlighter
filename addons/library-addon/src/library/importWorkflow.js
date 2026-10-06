@@ -269,10 +269,6 @@ export async function executeLibraryImport({
       batch.map((entry) => entry.value),
       shouldCancel,
     );
-    if (shouldCancel()) {
-      cancelled = true;
-      break;
-    }
     if (bulkResult?.reason === "cancelled") {
       cancelled = true;
       break;
@@ -289,6 +285,10 @@ export async function executeLibraryImport({
         failureReasons: {},
       };
     } else {
+      if (shouldCancel()) {
+        cancelled = true;
+        break;
+      }
       batchOutcome = await saveImportBatchIndividually(
         batch,
         shouldCancel,
@@ -297,17 +297,19 @@ export async function executeLibraryImport({
       );
     }
 
-    if (batchOutcome?.cancelled) {
-      cancelled = true;
-      break;
-    }
-
+    // Count work that was actually written, even when a cancel arrived while it ran.
     added += Number(batchOutcome?.added || 0);
     updated += Number(batchOutcome?.updated || 0);
     processed += Number(batchOutcome?.processed || 0);
     failed += Number(batchOutcome?.failed || 0);
     skipped += Number(batchOutcome?.failed || 0);
     mergeFailureReasons(batchOutcome?.failureReasons);
+
+    if (batchOutcome?.cancelled || shouldCancel()) {
+      cancelled = true;
+      break;
+    }
+
     completedBatches += 1;
     reportProgress();
 

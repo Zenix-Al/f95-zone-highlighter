@@ -190,18 +190,21 @@ export function disableLatestOverlay() {
   debugLog("latest-overlay", "Disable started");
   stateManager.set("latestOverlayStatus", "TEARING_DOWN");
 
-  incrementGeneration();
-  clearMutationState();
-  latestMarkers.disable();
-  removeObserverCallback("latest-overlay-markers");
-  unsubscribeLatestDataCapture();
-  teardownHoverListener();
+  try {
+    incrementGeneration();
+    clearMutationState();
+    latestMarkers.disable();
+    removeObserverCallback("latest-overlay-markers");
+    unsubscribeLatestDataCapture();
+    teardownHoverListener();
 
-  removeObserverCallback("latest-overlay");
-  debugLog("latest-overlay", "Mutation observer removed");
+    removeObserverCallback("latest-overlay");
+    debugLog("latest-overlay", "Mutation observer removed");
 
-  resetAllTiles();
-
-  stateManager.set("latestOverlayStatus", "IDLE");
+    resetAllTiles();
+  } finally {
+    // Never leave the status stuck in TEARING_DOWN if a teardown step throws.
+    stateManager.set("latestOverlayStatus", "IDLE");
+  }
   debugLog("latest-overlay", "Disable completed");
 }

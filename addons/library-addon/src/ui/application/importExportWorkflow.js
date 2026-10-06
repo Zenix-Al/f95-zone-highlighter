@@ -120,6 +120,15 @@ export async function handleImportFile(
   await finishImportProgress(result.cancelled ? "import-cancelled" : "import-complete");
   if (result.cancelled) {
     inputEl.value = "";
+    // Batches written before the cancel are already in the library; refresh the view.
+    if (Number(result.imported || 0) > 0) {
+      try {
+        await reloadAfterImport(root, reloadRowsFn);
+      } catch {
+        await showToast("Import stopped, but refreshing the table is still being rate-limited.", "error");
+      }
+      if (typeof onMutatedFn === "function") onMutatedFn();
+    }
     return;
   }
   const detail = [

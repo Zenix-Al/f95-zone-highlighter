@@ -435,6 +435,83 @@ module.exports = function registerLibraryUpdateQueueWorkerGroup(context) {
     assert.ok(renewals >= 2);
   });
 
+  runTest("LIBRARY-UPDATE-QUEUE-WORKER-02 does not count a first-attempt terminal failure as a pending retry", async () => {
+    const repository = createRepository(["denied"]);
+    const seen = [];
+    const worker = createWorker({
+      repository,
+      getRecord: async () => ({ updateCheck: { enabled: true } }),
+      checkRecords: async () => ({ results: [{ ok: false, reason: "http_403", attempts: 1 }] }),
+      commitResults: async () => ({ failed: 1 }),
+      now: () => 100,
+      waitFor: async () => {},
+    });
+    await worker.run({
+      owner: "denied-tab", config, stillOwn: async () => true,
+      renewOwnership: async () => true,
+      onCycleChange: (cycle) => seen.push(cycle.retryPending),
+    });
+    assert.deepStrictEqual(seen.filter((value) => value !== 0), []);
+  });
+
+  runTest("LIBRARY-UPDATE-QUEUE-WORKER-02 treats a failed heartbeat as a lost claim", async () => {
+    const repository = createRepository(["slow"]);
+    let heartbeat = null;
+    let release;
+    let failRenewal = false;
+    const worker = createWorker({
+      repository,
+      getRecord: async () => ({ threadId: "slow", updateCheck: { enabled: true } }),
+      checkRecords: async () => new Promise((resolve) => {
+        release = () => resolve({ results: [{ threadId: "slow", ok: true, attempts: 1 }] });
+      }),
+      commitResults: async () => ({ checked: 1, current: 1 }),
+      now: () => 100,
+      waitFor: async () => {},
+      setIntervalFn: (callback) => { heartbeat = callback; return 1; },
+      clearIntervalFn: () => {},
+    });
+    const running = worker.run({
+      owner: "tab-one", config, stillOwn: async () => true,
+      renewOwnership: async () => {
+        if (failRenewal) throw new Error("renew failed");
+        return true;
+      },
+    });
+    while (!release || !heartbeat) await new Promise((resolve) => setTimeout(resolve, 0));
+    failRenewal = true;
+    await heartbeat();
+    release();
+    const result = await running;
+    assert.strictEqual(result.ok, false);
+    assert.strictEqual(result.reason, "lease_lost");
+  });
+
+  runTest("LIBRARY-UPDATE-QUEUE-WORKER-02 removes abort listeners after each wait", async () => {
+    const repository = createRepository(["a", "b", "c"]);
+    const controller = new AbortController();
+    let added = 0;
+    let removed = 0;
+    const signal = controller.signal;
+    const add = signal.addEventListener.bind(signal);
+    const remove = signal.removeEventListener.bind(signal);
+    signal.addEventListener = (...args) => { if (args[0] === "abort") added += 1; return add(...args); };
+    signal.removeEventListener = (...args) => { if (args[0] === "abort") removed += 1; return remove(...args); };
+    const worker = createWorker({
+      repository,
+      getRecord: async (threadId) => ({ threadId, updateCheck: { enabled: true } }),
+      checkRecords: async ([threadId]) => ({ results: [{ threadId, ok: true, attempts: 1 }] }),
+      commitResults: async () => ({ checked: 1, current: 1 }),
+      now: () => 100,
+    });
+    await worker.run({
+      owner: "tab-one", config: { ...config, spacingMs: 1 }, signal,
+      stillOwn: async () => true, renewOwnership: async () => true,
+    });
+    assert.ok(added >= 3);
+    assert.strictEqual(removed, added);
+  });
+
   runTest("LIBRARY-UPDATE-QUEUE-RECOVERY-01 preserves one cycle across ten daily allowances", async () => {
     const threadIds = Array.from({ length: 1_000 }, (_, index) => String(index + 1));
     const repository = createRepository(threadIds);
