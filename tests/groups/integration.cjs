@@ -2438,6 +2438,138 @@ module.exports = function registerGroup(context) {
   );
 
   runTest(
+    "TRANSFER-LEAN-01 file picker resolves null on the input cancel event and waits before treating focus as cancel",
+    async () => {
+      const sandbox = createDomSandbox();
+      const realSetTimeout = global.setTimeout;
+      try {
+        const transferIO = loadModule("src/ui/configTransfer/transferIO.js");
+        const delays = [];
+        global.setTimeout = (callback, delay) => {
+          delays.push(delay);
+          return realSetTimeout(() => {}, 0);
+        };
+        const picker = transferIO.createJsonFilePicker();
+        window.dispatchEvent(new window.Event("focus"));
+        assert.ok(delays.some((delay) => delay >= 1000), "focus fallback must not race the change event");
+        global.setTimeout = realSetTimeout;
+        document.querySelector('input[type="file"]').dispatchEvent(new window.Event("cancel"));
+        assert.strictEqual(await picker.promise, null);
+        assert.strictEqual(document.querySelectorAll('input[type="file"]').length, 0);
+      } finally {
+        global.setTimeout = realSetTimeout;
+        sandbox.restore();
+      }
+    },
+  );
+
+  runTest(
+    "TRANSFER-LEAN-01 export download keeps the blob URL alive after the click",
+    () => {
+      const sandbox = createDomSandbox();
+      const realSetTimeout = global.setTimeout;
+      const realCreate = URL.createObjectURL;
+      const realRevoke = URL.revokeObjectURL;
+      try {
+        const transferIO = loadModule("src/ui/configTransfer/transferIO.js");
+        const revoked = [];
+        const delays = [];
+        URL.createObjectURL = () => "blob:test";
+        URL.revokeObjectURL = (url) => revoked.push(url);
+        global.setTimeout = (callback, delay) => {
+          delays.push(delay);
+          return 0;
+        };
+        sandbox.window.HTMLAnchorElement.prototype.click = () => {};
+        const revoke = transferIO.downloadJsonFile("x.json", "{}");
+        assert.deepStrictEqual(revoked, []);
+        assert.ok(delays.some((delay) => delay >= 1000));
+        revoke();
+        assert.deepStrictEqual(revoked, ["blob:test"]);
+      } finally {
+        global.setTimeout = realSetTimeout;
+        URL.createObjectURL = realCreate;
+        URL.revokeObjectURL = realRevoke;
+        sandbox.restore();
+      }
+    },
+  );
+
+  runTest(
+    "LATEST-CONTROL-01 disable cancels the delayed web-notification click",
+    async () => {
+      const sandbox = createDomSandbox("https://f95zone.to/sam/latest_alpha/");
+      const realSetTimeout = global.setTimeout;
+      const realClearTimeout = global.clearTimeout;
+      try {
+        const { config, stateManager, SELECTORS, latestControlFeature } = loadModule(
+          "tests/fixtures/latestFeaturesHarness.js",
+        );
+        stateManager.set("isLatest", true);
+        const refresh = document.createElement("div");
+        refresh.id = SELECTORS.LATEST_CONTROL.IDS.AUTO_REFRESH;
+        refresh.className = "selected";
+        const notify = document.createElement("div");
+        notify.id = SELECTORS.LATEST_CONTROL.IDS.NOTIFY;
+        let clicks = 0;
+        notify.click = () => { clicks += 1; };
+        document.body.append(refresh, notify);
+        config.latestSettings.autoRefresh = true;
+        config.latestSettings.webNotif = true;
+        const timers = new Map();
+        const cleared = [];
+        let nextId = 1000;
+        global.setTimeout = (callback) => {
+          const id = nextId++;
+          timers.set(id, callback);
+          return id;
+        };
+        global.clearTimeout = (id) => { cleared.push(id); timers.delete(id); };
+        await latestControlFeature.enable();
+        assert.ok(timers.size >= 1, "web-notification click was scheduled");
+        config.latestSettings.webNotif = false;
+        await latestControlFeature.disable();
+        assert.strictEqual(timers.size, 0);
+        assert.ok(cleared.length >= 1);
+        assert.strictEqual(clicks, 0);
+      } finally {
+        global.setTimeout = realSetTimeout;
+        global.clearTimeout = realClearTimeout;
+        sandbox.restore();
+      }
+    },
+  );
+
+  runTest(
+    "LATEST-OVERLAY-01 recovers from a stuck TEARING_DOWN status instead of retrying forever",
+    () => {
+      const sandbox = createDomSandbox("https://f95zone.to/sam/latest_alpha/");
+      const realSetTimeout = global.setTimeout;
+      try {
+        const { stateManager, enableLatestOverlay, disableLatestOverlay } = loadModule(
+          "tests/fixtures/latestFeaturesHarness.js",
+        );
+        stateManager.set("latestOverlayStatus", "TEARING_DOWN");
+        const queued = [];
+        global.setTimeout = (callback) => { queued.push(callback); return 0; };
+        let guard = 0;
+        enableLatestOverlay();
+        while (queued.length && guard < 200) {
+          guard += 1;
+          try { queued.shift()(); } catch { break; }
+        }
+        assert.ok(guard < 200, "deferred enable must stop retrying");
+        assert.notStrictEqual(stateManager.get("latestOverlayStatus"), "TEARING_DOWN");
+        global.setTimeout = realSetTimeout;
+        disableLatestOverlay();
+      } finally {
+        global.setTimeout = realSetTimeout;
+        sandbox.restore();
+      }
+    },
+  );
+
+  runTest(
     "TRANSFER-LEAN-01 successful commit applies registered effects exactly once",
     async () => {
       const previousGM = global.GM;
