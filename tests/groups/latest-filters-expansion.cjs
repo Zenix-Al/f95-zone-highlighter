@@ -268,7 +268,16 @@ module.exports = function registerLatestFiltersExpansionGroup(context) {
         1,
       );
 
-      document.querySelector("[data-action='surprise']").click();
+      // Surprise is weighted-random and may pick only the excluded tag, which
+      // would leave no preferred/marked chip for the assertions below. Pin it to
+      // the first candidate; its randomness is covered by LATEST-FILTERS-SURPRISE-01.
+      const realRandom = Math.random;
+      Math.random = () => 0;
+      try {
+        document.querySelector("[data-action='surprise']").click();
+      } finally {
+        Math.random = realRandom;
+      }
       const surpriseParts = Object.fromEntries(
         location.hash
           .replace(/^#\/?/, "")
