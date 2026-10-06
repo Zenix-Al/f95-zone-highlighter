@@ -141,7 +141,7 @@ export function renderAddinsOverview(shadowRoot, getRegisteredAddons, getPinnedA
   if (isAddonsServiceDisabled()) {
     createEl("div", {
       className: "settings-addon-status-note error",
-      text: "Ã¢Å¡Â Ã¯Â¸Â Add-ons service is disabled. No add-ons will be loaded or executed.",
+      text: "⚠️ Add-ons service is disabled. No add-ons will be loaded or executed.",
       mount: installedList,
     });
   }

@@ -10,6 +10,7 @@ import { addListener, removeListener } from "../core/listenerRegistry";
  */
 function createHeaderScrollHandler({ threshold, hiddenClassName }) {
   let scrollHandler = null;
+  const listenerId = `scroll-${hiddenClassName}`;
   let lastScrollY = 0;
 
   const handler = () => {
@@ -29,12 +30,12 @@ function createHeaderScrollHandler({ threshold, hiddenClassName }) {
     if (scrollHandler) return;
     lastScrollY = window.scrollY;
     scrollHandler = handler;
-    addListener("scroll", window, "scrollHandler", scrollHandler);
+    addListener(listenerId, window, "scroll", scrollHandler, { passive: true });
   }
 
   function disable() {
     if (!scrollHandler) return;
-    removeListener("scroll");
+    removeListener(listenerId);
 
     scrollHandler = null;
     document.documentElement.classList.remove(hiddenClassName);

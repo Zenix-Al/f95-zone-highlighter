@@ -25,7 +25,7 @@ export function ensureConfigTransferErrorElement() {
   if (el) return el;
 
   el = createEl("div", {
-    id: CONFIG_TRANSFER_ERROR_ID,
+    attrs: { id: CONFIG_TRANSFER_ERROR_ID },
     className: "config-transfer-dialog-error",
     style: { display: "none" },
   });

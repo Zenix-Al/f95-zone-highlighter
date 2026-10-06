@@ -249,7 +249,7 @@ export function openReorderDialog({
         const upBtn = createEl("button", {
           className: "config-reorder-btn",
           attrs: { type: "button" },
-          text: "â–²",
+          text: "▲",
         });
         upBtn.disabled = idx === 0;
         upBtn.addEventListener("click", () => {
@@ -261,7 +261,7 @@ export function openReorderDialog({
         const downBtn = createEl("button", {
           className: "config-reorder-btn",
           attrs: { type: "button" },
-          text: "â–¼",
+          text: "▼",
         });
         downBtn.disabled = idx === order.length - 1;
         downBtn.addEventListener("click", () => {
