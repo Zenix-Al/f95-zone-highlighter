@@ -364,11 +364,11 @@
     }
   ],
   "build": {
-    "authoredBytes": 412657,
+    "authoredBytes": 413542,
     "fileCount": 102,
     "regular": {
       "mode": "regular",
-      "bytes": 425222,
+      "bytes": 425975,
       "contributors": [
         {
           "path": "addons/library-addon/src/library/service.js",
@@ -392,7 +392,7 @@
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-          "bytes": 11449
+          "bytes": 12202
         },
         {
           "path": "addons/library-addon/src/app/dockController.js",
@@ -454,7 +454,7 @@
     },
     "release": {
       "mode": "release",
-      "bytes": 383485,
+      "bytes": 384188,
       "contributors": [
         {
           "path": "addons/library-addon/src/ui/assets/manager.css",
@@ -477,12 +477,12 @@
           "bytes": 8723
         },
         {
-          "path": "addons/library-addon/src/library/recordModel.js",
-          "bytes": 8044
+          "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
+          "bytes": 8056
         },
         {
-          "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-          "bytes": 7834
+          "path": "addons/library-addon/src/library/recordModel.js",
+          "bytes": 8044
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorController.js",

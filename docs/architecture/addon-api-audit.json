@@ -3841,7 +3841,12 @@
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-            "line": 253,
+            "line": 240,
+            "text": "timer = setTimeout(() => { if (timer) void rearm(); }, 60_000);"
+          },
+          {
+            "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
+            "line": 270,
             "text": "timer = setTimeout(async () => {"
           },
           {
@@ -4265,17 +4270,17 @@
           },
           {
             "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
-            "line": 46,
+            "line": 49,
             "text": "const status = String(getRoot()?.querySelector('[data-field=\"bulkStatus\"]')?.value || \"saved\").trim();"
           },
           {
             "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
-            "line": 53,
+            "line": 56,
             "text": "const pinned = getRoot()?.querySelector('[data-field=\"bulkPin\"]')?.value !== \"unpin\";"
           },
           {
             "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
-            "line": 70,
+            "line": 73,
             "text": "const action = String(getRoot()?.querySelector('[data-field=\"bulkAction\"]')?.value || \"\").trim();"
           },
           {
@@ -4779,26 +4784,31 @@
           {
             "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
             "line": 117,
-            "text": "controller = new AbortController();"
+            "text": "const ownController = new AbortController();"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-            "line": 119,
+            "line": 120,
             "text": "generation += 1;"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-            "line": 208,
+            "line": 215,
             "text": "await repository.putLease({ owner, generation, expiresAt: now() + config.leaseTtlMs });"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-            "line": 252,
+            "line": 239,
             "text": "clearTimeout(timer);"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-            "line": 266,
+            "line": 269,
+            "text": "clearTimeout(timer);"
+          },
+          {
+            "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
+            "line": 291,
             "text": "clearTimeout(timer);"
           },
           {
@@ -5063,12 +5073,12 @@
           },
           {
             "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
-            "line": 61,
+            "line": 64,
             "text": "confirmText: \"Remove\", cancelText: \"Cancel\", danger: true,"
           },
           {
             "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
-            "line": 86,
+            "line": 89,
             "text": "if (action === \"auto-enable\" || action === \"auto-disable\") {"
           },
           {
@@ -11147,7 +11157,12 @@
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-          "line": 253,
+          "line": 240,
+          "text": "timer = setTimeout(() => { if (timer) void rearm(); }, 60_000);"
+        },
+        {
+          "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
+          "line": 270,
           "text": "timer = setTimeout(async () => {"
         },
         {
@@ -12336,56 +12351,61 @@
         {
           "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
           "line": 25,
-          "text": "progressUi.update({ total: ids.length, processed: 0 });"
+          "text": "if (opened) progressUi.update({ total: ids.length, processed: 0 });"
         },
         {
           "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
-          "line": 26,
-          "text": "const result = await invoke(progressUi.update, progressUi.isCancelled);"
+          "line": 27,
+          "text": "opened ? progressUi.update : () => {},"
         },
         {
           "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
-          "line": 37,
+          "line": 28,
+          "text": "opened ? progressUi.isCancelled : () => false,"
+        },
+        {
+          "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
+          "line": 40,
           "text": "if (opened) await progressUi.finish(\"bulk-finished\");"
         },
         {
           "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
-          "line": 47,
+          "line": 50,
           "text": "return run(\"Bulk status\", ids, (onProgress, shouldCancel) => api.bulkUpdateStatus(ids, status, {"
         },
         {
           "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
-          "line": 48,
+          "line": 51,
           "text": "commandId: createActivityCommandId(\"bulk-status\"), onProgress, shouldCancel,"
         },
         {
           "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
-          "line": 54,
+          "line": 57,
           "text": "return run(\"Bulk pin\", ids, (onProgress, shouldCancel) => api.bulkSetPinned(ids, pinned, { onProgress, shouldCancel }));"
         },
         {
           "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
-          "line": 64,
+          "line": 67,
           "text": "return run(\"Bulk remove\", ids, (onProgress, shouldCancel) => api.bulkRemoveEntries(ids, { onProgress, shouldCancel }), { remove: true });"
         },
         {
           "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
-          "line": 78,
+          "line": 81,
           "text": "return run(\"Bulk status\", ids, (onProgress, shouldCancel) => api.bulkUpdateStatus(ids, action.slice(7), {"
         },
         {
           "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
-          "line": 79,
+          "line": 82,
           "text": "commandId: createActivityCommandId(\"bulk-status\"), onProgress, shouldCancel,"
         },
         {
           "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
-          "line": 84,
+          "line": 87,
           "text": "return run(\"Bulk pin\", ids, (onProgress, shouldCancel) => api.bulkSetPinned(ids, action === \"pin\", { onProgress, shouldCancel }));"
         },
         {
           "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
-          "line": 88,
+          "line": 91,
           "text": "return run(\"Bulk auto update\", ids, (onProgress, shouldCancel) => api.setAutoUpdateEnabled(ids, action === \"auto-enable\", { onProgress, shouldCancel }));"
         },
         {
@@ -13615,21 +13635,26 @@
         {
           "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
           "line": 117,
-          "text": "controller = new AbortController();"
+          "text": "const ownController = new AbortController();"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-          "line": 119,
+          "line": 120,
           "text": "generation += 1;"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-          "line": 208,
+          "line": 215,
           "text": "await repository.putLease({ owner, generation, expiresAt: now() + config.leaseTtlMs });"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-          "line": 253,
+          "line": 240,
+          "text": "timer = setTimeout(() => { if (timer) void rearm(); }, 60_000);"
+        },
+        {
+          "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
+          "line": 270,
           "text": "timer = setTimeout(async () => {"
         },
         {
@@ -13889,7 +13914,7 @@
         },
         {
           "path": "addons/library-addon/src/ui/manager/handlers/bulkHandlers.js",
-          "line": 61,
+          "line": 64,
           "text": "confirmText: \"Remove\", cancelText: \"Cancel\", danger: true,"
         },
         {
