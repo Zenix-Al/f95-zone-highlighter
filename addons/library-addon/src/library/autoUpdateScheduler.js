@@ -114,23 +114,37 @@ export function createAutoUpdateScheduler({
   async function run(options = {}) {
     if (controller) return { ok: false, reason: "already_running" };
     if (!queueRuntime) return { ok: false, reason: "queue_unavailable" };
-    controller = new AbortController();
-    const signal = controller.signal;
+    const ownController = new AbortController();
+    controller = ownController;
+    const signal = ownController.signal;
     generation += 1;
+    try {
+      return await runCycle(options, signal);
+    } catch (error) {
+      // A thrown storage/network error must not wedge the scheduler as "already_running".
+      debugLog(DEBUG_OWNER, "Automatic-update run failed.", {
+        level: "warn",
+        data: { reason: String(error?.message || error).slice(0, 120) },
+      });
+      try { await releaseLease(); } catch { /* lease expiry is the fallback */ }
+      return { ok: false, reason: "run_failed" };
+    } finally {
+      if (controller === ownController) controller = null;
+    }
+  }
+
+  async function runCycle(options, signal) {
     const config = await repository.getConfig();
     if (!config.enabled && !options.force) {
-      controller = null;
       return { ok: false, reason: "paused" };
     }
     if (!(await claimLease(config, signal))) {
-      controller = null;
       return { ok: false, reason: "lease_owned" };
     }
 
     const migrated = await migrateLegacyMetadata(config);
     if (!migrated?.ok) {
       await releaseLease();
-      controller = null;
       return migrated;
     }
     const startedAt = now();
@@ -143,7 +157,6 @@ export function createAutoUpdateScheduler({
         const repaired = await queueRuntime.putCycle({ ...cycle, nextRunAt: missedSlot });
         if (!repaired?.ok) {
           await releaseLease();
-          controller = null;
           return repaired;
         }
         cycle = repaired.value;
@@ -151,7 +164,6 @@ export function createAutoUpdateScheduler({
     }
     if (cycle?.status === "completed" && !options.force && !options.runNow && cycle.nextRunAt > startedAt) {
       await releaseLease();
-      controller = null;
       return { ok: false, reason: "not_due", nextRunAt: cycle.nextRunAt, cycle };
     }
     if (!cycle || cycle.status === "completed" || cycle.status === "preparing") {
@@ -162,7 +174,6 @@ export function createAutoUpdateScheduler({
       });
       if (!snapshot?.ok) {
         await releaseLease();
-        controller = null;
         return snapshot;
       }
       cycle = snapshot.cycle;
@@ -174,14 +185,12 @@ export function createAutoUpdateScheduler({
         });
         if (!carried?.ok) {
           await releaseLease();
-          controller = null;
           return carried;
         }
         cycle = carried.value;
         const cleared = await repository.clearLegacyQueueMetadata(migrated.legacy.days);
         if (!cleared?.ok) {
           await releaseLease();
-          controller = null;
           return cleared;
         }
       }
@@ -190,7 +199,6 @@ export function createAutoUpdateScheduler({
       const resumed = await queueRuntime.putCycle({ ...cycle, status: "running" });
       if (!resumed?.ok) {
         await releaseLease();
-        controller = null;
         return resumed;
       }
       cycle = resumed.value;
@@ -199,7 +207,6 @@ export function createAutoUpdateScheduler({
       const scheduled = await queueRuntime.putCycle({ ...cycle, nextRunAt });
       if (!scheduled?.ok) {
         await releaseLease();
-        controller = null;
         return scheduled;
       }
     }
@@ -218,11 +225,21 @@ export function createAutoUpdateScheduler({
     });
     const settledCycle = worked?.cycle || await queueRuntime.getCycle();
     await releaseLease();
-    controller = null;
     debugLog(DEBUG_OWNER, "Durable automatic-update cycle settled.", {
       data: { cycleId: settledCycle?.cycleId || "", status: settledCycle?.status || "" },
     });
     return { ok: Boolean(worked?.ok), cycle: settledCycle, reason: worked?.reason };
+  }
+
+  async function rearm() {
+    try {
+      await start();
+    } catch {
+      if (!timer) return;
+      clearTimeout(timer);
+      timer = setTimeout(() => { if (timer) void rearm(); }, 60_000);
+      timer?.unref?.();
+    }
   }
 
   async function start(options = {}) {
@@ -252,9 +269,17 @@ export function createAutoUpdateScheduler({
     clearTimeout(timer);
     timer = setTimeout(async () => {
       recoveryAt = 0;
-      notify(await queueRuntime.getCycle());
-      await run();
-      if (timer) await start();
+      try {
+        notify(await queueRuntime.getCycle());
+        await run();
+      } catch (error) {
+        debugLog(DEBUG_OWNER, "Scheduled run threw.", {
+          level: "warn",
+          data: { reason: String(error?.message || error).slice(0, 120) },
+        });
+      }
+      // Always re-arm unless stopped, even after a failure, or automatic updates die.
+      if (timer) await rearm();
     }, delayMs);
     timer?.unref?.();
     debugLog(DEBUG_OWNER, "Automatic-update scheduler armed.", {
