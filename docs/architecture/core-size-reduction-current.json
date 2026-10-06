@@ -28,24 +28,24 @@
   },
   "authored": {
     "fileCount": 118,
-    "physicalLines": 15697,
-    "meaningfulLines": 13697,
-    "authoredBytes": 476188,
+    "physicalLines": 15774,
+    "meaningfulLines": 13762,
+    "authoredBytes": 478592,
     "bytesByArea": {
-      "config": 31778,
+      "config": 32163,
       "core": 89037,
       "services": 83333,
-      "features": 131776,
-      "ui": 140264
+      "features": 133086,
+      "ui": 140973
     },
     "bytesByFile": {
       "src/services/settingsService.js": 32847,
       "src/ui/assets/css.css": 25118,
-      "src/config/schema.js": 21048,
+      "src/config/schema.js": 21305,
       "src/features/latest-overlay/settings.js": 14852,
       "src/features/latest-overlay/scoreCalculator.js": 14662,
+      "src/ui/components/tag-search/tagDrag.js": 13008,
       "src/services/configTransfer/index.js": 12960,
-      "src/ui/components/tag-search/tagDrag.js": 12819,
       "src/core/taskQueue.js": 12291,
       "src/features/latest-overlay/capture/latestCaptureService.js": 11806,
       "src/ui/components/dialog.js": 11317,
@@ -62,11 +62,11 @@
       "src/features/latest-overlay/tileProcessor.js": 5979,
       "src/ui/settings/metaRegistry.js": 5959,
       "src/ui/assets/ui.html": 5910,
+      "src/features/dismiss-notification/handler.js": 5835,
       "src/services/prefixService.js": 5673,
       "src/core/resourceManager.js": 5582,
       "src/services/storageBootstrapService.js": 5579,
       "src/features/thread-overlay/index.js": 5526,
-      "src/features/dismiss-notification/handler.js": 4865,
       "src/core/featureCatalog.js": 4763,
       "src/features/latest-overlay/overlayEvaluator.js": 4587,
       "src/services/configChangeApplication.js": 4555,
@@ -80,6 +80,7 @@
       "src/features/latest-overlay/capture/pageCaptureTransport.js": 3428,
       "src/core/StateManager.js": 3393,
       "src/core/listenerRegistry.js": 3303,
+      "src/ui/configTransfer/transferIO.js": 3244,
       "src/features/latest-overlay/markers.js": 3222,
       "src/services/storageReadiness.js": 3201,
       "src/features/latest-overlay/tilePatcher.js": 3110,
@@ -90,14 +91,13 @@
       "src/ui/components/toast.js": 2822,
       "src/features/signature-collapse/index.js": 2808,
       "src/features/latest-overlay/hoverTagHandler.js": 2776,
-      "src/ui/configTransfer/index.js": 2672,
       "src/core/styleRegistry.js": 2641,
       "src/features/wide-latest/index.js": 2625,
+      "src/config/defaults.js": 2615,
       "src/features/latest-overlay/markerLifecycle.js": 2605,
       "src/core/routeState.js": 2573,
-      "src/ui/configTransfer/transferIO.js": 2571,
-      "src/config/defaults.js": 2570,
       "src/core/pageDetection.js": 2522,
+      "src/ui/configTransfer/index.js": 2519,
       "src/features/latest-overlay/latestDataIndex.js": 2449,
       "src/features/latest-overlay/capture/sandboxCaptureTransport.js": 2388,
       "src/ui/settings/modalLifecycle.js": 2384,
@@ -107,9 +107,10 @@
       "src/core/pageBridge.js": 2170,
       "src/ui/settings/tagsSettings.js": 2164,
       "src/ui/settings/colorSettings.js": 2162,
+      "src/config/state.js": 1994,
       "src/ui/settingsRuntime/sectionsRegistry.js": 1950,
       "src/ui/settings/storageReadOnly.js": 1932,
-      "src/config/state.js": 1911,
+      "src/features/dismiss-notification/index.js": 1857,
       "src/services/safetyService.js": 1848,
       "src/ui/helpers/updateColorStyle.js": 1766,
       "src/core/frameBudget.js": 1764,
@@ -118,7 +119,6 @@
       "src/ui/settingsRuntime/effectTasks.js": 1580,
       "src/ui/components/modal.js": 1573,
       "src/features/latest-overlay/capture/captureQueue.js": 1557,
-      "src/features/dismiss-notification/index.js": 1517,
       "src/config/persistence.js": 1496,
       "src/features/latest-overlay/overlayOrder.js": 1474,
       "src/ui/settingsRuntime/prefs.js": 1396,
@@ -200,9 +200,9 @@
       {
         "path": "src/config/schema.js",
         "area": "config",
-        "bytes": 21048,
-        "physicalLines": 622,
-        "meaningfulLines": 592,
+        "bytes": 21305,
+        "physicalLines": 628,
+        "meaningfulLines": 597,
         "fanIn": 4,
         "fanOut": 2,
         "exports": [
@@ -249,6 +249,20 @@
         ]
       },
       {
+        "path": "src/ui/components/tag-search/tagDrag.js",
+        "area": "ui",
+        "bytes": 13008,
+        "physicalLines": 437,
+        "meaningfulLines": 364,
+        "fanIn": 1,
+        "fanOut": 3,
+        "exports": [
+          "ensurePointerCleanupHooks",
+          "ensureContainerDropHandlers",
+          "createTagChipItem"
+        ]
+      },
+      {
         "path": "src/services/configTransfer/index.js",
         "area": "services",
         "bytes": 12960,
@@ -261,20 +275,6 @@
           "buildConfigExport",
           "previewConfigImport",
           "commitConfigImport"
-        ]
-      },
-      {
-        "path": "src/ui/components/tag-search/tagDrag.js",
-        "area": "ui",
-        "bytes": 12819,
-        "physicalLines": 433,
-        "meaningfulLines": 361,
-        "fanIn": 1,
-        "fanOut": 3,
-        "exports": [
-          "ensurePointerCleanupHooks",
-          "ensureContainerDropHandlers",
-          "createTagChipItem"
         ]
       },
       {
@@ -539,12 +539,12 @@
           "fanOut": 2
         },
         {
-          "path": "src/services/configTransfer/index.js",
+          "path": "src/ui/components/tag-search/tagDrag.js",
           "fanIn": 1,
           "fanOut": 3
         },
         {
-          "path": "src/ui/components/tag-search/tagDrag.js",
+          "path": "src/services/configTransfer/index.js",
           "fanIn": 1,
           "fanOut": 3
         },
@@ -629,6 +629,11 @@
           "fanOut": 0
         },
         {
+          "path": "src/features/dismiss-notification/handler.js",
+          "fanIn": 1,
+          "fanOut": 4
+        },
+        {
           "path": "src/services/prefixService.js",
           "fanIn": 1,
           "fanOut": 3
@@ -647,11 +652,6 @@
           "path": "src/features/thread-overlay/index.js",
           "fanIn": 1,
           "fanOut": 8
-        },
-        {
-          "path": "src/features/dismiss-notification/handler.js",
-          "fanIn": 1,
-          "fanOut": 4
         },
         {
           "path": "src/core/featureCatalog.js",
@@ -719,6 +719,11 @@
           "fanOut": 2
         },
         {
+          "path": "src/ui/configTransfer/transferIO.js",
+          "fanIn": 1,
+          "fanOut": 2
+        },
+        {
           "path": "src/features/latest-overlay/markers.js",
           "fanIn": 2,
           "fanOut": 3
@@ -769,11 +774,6 @@
           "fanOut": 2
         },
         {
-          "path": "src/ui/configTransfer/index.js",
-          "fanIn": 1,
-          "fanOut": 5
-        },
-        {
           "path": "src/core/styleRegistry.js",
           "fanIn": 3,
           "fanOut": 1
@@ -782,6 +782,11 @@
           "path": "src/features/wide-latest/index.js",
           "fanIn": 0,
           "fanOut": 3
+        },
+        {
+          "path": "src/config/defaults.js",
+          "fanIn": 3,
+          "fanOut": 0
         },
         {
           "path": "src/features/latest-overlay/markerLifecycle.js",
@@ -794,19 +799,14 @@
           "fanOut": 1
         },
         {
-          "path": "src/ui/configTransfer/transferIO.js",
-          "fanIn": 1,
-          "fanOut": 2
-        },
-        {
-          "path": "src/config/defaults.js",
-          "fanIn": 3,
-          "fanOut": 0
-        },
-        {
           "path": "src/core/pageDetection.js",
           "fanIn": 0,
           "fanOut": 2
+        },
+        {
+          "path": "src/ui/configTransfer/index.js",
+          "fanIn": 1,
+          "fanOut": 5
         },
         {
           "path": "src/features/latest-overlay/latestDataIndex.js",
@@ -854,6 +854,11 @@
           "fanOut": 4
         },
         {
+          "path": "src/config/state.js",
+          "fanIn": 3,
+          "fanOut": 3
+        },
+        {
           "path": "src/ui/settingsRuntime/sectionsRegistry.js",
           "fanIn": 3,
           "fanOut": 2
@@ -864,9 +869,9 @@
           "fanOut": 1
         },
         {
-          "path": "src/config/state.js",
-          "fanIn": 3,
-          "fanOut": 3
+          "path": "src/features/dismiss-notification/index.js",
+          "fanIn": 0,
+          "fanOut": 4
         },
         {
           "path": "src/services/safetyService.js",
@@ -907,11 +912,6 @@
           "path": "src/features/latest-overlay/capture/captureQueue.js",
           "fanIn": 1,
           "fanOut": 1
-        },
-        {
-          "path": "src/features/dismiss-notification/index.js",
-          "fanIn": 0,
-          "fanOut": 4
         },
         {
           "path": "src/config/persistence.js",
@@ -1585,10 +1585,10 @@
   "bundle": {
     "readable": {
       "mode": "regular",
-      "bytes": 664725,
-      "gzipBytes": 142800,
-      "coreBytes": 420141,
-      "excludedBytes": 237339,
+      "bytes": 666731,
+      "gzipBytes": 143356,
+      "coreBytes": 422115,
+      "excludedBytes": 237371,
       "contributors": [
         {
           "path": "src/services/settingsService.js",
@@ -1600,7 +1600,7 @@
         },
         {
           "path": "src/config/schema.js",
-          "bytes": 20751
+          "bytes": 20988
         },
         {
           "path": "src/services/addons/uiHost.js",
@@ -1620,7 +1620,7 @@
         },
         {
           "path": "src/ui/components/tag-search/tagDrag.js",
-          "bytes": 13150
+          "bytes": 13183
         },
         {
           "path": "src/services/configTransfer/index.js",
@@ -1668,7 +1668,7 @@
         },
         {
           "path": "src/services/addons/uiSanitizer.js",
-          "bytes": 8245
+          "bytes": 8277
         }
       ],
       "coreContributors": [
@@ -1682,7 +1682,7 @@
         },
         {
           "path": "src/config/schema.js",
-          "bytes": 20751
+          "bytes": 20988
         },
         {
           "path": "src/features/latest-overlay/settings.js",
@@ -1690,7 +1690,7 @@
         },
         {
           "path": "src/ui/components/tag-search/tagDrag.js",
-          "bytes": 13150
+          "bytes": 13183
         },
         {
           "path": "src/services/configTransfer/index.js",
@@ -1769,6 +1769,10 @@
           "bytes": 4948
         },
         {
+          "path": "src/features/dismiss-notification/handler.js",
+          "bytes": 4870
+        },
+        {
           "path": "src/features/latest-overlay/overlayEvaluator.js",
           "bytes": 4496
         },
@@ -1791,10 +1795,6 @@
         {
           "path": "src/ui/settings/panelNavigation.js",
           "bytes": 4125
-        },
-        {
-          "path": "src/features/dismiss-notification/handler.js",
-          "bytes": 3980
         },
         {
           "path": "src/ui/components/tag-search/tagMutations.js",
@@ -1853,6 +1853,10 @@
           "bytes": 2853
         },
         {
+          "path": "src/ui/configTransfer/transferIO.js",
+          "bytes": 2785
+        },
+        {
           "path": "src/ui/components/toast.js",
           "bytes": 2779
         },
@@ -1870,7 +1874,7 @@
         },
         {
           "path": "src/config/defaults.js",
-          "bytes": 2541
+          "bytes": 2579
         },
         {
           "path": "src/features/latest-overlay/latestDataIndex.js",
@@ -1893,16 +1897,8 @@
           "bytes": 2363
         },
         {
-          "path": "src/ui/configTransfer/index.js",
-          "bytes": 2329
-        },
-        {
           "path": "src/core/routeObserver.js",
           "bytes": 2269
-        },
-        {
-          "path": "src/ui/configTransfer/transferIO.js",
-          "bytes": 2226
         },
         {
           "path": "src/services/configMigrationService.js",
@@ -1915,6 +1911,10 @@
         {
           "path": "src/features/wide-latest/style.css",
           "bytes": 2182
+        },
+        {
+          "path": "src/ui/configTransfer/index.js",
+          "bytes": 2165
         },
         {
           "path": "src/features/latest-overlay/hoverTagHandler.js",
@@ -1949,12 +1949,12 @@
           "bytes": 1689
         },
         {
-          "path": "src/ui/settings/modalLifecycle.js",
-          "bytes": 1600
+          "path": "src/config/state.js",
+          "bytes": 1647
         },
         {
-          "path": "src/config/state.js",
-          "bytes": 1591
+          "path": "src/ui/settings/modalLifecycle.js",
+          "bytes": 1600
         },
         {
           "path": "src/features/latest-overlay/capture/captureQueue.js",
@@ -1983,6 +1983,10 @@
         {
           "path": "src/ui/configTransfer/dialogError.js",
           "bytes": 1408
+        },
+        {
+          "path": "src/features/dismiss-notification/index.js",
+          "bytes": 1387
         },
         {
           "path": "src/config/persistence.js",
@@ -2019,10 +2023,6 @@
         {
           "path": "src/core/pageLifecycle.js",
           "bytes": 1145
-        },
-        {
-          "path": "src/features/dismiss-notification/index.js",
-          "bytes": 1062
         },
         {
           "path": "src/ui/settings/globalSettings.js",
@@ -2172,7 +2172,7 @@
         },
         {
           "path": "src/services/addons/uiSanitizer.js",
-          "bytes": 8245
+          "bytes": 8277
         },
         {
           "path": "src/services/addons/catalog.js",
@@ -2226,10 +2226,10 @@
     },
     "uglified": {
       "mode": "release",
-      "bytes": 331758,
-      "gzipBytes": 99483,
-      "coreBytes": 217399,
-      "excludedBytes": 114347,
+      "bytes": 332673,
+      "gzipBytes": 99781,
+      "coreBytes": 218287,
+      "excludedBytes": 114374,
       "contributors": [
         {
           "path": "src/ui/assets/css.css",
@@ -2241,7 +2241,7 @@
         },
         {
           "path": "src/config/schema.js",
-          "bytes": 10207
+          "bytes": 10283
         },
         {
           "path": "src/features/latest-overlay/settings.js",
@@ -2261,7 +2261,7 @@
         },
         {
           "path": "src/ui/components/tag-search/tagDrag.js",
-          "bytes": 6254
+          "bytes": 6272
         },
         {
           "path": "src/services/configTransfer/index.js",
@@ -2293,7 +2293,7 @@
         },
         {
           "path": "src/services/addons/uiSanitizer.js",
-          "bytes": 4408
+          "bytes": 4435
         },
         {
           "path": "src/ui/assets/ui.html",
@@ -2323,7 +2323,7 @@
         },
         {
           "path": "src/config/schema.js",
-          "bytes": 10207
+          "bytes": 10283
         },
         {
           "path": "src/features/latest-overlay/settings.js",
@@ -2331,7 +2331,7 @@
         },
         {
           "path": "src/ui/components/tag-search/tagDrag.js",
-          "bytes": 6254
+          "bytes": 6272
         },
         {
           "path": "src/services/configTransfer/index.js",
@@ -2398,6 +2398,10 @@
           "bytes": 2683
         },
         {
+          "path": "src/features/dismiss-notification/handler.js",
+          "bytes": 2440
+        },
+        {
           "path": "src/core/resourceManager.js",
           "bytes": 2436
         },
@@ -2428,10 +2432,6 @@
         {
           "path": "src/core/featureCatalog.js",
           "bytes": 2069
-        },
-        {
-          "path": "src/features/dismiss-notification/handler.js",
-          "bytes": 2043
         },
         {
           "path": "src/config/latestOverlayScoring.js",
@@ -2495,11 +2495,15 @@
         },
         {
           "path": "src/config/defaults.js",
-          "bytes": 1498
+          "bytes": 1504
         },
         {
           "path": "src/services/prefixService.js",
           "bytes": 1497
+        },
+        {
+          "path": "src/ui/configTransfer/transferIO.js",
+          "bytes": 1417
         },
         {
           "path": "src/ui/components/configButton.js",
@@ -2538,20 +2542,16 @@
           "bytes": 1171
         },
         {
-          "path": "src/ui/configTransfer/index.js",
-          "bytes": 1160
-        },
-        {
           "path": "src/core/routeState.js",
           "bytes": 1111
         },
         {
-          "path": "src/ui/configTransfer/transferIO.js",
-          "bytes": 1105
-        },
-        {
           "path": "src/ui/settings/colorSettings.js",
           "bytes": 1073
+        },
+        {
+          "path": "src/ui/configTransfer/index.js",
+          "bytes": 1029
         },
         {
           "path": "src/core/routeObserver.js",
@@ -2570,6 +2570,10 @@
           "bytes": 968
         },
         {
+          "path": "src/config/state.js",
+          "bytes": 956
+        },
+        {
           "path": "src/features/latest-overlay/hoverTagHandler.js",
           "bytes": 952
         },
@@ -2580,10 +2584,6 @@
         {
           "path": "src/ui/helpers/updateColorStyle.js",
           "bytes": 939
-        },
-        {
-          "path": "src/config/state.js",
-          "bytes": 929
         },
         {
           "path": "src/features/wideForum/index.js",
@@ -2608,6 +2608,10 @@
         {
           "path": "src/config/persistence.js",
           "bytes": 782
+        },
+        {
+          "path": "src/features/dismiss-notification/index.js",
+          "bytes": 747
         },
         {
           "path": "src/config/selectors.js",
@@ -2660,10 +2664,6 @@
         {
           "path": "src/core/createStyledFeature.js",
           "bytes": 614
-        },
-        {
-          "path": "src/features/dismiss-notification/index.js",
-          "bytes": 564
         },
         {
           "path": "src/ui/settingsRuntime/prefs.js",
@@ -2809,7 +2809,7 @@
         },
         {
           "path": "src/services/addons/uiSanitizer.js",
-          "bytes": 4408
+          "bytes": 4435
         },
         {
           "path": "src/services/addons/latestMarkerBroker.js",
@@ -2983,9 +2983,9 @@
           "src/ui/configTransfer/index.js",
           "src/ui/configTransfer/transferIO.js"
         ],
-        "authoredBytes": 20002,
-        "readableBundleBytes": 19255,
-        "uglifiedBundleBytes": 9153
+        "authoredBytes": 20522,
+        "readableBundleBytes": 19650,
+        "uglifiedBundleBytes": 9334
       },
       "optionalFeatures": {
         "paths": [
@@ -3000,9 +3000,9 @@
           "src/features/wideForum/index.js",
           "src/features/wideForum/style.css"
         ],
-        "authoredBytes": 23084,
-        "readableBundleBytes": 19986,
-        "uglifiedBundleBytes": 12729
+        "authoredBytes": 24394,
+        "readableBundleBytes": 21201,
+        "uglifiedBundleBytes": 13309
       },
       "tagManagement": {
         "paths": [
@@ -3011,9 +3011,9 @@
           "src/ui/components/tag-search/tagDrag.js",
           "src/ui/components/tag-search/tagMutations.js"
         ],
-        "authoredBytes": 36381,
-        "readableBundleBytes": 36127,
-        "uglifiedBundleBytes": 17120
+        "authoredBytes": 36570,
+        "readableBundleBytes": 36160,
+        "uglifiedBundleBytes": 17138
       },
       "fastCapture": {
         "paths": [
@@ -3041,39 +3041,39 @@
   },
   "comparison": {
     "authoredBytes": {
-      "current": 476188,
+      "current": 478592,
       "baseline": 476860,
-      "delta": -672
+      "delta": 1732
     },
     "readableBytes": {
-      "current": 664725,
+      "current": 666731,
       "baseline": 644346,
-      "delta": 20379
+      "delta": 22385
     },
     "readableCoreBytes": {
-      "current": 420141,
+      "current": 422115,
       "baseline": 415202,
-      "delta": 4939
+      "delta": 6913
     },
     "readableGzipBytes": {
-      "current": 142800,
+      "current": 143356,
       "baseline": 137635,
-      "delta": 5165
+      "delta": 5721
     },
     "uglifiedBytes": {
-      "current": 331758,
+      "current": 332673,
       "baseline": 325815,
-      "delta": 5943
+      "delta": 6858
     },
     "uglifiedCoreBytes": {
-      "current": 217399,
+      "current": 218287,
       "baseline": 217419,
-      "delta": -20
+      "delta": 868
     },
     "uglifiedGzipBytes": {
-      "current": 99483,
+      "current": 99781,
       "baseline": 96838,
-      "delta": 2645
+      "delta": 2943
     },
     "candidates": {
       "customColorPicker": {
@@ -3180,53 +3180,53 @@
       },
       "configTransfer": {
         "authoredBytes": {
-          "current": 20002,
+          "current": 20522,
           "baseline": 18976,
-          "delta": 1026
+          "delta": 1546
         },
         "readableBundleBytes": {
-          "current": 19255,
+          "current": 19650,
           "baseline": 18550,
-          "delta": 705
+          "delta": 1100
         },
         "uglifiedBundleBytes": {
-          "current": 9153,
+          "current": 9334,
           "baseline": 9100,
-          "delta": 53
+          "delta": 234
         }
       },
       "optionalFeatures": {
         "authoredBytes": {
-          "current": 23084,
+          "current": 24394,
           "baseline": 23423,
-          "delta": -339
+          "delta": 971
         },
         "readableBundleBytes": {
-          "current": 19986,
+          "current": 21201,
           "baseline": 19599,
-          "delta": 387
+          "delta": 1602
         },
         "uglifiedBundleBytes": {
-          "current": 12729,
+          "current": 13309,
           "baseline": 12603,
-          "delta": 126
+          "delta": 706
         }
       },
       "tagManagement": {
         "authoredBytes": {
-          "current": 36381,
+          "current": 36570,
           "baseline": 36317,
-          "delta": 64
+          "delta": 253
         },
         "readableBundleBytes": {
-          "current": 36127,
+          "current": 36160,
           "baseline": 35236,
-          "delta": 891
+          "delta": 924
         },
         "uglifiedBundleBytes": {
-          "current": 17120,
+          "current": 17138,
           "baseline": 16671,
-          "delta": 449
+          "delta": 467
         }
       },
       "fastCapture": {

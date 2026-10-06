@@ -364,11 +364,11 @@
     }
   ],
   "build": {
-    "authoredBytes": 416623,
+    "authoredBytes": 418159,
     "fileCount": 102,
     "regular": {
       "mode": "regular",
-      "bytes": 428417,
+      "bytes": 429851,
       "contributors": [
         {
           "path": "addons/library-addon/src/library/service.js",
@@ -392,7 +392,7 @@
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-          "bytes": 12202
+          "bytes": 12545
         },
         {
           "path": "addons/library-addon/src/app/dockController.js",
@@ -428,7 +428,7 @@
         },
         {
           "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
-          "bytes": 8631
+          "bytes": 9212
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
@@ -447,14 +447,14 @@
           "bytes": 7457
         },
         {
-          "path": "addons/library-addon/src/ui/application/importExportWorkflow.js",
-          "bytes": 6569
+          "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
+          "bytes": 6732
         }
       ]
     },
     "release": {
       "mode": "release",
-      "bytes": 386812,
+      "bytes": 388269,
       "contributors": [
         {
           "path": "addons/library-addon/src/ui/assets/manager.css",
@@ -478,11 +478,15 @@
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-          "bytes": 8056
+          "bytes": 8317
         },
         {
           "path": "addons/library-addon/src/library/recordModel.js",
           "bytes": 8044
+        },
+        {
+          "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
+          "bytes": 7826
         },
         {
           "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
@@ -491,10 +495,6 @@
         {
           "path": "addons/library-addon/src/ui/entryEditor/editor.css",
           "bytes": 7405
-        },
-        {
-          "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
-          "bytes": 7358
         },
         {
           "path": "addons/library-addon/src/ui/controllers/bindManagerEvents.js",

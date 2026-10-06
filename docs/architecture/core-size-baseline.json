@@ -28,24 +28,24 @@
   },
   "authored": {
     "fileCount": 118,
-    "physicalLines": 15697,
-    "meaningfulLines": 13697,
-    "authoredBytes": 476188,
+    "physicalLines": 15774,
+    "meaningfulLines": 13762,
+    "authoredBytes": 478592,
     "bytesByArea": {
-      "config": 31778,
+      "config": 32163,
       "core": 89037,
       "services": 83333,
-      "features": 131776,
-      "ui": 140264
+      "features": 133086,
+      "ui": 140973
     },
     "bytesByFile": {
       "src/services/settingsService.js": 32847,
       "src/ui/assets/css.css": 25118,
-      "src/config/schema.js": 21048,
+      "src/config/schema.js": 21305,
       "src/features/latest-overlay/settings.js": 14852,
       "src/features/latest-overlay/scoreCalculator.js": 14662,
+      "src/ui/components/tag-search/tagDrag.js": 13008,
       "src/services/configTransfer/index.js": 12960,
-      "src/ui/components/tag-search/tagDrag.js": 12819,
       "src/core/taskQueue.js": 12291,
       "src/features/latest-overlay/capture/latestCaptureService.js": 11806,
       "src/ui/components/dialog.js": 11317,
@@ -62,11 +62,11 @@
       "src/features/latest-overlay/tileProcessor.js": 5979,
       "src/ui/settings/metaRegistry.js": 5959,
       "src/ui/assets/ui.html": 5910,
+      "src/features/dismiss-notification/handler.js": 5835,
       "src/services/prefixService.js": 5673,
       "src/core/resourceManager.js": 5582,
       "src/services/storageBootstrapService.js": 5579,
       "src/features/thread-overlay/index.js": 5526,
-      "src/features/dismiss-notification/handler.js": 4865,
       "src/core/featureCatalog.js": 4763,
       "src/features/latest-overlay/overlayEvaluator.js": 4587,
       "src/services/configChangeApplication.js": 4555,
@@ -80,6 +80,7 @@
       "src/features/latest-overlay/capture/pageCaptureTransport.js": 3428,
       "src/core/StateManager.js": 3393,
       "src/core/listenerRegistry.js": 3303,
+      "src/ui/configTransfer/transferIO.js": 3244,
       "src/features/latest-overlay/markers.js": 3222,
       "src/services/storageReadiness.js": 3201,
       "src/features/latest-overlay/tilePatcher.js": 3110,
@@ -90,14 +91,13 @@
       "src/ui/components/toast.js": 2822,
       "src/features/signature-collapse/index.js": 2808,
       "src/features/latest-overlay/hoverTagHandler.js": 2776,
-      "src/ui/configTransfer/index.js": 2672,
       "src/core/styleRegistry.js": 2641,
       "src/features/wide-latest/index.js": 2625,
+      "src/config/defaults.js": 2615,
       "src/features/latest-overlay/markerLifecycle.js": 2605,
       "src/core/routeState.js": 2573,
-      "src/ui/configTransfer/transferIO.js": 2571,
-      "src/config/defaults.js": 2570,
       "src/core/pageDetection.js": 2522,
+      "src/ui/configTransfer/index.js": 2519,
       "src/features/latest-overlay/latestDataIndex.js": 2449,
       "src/features/latest-overlay/capture/sandboxCaptureTransport.js": 2388,
       "src/ui/settings/modalLifecycle.js": 2384,
@@ -107,9 +107,10 @@
       "src/core/pageBridge.js": 2170,
       "src/ui/settings/tagsSettings.js": 2164,
       "src/ui/settings/colorSettings.js": 2162,
+      "src/config/state.js": 1994,
       "src/ui/settingsRuntime/sectionsRegistry.js": 1950,
       "src/ui/settings/storageReadOnly.js": 1932,
-      "src/config/state.js": 1911,
+      "src/features/dismiss-notification/index.js": 1857,
       "src/services/safetyService.js": 1848,
       "src/ui/helpers/updateColorStyle.js": 1766,
       "src/core/frameBudget.js": 1764,
@@ -118,7 +119,6 @@
       "src/ui/settingsRuntime/effectTasks.js": 1580,
       "src/ui/components/modal.js": 1573,
       "src/features/latest-overlay/capture/captureQueue.js": 1557,
-      "src/features/dismiss-notification/index.js": 1517,
       "src/config/persistence.js": 1496,
       "src/features/latest-overlay/overlayOrder.js": 1474,
       "src/ui/settingsRuntime/prefs.js": 1396,
@@ -200,9 +200,9 @@
       {
         "path": "src/config/schema.js",
         "area": "config",
-        "bytes": 21048,
-        "physicalLines": 622,
-        "meaningfulLines": 592,
+        "bytes": 21305,
+        "physicalLines": 628,
+        "meaningfulLines": 597,
         "fanIn": 4,
         "fanOut": 2,
         "exports": [
@@ -249,6 +249,20 @@
         ]
       },
       {
+        "path": "src/ui/components/tag-search/tagDrag.js",
+        "area": "ui",
+        "bytes": 13008,
+        "physicalLines": 437,
+        "meaningfulLines": 364,
+        "fanIn": 1,
+        "fanOut": 3,
+        "exports": [
+          "ensurePointerCleanupHooks",
+          "ensureContainerDropHandlers",
+          "createTagChipItem"
+        ]
+      },
+      {
         "path": "src/services/configTransfer/index.js",
         "area": "services",
         "bytes": 12960,
@@ -261,20 +275,6 @@
           "buildConfigExport",
           "previewConfigImport",
           "commitConfigImport"
-        ]
-      },
-      {
-        "path": "src/ui/components/tag-search/tagDrag.js",
-        "area": "ui",
-        "bytes": 12819,
-        "physicalLines": 433,
-        "meaningfulLines": 361,
-        "fanIn": 1,
-        "fanOut": 3,
-        "exports": [
-          "ensurePointerCleanupHooks",
-          "ensureContainerDropHandlers",
-          "createTagChipItem"
         ]
       },
       {
@@ -539,12 +539,12 @@
           "fanOut": 2
         },
         {
-          "path": "src/services/configTransfer/index.js",
+          "path": "src/ui/components/tag-search/tagDrag.js",
           "fanIn": 1,
           "fanOut": 3
         },
         {
-          "path": "src/ui/components/tag-search/tagDrag.js",
+          "path": "src/services/configTransfer/index.js",
           "fanIn": 1,
           "fanOut": 3
         },
@@ -629,6 +629,11 @@
           "fanOut": 0
         },
         {
+          "path": "src/features/dismiss-notification/handler.js",
+          "fanIn": 1,
+          "fanOut": 4
+        },
+        {
           "path": "src/services/prefixService.js",
           "fanIn": 1,
           "fanOut": 3
@@ -647,11 +652,6 @@
           "path": "src/features/thread-overlay/index.js",
           "fanIn": 1,
           "fanOut": 8
-        },
-        {
-          "path": "src/features/dismiss-notification/handler.js",
-          "fanIn": 1,
-          "fanOut": 4
         },
         {
           "path": "src/core/featureCatalog.js",
@@ -719,6 +719,11 @@
           "fanOut": 2
         },
         {
+          "path": "src/ui/configTransfer/transferIO.js",
+          "fanIn": 1,
+          "fanOut": 2
+        },
+        {
           "path": "src/features/latest-overlay/markers.js",
           "fanIn": 2,
           "fanOut": 3
@@ -769,11 +774,6 @@
           "fanOut": 2
         },
         {
-          "path": "src/ui/configTransfer/index.js",
-          "fanIn": 1,
-          "fanOut": 5
-        },
-        {
           "path": "src/core/styleRegistry.js",
           "fanIn": 3,
           "fanOut": 1
@@ -782,6 +782,11 @@
           "path": "src/features/wide-latest/index.js",
           "fanIn": 0,
           "fanOut": 3
+        },
+        {
+          "path": "src/config/defaults.js",
+          "fanIn": 3,
+          "fanOut": 0
         },
         {
           "path": "src/features/latest-overlay/markerLifecycle.js",
@@ -794,19 +799,14 @@
           "fanOut": 1
         },
         {
-          "path": "src/ui/configTransfer/transferIO.js",
-          "fanIn": 1,
-          "fanOut": 2
-        },
-        {
-          "path": "src/config/defaults.js",
-          "fanIn": 3,
-          "fanOut": 0
-        },
-        {
           "path": "src/core/pageDetection.js",
           "fanIn": 0,
           "fanOut": 2
+        },
+        {
+          "path": "src/ui/configTransfer/index.js",
+          "fanIn": 1,
+          "fanOut": 5
         },
         {
           "path": "src/features/latest-overlay/latestDataIndex.js",
@@ -854,6 +854,11 @@
           "fanOut": 4
         },
         {
+          "path": "src/config/state.js",
+          "fanIn": 3,
+          "fanOut": 3
+        },
+        {
           "path": "src/ui/settingsRuntime/sectionsRegistry.js",
           "fanIn": 3,
           "fanOut": 2
@@ -864,9 +869,9 @@
           "fanOut": 1
         },
         {
-          "path": "src/config/state.js",
-          "fanIn": 3,
-          "fanOut": 3
+          "path": "src/features/dismiss-notification/index.js",
+          "fanIn": 0,
+          "fanOut": 4
         },
         {
           "path": "src/services/safetyService.js",
@@ -907,11 +912,6 @@
           "path": "src/features/latest-overlay/capture/captureQueue.js",
           "fanIn": 1,
           "fanOut": 1
-        },
-        {
-          "path": "src/features/dismiss-notification/index.js",
-          "fanIn": 0,
-          "fanOut": 4
         },
         {
           "path": "src/config/persistence.js",
@@ -1585,10 +1585,10 @@
   "bundle": {
     "readable": {
       "mode": "regular",
-      "bytes": 664725,
-      "gzipBytes": 142800,
-      "coreBytes": 420141,
-      "excludedBytes": 237339,
+      "bytes": 666731,
+      "gzipBytes": 143356,
+      "coreBytes": 422115,
+      "excludedBytes": 237371,
       "contributors": [
         {
           "path": "src/services/settingsService.js",
@@ -1600,7 +1600,7 @@
         },
         {
           "path": "src/config/schema.js",
-          "bytes": 20751
+          "bytes": 20988
         },
         {
           "path": "src/services/addons/uiHost.js",
@@ -1620,7 +1620,7 @@
         },
         {
           "path": "src/ui/components/tag-search/tagDrag.js",
-          "bytes": 13150
+          "bytes": 13183
         },
         {
           "path": "src/services/configTransfer/index.js",
@@ -1668,7 +1668,7 @@
         },
         {
           "path": "src/services/addons/uiSanitizer.js",
-          "bytes": 8245
+          "bytes": 8277
         }
       ],
       "coreContributors": [
@@ -1682,7 +1682,7 @@
         },
         {
           "path": "src/config/schema.js",
-          "bytes": 20751
+          "bytes": 20988
         },
         {
           "path": "src/features/latest-overlay/settings.js",
@@ -1690,7 +1690,7 @@
         },
         {
           "path": "src/ui/components/tag-search/tagDrag.js",
-          "bytes": 13150
+          "bytes": 13183
         },
         {
           "path": "src/services/configTransfer/index.js",
@@ -1784,7 +1784,7 @@
         },
         {
           "path": "src/services/addons/uiSanitizer.js",
-          "bytes": 8245
+          "bytes": 8277
         },
         {
           "path": "src/services/addons/catalog.js",
@@ -1838,10 +1838,10 @@
     },
     "uglified": {
       "mode": "release",
-      "bytes": 331758,
-      "gzipBytes": 99483,
-      "coreBytes": 217399,
-      "excludedBytes": 114347,
+      "bytes": 332673,
+      "gzipBytes": 99781,
+      "coreBytes": 218287,
+      "excludedBytes": 114374,
       "contributors": [
         {
           "path": "src/ui/assets/css.css",
@@ -1853,7 +1853,7 @@
         },
         {
           "path": "src/config/schema.js",
-          "bytes": 10207
+          "bytes": 10283
         },
         {
           "path": "src/features/latest-overlay/settings.js",
@@ -1873,7 +1873,7 @@
         },
         {
           "path": "src/ui/components/tag-search/tagDrag.js",
-          "bytes": 6254
+          "bytes": 6272
         },
         {
           "path": "src/services/configTransfer/index.js",
@@ -1905,7 +1905,7 @@
         },
         {
           "path": "src/services/addons/uiSanitizer.js",
-          "bytes": 4408
+          "bytes": 4435
         },
         {
           "path": "src/ui/assets/ui.html",
@@ -1935,7 +1935,7 @@
         },
         {
           "path": "src/config/schema.js",
-          "bytes": 10207
+          "bytes": 10283
         },
         {
           "path": "src/features/latest-overlay/settings.js",
@@ -1943,7 +1943,7 @@
         },
         {
           "path": "src/ui/components/tag-search/tagDrag.js",
-          "bytes": 6254
+          "bytes": 6272
         },
         {
           "path": "src/services/configTransfer/index.js",
@@ -2037,7 +2037,7 @@
         },
         {
           "path": "src/services/addons/uiSanitizer.js",
-          "bytes": 4408
+          "bytes": 4435
         },
         {
           "path": "src/services/addons/latestMarkerBroker.js",

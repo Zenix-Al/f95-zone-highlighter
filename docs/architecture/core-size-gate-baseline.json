@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "sourceReport": "docs/architecture/core-size-baseline.json",
-  "sourceReportSha256": "2e06498dddb8a72f5ce86ffa463a28601ba0c9679e21bb164c3d7bfef07ce5e5",
+  "sourceReportSha256": "a76aa1621d30ab1adb83966747f003a341dc7646fe5b320951347a0ab77d2229",
   "thresholds": {
     "authoredArea": {
       "absoluteBytes": 1024,
@@ -22,6 +22,6 @@
   },
   "rationale": {
     "type": "commit-note",
-    "text": "Audit fixes: settings-effect debounce cancel(), add-on CSS sanitizer bypasses closed."
+    "text": "Second audit round: data-xf-* stripping, registry-owned tag-drag listeners, dismissedNoticeIds with a Show again setting, and a 5 MB config import cap."
   }
 }
