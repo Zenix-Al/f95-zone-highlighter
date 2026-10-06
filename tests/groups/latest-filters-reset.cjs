@@ -3,6 +3,25 @@
 module.exports = function registerLatestFiltersResetGroup(context) {
   const { assert, createDomSandbox, loadModule, runTest } = context;
 
+  runTest("LATEST-FILTERS-URL-01 summaries do not double-decode and survive malformed hash escapes", () => {
+    const sandbox = createDomSandbox("https://f95zone.to/sam/latest_alpha/");
+    try {
+      const { summarizeUrlParts, summarizeUrl, normalizeLatestUrl } = loadModule(
+        "addons/latest-filters-addon/src/domain/presets.js",
+      );
+      const parts = summarizeUrlParts("https://f95zone.to/sam/latest_alpha/?search=100%25%2B+fun");
+      assert.deepStrictEqual(parts, [{ key: "search", label: "search", values: ["100%+ fun"] }]);
+      const bad = summarizeUrlParts("https://f95zone.to/sam/latest_alpha/?cat=games#/search=100%/tags=1,2");
+      assert.deepStrictEqual(bad.map((part) => part.key), ["cat", "search", "tags"]);
+      assert.notStrictEqual(summarizeUrl("https://f95zone.to/sam/latest_alpha/?cat=games#/search=100%"), "Base latest page");
+      assert.ok(normalizeLatestUrl("https://forum.f95zone.to/sam/latest_alpha/"));
+      assert.strictEqual(normalizeLatestUrl("https://f95zone.to.evil.example/sam/latest_alpha/"), "");
+      assert.strictEqual(normalizeLatestUrl("https://evilf95zone.to/sam/latest_alpha/"), "");
+    } finally {
+      sandbox.restore();
+    }
+  });
+
   runTest("LATEST-FILTERS-RESET-01 removes included or excluded tags without touching sibling filters", () => {
     const sandbox = createDomSandbox(
       "https://f95zone.to/sam/latest_alpha/?rows=30#/cat=games/page=4/tags=1,2/notags=3/search=hello%20world/sort=likes/custom=value",

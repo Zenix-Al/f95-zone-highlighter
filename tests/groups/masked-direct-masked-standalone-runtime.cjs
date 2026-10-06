@@ -167,6 +167,81 @@ module.exports = function registerMaskedDirectMaskedStandaloneRuntime(context) {
   );
 
   runTest(
+    "MASKED-DIRECT-MASKED-STANDALONE-RUNTIME-02 disposal releases an unsolved captcha wait",
+    async () => {
+      const sandbox = createDomSandbox("https://f95zone.to/masked/example");
+      try {
+        preparePage(sandbox);
+        let rendered = false;
+        const { createMaskedPageController } = loadModule(
+          "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
+        );
+        const controller = createMaskedPageController({
+          addTeardown() {},
+          readThreadFlags: async () => ({ skipMaskedLink: true }),
+          normalizeUrl: (value) => value,
+          resolveMaskedLink: async () => ({ status: "captcha" }),
+          getCaptchaApi: () => ({ render: () => { rendered = true; } }),
+          deliverDestination: async () => {},
+        });
+        const operation = controller.enableMaskedPageHooks({ isEnabled: true, isBlockedByCore: false });
+        for (let attempt = 0; attempt < 10 && !rendered; attempt += 1) await Promise.resolve();
+        assert.strictEqual(rendered, true);
+        controller.dispose();
+        const outcome = await Promise.race([
+          operation.then(() => "settled"),
+          new Promise((resolve) => setTimeout(() => resolve("hung"), 200)),
+        ]);
+        assert.strictEqual(outcome, "settled");
+      } finally {
+        sandbox.restore();
+      }
+    },
+  );
+
+  runTest(
+    "MASKED-DIRECT-MASKED-STANDALONE-RUNTIME-02 recaptcha checkbox polling stops after a timeout",
+    () => {
+      const sandbox = createDomSandbox(
+        "https://www.google.com/recaptcha/api2/anchor?k=6LcQDlBFAAAAAFakeSiteKey",
+      );
+      const realSetInterval = global.setInterval;
+      const realClearInterval = global.clearInterval;
+      try {
+        const { F95_CAPTCHA_SITEKEY } = loadModule("addons/masked-direct-addon/src/constants.js");
+        sandbox.window.happyDOM.setURL(
+          `https://www.google.com/recaptcha/api2/anchor?k=${F95_CAPTCHA_SITEKEY}`,
+        );
+        let tick = null;
+        let cleared = 0;
+        global.setInterval = (callback) => { tick = callback; return 1; };
+        global.clearInterval = () => { cleared += 1; };
+        let clock = 0;
+        const { createMaskedPageController } = loadModule(
+          "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
+        );
+        const controller = createMaskedPageController({
+          addTeardown() {},
+          readThreadFlags: async () => ({}),
+          normalizeUrl: (value) => value,
+          now: () => clock,
+        });
+        controller.handleRecaptcha();
+        assert.ok(tick, "polling timer started");
+        tick();
+        assert.strictEqual(cleared, 0);
+        clock = 31000;
+        tick();
+        assert.strictEqual(cleared, 1);
+      } finally {
+        global.setInterval = realSetInterval;
+        global.clearInterval = realClearInterval;
+        sandbox.restore();
+      }
+    },
+  );
+
+  runTest(
     "MASKED-DIRECT-MASKED-STANDALONE-RUNTIME-01 aborts and suppresses late delivery on disposal",
     async () => {
       const sandbox = createDomSandbox("https://f95zone.to/masked/example");

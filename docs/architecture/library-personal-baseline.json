@@ -388,7 +388,7 @@
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-          "bytes": 12918
+          "bytes": 13079
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
@@ -474,7 +474,7 @@
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-          "bytes": 8723
+          "bytes": 8809
         },
         {
           "path": "addons/library-addon/src/library/recordModel.js",

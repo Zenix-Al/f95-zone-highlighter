@@ -17,7 +17,7 @@ export function resolveMaskedLink(url, { token = "", XMLHttpRequestCtor = XMLHtt
         reject({ type: "parse", error });
       }
     };
-    xhr.send(`xhr=1&download=1${token ? `&captcha=${token}` : ""}`);
+    xhr.send(`xhr=1&download=1${token ? `&captcha=${encodeURIComponent(token)}` : ""}`);
   });
   promise.abort = () => xhr?.abort?.();
   return promise;

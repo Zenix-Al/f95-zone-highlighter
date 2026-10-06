@@ -6,6 +6,21 @@ import { TIMINGS } from "../../config/timings.js";
 import { debugLog } from "../../core/logger.js";
 import { createEnabledDisabledToast, createToggleSetting } from "../../ui/settings/metaFactory.js";
 
+const pendingTimers = new Set();
+
+function schedule(callback, delay) {
+  const timer = setTimeout(() => {
+    pendingTimers.delete(timer);
+    callback();
+  }, delay);
+  pendingTimers.add(timer);
+}
+
+function clearPendingTimers() {
+  for (const timer of pendingTimers) clearTimeout(timer);
+  pendingTimers.clear();
+}
+
 /**
  * Main handler to synchronize the state of on-page UI controls
  * (Auto-Refresh, Web Notifications) with the script's configuration.
@@ -37,8 +52,8 @@ function syncLatestControls() {
   }
 
   if (!isWebNotifOn && targetWebNotif) {
-    setTimeout(() => {
-      if (!webNotifBtn.classList.contains("selected")) {
+    schedule(() => {
+      if (config.latestSettings.webNotif && !webNotifBtn.classList.contains("selected")) {
         webNotifBtn.click();
       }
     }, TIMINGS.LATEST_CONTROL_WEBNOTIF_DELAY);
@@ -55,7 +70,7 @@ function processMutations(mutationsList) {
       (mutation.addedNodes && mutation.addedNodes.length > 0) ||
       (mutation.removedNodes && mutation.removedNodes.length > 0);
     if (hasDomChange) {
-      setTimeout(() => {
+      schedule(() => {
         syncLatestControls();
       }, 100);
       return;
@@ -81,6 +96,7 @@ function enable() {
 
 function disable() {
   removeObserverCallback("sync-latest-controls");
+  clearPendingTimers();
   syncLatestControls();
 }
 
