@@ -2391,6 +2391,66 @@ module.exports = function registerGroup(context) {
     }
   });
 
+  runTest("CONFIG-CROSS-TAB-01 a save does not overwrite another tab's newer changes", async () => {
+    const previousGM = global.GM;
+    const gm = createFakeGM();
+    global.GM = gm;
+    try {
+      const service = loadModule("tests/fixtures/configTransferReadyHarness.js");
+      await service.authorizeStorageForTest();
+      const stored = gm.snapshot()[service.CONFIG_ENVELOPE_KEY];
+      // Another tab saves a newer revision that turns on wideLatest.
+      const otherTab = JSON.parse(JSON.stringify(stored));
+      otherTab.revision = stored.revision + 1;
+      otherTab.writerId = "tab:other";
+      otherTab.data.latestSettings.wideLatest = true;
+      await gm.setValue(service.CONFIG_ENVELOPE_KEY, otherTab);
+      assert.strictEqual(service.config.latestSettings.wideLatest, false, "this tab is stale");
+      const result = await service.updateConfig((draft) => {
+        draft.latestSettings.denseLatestGrid = true;
+      }, { origin: "test" });
+      assert.strictEqual(result.committed, true);
+      const after = gm.snapshot()[service.CONFIG_ENVELOPE_KEY];
+      assert.strictEqual(after.data.latestSettings.wideLatest, true, "other tab's change survives");
+      assert.strictEqual(after.data.latestSettings.denseLatestGrid, true);
+      assert.strictEqual(after.revision, otherTab.revision + 1);
+      assert.strictEqual(service.config.latestSettings.wideLatest, true);
+    } finally {
+      global.GM = previousGM;
+    }
+  });
+
+  runTest("CONFIG-RECOVERY-01 a failed write-back still uses the recovered backup", async () => {
+    const previousGM = global.GM;
+    const seed = createFakeGM();
+    global.GM = seed;
+    let backup;
+    let keys;
+    try {
+      const service = loadModule("tests/fixtures/configTransferReadyHarness.js");
+      await service.authorizeStorageForTest();
+      keys = { current: service.CONFIG_ENVELOPE_KEY, backup: service.CONFIG_BACKUP_KEY };
+      backup = JSON.parse(JSON.stringify(seed.snapshot()[keys.current]));
+      backup.data.latestSettings.wideLatest = true;
+    } finally {
+      global.GM = previousGM;
+    }
+    const gm = createFakeGM({
+      [keys.current]: { schemaVersion: 2, revision: 3, data: "corrupt" },
+      [keys.backup]: backup,
+    }, { failSetKey: keys.current });
+    global.GM = gm;
+    try {
+      const service = loadModule("tests/fixtures/configTransferReadyHarness.js");
+      const loaded = await service.loadConfig();
+      assert.strictEqual(loaded.source, "backup");
+      assert.strictEqual(loaded.persisted, false);
+      assert.strictEqual(loaded.data.latestSettings.wideLatest, true);
+    } finally {
+      global.GM = previousGM;
+    }
+  });
+
   runTest("TRANSFER-01 rejected tag-cache write does not commit core settings", async () => {
     const previousGM = global.GM;
     const gm = createFakeGM();

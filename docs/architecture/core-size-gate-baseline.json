@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "sourceReport": "docs/architecture/core-size-baseline.json",
-  "sourceReportSha256": "b762b21f12cd915ca2d1b20eb8f2ba2b56801b70bc936e9bdc660292707ab6b3",
+  "sourceReportSha256": "15143b37714537bd898bb0219c35a6756cd404eb9ef011e29f6afd6168a7a130",
   "thresholds": {
     "authoredArea": {
       "absoluteBytes": 1024,
@@ -22,6 +22,6 @@
   },
   "rationale": {
     "type": "commit-note",
-    "text": "Refresh stale baselines: regenerated on an LF checkout (.gitattributes eol=lf); also picks up source added since the last refresh (latest-overlay markers.js, markerLifecycle.js, services/addons/latestMarkerBroker.js). No intentional core size change."
+    "text": "Config cross-tab refresh before save and backup-recovery fallback in settingsService.js add about 1.4 KB of source; intentional, no other core size change."
   }
 }

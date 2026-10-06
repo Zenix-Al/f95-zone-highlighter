@@ -28,18 +28,18 @@
   },
   "authored": {
     "fileCount": 118,
-    "physicalLines": 14663,
-    "meaningfulLines": 12680,
-    "authoredBytes": 466995,
+    "physicalLines": 14698,
+    "meaningfulLines": 12708,
+    "authoredBytes": 468646,
     "bytesByArea": {
       "config": 30359,
       "core": 87440,
-      "services": 79625,
+      "services": 81276,
       "features": 130090,
       "ui": 139481
     },
     "bytesByFile": {
-      "src/services/settingsService.js": 30245,
+      "src/services/settingsService.js": 31896,
       "src/ui/assets/css.css": 25118,
       "src/config/schema.js": 19644,
       "src/features/latest-overlay/scoreCalculator.js": 14662,
@@ -162,9 +162,9 @@
       {
         "path": "src/services/settingsService.js",
         "area": "services",
-        "bytes": 30245,
-        "physicalLines": 824,
-        "meaningfulLines": 761,
+        "bytes": 31896,
+        "physicalLines": 859,
+        "meaningfulLines": 789,
         "fanIn": 9,
         "fanOut": 7,
         "exports": [
@@ -1586,14 +1586,14 @@
   "bundle": {
     "readable": {
       "mode": "regular",
-      "bytes": 651622,
-      "gzipBytes": 140666,
-      "coreBytes": 411948,
+      "bytes": 652819,
+      "gzipBytes": 140883,
+      "coreBytes": 413145,
       "excludedBytes": 232429,
       "contributors": [
         {
           "path": "src/services/settingsService.js",
-          "bytes": 30192
+          "bytes": 31389
         },
         {
           "path": "src/ui/assets/css.css",
@@ -1675,7 +1675,7 @@
       "coreContributors": [
         {
           "path": "src/services/settingsService.js",
-          "bytes": 30192
+          "bytes": 31389
         },
         {
           "path": "src/ui/assets/css.css",
@@ -1839,9 +1839,9 @@
     },
     "uglified": {
       "mode": "release",
-      "bytes": 330584,
-      "gzipBytes": 99021,
-      "coreBytes": 216597,
+      "bytes": 331093,
+      "gzipBytes": 99192,
+      "coreBytes": 217106,
       "excludedBytes": 113975,
       "contributors": [
         {
@@ -1850,7 +1850,7 @@
         },
         {
           "path": "src/services/settingsService.js",
-          "bytes": 13401
+          "bytes": 13910
         },
         {
           "path": "src/config/schema.js",
@@ -1932,7 +1932,7 @@
         },
         {
           "path": "src/services/settingsService.js",
-          "bytes": 13401
+          "bytes": 13910
         },
         {
           "path": "src/config/schema.js",

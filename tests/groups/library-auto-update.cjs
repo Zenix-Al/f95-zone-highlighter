@@ -246,6 +246,65 @@ module.exports = function registerLibraryAutoUpdateGroup(context) {
     assert.strictEqual(cleared, 1);
   });
 
+  runTest("LIBRARY-UPDATE-SCHEDULER-02 a thrown worker error does not wedge the scheduler", async () => {
+    const repository = createRepository();
+    const queue = createQueue();
+    const realRunWorker = queue.runWorker;
+    let calls = 0;
+    queue.runWorker = async (...args) => {
+      calls += 1;
+      if (calls === 1) throw new Error("storage exploded");
+      return realRunWorker(...args);
+    };
+    const { createAutoUpdateScheduler } = loadModule(
+      "addons/library-addon/src/library/autoUpdateScheduler.js",
+    );
+    const scheduler = createAutoUpdateScheduler({
+      repository, queueRuntime: queue, owner: "throwing-tab", now: () => 100, random: () => 0,
+    });
+    const first = await scheduler.run({ force: true });
+    assert.strictEqual(first.ok, false);
+    assert.strictEqual(first.reason, "run_failed");
+    assert.strictEqual(repository.snapshot().lease, null, "lease is released after a failure");
+    assert.strictEqual(scheduler.snapshot().running, false);
+    const second = await scheduler.run({ force: true });
+    assert.notStrictEqual(second.reason, "already_running");
+    assert.strictEqual(second.ok, true);
+  });
+
+  runTest("LIBRARY-UPDATE-SCHEDULER-02 the timer re-arms after a scheduled run throws", async () => {
+    const repository = createRepository();
+    const queue = createQueue();
+    const { createAutoUpdateScheduler } = loadModule(
+      "addons/library-addon/src/library/autoUpdateScheduler.js",
+    );
+    const scheduler = createAutoUpdateScheduler({
+      repository, queueRuntime: queue, owner: "rearm-tab", now: () => 100, random: () => 0,
+    });
+    const realSetTimeout = global.setTimeout;
+    const armed = [];
+    global.setTimeout = (callback, delay) => {
+      armed.push(callback);
+      return realSetTimeout(() => {}, 0);
+    };
+    try {
+      await scheduler.start();
+      assert.strictEqual(armed.length, 1);
+      const realGetCycle = queue.getCycle;
+      let threw = false;
+      queue.getCycle = async () => {
+        if (!threw) { threw = true; throw new Error("transient"); }
+        return realGetCycle();
+      };
+      await armed[0]();
+      assert.strictEqual(threw, true);
+      assert.strictEqual(armed.length, 2, "scheduler must re-arm after the throw");
+    } finally {
+      global.setTimeout = realSetTimeout;
+      await scheduler.stop();
+    }
+  });
+
   runTest("LIBRARY-UPDATE-QUEUE-RECOVERY-01 elects one durable worker across ten tabs", async () => {
     const repository = createRepository();
     const queue = createQueue({ cycleId: "shared", status: "running", total: 1, nextRunAt: 1 });

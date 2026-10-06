@@ -2369,9 +2369,9 @@
       "id": "library-addon",
       "source": {
         "fileCount": 102,
-        "authoredBytes": 413163,
-        "physicalLines": 12754,
-        "nonblankLines": 11560,
+        "authoredBytes": 413542,
+        "physicalLines": 12768,
+        "nonblankLines": 11573,
         "files": [
           {
             "path": "addons/library-addon/src/api/bridge.js",
@@ -2603,9 +2603,9 @@
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-            "bytes": 11059,
-            "physicalLines": 328,
-            "nonblankLines": 307
+            "bytes": 11944,
+            "physicalLines": 353,
+            "nonblankLines": 328
           },
           {
             "path": "addons/library-addon/src/library/importWorkflow.js",
@@ -2990,8 +2990,8 @@
       "builds": {
         "regular": {
           "mode": "regular",
-          "bytes": 425570,
-          "gzipBytes": 87398,
+          "bytes": 425975,
+          "gzipBytes": 87484,
           "contributors": [
             {
               "path": "addons/library-addon/src/library/service.js",
@@ -3015,7 +3015,7 @@
             },
             {
               "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-              "bytes": 11449
+              "bytes": 12202
             },
             {
               "path": "addons/library-addon/src/app/dockController.js",
@@ -3077,8 +3077,8 @@
         },
         "release": {
           "mode": "release",
-          "bytes": 383891,
-          "gzipBytes": 76635,
+          "bytes": 384188,
+          "gzipBytes": 76673,
           "contributors": [
             {
               "path": "addons/library-addon/src/ui/assets/manager.css",
@@ -3101,12 +3101,12 @@
               "bytes": 8723
             },
             {
-              "path": "addons/library-addon/src/library/recordModel.js",
-              "bytes": 8044
+              "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
+              "bytes": 8056
             },
             {
-              "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-              "bytes": 7834
+              "path": "addons/library-addon/src/library/recordModel.js",
+              "bytes": 8044
             },
             {
               "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
