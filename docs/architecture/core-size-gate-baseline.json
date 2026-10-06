@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "sourceReport": "docs/architecture/core-size-baseline.json",
-  "sourceReportSha256": "27a2fa1cc2a041f5adc4373bed5e6cda30dc6004400108f755ec4dd02f8a1ff2",
+  "sourceReportSha256": "2e06498dddb8a72f5ce86ffa463a28601ba0c9679e21bb164c3d7bfef07ce5e5",
   "thresholds": {
     "authoredArea": {
       "absoluteBytes": 1024,
@@ -22,6 +22,6 @@
   },
   "rationale": {
     "type": "commit-note",
-    "text": "Prettier reformat of src (printWidth 100). Authored growth is formatting; also refreshes reports that went stale in the merged PRs #73-#78."
+    "text": "Audit fixes: settings-effect debounce cancel(), add-on CSS sanitizer bypasses closed."
   }
 }

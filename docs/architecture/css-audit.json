@@ -9,13 +9,13 @@
   "authoredBytes": 28602,
   "bundle": {
     "readable": {
-      "fullBytes": 663980,
-      "gzipBytes": 142670,
+      "fullBytes": 664725,
+      "gzipBytes": 142800,
       "contributionBytes": 21749
     },
     "uglified": {
-      "fullBytes": 331453,
-      "gzipBytes": 99370,
+      "fullBytes": 331758,
+      "gzipBytes": 99483,
       "contributionBytes": 24665
     }
   },
@@ -4596,13 +4596,13 @@
     },
     "readableBundleFullBytes": {
       "before": 586580,
-      "after": 663980,
-      "delta": 77400
+      "after": 664725,
+      "delta": 78145
     },
     "readableBundleGzipBytes": {
       "before": 124202,
-      "after": 142670,
-      "delta": 18468
+      "after": 142800,
+      "delta": 18598
     },
     "uglifiedBundleContributionBytes": {
       "before": 27380,
@@ -4611,13 +4611,13 @@
     },
     "uglifiedBundleFullBytes": {
       "before": 302505,
-      "after": 331453,
-      "delta": 28948
+      "after": 331758,
+      "delta": 29253
     },
     "uglifiedBundleGzipBytes": {
       "before": 88402,
-      "after": 99370,
-      "delta": 10968
+      "after": 99483,
+      "delta": 11081
     },
     "selectorCount": {
       "before": 252,

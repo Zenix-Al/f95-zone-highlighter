@@ -2369,9 +2369,9 @@
       "id": "library-addon",
       "source": {
         "fileCount": 102,
-        "authoredBytes": 414201,
-        "physicalLines": 12785,
-        "nonblankLines": 11587,
+        "authoredBytes": 416623,
+        "physicalLines": 12845,
+        "nonblankLines": 11637,
         "files": [
           {
             "path": "addons/library-addon/src/api/bridge.js",
@@ -2441,9 +2441,9 @@
           },
           {
             "path": "addons/library-addon/src/api/threadHtml.js",
-            "bytes": 4245,
-            "physicalLines": 112,
-            "nonblankLines": 110
+            "bytes": 4803,
+            "physicalLines": 126,
+            "nonblankLines": 120
           },
           {
             "path": "addons/library-addon/src/api/toast.js",
@@ -2573,15 +2573,15 @@
           },
           {
             "path": "addons/library-addon/src/library/autoUpdatePolicy.js",
-            "bytes": 2246,
-            "physicalLines": 55,
-            "nonblankLines": 47
+            "bytes": 2491,
+            "physicalLines": 60,
+            "nonblankLines": 49
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-            "bytes": 18715,
-            "physicalLines": 541,
-            "nonblankLines": 506
+            "bytes": 18812,
+            "physicalLines": 543,
+            "nonblankLines": 508
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueSnapshot.js",
@@ -2591,9 +2591,9 @@
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-            "bytes": 12891,
-            "physicalLines": 347,
-            "nonblankLines": 328
+            "bytes": 14147,
+            "physicalLines": 378,
+            "nonblankLines": 356
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateRepository.js",
@@ -2621,9 +2621,9 @@
           },
           {
             "path": "addons/library-addon/src/library/manualUpdateChecker.js",
-            "bytes": 4174,
-            "physicalLines": 112,
-            "nonblankLines": 108
+            "bytes": 4417,
+            "physicalLines": 119,
+            "nonblankLines": 115
           },
           {
             "path": "addons/library-addon/src/library/querying.js",
@@ -2651,9 +2651,9 @@
           },
           {
             "path": "addons/library-addon/src/library/threadUpdateParser.js",
-            "bytes": 4508,
-            "physicalLines": 146,
-            "nonblankLines": 137
+            "bytes": 4531,
+            "physicalLines": 147,
+            "nonblankLines": 138
           },
           {
             "path": "addons/library-addon/src/library/updateEventModel.js",
@@ -2990,8 +2990,8 @@
       "builds": {
         "regular": {
           "mode": "regular",
-          "bytes": 426484,
-          "gzipBytes": 87576,
+          "bytes": 428417,
+          "gzipBytes": 87991,
           "contributors": [
             {
               "path": "addons/library-addon/src/library/service.js",
@@ -3003,15 +3003,15 @@
             },
             {
               "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-              "bytes": 19372
+              "bytes": 19474
+            },
+            {
+              "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
+              "bytes": 14173
             },
             {
               "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
               "bytes": 13788
-            },
-            {
-              "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-              "bytes": 13079
             },
             {
               "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
@@ -3077,8 +3077,8 @@
         },
         "release": {
           "mode": "release",
-          "bytes": 384764,
-          "gzipBytes": 76789,
+          "bytes": 386812,
+          "gzipBytes": 77189,
           "contributors": [
             {
               "path": "addons/library-addon/src/ui/assets/manager.css",
@@ -3090,7 +3090,7 @@
             },
             {
               "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-              "bytes": 14250
+              "bytes": 14335
             },
             {
               "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
@@ -3098,7 +3098,7 @@
             },
             {
               "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-              "bytes": 8809
+              "bytes": 9524
             },
             {
               "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
@@ -4433,9 +4433,9 @@
     },
     "servicesAddons": {
       "fileCount": 37,
-      "authoredBytes": 199212,
-      "physicalLines": 5995,
-      "nonblankLines": 5337,
+      "authoredBytes": 200243,
+      "physicalLines": 6023,
+      "nonblankLines": 5358,
       "files": [
         {
           "path": "src/services/addons/access.js",
@@ -4655,9 +4655,9 @@
         },
         {
           "path": "src/services/addons/uiSanitizer.js",
-          "bytes": 7517,
-          "physicalLines": 267,
-          "nonblankLines": 247
+          "bytes": 8548,
+          "physicalLines": 295,
+          "nonblankLines": 268
         }
       ]
     },
