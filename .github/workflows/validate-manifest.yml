@@ -19,8 +19,21 @@ jobs:
         run: npm ci
       - name: Lint source
         run: npm run lint
+      - name: Lint add-ons
+        run: npm run lint:addons
       - name: Run tests
         run: npm test
+      - name: Check core size and CSS reports
+        run: |
+          npm run check:core
+          npm run check:core:size
+          npm run check:core:size-reduction
+          npm run check:css
+      - name: Check add-on reports
+        run: |
+          npm run check:addons:baseline
+          npm run check:addons:api
+          npm run check:library:personal
       - name: Check whitespace errors
         run: git diff --check
       - name: Validate generated manifest metadata
