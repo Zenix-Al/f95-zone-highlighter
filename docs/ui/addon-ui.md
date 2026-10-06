@@ -144,7 +144,11 @@ event-handler attributes, unsafe URL schemes, `srcdoc`, SVG, and MathML.
 
 Page-host CSS is scoped by the service to the add-on-owned mount or dialog root.
 Global selectors and risky CSS constructs are rejected; styles are removed with
-the owning add-on during teardown.
+the owning add-on during teardown. CSS containing a backslash is rejected because
+escapes can spell `url(` past the pattern checks, and `image-set()` is rejected
+because it loads URLs without `url()`. Selectors may not start with `~` or `+`,
+and a selector containing a sibling combinator is only emitted in its descendant
+form, so it cannot match page elements next to the mount.
 
 Add-on UI helpers can mount add-on-provided HTML and styles. This is not by itself evidence of a vulnerability — sanitization or trust enforcement may occur in the add-on service/UI-host boundary.
 
