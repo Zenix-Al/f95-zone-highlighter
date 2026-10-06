@@ -364,8 +364,22 @@ function resetFastCaptureHarness() {
 }
 
 
+let finished = false;
+
+// A test awaiting a promise that never settles drains the event loop, and Node
+// would otherwise exit 0 without running the remaining tests.
+process.on("exit", () => {
+  if (finished) return;
+  console.error(
+    "\nTest run stopped early: a test is waiting on a promise that never settles " +
+      `(after ${passed} passed, ${failed} failed).`,
+  );
+  process.exitCode = 1;
+});
+
 function finish() {
   return testChain.then(() => {
+    finished = true;
     console.log("\nTest results: " + passed + " passed, " + failed + " failed");
     if (failed > 0) process.exitCode = 1;
   });
