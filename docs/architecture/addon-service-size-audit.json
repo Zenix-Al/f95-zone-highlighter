@@ -22,7 +22,7 @@
   },
   "summary": {
     "coreService": {
-      "authoredBytes": 241569,
+      "authoredBytes": 241545,
       "readableBytes": 671789,
       "uglifiedBytes": 334349,
       "readableGzipBytes": 144250,
@@ -50,9 +50,9 @@
   "beforeAfter": {
     "coreService": {
       "authoredBytes": {
-        "current": 241569,
+        "current": 241545,
         "baseline": 241545,
-        "delta": 24
+        "delta": 0
       },
       "owningFiles": [
         "src/services/addons/uiHost.js",
@@ -326,7 +326,7 @@
   "coreAddOnService": {
     "source": {
       "fileCount": 53,
-      "authoredBytes": 241569,
+      "authoredBytes": 241545,
       "physicalLines": 7316,
       "nonblankLines": 6463,
       "largestFiles": [
@@ -718,13 +718,13 @@
         },
         {
           "path": "src/ui/components/addons/addonScopes.js",
-          "bytes": 236,
+          "bytes": 231,
           "physicalLines": 5,
           "nonblankLines": 5
         },
         {
           "path": "src/ui/components/addons/addonStyle.js",
-          "bytes": 318,
+          "bytes": 310,
           "physicalLines": 8,
           "nonblankLines": 8
         },
@@ -748,7 +748,7 @@
         },
         {
           "path": "src/ui/components/addons/settingPath.js",
-          "bytes": 182,
+          "bytes": 178,
           "physicalLines": 4,
           "nonblankLines": 4
         },
@@ -760,7 +760,7 @@
         },
         {
           "path": "src/ui/components/addons/statusMeta.js",
-          "bytes": 347,
+          "bytes": 340,
           "physicalLines": 7,
           "nonblankLines": 7
         },
@@ -1009,7 +1009,7 @@
       },
       "core-ui-integration": {
         "fileCount": 16,
-        "authoredBytes": 43930,
+        "authoredBytes": 43906,
         "physicalLines": 1422,
         "nonblankLines": 1239,
         "largestFiles": [
@@ -1081,21 +1081,15 @@
           },
           {
             "path": "src/ui/components/addons/statusMeta.js",
-            "bytes": 347,
+            "bytes": 340,
             "physicalLines": 7,
             "nonblankLines": 7
           },
           {
             "path": "src/ui/components/addons/addonStyle.js",
-            "bytes": 318,
+            "bytes": 310,
             "physicalLines": 8,
             "nonblankLines": 8
-          },
-          {
-            "path": "src/ui/components/addons/addonScopes.js",
-            "bytes": 236,
-            "physicalLines": 5,
-            "nonblankLines": 5
           },
           {
             "path": "src/ui/components/addons/badge.js",
@@ -1104,8 +1098,14 @@
             "nonblankLines": 8
           },
           {
+            "path": "src/ui/components/addons/addonScopes.js",
+            "bytes": 231,
+            "physicalLines": 5,
+            "nonblankLines": 5
+          },
+          {
             "path": "src/ui/components/addons/settingPath.js",
-            "bytes": 182,
+            "bytes": 178,
             "physicalLines": 4,
             "nonblankLines": 4
           }
@@ -1155,13 +1155,13 @@
           },
           {
             "path": "src/ui/components/addons/addonScopes.js",
-            "bytes": 236,
+            "bytes": 231,
             "physicalLines": 5,
             "nonblankLines": 5
           },
           {
             "path": "src/ui/components/addons/addonStyle.js",
-            "bytes": 318,
+            "bytes": 310,
             "physicalLines": 8,
             "nonblankLines": 8
           },
@@ -1185,7 +1185,7 @@
           },
           {
             "path": "src/ui/components/addons/settingPath.js",
-            "bytes": 182,
+            "bytes": 178,
             "physicalLines": 4,
             "nonblankLines": 4
           },
@@ -1197,7 +1197,7 @@
           },
           {
             "path": "src/ui/components/addons/statusMeta.js",
-            "bytes": 347,
+            "bytes": 340,
             "physicalLines": 7,
             "nonblankLines": 7
           },

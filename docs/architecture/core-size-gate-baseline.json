@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "sourceReport": "docs/architecture/core-size-baseline.json",
-  "sourceReportSha256": "ce6fd14c0de885f848c26127c0bcd783c92259672f5279505c16b2737a72f49b",
+  "sourceReportSha256": "87a64668c2d4caf66ccf765d61f9519dce3a379c4a827a128f8e823575afb11a",
   "thresholds": {
     "authoredArea": {
       "absoluteBytes": 1024,
@@ -22,6 +22,6 @@
   },
   "rationale": {
     "type": "commit-note",
-    "text": "Merge PR #82 audit and sanitizer fixes with current main; refresh accepted report after combined source changes."
+    "text": "Normalize audit evidence to Git-canonical LF source; CI and Windows now measure the same authored bytes."
   }
 }
