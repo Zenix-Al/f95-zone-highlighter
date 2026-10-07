@@ -1,3 +1,7 @@
+## [1.0.5] - Slow-page startup reliability
+
+- Extended the shared core handshake wait to 5 seconds for slow pages and verbose development builds; normal API action timeouts are unchanged.
+
 ## [1.0.4] - Latest marker-provider API demo
 
 - Add an opt-in Latest marker-provider API demo with register, query response,

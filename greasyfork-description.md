@@ -56,6 +56,6 @@ You can enable or disable these individually from the main config panel:
 Handled by the **Masked + Direct Download Add-on** (Buzzheavier, Gofile, Pixeldrain, Datanodes, MediaFire, Workupload)
 
 **Author:** X Death  
-**Contributor:** Edexal
+**Contributors:** Edexal (GM storage, change listener, and summary UI); [xBandaku](https://github.com/xBandaku) (core/add-on reliability, security hardening, tests, and development tooling)
 
 [Source code](https://github.com/Zenix-Al/f95-zone-highlighter)

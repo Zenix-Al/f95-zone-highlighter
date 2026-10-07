@@ -1,19 +1,19 @@
 {
   "addons": {
     "library-addon": {
-      "regular": "0d4b5becaa0b6d056e36db30870db9fbab9927186d94ccf584c32494c96ff28c",
-      "release": "02c0ee8497a39273e2db439bf7a845ac56fb5eae259f29fa5a835ef0e6082c91"
+      "regular": "25af096a46dc23e26a691035a2f592f7fb375649d061ad392ace37179cb3290b",
+      "release": "0a5820c9ac650642ff9e8bc73c673ec5d106e0d24384b250e5336a4cb2075f7b"
     },
     "image-repair-addon": {
       "release": "599180b41d1edaf69497c5acbf83bdcee2b3417604595341691dd6eac64a4450",
       "regular": "caacd5214f6f63a95e6bed0cbe8ab2e21cce9758edd76f9a13d8df5f85d82f2b"
     },
     "masked-direct-addon": {
-      "release": "2e697e043cb3017eb9c00e6eb32d5446c9c5470bc7fc0c6fdde1d0c47626802a",
-      "regular": "1b22fc2d87909c704149ede700634d6d6b7de8dd31a7650085500c60f7de0882"
+      "release": "ef141937e8f947ea3e10f63499760fe252cef1c9cec876f51b9ab45f750dc329",
+      "regular": "7df44c76e4c662e3e265e7a884c43aa0dca9d7ac18be47f9de20bf12a57f2973"
     },
     "latest-filters-addon": {
-      "release": "12398de3cf108c71bd3e45a0ed00b025e8a0cdb4f7a727f977db9d8ec7cf8bfd",
+      "release": "1993de8dd5512f1f6f789bf815c8a8b085799a0ebe3b4e6ebc86d8e16976f8a3",
       "regular": "5388f35cca69e6575b3c6559e6fba118facdd73074f2362e87c8d7e4fc271aca"
     },
     "halloween-theme-addon": {
@@ -22,7 +22,7 @@
     },
     "example-addon": {
       "regular": "10a083a99b148fde651de64a460fc6d4b4dee3a42bd14e7378a1e8ec4c4cd064",
-      "release": "c1e87a28fdaff8d0caa322d1c88a347bd9882209c70c288a2e1aeb23b486bb65"
+      "release": "0cc58dcc0deb96f72824a998e6bc2b681aa3d16c90c20b35bdda55d47b0bbfbe"
     },
     "site-repair-addon": {
       "regular": "73f6cb30292fea794aa94df6fbb71805c3253f9b896150001e302b541089ef94",

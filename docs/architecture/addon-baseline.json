@@ -23,7 +23,7 @@
         "id": "site-repair-addon",
         "name": "F95UE Site Repair",
         "description": "Provides independently controlled repairs for F95Zone site behavior.",
-        "version": "1.0.3",
+        "version": "1.0.4",
         "author": "X Death",
         "entry": "addons/site-repair-addon/src/main.js",
         "outfile": "addons/site-repair-addon/dist/site-repair-addon.user.js",
@@ -54,7 +54,7 @@
         "id": "masked-direct-addon",
         "name": "F95UE Masked + Direct Download Add-on",
         "description": "Combines masked-link skipper and direct-download flows into one trusted add-on.",
-        "version": "1.2.2",
+        "version": "1.2.3",
         "author": "X Death",
         "entry": "addons/masked-direct-addon/src/main.js",
         "outfile": "addons/masked-direct-addon/dist/masked-direct-addon.user.js",
@@ -129,7 +129,7 @@
         "id": "library-addon",
         "name": "F95UE Library Add-on",
         "description": "Quick-add threads to a personal library and manage entries with a dedicated add-on UI.",
-        "version": "1.3.8",
+        "version": "1.3.9",
         "author": "X Death",
         "entry": "addons/library-addon/src/main.js",
         "outfile": "addons/library-addon/dist/library-addon.user.js",
@@ -163,7 +163,7 @@
         "id": "example-addon",
         "name": "F95UE Example Add-on",
         "description": "Core API playground demonstrating every current addon-facing action through api modules.",
-        "version": "1.0.4",
+        "version": "1.0.5",
         "author": "X Death",
         "entry": "addons/example-addon/src/main.js",
         "outfile": "addons/example-addon/dist/example-addon.user.js",
@@ -198,7 +198,7 @@
         "id": "latest-filters-addon",
         "name": "F95UE Latest Filters Add-on",
         "description": "Adds one Saved Filters button on Latest Updates with a searchable preset list and active filter tracking.",
-        "version": "1.1.1",
+        "version": "1.1.2",
         "author": "X Death",
         "entry": "addons/latest-filters-addon/src/main.js",
         "outfile": "addons/latest-filters-addon/dist/latest-filters-addon.user.js",
@@ -232,7 +232,7 @@
         "id": "halloween-theme-addon",
         "name": "F95UE Halloween Theme Add-on",
         "description": "Forces Halloween logo/background theme with simple apply and teardown lifecycle.",
-        "version": "1.0.1",
+        "version": "1.0.2",
         "author": "X Death",
         "entry": "addons/halloween-theme-addon/src/main.js",
         "outfile": "addons/halloween-theme-addon/dist/halloween-theme-addon.user.js",
@@ -257,7 +257,7 @@
         "id": "thread-utility-addon",
         "name": "F95UE Thread Utility Add-on",
         "description": "Provides a compact thread dashboard and extensible thread utilities.",
-        "version": "1.0.2",
+        "version": "1.0.3",
         "author": "X Death",
         "entry": "addons/thread-utility-addon/src/main.js",
         "outfile": "addons/thread-utility-addon/dist/thread-utility-addon.user.js",
@@ -288,13 +288,13 @@
     ]
   },
   "trustedCatalog": {
-    "source": "src/generated/trusted-addon-catalog.249c0672abc5d1fa.json",
+    "source": "src/generated/trusted-addon-catalog.d4ead9c2fa82eb42.json",
     "projection": [
       {
         "id": "example-addon",
         "name": "F95UE Example Add-on",
         "description": "Core API playground demonstrating every current addon-facing action through api modules.",
-        "version": "1.0.4",
+        "version": "1.0.5",
         "pageScopes": [
           "f95zone"
         ],
@@ -309,7 +309,7 @@
         "id": "halloween-theme-addon",
         "name": "F95UE Halloween Theme Add-on",
         "description": "Forces Halloween logo/background theme with simple apply and teardown lifecycle.",
-        "version": "1.0.1",
+        "version": "1.0.2",
         "pageScopes": [
           "f95zone"
         ],
@@ -324,7 +324,7 @@
         "id": "latest-filters-addon",
         "name": "F95UE Latest Filters Add-on",
         "description": "Adds one Saved Filters button on Latest Updates with a searchable preset list and active filter tracking.",
-        "version": "1.1.1",
+        "version": "1.1.2",
         "pageScopes": [
           "latest"
         ],
@@ -339,7 +339,7 @@
         "id": "library-addon",
         "name": "F95UE Library Add-on",
         "description": "Quick-add threads to a personal library and manage entries with a dedicated add-on UI.",
-        "version": "1.3.8",
+        "version": "1.3.9",
         "pageScopes": [
           "f95zone"
         ],
@@ -354,7 +354,7 @@
         "id": "masked-direct-addon",
         "name": "F95UE Masked + Direct Download Add-on",
         "description": "Combines masked-link skipper and direct-download flows into one trusted add-on.",
-        "version": "1.2.2",
+        "version": "1.2.3",
         "pageScopes": [
           "f95zone"
         ],
@@ -409,7 +409,7 @@
         "id": "site-repair-addon",
         "name": "F95UE Site Repair",
         "description": "Provides independently controlled repairs for F95Zone site behavior.",
-        "version": "1.0.3",
+        "version": "1.0.4",
         "pageScopes": [
           "f95zone"
         ],
@@ -424,7 +424,7 @@
         "id": "thread-utility-addon",
         "name": "F95UE Thread Utility Add-on",
         "description": "Provides a compact thread dashboard and extensible thread utilities.",
-        "version": "1.0.2",
+        "version": "1.0.3",
         "pageScopes": [
           "thread"
         ],
@@ -2196,7 +2196,7 @@
         "regular": {
           "mode": "regular",
           "bytes": 89723,
-          "gzipBytes": 20391,
+          "gzipBytes": 20390,
           "contributors": [
             {
               "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
@@ -3082,7 +3082,7 @@
         "release": {
           "mode": "release",
           "bytes": 389467,
-          "gzipBytes": 77864,
+          "gzipBytes": 77862,
           "contributors": [
             {
               "path": "addons/library-addon/src/ui/assets/manager.css",
@@ -3530,7 +3530,7 @@
         "regular": {
           "mode": "regular",
           "bytes": 199695,
-          "gzipBytes": 40869,
+          "gzipBytes": 40868,
           "contributors": [
             {
               "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
@@ -3617,7 +3617,7 @@
         "release": {
           "mode": "release",
           "bytes": 169118,
-          "gzipBytes": 34458,
+          "gzipBytes": 34457,
           "contributors": [
             {
               "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
@@ -3831,7 +3831,7 @@
         "regular": {
           "mode": "regular",
           "bytes": 52323,
-          "gzipBytes": 12607,
+          "gzipBytes": 12608,
           "contributors": [
             {
               "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",

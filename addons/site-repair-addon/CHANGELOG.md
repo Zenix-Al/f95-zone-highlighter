@@ -1,7 +1,8 @@
 # Changelog
 
-## Unreleased
+## v1.0.4 - Ajax teardown and startup reliability
 
+- Extended the shared core handshake wait to 5 seconds for slow pages and verbose development builds; normal API action timeouts are unchanged.
 - Kept the Latest Ajax wrapper safe after Site Repair is disabled or torn down.
 
 ## v1.0.3 - Fix image repair

@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.0.3 - Slow-page startup reliability
+
+- Extended the shared core handshake wait to 5 seconds for slow pages and verbose development builds; normal API action timeouts are unchanged.
+
 ## v1.0.1 - Core UI alignment
 
 - Aligned the thread palette, controls, tags, prefixes, and settings dialog with the core Settings palette and semantic user-tag colors.
