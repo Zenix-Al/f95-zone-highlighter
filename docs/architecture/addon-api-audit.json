@@ -3836,7 +3836,7 @@
           },
           {
             "path": "addons/library-addon/src/api/threadHtml.js",
-            "line": 23,
+            "line": 36,
             "text": "const timer = setTimeout(() => controller.abort(\"timeout\"), timeoutMs);"
           },
           {
@@ -3846,7 +3846,7 @@
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-            "line": 15,
+            "line": 17,
             "text": "const timer = setTimeout(() => {"
           },
           {
@@ -3871,7 +3871,7 @@
           },
           {
             "path": "addons/library-addon/src/library/manualUpdateChecker.js",
-            "line": 10,
+            "line": 11,
             "text": "const timer = setTimeout(resolve, Math.max(0, ms));"
           },
           {
@@ -3908,62 +3908,62 @@
         "urlAndPageParsing": [
           {
             "path": "addons/library-addon/src/api/threadHtml.js",
-            "line": 11,
+            "line": 24,
             "text": "target = new URL(url, globalThis.location?.origin || \"https://f95zone.to\");"
           },
           {
             "path": "addons/library-addon/src/api/threadHtml.js",
-            "line": 15,
+            "line": 28,
             "text": "if (!/(^|\\.)f95zone\\.to$/i.test(target.hostname)) {"
           },
           {
             "path": "addons/library-addon/src/api/threadHtml.js",
-            "line": 27,
+            "line": 40,
             "text": "path: `${target.pathname}${target.search}`,"
           },
           {
             "path": "addons/library-addon/src/api/threadHtml.js",
-            "line": 42,
+            "line": 55,
             "text": "path: target.pathname,"
           },
           {
             "path": "addons/library-addon/src/api/threadHtml.js",
-            "line": 48,
+            "line": 61,
             "text": "return new URL(response.url || target.href).pathname;"
           },
           {
             "path": "addons/library-addon/src/api/threadHtml.js",
-            "line": 60,
+            "line": 73,
             "text": "data: { path: target.pathname, reason: \"response_too_large\", contentLength },"
           },
           {
             "path": "addons/library-addon/src/api/threadHtml.js",
-            "line": 67,
-            "text": "data: { path: target.pathname, reason: `http_${response.status}` },"
+            "line": 81,
+            "text": "data: { path: target.pathname, reason },"
           },
           {
             "path": "addons/library-addon/src/api/threadHtml.js",
-            "line": 76,
+            "line": 90,
             "text": "data: { path: target.pathname, reason: \"response_too_large\", responseBytes },"
           },
           {
             "path": "addons/library-addon/src/api/threadHtml.js",
-            "line": 81,
+            "line": 95,
             "text": "data: { path: target.pathname, responseBytes },"
           },
           {
             "path": "addons/library-addon/src/api/threadHtml.js",
-            "line": 87,
+            "line": 101,
             "text": "data: { path: target.pathname },"
           },
           {
             "path": "addons/library-addon/src/api/threadHtml.js",
-            "line": 94,
+            "line": 108,
             "text": "data: { path: target.pathname, timeoutMs },"
           },
           {
             "path": "addons/library-addon/src/api/threadHtml.js",
-            "line": 101,
+            "line": 115,
             "text": "path: target.pathname,"
           },
           {
@@ -4433,12 +4433,12 @@
         "cancellationAndTeardown": [
           {
             "path": "addons/library-addon/src/api/threadHtml.js",
-            "line": 20,
+            "line": 33,
             "text": "const controller = new AbortController();"
           },
           {
             "path": "addons/library-addon/src/api/threadHtml.js",
-            "line": 108,
+            "line": 122,
             "text": "clearTimeout(timer);"
           },
           {
@@ -4678,92 +4678,92 @@
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-            "line": 222,
+            "line": 224,
             "text": "[normalizedCycleId, \"retry\", 0],"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-            "line": 223,
+            "line": 225,
             "text": "[normalizedCycleId, \"retry\", integer(currentTime)],"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-            "line": 231,
+            "line": 233,
             "text": "[normalizedCycleId, \"retry\", 0],"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-            "line": 232,
+            "line": 234,
             "text": "[normalizedCycleId, \"retry\", MAX_COUNT],"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-            "line": 276,
+            "line": 278,
             "text": "if (![\"pending\", \"retry\"].includes(item.status)) {"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-            "line": 338,
+            "line": 340,
             "text": "const nextStatus = status(settlement.status, QUEUE_STATUSES, \"retry\");"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-            "line": 339,
+            "line": 341,
             "text": "if (![\"pending\", \"retry\", \"completed\", \"failed\"].includes(nextStatus)) {"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-            "line": 372,
+            "line": 374,
             "text": "status: item.attempts > 0 ? \"retry\" : \"pending\","
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-            "line": 12,
+            "line": 14,
             "text": "clearTimeout(timer);"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-            "line": 31,
+            "line": 33,
             "text": "clearIntervalFn = clearInterval,"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-            "line": 71,
+            "line": 74,
             "text": "// Reconcile retry rows written by older versions without deleting the cycle."
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-            "line": 79,
+            "line": 82,
             "text": "queueStatus: \"retry\","
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-            "line": 91,
+            "line": 94,
             "text": "status: terminal ? \"failed\" : \"retry\","
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-            "line": 103,
+            "line": 106,
             "text": "retryPending: counts.counts.retry,"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-            "line": 179,
+            "line": 182,
             "text": "const unfinished = counts.counts.pending + counts.counts.processing + counts.counts.retry;"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-            "line": 187,
+            "line": 190,
             "text": "retryPending: counts.counts.retry,"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-            "line": 299,
+            "line": 330,
             "text": "const wasRetry = item.status === \"retry\";"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-            "line": 304,
+            "line": 335,
             "text": "status: terminal ? \"failed\" : \"retry\","
           },
           {
@@ -4838,7 +4838,7 @@
           },
           {
             "path": "addons/library-addon/src/library/manualUpdateChecker.js",
-            "line": 12,
+            "line": 13,
             "text": "clearTimeout(timer);"
           },
           {
@@ -10692,62 +10692,62 @@
         },
         {
           "path": "addons/library-addon/src/api/threadHtml.js",
-          "line": 11,
+          "line": 24,
           "text": "target = new URL(url, globalThis.location?.origin || \"https://f95zone.to\");"
         },
         {
           "path": "addons/library-addon/src/api/threadHtml.js",
-          "line": 15,
+          "line": 28,
           "text": "if (!/(^|\\.)f95zone\\.to$/i.test(target.hostname)) {"
         },
         {
           "path": "addons/library-addon/src/api/threadHtml.js",
-          "line": 27,
+          "line": 40,
           "text": "path: `${target.pathname}${target.search}`,"
         },
         {
           "path": "addons/library-addon/src/api/threadHtml.js",
-          "line": 42,
+          "line": 55,
           "text": "path: target.pathname,"
         },
         {
           "path": "addons/library-addon/src/api/threadHtml.js",
-          "line": 48,
+          "line": 61,
           "text": "return new URL(response.url || target.href).pathname;"
         },
         {
           "path": "addons/library-addon/src/api/threadHtml.js",
-          "line": 60,
+          "line": 73,
           "text": "data: { path: target.pathname, reason: \"response_too_large\", contentLength },"
         },
         {
           "path": "addons/library-addon/src/api/threadHtml.js",
-          "line": 67,
-          "text": "data: { path: target.pathname, reason: `http_${response.status}` },"
+          "line": 81,
+          "text": "data: { path: target.pathname, reason },"
         },
         {
           "path": "addons/library-addon/src/api/threadHtml.js",
-          "line": 76,
+          "line": 90,
           "text": "data: { path: target.pathname, reason: \"response_too_large\", responseBytes },"
         },
         {
           "path": "addons/library-addon/src/api/threadHtml.js",
-          "line": 81,
+          "line": 95,
           "text": "data: { path: target.pathname, responseBytes },"
         },
         {
           "path": "addons/library-addon/src/api/threadHtml.js",
-          "line": 87,
+          "line": 101,
           "text": "data: { path: target.pathname },"
         },
         {
           "path": "addons/library-addon/src/api/threadHtml.js",
-          "line": 94,
+          "line": 108,
           "text": "data: { path: target.pathname, timeoutMs },"
         },
         {
           "path": "addons/library-addon/src/api/threadHtml.js",
-          "line": 101,
+          "line": 115,
           "text": "path: target.pathname,"
         },
         {
@@ -11187,7 +11187,7 @@
         },
         {
           "path": "addons/library-addon/src/api/threadHtml.js",
-          "line": 23,
+          "line": 36,
           "text": "const timer = setTimeout(() => controller.abort(\"timeout\"), timeoutMs);"
         },
         {
@@ -11197,7 +11197,7 @@
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-          "line": 15,
+          "line": 17,
           "text": "const timer = setTimeout(() => {"
         },
         {
@@ -11222,7 +11222,7 @@
         },
         {
           "path": "addons/library-addon/src/library/manualUpdateChecker.js",
-          "line": 10,
+          "line": 11,
           "text": "const timer = setTimeout(resolve, Math.max(0, ms));"
         },
         {
@@ -11990,7 +11990,7 @@
         },
         {
           "path": "addons/library-addon/src/library/manualUpdateChecker.js",
-          "line": 98,
+          "line": 100,
           "text": "options.onProgress?.({ completed: results.length, total: list.length, result: results.at(-1) });"
         },
         {
@@ -13304,12 +13304,12 @@
         },
         {
           "path": "addons/library-addon/src/api/threadHtml.js",
-          "line": 20,
+          "line": 33,
           "text": "const controller = new AbortController();"
         },
         {
           "path": "addons/library-addon/src/api/threadHtml.js",
-          "line": 23,
+          "line": 36,
           "text": "const timer = setTimeout(() => controller.abort(\"timeout\"), timeoutMs);"
         },
         {
@@ -13549,92 +13549,92 @@
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-          "line": 222,
+          "line": 224,
           "text": "[normalizedCycleId, \"retry\", 0],"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-          "line": 223,
+          "line": 225,
           "text": "[normalizedCycleId, \"retry\", integer(currentTime)],"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-          "line": 231,
+          "line": 233,
           "text": "[normalizedCycleId, \"retry\", 0],"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-          "line": 232,
+          "line": 234,
           "text": "[normalizedCycleId, \"retry\", MAX_COUNT],"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-          "line": 276,
+          "line": 278,
           "text": "if (![\"pending\", \"retry\"].includes(item.status)) {"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-          "line": 338,
+          "line": 340,
           "text": "const nextStatus = status(settlement.status, QUEUE_STATUSES, \"retry\");"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-          "line": 339,
+          "line": 341,
           "text": "if (![\"pending\", \"retry\", \"completed\", \"failed\"].includes(nextStatus)) {"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-          "line": 372,
+          "line": 374,
           "text": "status: item.attempts > 0 ? \"retry\" : \"pending\","
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-          "line": 15,
+          "line": 17,
           "text": "const timer = setTimeout(() => {"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-          "line": 30,
+          "line": 32,
           "text": "setIntervalFn = setInterval,"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-          "line": 71,
+          "line": 74,
           "text": "// Reconcile retry rows written by older versions without deleting the cycle."
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-          "line": 79,
+          "line": 82,
           "text": "queueStatus: \"retry\","
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-          "line": 91,
+          "line": 94,
           "text": "status: terminal ? \"failed\" : \"retry\","
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-          "line": 103,
+          "line": 106,
           "text": "retryPending: counts.counts.retry,"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-          "line": 179,
+          "line": 182,
           "text": "const unfinished = counts.counts.pending + counts.counts.processing + counts.counts.retry;"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-          "line": 187,
+          "line": 190,
           "text": "retryPending: counts.counts.retry,"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-          "line": 299,
+          "line": 330,
           "text": "const wasRetry = item.status === \"retry\";"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-          "line": 304,
+          "line": 335,
           "text": "status: terminal ? \"failed\" : \"retry\","
         },
         {
@@ -13709,7 +13709,7 @@
         },
         {
           "path": "addons/library-addon/src/library/manualUpdateChecker.js",
-          "line": 10,
+          "line": 11,
           "text": "const timer = setTimeout(resolve, Math.max(0, ms));"
         },
         {

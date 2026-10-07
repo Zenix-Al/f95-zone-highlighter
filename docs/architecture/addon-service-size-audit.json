@@ -22,19 +22,19 @@
   },
   "summary": {
     "coreService": {
-      "authoredBytes": 240538,
-      "readableBytes": 671044,
-      "uglifiedBytes": 334044,
-      "readableGzipBytes": 144115,
-      "uglifiedGzipBytes": 100193
+      "authoredBytes": 241545,
+      "readableBytes": 671789,
+      "uglifiedBytes": 334349,
+      "readableGzipBytes": 144250,
+      "uglifiedGzipBytes": 100314
     },
     "addons": {
       "count": 7,
-      "authoredBytes": 913552,
-      "regularBytes": 1003942,
-      "releaseBytes": 728285,
-      "regularGzipBytes": 214502,
-      "releaseGzipBytes": 179549
+      "authoredBytes": 915974,
+      "regularBytes": 1005875,
+      "releaseBytes": 729617,
+      "regularGzipBytes": 214911,
+      "releaseGzipBytes": 179896
     },
     "sharedRuntime": {
       "authoredBytes": 16565,
@@ -50,9 +50,9 @@
   "beforeAfter": {
     "coreService": {
       "authoredBytes": {
-        "current": 240538,
-        "baseline": 240514,
-        "delta": 24
+        "current": 241545,
+        "baseline": 241545,
+        "delta": 0
       },
       "owningFiles": [
         "src/services/addons/uiHost.js",
@@ -62,9 +62,9 @@
         "src/services/addons/bridgeServer.js",
         "src/services/addons/registry.js",
         "src/services/addons/knownAddons.js",
+        "src/services/addons/uiSanitizer.js",
         "src/services/addons/catalog.js",
-        "src/services/addons/observer.js",
-        "src/services/addons/invocation.js"
+        "src/services/addons/observer.js"
       ],
       "bundleBaseline": "ADDON-BASELINE-01 did not record a core bundle baseline; current smoke-build contribution is reported without a fabricated delta"
     },
@@ -180,29 +180,29 @@
       {
         "addonId": "library-addon",
         "authoredBytes": {
-          "current": 416314,
-          "baseline": 415876,
+          "current": 418736,
+          "baseline": 418298,
           "delta": 438
         },
         "regularBytes": {
-          "current": 428783,
-          "baseline": 428473,
+          "current": 430716,
+          "baseline": 430406,
           "delta": 310
         },
         "releaseBytes": {
-          "current": 316500,
-          "baseline": 385962,
-          "delta": -69462
+          "current": 317832,
+          "baseline": 388010,
+          "delta": -70178
         },
         "regularGzipBytes": {
-          "current": 88142,
-          "baseline": 88056,
-          "delta": 86
+          "current": 88551,
+          "baseline": 88464,
+          "delta": 87
         },
         "releaseGzipBytes": {
-          "current": 74827,
-          "baseline": 77113,
-          "delta": -2286
+          "current": 75174,
+          "baseline": 77516,
+          "delta": -2342
         },
         "owningFiles": [
           "addons/library-addon/src/library/service.js",
@@ -326,9 +326,9 @@
   "coreAddOnService": {
     "source": {
       "fileCount": 53,
-      "authoredBytes": 240538,
-      "physicalLines": 7288,
-      "nonblankLines": 6442,
+      "authoredBytes": 241545,
+      "physicalLines": 7316,
+      "nonblankLines": 6463,
       "largestFiles": [
         {
           "path": "src/services/addons/uiHost.js",
@@ -373,6 +373,12 @@
           "nonblankLines": 272
         },
         {
+          "path": "src/services/addons/uiSanitizer.js",
+          "bytes": 8548,
+          "physicalLines": 295,
+          "nonblankLines": 268
+        },
+        {
           "path": "src/services/addons/catalog.js",
           "bytes": 8048,
           "physicalLines": 215,
@@ -395,12 +401,6 @@
           "bytes": 7683,
           "physicalLines": 240,
           "nonblankLines": 206
-        },
-        {
-          "path": "src/services/addons/uiSanitizer.js",
-          "bytes": 7517,
-          "physicalLines": 267,
-          "nonblankLines": 247
         },
         {
           "path": "src/services/addons/latestMarkerBroker.js",
@@ -664,9 +664,9 @@
         },
         {
           "path": "src/services/addons/uiSanitizer.js",
-          "bytes": 7517,
-          "physicalLines": 267,
-          "nonblankLines": 247
+          "bytes": 8548,
+          "physicalLines": 295,
+          "nonblankLines": 268
         },
         {
           "path": "src/services/addonsService.js",
@@ -718,13 +718,13 @@
         },
         {
           "path": "src/ui/components/addons/addonScopes.js",
-          "bytes": 236,
+          "bytes": 231,
           "physicalLines": 5,
           "nonblankLines": 5
         },
         {
           "path": "src/ui/components/addons/addonStyle.js",
-          "bytes": 318,
+          "bytes": 310,
           "physicalLines": 8,
           "nonblankLines": 8
         },
@@ -748,7 +748,7 @@
         },
         {
           "path": "src/ui/components/addons/settingPath.js",
-          "bytes": 182,
+          "bytes": 178,
           "physicalLines": 4,
           "nonblankLines": 4
         },
@@ -760,7 +760,7 @@
         },
         {
           "path": "src/ui/components/addons/statusMeta.js",
-          "bytes": 347,
+          "bytes": 340,
           "physicalLines": 7,
           "nonblankLines": 7
         },
@@ -1009,7 +1009,7 @@
       },
       "core-ui-integration": {
         "fileCount": 16,
-        "authoredBytes": 43930,
+        "authoredBytes": 43906,
         "physicalLines": 1422,
         "nonblankLines": 1239,
         "largestFiles": [
@@ -1081,21 +1081,15 @@
           },
           {
             "path": "src/ui/components/addons/statusMeta.js",
-            "bytes": 347,
+            "bytes": 340,
             "physicalLines": 7,
             "nonblankLines": 7
           },
           {
             "path": "src/ui/components/addons/addonStyle.js",
-            "bytes": 318,
+            "bytes": 310,
             "physicalLines": 8,
             "nonblankLines": 8
-          },
-          {
-            "path": "src/ui/components/addons/addonScopes.js",
-            "bytes": 236,
-            "physicalLines": 5,
-            "nonblankLines": 5
           },
           {
             "path": "src/ui/components/addons/badge.js",
@@ -1104,8 +1098,14 @@
             "nonblankLines": 8
           },
           {
+            "path": "src/ui/components/addons/addonScopes.js",
+            "bytes": 231,
+            "physicalLines": 5,
+            "nonblankLines": 5
+          },
+          {
             "path": "src/ui/components/addons/settingPath.js",
-            "bytes": 182,
+            "bytes": 178,
             "physicalLines": 4,
             "nonblankLines": 4
           }
@@ -1155,13 +1155,13 @@
           },
           {
             "path": "src/ui/components/addons/addonScopes.js",
-            "bytes": 236,
+            "bytes": 231,
             "physicalLines": 5,
             "nonblankLines": 5
           },
           {
             "path": "src/ui/components/addons/addonStyle.js",
-            "bytes": 318,
+            "bytes": 310,
             "physicalLines": 8,
             "nonblankLines": 8
           },
@@ -1185,7 +1185,7 @@
           },
           {
             "path": "src/ui/components/addons/settingPath.js",
-            "bytes": 182,
+            "bytes": 178,
             "physicalLines": 4,
             "nonblankLines": 4
           },
@@ -1197,7 +1197,7 @@
           },
           {
             "path": "src/ui/components/addons/statusMeta.js",
-            "bytes": 347,
+            "bytes": 340,
             "physicalLines": 7,
             "nonblankLines": 7
           },
@@ -1255,15 +1255,15 @@
       },
       "other": {
         "fileCount": 7,
-        "authoredBytes": 28018,
-        "physicalLines": 885,
-        "nonblankLines": 828,
+        "authoredBytes": 29049,
+        "physicalLines": 913,
+        "nonblankLines": 849,
         "largestFiles": [
           {
             "path": "src/services/addons/uiSanitizer.js",
-            "bytes": 7517,
-            "physicalLines": 267,
-            "nonblankLines": 247
+            "bytes": 8548,
+            "physicalLines": 295,
+            "nonblankLines": 268
           },
           {
             "path": "src/services/addons/latestMarkerBroker.js",
@@ -1341,9 +1341,9 @@
           },
           {
             "path": "src/services/addons/uiSanitizer.js",
-            "bytes": 7517,
-            "physicalLines": 267,
-            "nonblankLines": 247
+            "bytes": 8548,
+            "physicalLines": 295,
+            "nonblankLines": 268
           }
         ]
       },
@@ -2649,9 +2649,9 @@
     },
     "bundle": {
       "readable": {
-        "bytes": 671044,
-        "gzipBytes": 144115,
-        "contributionBytes": 89639,
+        "bytes": 671789,
+        "gzipBytes": 144250,
+        "contributionBytes": 97884,
         "contributors": [
           {
             "path": "src/services/addons/uiHost.js",
@@ -2680,13 +2680,17 @@
           {
             "path": "src/services/addons/knownAddons.js",
             "bytes": 10436
+          },
+          {
+            "path": "src/services/addons/uiSanitizer.js",
+            "bytes": 8245
           }
         ]
       },
       "uglified": {
-        "bytes": 334044,
-        "gzipBytes": 100193,
-        "contributionBytes": 46253,
+        "bytes": 334349,
+        "gzipBytes": 100314,
+        "contributionBytes": 46509,
         "contributors": [
           {
             "path": "src/ui/components/addons/settingsController.js",
@@ -2718,7 +2722,7 @@
           },
           {
             "path": "src/services/addons/uiSanitizer.js",
-            "bytes": 4152
+            "bytes": 4408
           }
         ]
       }
@@ -2754,7 +2758,7 @@
       },
       {
         "path": "src/services/addons/uiSanitizer.js",
-        "bytes": 4152
+        "bytes": 4408
       }
     ],
     "actionFamilies": {
@@ -7050,9 +7054,9 @@
       },
       "source": {
         "fileCount": 102,
-        "authoredBytes": 416314,
-        "physicalLines": 12823,
-        "nonblankLines": 11619,
+        "authoredBytes": 418736,
+        "physicalLines": 12883,
+        "nonblankLines": 11669,
         "largestFiles": [
           {
             "path": "addons/library-addon/src/library/service.js",
@@ -7068,9 +7072,9 @@
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-            "bytes": 18715,
-            "physicalLines": 541,
-            "nonblankLines": 506
+            "bytes": 18812,
+            "physicalLines": 543,
+            "nonblankLines": 508
           },
           {
             "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
@@ -7080,9 +7084,9 @@
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-            "bytes": 12891,
-            "physicalLines": 347,
-            "nonblankLines": 328
+            "bytes": 14147,
+            "physicalLines": 378,
+            "nonblankLines": 356
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
@@ -7244,9 +7248,9 @@
           },
           {
             "path": "addons/library-addon/src/api/threadHtml.js",
-            "bytes": 4245,
-            "physicalLines": 112,
-            "nonblankLines": 110
+            "bytes": 4803,
+            "physicalLines": 126,
+            "nonblankLines": 120
           },
           {
             "path": "addons/library-addon/src/api/toast.js",
@@ -7376,15 +7380,15 @@
           },
           {
             "path": "addons/library-addon/src/library/autoUpdatePolicy.js",
-            "bytes": 2246,
-            "physicalLines": 55,
-            "nonblankLines": 47
+            "bytes": 2491,
+            "physicalLines": 60,
+            "nonblankLines": 49
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-            "bytes": 18715,
-            "physicalLines": 541,
-            "nonblankLines": 506
+            "bytes": 18812,
+            "physicalLines": 543,
+            "nonblankLines": 508
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueSnapshot.js",
@@ -7394,9 +7398,9 @@
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-            "bytes": 12891,
-            "physicalLines": 347,
-            "nonblankLines": 328
+            "bytes": 14147,
+            "physicalLines": 378,
+            "nonblankLines": 356
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateRepository.js",
@@ -7424,9 +7428,9 @@
           },
           {
             "path": "addons/library-addon/src/library/manualUpdateChecker.js",
-            "bytes": 4222,
-            "physicalLines": 113,
-            "nonblankLines": 109
+            "bytes": 4465,
+            "physicalLines": 120,
+            "nonblankLines": 116
           },
           {
             "path": "addons/library-addon/src/library/querying.js",
@@ -7454,9 +7458,9 @@
           },
           {
             "path": "addons/library-addon/src/library/threadUpdateParser.js",
-            "bytes": 4508,
-            "physicalLines": 146,
-            "nonblankLines": 137
+            "bytes": 4531,
+            "physicalLines": 147,
+            "nonblankLines": 138
           },
           {
             "path": "addons/library-addon/src/library/updateEventModel.js",
@@ -7792,8 +7796,8 @@
       },
       "builds": {
         "regular": {
-          "bytes": 428783,
-          "gzipBytes": 88142,
+          "bytes": 430716,
+          "gzipBytes": 88551,
           "headerBytes": 967,
           "contributors": [
             {
@@ -7806,15 +7810,15 @@
             },
             {
               "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-              "bytes": 19372
+              "bytes": 19474
+            },
+            {
+              "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
+              "bytes": 14173
             },
             {
               "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
               "bytes": 13788
-            },
-            {
-              "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-              "bytes": 13079
             },
             {
               "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
@@ -7992,7 +7996,7 @@
             ]
           },
           "storageIdbDomain": {
-            "bytes": 406104,
+            "bytes": 408037,
             "contributors": [
               {
                 "path": "addons/library-addon/src/library/service.js",
@@ -8004,15 +8008,15 @@
               },
               {
                 "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-                "bytes": 19372
+                "bytes": 19474
+              },
+              {
+                "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
+                "bytes": 14173
               },
               {
                 "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
                 "bytes": 13788
-              },
-              {
-                "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-                "bytes": 13079
               },
               {
                 "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
@@ -8078,8 +8082,8 @@
           }
         },
         "release": {
-          "bytes": 316500,
-          "gzipBytes": 74827,
+          "bytes": 317832,
+          "gzipBytes": 75174,
           "headerBytes": 967,
           "contributors": [
             {
@@ -8092,7 +8096,7 @@
             },
             {
               "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-              "bytes": 14250
+              "bytes": 14335
             },
             {
               "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
@@ -8100,7 +8104,7 @@
             },
             {
               "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-              "bytes": 8809
+              "bytes": 9524
             },
             {
               "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
@@ -8274,7 +8278,7 @@
             ]
           },
           "storageIdbDomain": {
-            "bytes": 305439,
+            "bytes": 306771,
             "contributors": [
               {
                 "path": "addons/library-addon/src/ui/assets/manager.css",
@@ -8286,7 +8290,7 @@
               },
               {
                 "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-                "bytes": 14250
+                "bytes": 14335
               },
               {
                 "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
@@ -8294,7 +8298,7 @@
               },
               {
                 "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-                "bytes": 8809
+                "bytes": 9524
               },
               {
                 "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
@@ -8383,29 +8387,29 @@
       "thirdPartyOrVendored": [],
       "baseline": {
         "authoredBytes": {
-          "current": 416314,
-          "baseline": 415876,
+          "current": 418736,
+          "baseline": 418298,
           "delta": 438
         },
         "regularBytes": {
-          "current": 428783,
-          "baseline": 428473,
+          "current": 430716,
+          "baseline": 430406,
           "delta": 310
         },
         "releaseBytes": {
-          "current": 316500,
-          "baseline": 385962,
-          "delta": -69462
+          "current": 317832,
+          "baseline": 388010,
+          "delta": -70178
         },
         "regularGzipBytes": {
-          "current": 88142,
-          "baseline": 88056,
-          "delta": 86
+          "current": 88551,
+          "baseline": 88464,
+          "delta": 87
         },
         "releaseGzipBytes": {
-          "current": 74827,
-          "baseline": 77113,
-          "delta": -2286
+          "current": 75174,
+          "baseline": 77516,
+          "delta": -2342
         },
         "owningFiles": [
           "addons/library-addon/src/library/service.js",
@@ -14016,9 +14020,10 @@
         },
         {
           "path": "addons/library-addon/src/api/threadHtml.js",
-          "fanIn": 1,
+          "fanIn": 2,
           "fanOut": 1,
           "exports": [
+            "CHALLENGE_PAGE_PATTERN",
             "createThreadHtmlRequest"
           ]
         },
@@ -14219,12 +14224,14 @@
         },
         {
           "path": "addons/library-addon/src/library/autoUpdatePolicy.js",
-          "fanIn": 3,
+          "fanIn": 4,
           "fanOut": 0,
           "exports": [
             "getClaimJitter",
             "getFailureDelay",
             "MAX_DURABLE_RETRY_ATTEMPTS",
+            "SITE_BLOCK_REASONS",
+            "SITE_BLOCK_PAUSE_MS",
             "getDurableRetryDelay",
             "isTerminalQueueFailure",
             "getLocalDayKey",
@@ -14307,7 +14314,7 @@
         {
           "path": "addons/library-addon/src/library/manualUpdateChecker.js",
           "fanIn": 1,
-          "fanOut": 3,
+          "fanOut": 4,
           "exports": [
             "checkLibraryRecords"
           ]
@@ -14358,7 +14365,7 @@
         {
           "path": "addons/library-addon/src/library/threadUpdateParser.js",
           "fanIn": 1,
-          "fanOut": 2,
+          "fanOut": 3,
           "exports": [
             "parseLibraryThreadHtml"
           ]

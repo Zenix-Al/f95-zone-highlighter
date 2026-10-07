@@ -632,4 +632,44 @@ runTest("BOOT-01 reset followed by startup does not reuse stale bootstrap state"
   }
 });
 
+runTest("CORE-DEBOUNCE-01 cancel drops a pending debounced call", async () => {
+  const { createDebouncedTask } = loadModule("src/core/createDebouncedTask.js");
+  let calls = 0;
+  const task = createDebouncedTask(() => {
+    calls += 1;
+  }, 5);
+  task();
+  task.cancel();
+  await new Promise((resolve) => setTimeout(resolve, 20));
+  assert.strictEqual(calls, 0);
+  task();
+  await new Promise((resolve) => setTimeout(resolve, 20));
+  assert.strictEqual(calls, 1);
+});
+
+runTest("CORE-DEBOUNCE-02 releasing settings effects cancels without cleanup failures", () => {
+  const sandbox = createDomSandbox();
+  try {
+    const importLine = 'import { resourceManager } from "../../core/resourceManager.js";';
+    const effects = loadModule("src/ui/settingsRuntime/effectTasks.js", {
+      loader: { ".css": "text", ".html": "text" },
+      sourceReplacements: {
+        [importLine]: `${importLine}\nexport { resourceManager };\nexport { getHealthEvents } from "../../core/featureHealth.js";`,
+      },
+    });
+    effects.refreshThreadOverlayAfterSettingsChange();
+    effects.resourceManager.getOwner("ui:settings-effects").release();
+    const failures = effects
+      .getHealthEvents()
+      .filter((event) => event.code === "RESOURCE_CLEANUP_FAILED");
+    assert.deepStrictEqual(failures, []);
+    assert.strictEqual(
+      effects.resourceManager.getSnapshot().owners["ui:settings-effects"],
+      undefined,
+    );
+  } finally {
+    sandbox.restore();
+  }
+});
+
 };

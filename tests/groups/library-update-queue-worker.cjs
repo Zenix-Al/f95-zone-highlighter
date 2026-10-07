@@ -333,6 +333,64 @@ module.exports = function registerLibraryUpdateQueueWorkerGroup(context) {
     assert.strictEqual(repository.snapshot().items[0].status, "failed");
   });
 
+  runTest("LIBRARY-SITE-BLOCK-01 worker returns a blocked item untouched and waits out the block", async () => {
+    const repository = createRepository(["first", "second"]);
+    const checked = [];
+    let clock = 100;
+    let blocked = true;
+    let commits = 0;
+    const worker = createWorker({
+      repository,
+      getRecord: async (threadId) => ({ threadId, updateCheck: { enabled: true } }),
+      checkRecords: async ([threadId]) => {
+        checked.push(threadId);
+        return {
+          results: [blocked
+            ? { threadId, ok: false, reason: "challenge_page", attempts: 1 }
+            : { threadId, ok: true, reason: "", attempts: 1 }],
+        };
+      },
+      commitResults: async () => {
+        commits += 1;
+        return { checked: 1, current: 1 };
+      },
+      now: () => clock,
+      waitFor: async () => {},
+    });
+    const runOptions = {
+      owner: "block-tab", config, stillOwn: async () => true,
+      renewOwnership: async () => true,
+    };
+
+    const first = await worker.run(runOptions);
+    assert.strictEqual(first.reason, "site_blocked");
+    assert.strictEqual(first.waiting, true);
+    assert.deepStrictEqual(checked, ["first"]);
+    assert.strictEqual(commits, 0);
+    const afterBlock = repository.snapshot();
+    assert.strictEqual(afterBlock.cycle.status, "waiting");
+    assert.strictEqual(afterBlock.cycle.blockedReason, "challenge_page");
+    assert.strictEqual(afterBlock.cycle.blockedUntil, 100 + 30 * 60_000);
+    assert.strictEqual(afterBlock.cycle.dailyAttempted, 0);
+    assert.strictEqual(afterBlock.cycle.failed, 0);
+    assert.deepStrictEqual(
+      afterBlock.items.map(({ status, attempts }) => [status, attempts]),
+      [["pending", 0], ["pending", 0]],
+    );
+
+    clock += 60_000;
+    const during = await worker.run(runOptions);
+    assert.strictEqual(during.reason, "site_blocked");
+    assert.deepStrictEqual(checked, ["first"]);
+
+    clock = afterBlock.cycle.blockedUntil + 1;
+    blocked = false;
+    const resumed = await worker.run(runOptions);
+    assert.strictEqual(resumed.ok, true);
+    assert.deepStrictEqual(checked, ["first", "first", "second"]);
+    assert.strictEqual(repository.snapshot().cycle.status, "completed");
+  });
+
   runTest("LIBRARY-UPDATE-QUEUE-WORKER-01 shortens a legacy transient retry and caps repeated failures", async () => {
     const repository = createRepository(["flaky"]);
     await repository.putQueueItem({

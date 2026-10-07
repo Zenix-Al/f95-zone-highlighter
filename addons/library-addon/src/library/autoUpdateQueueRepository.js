@@ -76,6 +76,8 @@ export function normalizeAutoUpdateCycle(value = {}, options = {}) {
     dailyBonusAllowance: integer(value.dailyBonusAllowance, 0, 0, 100_000),
     checksPerDay: integer(value.checksPerDay, 100, 1, 100_000),
     nextRunAt: integer(value.nextRunAt),
+    blockedUntil: integer(value.blockedUntil),
+    blockedReason: text(value.blockedReason, 40),
   };
 }
 

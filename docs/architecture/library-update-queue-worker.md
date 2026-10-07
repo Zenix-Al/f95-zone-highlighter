@@ -31,7 +31,16 @@ safer than marking work complete before its canonical record commit succeeds.
   making a request (or without committing a request that raced the change).
 - Access-denied (`http_403`) and explicit missing-thread responses
   (`http_404`, `thread_not_found`, and `entry_not_found`) become terminal
-  `failed` rows without holding the cycle open.
+  `failed` rows without holding the cycle open. A 403 or 503 whose body is a
+  Cloudflare challenge is reported as `challenge_page` instead, and a 429 as
+  `rate_limited`.
+- `challenge_page` and `rate_limited` block the whole site, so they stop the
+  run. The claimed row goes back with its previous status, attempt count, and
+  daily-allowance day, the daily check is refunded, and the cycle records
+  `blockedUntil` (30 minutes later) and `blockedReason` and becomes `waiting`.
+  Runs before `blockedUntil` return `site_blocked` without a request. Manual
+  checks stop their batch at the first such response and report
+  `blockedReason`.
 - Other failures receive a durable retry delay of five minutes initially,
   capped at one hour, independent of the daily cycle interval. Pending rows
   run before due retries. After three total request attempts, the row becomes

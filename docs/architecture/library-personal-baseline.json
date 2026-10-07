@@ -365,11 +365,11 @@
     }
   ],
   "build": {
-    "authoredBytes": 415876,
+    "authoredBytes": 418298,
     "fileCount": 102,
     "regular": {
       "mode": "regular",
-      "bytes": 428473,
+      "bytes": 430406,
       "contributors": [
         {
           "path": "addons/library-addon/src/library/service.js",
@@ -381,15 +381,15 @@
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-          "bytes": 19372
+          "bytes": 19474
+        },
+        {
+          "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
+          "bytes": 14173
         },
         {
           "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
           "bytes": 13788
-        },
-        {
-          "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-          "bytes": 13079
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
@@ -455,7 +455,7 @@
     },
     "release": {
       "mode": "release",
-      "bytes": 385962,
+      "bytes": 388010,
       "contributors": [
         {
           "path": "addons/library-addon/src/ui/assets/manager.css",
@@ -467,7 +467,7 @@
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-          "bytes": 14250
+          "bytes": 14335
         },
         {
           "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
@@ -475,7 +475,7 @@
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-          "bytes": 8809
+          "bytes": 9524
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateScheduler.js",

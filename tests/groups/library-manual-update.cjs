@@ -173,6 +173,45 @@ module.exports = function registerLibraryManualUpdateGroup(context) {
     );
   });
 
+  runTest("LIBRARY-SITE-BLOCK-01 request adapter reads challenge and rate-limit responses", async () => {
+    const { createThreadHtmlRequest } = loadModule(
+      "addons/library-addon/src/api/threadHtml.js",
+    );
+    const respond = (status, body) => createThreadHtmlRequest(async () => ({
+      ok: false,
+      status,
+      url: "https://f95zone.to/threads/game.1/",
+      headers: { get: () => "" },
+      text: async () => body,
+    }))("https://f95zone.to/threads/game.1/");
+    const challenge = "<html><title>Just a moment...</title><script src=\"/cdn-cgi/challenge-platform/x\"></script></html>";
+    assert.strictEqual((await respond(403, challenge)).reason, "challenge_page");
+    assert.strictEqual((await respond(503, challenge)).reason, "challenge_page");
+    assert.strictEqual((await respond(429, "")).reason, "rate_limited");
+    assert.strictEqual((await respond(403, "<html>No permission</html>")).reason, "http_403");
+    assert.strictEqual((await respond(503, "<html>Maintenance</html>")).reason, "http_503");
+  });
+
+  runTest("LIBRARY-SITE-BLOCK-01 manual check stops the batch on a site block", async () => {
+    const { checkLibraryRecords } = loadModule(
+      "addons/library-addon/src/library/manualUpdateChecker.js",
+    );
+    const records = ["1", "2", "3"].map((threadId) => ({
+      threadId,
+      thread: { url: `https://f95zone.to/threads/${threadId}/`, currentVersion: "v1" },
+    }));
+    const requested = [];
+    const result = await checkLibraryRecords(records, async (url) => {
+      requested.push(url);
+      return url.includes("/2/")
+        ? { ok: false, reason: "challenge_page", status: 403 }
+        : { ok: true, html: html({ body: "Version: v1" }), finalUrl: url };
+    }, { spacingMs: 0, retryLimit: 2 });
+    assert.strictEqual(requested.length, 2);
+    assert.strictEqual(result.blockedReason, "challenge_page");
+    assert.deepStrictEqual(result.results.map(({ reason }) => reason), ["", "challenge_page"]);
+  });
+
   runTest("LIBRARY-MANUAL-UPDATE-CHECK-01 serializes requests and applies retry policy", async () => {
     const { checkLibraryRecords } = loadModule(
       "addons/library-addon/src/library/manualUpdateChecker.js",

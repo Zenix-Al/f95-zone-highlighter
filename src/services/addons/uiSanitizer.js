@@ -174,10 +174,28 @@ export function normalizeAddonMountSlot(value) {
   return Object.prototype.hasOwnProperty.call(ADDON_UI_SLOT_POLICY, slot) ? slot : "";
 }
 
+// Backslashes are rejected outright: CSS escapes such as `\75 rl(` decode to
+// url( after this regex has run.
 function hasUnsafeCssConstruct(cssText) {
-  return /(?:@import|@namespace|@font-face|@document|expression\s*\(|-moz-binding|behavior\s*:|url\s*\(|<\/style)/i.test(
+  return /(?:\\|@import|@namespace|@font-face|@document|expression\s*\(|-moz-binding|behavior\s*:|url\s*\(|image-set\s*\(|<\/style)/i.test(
     cssText,
   );
+}
+
+// `~` and `+` outside brackets, parentheses, and strings are sibling
+// combinators; `[class~=x]` and `:nth-child(2n+1)` are not.
+function hasSiblingCombinator(selector) {
+  let depth = 0;
+  let quote = "";
+  for (const char of selector) {
+    if (quote) {
+      if (char === quote) quote = "";
+    } else if (char === '"' || char === "'") quote = char;
+    else if (char === "[" || char === "(") depth += 1;
+    else if (char === "]" || char === ")") depth -= 1;
+    else if (depth === 0 && (char === "~" || char === "+")) return true;
+  }
+  return false;
 }
 
 function splitCssRules(cssText) {
@@ -252,13 +270,23 @@ export function sanitizeAddonCss(addonId, value, { maxBytes = MAX_STYLE_BYTES } 
       if (
         selectors.some(
           (selector) =>
-            !selector || /(?:^|[\s>+~])(?:html|body|:root)(?:\b|\s|[>+~.#[:])|\*/i.test(selector),
+            !selector ||
+            /^[~+]/.test(selector) ||
+            /(?:^|[\s>+~])(?:html|body|:root)(?:\b|\s|[>+~.#[:])|\*/i.test(selector),
         )
       ) {
         return { ok: false, reason: "unsafe_css_selector" };
       }
+      // The root form `${scope}.a ~ .b` would match page siblings of the mount,
+      // so selectors with sibling combinators only get the descendant form.
       scoped.push(
-        `${selectors.map((selector) => `${scope}${selector}, ${scope} ${selector}`).join(", ")}${declarationText}`,
+        `${selectors
+          .map((selector) =>
+            hasSiblingCombinator(selector)
+              ? `${scope} ${selector}`
+              : `${scope}${selector}, ${scope} ${selector}`,
+          )
+          .join(", ")}${declarationText}`,
       );
     }
     return { ok: true, cssText: scoped.join("\n") };

@@ -1,6 +1,7 @@
 import { parseLibraryThreadHtml } from "./threadUpdateParser.js";
 import { normalizeVersionIdentity } from "./updateEventModel.js";
 import { debugLog } from "../../../shared/debugLog.js";
+import { SITE_BLOCK_REASONS } from "./autoUpdatePolicy.js";
 
 const RETRYABLE = new Set(["timeout", "network_error", "http_500", "http_502", "http_503", "http_504"]);
 const DEBUG_OWNER = "library-addon:auto-update";
@@ -24,6 +25,7 @@ export async function checkLibraryRecords(records, requestHtml, options = {}) {
   const timeoutMs = Math.min(30_000, Math.max(1, Number(options.timeoutMs || 30_000)));
   const list = (Array.isArray(records) ? records : []).slice(0, maxRecords);
   const results = [];
+  let blockedReason = "";
   debugLog(DEBUG_OWNER, "Update-check batch started.", {
     data: {
       recordCount: list.length,
@@ -96,6 +98,10 @@ export async function checkLibraryRecords(records, requestHtml, options = {}) {
       },
     });
     options.onProgress?.({ completed: results.length, total: list.length, result: results.at(-1) });
+    if (SITE_BLOCK_REASONS.has(results.at(-1).reason)) {
+      blockedReason = results.at(-1).reason;
+      break;
+    }
     if (index < list.length - 1) {
       await wait(spacingMs + Math.floor(Math.random() * (jitterMs + 1)), signal);
     }
@@ -105,9 +111,10 @@ export async function checkLibraryRecords(records, requestHtml, options = {}) {
       completed: results.length,
       total: list.length,
       cancelled: Boolean(signal?.aborted),
+      blockedReason,
       failed: results.filter((result) => !result.ok).length,
       changed: results.filter((result) => result.changed).length,
     },
   });
-  return { results, cancelled: Boolean(signal?.aborted), total: list.length };
+  return { results, cancelled: Boolean(signal?.aborted), blockedReason, total: list.length };
 }

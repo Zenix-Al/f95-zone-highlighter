@@ -3,6 +3,19 @@ import { debugLog } from "../../../shared/debugLog.js";
 const DEFAULT_MAX_BYTES = 1_048_576;
 const DEFAULT_TIMEOUT_MS = 30_000;
 const DEBUG_OWNER = "library-addon:auto-update";
+const BLOCKING_STATUSES = new Set([403, 503]);
+
+export const CHALLENGE_PAGE_PATTERN = /cf-chl-|challenge-platform|Just a moment|Attention Required/i;
+
+// Challenge pages arrive as 403 or 503, which would otherwise read as a real
+// access denial (terminal) or a server error.
+async function classifyHttpFailure(response) {
+  if (response.status === 429) return "rate_limited";
+  if (BLOCKING_STATUSES.has(response.status)) {
+    if (CHALLENGE_PAGE_PATTERN.test(await response.text())) return "challenge_page";
+  }
+  return `http_${response.status}`;
+}
 
 export function createThreadHtmlRequest(fetchFn = globalThis.fetch) {
   return async function requestThreadHtml(url, options = {}) {
@@ -62,11 +75,12 @@ export function createThreadHtmlRequest(fetchFn = globalThis.fetch) {
         return { ok: false, reason: "response_too_large" };
       }
       if (!response.ok) {
+        const reason = await classifyHttpFailure(response);
         debugLog(DEBUG_OWNER, "Thread HTML response rejected.", {
           level: "warn",
-          data: { path: target.pathname, reason: `http_${response.status}` },
+          data: { path: target.pathname, reason },
         });
-        return { ok: false, reason: `http_${response.status}`, status: response.status };
+        return { ok: false, reason, status: response.status };
       }
       const html = await response.text();
       const responseBytes = new TextEncoder().encode(html).length;

@@ -250,6 +250,28 @@ module.exports = function registerGroup(context) {
         ).reason,
         "unsafe_css",
       );
+      for (const css of [
+        String.raw`.card { background: \75 rl(https://example.test/a.png); }`,
+        `.card { background-image: image-set("https://example.test/a.png" 1x); }`,
+        `.card { background-image: -webkit-image-set("https://example.test/a.png" 1x); }`,
+      ]) {
+        assert.strictEqual(sanitizeAddonCss("example-addon", css).reason, "unsafe_css", css);
+      }
+      for (const css of ["~ .p-body { display: none; }", "+ div { display: none; }"]) {
+        assert.strictEqual(
+          sanitizeAddonCss("example-addon", css).reason,
+          "unsafe_css_selector",
+          css,
+        );
+      }
+      const siblings = sanitizeAddonCss(
+        "example-addon",
+        ".item + .item { margin: 0; } .row:nth-child(2n+1) { color: red; }",
+      );
+      assert.strictEqual(siblings.ok, true);
+      assert.ok(!siblings.cssText.includes('[data-addon-id="example-addon"].item'));
+      assert.ok(siblings.cssText.includes('[data-addon-id="example-addon"] .item + .item'));
+      assert.ok(siblings.cssText.includes('[data-addon-id="example-addon"].row:nth-child(2n+1)'));
     },
   );
 

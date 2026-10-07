@@ -11,6 +11,11 @@ export function getFailureDelay(intervalMs, consecutiveFailures) {
 
 export const MAX_DURABLE_RETRY_ATTEMPTS = 3;
 
+// A challenge or rate limit applies to every thread, so the whole run stops
+// instead of failing items one by one.
+export const SITE_BLOCK_REASONS = new Set(["challenge_page", "rate_limited"]);
+export const SITE_BLOCK_PAUSE_MS = 30 * 60_000;
+
 export function getDurableRetryDelay(attempts) {
   const count = Math.max(1, Number(attempts) || 1);
   return Math.min(60 * 60_000, 5 * 60_000 * 2 ** Math.min(10, count - 1));

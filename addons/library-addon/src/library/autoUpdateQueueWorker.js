@@ -4,6 +4,8 @@ import {
   getLocalDayKey,
   getNextLocalDayAt,
   isTerminalQueueFailure,
+  SITE_BLOCK_PAUSE_MS,
+  SITE_BLOCK_REASONS,
 } from "./autoUpdatePolicy.js";
 
 function wait(ms, signal) {
@@ -42,6 +44,7 @@ export function createAutoUpdateQueueWorker({
     if (!cycle) return { ok: false, reason: "cycle_missing" };
     if (cycle.status === "paused") return { ok: false, reason: "paused", cycle };
     if (cycle.status === "completed") return { ok: true, cycle };
+    if (cycle.blockedUntil > now()) return { ok: true, cycle, waiting: true, reason: "site_blocked" };
 
     async function updateCycle(patch) {
       const result = await repository.putCycle({
@@ -283,6 +286,34 @@ export function createAutoUpdateQueueWorker({
       if (!(await ownsClaim(activeClaim))) {
         await updateCycle({ status: "waiting", currentThreadId: "" });
         return { ok: false, reason: "lease_lost", cycle };
+      }
+
+      if (!check.ok && SITE_BLOCK_REASONS.has(check.reason)) {
+        // The thread was never checked, so the item goes back exactly as it was
+        // claimed and the daily check it used is refunded.
+        const released = await repository.settleQueueItem(
+          { ...activeClaim, attemptedDayKey: item.attemptedDayKey },
+          {
+            owner,
+            status: item.status,
+            attempts: item.attempts,
+            nextAttemptAt: item.nextAttemptAt,
+            lastErrorCode: check.reason,
+          },
+        );
+        if (!released?.ok) return { ...released, cycle };
+        const blockedUntil = now() + SITE_BLOCK_PAUSE_MS;
+        const blocked = await updateCycle({
+          status: "waiting",
+          currentThreadId: "",
+          dailyAttempted: Math.max(0, cycle.dailyAttempted - (consumesAllowance ? 1 : 0)),
+          blockedUntil,
+          blockedReason: check.reason,
+          nextRunAt: blockedUntil,
+        });
+        return blocked?.ok
+          ? { ok: true, cycle, waiting: true, reason: "site_blocked" }
+          : { ...blocked, cycle };
       }
       const committed = await commitResults(preview, {
         shouldCancel: () => Boolean(signal?.aborted),
