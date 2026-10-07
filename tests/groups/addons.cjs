@@ -1275,6 +1275,39 @@ runTest("ADDON-IDENTITY-01 merges state atomically with deterministic precedence
   }
 });
 
+runTest("Add-on storage saves do not erase a newer installation sighting", async () => {
+  const previousGM = global.GM;
+  const gm = createFakeGM();
+  global.GM = gm;
+  try {
+    const state = loadModule("tests/fixtures/addonStateReadyHarness.js");
+    await seedReadyConfig(gm, state, state.config);
+    await state.authorizeStorageForTest();
+    const staged = state.ensureAddonStateBucket("example-addon");
+    staged.preference = "saved";
+    assert.strictEqual((await state.upsertInstalledAddonMeta("library-addon", {
+      name: "Library", version: "1.3.9",
+    })).ok, true);
+    assert.strictEqual((await state.persistAddonsState()).ok, true);
+    const stored = gm.snapshot()[state.CONFIG_ENVELOPE_KEY].data.addons;
+    assert.strictEqual(stored.installedMeta["library-addon"].name, "Library");
+    assert.strictEqual(stored.byAddon["example-addon"].state.preference, "saved");
+  } finally {
+    global.GM = previousGM;
+  }
+});
+
+runTest("Temporary missing add-on registration does not erase pinned shortcuts", () => {
+  const pins = loadModule("tests/fixtures/addonPinsHarness.js");
+  const installed = { id: "library-addon", name: "Library", status: "installed" };
+  pins.stateManager.set("settingsPinnedAddonIds", ["library-addon"]);
+  pins.updateRegisteredAddons([installed]);
+  pins.updateRegisteredAddons([{ ...installed, status: "not-installed" }]);
+  assert.deepStrictEqual(pins.getPinnedAddonIds(), ["library-addon"]);
+  pins.updateRegisteredAddons([installed]);
+  assert.deepStrictEqual(pins.getPinnedAddonIds(), ["library-addon"]);
+});
+
 runTest("ADDON-TRUST-GATING-01 reproduces the stale trusted-and-blocked masked fixture", () => {
   const { buildKnownAddonsSnapshot } = loadModule("src/services/addons/knownAddons.js");
   const snapshot = buildKnownAddonsSnapshot({

@@ -7,7 +7,14 @@ function normalizedText(value) {
 }
 
 export function normalizeVersionIdentity(value) {
-  return normalizedText(value).replace(/^v(?=\d)/, "");
+  const normalized = normalizedText(value).replace(/^v(?=\d)/, "");
+  // Some threads label the same demo as "Demo - 0.46" in the post and
+  // "Demo v0.46" in the title. Keep the label and numeric suffix, but ignore
+  // only that separator; different version numbers still compare differently.
+  return normalized.replace(
+    /^([a-z][a-z0-9 ]*?)\s*(?:[-–—]\s*|v(?=\d))(\d+(?:[._-]\d+)*(?:[a-z]\d*)?)$/,
+    "$1 $2",
+  );
 }
 
 function normalizePrefixes(value) {

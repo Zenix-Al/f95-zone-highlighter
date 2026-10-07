@@ -394,9 +394,12 @@ module.exports = function registerGroup(context) {
             return { ok: true, value: {} };
           },
         };
+        let cacheRefreshes = 0;
+        let storedRows = [];
         const library = {
-          async queryEntries() {
-            return [];
+          clearEntryCache() { cacheRefreshes += 1; },
+          async queryEntriesPage() {
+            return { rows: storedRows, hasNext: false, totalRows: storedRows.length, mode: "keyset" };
           },
           async getAllEntries() {
             return [];
@@ -415,13 +418,36 @@ module.exports = function registerGroup(context) {
         });
 
         await manager.open();
+        assert.strictEqual(cacheRefreshes, 1);
         let input = document.querySelector('input[data-field="importFile"]');
         assert.ok(input);
         assert.strictEqual(input.hidden, true);
         assert.strictEqual(input.style.display, "none");
 
+        storedRows = [{ threadId: "42", thread: { title: "Added in another tab", tags: [], prefixes: [] }, personal: { status: "saved", rating: 2 } }];
+        document.querySelector('button[data-action="refresh-library"]').click();
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        assert.strictEqual(cacheRefreshes, 2);
+        assert.match(document.querySelector('[data-role="rows"]').textContent, /Added in another tab/);
+        assert.strictEqual(document.querySelector('input[data-action="rating-input"]').value, "2");
+
+        storedRows = [{ ...storedRows[0], personal: { status: "saved", rating: 3 } }];
+        document.querySelector('button[data-action="refresh-library"]').click();
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        assert.strictEqual(cacheRefreshes, 3);
+        assert.strictEqual(document.querySelector('input[data-action="rating-input"]').value, "3");
+
+        storedRows = [{ ...storedRows[0], personal: { status: "saved", rating: 4.5 } }];
+        await manager.open();
+        assert.strictEqual(cacheRefreshes, 4, "opening an already-mounted manager must refetch");
+        assert.strictEqual(document.querySelector('input[data-action="rating-input"]').value, "4.5");
+
+        storedRows = [];
+
         await manager.close("test-close");
         await manager.open();
+        assert.strictEqual(cacheRefreshes, 5, "reopening must discard stale cross-tab reads");
+        assert.doesNotMatch(document.querySelector('[data-role="rows"]').textContent, /Added in another tab/);
         input = document.querySelector('input[data-field="importFile"]');
         assert.ok(input, "manager must mount again after close");
         assert.strictEqual(input.hidden, true);
@@ -2442,6 +2468,128 @@ module.exports = function registerGroup(context) {
     }
   });
 
+  runTest("CONFIG-CROSS-TAB-02 simultaneous writes serialize the entire read-modify-write", async () => {
+    const previousGM = global.GM;
+    const gm = createFakeGM();
+    global.GM = gm;
+    try {
+      const firstTab = loadModule("tests/fixtures/configTransferReadyHarness.js");
+      await firstTab.authorizeStorageForTest();
+      const secondTab = loadModule("tests/fixtures/configTransferReadyHarness.js");
+      await secondTab.authorizeStorageForTest();
+      const initialRevision = gm.snapshot()[firstTab.CONFIG_ENVELOPE_KEY].revision;
+      const originalSet = gm.setValue.bind(gm);
+      let releaseFirstWrite;
+      const firstWriteHeld = new Promise((resolve) => { releaseFirstWrite = resolve; });
+      let reportFirstWrite;
+      const firstWriteStarted = new Promise((resolve) => { reportFirstWrite = resolve; });
+      let holdNextCanonicalWrite = true;
+      gm.setValue = async (key, value) => {
+        if (key === firstTab.CONFIG_ENVELOPE_KEY && holdNextCanonicalWrite) {
+          holdNextCanonicalWrite = false;
+          reportFirstWrite();
+          await firstWriteHeld;
+        }
+        return originalSet(key, value);
+      };
+      const first = firstTab.updateConfig((draft) => {
+        draft.latestSettings.wideLatest = true;
+      }, { origin: "first-tab" });
+      await firstWriteStarted;
+      let secondUpdaterRan = false;
+      const second = secondTab.updateConfig((draft) => {
+        secondUpdaterRan = true;
+        draft.latestSettings.denseLatestGrid = true;
+      }, { origin: "second-tab" });
+      await Promise.resolve();
+      assert.strictEqual(secondUpdaterRan, false, "second tab must wait for the first write");
+      releaseFirstWrite();
+      const [firstResult, secondResult] = await Promise.all([first, second]);
+      assert.strictEqual(firstResult.committed, true);
+      assert.strictEqual(secondResult.committed, true);
+      const final = gm.snapshot()[firstTab.CONFIG_ENVELOPE_KEY];
+      assert.strictEqual(final.revision, initialRevision + 2);
+      assert.strictEqual(final.data.latestSettings.wideLatest, true);
+      assert.strictEqual(final.data.latestSettings.denseLatestGrid, true);
+    } finally {
+      global.GM = previousGM;
+    }
+  });
+
+  runTest("CONFIG-CROSS-TAB-02 HTTP and unavailable Web Locks fail closed", async () => {
+    const previousGM = global.GM;
+    const gm = createFakeGM();
+    global.GM = gm;
+    const sandbox = createDomSandbox("http://f95zone.to/threads/example.1/");
+    try {
+      const service = loadModule("tests/fixtures/configTransferReadyHarness.js");
+      const loaded = await service.loadConfig();
+      assert.strictEqual(loaded.persisted, false);
+      assert.deepStrictEqual(gm.logs().writes, []);
+      const { withConfigWriteLock } = loadModule("src/services/configWriteLock.js");
+      await assert.rejects(withConfigWriteLock(async () => true), /config_https_required/);
+      await assert.rejects(withConfigWriteLock(async () => true, {
+        pageLocation: { protocol: "https:" }, lockManager: null,
+      }), /config_lock_unavailable/);
+    } finally {
+      sandbox.restore();
+      global.GM = previousGM;
+    }
+  });
+
+  runTest("CONFIG-CROSS-TAB-02 stale whole-section and cache candidates cannot overwrite a tab", async () => {
+    const previousGM = global.GM;
+    const gm = createFakeGM();
+    global.GM = gm;
+    try {
+      const firstTab = loadModule("tests/fixtures/configTransferReadyHarness.js");
+      await firstTab.authorizeStorageForTest();
+      const secondTab = loadModule("tests/fixtures/configTransferReadyHarness.js");
+      await secondTab.authorizeStorageForTest();
+      const firstSettings = { ...firstTab.config.latestSettings, wideLatest: true };
+      const staleSettings = { ...secondTab.config.latestSettings, denseLatestGrid: true };
+      assert.strictEqual((await firstTab.saveConfigKeys({ latestSettings: firstSettings })).committed, true);
+      const rejected = await secondTab.saveConfigKeys({ latestSettings: staleSettings });
+      assert.strictEqual(rejected.committed, false);
+      assert.strictEqual(rejected.failed[0].code, "config_stale_candidate");
+      const stored = gm.snapshot()[firstTab.CONFIG_ENVELOPE_KEY];
+      assert.strictEqual(stored.data.latestSettings.wideLatest, true);
+      assert.strictEqual(stored.data.latestSettings.denseLatestGrid, false);
+
+      const firstTags = [{ id: 1, name: "First tab" }];
+      const staleTags = [{ id: 2, name: "Second tab" }];
+      assert.strictEqual((await firstTab.saveConfigKeys({ tags: firstTags })).committed, true);
+      const rejectedTags = await secondTab.saveConfigKeys({ tags: staleTags });
+      assert.strictEqual(rejectedTags.committed, false);
+      assert.strictEqual(rejectedTags.failed[0].code, "config_stale_candidate");
+      assert.deepStrictEqual(gm.snapshot()[firstTab.CONFIG_TAGS_CACHE_KEY], firstTags);
+    } finally {
+      global.GM = previousGM;
+    }
+  });
+
+  runTest("CONFIG-CROSS-TAB-02 updater refreshes cache-only writes before mutating tags", async () => {
+    const previousGM = global.GM;
+    const gm = createFakeGM();
+    global.GM = gm;
+    try {
+      const firstTab = loadModule("tests/fixtures/configTransferReadyHarness.js");
+      await firstTab.authorizeStorageForTest();
+      const secondTab = loadModule("tests/fixtures/configTransferReadyHarness.js");
+      await secondTab.authorizeStorageForTest();
+      assert.strictEqual((await firstTab.saveConfigKeys({ tags: [{ id: 1, name: "First" }] })).committed, true);
+      const result = await secondTab.updateConfig((draft) => {
+        draft.tags = [...draft.tags, { id: 2, name: "Second" }];
+      }, { persistRuntimeCatalogs: ["tags"] });
+      assert.strictEqual(result.committed, true);
+      assert.deepStrictEqual(gm.snapshot()[firstTab.CONFIG_TAGS_CACHE_KEY], [
+        { id: 1, name: "First" }, { id: 2, name: "Second" },
+      ]);
+    } finally {
+      global.GM = previousGM;
+    }
+  });
+
   runTest("CONFIG-RECOVERY-01 a failed write-back still uses the recovered backup", async () => {
     const previousGM = global.GM;
     const seed = createFakeGM();
@@ -2613,6 +2761,48 @@ module.exports = function registerGroup(context) {
         await latestControlFeature.disable();
         assert.strictEqual(timers.size, 0);
         assert.ok(cleared.length >= 1);
+        assert.strictEqual(clicks, 0);
+      } finally {
+        global.setTimeout = realSetTimeout;
+        global.clearTimeout = realClearTimeout;
+        sandbox.restore();
+      }
+    },
+  );
+
+  runTest(
+    "LATEST-CONTROL-01 route disable does not re-arm a delayed web-notification click",
+    async () => {
+      const sandbox = createDomSandbox("https://f95zone.to/sam/latest_alpha/");
+      const realSetTimeout = global.setTimeout;
+      const realClearTimeout = global.clearTimeout;
+      try {
+        const { config, stateManager, SELECTORS, latestControlFeature } = loadModule(
+          "tests/fixtures/latestFeaturesHarness.js",
+        );
+        stateManager.set("isLatest", true);
+        const refresh = document.createElement("div");
+        refresh.id = SELECTORS.LATEST_CONTROL.IDS.AUTO_REFRESH;
+        refresh.className = "selected";
+        const notify = document.createElement("div");
+        notify.id = SELECTORS.LATEST_CONTROL.IDS.NOTIFY;
+        let clicks = 0;
+        notify.click = () => { clicks += 1; };
+        document.body.append(refresh, notify);
+        config.latestSettings.autoRefresh = true;
+        config.latestSettings.webNotif = true;
+        const timers = new Map();
+        let nextId = 2000;
+        global.setTimeout = (callback) => {
+          const id = nextId++;
+          timers.set(id, callback);
+          return id;
+        };
+        global.clearTimeout = (id) => { timers.delete(id); };
+        await latestControlFeature.enable();
+        assert.ok(timers.size >= 1, "web-notification click was scheduled");
+        await latestControlFeature.disable();
+        assert.strictEqual(timers.size, 0, "disable must not schedule a replacement timer");
         assert.strictEqual(clicks, 0);
       } finally {
         global.setTimeout = realSetTimeout;
@@ -3132,6 +3322,7 @@ module.exports = function registerGroup(context) {
       const sandbox = createDomSandbox(
         "https://f95zone.to/threads/library-test.42/",
       );
+      sandbox.document.body.innerHTML = '<h1 class="p-title-value">Library Test [v1] [Dev]</h1><article class="message-threadStarterPost">Version: v1</article>';
       const actions = [];
       const mounts = new Map();
       let commandHandler = null;
@@ -3377,6 +3568,9 @@ module.exports = function registerGroup(context) {
       ];
       for (const [url, pageScopes, expectsThreadControls] of routes) {
         const sandbox = createDomSandbox(url);
+        if (expectsThreadControls) {
+          sandbox.document.body.innerHTML = '<h1 class="p-title-value">Game [v1] [Dev]</h1><article class="message-threadStarterPost">Version: v1</article>';
+        }
         const actions = [];
         const stored = {
           settings: { enabled: true, showPageButtons: true },

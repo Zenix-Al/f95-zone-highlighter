@@ -1,32 +1,32 @@
 {
   "addons": {
     "library-addon": {
-      "regular": "9e9b8351a41e27a912926f8fa95da201c95e7a15f9360440a163771f8ecb957c",
-      "release": "96671021951b20876f0ea0cd57fa595cffee6024a419ac3aead1375e5b9ad776"
+      "regular": "0d4b5becaa0b6d056e36db30870db9fbab9927186d94ccf584c32494c96ff28c",
+      "release": "02c0ee8497a39273e2db439bf7a845ac56fb5eae259f29fa5a835ef0e6082c91"
     },
     "image-repair-addon": {
       "release": "599180b41d1edaf69497c5acbf83bdcee2b3417604595341691dd6eac64a4450",
       "regular": "caacd5214f6f63a95e6bed0cbe8ab2e21cce9758edd76f9a13d8df5f85d82f2b"
     },
     "masked-direct-addon": {
-      "release": "3cb36dff269e6a1b76472476c6d5c0f4c32641492a22c757f337bea8e2eb2304",
-      "regular": "7e23dbd5b0649477979e416cc7a92a27844f0f48431d23cd88f9449b38d25b47"
+      "release": "2e697e043cb3017eb9c00e6eb32d5446c9c5470bc7fc0c6fdde1d0c47626802a",
+      "regular": "1b22fc2d87909c704149ede700634d6d6b7de8dd31a7650085500c60f7de0882"
     },
     "latest-filters-addon": {
-      "release": "4f710e18bac0fbf71d9b0003384b4f2f866a7e616a31d939f9379d77d24d64c1",
-      "regular": "e1cd1031ff3f28a8ec5746ca0a9b06e0503b91487043e52d4ffc2123972506b4"
+      "release": "12398de3cf108c71bd3e45a0ed00b025e8a0cdb4f7a727f977db9d8ec7cf8bfd",
+      "regular": "5388f35cca69e6575b3c6559e6fba118facdd73074f2362e87c8d7e4fc271aca"
     },
     "halloween-theme-addon": {
       "release": "7f0ea5a0fd93cb562a00e6c2d093ec53ba8972d13cb8f9c2e34cdc434014e3d9",
       "regular": "b4c5f96a0069239be083ac3561f9319431f9f142355fe742fb766d5d44ce7abf"
     },
     "example-addon": {
-      "regular": "7fff543063794fe1bd66c1225985e7f694b7d81aa4b257a9faf11002560f19d2",
-      "release": "824df49ea02ff70e9f7d439341e61c428d3a9151c2bb47e646a4b6e5c6c9866e"
+      "regular": "10a083a99b148fde651de64a460fc6d4b4dee3a42bd14e7378a1e8ec4c4cd064",
+      "release": "c1e87a28fdaff8d0caa322d1c88a347bd9882209c70c288a2e1aeb23b486bb65"
     },
     "site-repair-addon": {
-      "regular": "504794a9fa8d7cb0a2a80049c787d736b7300a5340c735aa4f56920e1c70bc45",
-      "release": "ca5c15ff4b103d81abec821bff5f01f0865cd4e987dbec568eb7fd93477a7534"
+      "regular": "73f6cb30292fea794aa94df6fbb71805c3253f9b896150001e302b541089ef94",
+      "release": "162d98f0c5cd9d641b82a1de5d7bfc4c80b5c1bdf0b7944c8b3781727816e666"
     },
     "thread-utility-addon": {
       "release": "84230151ce0a8393745d615a2ca7e052343038b5dd01024dbc14d77ce4c39ed6",

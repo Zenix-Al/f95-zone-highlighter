@@ -1,7 +1,24 @@
 const { Window } = require("happy-dom");
 
+function createFakeLockManager() {
+  const pending = new Map();
+  return {
+    request(name, options, callback) {
+      const previous = pending.get(name) || Promise.resolve();
+      const current = previous.catch(() => {}).then(() => callback({ name, mode: options?.mode || "exclusive" }));
+      const settled = current.catch(() => {});
+      pending.set(name, settled);
+      void settled.then(() => { if (pending.get(name) === settled) pending.delete(name); });
+      return current;
+    },
+  };
+}
+
+const fakeConfigLocks = createFakeLockManager();
+
 function createDomSandbox(url = "https://f95zone.to/threads/example.1/") {
   const window = new Window({ url });
+  Object.defineProperty(window.navigator, "locks", { configurable: true, value: fakeConfigLocks });
   const previous = {};
   for (const key of ["window", "document", "HTMLElement", "Node", "CustomEvent", "Event", "MutationObserver", "location", "history", "navigator"]) {
     previous[key] = global[key];
@@ -62,4 +79,4 @@ function createAddonBridgeTransport(window, eventName = "TEST-01:addon-bridge") 
   return { eventName, requests, send, subscribe };
 }
 
-module.exports = { createAddonBridgeTransport, createDomSandbox, createFakeClock, createFakeGM, dispatchPageTransition };
+module.exports = { createAddonBridgeTransport, createDomSandbox, createFakeClock, createFakeGM, createFakeLockManager, fakeConfigLocks, dispatchPageTransition };

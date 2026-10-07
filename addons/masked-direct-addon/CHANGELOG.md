@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Restricted resolved download links to HTTP(S) URLs and hardened masked-page error and timeout handling.
+- Removed the ineffective Datanodes timer patch.
+
 # v1.2.1 - Gofile update
 
 - Update Gofile automation with its new ui.

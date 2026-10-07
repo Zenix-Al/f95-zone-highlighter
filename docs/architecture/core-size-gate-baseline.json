@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "sourceReport": "docs/architecture/core-size-baseline.json",
-  "sourceReportSha256": "2e06498dddb8a72f5ce86ffa463a28601ba0c9679e21bb164c3d7bfef07ce5e5",
+  "sourceReportSha256": "ce6fd14c0de885f848c26127c0bcd783c92259672f5279505c16b2737a72f49b",
   "thresholds": {
     "authoredArea": {
       "absoluteBytes": 1024,
@@ -22,6 +22,6 @@
   },
   "rationale": {
     "type": "commit-note",
-    "text": "Audit fixes: settings-effect debounce cancel(), add-on CSS sanitizer bypasses closed."
+    "text": "Merge PR #82 audit and sanitizer fixes with current main; refresh accepted report after combined source changes."
   }
 }

@@ -3871,7 +3871,7 @@
           },
           {
             "path": "addons/library-addon/src/library/manualUpdateChecker.js",
-            "line": 10,
+            "line": 11,
             "text": "const timer = setTimeout(resolve, Math.max(0, ms));"
           },
           {
@@ -4018,7 +4018,7 @@
           },
           {
             "path": "addons/library-addon/src/thread/detector.js",
-            "line": 86,
+            "line": 89,
             "text": "url: `${location.origin}${location.pathname}`,"
           }
         ],
@@ -4042,6 +4042,11 @@
             "path": "addons/library-addon/src/thread/detector.js",
             "line": 75,
             "text": "const titleNode = document.querySelector(\"h1.p-title-value\");"
+          },
+          {
+            "path": "addons/library-addon/src/thread/detector.js",
+            "line": 78,
+            "text": "if (!titleNode || !document.querySelector(\".message-threadStarterPost\")) return null;"
           },
           {
             "path": "addons/library-addon/src/thread/quickActions.js",
@@ -4355,17 +4360,17 @@
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 202,
+            "line": 219,
             "text": "appContext.dialogRoot = contentId ? document.getElementById(contentId) : null;"
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 209,
+            "line": 226,
             "text": "const importInput = appContext.dialogRoot.querySelector("
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 233,
+            "line": 250,
             "text": "appContext.dialogRoot.querySelector(\".f95ue-library-manager-window\")?.focus();"
           },
           {
@@ -4833,7 +4838,7 @@
           },
           {
             "path": "addons/library-addon/src/library/manualUpdateChecker.js",
-            "line": 12,
+            "line": 13,
             "text": "clearTimeout(timer);"
           },
           {
@@ -4848,17 +4853,17 @@
           },
           {
             "path": "addons/library-addon/src/ui/assets/manager.html",
-            "line": 72,
+            "line": 73,
             "text": "<button type=\"button\" data-action=\"cancel-manual-check\" data-role=\"cancelManualCheck\" hidden>"
           },
           {
             "path": "addons/library-addon/src/ui/assets/manager.html",
-            "line": 73,
+            "line": 74,
             "text": "Cancel check"
           },
           {
             "path": "addons/library-addon/src/ui/assets/manager.html",
-            "line": 93,
+            "line": 94,
             "text": "<option value=\"auto-disable\">Disable auto update</option>"
           },
           {
@@ -5183,42 +5188,42 @@
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 185,
+            "line": 198,
             "text": "const openGeneration = ++generation;"
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 196,
+            "line": 213,
             "text": "if (openGeneration !== generation) {"
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 219,
+            "line": 236,
             "text": "if (openGeneration !== generation) return;"
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 232,
+            "line": 249,
             "text": "if (openGeneration !== generation) return;"
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 246,
+            "line": 263,
             "text": "const closeGeneration = ++generation;"
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 254,
+            "line": 271,
             "text": "// that belongs to that newer generation."
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 255,
+            "line": 272,
             "text": "if (generation !== closeGeneration && getActiveRoot()) {"
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 266,
+            "line": 283,
             "text": "generation,"
           },
           {
@@ -10797,7 +10802,7 @@
         },
         {
           "path": "addons/library-addon/src/thread/detector.js",
-          "line": 86,
+          "line": 89,
           "text": "url: `${location.origin}${location.pathname}`,"
         },
         {
@@ -11217,7 +11222,7 @@
         },
         {
           "path": "addons/library-addon/src/library/manualUpdateChecker.js",
-          "line": 10,
+          "line": 11,
           "text": "const timer = setTimeout(resolve, Math.max(0, ms));"
         },
         {
@@ -11442,12 +11447,12 @@
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 201,
+          "line": 218,
           "text": "const contentId = String(result?.value?.contentId || \"\").trim();"
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 202,
+          "line": 219,
           "text": "appContext.dialogRoot = contentId ? document.getElementById(contentId) : null;"
         },
         {
@@ -11985,7 +11990,7 @@
         },
         {
           "path": "addons/library-addon/src/library/manualUpdateChecker.js",
-          "line": 99,
+          "line": 100,
           "text": "options.onProgress?.({ completed: results.length, total: list.length, result: results.at(-1) });"
         },
         {
@@ -11995,72 +12000,72 @@
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 372,
+          "line": 373,
           "text": "const onProgress = typeof options.onProgress === \"function\" ? options.onProgress : () => {};"
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 390,
+          "line": 391,
           "text": "onProgress,"
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 497,
+          "line": 498,
           "text": "\"progressNote\","
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 786,
+          "line": 787,
           "text": "function reportBulkProgress(options, progress) {"
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 787,
+          "line": 788,
           "text": "options?.onProgress?.({ ...progress, processed: progress.updated + progress.removed + progress.skipped });"
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 794,
+          "line": 795,
           "text": "reportBulkProgress(options, { total: ids.length, updated, removed: 0, skipped });"
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 800,
+          "line": 801,
           "text": "reportBulkProgress(options, { total: ids.length, updated, removed: 0, skipped });"
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 815,
+          "line": 816,
           "text": "reportBulkProgress(options, { total: ids.length, updated, removed: 0, skipped });"
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 1085,
+          "line": 1086,
           "text": "reportBulkProgress(options, { total: ids.length, updated, removed: 0, skipped });"
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 1096,
+          "line": 1097,
           "text": "reportBulkProgress(options, { total: ids.length, updated, removed: 0, skipped });"
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 1111,
+          "line": 1112,
           "text": "reportBulkProgress(options, { total: ids.length, updated, removed: 0, skipped });"
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 1117,
+          "line": 1118,
           "text": "reportBulkProgress(options, { total: ids.length, updated, removed: 0, skipped });"
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 1133,
+          "line": 1134,
           "text": "reportBulkProgress(options, { total: ids.length, updated: 0, removed, skipped });"
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 1140,
+          "line": 1141,
           "text": "reportBulkProgress(options, { total: ids.length, updated: 0, removed, skipped });"
         },
         {
@@ -12200,7 +12205,7 @@
         },
         {
           "path": "addons/library-addon/src/ui/assets/manager.html",
-          "line": 20,
+          "line": 21,
           "text": ">?<span id=\"f95ue-library-search-help-text\" role=\"tooltip\">Filters: tag:&quot;male protagonist&quot; status:playing rating&gt;=4 public-rating&gt;=4 developer:&quot;name&quot; version:v1 prefix:completed update:changed check:failed pinned has:note has:progress id:123</span></button>"
         },
         {
@@ -13704,7 +13709,7 @@
         },
         {
           "path": "addons/library-addon/src/library/manualUpdateChecker.js",
-          "line": 10,
+          "line": 11,
           "text": "const timer = setTimeout(resolve, Math.max(0, ms));"
         },
         {
@@ -13729,12 +13734,12 @@
         },
         {
           "path": "addons/library-addon/src/ui/assets/manager.html",
-          "line": 72,
+          "line": 73,
           "text": "<button type=\"button\" data-action=\"cancel-manual-check\" data-role=\"cancelManualCheck\" hidden>"
         },
         {
           "path": "addons/library-addon/src/ui/assets/manager.html",
-          "line": 73,
+          "line": 74,
           "text": "Cancel check"
         },
         {
@@ -14034,42 +14039,42 @@
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 185,
+          "line": 198,
           "text": "const openGeneration = ++generation;"
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 196,
+          "line": 213,
           "text": "if (openGeneration !== generation) {"
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 219,
+          "line": 236,
           "text": "if (openGeneration !== generation) return;"
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 232,
+          "line": 249,
           "text": "if (openGeneration !== generation) return;"
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 246,
+          "line": 263,
           "text": "const closeGeneration = ++generation;"
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 254,
+          "line": 271,
           "text": "// that belongs to that newer generation."
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 255,
+          "line": 272,
           "text": "if (generation !== closeGeneration && getActiveRoot()) {"
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 266,
+          "line": 283,
           "text": "generation,"
         },
         {

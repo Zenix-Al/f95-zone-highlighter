@@ -4,7 +4,11 @@ const assert = require("assert");
 const childProcess = require("child_process");
 const esbuild = require("esbuild");
 const { Window } = require("happy-dom");
-const { createAddonBridgeTransport, createDomSandbox, createFakeClock, createFakeGM, dispatchPageTransition } = require("./helpers.cjs");
+const { createAddonBridgeTransport, createDomSandbox, createFakeClock, createFakeGM, fakeConfigLocks, dispatchPageTransition } = require("./helpers.cjs");
+
+// The test process stands in for a supported HTTPS userscript origin.
+global.location ||= { protocol: "https:", hostname: "f95zone.to", href: "https://f95zone.to/" };
+Object.defineProperty(global.navigator, "locks", { configurable: true, value: fakeConfigLocks });
 const {
   generateFeatureManifest,
   checkFeatureManifest,

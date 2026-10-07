@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Kept the Latest Ajax wrapper safe after Site Repair is disabled or torn down.
+
 ## v1.0.3 - Fix image repair
 
 - Fix attachment error events bypassing the configured retry interval and triggering retries immediately.
