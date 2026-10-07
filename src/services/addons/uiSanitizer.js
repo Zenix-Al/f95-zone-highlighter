@@ -101,11 +101,13 @@ function escapeText(value) {
   );
 }
 
+// XenForo binds behavior to data-xf-* attributes (data-xf-click, data-xf-init),
+// which could turn mounted add-on markup into site actions.
 function isAllowedAttribute(tagName, name) {
   return (
     GLOBAL_ATTRIBUTES.has(name) ||
     name.startsWith("aria-") ||
-    name.startsWith("data-") ||
+    (name.startsWith("data-") && !name.startsWith("data-xf-")) ||
     TAG_ATTRIBUTES[tagName]?.has(name)
   );
 }

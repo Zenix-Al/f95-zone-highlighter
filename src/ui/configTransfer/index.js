@@ -1,7 +1,12 @@
 import { buildConfigExport, commitConfigImport } from "../../services/configTransfer/index.js";
 import { openSettingsDialog } from "../components/dialog.js";
 import { showToast } from "../components/toast.js";
-import { downloadJsonFile, formatDateForFilename, createJsonFilePicker } from "./transferIO.js";
+import {
+  downloadJsonFile,
+  formatDateForFilename,
+  createJsonFilePicker,
+  readJsonImportFile,
+} from "./transferIO.js";
 import {
   clearConfigTransferError,
   ensureConfigTransferErrorElement,
@@ -33,18 +38,13 @@ async function importSettingsFromFile() {
   if (activePicker === picker) activePicker = null;
   if (!file) return;
 
-  const isJsonName = String(file.name || "")
-    .toLowerCase()
-    .endsWith(".json");
-  const isJsonType = String(file.type || "")
-    .toLowerCase()
-    .includes("json");
-  if (!isJsonName && !isJsonType) {
-    showConfigTransferError("Import failed: JSON file only (.json).");
+  const read = await readJsonImportFile(file);
+  if (!read.ok) {
+    showConfigTransferError(read.message);
     return;
   }
 
-  const result = await commitConfigImport(await file.text());
+  const result = await commitConfigImport(read.text);
   if (!result.ok || !result.committed) {
     const error = result.issues?.[0];
     showConfigTransferError(

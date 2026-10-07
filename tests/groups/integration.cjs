@@ -301,6 +301,14 @@ module.exports = function registerGroup(context) {
         );
         assert.strictEqual(sandbox.document.querySelector("iframe"), null);
         assert.strictEqual(sandbox.document.querySelector("svg"), null);
+
+        sandbox.document.body.innerHTML = sanitizeAddonHtml(
+          '<a class="xf" href="/threads/1/watch" data-xf-click="switch" data-xf-init="tooltip" data-thread-id="1">Watch</a>',
+        );
+        const link = sandbox.document.querySelector("a.xf");
+        assert.strictEqual(link.getAttribute("data-xf-click"), null);
+        assert.strictEqual(link.getAttribute("data-xf-init"), null);
+        assert.strictEqual(link.getAttribute("data-thread-id"), "1");
       } finally {
         sandbox.restore();
       }
@@ -2643,6 +2651,43 @@ module.exports = function registerGroup(context) {
       global.GM = previousGM;
     }
   });
+
+  runTest(
+    "TRANSFER-LEAN-01 import reads only JSON files up to 5 MB",
+    async () => {
+      const transferIO = loadModule("src/ui/configTransfer/transferIO.js");
+      let reads = 0;
+      const file = (name, type, size) => ({
+        name,
+        type,
+        size,
+        text: async () => {
+          reads += 1;
+          return "{}";
+        },
+      });
+      assert.deepStrictEqual(
+        await transferIO.readJsonImportFile(file("settings.json", "", 100_000)),
+        { ok: true, text: "{}" },
+      );
+      assert.strictEqual(
+        (await transferIO.readJsonImportFile(file("export", "application/json", 10))).ok,
+        true,
+      );
+      const tooLarge = await transferIO.readJsonImportFile(
+        file("settings.json", "application/json", 5 * 1024 * 1024 + 1),
+      );
+      assert.deepStrictEqual(tooLarge, {
+        ok: false,
+        message: "Import failed: file is larger than 5 MB.",
+      });
+      assert.strictEqual(
+        (await transferIO.readJsonImportFile(file("notes.txt", "text/plain", 10))).message,
+        "Import failed: JSON file only (.json).",
+      );
+      assert.strictEqual(reads, 2);
+    },
+  );
 
   runTest(
     "TRANSFER-LEAN-01 file picker cancellation removes temporary DOM and listeners",

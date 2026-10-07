@@ -40,7 +40,9 @@ safer than marking work complete before its canonical record commit succeeds.
   `blockedUntil` (30 minutes later) and `blockedReason` and becomes `waiting`.
   Runs before `blockedUntil` return `site_blocked` without a request. Manual
   checks stop their batch at the first such response and report
-  `blockedReason`.
+  `blockedReason`. The auto-update dialog shows `PAUSED: F95 BROWSER CHECK`
+  (or rate limit) and offers **Retry now**, which calls the scheduler's
+  `clearSiteBlock()` and runs immediately.
 - Other failures receive a durable retry delay of five minutes initially,
   capped at one hour, independent of the daily cycle interval. Pending rows
   run before due retries. After three total request attempts, the row becomes

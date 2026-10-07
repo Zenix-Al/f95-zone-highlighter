@@ -94,6 +94,39 @@ module.exports = function registerLibraryAutoUpdateGroup(context) {
     assert.strictEqual(primary.dataset.autoAction, "continue-batch");
   });
 
+  runTest("LIBRARY-SITE-BLOCK-01 auto-update view shows the block and offers a retry", () => {
+    const { createAutoUpdateDiagnostics, derivePrimaryUpdateAction, patchAutoUpdateView } = loadModule(
+      "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
+    );
+    const blocked = {
+      status: "waiting",
+      total: 10,
+      completed: 2,
+      checksPerDay: 100,
+      blockedReason: "challenge_page",
+      blockedUntil: Date.now() + 60_000,
+    };
+    assert.deepStrictEqual(derivePrimaryUpdateAction(blocked), {
+      action: "retry-now",
+      label: "Retry now",
+      disabled: false,
+    });
+    assert.notStrictEqual(
+      derivePrimaryUpdateAction({ ...blocked, blockedUntil: Date.now() - 1 }).action,
+      "retry-now",
+    );
+    const nodes = {
+      state: { textContent: "" },
+      primaryAction: { dataset: {}, disabled: false, textContent: "", setAttribute() {} },
+    };
+    patchAutoUpdateView({
+      querySelector: (selector) => nodes[selector.match(/data-role="([^"]+)"/)?.[1]] || null,
+    }, blocked);
+    assert.strictEqual(nodes.state.textContent, "PAUSED: F95 BROWSER CHECK");
+    assert.strictEqual(nodes.primaryAction.dataset.autoAction, "retry-now");
+    assert.match(createAutoUpdateDiagnostics(blocked), /Blocked: challenge_page until \d+/);
+  });
+
   runTest("LIBRARY-AUTO-UPDATE-01 bounds jitter and exponential failure backoff", () => {
     const { getClaimJitter, getFailureDelay } = loadModule(
       "addons/library-addon/src/library/autoUpdatePolicy.js",

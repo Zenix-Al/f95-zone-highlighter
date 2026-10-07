@@ -9,13 +9,13 @@
   "authoredBytes": 28602,
   "bundle": {
     "readable": {
-      "fullBytes": 671789,
-      "gzipBytes": 144250,
+      "fullBytes": 673795,
+      "gzipBytes": 144804,
       "contributionBytes": 21749
     },
     "uglified": {
-      "fullBytes": 334349,
-      "gzipBytes": 100314,
+      "fullBytes": 335264,
+      "gzipBytes": 100605,
       "contributionBytes": 24665
     }
   },
@@ -2360,7 +2360,7 @@
       "callSites": [
         {
           "file": "src/ui/components/tag-search/tagDrag.js",
-          "line": 313,
+          "line": 317,
           "excerpt": "ghost.classList.add(\"drag-ghost\");"
         }
       ],
@@ -2372,42 +2372,42 @@
       "callSites": [
         {
           "file": "src/ui/components/tag-search/tagDrag.js",
-          "line": 64,
+          "line": 63,
           "excerpt": "container.classList.remove(\"drag-over\");"
         },
         {
           "file": "src/ui/components/tag-search/tagDrag.js",
-          "line": 70,
+          "line": 69,
           "excerpt": "activePointerDrag.hoveredItem.classList.remove(\"drag-over\");"
         },
         {
           "file": "src/ui/components/tag-search/tagDrag.js",
-          "line": 133,
+          "line": 132,
           "excerpt": "containers.forEach((c) => c.classList.remove(\"drag-over\"));"
         },
         {
           "file": "src/ui/components/tag-search/tagDrag.js",
-          "line": 138,
+          "line": 137,
           "excerpt": "if (toListKey !== activePointerDrag.fromListKey) container.classList.add(\"drag-over\");"
         },
         {
           "file": "src/ui/components/tag-search/tagDrag.js",
-          "line": 143,
+          "line": 142,
           "excerpt": "activePointerDrag.hoveredItem.classList.remove(\"drag-over\");"
         },
         {
           "file": "src/ui/components/tag-search/tagDrag.js",
-          "line": 147,
+          "line": 146,
           "excerpt": "hoveredItem.classList.add(\"drag-over\");"
         },
         {
           "file": "src/ui/components/tag-search/tagDrag.js",
-          "line": 222,
+          "line": 226,
           "excerpt": "if (fromList && fromList !== listKey) container.classList.add(\"drag-over\");"
         },
         {
           "file": "src/ui/components/tag-search/tagDrag.js",
-          "line": 228,
+          "line": 232,
           "excerpt": "if (fromList && fromList !== listKey) container.classList.add(\"drag-over\");"
         }
       ],
@@ -2419,12 +2419,12 @@
       "callSites": [
         {
           "file": "src/ui/components/tag-search/tagDrag.js",
-          "line": 54,
+          "line": 53,
           "excerpt": "container.classList.add(\"drag-target\");"
         },
         {
           "file": "src/ui/components/tag-search/tagDrag.js",
-          "line": 63,
+          "line": 62,
           "excerpt": "container.classList.remove(\"drag-target\");"
         }
       ],
@@ -2436,17 +2436,17 @@
       "callSites": [
         {
           "file": "src/ui/components/tag-search/tagDrag.js",
-          "line": 282,
+          "line": 286,
           "excerpt": "item.classList.add(\"dragging\");"
         },
         {
           "file": "src/ui/components/tag-search/tagDrag.js",
-          "line": 290,
+          "line": 294,
           "excerpt": "item.classList.remove(\"dragging\");"
         },
         {
           "file": "src/ui/components/tag-search/tagDrag.js",
-          "line": 340,
+          "line": 344,
           "excerpt": "item.classList.add(\"dragging\");"
         }
       ],
@@ -3517,7 +3517,7 @@
       "callSites": [
         {
           "file": "src/ui/components/tag-search/tagDrag.js",
-          "line": 414,
+          "line": 418,
           "excerpt": "const item = createEl(\"div\", { className: `tag-list-item ${itemClass} tag-chip`, mount: sr });"
         }
       ],
@@ -3603,7 +3603,7 @@
       "callSites": [
         {
           "file": "src/ui/components/tag-search/tagDrag.js",
-          "line": 414,
+          "line": 418,
           "excerpt": "const item = createEl(\"div\", { className: `tag-list-item ${itemClass} tag-chip`, mount: sr });"
         }
       ],
@@ -3689,7 +3689,7 @@
       "callSites": [
         {
           "file": "src/ui/components/tag-search/tagDrag.js",
-          "line": 261,
+          "line": 265,
           "excerpt": "className: `tag-remove-btn ${removeBtnClass}`,"
         }
       ],
@@ -4596,13 +4596,13 @@
     },
     "readableBundleFullBytes": {
       "before": 586580,
-      "after": 671789,
-      "delta": 85209
+      "after": 673795,
+      "delta": 87215
     },
     "readableBundleGzipBytes": {
       "before": 124202,
-      "after": 144250,
-      "delta": 20048
+      "after": 144804,
+      "delta": 20602
     },
     "uglifiedBundleContributionBytes": {
       "before": 27380,
@@ -4611,13 +4611,13 @@
     },
     "uglifiedBundleFullBytes": {
       "before": 302505,
-      "after": 334349,
-      "delta": 31844
+      "after": 335264,
+      "delta": 32759
     },
     "uglifiedBundleGzipBytes": {
       "before": 88402,
-      "after": 100314,
-      "delta": 11912
+      "after": 100605,
+      "delta": 12203
     },
     "selectorCount": {
       "before": 252,

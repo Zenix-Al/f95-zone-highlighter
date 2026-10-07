@@ -1,10 +1,9 @@
 import { debugLog } from "../../../core/logger";
 import { createEl } from "../../../utils/dom.js";
-import { createRegistrar } from "../../../core/listenerRegistry.js";
+import { addListener, createRegistrar } from "../../../core/listenerRegistry.js";
 import { getShadowRoot } from "../../getShadowRoot.js";
 
 let activePointerDrag = null;
-let pointerCleanupHooksInstalled = false;
 let cachedShadowRoot = null;
 let cachedContainers = [];
 const ENABLE_NATIVE_DESKTOP_DRAG = false;
@@ -184,17 +183,22 @@ function handlePointerDrop({ x, y, onDropOnItem, onDropOnContainer }) {
   }
 }
 
+function cleanupPointerDragWhenHidden() {
+  if (document.hidden) cleanupActivePointerDrag();
+}
+
+// addListener skips IDs that are already registered, and teardown removes them,
+// so these install once per runtime and come back after a re-init.
 export function ensurePointerCleanupHooks() {
-  if (pointerCleanupHooksInstalled) return;
-
-  window.addEventListener("pointercancel", cleanupActivePointerDrag);
-  window.addEventListener("blur", cleanupActivePointerDrag);
-  window.addEventListener("pagehide", cleanupActivePointerDrag);
-  document.addEventListener("visibilitychange", () => {
-    if (document.hidden) cleanupActivePointerDrag();
-  });
-
-  pointerCleanupHooksInstalled = true;
+  addListener("tagDrag:pointercancel", window, "pointercancel", cleanupActivePointerDrag);
+  addListener("tagDrag:blur", window, "blur", cleanupActivePointerDrag);
+  addListener("tagDrag:pagehide", window, "pagehide", cleanupActivePointerDrag);
+  addListener(
+    "tagDrag:visibilitychange",
+    document,
+    "visibilitychange",
+    cleanupPointerDragWhenHidden,
+  );
 }
 
 export function ensureContainerDropHandlers({

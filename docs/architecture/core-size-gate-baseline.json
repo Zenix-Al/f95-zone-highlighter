@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "sourceReport": "docs/architecture/core-size-baseline.json",
-  "sourceReportSha256": "87a64668c2d4caf66ccf765d61f9519dce3a379c4a827a128f8e823575afb11a",
+  "sourceReportSha256": "60bf76e8d82b208b4580d1fad59e37540bbb94eb14a88a953e463bca200305ff",
   "thresholds": {
     "authoredArea": {
       "absoluteBytes": 1024,
@@ -22,6 +22,6 @@
   },
   "rationale": {
     "type": "commit-note",
-    "text": "Normalize audit evidence to Git-canonical LF source; CI and Windows now measure the same authored bytes."
+    "text": "Merge PR 83 targeted fixes with current main; refresh audit evidence from Git-canonical LF source."
   }
 }

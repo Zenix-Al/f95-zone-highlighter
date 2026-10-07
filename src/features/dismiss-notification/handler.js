@@ -1,9 +1,42 @@
 import { stateManager, config } from "../../config.js";
-import { saveConfigKeys } from "../../services/settingsService";
+import { updateConfig } from "../../services/settingsService";
 import { debugLog } from "../../core/logger";
 import { addObserverCallback, removeObserverCallback } from "../../core/observer.js";
 import { SELECTORS } from "../../config/selectors.js";
 let noticeDismissHandler = null;
+
+const MAX_DISMISSED_NOTICES = 50;
+
+function parseNoticeId(value) {
+  const id = Number.parseInt(value, 10);
+  return Number.isInteger(id) && id > 0 ? id : null;
+}
+
+function isNoticeDismissed(id) {
+  return config.savedNotifID === id || config.dismissedNoticeIds.includes(id);
+}
+
+// updateConfig reads the draft inside the serialized queue, so two quick
+// dismissals cannot overwrite each other.
+function rememberDismissedNotice(id) {
+  return updateConfig((draft) => {
+    draft.dismissedNoticeIds = [
+      ...draft.dismissedNoticeIds.filter((existing) => existing !== id),
+      id,
+    ].slice(-MAX_DISMISSED_NOTICES);
+  });
+}
+
+export function forgetDismissedNotices() {
+  return updateConfig((draft) => {
+    draft.dismissedNoticeIds = [];
+    draft.savedNotifID = null;
+  }).then((result) => {
+    if (result.committed)
+      document.querySelectorAll(SELECTORS.NOTICE.SELECTOR).forEach(expandNotice);
+    return result;
+  });
+}
 
 /**
  * The handler that implements our custom dismissal logic.
@@ -17,20 +50,19 @@ function customDismissHandler(e) {
   const notice = e.target.closest(SELECTORS.NOTICE.SELECTOR);
   if (!notice) return;
 
-  const noticeId = notice.getAttribute("data-notice-id");
-  if (noticeId) {
-    saveConfigKeys({ savedNotifID: parseInt(noticeId) });
-  }
+  const noticeId = parseNoticeId(notice.getAttribute("data-notice-id"));
+  if (noticeId) rememberDismissedNotice(noticeId);
 
   collapseNotice(notice);
 }
 
 function processNotice(notice) {
-  const noticeId = notice.getAttribute("data-notice-id");
-  if (!noticeId) return;
+  const rawNoticeId = notice.getAttribute("data-notice-id");
+  if (!rawNoticeId) return;
+  const noticeId = parseNoticeId(rawNoticeId);
 
   // If already dismissed in our config, collapse it and we're done.
-  if (config.savedNotifID === parseInt(noticeId)) {
+  if (noticeId && isNoticeDismissed(noticeId)) {
     collapseNotice(notice);
     return;
   }

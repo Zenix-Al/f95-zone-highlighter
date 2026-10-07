@@ -102,10 +102,19 @@ export function createMaskedPageController({
       return;
     }
     nodes.captcha.style.display = "block";
+    // reCAPTCHA refuses to render twice into one element, so each operation gets
+    // its own host, removed when its wait ends (including on dispose).
+    const host = document.createElement("div");
+    nodes.captcha.append(host);
     await new Promise((resolve) => {
       let accepted = false;
-      captchaWaiters.add(resolve);
-      api.render("captcha", {
+      const release = () => {
+        captchaWaiters.delete(release);
+        host.remove();
+        resolve();
+      };
+      captchaWaiters.add(release);
+      api.render(host, {
         theme: "dark",
         sitekey: F95_CAPTCHA_SITEKEY,
         callback: async (token) => {
@@ -118,8 +127,7 @@ export function createMaskedPageController({
           } catch {
             showError(nodes, undefined, undefined, owner);
           }
-          captchaWaiters.delete(resolve);
-          resolve();
+          release();
         },
       });
     });

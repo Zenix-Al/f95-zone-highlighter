@@ -14,6 +14,16 @@ const escapeHtml = (value) =>
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
 
+const SITE_BLOCK_LABELS = {
+  challenge_page: "F95 browser check",
+  rate_limited: "F95 rate limit",
+};
+
+export function getSiteBlockLabel(cycle) {
+  if (!(Number(cycle?.blockedUntil) > Date.now())) return "";
+  return SITE_BLOCK_LABELS[cycle.blockedReason] || "F95 blocked requests";
+}
+
 export function getAutoUpdateStyleText(root = ".f95ue-library-auto-dialog") {
   return cssTemplate.replaceAll("__ROOT__", root);
 }
@@ -46,6 +56,8 @@ export function derivePrimaryUpdateAction(
   }
   if (cycle.status === "paused")
     return { action: "resume", label: "Resume updates", disabled: false };
+  if (getSiteBlockLabel(cycle))
+    return { action: "retry-now", label: "Retry now", disabled: false };
   const localDay = localDayKey();
   const staleDay = Boolean(cycle.dailyKey && cycle.dailyKey !== localDay);
   const limit =
@@ -77,6 +89,7 @@ export function createAutoUpdateDiagnostics(cycle) {
     `Network retries: ${count(cycle.networkRetries)}`,
     `Current item: ${cycle.currentThreadId || "-"} @ ${count(cycle.currentPosition) || "-"}`,
     `Next wake: ${cycle.nextRunAt || 0}`,
+    `Blocked: ${cycle.blockedReason || "-"} until ${cycle.blockedUntil || 0}`,
     `Updated: ${cycle.updatedAt || 0}`,
   ]
     .join("\n")
@@ -95,11 +108,14 @@ export function patchAutoUpdateView(root, cycle, runtime = {}) {
   const limit =
     count(cycle?.checksPerDay) +
     (staleDay ? 0 : count(cycle?.dailyBonusAllowance));
+  const siteBlock = getSiteBlockLabel(cycle);
   set(
     "state",
     runtime.recoveryPending
       ? "WAITING FOR PREVIOUS PROCESS"
-      : String(cycle?.status || "idle").toUpperCase(),
+      : siteBlock
+        ? `PAUSED: ${siteBlock.toUpperCase()}`
+        : String(cycle?.status || "idle").toUpperCase(),
   );
   set("cycleProgress", `${completed} / ${total}`);
   set(

@@ -985,7 +985,7 @@
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-            "line": 191,
+            "line": 199,
             "text": "const timer = setInterval(() => {"
           },
           {
@@ -1317,7 +1317,7 @@
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-            "line": 189,
+            "line": 197,
             "text": "if (!location.href.includes(F95_CAPTCHA_SITEKEY)) return;"
           },
           {
@@ -2299,12 +2299,17 @@
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-            "line": 197,
+            "line": 107,
+            "text": "const host = document.createElement(\"div\");"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
+            "line": 205,
             "text": "document.querySelector(\".recaptcha-checkbox-checkmark\") ||"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-            "line": 198,
+            "line": 206,
             "text": "document.querySelector(\".recaptcha-checkbox-border\");"
           },
           {
@@ -3018,28 +3023,23 @@
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-            "line": 112,
+            "line": 121,
             "text": "if (accepted || disposed || owner !== generation) return;"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-            "line": 130,
+            "line": 138,
             "text": "if (disposed || owner !== generation || flags.skipMaskedLink === false) return;"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-            "line": 159,
+            "line": 167,
             "text": "if (!operation) operation = runOperation(generation);"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-            "line": 166,
+            "line": 174,
             "text": "generation += 1;"
-          },
-          {
-            "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-            "line": 193,
-            "text": "clearInterval(timer);"
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
@@ -3048,7 +3048,12 @@
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-            "line": 203,
+            "line": 209,
+            "text": "clearInterval(timer);"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
+            "line": 211,
             "text": "addTeardown(() => clearInterval(timer));"
           },
           {
@@ -4090,37 +4095,37 @@
           },
           {
             "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
-            "line": 28,
+            "line": 29,
             "text": "const numeric = (name, fallback) => Number(root?.querySelector(`[name=\"${name}\"]`)?.value || fallback);"
           },
           {
             "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
-            "line": 31,
+            "line": 32,
             "text": "enabled: Boolean(root?.querySelector('[name=\"enabled\"]')?.checked),"
           },
           {
             "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
-            "line": 129,
+            "line": 140,
             "text": "root = document.getElementById(String(result.value?.contentId || \"\"));"
           },
           {
             "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
-            "line": 89,
+            "line": 102,
             "text": "const node = root.querySelector(`[data-role=\"${role}\"]`);"
           },
           {
             "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
-            "line": 128,
+            "line": 144,
             "text": "const progress = root.querySelector('[data-role=\"progress\"]');"
           },
           {
             "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
-            "line": 133,
+            "line": 149,
             "text": "const primary = root.querySelector('[data-role=\"primaryAction\"]');"
           },
           {
             "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
-            "line": 141,
+            "line": 157,
             "text": "const pause = root.querySelector('[data-auto-action=\"pause\"]');"
           },
           {
@@ -4832,6 +4837,11 @@
             "text": "clearTimeout(timer);"
           },
           {
+            "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
+            "line": 313,
+            "text": "// Lets the user retry before blockedUntil, for example after passing the"
+          },
+          {
             "path": "addons/library-addon/src/library/importWorkflow.js",
             "line": 300,
             "text": "// Count work that was actually written, even when a cancel arrived while it ran."
@@ -4868,57 +4878,67 @@
           },
           {
             "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
-            "line": 14,
+            "line": 15,
             "text": "let generation = 0;"
           },
           {
             "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
-            "line": 21,
+            "line": 22,
             "text": "generation += 1;"
           },
           {
             "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
-            "line": 54,
+            "line": 55,
             "text": "cancelLabel: \"Cancel\","
           },
           {
             "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
-            "line": 76,
+            "line": 73,
+            "text": "if (action === \"retry-now\") {"
+          },
+          {
+            "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
+            "line": 81,
             "text": "`Allow up to ${cycle?.checksPerDay || config.checksPerDay} additional Library checks today. Spacing and retry limits still apply.`,"
           },
           {
             "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
-            "line": 112,
+            "line": 123,
             "text": "const openGeneration = ++generation;"
           },
           {
             "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
-            "line": 117,
+            "line": 128,
             "text": "if (openGeneration !== generation) return { ok: false, reason: \"cancelled\" };"
           },
           {
             "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
-            "line": 128,
+            "line": 139,
             "text": "if (!result?.ok || openGeneration !== generation) return result;"
           },
           {
             "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
-            "line": 132,
+            "line": 143,
             "text": "const controller = new AbortController();"
           },
           {
             "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
-            "line": 149,
+            "line": 160,
             "text": "if (action === \"cancel\") return close(\"cancel\");"
           },
           {
             "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
-            "line": 76,
+            "line": 60,
+            "text": "return { action: \"retry-now\", label: \"Retry now\", disabled: false };"
+          },
+          {
+            "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
+            "line": 88,
             "text": "`Current: ${count(cycle.current)}; changed: ${count(cycle.changed)}; retry: ${count(cycle.retryPending)}; terminal: ${count(cycle.failed)}; skipped: ${count(cycle.skipped)}`,"
           },
           {
             "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
-            "line": 153,
+            "line": 169,
             "text": "return `<form class=\"f95ue-library-auto-dialog\" data-role=\"auto-update-dialog\"><section class=\"f95ue-library-auto-overview\"><div class=\"f95ue-library-auto-heading\"><strong>Update overview</strong><span class=\"f95ue-library-auto-state\" data-role=\"state\">IDLE</span></div><progress data-role=\"progress\" max=\"1\" value=\"0\"></progress><div class=\"f95ue-library-auto-stats\"><span>Cycle <strong data-role=\"cycleProgress\">0 / 0</strong></span><span>Today <strong data-role=\"dailyProgress\">0 / ${config.checksPerDay}</strong></span><span>Completed <strong data-role=\"completed\">0</strong></span><span>Retry pending <strong data-role=\"retryPending\">0</strong></span><span>Terminal <strong data-role=\"terminalFailed\">0</strong></span></div><div class=\"f95ue-library-auto-meta\"><span>Current: <b data-role=\"currentItem\">-</b></span><span>Next: <b data-role=\"nextWake\">-</b></span><span>Last activity: <b data-role=\"lastActivity\">-</b></span></div></section><details><summary>Cycle details &gt;</summary><div class=\"f95ue-library-auto-details\"><div>Cycle ID: <span data-role=\"cycleId\">-</span></div><div data-role=\"cycleCounts\">current 0 · changed 0 · skipped 0 · network retries 0</div><button type=\"button\" data-auto-action=\"copy-diagnostics\">Copy diagnostics</button><button type=\"button\" data-auto-action=\"restart\">Restart cycle...</button></div></details><details><summary>Update settings &gt;</summary><div class=\"f95ue-library-auto-grid\"><label class=\"f95ue-library-auto-toggle\"><input name=\"enabled\" type=\"checkbox\"${config.enabled !== false ? \" checked\" : \"\"}><span>Check eligible Library records automatically</span></label>${field(\"Checks per day\", \"checksPerDay\", config.checksPerDay, 1, 500)}${field(\"Update hour (local, 0-23)\", \"runHour\", config.runHour, 0, 23)}${field(\"Spacing (ms)\", \"spacingMs\", config.spacingMs, 5000, 30000)}${field(\"Timeout (ms)\", \"timeoutMs\", config.timeoutMs, 1000, 30000)}${field(\"Retries\", \"retryLimit\", config.retryLimit, 0, 5)}<button type=\"submit\" class=\"primary\">Save settings</button></div></details><div class=\"f95ue-library-auto-actions\"><button type=\"button\" class=\"primary\" data-role=\"primaryAction\" data-auto-action=\"${primary.action}\"${primary.disabled ? \" disabled\" : \"\"}>${primary.label}</button><button type=\"button\" data-auto-action=\"pause\">Pause</button><button type=\"button\" data-auto-action=\"cancel\">Close</button></div></form>`;"
           },
           {
@@ -9747,7 +9767,7 @@
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-          "line": 189,
+          "line": 197,
           "text": "if (!location.href.includes(F95_CAPTCHA_SITEKEY)) return;"
         },
         {
@@ -11077,7 +11097,7 @@
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-          "line": 191,
+          "line": 199,
           "text": "const timer = setInterval(() => {"
         },
         {
@@ -11397,7 +11417,7 @@
         },
         {
           "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
-          "line": 129,
+          "line": 140,
           "text": "root = document.getElementById(String(result.value?.contentId || \"\"));"
         },
         {
@@ -12220,47 +12240,47 @@
         },
         {
           "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
-          "line": 94,
+          "line": 99,
           "text": "\"Unfinished queue progress will be discarded and rebuilt from the current Library.\","
         },
         {
           "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
-          "line": 74,
+          "line": 86,
           "text": "`Progress: ${count(cycle.completed)} / ${count(cycle.total)}`,"
         },
         {
           "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
-          "line": 104,
+          "line": 120,
           "text": "set(\"cycleProgress\", `${completed} / ${total}`);"
         },
         {
           "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
-          "line": 106,
+          "line": 122,
           "text": "\"dailyProgress\","
         },
         {
           "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
-          "line": 128,
+          "line": 144,
           "text": "const progress = root.querySelector('[data-role=\"progress\"]');"
         },
         {
           "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
-          "line": 129,
+          "line": 145,
           "text": "if (progress) {"
         },
         {
           "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
-          "line": 130,
+          "line": 146,
           "text": "progress.max = Math.max(1, total);"
         },
         {
           "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
-          "line": 131,
+          "line": 147,
           "text": "progress.value = completed;"
         },
         {
           "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
-          "line": 153,
+          "line": 169,
           "text": "return `<form class=\"f95ue-library-auto-dialog\" data-role=\"auto-update-dialog\"><section class=\"f95ue-library-auto-overview\"><div class=\"f95ue-library-auto-heading\"><strong>Update overview</strong><span class=\"f95ue-library-auto-state\" data-role=\"state\">IDLE</span></div><progress data-role=\"progress\" max=\"1\" value=\"0\"></progress><div class=\"f95ue-library-auto-stats\"><span>Cycle <strong data-role=\"cycleProgress\">0 / 0</strong></span><span>Today <strong data-role=\"dailyProgress\">0 / ${config.checksPerDay}</strong></span><span>Completed <strong data-role=\"completed\">0</strong></span><span>Retry pending <strong data-role=\"retryPending\">0</strong></span><span>Terminal <strong data-role=\"terminalFailed\">0</strong></span></div><div class=\"f95ue-library-auto-meta\"><span>Current: <b data-role=\"currentItem\">-</b></span><span>Next: <b data-role=\"nextWake\">-</b></span><span>Last activity: <b data-role=\"lastActivity\">-</b></span></div></section><details><summary>Cycle details &gt;</summary><div class=\"f95ue-library-auto-details\"><div>Cycle ID: <span data-role=\"cycleId\">-</span></div><div data-role=\"cycleCounts\">current 0 · changed 0 · skipped 0 · network retries 0</div><button type=\"button\" data-auto-action=\"copy-diagnostics\">Copy diagnostics</button><button type=\"button\" data-auto-action=\"restart\">Restart cycle...</button></div></details><details><summary>Update settings &gt;</summary><div class=\"f95ue-library-auto-grid\"><label class=\"f95ue-library-auto-toggle\"><input name=\"enabled\" type=\"checkbox\"${config.enabled !== false ? \" checked\" : \"\"}><span>Check eligible Library records automatically</span></label>${field(\"Checks per day\", \"checksPerDay\", config.checksPerDay, 1, 500)}${field(\"Update hour (local, 0-23)\", \"runHour\", config.runHour, 0, 23)}${field(\"Spacing (ms)\", \"spacingMs\", config.spacingMs, 5000, 30000)}${field(\"Timeout (ms)\", \"timeoutMs\", config.timeoutMs, 1000, 30000)}${field(\"Retries\", \"retryLimit\", config.retryLimit, 0, 5)}<button type=\"submit\" class=\"primary\">Save settings</button></div></details><div class=\"f95ue-library-auto-actions\"><button type=\"button\" class=\"primary\" data-role=\"primaryAction\" data-auto-action=\"${primary.action}\"${primary.disabled ? \" disabled\" : \"\"}>${primary.label}</button><button type=\"button\" data-auto-action=\"pause\">Pause</button><button type=\"button\" data-auto-action=\"cancel\">Close</button></div></form>`;"
         },
         {
@@ -13184,27 +13204,27 @@
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-          "line": 112,
+          "line": 121,
           "text": "if (accepted || disposed || owner !== generation) return;"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-          "line": 130,
+          "line": 138,
           "text": "if (disposed || owner !== generation || flags.skipMaskedLink === false) return;"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-          "line": 159,
+          "line": 167,
           "text": "if (!operation) operation = runOperation(generation);"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-          "line": 166,
+          "line": 174,
           "text": "generation += 1;"
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/maskedPageController.js",
-          "line": 191,
+          "line": 199,
           "text": "const timer = setInterval(() => {"
         },
         {
@@ -13698,6 +13718,11 @@
           "text": "timer = setTimeout(async () => {"
         },
         {
+          "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
+          "line": 313,
+          "text": "// Lets the user retry before blockedUntil, for example after passing the"
+        },
+        {
           "path": "addons/library-addon/src/library/importWorkflow.js",
           "line": 4,
           "text": "return new Promise((resolve) => setTimeout(resolve, Math.max(0, Number(ms) || 0)));"
@@ -13744,57 +13769,67 @@
         },
         {
           "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
-          "line": 14,
+          "line": 15,
           "text": "let generation = 0;"
         },
         {
           "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
-          "line": 21,
+          "line": 22,
           "text": "generation += 1;"
         },
         {
           "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
-          "line": 54,
+          "line": 55,
           "text": "cancelLabel: \"Cancel\","
         },
         {
           "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
-          "line": 76,
+          "line": 73,
+          "text": "if (action === \"retry-now\") {"
+        },
+        {
+          "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
+          "line": 81,
           "text": "`Allow up to ${cycle?.checksPerDay || config.checksPerDay} additional Library checks today. Spacing and retry limits still apply.`,"
         },
         {
           "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
-          "line": 112,
+          "line": 123,
           "text": "const openGeneration = ++generation;"
         },
         {
           "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
-          "line": 117,
+          "line": 128,
           "text": "if (openGeneration !== generation) return { ok: false, reason: \"cancelled\" };"
         },
         {
           "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
-          "line": 128,
+          "line": 139,
           "text": "if (!result?.ok || openGeneration !== generation) return result;"
         },
         {
           "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
-          "line": 132,
+          "line": 143,
           "text": "const controller = new AbortController();"
         },
         {
           "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
-          "line": 149,
+          "line": 160,
           "text": "if (action === \"cancel\") return close(\"cancel\");"
         },
         {
           "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
-          "line": 76,
+          "line": 60,
+          "text": "return { action: \"retry-now\", label: \"Retry now\", disabled: false };"
+        },
+        {
+          "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
+          "line": 88,
           "text": "`Current: ${count(cycle.current)}; changed: ${count(cycle.changed)}; retry: ${count(cycle.retryPending)}; terminal: ${count(cycle.failed)}; skipped: ${count(cycle.skipped)}`,"
         },
         {
           "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
-          "line": 153,
+          "line": 169,
           "text": "return `<form class=\"f95ue-library-auto-dialog\" data-role=\"auto-update-dialog\"><section class=\"f95ue-library-auto-overview\"><div class=\"f95ue-library-auto-heading\"><strong>Update overview</strong><span class=\"f95ue-library-auto-state\" data-role=\"state\">IDLE</span></div><progress data-role=\"progress\" max=\"1\" value=\"0\"></progress><div class=\"f95ue-library-auto-stats\"><span>Cycle <strong data-role=\"cycleProgress\">0 / 0</strong></span><span>Today <strong data-role=\"dailyProgress\">0 / ${config.checksPerDay}</strong></span><span>Completed <strong data-role=\"completed\">0</strong></span><span>Retry pending <strong data-role=\"retryPending\">0</strong></span><span>Terminal <strong data-role=\"terminalFailed\">0</strong></span></div><div class=\"f95ue-library-auto-meta\"><span>Current: <b data-role=\"currentItem\">-</b></span><span>Next: <b data-role=\"nextWake\">-</b></span><span>Last activity: <b data-role=\"lastActivity\">-</b></span></div></section><details><summary>Cycle details &gt;</summary><div class=\"f95ue-library-auto-details\"><div>Cycle ID: <span data-role=\"cycleId\">-</span></div><div data-role=\"cycleCounts\">current 0 · changed 0 · skipped 0 · network retries 0</div><button type=\"button\" data-auto-action=\"copy-diagnostics\">Copy diagnostics</button><button type=\"button\" data-auto-action=\"restart\">Restart cycle...</button></div></details><details><summary>Update settings &gt;</summary><div class=\"f95ue-library-auto-grid\"><label class=\"f95ue-library-auto-toggle\"><input name=\"enabled\" type=\"checkbox\"${config.enabled !== false ? \" checked\" : \"\"}><span>Check eligible Library records automatically</span></label>${field(\"Checks per day\", \"checksPerDay\", config.checksPerDay, 1, 500)}${field(\"Update hour (local, 0-23)\", \"runHour\", config.runHour, 0, 23)}${field(\"Spacing (ms)\", \"spacingMs\", config.spacingMs, 5000, 30000)}${field(\"Timeout (ms)\", \"timeoutMs\", config.timeoutMs, 1000, 30000)}${field(\"Retries\", \"retryLimit\", config.retryLimit, 0, 5)}<button type=\"submit\" class=\"primary\">Save settings</button></div></details><div class=\"f95ue-library-auto-actions\"><button type=\"button\" class=\"primary\" data-role=\"primaryAction\" data-auto-action=\"${primary.action}\"${primary.disabled ? \" disabled\" : \"\"}>${primary.label}</button><button type=\"button\" data-auto-action=\"pause\">Pause</button><button type=\"button\" data-auto-action=\"cancel\">Close</button></div></form>`;"
         },
         {

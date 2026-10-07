@@ -2,6 +2,7 @@ import {
   defaultAddonsApiThrottleSettings,
   defaultAddonsSettings,
   defaultColors,
+  defaultDismissedNoticeIds,
   defaultGlobalSettings,
   defaultLatestSettings,
   defaultOverlaySettings,
@@ -334,7 +335,12 @@ const CONFIG_SCHEMA = {
   globalSettings: { ...globalSettings, exportable: true },
   latestSettings: { ...latestSettings, exportable: true },
   addons,
+  // Single-notice predecessor of dismissedNoticeIds; still honored, never written.
   savedNotifID: node("number", defaultSavedNotifID, { nullable: true, min: 1, integer: true }),
+  dismissedNoticeIds: node("array", defaultDismissedNoticeIds, {
+    items: finiteNumber(0, { min: 1, integer: true }),
+    unique: true,
+  }),
 };
 
 const METADATA_INDEX = new Map();

@@ -10,6 +10,25 @@ export function formatDateForFilename(date = new Date()) {
 
 const REVOKE_DELAY_MS = 10000;
 const PICKER_FOCUS_GRACE_MS = 1500;
+// Real exports are around 100 KB; the cap stops a mistaken pick from being read
+// and parsed in the page.
+const MAX_IMPORT_FILE_BYTES = 5 * 1024 * 1024;
+
+export async function readJsonImportFile(file) {
+  const isJsonName = String(file.name || "")
+    .toLowerCase()
+    .endsWith(".json");
+  const isJsonType = String(file.type || "")
+    .toLowerCase()
+    .includes("json");
+  if (!isJsonName && !isJsonType) {
+    return { ok: false, message: "Import failed: JSON file only (.json)." };
+  }
+  if (file.size > MAX_IMPORT_FILE_BYTES) {
+    return { ok: false, message: "Import failed: file is larger than 5 MB." };
+  }
+  return { ok: true, text: await file.text() };
+}
 
 export function downloadJsonFile(filename, text) {
   const blob = new Blob([text], { type: "application/json;charset=utf-8" });

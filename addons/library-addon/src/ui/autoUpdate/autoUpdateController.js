@@ -4,6 +4,7 @@ import { showToast } from "../utils/showToast.js";
 import {
   createAutoUpdateDiagnostics,
   getAutoUpdateStyleText,
+  getSiteBlockLabel,
   patchAutoUpdateView,
   renderAutoUpdateDialog,
 } from "./autoUpdateRenderer.js";
@@ -69,6 +70,10 @@ export function createAutoUpdateController({ core, addonId, library, scheduler, 
     refresh(cycle, { running: true });
     let result;
     if (["run-now", "resume"].includes(action)) result = await scheduler.run({ runNow: true });
+    if (action === "retry-now") {
+      const cleared = await scheduler.clearSiteBlock();
+      result = cleared?.ok ? await scheduler.run({ runNow: true }) : cleared;
+    }
     if (action === "pause") result = await scheduler.pause();
     if (action === "continue-batch") {
       const accepted = await confirm(
@@ -102,6 +107,12 @@ export function createAutoUpdateController({ core, addonId, library, scheduler, 
     refresh(latest);
     if (result?.reason === "lease_owned") {
       await showToast("Update recovery is waiting for the previous tab lease. It will resume automatically.", "info");
+    } else if (result?.reason === "site_blocked") {
+      const until = new Date(latest?.blockedUntil || Date.now()).toLocaleTimeString();
+      await showToast(
+        `Library updates paused: ${getSiteBlockLabel(latest) || "F95 blocked requests"}. They resume automatically at ${until}.`,
+        "info",
+      );
     } else if (result && !result.ok && !["not_due", "daily_allowance_exhausted"].includes(result.reason)) {
       await showToast(`Auto update failed: ${result.reason || "unknown"}`, "error");
     }
