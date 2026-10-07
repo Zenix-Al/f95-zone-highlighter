@@ -1,5 +1,5 @@
 import { config } from "../../config.js";
-import { saveConfigKeys, updateConfig } from "../settingsService.js";
+import { updateConfig } from "../settingsService.js";
 import { getCanonicalAddonId, listTrustedAddonAliases } from "./catalog.js";
 import { sanitizeAddonId } from "./shared.js";
 
@@ -100,6 +100,31 @@ export function resolveAddonId(addonId) {
 }
 
 let pendingAddonConfig = null;
+let pendingAddonBase = null;
+
+function isObject(value) {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function applyAddonChanges(target, before, after) {
+  let changed = false;
+  for (const key of new Set([...Object.keys(before || {}), ...Object.keys(after || {})])) {
+    if (!Object.hasOwn(after, key)) {
+      delete target[key];
+      changed = true;
+    } else if (!Object.hasOwn(before, key)) {
+      target[key] = clone(after[key]);
+      changed = true;
+    } else if (isObject(before[key]) && isObject(after[key])) {
+      if (!isObject(target[key])) target[key] = {};
+      changed = applyAddonChanges(target[key], before[key], after[key]) || changed;
+    } else if (JSON.stringify(before[key]) !== JSON.stringify(after[key])) {
+      target[key] = clone(after[key]);
+      changed = true;
+    }
+  }
+  return changed;
+}
 
 function ensureInstalledMetaBucket(addons, addonId) {
   const normalizedId = resolveAddonId(addonId);
@@ -209,7 +234,8 @@ export function ensureAddonStateBucket(addonId) {
   const normalizedId = resolveAddonId(addonId);
   if (!normalizedId) return {};
   if (!pendingAddonConfig) {
-    pendingAddonConfig = ensureAddonsConfigBucket(clone(config.addons));
+    pendingAddonBase = clone(config.addons);
+    pendingAddonConfig = ensureAddonsConfigBucket(clone(pendingAddonBase));
     canonicalizeAddonIdentityRoot(pendingAddonConfig);
   }
   return ensureAddonStateBucketInRoot(pendingAddonConfig, normalizedId);
@@ -233,22 +259,36 @@ export function listInstalledAddonMeta() {
 }
 
 export async function persistAddonsState(addons = config.addons) {
-  const candidate = pendingAddonConfig || clone(addons);
-  canonicalizeAddonIdentityRoot(candidate);
-  const result = await saveConfigKeys({ addons: clone(candidate) });
+  const base = pendingAddonBase || clone(config.addons);
+  const candidate = clone(pendingAddonConfig || { ...base, ...addons });
   pendingAddonConfig = null;
-  return result.committed
+  pendingAddonBase = null;
+  canonicalizeAddonIdentityRoot(candidate);
+  const result = await updateConfig(
+    (draft) => {
+      const current = ensureAddonsConfigBucket(draft.addons);
+      return applyAddonChanges(current, base, candidate);
+    },
+    { origin: "addons:state" },
+  );
+  return result.committed || result.skipped
     ? { ok: true, result }
     : { ok: false, reason: result.failed?.[0]?.code || "storage_write_failed", result };
 }
 
 /** Persist all legacy buckets under their canonical identity in one commit. */
 export async function normalizeAddonIdentities() {
-  const candidate = ensureAddonsConfigBucket(clone(config.addons));
-  const normalized = canonicalizeAddonIdentityRoot(candidate);
-  if (!normalized.changed) return { ok: true, changed: false };
-  const persisted = await persistAddonsState(candidate);
-  return persisted.ok ? { ok: true, changed: true } : persisted;
+  let changed = false;
+  const result = await updateConfig(
+    (draft) => {
+      changed = canonicalizeAddonIdentityRoot(draft.addons).changed;
+      return changed;
+    },
+    { origin: "addons:normalize-identities" },
+  );
+  return result.committed || result.skipped
+    ? { ok: true, changed }
+    : { ok: false, reason: result.failed?.[0]?.code || "storage_write_failed", result };
 }
 
 /** Normalize one alias explicitly; useful during release/update sequencing. */
@@ -256,11 +296,8 @@ export async function normalizeAddonIdentity(addonId) {
   const sourceId = sanitizeAddonId(addonId);
   const canonicalId = resolveAddonId(sourceId);
   if (!sourceId || sourceId === canonicalId) return { ok: true, changed: false, canonicalId };
-  const candidate = ensureAddonsConfigBucket(clone(config.addons));
-  const normalized = canonicalizeAddonIdentityRoot(candidate);
-  if (!normalized.changed) return { ok: true, changed: false, canonicalId };
-  const persisted = await persistAddonsState(candidate);
-  return persisted.ok ? { ok: true, changed: true, canonicalId } : { ...persisted, canonicalId };
+  const normalized = await normalizeAddonIdentities();
+  return { ...normalized, canonicalId };
 }
 
 export async function setAddonStateValue(addonId, key, value) {
@@ -268,11 +305,16 @@ export async function setAddonStateValue(addonId, key, value) {
   const normalizedKey = String(key || "").trim();
   if (!normalizedId || !normalizedKey) return { ok: false, reason: "invalid_state_key" };
 
-  const addons = ensureAddonsConfigBucket(clone(config.addons));
-  ensureAddonStateBucketInRoot(addons, normalizedId)[normalizedKey] = value;
-  const persisted = await persistAddonsState(addons);
-  if (!persisted.ok) return persisted;
-  return { ok: true };
+  const result = await updateConfig(
+    (draft) => {
+      const addons = ensureAddonsConfigBucket(draft.addons);
+      ensureAddonStateBucketInRoot(addons, normalizedId)[normalizedKey] = value;
+    },
+    { origin: `addons:state:${normalizedId}` },
+  );
+  return result.committed
+    ? { ok: true }
+    : { ok: false, reason: result.failed?.[0]?.code || "storage_write_failed", result };
 }
 
 export async function upsertInstalledAddonMeta(addonId, partial = {}) {
@@ -316,24 +358,36 @@ export async function clearAddonState(addonId) {
   const normalizedId = resolveAddonId(addonId);
   if (!normalizedId) return { ok: true };
 
-  const addons = ensureAddonsConfigBucket(clone(config.addons));
-  canonicalizeAddonIdentityRoot(addons);
-  if (!addons.byAddon[normalizedId]) return { ok: true };
-  delete addons.byAddon[normalizedId];
-  const persisted = await persistAddonsState(addons);
-  return persisted.ok ? { ok: true } : persisted;
+  const result = await updateConfig(
+    (draft) => {
+      const addons = ensureAddonsConfigBucket(draft.addons);
+      canonicalizeAddonIdentityRoot(addons);
+      if (!addons.byAddon[normalizedId]) return false;
+      delete addons.byAddon[normalizedId];
+    },
+    { origin: `addons:clear-state:${normalizedId}` },
+  );
+  return result.committed || result.skipped
+    ? { ok: true }
+    : { ok: false, reason: result.failed?.[0]?.code || "storage_write_failed", result };
 }
 
 export async function removeInstalledAddonMeta(addonId) {
   const normalizedId = resolveAddonId(addonId);
   if (!normalizedId) return { ok: true };
 
-  const addons = ensureAddonsConfigBucket(clone(config.addons));
-  canonicalizeAddonIdentityRoot(addons);
-  if (!addons.installedMeta[normalizedId]) return { ok: true };
-  delete addons.installedMeta[normalizedId];
-  const persisted = await persistAddonsState(addons);
-  return persisted.ok ? { ok: true } : persisted;
+  const result = await updateConfig(
+    (draft) => {
+      const addons = ensureAddonsConfigBucket(draft.addons);
+      canonicalizeAddonIdentityRoot(addons);
+      if (!addons.installedMeta[normalizedId]) return false;
+      delete addons.installedMeta[normalizedId];
+    },
+    { origin: `addons:remove-meta:${normalizedId}` },
+  );
+  return result.committed || result.skipped
+    ? { ok: true }
+    : { ok: false, reason: result.failed?.[0]?.code || "storage_write_failed", result };
 }
 
 /** Remove installation metadata and per-add-on state in one revisioned commit. */

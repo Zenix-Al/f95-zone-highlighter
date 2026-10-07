@@ -1,4 +1,5 @@
 import { parseLibraryThreadHtml } from "./threadUpdateParser.js";
+import { normalizeVersionIdentity } from "./updateEventModel.js";
 import { debugLog } from "../../../shared/debugLog.js";
 import { SITE_BLOCK_REASONS } from "./autoUpdatePolicy.js";
 
@@ -80,8 +81,8 @@ export async function checkLibraryRecords(records, requestHtml, options = {}) {
       changed:
         Boolean(parsed.ok) &&
         (
-          String(parsed.value.currentVersion || "").trim().toLowerCase() !==
-            String(record.thread?.currentVersion || record.gameVersion || "").trim().toLowerCase() ||
+          normalizeVersionIdentity(parsed.value.currentVersion) !==
+            normalizeVersionIdentity(record.thread?.currentVersion || record.gameVersion) ||
           String(parsed.value.title || "").trim().toLowerCase() !==
             String(record.thread?.title || record.title || "").trim().toLowerCase()
         ),

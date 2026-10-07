@@ -26,7 +26,7 @@ function clearPendingTimers() {
  * (Auto-Refresh, Web Notifications) with the script's configuration.
  * This function understands the dependency that Web Notifications require Auto-Refresh.
  */
-function syncLatestControls() {
+function syncLatestControls({ allowDelayedWebNotif = true } = {}) {
   const autoRefreshBtn = document.getElementById(SELECTORS.LATEST_CONTROL.IDS.AUTO_REFRESH);
   const webNotifBtn = document.getElementById(SELECTORS.LATEST_CONTROL.IDS.NOTIFY);
   debugLog("Latest Controls Sync", "Syncing control states with configuration...", {
@@ -51,7 +51,7 @@ function syncLatestControls() {
     autoRefreshBtn.click();
   }
 
-  if (!isWebNotifOn && targetWebNotif) {
+  if (allowDelayedWebNotif && !isWebNotifOn && targetWebNotif) {
     schedule(() => {
       if (config.latestSettings.webNotif && !webNotifBtn.classList.contains("selected")) {
         webNotifBtn.click();
@@ -97,7 +97,7 @@ function enable() {
 function disable() {
   removeObserverCallback("sync-latest-controls");
   clearPendingTimers();
-  syncLatestControls();
+  syncLatestControls({ allowDelayedWebNotif: false });
 }
 
 export const latestControlFeature = createFeature("Latest Controls Sync", {

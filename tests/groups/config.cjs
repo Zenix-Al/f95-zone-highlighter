@@ -985,7 +985,7 @@ runTest("Latest capture is not configurable through feature metadata", () => {
     disable: () => null,
   });
   assert.strictEqual(Object.hasOwn(feature, "fastCapture"), false);
-  assert.strictEqual(FAST_CAPTURE_LIMITS.entryTtlMs, 30000);
+  assert.strictEqual(Object.hasOwn(FAST_CAPTURE_LIMITS, "entryTtlMs"), false);
 });
 
 runTest(

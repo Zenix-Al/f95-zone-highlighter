@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "sourceReport": "docs/architecture/core-size-baseline.json",
-  "sourceReportSha256": "a76aa1621d30ab1adb83966747f003a341dc7646fe5b320951347a0ab77d2229",
+  "sourceReportSha256": "60bf76e8d82b208b4580d1fad59e37540bbb94eb14a88a953e463bca200305ff",
   "thresholds": {
     "authoredArea": {
       "absoluteBytes": 1024,
@@ -22,6 +22,6 @@
   },
   "rationale": {
     "type": "commit-note",
-    "text": "Second audit round: data-xf-* stripping, registry-owned tag-drag listeners, dismissedNoticeIds with a Show again setting, and a 5 MB config import cap."
+    "text": "Merge PR 83 targeted fixes with current main; refresh audit evidence from Git-canonical LF source."
   }
 }

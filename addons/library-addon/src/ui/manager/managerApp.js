@@ -16,7 +16,7 @@ import { createEntryEditorController } from "../entryEditor/editorController.js"
 import { createAutoUpdateController } from "../autoUpdate/autoUpdateController.js";
 import { createUpdateInboxController } from "../updateInbox/updateInboxController.js";
 import { reloadRows } from "./reloadRows.js";
-import { createInitialState, createAppContext } from "./state.js";
+import { createInitialState, createAppContext, resetPagination } from "./state.js";
 
 const ROWS_STATUS_ID = "f95ue-library-rows-status";
 
@@ -174,15 +174,32 @@ export function createLibraryManagerApp({
     cancelManualCheckFn: cancelManualCheck,
     createManualCheckControllerFn: createManualCheckController,
     runAutoUpdateFn: (options) => autoUpdateScheduler.run(options),
+    refreshFromStorageFn: () => refreshFromStorage(),
   };
 
   const handlers = createManagerHandlers(state, api, deps);
 
+  async function refreshFromStorage() {
+    const root = getActiveRoot();
+    if (!root) return false;
+    library.clearEntryCache?.();
+    resetPagination(state);
+    state.selectedIds.clear();
+    state.ratingDraftById.clear();
+    state.ratingCommittedById.clear();
+    refreshLiveThreadContext();
+    return reloadRows(root, state, api, library, ROWS_STATUS_ID);
+  }
+
   // Main dialog functions
   async function open() {
-    if (appContext.dialogOpen && getActiveRoot()) return;
+    if (appContext.dialogOpen && getActiveRoot()) return refreshFromStorage();
 
     const openGeneration = ++generation;
+    library.clearEntryCache?.();
+    resetPagination(state);
+    state.ratingDraftById.clear();
+    state.ratingCommittedById.clear();
     await registerStyle();
 
     const result = await api.openDialog(dialogId, "Library Manager", createManagerDialogMarkup());

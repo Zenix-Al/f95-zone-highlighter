@@ -1,9 +1,9 @@
-import { config, defaultAddonsApiThrottleSettings } from "../../config.js";
+import { defaultAddonsApiThrottleSettings } from "../../config.js";
 import { openConfirmDialog, openSettingsDialog } from "../../ui/components/dialog.js";
 import { showToast } from "../../ui/components/toast.js";
 import { createEnabledDisabledToast, createToggleSetting } from "../../ui/settings/metaFactory.js";
 import { contributeToSection } from "../../ui/settingsRuntime/sectionsRegistry.js";
-import { saveConfigKeys } from "../settingsService.js";
+import { updateConfig } from "../settingsService.js";
 import {
   disableAddonsService,
   initAddonsConsoleBridge,
@@ -122,13 +122,19 @@ async function resetAddonsApiThrottleDefaults() {
   }
 
   resetThrottleConfirmUntil = 0;
-  const addons = JSON.parse(JSON.stringify(config.addons || {}));
-  const serviceConfig = addons.service && typeof addons.service === "object" ? addons.service : {};
-  addons.service = {
-    ...serviceConfig,
-    apiThrottle: { ...defaultAddonsApiThrottleSettings },
-  };
-  const persisted = await saveConfigKeys({ addons });
+  const persisted = await updateConfig(
+    (draft) => {
+      const serviceConfig =
+        draft.addons.service && typeof draft.addons.service === "object"
+          ? draft.addons.service
+          : {};
+      draft.addons.service = {
+        ...serviceConfig,
+        apiThrottle: { ...defaultAddonsApiThrottleSettings },
+      };
+    },
+    { origin: "addons:reset-api-throttle" },
+  );
   if (!persisted.committed) return;
   addonsServiceSettingsDialog?.close();
   addonsServiceSettingsDialog = null;

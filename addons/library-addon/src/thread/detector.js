@@ -73,6 +73,9 @@ export function getThreadSnapshot() {
   if (!threadId) return null;
 
   const titleNode = document.querySelector("h1.p-title-value");
+  // XenForo error/private-thread pages may retain the thread URL and even a
+  // page title. They are not observations of the saved thread's facts.
+  if (!titleNode || !document.querySelector(".message-threadStarterPost")) return null;
   const titleText =
     getPlainTitleTextFromTitleNode(titleNode) ||
     document.title.replace(/\s*\|\s*F95zone.*$/i, "").trim();
