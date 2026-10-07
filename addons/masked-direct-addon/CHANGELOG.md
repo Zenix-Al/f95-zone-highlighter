@@ -4,7 +4,7 @@
 
 - Extended the shared core handshake wait to 5 seconds for slow pages and verbose development builds; normal API action timeouts are unchanged.
 - Rendered each CAPTCHA operation into its own element and removed that element when the operation ends or the controller is disposed, allowing repeated CAPTCHA challenges on the same page.
-- Restricted resolved download links to HTTP(S) URLs and hardened masked-page error and timeout handling.
+- Restricted resolved download links to HTTP(S) URLs, URL-encoded CAPTCHA tokens in resolution requests, and hardened masked-page error rendering, timeout handling, and operation completion.
 - Removed the ineffective Datanodes timer patch.
 
 # v1.2.1 - Gofile update

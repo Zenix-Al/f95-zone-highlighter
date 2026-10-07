@@ -4,6 +4,7 @@
 
 - Extended the shared core handshake wait to 5 seconds for slow pages and verbose development builds; normal API action timeouts are unchanged.
 - Tightened Latest URL host checks and handled malformed encoded filter values without breaking saved-filter display.
+- Made Surprise-route regression coverage deterministic without changing multi-word tag support or numeric tag-ID storage.
 
 ## v1.1.1 - Dialog layout fix
 
