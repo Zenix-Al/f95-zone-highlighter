@@ -1,7 +1,8 @@
 # Changelog
 
-## Unreleased
+## v1.1.2 - Filter and startup reliability
 
+- Extended the shared core handshake wait to 5 seconds for slow pages and verbose development builds; normal API action timeouts are unchanged.
 - Tightened Latest URL host checks and handled malformed encoded filter values without breaking saved-filter display.
 
 ## v1.1.1 - Dialog layout fix

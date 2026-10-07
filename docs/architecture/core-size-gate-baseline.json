@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "sourceReport": "docs/architecture/core-size-baseline.json",
-  "sourceReportSha256": "60bf76e8d82b208b4580d1fad59e37540bbb94eb14a88a953e463bca200305ff",
+  "sourceReportSha256": "66e1777ffbc7511bbfabeee1eb25e170c4f9e121929aaea954e087e581537bce",
   "thresholds": {
     "authoredArea": {
       "absoluteBytes": 1024,
@@ -22,6 +22,6 @@
   },
   "rationale": {
     "type": "commit-note",
-    "text": "Merge PR 83 targeted fixes with current main; refresh audit evidence from Git-canonical LF source."
+    "text": "Release 5.4.5: remove redundant Settings backdrop scrolling and padding."
   }
 }

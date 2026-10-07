@@ -1,17 +1,27 @@
 # Changelog
 
-## Unreleased
+## [5.4.5 - Reliability and contributor maintenance]
 
+- Removed redundant Settings backdrop scrolling and padding, keeping scrolling inside the settings panel.
 - Fixed Latest overlays losing their fast-captured data after 30 seconds. The newest capture now remains available until it is replaced, the route changes, or capture is disabled.
 - Hardened cross-tab configuration writes against lost updates and preserved recovered backups when a write fails. Add-on state writes now merge their changes without erasing a newer installation sighting; temporary missing registration no longer deletes pinned add-on shortcuts.
-- Improved add-on startup diagnostics and extended the core handshake wait from 1.5 to 3 seconds for slow pages.
+- Improved shared add-on startup diagnostics and extended the core handshake wait from 1.5 to 5 seconds for slow pages and verbose development builds. Normal API action timeouts are unchanged.
 - Fixed Library update checks treating equivalent version labels such as `Demo - 0.46` and `Demo v0.46` as different versions.
 - Prevented visits to private, missing, or error thread pages from overwriting a saved Library entry with error-page details.
 - Refreshed Library records and My Rating on Manager open, including reopening an already-open Manager, and added a manual Refresh button for changes made in another tab.
 - Integrated xBandaku's robustness fixes: safer Latest overlay teardown and control timers, more reliable configuration-transfer file handling, UI text/element/scroll fixes, and stricter add-on URL validation.
 - Integrated xBandaku's add-on fixes: Library update-queue recovery and retry accounting, accurate cancelled-import progress, safer IndexedDB write aborts, Site Repair Ajax teardown, and Masked/Direct page-controller error and hang handling. Removed the ineffective Datanodes timer patch.
+- Integrated xBandaku's settings-effect cleanup fix so teardown cancels pending debounced tasks without cleanup errors.
+- Hardened add-on UI sanitization against escaped CSS URLs, `image-set()` resource loads, sibling selectors escaping their mount, and XenForo `data-xf-*` behavior attributes.
+- Remembered up to 50 unique dismissed notice IDs, dropping the oldest beyond that ceiling, and added a Show again setting. Existing single-ID dismissals remain respected; the list is excluded from config exports.
+- Registered tag-drag cancellation hooks with the shared listener registry so full teardown removes them and reinitialization can restore them.
+- Rejected core config import files larger than 5 MB before reading their contents.
+- Added Library browser-check/rate-limit pause detection, blocked-state diagnostics, and a Retry now action; improved repeat CAPTCHA rendering in Masked/Direct.
+- Integrated xBandaku's development tooling updates: Prettier configuration and blame-ignore metadata, locked CI dependency installation, expanded lint/report checks, happy-dom 20, deterministic Surprise-route coverage, and failure reporting for test runs that exit with unsettled tests. Removed the unused source ZIP archive and refreshed audit evidence using LF source.
 
-These changes are not released yet; add-on distributions and release versions remain independent.
+Known follow-ups: Library Retry now still needs worker-lease protection; notices restored by Show again may lack their dismissal handler until the feature is reinitialized.
+
+Release artifacts are built with debug logging stripped. Official add-on distributions receive independent patch versions for the shared handshake update and their respective fixes.
 
 ## [5.4.3 - Configuration import reliability]
 

@@ -12,7 +12,7 @@
     ],
     "generatedMetadata": [
       "src/generated/trusted-addon-aliases.json",
-      "src/generated/trusted-addon-catalog.249c0672abc5d1fa.json",
+      "src/generated/trusted-addon-catalog.d4ead9c2fa82eb42.json",
       "src/generated/trusted-addon-catalog.meta.json",
       "src/services/addons/trusted-catalog.json"
     ],
@@ -23,21 +23,21 @@
   "summary": {
     "coreService": {
       "authoredBytes": 241721,
-      "readableBytes": 673795,
-      "uglifiedBytes": 335264,
-      "readableGzipBytes": 144804,
-      "uglifiedGzipBytes": 100605
+      "readableBytes": 673762,
+      "uglifiedBytes": 335231,
+      "readableGzipBytes": 144791,
+      "uglifiedGzipBytes": 100596
     },
     "addons": {
       "count": 7,
-      "authoredBytes": 917818,
+      "authoredBytes": 917002,
       "regularBytes": 1007475,
       "releaseBytes": 730841,
-      "regularGzipBytes": 215328,
-      "releaseGzipBytes": 180286
+      "regularGzipBytes": 215329,
+      "releaseGzipBytes": 180285
     },
     "sharedRuntime": {
-      "authoredBytes": 16565,
+      "authoredBytes": 16497,
       "helperCount": 7
     },
     "generatedMetadata": {
@@ -72,9 +72,9 @@
       {
         "addonId": "example-addon",
         "authoredBytes": {
-          "current": 77326,
+          "current": 76967,
           "baseline": 76967,
-          "delta": 359
+          "delta": 0
         },
         "regularBytes": {
           "current": 90091,
@@ -92,9 +92,9 @@
           "delta": 93
         },
         "releaseGzipBytes": {
-          "current": 16015,
+          "current": 16014,
           "baseline": 16509,
-          "delta": -494
+          "delta": -495
         },
         "owningFiles": [
           "addons/example-addon/src/app/createExampleAddonApp.js",
@@ -128,9 +128,9 @@
           "delta": 75
         },
         "releaseGzipBytes": {
-          "current": 5281,
+          "current": 5282,
           "baseline": 5418,
-          "delta": -137
+          "delta": -136
         },
         "owningFiles": [
           "addons/halloween-theme-addon/src/app/createHalloweenThemeApp.js",
@@ -144,9 +144,9 @@
       {
         "addonId": "latest-filters-addon",
         "authoredBytes": {
-          "current": 75507,
+          "current": 75488,
           "baseline": 75488,
-          "delta": 19
+          "delta": 0
         },
         "regularBytes": {
           "current": 90049,
@@ -159,8 +159,8 @@
           "delta": -12723
         },
         "regularGzipBytes": {
-          "current": 20489,
-          "baseline": 20391,
+          "current": 20488,
+          "baseline": 20390,
           "delta": 98
         },
         "releaseGzipBytes": {
@@ -180,9 +180,9 @@
       {
         "addonId": "library-addon",
         "authoredBytes": {
-          "current": 420272,
+          "current": 419834,
           "baseline": 419834,
-          "delta": 438
+          "delta": 0
         },
         "regularBytes": {
           "current": 432150,
@@ -195,14 +195,14 @@
           "delta": -70510
         },
         "regularGzipBytes": {
-          "current": 88927,
+          "current": 88928,
           "baseline": 88839,
-          "delta": 88
+          "delta": 89
         },
         "releaseGzipBytes": {
-          "current": 75525,
-          "baseline": 77864,
-          "delta": -2339
+          "current": 75524,
+          "baseline": 77862,
+          "delta": -2338
         },
         "owningFiles": [
           "addons/library-addon/src/library/service.js",
@@ -232,13 +232,13 @@
         },
         "regularGzipBytes": {
           "current": 41107,
-          "baseline": 40869,
-          "delta": 238
+          "baseline": 40868,
+          "delta": 239
         },
         "releaseGzipBytes": {
           "current": 34228,
-          "baseline": 34458,
-          "delta": -230
+          "baseline": 34457,
+          "delta": -229
         },
         "owningFiles": [
           "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
@@ -267,8 +267,8 @@
           "delta": -8386
         },
         "regularGzipBytes": {
-          "current": 12699,
-          "baseline": 12607,
+          "current": 12700,
+          "baseline": 12608,
           "delta": 92
         },
         "releaseGzipBytes": {
@@ -2649,8 +2649,8 @@
     },
     "bundle": {
       "readable": {
-        "bytes": 673795,
-        "gzipBytes": 144804,
+        "bytes": 673762,
+        "gzipBytes": 144791,
         "contributionBytes": 97916,
         "contributors": [
           {
@@ -2688,8 +2688,8 @@
         ]
       },
       "uglified": {
-        "bytes": 335264,
-        "gzipBytes": 100605,
+        "bytes": 335231,
+        "gzipBytes": 100596,
         "contributionBytes": 46536,
         "contributors": [
           {
@@ -3840,7 +3840,7 @@
       },
       {
         "helper": "addons/shared/createEl.js",
-        "sourceBytes": 253,
+        "sourceBytes": 246,
         "consumerCount": 2,
         "consumers": [
           "latest-filters-addon",
@@ -3867,7 +3867,7 @@
       },
       {
         "helper": "addons/shared/debugLog.js",
-        "sourceBytes": 1197,
+        "sourceBytes": 1153,
         "consumerCount": 4,
         "consumers": [
           "example-addon",
@@ -3937,7 +3937,7 @@
       },
       {
         "helper": "addons/shared/htmlUtils.js",
-        "sourceBytes": 441,
+        "sourceBytes": 424,
         "consumerCount": 3,
         "consumers": [
           "example-addon",
@@ -4163,7 +4163,7 @@
     ],
     "authored": {
       "fileCount": 7,
-      "authoredBytes": 16565,
+      "authoredBytes": 16497,
       "physicalLines": 493,
       "nonblankLines": 424,
       "largestFiles": [
@@ -4181,7 +4181,7 @@
         },
         {
           "path": "addons/shared/debugLog.js",
-          "bytes": 1197,
+          "bytes": 1153,
           "physicalLines": 44,
           "nonblankLines": 30
         },
@@ -4193,7 +4193,7 @@
         },
         {
           "path": "addons/shared/htmlUtils.js",
-          "bytes": 441,
+          "bytes": 424,
           "physicalLines": 17,
           "nonblankLines": 11
         },
@@ -4205,7 +4205,7 @@
         },
         {
           "path": "addons/shared/createEl.js",
-          "bytes": 253,
+          "bytes": 246,
           "physicalLines": 7,
           "nonblankLines": 7
         }
@@ -4225,19 +4225,19 @@
         },
         {
           "path": "addons/shared/createEl.js",
-          "bytes": 253,
+          "bytes": 246,
           "physicalLines": 7,
           "nonblankLines": 7
         },
         {
           "path": "addons/shared/debugLog.js",
-          "bytes": 1197,
+          "bytes": 1153,
           "physicalLines": 44,
           "nonblankLines": 30
         },
         {
           "path": "addons/shared/htmlUtils.js",
-          "bytes": 441,
+          "bytes": 424,
           "physicalLines": 17,
           "nonblankLines": 11
         },
@@ -5154,7 +5154,7 @@
       },
       "source": {
         "fileCount": 39,
-        "authoredBytes": 77326,
+        "authoredBytes": 76967,
         "physicalLines": 2341,
         "nonblankLines": 2142,
         "largestFiles": [
@@ -5184,7 +5184,7 @@
           },
           {
             "path": "addons/example-addon/src/ui/example.css",
-            "bytes": 4264,
+            "bytes": 4044,
             "physicalLines": 220,
             "nonblankLines": 187
           },
@@ -5288,13 +5288,13 @@
           },
           {
             "path": "addons/example-addon/src/api/feature.js",
-            "bytes": 299,
+            "bytes": 288,
             "physicalLines": 11,
             "nonblankLines": 9
           },
           {
             "path": "addons/example-addon/src/api/idb.js",
-            "bytes": 794,
+            "bytes": 767,
             "physicalLines": 27,
             "nonblankLines": 21
           },
@@ -5306,7 +5306,7 @@
           },
           {
             "path": "addons/example-addon/src/api/meta.js",
-            "bytes": 197,
+            "bytes": 190,
             "physicalLines": 7,
             "nonblankLines": 6
           },
@@ -5324,13 +5324,13 @@
           },
           {
             "path": "addons/example-addon/src/api/storage.js",
-            "bytes": 531,
+            "bytes": 510,
             "physicalLines": 21,
             "nonblankLines": 18
           },
           {
             "path": "addons/example-addon/src/api/toast.js",
-            "bytes": 169,
+            "bytes": 163,
             "physicalLines": 6,
             "nonblankLines": 6
           },
@@ -5342,19 +5342,19 @@
           },
           {
             "path": "addons/example-addon/src/api/ui/dock.js",
-            "bytes": 230,
+            "bytes": 223,
             "physicalLines": 7,
             "nonblankLines": 6
           },
           {
             "path": "addons/example-addon/src/api/ui/mount.js",
-            "bytes": 323,
+            "bytes": 312,
             "physicalLines": 11,
             "nonblankLines": 9
           },
           {
             "path": "addons/example-addon/src/api/ui/style.js",
-            "bytes": 283,
+            "bytes": 271,
             "physicalLines": 12,
             "nonblankLines": 11
           },
@@ -5480,31 +5480,31 @@
           },
           {
             "path": "addons/example-addon/src/ui/dialog.js",
-            "bytes": 675,
+            "bytes": 658,
             "physicalLines": 17,
             "nonblankLines": 17
           },
           {
             "path": "addons/example-addon/src/ui/dock.html",
-            "bytes": 190,
+            "bytes": 185,
             "physicalLines": 5,
             "nonblankLines": 5
           },
           {
             "path": "addons/example-addon/src/ui/dockRenderer.js",
-            "bytes": 116,
+            "bytes": 111,
             "physicalLines": 5,
             "nonblankLines": 4
           },
           {
             "path": "addons/example-addon/src/ui/example.css",
-            "bytes": 4264,
+            "bytes": 4044,
             "physicalLines": 220,
             "nonblankLines": 187
           },
           {
             "path": "addons/example-addon/src/ui/extraMount.js",
-            "bytes": 319,
+            "bytes": 309,
             "physicalLines": 10,
             "nonblankLines": 9
           },
@@ -5701,7 +5701,7 @@
         },
         "release": {
           "bytes": 61503,
-          "gzipBytes": 16015,
+          "gzipBytes": 16014,
           "headerBytes": 969,
           "contributors": [
             {
@@ -5879,7 +5879,7 @@
         }
       },
       "manifest": {
-        "version": "1.0.4",
+        "version": "1.0.5",
         "pageScopes": [
           "f95zone"
         ],
@@ -5901,9 +5901,9 @@
       "thirdPartyOrVendored": [],
       "baseline": {
         "authoredBytes": {
-          "current": 77326,
+          "current": 76967,
           "baseline": 76967,
-          "delta": 359
+          "delta": 0
         },
         "regularBytes": {
           "current": 90091,
@@ -5921,9 +5921,9 @@
           "delta": 93
         },
         "releaseGzipBytes": {
-          "current": 16015,
+          "current": 16014,
           "baseline": 16509,
-          "delta": -494
+          "delta": -495
         },
         "owningFiles": [
           "addons/example-addon/src/app/createExampleAddonApp.js",
@@ -6173,7 +6173,7 @@
         },
         "release": {
           "bytes": 18083,
-          "gzipBytes": 5281,
+          "gzipBytes": 5282,
           "headerBytes": 977,
           "contributors": [
             {
@@ -6270,7 +6270,7 @@
         }
       },
       "manifest": {
-        "version": "1.0.1",
+        "version": "1.0.2",
         "pageScopes": [
           "f95zone"
         ],
@@ -6316,9 +6316,9 @@
           "delta": 75
         },
         "releaseGzipBytes": {
-          "current": 5281,
+          "current": 5282,
           "baseline": 5418,
-          "delta": -137
+          "delta": -136
         },
         "owningFiles": [
           "addons/halloween-theme-addon/src/app/createHalloweenThemeApp.js",
@@ -6344,7 +6344,7 @@
       },
       "source": {
         "fileCount": 30,
-        "authoredBytes": 75507,
+        "authoredBytes": 75488,
         "physicalLines": 2259,
         "nonblankLines": 1991,
         "largestFiles": [
@@ -6433,16 +6433,16 @@
             "nonblankLines": 26
           },
           {
-            "path": "addons/latest-filters-addon/src/ui/dialog.html",
-            "bytes": 847,
-            "physicalLines": 19,
-            "nonblankLines": 19
-          },
-          {
             "path": "addons/latest-filters-addon/src/app/surpriseController.js",
             "bytes": 835,
             "physicalLines": 32,
             "nonblankLines": 30
+          },
+          {
+            "path": "addons/latest-filters-addon/src/ui/dialog.html",
+            "bytes": 828,
+            "physicalLines": 19,
+            "nonblankLines": 19
           },
           {
             "path": "addons/latest-filters-addon/src/app/operationTracker.js",
@@ -6622,7 +6622,7 @@
           },
           {
             "path": "addons/latest-filters-addon/src/ui/dialog.html",
-            "bytes": 847,
+            "bytes": 828,
             "physicalLines": 19,
             "nonblankLines": 19
           },
@@ -6655,7 +6655,7 @@
       "builds": {
         "regular": {
           "bytes": 90049,
-          "gzipBytes": 20489,
+          "gzipBytes": 20488,
           "headerBytes": 1053,
           "contributors": [
             {
@@ -6983,7 +6983,7 @@
         }
       },
       "manifest": {
-        "version": "1.1.1",
+        "version": "1.1.2",
         "pageScopes": [
           "latest"
         ],
@@ -7006,9 +7006,9 @@
       "thirdPartyOrVendored": [],
       "baseline": {
         "authoredBytes": {
-          "current": 75507,
+          "current": 75488,
           "baseline": 75488,
-          "delta": 19
+          "delta": 0
         },
         "regularBytes": {
           "current": 90049,
@@ -7021,8 +7021,8 @@
           "delta": -12723
         },
         "regularGzipBytes": {
-          "current": 20489,
-          "baseline": 20391,
+          "current": 20488,
+          "baseline": 20390,
           "delta": 98
         },
         "releaseGzipBytes": {
@@ -7054,7 +7054,7 @@
       },
       "source": {
         "fileCount": 102,
-        "authoredBytes": 420272,
+        "authoredBytes": 419834,
         "physicalLines": 12921,
         "nonblankLines": 11702,
         "largestFiles": [
@@ -7218,7 +7218,7 @@
           },
           {
             "path": "addons/library-addon/src/api/library/throttle.js",
-            "bytes": 1666,
+            "bytes": 1623,
             "physicalLines": 43,
             "nonblankLines": 40
           },
@@ -7500,7 +7500,7 @@
           },
           {
             "path": "addons/library-addon/src/thread/quickActions.js",
-            "bytes": 2529,
+            "bytes": 2445,
             "physicalLines": 84,
             "nonblankLines": 69
           },
@@ -7524,13 +7524,13 @@
           },
           {
             "path": "addons/library-addon/src/ui/assets/dock.css",
-            "bytes": 1750,
+            "bytes": 1665,
             "physicalLines": 85,
             "nonblankLines": 74
           },
           {
             "path": "addons/library-addon/src/ui/assets/dock.html",
-            "bytes": 229,
+            "bytes": 222,
             "physicalLines": 7,
             "nonblankLines": 7
           },
@@ -7566,7 +7566,7 @@
           },
           {
             "path": "addons/library-addon/src/ui/components/dock/dockRenderer.js",
-            "bytes": 966,
+            "bytes": 947,
             "physicalLines": 19,
             "nonblankLines": 16
           },
@@ -7656,7 +7656,7 @@
           },
           {
             "path": "addons/library-addon/src/ui/manager/handlers/noteHandlers.js",
-            "bytes": 1868,
+            "bytes": 1807,
             "physicalLines": 61,
             "nonblankLines": 50
           },
@@ -7674,7 +7674,7 @@
           },
           {
             "path": "addons/library-addon/src/ui/manager/handlers/selectionHandlers.js",
-            "bytes": 1175,
+            "bytes": 1135,
             "physicalLines": 40,
             "nonblankLines": 34
           },
@@ -7758,7 +7758,7 @@
           },
           {
             "path": "addons/library-addon/src/ui/utils/download.js",
-            "bytes": 397,
+            "bytes": 386,
             "physicalLines": 11,
             "nonblankLines": 11
           },
@@ -7782,7 +7782,7 @@
           },
           {
             "path": "addons/library-addon/src/ui/utils/tagViewModel.js",
-            "bytes": 2660,
+            "bytes": 2572,
             "physicalLines": 88,
             "nonblankLines": 76
           },
@@ -7797,7 +7797,7 @@
       "builds": {
         "regular": {
           "bytes": 432150,
-          "gzipBytes": 88927,
+          "gzipBytes": 88928,
           "headerBytes": 967,
           "contributors": [
             {
@@ -8083,7 +8083,7 @@
         },
         "release": {
           "bytes": 318957,
-          "gzipBytes": 75525,
+          "gzipBytes": 75524,
           "headerBytes": 967,
           "contributors": [
             {
@@ -8365,7 +8365,7 @@
         }
       },
       "manifest": {
-        "version": "1.3.8",
+        "version": "1.3.9",
         "pageScopes": [
           "f95zone"
         ],
@@ -8387,9 +8387,9 @@
       "thirdPartyOrVendored": [],
       "baseline": {
         "authoredBytes": {
-          "current": 420272,
+          "current": 419834,
           "baseline": 419834,
-          "delta": 438
+          "delta": 0
         },
         "regularBytes": {
           "current": 432150,
@@ -8402,14 +8402,14 @@
           "delta": -70510
         },
         "regularGzipBytes": {
-          "current": 88927,
+          "current": 88928,
           "baseline": 88839,
-          "delta": 88
+          "delta": 89
         },
         "releaseGzipBytes": {
-          "current": 75525,
-          "baseline": 77864,
-          "delta": -2339
+          "current": 75524,
+          "baseline": 77862,
+          "delta": -2338
         },
         "owningFiles": [
           "addons/library-addon/src/library/service.js",
@@ -9194,7 +9194,7 @@
         }
       },
       "manifest": {
-        "version": "1.2.2",
+        "version": "1.2.3",
         "pageScopes": [
           "f95zone"
         ],
@@ -9276,13 +9276,13 @@
         },
         "regularGzipBytes": {
           "current": 41107,
-          "baseline": 40869,
-          "delta": 238
+          "baseline": 40868,
+          "delta": 239
         },
         "releaseGzipBytes": {
           "current": 34228,
-          "baseline": 34458,
-          "delta": -230
+          "baseline": 34457,
+          "delta": -229
         },
         "owningFiles": [
           "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
@@ -9547,7 +9547,7 @@
       "builds": {
         "regular": {
           "bytes": 52634,
-          "gzipBytes": 12699,
+          "gzipBytes": 12700,
           "headerBytes": 952,
           "contributors": [
             {
@@ -9795,7 +9795,7 @@
         }
       },
       "manifest": {
-        "version": "1.0.3",
+        "version": "1.0.4",
         "pageScopes": [
           "f95zone"
         ],
@@ -9834,8 +9834,8 @@
           "delta": -8386
         },
         "regularGzipBytes": {
-          "current": 12699,
-          "baseline": 12607,
+          "current": 12700,
+          "baseline": 12608,
           "delta": 92
         },
         "releaseGzipBytes": {
@@ -10506,7 +10506,7 @@
         }
       },
       "manifest": {
-        "version": "1.0.2",
+        "version": "1.0.3",
         "pageScopes": [
           "thread"
         ],
@@ -11764,7 +11764,7 @@
     },
     {
       "helper": "addons/shared/createEl.js",
-      "sourceBytes": 253,
+      "sourceBytes": 246,
       "consumerCount": 2,
       "consumers": [
         "latest-filters-addon",
@@ -11791,7 +11791,7 @@
     },
     {
       "helper": "addons/shared/debugLog.js",
-      "sourceBytes": 1197,
+      "sourceBytes": 1153,
       "consumerCount": 4,
       "consumers": [
         "example-addon",
@@ -11861,7 +11861,7 @@
     },
     {
       "helper": "addons/shared/htmlUtils.js",
-      "sourceBytes": 441,
+      "sourceBytes": 424,
       "consumerCount": 3,
       "consumers": [
         "example-addon",

@@ -6,9 +6,9 @@
     "stylesheet": {
       "path": "src/ui/assets/startup.css + src/ui/assets/css.css",
       "target": "shadow",
-      "authoredBytes": 31324,
-      "styleRuleCount": 218,
-      "selectorCount": 238,
+      "authoredBytes": 28565,
+      "styleRuleCount": 206,
+      "selectorCount": 226,
       "mediaQueryCount": 4,
       "ownership": {
         "startupRequired": {
@@ -53,9 +53,9 @@
           ]
         },
         "modalOnlyCandidates": {
-          "styleRuleCount": 194,
-          "selectorCount": 204,
-          "ruleAuthoredBytes": 25970,
+          "styleRuleCount": 182,
+          "selectorCount": 192,
+          "ruleAuthoredBytes": 23607,
           "selectors": [
             ".addins-action-btn",
             ".addins-action-btn:disabled",
@@ -135,17 +135,6 @@
             ".config-row select:focus",
             ".config-row:hover",
             ".config-transfer-dialog-error",
-            ".dark-color-btn",
-            ".dark-color-btn.apply",
-            ".dark-color-footer",
-            ".dark-color-hex",
-            ".dark-color-labels",
-            ".dark-color-popover",
-            ".dark-color-popover.open",
-            ".dark-color-preview",
-            ".dark-color-slider",
-            ".dark-color-slider.hue",
-            ".dark-color-sliders",
             ".drag-ghost",
             ".excluded-tag-item",
             ".excluded-tag-remove",
@@ -155,7 +144,6 @@
             ".feature-health-close:hover",
             ".feature-health-content",
             ".feature-health-header",
-            ".feature-health-line",
             ".feature-health-title",
             ".marked-tag-item",
             ".modal-btn",
@@ -327,9 +315,9 @@
     "modalStylesheet": {
       "path": "src/ui/assets/css.css",
       "target": "shadow",
-      "authoredBytes": 27840,
-      "styleRuleCount": 194,
-      "selectorCount": 204,
+      "authoredBytes": 25081,
+      "styleRuleCount": 182,
+      "selectorCount": 192,
       "mediaQueryCount": 3,
       "ownership": {
         "startupRequired": {
@@ -339,9 +327,9 @@
           "selectors": []
         },
         "modalOnlyCandidates": {
-          "styleRuleCount": 194,
-          "selectorCount": 204,
-          "ruleAuthoredBytes": 25970,
+          "styleRuleCount": 182,
+          "selectorCount": 192,
+          "ruleAuthoredBytes": 23607,
           "selectors": [
             ".addins-action-btn",
             ".addins-action-btn:disabled",
@@ -421,17 +409,6 @@
             ".config-row select:focus",
             ".config-row:hover",
             ".config-transfer-dialog-error",
-            ".dark-color-btn",
-            ".dark-color-btn.apply",
-            ".dark-color-footer",
-            ".dark-color-hex",
-            ".dark-color-labels",
-            ".dark-color-popover",
-            ".dark-color-popover.open",
-            ".dark-color-preview",
-            ".dark-color-slider",
-            ".dark-color-slider.hue",
-            ".dark-color-sliders",
             ".drag-ghost",
             ".excluded-tag-item",
             ".excluded-tag-remove",
@@ -441,7 +418,6 @@
             ".feature-health-close:hover",
             ".feature-health-content",
             ".feature-health-header",
-            ".feature-health-line",
             ".feature-health-title",
             ".marked-tag-item",
             ".modal-btn",
@@ -555,7 +531,7 @@
     "documentStylesheet": {
       "path": "src/ui/assets/document.css",
       "target": "document",
-      "authoredBytes": 513,
+      "authoredBytes": 496,
       "styleRuleCount": 1
     },
     "phases": {
@@ -568,7 +544,7 @@
       "firstOpenModal": {
         "newShadowStyleElements": 1,
         "newDocumentStyleElements": 0,
-        "cssBytesInjected": 27840,
+        "cssBytesInjected": 25081,
         "behavior": "openModal synchronously ensures the modal stylesheet before initModalUi constructs or exposes modal content."
       },
       "repeatOpenModal": {
@@ -582,7 +558,7 @@
       "startup": [
         {
           "path": "src/ui/index.js",
-          "line": 19,
+          "line": 22,
           "operation": "complete CSS injection before dock creation"
         },
         {
@@ -609,7 +585,7 @@
         },
         {
           "path": "src/ui/settings/modalLifecycle.js",
-          "line": 68,
+          "line": 78,
           "operation": "modal dynamic refresh"
         }
       ]
@@ -629,22 +605,22 @@
     "bypassEvidence": [
       {
         "path": "src/services/settingsService.js",
-        "line": 582,
+        "line": 938,
         "operation": "catalog-independent update draft"
       },
       {
         "path": "src/services/settingsService.js",
-        "line": 647,
+        "line": 1047,
         "operation": "unrelated commit validation bypass"
       },
       {
         "path": "src/services/configChangeApplication.js",
-        "line": 84,
+        "line": 109,
         "operation": "catalog-independent effect snapshot"
       },
       {
         "path": "src/services/configMigrationService.js",
-        "line": 216,
+        "line": 66,
         "operation": "catalog-free canonical projection"
       }
     ]
@@ -722,27 +698,27 @@
       },
       {
         "path": "src/ui/components/tag-search/index.js",
-        "line": 150,
+        "line": 129,
         "operation": "bounded visible rows created synchronously"
       },
       {
         "path": "src/ui/components/tag-search/index.js",
-        "line": 354,
+        "line": 333,
         "operation": "delegated result-container click listener"
       },
       {
         "path": "src/ui/components/tag-search/index.js",
-        "line": 302,
+        "line": 281,
         "operation": "preferred membership scan per candidate"
       },
       {
         "path": "src/ui/components/tag-search/index.js",
-        "line": 303,
+        "line": 282,
         "operation": "excluded membership scan per candidate"
       },
       {
         "path": "src/ui/components/tag-search/index.js",
-        "line": 304,
+        "line": 283,
         "operation": "marked membership scan per candidate"
       }
     ]

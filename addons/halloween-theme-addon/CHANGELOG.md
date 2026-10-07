@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.0.2 - Slow-page startup reliability
+
+- Extended the shared core handshake wait to 5 seconds for slow pages and verbose development builds; normal API action timeouts are unchanged.
+
 ## v1.0.0 - Restore page theme application
 
 - Restored the Halloween page background and logo swap after the scoped add-on UI style API rejected the global theme CSS.

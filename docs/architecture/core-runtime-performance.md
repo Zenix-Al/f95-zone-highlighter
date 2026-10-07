@@ -8,15 +8,15 @@ This deterministic report characterizes the current branch for
 | Phase | Shadow styles | New CSS bytes |
 | --- | ---: | ---: |
 | Before first interaction | 1 | 3483 |
-| First `openModal()` | 1 new | 27840 |
+| First `openModal()` | 1 new | 25081 |
 | Repeated `openModal()` | 0 new | 0 |
 
-The complete Shadow stylesheet contains 31324 bytes,
-218 style rules, and 238
+The complete Shadow stylesheet contains 28565 bytes,
+206 style rules, and 226
 selectors. Characterization marks
 24 rules / 3379
 rule bytes as startup-required (universal, toast, and page-dock rules); the
-remaining 194 rules
+remaining 182 rules
 are modal-layer candidates pending focused split tests.
 
 ## Integrated before/after verification

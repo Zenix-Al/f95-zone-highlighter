@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
-  "identifier": "249c0672abc5d1fa59b8f5ff7055b2cade5345f2b215fd8ddc85ff3d5ee7077a",
+  "identifier": "d4ead9c2fa82eb42765b36e6e736659d533e573eec8513d78399c67850381135",
   "catalog": [
     {
       "id": "example-addon",
       "name": "F95UE Example Add-on",
       "description": "Core API playground demonstrating every current addon-facing action through api modules.",
-      "version": "1.0.4",
+      "version": "1.0.5",
       "pageScopes": [
         "f95zone"
       ],
@@ -42,7 +42,7 @@
       "id": "halloween-theme-addon",
       "name": "F95UE Halloween Theme Add-on",
       "description": "Forces Halloween logo/background theme with simple apply and teardown lifecycle.",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "pageScopes": [
         "f95zone"
       ],
@@ -65,7 +65,7 @@
       "id": "latest-filters-addon",
       "name": "F95UE Latest Filters Add-on",
       "description": "Adds one Saved Filters button on Latest Updates with a searchable preset list and active filter tracking.",
-      "version": "1.1.1",
+      "version": "1.1.2",
       "pageScopes": [
         "latest"
       ],
@@ -97,7 +97,7 @@
       "id": "library-addon",
       "name": "F95UE Library Add-on",
       "description": "Quick-add threads to a personal library and manage entries with a dedicated add-on UI.",
-      "version": "1.3.8",
+      "version": "1.3.9",
       "pageScopes": [
         "f95zone"
       ],
@@ -129,7 +129,7 @@
       "id": "masked-direct-addon",
       "name": "F95UE Masked + Direct Download Add-on",
       "description": "Combines masked-link skipper and direct-download flows into one trusted add-on.",
-      "version": "1.2.2",
+      "version": "1.2.3",
       "pageScopes": [
         "f95zone"
       ],
@@ -202,7 +202,7 @@
       "id": "site-repair-addon",
       "name": "F95UE Site Repair",
       "description": "Provides independently controlled repairs for F95Zone site behavior.",
-      "version": "1.0.3",
+      "version": "1.0.4",
       "pageScopes": [
         "f95zone"
       ],
@@ -234,7 +234,7 @@
       "id": "thread-utility-addon",
       "name": "F95UE Thread Utility Add-on",
       "description": "Provides a compact thread dashboard and extensible thread utilities.",
-      "version": "1.0.2",
+      "version": "1.0.3",
       "pageScopes": [
         "thread"
       ],

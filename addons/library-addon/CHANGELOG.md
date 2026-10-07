@@ -1,7 +1,10 @@
 # Changelog
 
-## Unreleased
+## v1.3.9 - Update-check and Manager reliability
 
+- Extended the shared core handshake wait to 5 seconds for slow pages and verbose development builds; normal API action timeouts are unchanged.
+- Detected browser-check bodies on HTTP 403/503 responses and rate limiting on HTTP 429. Manual batches stop, while automatic checks pause for 30 minutes without consuming the blocked item's attempt or daily allowance.
+- Displayed browser-check/rate-limit pauses and their diagnostics in Auto Update, with a Retry now action after resolving the site block. Known follow-up: this action still needs worker-lease protection before clearing persisted block state.
 - Treated equivalent demo-version labels as the same version during update checks, avoiding false update notices.
 - Ignored private, missing, and error thread pages during visit-triggered observation so they cannot replace saved thread details.
 - Reloaded records and ratings when the Manager opens and added a Refresh button for changes made in another tab.

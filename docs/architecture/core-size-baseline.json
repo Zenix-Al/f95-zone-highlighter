@@ -28,19 +28,19 @@
   },
   "authored": {
     "fileCount": 119,
-    "physicalLines": 15904,
-    "meaningfulLines": 13883,
-    "authoredBytes": 484022,
+    "physicalLines": 15902,
+    "meaningfulLines": 13881,
+    "authoredBytes": 483985,
     "bytesByArea": {
       "config": 32163,
       "core": 89037,
       "services": 88556,
       "features": 133293,
-      "ui": 140973
+      "ui": 140936
     },
     "bytesByFile": {
       "src/services/settingsService.js": 36777,
-      "src/ui/assets/css.css": 25118,
+      "src/ui/assets/css.css": 25081,
       "src/config/schema.js": 21305,
       "src/features/latest-overlay/settings.js": 14852,
       "src/features/latest-overlay/scoreCalculator.js": 14662,
@@ -191,9 +191,9 @@
       {
         "path": "src/ui/assets/css.css",
         "area": "ui",
-        "bytes": 25118,
-        "physicalLines": 1341,
-        "meaningfulLines": 1156,
+        "bytes": 25081,
+        "physicalLines": 1339,
+        "meaningfulLines": 1154,
         "fanIn": 1,
         "fanOut": 0,
         "exports": []
@@ -1591,9 +1591,9 @@
   "bundle": {
     "readable": {
       "mode": "regular",
-      "bytes": 673795,
-      "gzipBytes": 144804,
-      "coreBytes": 426942,
+      "bytes": 673762,
+      "gzipBytes": 144791,
+      "coreBytes": 426909,
       "excludedBytes": 239570,
       "contributors": [
         {
@@ -1602,7 +1602,7 @@
         },
         {
           "path": "src/ui/assets/css.css",
-          "bytes": 21749
+          "bytes": 21716
         },
         {
           "path": "src/config/schema.js",
@@ -1684,7 +1684,7 @@
         },
         {
           "path": "src/ui/assets/css.css",
-          "bytes": 21749
+          "bytes": 21716
         },
         {
           "path": "src/config/schema.js",
@@ -1844,14 +1844,14 @@
     },
     "uglified": {
       "mode": "release",
-      "bytes": 335264,
-      "gzipBytes": 100605,
-      "coreBytes": 220503,
+      "bytes": 335231,
+      "gzipBytes": 100596,
+      "coreBytes": 220470,
       "excludedBytes": 114749,
       "contributors": [
         {
           "path": "src/ui/assets/css.css",
-          "bytes": 21735
+          "bytes": 21702
         },
         {
           "path": "src/services/settingsService.js",
@@ -1933,7 +1933,7 @@
       "coreContributors": [
         {
           "path": "src/ui/assets/css.css",
-          "bytes": 21735
+          "bytes": 21702
         },
         {
           "path": "src/services/settingsService.js",

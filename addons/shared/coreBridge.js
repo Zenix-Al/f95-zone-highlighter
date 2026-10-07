@@ -4,7 +4,7 @@ const CORE_EVENT = "f95ue:addons-dev-command";
 const ADDON_COMMAND_EVENT = "f95ue:addon-command";
 const CORE_PROTOCOL_VERSION = "0.1.0";
 const CORE_MARKER = "f95ue_addons_dev_bridge_installed";
-const PING_TIMEOUT_MS = 3000;
+const PING_TIMEOUT_MS = 5000;
 const CORE_ACTION_TIMEOUT_MS = 2500;
 
 function randomId(prefix) {
