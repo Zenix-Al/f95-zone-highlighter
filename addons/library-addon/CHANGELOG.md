@@ -7,7 +7,7 @@
 - Displayed browser-check/rate-limit pauses and their diagnostics in Auto Update, with a Retry now action after resolving the site block. Known follow-up: this action still needs worker-lease protection before clearing persisted block state.
 - Treated equivalent demo-version labels as the same version during update checks, avoiding false update notices.
 - Ignored private, missing, and error thread pages during visit-triggered observation so they cannot replace saved thread details.
-- Reloaded records and ratings when the Manager opens and added a Refresh button for changes made in another tab.
+- Reloaded records and My Rating when the Manager opens, including reopening an already-open Manager, and added a Refresh button for changes made in another tab.
 - Improved automatic-update queue heartbeat recovery and retry accounting, and kept the scheduler running after a thrown check.
 - Corrected cancelled-import counts and progress so successfully written batches remain reported; improved Manager refresh after import.
 
