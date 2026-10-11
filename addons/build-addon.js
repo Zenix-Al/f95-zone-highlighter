@@ -93,6 +93,19 @@ function computeAddonHash(addon, isRelease) {
   const srcRoot = path.join(addonRoot, "src");
   const sourceFiles = collectFilesRecursive(srcRoot);
   const filesToHash = sourceFiles.length > 0 ? sourceFiles : [entry];
+  // Resolve the real import graph, including shared modules outside this add-on.
+  // No output is written; metadata is used only for cache invalidation.
+  const graph = esbuild.buildSync({
+    absWorkingDir: ROOT,
+    entryPoints: [entry],
+    bundle: true,
+    write: false,
+    metafile: true,
+    loader: { ".html": "text", ".css": "text" },
+    logLevel: "silent",
+  });
+  for (const input of Object.keys(graph.metafile.inputs)) filesToHash.push(path.resolve(ROOT, input));
+  filesToHash.push(__filename, path.join(ROOT, "scripts/normalize-text-assets.cjs"), path.join(ROOT, "build/stripDebugLogs.js"));
 
   const hash = crypto.createHash("sha256");
   hash.update(
@@ -113,11 +126,11 @@ function computeAddonHash(addon, isRelease) {
       runtimeMode: addon.runtimeMode || "core-required",
       downloadUrl: addon.downloadUrl || "",
       isRelease: Boolean(isRelease),
-      buildToolVersion: 7,
+      buildToolVersion: 8,
     }),
   );
 
-  filesToHash
+  [...new Set(filesToHash)]
     .sort((a, b) => a.localeCompare(b))
     .forEach((filePath) => {
       hash.update(path.relative(ROOT, filePath));

@@ -1,3 +1,8 @@
+## [1.0.6] - Shared core readiness
+
+- Retry core readiness for up to 10 seconds, with ping starts spaced 750 ms apart and a 500-ms per-attempt timeout. Register only after readiness succeeds.
+- Demonstrate the shared readiness helper without changing normal API action timeouts.
+
 ## [1.0.5] - Slow-page startup reliability
 
 - Extended the shared core handshake wait to 5 seconds for slow pages and verbose development builds; normal API action timeouts are unchanged.

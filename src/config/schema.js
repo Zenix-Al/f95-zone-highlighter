@@ -372,6 +372,10 @@ function buildIndexes() {
 
 deepFreeze(CONFIG_SCHEMA);
 buildIndexes();
+const METADATA_PATTERNS = [...METADATA_INDEX.entries()].map(([pattern, metadata]) => ({
+  segments: pattern.split("."), metadata,
+}));
+const metadataLookupCache = new Map();
 const ROOT_DEFAULT_CONFIG = Object.freeze(
   Object.fromEntries(
     Object.entries(CONFIG_SCHEMA).map(([key, descriptor]) => [key, descriptor.defaultValue]),
@@ -566,11 +570,11 @@ export function getConfigPathMetadata(path) {
     .trim()
     .replace(/\[\d+\]/g, "[]");
   if (METADATA_INDEX.has(normalized)) return METADATA_INDEX.get(normalized);
+  if (metadataLookupCache.has(normalized)) return metadataLookupCache.get(normalized);
   const segments = normalized.split(".");
   let bestMetadata = null;
   let bestSpecificity = -1;
-  for (const [pattern, metadata] of METADATA_INDEX.entries()) {
-    const patternSegments = pattern.split(".");
+  for (const { segments: patternSegments, metadata } of METADATA_PATTERNS) {
     if (patternSegments.length !== segments.length) continue;
     let specificity = 0;
     let matches = true;
@@ -589,6 +593,8 @@ export function getConfigPathMetadata(path) {
       bestSpecificity = specificity;
     }
   }
+  if (metadataLookupCache.size >= 256) metadataLookupCache.delete(metadataLookupCache.keys().next().value);
+  metadataLookupCache.set(normalized, bestMetadata);
   return bestMetadata;
 }
 

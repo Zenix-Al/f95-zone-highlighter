@@ -1,10 +1,11 @@
 import { debugLog } from "../../../shared/debugLog.js";
+import { waitForCoreReady } from "../../../shared/coreReadiness.js";
 
 export function waitForCorePing(core, timeoutMs) {
   debugLog("example-addon", `Handshake ping dispatched (timeoutMs=${timeoutMs ?? "default"}).`, {
     data: { timeoutMs },
   });
-  return core.waitForCorePing(timeoutMs).then((result) => {
+  return waitForCoreReady(core, timeoutMs === undefined ? {} : { timeoutMs }).then((result) => {
     debugLog(
       "example-addon",
       `Handshake ping settled (ok=${Boolean(result?.ok)}, apiVersion=${String(result?.apiVersion || "")}).`,

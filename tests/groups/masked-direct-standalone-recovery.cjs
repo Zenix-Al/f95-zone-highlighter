@@ -27,6 +27,9 @@ module.exports = function registerMaskedDirectStandaloneRecovery(context) {
         "addons/masked-direct-addon/src/app/coreAvailability.js",
       );
       const result = await probeMaskedDirectCore({
+        readinessOptions: { timeoutMs: 1500, intervalMs: 750, now: () => 0 },
+        // Freeze elapsed time; this fixture verifies attempt cadence separately.
+        // Deadline behavior is covered by ADDON-READINESS.
         bridge: {
           async waitForCorePing(timeout) {
             calls.push(["ping", timeout]);
@@ -43,12 +46,10 @@ module.exports = function registerMaskedDirectStandaloneRecovery(context) {
       });
       assert.strictEqual(result.ok, false);
       assert.deepStrictEqual(calls, [
-        ["ping", 2200],
-        ["sleep", 300],
-        ["ping", 2800],
-        ["sleep", 550],
-        ["ping", 3400],
-        ["sleep", 800],
+        ["ping", 500],
+        ["sleep", 750],
+        ["ping", 500],
+        ["sleep", 750],
         ["access"],
       ]);
     },

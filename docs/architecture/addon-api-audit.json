@@ -65,7 +65,6 @@
           "addons/site-repair-addon/src/app/settings.js",
           "addons/site-repair-addon/src/constants.js",
           "addons/site-repair-addon/src/core/adaptor.js",
-          "addons/site-repair-addon/src/core/waitForCore.js",
           "addons/site-repair-addon/src/main.js",
           "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",
           "addons/site-repair-addon/src/repairs/imageAttachments/scheduler.js",
@@ -211,11 +210,6 @@
           }
         ],
         "pollingAndTimers": [
-          {
-            "path": "addons/site-repair-addon/src/core/waitForCore.js",
-            "line": 9,
-            "text": "delay = (milliseconds) => new Promise((resolve) => window.setTimeout(resolve, milliseconds)),"
-          },
           {
             "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
             "line": 141,
@@ -6115,7 +6109,7 @@
         "cancellationAndTeardown": [
           {
             "path": "addons/example-addon/src/api/bridge.js",
-            "line": 39,
+            "line": 40,
             "text": "debugLog(\"example-addon\", \"Teardown acknowledgment dispatched.\", { data: { reason } });"
           },
           {
@@ -11041,11 +11035,6 @@
       ],
       "callSites": [
         {
-          "path": "addons/site-repair-addon/src/core/waitForCore.js",
-          "line": 9,
-          "text": "delay = (milliseconds) => new Promise((resolve) => window.setTimeout(resolve, milliseconds)),"
-        },
-        {
           "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
           "line": 30,
           "text": "pollTimer: 0,"
@@ -11729,7 +11718,7 @@
         },
         {
           "path": "addons/masked-direct-addon/src/app/coreAvailability.js",
-          "line": 9,
+          "line": 5,
           "text": "const accessProbe = await bridge.getAddonAccess();"
         },
         {
@@ -12996,11 +12985,6 @@
           "path": "addons/site-repair-addon/src/app/createSiteRepairApp.js",
           "line": 107,
           "text": "onRefresh: async (context) => { await stopModules(); await loadSettings(); const page = await getPageContext(core); if (!context.isCurrent()) return { ok: false, reason: \"cancelled\" }; await startApplicableModules(page?.value || context.routeContext); return { ok: true }; },"
-        },
-        {
-          "path": "addons/site-repair-addon/src/core/waitForCore.js",
-          "line": 9,
-          "text": "delay = (milliseconds) => new Promise((resolve) => window.setTimeout(resolve, milliseconds)),"
         },
         {
           "path": "addons/site-repair-addon/src/repairs/imageAttachments/imageRepair.js",

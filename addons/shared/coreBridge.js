@@ -19,7 +19,7 @@ export function createCoreBridge(addonId) {
     window.dispatchEvent(new CustomEvent(CORE_EVENT, { detail: { type, ...payload } }));
   }
 
-  function waitForCorePing(timeoutMs = PING_TIMEOUT_MS) {
+  function waitForCorePing(timeoutMs = PING_TIMEOUT_MS, signal) {
     return new Promise((resolve) => {
       debugLog(normalizedAddonId, "Core handshake started.", { data: { timeoutMs } });
       const replyEvent = randomId(`f95ue-${normalizedAddonId || "addon"}-ping`);
@@ -29,6 +29,7 @@ export function createCoreBridge(addonId) {
         settled = true;
         clearTimeout(timer);
         window.removeEventListener(replyEvent, onReply);
+        signal?.removeEventListener("abort", onAbort);
         resolve(result);
       };
       const onReply = (event) => {
@@ -39,13 +40,16 @@ export function createCoreBridge(addonId) {
         });
         finish({ ok: Boolean(detail.ok), apiVersion: String(detail.apiVersion || "") });
       };
+      const onAbort = () => finish({ ok: false, apiVersion: "" });
       const timer = window.setTimeout(() => {
-        debugLog(normalizedAddonId, "Core handshake timed out; core-required add-on will not boot.", {
+        debugLog(normalizedAddonId, "Core handshake attempt timed out.", {
           level: "warn", data: { timeoutMs },
         });
         finish({ ok: false, apiVersion: "" });
       }, timeoutMs);
       window.addEventListener(replyEvent, onReply);
+      signal?.addEventListener("abort", onAbort, { once: true });
+      if (signal?.aborted) { onAbort(); return; }
       dispatchCoreCommand("ping", { replyEvent });
     });
   }

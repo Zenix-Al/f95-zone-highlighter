@@ -45,8 +45,10 @@ export function resetAllTiles() {
   document.querySelectorAll(SELECTORS.TILE.MODIFIED_SELECTOR).forEach(resetTile);
 }
 
-export function clearAllOverlayStyles() {
-  for (const tile of document.getElementsByClassName(SELECTORS.TILE.CLASS)) {
+export function clearAllOverlayStyles(
+  tiles = document.getElementsByClassName(SELECTORS.TILE.CLASS),
+) {
+  for (const tile of tiles) {
     try {
       clearTileStyles(tile);
     } catch (error) {

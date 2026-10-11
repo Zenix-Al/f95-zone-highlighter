@@ -4414,12 +4414,12 @@ module.exports = function registerGroup(context) {
   runTest(
     "SITE-REPAIR-02 keeps the early shield while waiting for delayed core readiness",
     async () => {
-      const { waitForCorePingUntilReady } = loadModule(
-        "addons/site-repair-addon/src/core/waitForCore.js",
+      const { waitForCoreReady } = loadModule(
+        "addons/shared/coreReadiness.js",
       );
       const pings = [false, false, true];
       const delays = [];
-      const result = await waitForCorePingUntilReady(
+      const result = await waitForCoreReady(
         {
           waitForCorePing: async () => ({
             ok: pings.shift(),
@@ -4427,9 +4427,10 @@ module.exports = function registerGroup(context) {
           }),
         },
         {
-          maxAttempts: 5,
+          timeoutMs: 35,
           pingTimeoutMs: 1,
-          retryDelayMs: 7,
+          intervalMs: 7,
+          now: () => 0,
           delay: async (milliseconds) => {
             delays.push(milliseconds);
           },

@@ -1,6 +1,6 @@
 /* global __ADDON_ID__, __ADDON_NAME__, __ADDON_VERSION__, __ADDON_DESCRIPTION__, __ADDON_CAPABILITIES__, __ADDON_REQUIRES_CORE__, __ADDON_PAGE_SCOPES__, __ADDON_RUNTIME_MODE__, __ADDON_MATCHES__ */
 import { createCoreAdaptor } from "./core/adaptor.js";
-import { waitForCorePingUntilReady } from "./core/waitForCore.js";
+import { waitForCoreReady as waitForCorePingUntilReady } from "../../shared/coreReadiness.js";
 import { createSiteRepairApp } from "./app/createSiteRepairApp.js";
 import { createLatestAjaxJqueryAdapter } from "./repairs/latestAjax/jqueryAdapter.js";
 

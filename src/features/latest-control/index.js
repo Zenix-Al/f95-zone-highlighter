@@ -7,6 +7,8 @@ import { debugLog } from "../../core/logger.js";
 import { createEnabledDisabledToast, createToggleSetting } from "../../ui/settings/metaFactory.js";
 
 const pendingTimers = new Set();
+let mutationSyncTimer = null;
+const CONTROL_DISCOVERY_SELECTOR = `${SELECTORS.TILE.ROOT}, #${SELECTORS.LATEST_CONTROL.IDS.AUTO_REFRESH}, #${SELECTORS.LATEST_CONTROL.IDS.NOTIFY}`;
 
 function schedule(callback, delay) {
   const timer = setTimeout(() => {
@@ -14,11 +16,13 @@ function schedule(callback, delay) {
     callback();
   }, delay);
   pendingTimers.add(timer);
+  return timer;
 }
 
 function clearPendingTimers() {
   for (const timer of pendingTimers) clearTimeout(timer);
   pendingTimers.clear();
+  mutationSyncTimer = null;
 }
 
 /**
@@ -61,28 +65,27 @@ function syncLatestControls({ allowDelayedWebNotif = true } = {}) {
 }
 
 /**
- * Observer callback that checks if the relevant control buttons have been added to the DOM.
+ * Newly rendered cards signal that the site has reset its existing controls.
+ * Coalesce pagination batches; hover content and overlay decorations are ignored.
  * @param {MutationRecord[]} mutationsList
  */
-function processMutations(mutationsList) {
-  for (const mutation of mutationsList) {
-    const hasDomChange =
-      (mutation.addedNodes && mutation.addedNodes.length > 0) ||
-      (mutation.removedNodes && mutation.removedNodes.length > 0);
-    if (hasDomChange) {
-      schedule(() => {
-        syncLatestControls();
-      }, 100);
-      return;
-    }
-  }
+function processMutations() {
+  if (mutationSyncTimer !== null) return;
+  mutationSyncTimer = schedule(() => {
+    mutationSyncTimer = null;
+    syncLatestControls();
+  }, 100);
 }
 
 function hasLatestControlMutations(mutationsList) {
   return mutationsList.some(
     (mutation) =>
-      (mutation.addedNodes && mutation.addedNodes.length > 0) ||
-      (mutation.removedNodes && mutation.removedNodes.length > 0),
+      Array.from(mutation.addedNodes || []).some(
+        (node) =>
+          node.nodeType === 1 &&
+          (node.matches?.(CONTROL_DISCOVERY_SELECTOR) ||
+            node.querySelector?.(CONTROL_DISCOVERY_SELECTOR)),
+      ),
   );
 }
 

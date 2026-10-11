@@ -258,6 +258,13 @@ export function listInstalledAddonMeta() {
   );
 }
 
+/** A fresh, detached read snapshot; never reuse across listing operations. */
+export function getAddonConfigSnapshot() {
+  const root = ensureAddonsConfigBucket(clone(config.addons));
+  canonicalizeAddonIdentityRoot(root);
+  return root;
+}
+
 export async function persistAddonsState(addons = config.addons) {
   const base = pendingAddonBase || clone(config.addons);
   const candidate = clone(pendingAddonConfig || { ...base, ...addons });

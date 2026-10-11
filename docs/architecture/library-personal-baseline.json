@@ -369,7 +369,7 @@
     "fileCount": 102,
     "regular": {
       "mode": "regular",
-      "bytes": 431840,
+      "bytes": 433890,
       "contributors": [
         {
           "path": "addons/library-addon/src/library/service.js",
@@ -455,7 +455,7 @@
     },
     "release": {
       "mode": "release",
-      "bytes": 389467,
+      "bytes": 391328,
       "contributors": [
         {
           "path": "addons/library-addon/src/ui/assets/manager.css",

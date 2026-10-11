@@ -33,7 +33,11 @@ jobs:
         run: |
           npm run check:addons:baseline
           npm run check:addons:api
+          npm run check:addons:size
           npm run check:library:personal
+          npm run check:addons:manifest
+          npm run check:addons:catalog
+          npm run check:addons:structure
       - name: Check whitespace errors
         run: git diff --check
       - name: Validate generated manifest metadata

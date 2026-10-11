@@ -1,5 +1,6 @@
+import { waitForCoreReady } from "../../../shared/coreReadiness.js";
 export function waitForCorePing(core, timeoutMs) {
-  return core.waitForCorePing(timeoutMs);
+  return waitForCoreReady(core, timeoutMs === undefined ? {} : { timeoutMs });
 }
 
 export function registerAddonRuntime(core, descriptor) {

@@ -18,6 +18,15 @@ the runtime kit remains tree-shaken to the wrappers each bundle uses. Masked + D
 
 ## Add-on registry and lifecycle
 
+All core-connected add-ons use `addons/shared/coreReadiness.js`: an immediate
+ping, then starts spaced 750 ms apart, each waiting up to 500 ms, within a
+10-second total readiness window. Success ends polling before registration.
+The single-attempt bridge primitive accepts an AbortSignal and removes its
+timer/reply listener on completion. The shared wait also supports cancellation.
+Core-required add-ons stop on exhaustion. Masked + Direct retains its separate
+access fallback and standalone-host policy; its access probe can extend bootstrap
+beyond the readiness window. Site Repair retains its early page shield.
+
 - The add-on service (`addonsService`) manages:
   - discovery of installed add-ons and catalog entries
   - runtime enable/disable
