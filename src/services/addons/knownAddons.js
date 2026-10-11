@@ -6,7 +6,7 @@ import { config, stateManager } from "../../config.js";
 import { isCatalogFresh, listTrustedAddonCatalog } from "./catalog.js";
 import { listRegisteredAddons } from "./registry.js";
 import { getCurrentAddonPageScopes } from "./scope.js";
-import { getAddonState, listInstalledAddonMeta } from "./state.js";
+import { getAddonConfigSnapshot } from "./state.js";
 
 function computeAddonStatus({
   runtimeEntry,
@@ -275,15 +275,16 @@ function getAccessStatusMessage(blockReason, previousMessage = "") {
 }
 
 export function listKnownAddons() {
+  const addons = getAddonConfigSnapshot();
   return buildKnownAddonsSnapshot({
     registered: listRegisteredAddons(),
     catalog: listTrustedAddonCatalog(),
-    installedMeta: listInstalledAddonMeta(),
+    installedMeta: addons.installedMeta,
     currentScopes: getCurrentAddonPageScopes(stateManager),
     currentUrl: typeof window !== "undefined" ? String(window.location?.href || "") : "",
     catalogFresh: isCatalogFresh(),
     trustedIds: config.addons?.trustedIds,
     allowUntrusted: Boolean(config.globalSettings?.allowUntrustedAddons),
-    getAddonState,
+    getAddonState: (id) => addons.byAddon[id]?.state || {},
   });
 }

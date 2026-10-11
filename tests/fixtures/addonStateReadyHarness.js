@@ -1,6 +1,7 @@
 export { config } from "../../src/config.js";
 export * from "../../src/services/settingsService.js";
 export * from "../../src/services/addons/state.js";
+export { listKnownAddons } from "../../src/services/addons/knownAddons.js";
 
 import { publishStorageReadiness } from "../../src/services/storageReadiness.js";
 import { loadConfig } from "../../src/services/settingsService.js";

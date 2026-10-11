@@ -1,36 +1,36 @@
 {
   "addons": {
     "library-addon": {
-      "regular": "25af096a46dc23e26a691035a2f592f7fb375649d061ad392ace37179cb3290b",
-      "release": "0a5820c9ac650642ff9e8bc73c673ec5d106e0d24384b250e5336a4cb2075f7b"
+      "regular": "2ddbd9cd0d826b3993f244fd4232af0a6e82450fede21450db75d83f7958599d",
+      "release": "3fdc9b6929d8dadd1bc12f63edd021165d4a40d6c15ecea830b125242f5d4845"
     },
     "image-repair-addon": {
       "release": "599180b41d1edaf69497c5acbf83bdcee2b3417604595341691dd6eac64a4450",
       "regular": "caacd5214f6f63a95e6bed0cbe8ab2e21cce9758edd76f9a13d8df5f85d82f2b"
     },
     "masked-direct-addon": {
-      "release": "ef141937e8f947ea3e10f63499760fe252cef1c9cec876f51b9ab45f750dc329",
-      "regular": "7df44c76e4c662e3e265e7a884c43aa0dca9d7ac18be47f9de20bf12a57f2973"
+      "release": "3c3d2169d3cd013aef85d41789713ba95c96af90d88cd00c13759c99163ddb44",
+      "regular": "53924e059392f694cd84aa8984039e5e0ee0aaa98737d930d141f6f83ec6a21e"
     },
     "latest-filters-addon": {
-      "release": "1993de8dd5512f1f6f789bf815c8a8b085799a0ebe3b4e6ebc86d8e16976f8a3",
-      "regular": "5388f35cca69e6575b3c6559e6fba118facdd73074f2362e87c8d7e4fc271aca"
+      "release": "8485531f419bb4322650ec2322d9064ed3ed719f529598928bd822617cbfd8fa",
+      "regular": "65f7b2124e6a8e449a461a2728885235e37a70f5c98692d0256c27a325c51e9e"
     },
     "halloween-theme-addon": {
-      "release": "7f0ea5a0fd93cb562a00e6c2d093ec53ba8972d13cb8f9c2e34cdc434014e3d9",
-      "regular": "b4c5f96a0069239be083ac3561f9319431f9f142355fe742fb766d5d44ce7abf"
+      "release": "4059c24d7760e6d8a9571582d8083d55857630f21bf3d3cfb438e7bde4c449a7",
+      "regular": "e83c8df4dcb1c9f9631b332cae3188151ce857e1ec38569a9cf5dee358f369bc"
     },
     "example-addon": {
-      "regular": "10a083a99b148fde651de64a460fc6d4b4dee3a42bd14e7378a1e8ec4c4cd064",
-      "release": "0cc58dcc0deb96f72824a998e6bc2b681aa3d16c90c20b35bdda55d47b0bbfbe"
+      "regular": "023974dbb154734872bc4c259d512bbb063ebd49a1d0b3d1ec81e133463078a3",
+      "release": "9fcbf01b53d7f43c30304502e801c1d3f7b02ffd9ecb74e57cd4823f0ada9bea"
     },
     "site-repair-addon": {
-      "regular": "73f6cb30292fea794aa94df6fbb71805c3253f9b896150001e302b541089ef94",
-      "release": "162d98f0c5cd9d641b82a1de5d7bfc4c80b5c1bdf0b7944c8b3781727816e666"
+      "regular": "e6704cd4a3bb12c394fd1133d91e30c3949483beaa2ea0fe4061bc18b1230786",
+      "release": "5e43746a788fa21bfe09918979f25a26e26476dee48e54f5e80d4b1b9ad96610"
     },
     "thread-utility-addon": {
-      "release": "84230151ce0a8393745d615a2ca7e052343038b5dd01024dbc14d77ce4c39ed6",
-      "regular": "f23d376bd235edd152001ef69ce0ed396d4f1c71bf2f6ac789c973ba3ec21406"
+      "release": "d15eb51a85cc90ac6995fe150298da6bf6dc1b6e6fef007b45c1bd692fd51848",
+      "regular": "9f07ebf314622e3d1b4e0774cf7cb934ca9be9d77d0d312c2f76b7cbbe00b86a"
     }
   }
 }

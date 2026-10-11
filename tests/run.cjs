@@ -2,6 +2,7 @@ const harness = require("./harness.cjs");
  
 for (const group of [
   "core",
+  "core-load-trace",
   "config",
   "core-runtime-performance",
   "core-size-reduction",
@@ -12,6 +13,7 @@ for (const group of [
   "library-latest-marker",
   "example-latest-marker",
   "addons",
+  "addon-readiness",
   "addon-matrix",
   "addon-size",
   "library-personal",

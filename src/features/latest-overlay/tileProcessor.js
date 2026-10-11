@@ -172,13 +172,9 @@ export function processAllTiles(
   if (expectedGeneration !== generation) return;
   refreshCaches();
   latestMarkers.refresh();
-  if (reset) clearAllOverlayStyles();
-  processTiles(
-    Array.from(document.getElementsByClassName(SELECTORS.TILE.CLASS)),
-    reset,
-    expectedGeneration,
-    reason,
-  );
+  const tiles = Array.from(document.getElementsByClassName(SELECTORS.TILE.CLASS));
+  if (reset) clearAllOverlayStyles(tiles);
+  processTiles(tiles, reset, expectedGeneration, reason);
 }
 
 export function reprocessAllTiles() {

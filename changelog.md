@@ -1,5 +1,15 @@
 # Changelog
 
+## [5.4.6 - Browsing performance and hover reliability]
+
+- Reduced repeated configuration metadata calculations and whole-config cloning when listing add-ons.
+- Reused one operation-local Latest card list for cleanup and evaluation, avoiding repeated discovery and live-collection churn.
+- Limited Latest Control synchronization to newly rendered cards and control buttons; hover decorations no longer trigger repeated checks. Pagination still restores Auto Refresh before Web Notifications.
+- Replaced fixed hover retries with content-readiness observation through the shared observer. Delayed and partial tag batches are styled while hovered, with cleanup on leave, removal, timeout or disable.
+- Removed redundant canonical/backup configuration cloning and deferred unused fallback defaults, preserving validation, recovery and cross-tab write safety.
+
+This patch was prompted by core overhead becoming noticeable enough to interfere with everyday browsing. One comparable before/after trace pair showed sampled core self CPU falling from 169.647 to 138.220 ms (18.5%); this is not a verified startup-time reduction. The maintenance pass also corrected unwanted hover and control-timer side effects.
+
 ## [5.4.5 - Reliability and contributor maintenance]
 
 - Removed redundant Settings backdrop scrolling and padding, keeping scrolling inside the settings panel.

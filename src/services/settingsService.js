@@ -165,15 +165,16 @@ function buildEnvelope(data, revision) {
     revision,
     writerId: CONFIG_WRITER_ID,
     updatedAt: Date.now(),
-    data: cloneConfig(getCanonicalData(data)),
+    data: getCanonicalData(data),
   };
 }
 
 async function persistEnvelope(envelope, previousEnvelope = null) {
   if (previousEnvelope) {
+    const { data, ...metadata } = previousEnvelope;
     await writeStorageValue(CONFIG_BACKUP_KEY, {
-      ...cloneConfig(previousEnvelope),
-      data: cloneConfig(getCanonicalData(previousEnvelope.data)),
+      ...cloneConfig(metadata),
+      data: getCanonicalData(data),
     });
   }
   await writeStorageValue(CONFIG_ENVELOPE_KEY, cloneConfig(envelope));
@@ -601,7 +602,6 @@ async function loadFastPath(canonicalRaw) {
 }
 
 async function loadConfigInternal() {
-  const defaults = getDefaultConfig();
   let canonicalRaw = null;
   try {
     const marker = await storageAdapter.get(CONFIG_MIGRATION_VERSION_KEY, null);
@@ -617,7 +617,7 @@ async function loadConfigInternal() {
     const legacyEvidence = await readLegacyUpgradeEvidence(canonicalRaw);
     if (legacyEvidence.classification.required) {
       return applyLoadedConfig(
-        makeLoadResult(defaults, {
+        makeLoadResult(getDefaultConfig(), {
           source: "legacy-surface",
           status: "upgrade-required",
           recovered: true,
@@ -641,7 +641,7 @@ async function loadConfigInternal() {
     }
 
     return applyLoadedConfig(
-      makeLoadResult(defaults, {
+      makeLoadResult(getDefaultConfig(), {
         source: "unknown-storage",
         status: "unrecoverable",
         recovered: true,
@@ -665,7 +665,7 @@ async function loadConfigInternal() {
       issues: error?.storageStep ? [{ path: "storage", code: error.storageStep }] : [],
     });
     return applyLoadedConfig(
-      makeLoadResult(defaults, {
+      makeLoadResult(getDefaultConfig(), {
         source: "defaults",
         status: "defaults",
         recovered: true,

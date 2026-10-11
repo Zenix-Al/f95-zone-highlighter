@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "sourceReport": "docs/architecture/core-size-baseline.json",
-  "sourceReportSha256": "66e1777ffbc7511bbfabeee1eb25e170c4f9e121929aaea954e087e581537bce",
+  "sourceReportSha256": "6ffb993023c2baecf56e0756b74627d366445779478049f684694c402b160107",
   "thresholds": {
     "authoredArea": {
       "absoluteBytes": 1024,
@@ -21,7 +21,8 @@
     }
   },
   "rationale": {
-    "type": "commit-note",
-    "text": "Release 5.4.5: remove redundant Settings backdrop scrolling and padding."
+    "type": "file",
+    "path": "TODO_CORE_LOAD.md",
+    "sha256": "4867d2f2e44bba8a36055d09b1138cbc1dcc4ad45868e03eac19d93b67d2b2f9"
   }
 }
