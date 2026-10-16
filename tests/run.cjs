@@ -31,6 +31,7 @@ for (const group of [
   "library-bulk-budget",
   "library-manual-update",
   "library-auto-update",
+  "library-update-activity",
   "library-update-queue-snapshot",
   "library-update-queue-worker",
   "latest-filters-reset",

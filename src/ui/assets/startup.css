@@ -135,6 +135,31 @@
   background: #244c45;
 }
 
+/* Add-on-owned dock markup can opt into core-owned activity rings. */
+.f95ue-page-dock-btn[data-f95ue-activity="working"] {
+  box-shadow: 0 0 0 2px #65d68d;
+  animation: f95ue-addon-activity-pulse 1.8s ease-in-out infinite;
+}
+
+.f95ue-page-dock-btn[data-f95ue-activity="waiting"] {
+  box-shadow: 0 0 0 2px #e6bd55;
+}
+
+.f95ue-page-dock-btn[data-f95ue-activity="error"] {
+  box-shadow: 0 0 0 2px #ef7777;
+}
+
+@keyframes f95ue-addon-activity-pulse {
+  0%, 100% { box-shadow: 0 0 0 2px #65d68d; }
+  50% { box-shadow: 0 0 0 2px rgb(101 214 141 / 30%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .f95ue-page-dock-btn[data-f95ue-activity="working"] {
+    animation: none;
+  }
+}
+
 #tag-config-button:hover,
 .f95ue-page-dock-btn:hover {
   opacity: 1;

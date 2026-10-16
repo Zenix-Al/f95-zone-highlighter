@@ -1,5 +1,14 @@
 # Changelog
 
+## [2026-10-17 - Library 1.3.11]
+
+- Released Library 1.3.11 with a 10-second minimum automatic request spacing,
+  persistent daily allowance across cycles, owner-aware recovery reporting,
+  and first-time Played this version recording.
+- Added working/waiting/error activity rings. Core 5.4.7 provides dock styling;
+  the Library Manager styles its own Auto update button.
+- Reload open F95 tabs after updating so older workers stop using old accounting.
+
 ## [2026-10-11 - Shared readiness patch releases]
 
 - Released Library 1.3.10, Latest Filters 1.1.3, Halloween Theme 1.0.3,

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "sourceReport": "docs/architecture/core-size-baseline.json",
-  "sourceReportSha256": "6ffb993023c2baecf56e0756b74627d366445779478049f684694c402b160107",
+  "sourceReportSha256": "db4859d81d781f1e5760ef14911f2048d35bfadfa5d17aae6f8d1da6e43c4d15",
   "thresholds": {
     "authoredArea": {
       "absoluteBytes": 1024,
@@ -22,7 +22,7 @@
   },
   "rationale": {
     "type": "file",
-    "path": "TODO_CORE_LOAD.md",
-    "sha256": "4867d2f2e44bba8a36055d09b1138cbc1dcc4ad45868e03eac19d93b67d2b2f9"
+    "path": "docs/ui/addon-ui.md",
+    "sha256": "841363c6c86c4945a287134d43e57d16d849a2ad7abb21e4a972ac195642c4d6"
   }
 }

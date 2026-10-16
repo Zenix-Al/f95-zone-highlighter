@@ -3185,6 +3185,7 @@
           "addons/library-addon/src/library/activityCommandId.js",
           "addons/library-addon/src/library/activityEventModel.js",
           "addons/library-addon/src/library/activityRepository.js",
+          "addons/library-addon/src/library/autoUpdateActivity.js",
           "addons/library-addon/src/library/autoUpdatePolicy.js",
           "addons/library-addon/src/library/autoUpdateQueueRepository.js",
           "addons/library-addon/src/library/autoUpdateQueueSnapshot.js",
@@ -3690,17 +3691,27 @@
                 "text": "core.invokeCoreAction(\"ui.unmount\", { mountId });"
               }
             ]
+          },
+          {
+            "id": "ui.update",
+            "callSites": [
+              {
+                "path": "addons/library-addon/src/app/dockController.js",
+                "line": 48,
+                "text": "await core.invokeCoreAction(\"ui.update\", {"
+              }
+            ]
           }
         ],
         "globalEventListeners": [
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 209,
+            "line": 210,
             "text": "window.addEventListener(\"pagehide\", onPageHide);"
           },
           {
             "path": "addons/library-addon/src/app/dockController.js",
-            "line": 88,
+            "line": 112,
             "text": "window.addEventListener(\"click\", clickHandler, true);"
           }
         ],
@@ -3845,22 +3856,22 @@
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-            "line": 17,
+            "line": 18,
             "text": "const timer = setTimeout(() => {"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-            "line": 8,
+            "line": 9,
             "text": "const timer = setTimeout(resolve, Math.max(0, ms));"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-            "line": 240,
+            "line": 263,
             "text": "timer = setTimeout(() => { if (timer) void rearm(); }, 60_000);"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-            "line": 270,
+            "line": 297,
             "text": "timer = setTimeout(async () => {"
           },
           {
@@ -4104,22 +4115,22 @@
           },
           {
             "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
-            "line": 102,
+            "line": 103,
             "text": "const node = root.querySelector(`[data-role=\"${role}\"]`);"
           },
           {
             "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
-            "line": 144,
+            "line": 145,
             "text": "const progress = root.querySelector('[data-role=\"progress\"]');"
           },
           {
             "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
-            "line": 149,
+            "line": 150,
             "text": "const primary = root.querySelector('[data-role=\"primaryAction\"]');"
           },
           {
             "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
-            "line": 157,
+            "line": 158,
             "text": "const pause = root.querySelector('[data-auto-action=\"pause\"]');"
           },
           {
@@ -4354,22 +4365,27 @@
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 131,
+            "line": 45,
+            "text": "getActiveRoot()?.querySelector('[data-action=\"open-auto-update\"]'),"
+          },
+          {
+            "path": "addons/library-addon/src/ui/manager/managerApp.js",
+            "line": 140,
             "text": "const existing = document.getElementById(styleId);"
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 219,
+            "line": 230,
             "text": "appContext.dialogRoot = contentId ? document.getElementById(contentId) : null;"
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 226,
+            "line": 240,
             "text": "const importInput = appContext.dialogRoot.querySelector("
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 250,
+            "line": 264,
             "text": "appContext.dialogRoot.querySelector(\".f95ue-library-manager-window\")?.focus();"
           },
           {
@@ -4492,22 +4508,22 @@
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 176,
+            "line": 177,
             "text": "else if (command === \"disable\") void lifecycle.disable(detail);"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 179,
+            "line": 180,
             "text": "markerProvider.cancel();"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 197,
+            "line": 198,
             "text": "} else if (command === \"teardown\") {"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 198,
+            "line": 199,
             "text": "void lifecycle.teardown(detail);"
           },
           {
@@ -4517,52 +4533,52 @@
           },
           {
             "path": "addons/library-addon/src/app/dockController.js",
-            "line": 40,
+            "line": 64,
             "text": "function isCurrent(context) {"
           },
           {
             "path": "addons/library-addon/src/app/dockController.js",
-            "line": 43,
+            "line": 67,
             "text": "typeof context.isCurrent !== \"function\" ||"
           },
           {
             "path": "addons/library-addon/src/app/dockController.js",
-            "line": 44,
+            "line": 68,
             "text": "context.isCurrent()"
           },
           {
             "path": "addons/library-addon/src/app/dockController.js",
-            "line": 103,
+            "line": 127,
             "text": "if (!state.enabled || !isCurrent(context)) {"
           },
           {
             "path": "addons/library-addon/src/app/dockController.js",
-            "line": 147,
+            "line": 172,
             "text": "if (!state.enabled || !isCurrent(context) || token !== mountToken) {"
           },
           {
             "path": "addons/library-addon/src/app/dockController.js",
-            "line": 173,
+            "line": 199,
             "text": "if (!isCurrent(context)) return { ok: false, reason: \"stale_mount\" };"
           },
           {
             "path": "addons/library-addon/src/app/dockController.js",
-            "line": 186,
+            "line": 212,
             "text": "if (!state.enabled || !isCurrent(context)) {"
           },
           {
             "path": "addons/library-addon/src/app/dockController.js",
-            "line": 202,
+            "line": 228,
             "text": "if (!state.enabled || !isCurrent(context)) {"
           },
           {
             "path": "addons/library-addon/src/app/dockController.js",
-            "line": 223,
+            "line": 249,
             "text": "if (!state.enabled || !isCurrent(context) || observation?.reason === \"cancelled\") {"
           },
           {
             "path": "addons/library-addon/src/app/dockController.js",
-            "line": 236,
+            "line": 262,
             "text": "if (!state.enabled || !isCurrent(context)) {"
           },
           {
@@ -4672,167 +4688,167 @@
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-            "line": 16,
+            "line": 19,
             "text": "\"retry\","
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-            "line": 224,
+            "line": 256,
             "text": "[normalizedCycleId, \"retry\", 0],"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-            "line": 225,
+            "line": 257,
             "text": "[normalizedCycleId, \"retry\", integer(currentTime)],"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-            "line": 233,
+            "line": 265,
             "text": "[normalizedCycleId, \"retry\", 0],"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-            "line": 234,
+            "line": 266,
             "text": "[normalizedCycleId, \"retry\", MAX_COUNT],"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-            "line": 278,
+            "line": 310,
             "text": "if (![\"pending\", \"retry\"].includes(item.status)) {"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-            "line": 340,
+            "line": 374,
             "text": "const nextStatus = status(settlement.status, QUEUE_STATUSES, \"retry\");"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-            "line": 341,
+            "line": 375,
             "text": "if (![\"pending\", \"retry\", \"completed\", \"failed\"].includes(nextStatus)) {"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-            "line": 374,
+            "line": 408,
             "text": "status: item.attempts > 0 ? \"retry\" : \"pending\","
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-            "line": 14,
+            "line": 15,
             "text": "clearTimeout(timer);"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-            "line": 33,
+            "line": 34,
             "text": "clearIntervalFn = clearInterval,"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-            "line": 74,
+            "line": 79,
             "text": "// Reconcile retry rows written by older versions without deleting the cycle."
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-            "line": 82,
+            "line": 87,
             "text": "queueStatus: \"retry\","
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-            "line": 94,
+            "line": 99,
             "text": "status: terminal ? \"failed\" : \"retry\","
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-            "line": 106,
+            "line": 111,
             "text": "retryPending: counts.counts.retry,"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-            "line": 182,
+            "line": 187,
             "text": "const unfinished = counts.counts.pending + counts.counts.processing + counts.counts.retry;"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-            "line": 190,
+            "line": 195,
             "text": "retryPending: counts.counts.retry,"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-            "line": 330,
+            "line": 335,
             "text": "const wasRetry = item.status === \"retry\";"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-            "line": 335,
+            "line": 340,
             "text": "status: terminal ? \"failed\" : \"retry\","
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-            "line": 9,
+            "line": 10,
             "text": "signal?.addEventListener(\"abort\", () => { clearTimeout(timer); resolve(); }, { once: true });"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-            "line": 13,
+            "line": 14,
             "text": "function owned(value, owner, generation, now) {"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-            "line": 14,
+            "line": 15,
             "text": "return value?.owner === owner && value?.generation === generation && Number(value.expiresAt) > now;"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-            "line": 57,
+            "line": 59,
             "text": "let generation = 0;"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-            "line": 76,
+            "line": 84,
             "text": "generation,"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-            "line": 83,
+            "line": 92,
             "text": "return owned(verified, owner, generation, now()) ? verified : null;"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-            "line": 87,
+            "line": 96,
             "text": "return owned(await repository.getLease(), owner, generation, now());"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-            "line": 117,
+            "line": 126,
             "text": "const ownController = new AbortController();"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-            "line": 120,
+            "line": 129,
             "text": "generation += 1;"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-            "line": 215,
+            "line": 238,
             "text": "await repository.putLease({ owner, generation, expiresAt: now() + config.leaseTtlMs });"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-            "line": 239,
+            "line": 262,
             "text": "clearTimeout(timer);"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-            "line": 269,
+            "line": 296,
             "text": "clearTimeout(timer);"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-            "line": 291,
+            "line": 318,
             "text": "clearTimeout(timer);"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-            "line": 313,
+            "line": 343,
             "text": "// Lets the user retry before blockedUntil, for example after passing the"
           },
           {
@@ -4922,17 +4938,17 @@
           },
           {
             "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
-            "line": 60,
+            "line": 61,
             "text": "return { action: \"retry-now\", label: \"Retry now\", disabled: false };"
           },
           {
             "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
-            "line": 88,
+            "line": 89,
             "text": "`Current: ${count(cycle.current)}; changed: ${count(cycle.changed)}; retry: ${count(cycle.retryPending)}; terminal: ${count(cycle.failed)}; skipped: ${count(cycle.skipped)}`,"
           },
           {
             "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
-            "line": 169,
+            "line": 172,
             "text": "return `<form class=\"f95ue-library-auto-dialog\" data-role=\"auto-update-dialog\"><section class=\"f95ue-library-auto-overview\"><div class=\"f95ue-library-auto-heading\"><strong>Update overview</strong><span class=\"f95ue-library-auto-state\" data-role=\"state\">IDLE</span></div><progress data-role=\"progress\" max=\"1\" value=\"0\"></progress><div class=\"f95ue-library-auto-stats\"><span>Cycle <strong data-role=\"cycleProgress\">0 / 0</strong></span><span>Today <strong data-role=\"dailyProgress\">0 / ${config.checksPerDay}</strong></span><span>Completed <strong data-role=\"completed\">0</strong></span><span>Retry pending <strong data-role=\"retryPending\">0</strong></span><span>Terminal <strong data-role=\"terminalFailed\">0</strong></span></div><div class=\"f95ue-library-auto-meta\"><span>Current: <b data-role=\"currentItem\">-</b></span><span>Next: <b data-role=\"nextWake\">-</b></span><span>Last activity: <b data-role=\"lastActivity\">-</b></span></div></section><details><summary>Cycle details &gt;</summary><div class=\"f95ue-library-auto-details\"><div>Cycle ID: <span data-role=\"cycleId\">-</span></div><div data-role=\"cycleCounts\">current 0 · changed 0 · skipped 0 · network retries 0</div><button type=\"button\" data-auto-action=\"copy-diagnostics\">Copy diagnostics</button><button type=\"button\" data-auto-action=\"restart\">Restart cycle...</button></div></details><details><summary>Update settings &gt;</summary><div class=\"f95ue-library-auto-grid\"><label class=\"f95ue-library-auto-toggle\"><input name=\"enabled\" type=\"checkbox\"${config.enabled !== false ? \" checked\" : \"\"}><span>Check eligible Library records automatically</span></label>${field(\"Checks per day\", \"checksPerDay\", config.checksPerDay, 1, 500)}${field(\"Update hour (local, 0-23)\", \"runHour\", config.runHour, 0, 23)}${field(\"Spacing (ms)\", \"spacingMs\", config.spacingMs, 5000, 30000)}${field(\"Timeout (ms)\", \"timeoutMs\", config.timeoutMs, 1000, 30000)}${field(\"Retries\", \"retryLimit\", config.retryLimit, 0, 5)}<button type=\"submit\" class=\"primary\">Save settings</button></div></details><div class=\"f95ue-library-auto-actions\"><button type=\"button\" class=\"primary\" data-role=\"primaryAction\" data-auto-action=\"${primary.action}\"${primary.disabled ? \" disabled\" : \"\"}>${primary.label}</button><button type=\"button\" data-auto-action=\"pause\">Pause</button><button type=\"button\" data-auto-action=\"cancel\">Close</button></div></form>`;"
           },
           {
@@ -5182,62 +5198,62 @@
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 38,
+            "line": 39,
             "text": "let generation = 0;"
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 48,
+            "line": 57,
             "text": "manualCheckController = new AbortController();"
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 106,
+            "line": 115,
             "text": "cancelText = \"Cancel\","
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 138,
+            "line": 147,
             "text": "generation += 1;"
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 198,
+            "line": 209,
             "text": "const openGeneration = ++generation;"
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 213,
+            "line": 224,
             "text": "if (openGeneration !== generation) {"
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 236,
-            "text": "if (openGeneration !== generation) return;"
-          },
-          {
-            "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 249,
+            "line": 250,
             "text": "if (openGeneration !== generation) return;"
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
             "line": 263,
+            "text": "if (openGeneration !== generation) return;"
+          },
+          {
+            "path": "addons/library-addon/src/ui/manager/managerApp.js",
+            "line": 277,
             "text": "const closeGeneration = ++generation;"
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 271,
+            "line": 287,
             "text": "// that belongs to that newer generation."
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 272,
+            "line": 288,
             "text": "if (generation !== closeGeneration && getActiveRoot()) {"
           },
           {
             "path": "addons/library-addon/src/ui/manager/managerApp.js",
-            "line": 283,
+            "line": 299,
             "text": "generation,"
           },
           {
@@ -5416,7 +5432,7 @@
             "text": "generation,"
           }
         ],
-        "rawActionCount": 60
+        "rawActionCount": 61
       },
       {
         "id": "example-addon",
@@ -9455,6 +9471,11 @@
       "id": "ui.update",
       "callSites": [
         {
+          "path": "addons/library-addon/src/app/dockController.js",
+          "line": 48,
+          "text": "await core.invokeCoreAction(\"ui.update\", {"
+        },
+        {
           "path": "addons/example-addon/src/api/ui/mount.js",
           "line": 6,
           "text": "return core.invokeCoreAction(\"ui.update\", payload || {});"
@@ -9472,9 +9493,10 @@
       ],
       "consumers": [
         "example-addon",
+        "library-addon",
         "thread-utility-addon"
       ],
-      "consumerCount": 2
+      "consumerCount": 3
     }
   ],
   "candidates": [
@@ -11206,22 +11228,22 @@
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-          "line": 17,
+          "line": 18,
           "text": "const timer = setTimeout(() => {"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-          "line": 8,
+          "line": 9,
           "text": "const timer = setTimeout(resolve, Math.max(0, ms));"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-          "line": 240,
+          "line": 263,
           "text": "timer = setTimeout(() => { if (timer) void rearm(); }, 60_000);"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-          "line": 270,
+          "line": 297,
           "text": "timer = setTimeout(async () => {"
         },
         {
@@ -11456,12 +11478,12 @@
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 218,
+          "line": 229,
           "text": "const contentId = String(result?.value?.contentId || \"\").trim();"
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 219,
+          "line": 230,
           "text": "appContext.dialogRoot = contentId ? document.getElementById(contentId) : null;"
         },
         {
@@ -11603,7 +11625,7 @@
         },
         {
           "path": "addons/library-addon/src/app/dockController.js",
-          "line": 88,
+          "line": 112,
           "text": "window.addEventListener(\"click\", clickHandler, true);"
         }
       ],
@@ -11773,7 +11795,7 @@
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 214,
+          "line": 215,
           "text": "const access = await getAddonAccess(core);"
         },
         {
@@ -11959,7 +11981,7 @@
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 189,
+          "line": 190,
           "text": "handleImportProgressDialogClosed(detail);"
         },
         {
@@ -12234,42 +12256,42 @@
         },
         {
           "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
-          "line": 86,
+          "line": 87,
           "text": "`Progress: ${count(cycle.completed)} / ${count(cycle.total)}`,"
         },
         {
           "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
-          "line": 120,
+          "line": 121,
           "text": "set(\"cycleProgress\", `${completed} / ${total}`);"
         },
         {
           "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
-          "line": 122,
+          "line": 123,
           "text": "\"dailyProgress\","
         },
         {
           "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
-          "line": 144,
+          "line": 145,
           "text": "const progress = root.querySelector('[data-role=\"progress\"]');"
         },
         {
           "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
-          "line": 145,
+          "line": 146,
           "text": "if (progress) {"
         },
         {
           "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
-          "line": 146,
+          "line": 147,
           "text": "progress.max = Math.max(1, total);"
         },
         {
           "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
-          "line": 147,
+          "line": 148,
           "text": "progress.value = completed;"
         },
         {
           "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
-          "line": 169,
+          "line": 172,
           "text": "return `<form class=\"f95ue-library-auto-dialog\" data-role=\"auto-update-dialog\"><section class=\"f95ue-library-auto-overview\"><div class=\"f95ue-library-auto-heading\"><strong>Update overview</strong><span class=\"f95ue-library-auto-state\" data-role=\"state\">IDLE</span></div><progress data-role=\"progress\" max=\"1\" value=\"0\"></progress><div class=\"f95ue-library-auto-stats\"><span>Cycle <strong data-role=\"cycleProgress\">0 / 0</strong></span><span>Today <strong data-role=\"dailyProgress\">0 / ${config.checksPerDay}</strong></span><span>Completed <strong data-role=\"completed\">0</strong></span><span>Retry pending <strong data-role=\"retryPending\">0</strong></span><span>Terminal <strong data-role=\"terminalFailed\">0</strong></span></div><div class=\"f95ue-library-auto-meta\"><span>Current: <b data-role=\"currentItem\">-</b></span><span>Next: <b data-role=\"nextWake\">-</b></span><span>Last activity: <b data-role=\"lastActivity\">-</b></span></div></section><details><summary>Cycle details &gt;</summary><div class=\"f95ue-library-auto-details\"><div>Cycle ID: <span data-role=\"cycleId\">-</span></div><div data-role=\"cycleCounts\">current 0 · changed 0 · skipped 0 · network retries 0</div><button type=\"button\" data-auto-action=\"copy-diagnostics\">Copy diagnostics</button><button type=\"button\" data-auto-action=\"restart\">Restart cycle...</button></div></details><details><summary>Update settings &gt;</summary><div class=\"f95ue-library-auto-grid\"><label class=\"f95ue-library-auto-toggle\"><input name=\"enabled\" type=\"checkbox\"${config.enabled !== false ? \" checked\" : \"\"}><span>Check eligible Library records automatically</span></label>${field(\"Checks per day\", \"checksPerDay\", config.checksPerDay, 1, 500)}${field(\"Update hour (local, 0-23)\", \"runHour\", config.runHour, 0, 23)}${field(\"Spacing (ms)\", \"spacingMs\", config.spacingMs, 5000, 30000)}${field(\"Timeout (ms)\", \"timeoutMs\", config.timeoutMs, 1000, 30000)}${field(\"Retries\", \"retryLimit\", config.retryLimit, 0, 5)}<button type=\"submit\" class=\"primary\">Save settings</button></div></details><div class=\"f95ue-library-auto-actions\"><button type=\"button\" class=\"primary\" data-role=\"primaryAction\" data-auto-action=\"${primary.action}\"${primary.disabled ? \" disabled\" : \"\"}>${primary.label}</button><button type=\"button\" data-auto-action=\"pause\">Pause</button><button type=\"button\" data-auto-action=\"cancel\">Close</button></div></form>`;"
         },
         {
@@ -13368,17 +13390,17 @@
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 179,
+          "line": 180,
           "text": "markerProvider.cancel();"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 197,
+          "line": 198,
           "text": "} else if (command === \"teardown\") {"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 198,
+          "line": 199,
           "text": "void lifecycle.teardown(detail);"
         },
         {
@@ -13393,52 +13415,52 @@
         },
         {
           "path": "addons/library-addon/src/app/dockController.js",
-          "line": 40,
+          "line": 64,
           "text": "function isCurrent(context) {"
         },
         {
           "path": "addons/library-addon/src/app/dockController.js",
-          "line": 43,
+          "line": 67,
           "text": "typeof context.isCurrent !== \"function\" ||"
         },
         {
           "path": "addons/library-addon/src/app/dockController.js",
-          "line": 44,
+          "line": 68,
           "text": "context.isCurrent()"
         },
         {
           "path": "addons/library-addon/src/app/dockController.js",
-          "line": 103,
+          "line": 127,
           "text": "if (!state.enabled || !isCurrent(context)) {"
         },
         {
           "path": "addons/library-addon/src/app/dockController.js",
-          "line": 147,
+          "line": 172,
           "text": "if (!state.enabled || !isCurrent(context) || token !== mountToken) {"
         },
         {
           "path": "addons/library-addon/src/app/dockController.js",
-          "line": 173,
+          "line": 199,
           "text": "if (!isCurrent(context)) return { ok: false, reason: \"stale_mount\" };"
         },
         {
           "path": "addons/library-addon/src/app/dockController.js",
-          "line": 186,
+          "line": 212,
           "text": "if (!state.enabled || !isCurrent(context)) {"
         },
         {
           "path": "addons/library-addon/src/app/dockController.js",
-          "line": 202,
+          "line": 228,
           "text": "if (!state.enabled || !isCurrent(context)) {"
         },
         {
           "path": "addons/library-addon/src/app/dockController.js",
-          "line": 223,
+          "line": 249,
           "text": "if (!state.enabled || !isCurrent(context) || observation?.reason === \"cancelled\") {"
         },
         {
           "path": "addons/library-addon/src/app/dockController.js",
-          "line": 236,
+          "line": 262,
           "text": "if (!state.enabled || !isCurrent(context)) {"
         },
         {
@@ -13548,162 +13570,162 @@
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-          "line": 16,
+          "line": 19,
           "text": "\"retry\","
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-          "line": 224,
+          "line": 256,
           "text": "[normalizedCycleId, \"retry\", 0],"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-          "line": 225,
+          "line": 257,
           "text": "[normalizedCycleId, \"retry\", integer(currentTime)],"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-          "line": 233,
+          "line": 265,
           "text": "[normalizedCycleId, \"retry\", 0],"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-          "line": 234,
+          "line": 266,
           "text": "[normalizedCycleId, \"retry\", MAX_COUNT],"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-          "line": 278,
+          "line": 310,
           "text": "if (![\"pending\", \"retry\"].includes(item.status)) {"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-          "line": 340,
+          "line": 374,
           "text": "const nextStatus = status(settlement.status, QUEUE_STATUSES, \"retry\");"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-          "line": 341,
+          "line": 375,
           "text": "if (![\"pending\", \"retry\", \"completed\", \"failed\"].includes(nextStatus)) {"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-          "line": 374,
+          "line": 408,
           "text": "status: item.attempts > 0 ? \"retry\" : \"pending\","
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-          "line": 17,
+          "line": 18,
           "text": "const timer = setTimeout(() => {"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-          "line": 32,
+          "line": 33,
           "text": "setIntervalFn = setInterval,"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-          "line": 74,
+          "line": 79,
           "text": "// Reconcile retry rows written by older versions without deleting the cycle."
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-          "line": 82,
+          "line": 87,
           "text": "queueStatus: \"retry\","
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-          "line": 94,
+          "line": 99,
           "text": "status: terminal ? \"failed\" : \"retry\","
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-          "line": 106,
+          "line": 111,
           "text": "retryPending: counts.counts.retry,"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-          "line": 182,
+          "line": 187,
           "text": "const unfinished = counts.counts.pending + counts.counts.processing + counts.counts.retry;"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-          "line": 190,
+          "line": 195,
           "text": "retryPending: counts.counts.retry,"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-          "line": 330,
+          "line": 335,
           "text": "const wasRetry = item.status === \"retry\";"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-          "line": 335,
+          "line": 340,
           "text": "status: terminal ? \"failed\" : \"retry\","
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-          "line": 8,
+          "line": 9,
           "text": "const timer = setTimeout(resolve, Math.max(0, ms));"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-          "line": 13,
+          "line": 14,
           "text": "function owned(value, owner, generation, now) {"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-          "line": 14,
+          "line": 15,
           "text": "return value?.owner === owner && value?.generation === generation && Number(value.expiresAt) > now;"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-          "line": 57,
+          "line": 59,
           "text": "let generation = 0;"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-          "line": 76,
+          "line": 84,
           "text": "generation,"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-          "line": 83,
+          "line": 92,
           "text": "return owned(verified, owner, generation, now()) ? verified : null;"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-          "line": 87,
+          "line": 96,
           "text": "return owned(await repository.getLease(), owner, generation, now());"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-          "line": 117,
+          "line": 126,
           "text": "const ownController = new AbortController();"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-          "line": 120,
+          "line": 129,
           "text": "generation += 1;"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-          "line": 215,
+          "line": 238,
           "text": "await repository.putLease({ owner, generation, expiresAt: now() + config.leaseTtlMs });"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-          "line": 240,
+          "line": 263,
           "text": "timer = setTimeout(() => { if (timer) void rearm(); }, 60_000);"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-          "line": 270,
+          "line": 297,
           "text": "timer = setTimeout(async () => {"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-          "line": 313,
+          "line": 343,
           "text": "// Lets the user retry before blockedUntil, for example after passing the"
         },
         {
@@ -13803,17 +13825,17 @@
         },
         {
           "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
-          "line": 60,
+          "line": 61,
           "text": "return { action: \"retry-now\", label: \"Retry now\", disabled: false };"
         },
         {
           "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
-          "line": 88,
+          "line": 89,
           "text": "`Current: ${count(cycle.current)}; changed: ${count(cycle.changed)}; retry: ${count(cycle.retryPending)}; terminal: ${count(cycle.failed)}; skipped: ${count(cycle.skipped)}`,"
         },
         {
           "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
-          "line": 169,
+          "line": 172,
           "text": "return `<form class=\"f95ue-library-auto-dialog\" data-role=\"auto-update-dialog\"><section class=\"f95ue-library-auto-overview\"><div class=\"f95ue-library-auto-heading\"><strong>Update overview</strong><span class=\"f95ue-library-auto-state\" data-role=\"state\">IDLE</span></div><progress data-role=\"progress\" max=\"1\" value=\"0\"></progress><div class=\"f95ue-library-auto-stats\"><span>Cycle <strong data-role=\"cycleProgress\">0 / 0</strong></span><span>Today <strong data-role=\"dailyProgress\">0 / ${config.checksPerDay}</strong></span><span>Completed <strong data-role=\"completed\">0</strong></span><span>Retry pending <strong data-role=\"retryPending\">0</strong></span><span>Terminal <strong data-role=\"terminalFailed\">0</strong></span></div><div class=\"f95ue-library-auto-meta\"><span>Current: <b data-role=\"currentItem\">-</b></span><span>Next: <b data-role=\"nextWake\">-</b></span><span>Last activity: <b data-role=\"lastActivity\">-</b></span></div></section><details><summary>Cycle details &gt;</summary><div class=\"f95ue-library-auto-details\"><div>Cycle ID: <span data-role=\"cycleId\">-</span></div><div data-role=\"cycleCounts\">current 0 · changed 0 · skipped 0 · network retries 0</div><button type=\"button\" data-auto-action=\"copy-diagnostics\">Copy diagnostics</button><button type=\"button\" data-auto-action=\"restart\">Restart cycle...</button></div></details><details><summary>Update settings &gt;</summary><div class=\"f95ue-library-auto-grid\"><label class=\"f95ue-library-auto-toggle\"><input name=\"enabled\" type=\"checkbox\"${config.enabled !== false ? \" checked\" : \"\"}><span>Check eligible Library records automatically</span></label>${field(\"Checks per day\", \"checksPerDay\", config.checksPerDay, 1, 500)}${field(\"Update hour (local, 0-23)\", \"runHour\", config.runHour, 0, 23)}${field(\"Spacing (ms)\", \"spacingMs\", config.spacingMs, 5000, 30000)}${field(\"Timeout (ms)\", \"timeoutMs\", config.timeoutMs, 1000, 30000)}${field(\"Retries\", \"retryLimit\", config.retryLimit, 0, 5)}<button type=\"submit\" class=\"primary\">Save settings</button></div></details><div class=\"f95ue-library-auto-actions\"><button type=\"button\" class=\"primary\" data-role=\"primaryAction\" data-auto-action=\"${primary.action}\"${primary.disabled ? \" disabled\" : \"\"}>${primary.label}</button><button type=\"button\" data-auto-action=\"pause\">Pause</button><button type=\"button\" data-auto-action=\"cancel\">Close</button></div></form>`;"
         },
         {
@@ -14038,62 +14060,62 @@
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 38,
+          "line": 39,
           "text": "let generation = 0;"
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 48,
+          "line": 57,
           "text": "manualCheckController = new AbortController();"
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 106,
+          "line": 115,
           "text": "cancelText = \"Cancel\","
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 138,
+          "line": 147,
           "text": "generation += 1;"
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 198,
+          "line": 209,
           "text": "const openGeneration = ++generation;"
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 213,
+          "line": 224,
           "text": "if (openGeneration !== generation) {"
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 236,
-          "text": "if (openGeneration !== generation) return;"
-        },
-        {
-          "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 249,
+          "line": 250,
           "text": "if (openGeneration !== generation) return;"
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
           "line": 263,
+          "text": "if (openGeneration !== generation) return;"
+        },
+        {
+          "path": "addons/library-addon/src/ui/manager/managerApp.js",
+          "line": 277,
           "text": "const closeGeneration = ++generation;"
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 271,
+          "line": 287,
           "text": "// that belongs to that newer generation."
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 272,
+          "line": 288,
           "text": "if (generation !== closeGeneration && getActiveRoot()) {"
         },
         {
           "path": "addons/library-addon/src/ui/manager/managerApp.js",
-          "line": 283,
+          "line": 299,
           "text": "generation,"
         },
         {

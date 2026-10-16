@@ -1,4 +1,4 @@
-import { LIBRARY_AUTO_UPDATE_DEFAULTS } from "../constants.js";
+import { LIBRARY_AUTO_UPDATE_DEFAULTS, LIBRARY_MIN_UPDATE_SPACING_MS } from "../constants.js";
 
 const CONFIG_KEY = "auto-update:config";
 const SUMMARY_KEY = "auto-update:last-run";
@@ -27,7 +27,10 @@ export function normalizeAutoUpdateConfig(value = {}) {
     enabled: value.enabled !== false,
     intervalMs: bounded(value.intervalMs, defaults.intervalMs, 6 * 3600000, 30 * 86400000),
     runHour: bounded(value.runHour, defaults.runHour, 0, 23),
-    spacingMs: bounded(value.spacingMs, defaults.spacingMs, 5000, 30_000),
+    spacingMs: bounded(
+      Number.isFinite(Number(value.spacingMs)) ? value.spacingMs : defaults.spacingMs,
+      defaults.spacingMs, LIBRARY_MIN_UPDATE_SPACING_MS, 30_000,
+    ),
     jitterMs: bounded(value.jitterMs, defaults.jitterMs, 0, 10_000),
     timeoutMs: bounded(value.timeoutMs, defaults.timeoutMs, 1000, 30_000),
     retryLimit: bounded(value.retryLimit, defaults.retryLimit, 0, 5),

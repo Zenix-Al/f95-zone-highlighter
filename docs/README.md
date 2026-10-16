@@ -12,6 +12,7 @@ Welcome to the documentation for the Latest Highlighter userscript. This directo
 - [Maintenance Policy](maintenance-policy.md) - Standing rules for triage, release health, and new proposals.
 - [Core Architecture](architecture.md) - High-level overview of how the app boots and runs.
 - [Library Update Inbox](architecture/library-update-inbox.md) - Durable update acknowledgement, bounded inbox queries, and page-session notification behavior.
+- [Library Updater Current Behavior](architecture/library-updater-current-behavior.md) - Current pause, cooldown, retry, restart and cross-tab rules, with investigation gaps.
 - [Library Update Queue Baseline](architecture/library-update-queue-baseline.md) - Current scheduler entry points, interruption boundaries, database capability, and pre-queue size evidence.
 - [Library Update Queue Schema](architecture/library-update-queue-schema.md) - Version-4 cycle/queue stores, recoverable publication, and repository contracts.
 - [Library Update Queue Snapshot](architecture/library-update-queue-snapshot.md) - Bounded eligible-record snapshots, deterministic ordering, and cancellation cleanup.

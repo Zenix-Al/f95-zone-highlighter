@@ -1,6 +1,9 @@
+import { getLocalDayKey } from "./autoUpdatePolicy.js";
+
 export const AUTO_UPDATE_CYCLE_STORE = "update-cycles";
 export const AUTO_UPDATE_QUEUE_STORE = "update-queue";
 export const ACTIVE_AUTO_UPDATE_CYCLE_ID = "active";
+export const DAILY_ALLOWANCE_ID = "daily-allowance-v1";
 
 const CYCLE_STATUSES = new Set([
   "preparing",
@@ -119,10 +122,39 @@ export function createAutoUpdateQueueRepository(api, { now = Date.now } = {}) {
     return result?.ok && result.value ? normalizeAutoUpdateCycle(result.value) : null;
   }
 
-  async function putCycle(value) {
+  async function putCycle(value, { allowDailyRefund = false } = {}) {
     const cycle = normalizeAutoUpdateCycle(value);
     if (!cycle.id || !cycle.cycleId) return { ok: false, reason: "cycle_identity_required" };
-    const result = await api.putStoreValue(AUTO_UPDATE_CYCLE_STORE, cycle);
+    // A separate row survives snapshot deletion. Sharing the cycle store lets
+    // both rows commit in one existing IndexedDB bulk-put transaction.
+    const stored = await api.getStoreValue(AUTO_UPDATE_CYCLE_STORE, DAILY_ALLOWANCE_ID);
+    if (!stored?.ok) return coreFailure(stored);
+    const allowance = stored.value;
+    const dailyKey = [getLocalDayKey(now()), cycle.dailyKey, text(allowance?.dailyKey, 16)]
+      .filter((day) => /^\d{4}-\d{2}-\d{2}$/.test(day)).sort().at(-1);
+    const sameDay = allowance?.dailyKey === dailyKey;
+    const incomingDay = cycle.dailyKey === dailyKey;
+    const sameCycle = allowance?.cycleId === cycle.cycleId;
+    // Ordinary writes are monotonic, including stale writes for the same cycle.
+    // Only the worker's explicit challenge refund can lower usage, by at most one.
+    if (sameDay) {
+      const used = integer(allowance.dailyAttempted);
+      const floor = allowDailyRefund && sameCycle && incomingDay ? Math.max(0, used - 1) : used;
+      cycle.dailyAttempted = Math.max(floor, incomingDay ? cycle.dailyAttempted : 0);
+      cycle.dailyBonusAllowance = Math.max(integer(allowance.dailyBonusAllowance, 0, 0, 100_000), incomingDay ? cycle.dailyBonusAllowance : 0);
+    } else if (!incomingDay) {
+      cycle.dailyAttempted = 0;
+      cycle.dailyBonusAllowance = 0;
+    }
+    cycle.dailyKey = dailyKey;
+    const result = await api.bulkPutStoreValues(AUTO_UPDATE_CYCLE_STORE, [cycle, {
+      id: DAILY_ALLOWANCE_ID,
+      cycleId: cycle.cycleId,
+      dailyKey,
+      dailyAttempted: cycle.dailyAttempted,
+      dailyBonusAllowance: cycle.dailyBonusAllowance,
+      updatedAt: now(),
+    }]);
     return result?.ok ? { ...result, value: cycle } : coreFailure(result);
   }
 
@@ -290,7 +322,9 @@ export function createAutoUpdateQueueRepository(api, { now = Date.now } = {}) {
   }
 
   async function grantDailyBonus(value, amount) {
-    const cycle = normalizeAutoUpdateCycle(value);
+    const rolled = await rolloverDailyAllowance(value, getLocalDayKey(now()));
+    if (!rolled?.ok) return rolled;
+    const cycle = rolled.value;
     return putCycle({
       ...cycle,
       dailyBonusAllowance: Math.min(
@@ -504,6 +538,9 @@ export function createAutoUpdateQueueRepository(api, { now = Date.now } = {}) {
     if (!active || active.cycleId !== text(cycleId, 128)) {
       return { ok: false, reason: "cycle_identity_mismatch", removed: 0 };
     }
+    // Seed the independent allowance from pre-fix masters before deleting them.
+    const preserved = await putCycle(active);
+    if (!preserved?.ok) return { ...preserved, removed: 0 };
     const removed = await deleteCycleItems(cycleId);
     if (!removed.ok) return removed;
     const result = await api.deleteStoreValue(

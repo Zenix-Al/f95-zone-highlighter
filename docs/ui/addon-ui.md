@@ -111,6 +111,15 @@ Creates and inserts add-on HTML mounts according to host and position rules.
 ### `addonDockGroup.js`
 Builds groups of add-on controls for the page dock.
 
+Dock buttons with class `f95ue-page-dock-btn` can opt into a core-owned activity
+ring using `data-f95ue-activity="working"`, `"waiting"`, or `"error"` in owned
+`page.dock` mount markup. Working pulses green; waiting is steady yellow; error
+is steady red. Omit the attribute or use `idle` for normal styling. Reduced
+motion disables the pulse but retains green. This is a markup styling contract,
+not a new bridge action or support for arbitrary add-on CSS in Shadow DOM.
+Update owned markup through `ui.update`; do not register a stylesheet in the
+page head expecting it to cross into the dock's Shadow DOM.
+
 ### `addonStyle.js`
 Creates style elements for add-on-contributed styles.
 

@@ -6,15 +6,15 @@
     "stylesheet": {
       "path": "src/ui/assets/startup.css + src/ui/assets/css.css",
       "target": "shadow",
-      "authoredBytes": 28565,
-      "styleRuleCount": 206,
-      "selectorCount": 226,
-      "mediaQueryCount": 4,
+      "authoredBytes": 29242,
+      "styleRuleCount": 210,
+      "selectorCount": 230,
+      "mediaQueryCount": 5,
       "ownership": {
         "startupRequired": {
-          "styleRuleCount": 24,
-          "selectorCount": 34,
-          "ruleAuthoredBytes": 3379,
+          "styleRuleCount": 28,
+          "selectorCount": 38,
+          "ruleAuthoredBytes": 3863,
           "selectors": [
             ".f95ue-page-dock-btn",
             ".f95ue-page-dock-btn",
@@ -23,6 +23,10 @@
             ".f95ue-page-dock-btn:hover",
             ".f95ue-page-dock-btn.saved",
             ".f95ue-page-dock-btn.secondary",
+            ".f95ue-page-dock-btn[data-f95ue-activity=\"error\"]",
+            ".f95ue-page-dock-btn[data-f95ue-activity=\"waiting\"]",
+            ".f95ue-page-dock-btn[data-f95ue-activity=\"working\"]",
+            ".f95ue-page-dock-btn[data-f95ue-activity=\"working\"]",
             ".f95ue-page-dock-group",
             ".f95ue-page-dock-group",
             ".toast",
@@ -257,15 +261,15 @@
     "startupStylesheet": {
       "path": "src/ui/assets/startup.css",
       "target": "shadow",
-      "authoredBytes": 3483,
-      "styleRuleCount": 24,
-      "selectorCount": 34,
-      "mediaQueryCount": 1,
+      "authoredBytes": 4160,
+      "styleRuleCount": 28,
+      "selectorCount": 38,
+      "mediaQueryCount": 2,
       "ownership": {
         "startupRequired": {
-          "styleRuleCount": 24,
-          "selectorCount": 34,
-          "ruleAuthoredBytes": 3379,
+          "styleRuleCount": 28,
+          "selectorCount": 38,
+          "ruleAuthoredBytes": 3863,
           "selectors": [
             ".f95ue-page-dock-btn",
             ".f95ue-page-dock-btn",
@@ -274,6 +278,10 @@
             ".f95ue-page-dock-btn:hover",
             ".f95ue-page-dock-btn.saved",
             ".f95ue-page-dock-btn.secondary",
+            ".f95ue-page-dock-btn[data-f95ue-activity=\"error\"]",
+            ".f95ue-page-dock-btn[data-f95ue-activity=\"waiting\"]",
+            ".f95ue-page-dock-btn[data-f95ue-activity=\"working\"]",
+            ".f95ue-page-dock-btn[data-f95ue-activity=\"working\"]",
             ".f95ue-page-dock-group",
             ".f95ue-page-dock-group",
             ".toast",
@@ -538,7 +546,7 @@
       "beforeFirstInteraction": {
         "shadowStyleElements": 1,
         "documentStyleElements": 1,
-        "shadowCssBytes": 3483,
+        "shadowCssBytes": 4160,
         "behavior": "initUiPhaseIfApplicable creates the Shadow root, then injectCSS acquires startup CSS and document styles before injecting the settings dock button."
       },
       "firstOpenModal": {

@@ -6,25 +6,25 @@
     "src/ui/assets/startup.css",
     "src/ui/assets/css.css"
   ],
-  "authoredBytes": 28565,
+  "authoredBytes": 29242,
   "bundle": {
     "readable": {
-      "fullBytes": 676232,
-      "gzipBytes": 145329,
+      "fullBytes": 676813,
+      "gzipBytes": 145498,
       "contributionBytes": 21716
     },
     "uglified": {
-      "fullBytes": 336304,
-      "gzipBytes": 100918,
-      "contributionBytes": 24632
+      "fullBytes": 336885,
+      "gzipBytes": 101097,
+      "contributionBytes": 25213
     }
   },
-  "ruleCount": 206,
-  "styleRuleCount": 206,
-  "selectorCount": 226,
-  "declarationCount": 844,
-  "mediaQueryCount": 4,
-  "keyframeCount": 0,
+  "ruleCount": 211,
+  "styleRuleCount": 210,
+  "selectorCount": 230,
+  "declarationCount": 850,
+  "mediaQueryCount": 5,
+  "keyframeCount": 1,
   "customProperties": [],
   "customPropertyReferences": [
     "--excluded-color",
@@ -36,7 +36,9 @@
     "--preferred-color",
     "--preferred-text-color"
   ],
-  "animationNames": [],
+  "animationNames": [
+    "f95ue-addon-activity-pulse"
+  ],
   "selectors": [
     {
       "selector": "*",
@@ -144,1066 +146,1088 @@
       "atRules": []
     },
     {
-      "selector": "#tag-config-button:hover",
-      "sourceLine": 138,
+      "selector": ".f95ue-page-dock-btn[data-f95ue-activity=\"working\"]",
+      "sourceLine": 139,
       "atRules": []
     },
     {
-      "selector": ".f95ue-page-dock-btn:hover",
-      "sourceLine": 138,
+      "selector": ".f95ue-page-dock-btn[data-f95ue-activity=\"waiting\"]",
+      "sourceLine": 144,
       "atRules": []
     },
     {
-      "selector": "#tag-config-button:active",
-      "sourceLine": 143,
-      "atRules": []
-    },
-    {
-      "selector": ".f95ue-page-dock-btn:active",
-      "sourceLine": 143,
-      "atRules": []
-    },
-    {
-      "selector": "#f95ue-page-dock.is-collapsed #tag-config-button",
+      "selector": ".f95ue-page-dock-btn[data-f95ue-activity=\"error\"]",
       "sourceLine": 148,
       "atRules": []
     },
     {
+      "selector": ".f95ue-page-dock-btn[data-f95ue-activity=\"working\"]",
+      "sourceLine": 139,
+      "atRules": [
+        "@media (prefers-reduced-motion: reduce)"
+      ]
+    },
+    {
+      "selector": "#tag-config-button:hover",
+      "sourceLine": 163,
+      "atRules": []
+    },
+    {
+      "selector": ".f95ue-page-dock-btn:hover",
+      "sourceLine": 163,
+      "atRules": []
+    },
+    {
+      "selector": "#tag-config-button:active",
+      "sourceLine": 168,
+      "atRules": []
+    },
+    {
+      "selector": ".f95ue-page-dock-btn:active",
+      "sourceLine": 168,
+      "atRules": []
+    },
+    {
+      "selector": "#f95ue-page-dock.is-collapsed #tag-config-button",
+      "sourceLine": 173,
+      "atRules": []
+    },
+    {
       "selector": "#f95ue-page-dock.is-collapsed .f95ue-page-dock-btn",
-      "sourceLine": 153,
+      "sourceLine": 178,
       "atRules": []
     },
     {
       "selector": "#f95ue-page-dock.is-collapsed #tag-config-button:hover",
-      "sourceLine": 158,
+      "sourceLine": 183,
       "atRules": []
     },
     {
       "selector": "#f95ue-page-dock.is-collapsed #tag-config-button:focus-visible",
-      "sourceLine": 158,
+      "sourceLine": 183,
       "atRules": []
     },
     {
       "selector": "#f95ue-page-dock.is-collapsed .f95ue-page-dock-btn:hover",
-      "sourceLine": 158,
+      "sourceLine": 183,
       "atRules": []
     },
     {
       "selector": "#f95ue-page-dock.is-collapsed .f95ue-page-dock-btn:focus-visible",
-      "sourceLine": 158,
+      "sourceLine": 183,
       "atRules": []
     },
     {
       "selector": "#f95ue-page-dock",
-      "sourceLine": 167,
+      "sourceLine": 192,
       "atRules": [
         "@media (max-width: 640px)"
       ]
     },
     {
       "selector": "#tag-config-button",
-      "sourceLine": 173,
+      "sourceLine": 198,
       "atRules": [
         "@media (max-width: 640px)"
       ]
     },
     {
       "selector": ".f95ue-page-dock-btn",
-      "sourceLine": 173,
+      "sourceLine": 198,
       "atRules": [
         "@media (max-width: 640px)"
       ]
     },
     {
       "selector": ".modal-error-notif",
-      "sourceLine": 179,
+      "sourceLine": 204,
       "atRules": []
     },
     {
       "selector": ".centered-item",
-      "sourceLine": 193,
+      "sourceLine": 218,
       "atRules": []
     },
     {
       "selector": ".settings-wrapper-inner",
-      "sourceLine": 200,
-      "atRules": []
-    },
-    {
-      "selector": ".tag-chip",
-      "sourceLine": 206,
-      "atRules": []
-    },
-    {
-      "selector": ".tag-chip span",
-      "sourceLine": 220,
-      "atRules": []
-    },
-    {
-      "selector": ".tag-chip.dragging",
       "sourceLine": 225,
       "atRules": []
     },
     {
+      "selector": ".tag-chip",
+      "sourceLine": 231,
+      "atRules": []
+    },
+    {
+      "selector": ".tag-chip span",
+      "sourceLine": 245,
+      "atRules": []
+    },
+    {
+      "selector": ".tag-chip.dragging",
+      "sourceLine": 250,
+      "atRules": []
+    },
+    {
       "selector": "#tag-config-modal",
-      "sourceLine": 229,
+      "sourceLine": 254,
       "atRules": []
     },
     {
       "selector": ".tag-list-container",
-      "sourceLine": 240,
+      "sourceLine": 265,
       "atRules": []
     },
     {
       "selector": ".preferred-tag-item",
-      "sourceLine": 251,
+      "sourceLine": 276,
       "atRules": []
     },
     {
       "selector": ".drag-ghost",
-      "sourceLine": 256,
+      "sourceLine": 281,
       "atRules": []
     },
     {
       "selector": ".tag-actions",
-      "sourceLine": 266,
-      "atRules": []
-    },
-    {
-      "selector": "#search-container",
-      "sourceLine": 271,
-      "atRules": []
-    },
-    {
-      "selector": ".tag-priority-note",
-      "sourceLine": 277,
-      "atRules": []
-    },
-    {
-      "selector": ".tag-list-section",
-      "sourceLine": 288,
-      "atRules": []
-    },
-    {
-      "selector": ".tag-list-header",
       "sourceLine": 291,
       "atRules": []
     },
     {
+      "selector": "#search-container",
+      "sourceLine": 296,
+      "atRules": []
+    },
+    {
+      "selector": ".tag-priority-note",
+      "sourceLine": 302,
+      "atRules": []
+    },
+    {
+      "selector": ".tag-list-section",
+      "sourceLine": 313,
+      "atRules": []
+    },
+    {
+      "selector": ".tag-list-header",
+      "sourceLine": 316,
+      "atRules": []
+    },
+    {
       "selector": ".excluded-tag-item",
-      "sourceLine": 299,
-      "atRules": []
-    },
-    {
-      "selector": ".marked-tag-item",
-      "sourceLine": 305,
-      "atRules": []
-    },
-    {
-      "selector": ".tag-list-item",
-      "sourceLine": 310,
-      "atRules": []
-    },
-    {
-      "selector": ".tag-list-item:hover",
-      "sourceLine": 315,
-      "atRules": []
-    },
-    {
-      "selector": ".tag-list-item.dragging",
-      "sourceLine": 319,
-      "atRules": []
-    },
-    {
-      "selector": ".tag-list-item.drag-over",
       "sourceLine": 324,
       "atRules": []
     },
     {
-      "selector": ".offscreen-copy",
+      "selector": ".marked-tag-item",
       "sourceLine": 330,
       "atRules": []
     },
     {
+      "selector": ".tag-list-item",
+      "sourceLine": 335,
+      "atRules": []
+    },
+    {
+      "selector": ".tag-list-item:hover",
+      "sourceLine": 340,
+      "atRules": []
+    },
+    {
+      "selector": ".tag-list-item.dragging",
+      "sourceLine": 344,
+      "atRules": []
+    },
+    {
+      "selector": ".tag-list-item.drag-over",
+      "sourceLine": 349,
+      "atRules": []
+    },
+    {
+      "selector": ".offscreen-copy",
+      "sourceLine": 355,
+      "atRules": []
+    },
+    {
       "selector": ".tag-list-container.drag-over",
-      "sourceLine": 341,
+      "sourceLine": 366,
       "atRules": []
     },
     {
       "selector": ".tag-list-container.drag-target",
-      "sourceLine": 347,
+      "sourceLine": 372,
       "atRules": []
     },
     {
       "selector": "#search-results li",
-      "sourceLine": 353,
+      "sourceLine": 378,
       "atRules": []
     },
     {
       "selector": "#search-results li:hover",
-      "sourceLine": 364,
+      "sourceLine": 389,
       "atRules": []
     },
     {
       "selector": "#search-results .tag-search-load-more-row",
-      "sourceLine": 368,
+      "sourceLine": 393,
       "atRules": []
     },
     {
       "selector": ".tag-search-load-more",
-      "sourceLine": 373,
+      "sourceLine": 398,
       "atRules": []
     },
     {
       "selector": ".tag-search-load-more:hover",
-      "sourceLine": 383,
+      "sourceLine": 408,
       "atRules": []
     },
     {
       "selector": ".tag-search-load-more:focus-visible",
-      "sourceLine": 383,
+      "sourceLine": 408,
       "atRules": []
     },
     {
       "selector": ".tags-search-input-wrap",
-      "sourceLine": 388,
+      "sourceLine": 413,
       "atRules": []
     },
     {
       "selector": "#tags-search",
-      "sourceLine": 392,
+      "sourceLine": 417,
       "atRules": []
     },
     {
       "selector": ".tags-search-clear",
-      "sourceLine": 401,
+      "sourceLine": 426,
       "atRules": []
     },
     {
       "selector": ".tags-search-clear.visible",
-      "sourceLine": 423,
+      "sourceLine": 448,
       "atRules": []
     },
     {
       "selector": ".tags-search-clear:hover",
-      "sourceLine": 428,
+      "sourceLine": 453,
       "atRules": []
     },
     {
       "selector": ".tags-search-clear:focus-visible",
-      "sourceLine": 433,
+      "sourceLine": 458,
       "atRules": []
     },
     {
       "selector": "#tags-search:focus",
-      "sourceLine": 437,
+      "sourceLine": 462,
       "atRules": []
     },
     {
       "selector": ".tag-btn",
-      "sourceLine": 443,
+      "sourceLine": 468,
       "atRules": []
     },
     {
       "selector": ".tag-btn:hover",
-      "sourceLine": 459,
+      "sourceLine": 484,
       "atRules": []
     },
     {
       "selector": ".tag-btn.preferred",
-      "sourceLine": 463,
+      "sourceLine": 488,
       "atRules": []
     },
     {
       "selector": ".tag-btn.excluded",
-      "sourceLine": 467,
+      "sourceLine": 492,
       "atRules": []
     },
     {
       "selector": ".tag-btn.marked",
-      "sourceLine": 471,
+      "sourceLine": 496,
       "atRules": []
     },
     {
       "selector": ".tag-btn",
-      "sourceLine": 478,
+      "sourceLine": 503,
       "atRules": [
         "@media (max-width: 480px)"
       ]
     },
     {
       "selector": ".preferred-tag-remove",
-      "sourceLine": 486,
+      "sourceLine": 511,
       "atRules": []
     },
     {
       "selector": ".excluded-tag-remove",
-      "sourceLine": 486,
+      "sourceLine": 511,
       "atRules": []
     },
     {
       "selector": ".tag-remove-btn",
-      "sourceLine": 486,
+      "sourceLine": 511,
       "atRules": []
     },
     {
       "selector": "#search-results",
-      "sourceLine": 503,
+      "sourceLine": 528,
       "atRules": []
     },
     {
       "selector": "#tag-config-modal input",
-      "sourceLine": 520,
+      "sourceLine": 545,
       "atRules": []
     },
     {
       "selector": "#tag-config-modal textarea",
-      "sourceLine": 520,
+      "sourceLine": 545,
       "atRules": []
     },
     {
       "selector": "#tag-config-modal select",
-      "sourceLine": 520,
+      "sourceLine": 545,
       "atRules": []
     },
     {
       "selector": "#tag-config-modal input:focus",
-      "sourceLine": 528,
+      "sourceLine": 553,
       "atRules": []
     },
     {
       "selector": "#tag-config-modal textarea:focus",
-      "sourceLine": 528,
+      "sourceLine": 553,
       "atRules": []
     },
     {
       "selector": "#tag-config-modal select:focus",
-      "sourceLine": 528,
+      "sourceLine": 553,
       "atRules": []
     },
     {
       "selector": "#tag-config-modal input[type=\"checkbox\"]",
-      "sourceLine": 536,
+      "sourceLine": 561,
       "atRules": []
     },
     {
       "selector": "#tag-config-modal input[type=\"radio\"]",
-      "sourceLine": 536,
+      "sourceLine": 561,
       "atRules": []
     },
     {
       "selector": "#tag-config-modal .config-color-input",
-      "sourceLine": 542,
+      "sourceLine": 567,
       "atRules": []
     },
     {
       "selector": "#tag-config-modal .config-color-input::-webkit-color-swatch-wrapper",
-      "sourceLine": 555,
+      "sourceLine": 580,
       "atRules": []
     },
     {
       "selector": "#tag-config-modal .config-color-input::-webkit-color-swatch",
-      "sourceLine": 559,
-      "atRules": []
-    },
-    {
-      "selector": ".modal-btn",
-      "sourceLine": 564,
-      "atRules": []
-    },
-    {
-      "selector": ".modal-btn:hover",
-      "sourceLine": 579,
-      "atRules": []
-    },
-    {
-      "selector": ".modal-btn:active",
       "sourceLine": 584,
       "atRules": []
     },
     {
-      "selector": ".config-button",
+      "selector": ".modal-btn",
       "sourceLine": 589,
       "atRules": []
     },
     {
+      "selector": ".modal-btn:hover",
+      "sourceLine": 604,
+      "atRules": []
+    },
+    {
+      "selector": ".modal-btn:active",
+      "sourceLine": 609,
+      "atRules": []
+    },
+    {
+      "selector": ".config-button",
+      "sourceLine": 614,
+      "atRules": []
+    },
+    {
       "selector": ".config-button:hover",
-      "sourceLine": 598,
-      "atRules": []
-    },
-    {
-      "selector": ".feature-health-box",
-      "sourceLine": 603,
-      "atRules": []
-    },
-    {
-      "selector": ".feature-health-header",
-      "sourceLine": 611,
-      "atRules": []
-    },
-    {
-      "selector": ".feature-health-title",
-      "sourceLine": 617,
-      "atRules": []
-    },
-    {
-      "selector": ".feature-health-actions",
       "sourceLine": 623,
       "atRules": []
     },
     {
-      "selector": ".feature-health-close",
+      "selector": ".feature-health-box",
       "sourceLine": 628,
       "atRules": []
     },
     {
-      "selector": ".feature-health-close:hover",
-      "sourceLine": 638,
+      "selector": ".feature-health-header",
+      "sourceLine": 636,
       "atRules": []
     },
     {
-      "selector": ".feature-health-content",
+      "selector": ".feature-health-title",
       "sourceLine": 642,
       "atRules": []
     },
     {
-      "selector": ".config-row",
+      "selector": ".feature-health-actions",
+      "sourceLine": 648,
+      "atRules": []
+    },
+    {
+      "selector": ".feature-health-close",
       "sourceLine": 653,
       "atRules": []
     },
     {
+      "selector": ".feature-health-close:hover",
+      "sourceLine": 663,
+      "atRules": []
+    },
+    {
+      "selector": ".feature-health-content",
+      "sourceLine": 667,
+      "atRules": []
+    },
+    {
+      "selector": ".config-row",
+      "sourceLine": 678,
+      "atRules": []
+    },
+    {
       "selector": ".config-row label",
-      "sourceLine": 664,
+      "sourceLine": 689,
       "atRules": []
     },
     {
       "selector": ".setting-tooltip-badge",
-      "sourceLine": 674,
+      "sourceLine": 699,
       "atRules": []
     },
     {
       "selector": ".setting-tooltip-badge:hover",
-      "sourceLine": 692,
+      "sourceLine": 717,
       "atRules": []
     },
     {
       "selector": ".config-row input[type=\"checkbox\"]",
-      "sourceLine": 698,
+      "sourceLine": 723,
       "atRules": []
     },
     {
       "selector": ".config-row input:not([type=\"checkbox\"])",
-      "sourceLine": 707,
+      "sourceLine": 732,
       "atRules": []
     },
     {
       "selector": ".config-row select",
-      "sourceLine": 715,
+      "sourceLine": 740,
       "atRules": []
     },
     {
       "selector": ".config-row select:focus",
-      "sourceLine": 729,
+      "sourceLine": 754,
       "atRules": []
     },
     {
       "selector": ".config-row input[type=\"number\"]",
-      "sourceLine": 734,
+      "sourceLine": 759,
       "atRules": []
     },
     {
       "selector": ".config-row input[type=\"number\"]:focus",
-      "sourceLine": 745,
+      "sourceLine": 770,
       "atRules": []
     },
     {
       "selector": ".config-row input[type=\"number\"]::-webkit-inner-spin-button",
-      "sourceLine": 750,
+      "sourceLine": 775,
       "atRules": []
     },
     {
       "selector": ".config-row input[type=\"number\"]::-webkit-outer-spin-button",
-      "sourceLine": 750,
+      "sourceLine": 775,
       "atRules": []
     },
     {
       "selector": ".config-row input[type=\"color\"]",
-      "sourceLine": 756,
+      "sourceLine": 781,
       "atRules": []
     },
     {
       "selector": ".config-row .config-color-input",
-      "sourceLine": 763,
+      "sourceLine": 788,
       "atRules": []
     },
     {
       "selector": ".config-row .config-button",
-      "sourceLine": 769,
+      "sourceLine": 794,
       "atRules": []
     },
     {
       "selector": ".config-row:hover",
-      "sourceLine": 773,
+      "sourceLine": 798,
       "atRules": []
     },
     {
       "selector": "#tag-config-modal .modal-content",
-      "sourceLine": 777,
+      "sourceLine": 802,
       "atRules": []
     },
     {
       "selector": ".settings-mobile-panel-header",
-      "sourceLine": 795,
+      "sourceLine": 820,
       "atRules": []
     },
     {
       "selector": ".settings-mobile-panel-title",
-      "sourceLine": 799,
+      "sourceLine": 824,
       "atRules": []
     },
     {
       "selector": ".settings-mobile-nav-btn",
-      "sourceLine": 810,
+      "sourceLine": 835,
       "atRules": []
     },
     {
       "selector": ".settings-mobile-nav-btn:hover",
-      "sourceLine": 822,
+      "sourceLine": 847,
       "atRules": []
     },
     {
       "selector": "#tag-config-modal .modal-content",
-      "sourceLine": 828,
+      "sourceLine": 853,
       "atRules": [
         "@media (max-width: 480px)"
       ]
     },
     {
       "selector": ".settings-shell",
-      "sourceLine": 833,
+      "sourceLine": 858,
       "atRules": []
     },
     {
       "selector": ".settings-sidebar",
-      "sourceLine": 840,
+      "sourceLine": 865,
       "atRules": []
     },
     {
       "selector": ".settings-sidebar-title",
-      "sourceLine": 850,
+      "sourceLine": 875,
       "atRules": []
     },
     {
       "selector": ".settings-nav",
-      "sourceLine": 857,
+      "sourceLine": 882,
       "atRules": []
     },
     {
       "selector": ".settings-nav-group",
-      "sourceLine": 866,
+      "sourceLine": 891,
       "atRules": []
     },
     {
       "selector": ".settings-nav-group + .settings-nav-group",
-      "sourceLine": 872,
+      "sourceLine": 897,
       "atRules": []
     },
     {
       "selector": ".settings-nav-group-label",
-      "sourceLine": 878,
+      "sourceLine": 903,
       "atRules": []
     },
     {
       "selector": ".settings-nav-pinned-items",
-      "sourceLine": 886,
+      "sourceLine": 911,
       "atRules": []
     },
     {
       "selector": ".settings-nav-item",
-      "sourceLine": 892,
+      "sourceLine": 917,
       "atRules": []
     },
     {
       "selector": ".settings-nav-item:hover",
-      "sourceLine": 909,
+      "sourceLine": 934,
       "atRules": []
     },
     {
       "selector": ".settings-nav-item.active",
-      "sourceLine": 914,
+      "sourceLine": 939,
       "atRules": []
     },
     {
       "selector": ".settings-nav-item.settings-nav-addon-item",
-      "sourceLine": 920,
+      "sourceLine": 945,
       "atRules": []
     },
     {
       "selector": ".settings-nav-item.settings-nav-addon-item::after",
-      "sourceLine": 925,
+      "sourceLine": 950,
       "atRules": []
     },
     {
       "selector": ".settings-sidebar-footer",
-      "sourceLine": 938,
+      "sourceLine": 963,
       "atRules": []
     },
     {
       "selector": ".settings-close-btn",
-      "sourceLine": 943,
+      "sourceLine": 968,
       "atRules": []
     },
     {
       "selector": ".settings-main",
-      "sourceLine": 948,
+      "sourceLine": 973,
       "atRules": []
     },
     {
       "selector": ".settings-panel",
-      "sourceLine": 955,
-      "atRules": []
-    },
-    {
-      "selector": ".settings-panel.active",
-      "sourceLine": 962,
-      "atRules": []
-    },
-    {
-      "selector": ".settings-panel .settings-wrapper-inner",
-      "sourceLine": 966,
-      "atRules": []
-    },
-    {
-      "selector": ".settings-panel-actions",
-      "sourceLine": 970,
-      "atRules": []
-    },
-    {
-      "selector": ".addins-panel-section + .addins-panel-section",
-      "sourceLine": 976,
-      "atRules": []
-    },
-    {
-      "selector": ".addins-panel-header-row",
       "sourceLine": 980,
       "atRules": []
     },
     {
-      "selector": ".addins-panel-title",
+      "selector": ".settings-panel.active",
       "sourceLine": 987,
       "atRules": []
     },
     {
+      "selector": ".settings-panel .settings-wrapper-inner",
+      "sourceLine": 991,
+      "atRules": []
+    },
+    {
+      "selector": ".settings-panel-actions",
+      "sourceLine": 995,
+      "atRules": []
+    },
+    {
+      "selector": ".addins-panel-section + .addins-panel-section",
+      "sourceLine": 1001,
+      "atRules": []
+    },
+    {
+      "selector": ".addins-panel-header-row",
+      "sourceLine": 1005,
+      "atRules": []
+    },
+    {
+      "selector": ".addins-panel-title",
+      "sourceLine": 1012,
+      "atRules": []
+    },
+    {
       "selector": ".addins-panel-subtitle",
-      "sourceLine": 993,
+      "sourceLine": 1018,
       "atRules": []
     },
     {
       "selector": ".addins-list",
-      "sourceLine": 1000,
+      "sourceLine": 1025,
       "atRules": []
     },
     {
       "selector": ".addins-empty-state",
-      "sourceLine": 1006,
+      "sourceLine": 1031,
       "atRules": []
     },
     {
       "selector": ".addins-card",
-      "sourceLine": 1006,
+      "sourceLine": 1031,
       "atRules": []
     },
     {
       "selector": ".addins-empty-state",
-      "sourceLine": 1013,
+      "sourceLine": 1038,
       "atRules": []
     },
     {
       "selector": ".addins-empty-title",
-      "sourceLine": 1017,
+      "sourceLine": 1042,
       "atRules": []
     },
     {
       "selector": ".addins-empty-copy",
-      "sourceLine": 1023,
+      "sourceLine": 1048,
       "atRules": []
     },
     {
       "selector": ".addins-card",
-      "sourceLine": 1030,
+      "sourceLine": 1055,
       "atRules": []
     },
     {
       "selector": ".addins-card-head",
-      "sourceLine": 1034,
+      "sourceLine": 1059,
       "atRules": []
     },
     {
       "selector": ".addins-card-name",
-      "sourceLine": 1041,
+      "sourceLine": 1066,
       "atRules": []
     },
     {
       "selector": ".addins-card-meta",
-      "sourceLine": 1047,
+      "sourceLine": 1072,
       "atRules": []
     },
     {
       "selector": ".addins-card-description",
-      "sourceLine": 1053,
+      "sourceLine": 1078,
       "atRules": []
     },
     {
       "selector": ".addins-card-badges",
-      "sourceLine": 1060,
+      "sourceLine": 1085,
       "atRules": []
     },
     {
       "selector": ".addins-badge",
-      "sourceLine": 1067,
+      "sourceLine": 1092,
       "atRules": []
     },
     {
       "selector": ".addins-badge.planned",
-      "sourceLine": 1083,
+      "sourceLine": 1108,
       "atRules": []
     },
     {
       "selector": ".addins-badge.installed",
-      "sourceLine": 1089,
+      "sourceLine": 1114,
       "atRules": []
     },
     {
       "selector": ".addins-badge.running",
-      "sourceLine": 1095,
+      "sourceLine": 1120,
       "atRules": []
     },
     {
       "selector": ".addins-badge.pinned",
-      "sourceLine": 1101,
+      "sourceLine": 1126,
       "atRules": []
     },
     {
       "selector": ".addins-badge.disabled",
-      "sourceLine": 1107,
+      "sourceLine": 1132,
       "atRules": []
     },
     {
       "selector": ".addins-badge.needs-update",
-      "sourceLine": 1113,
+      "sourceLine": 1138,
       "atRules": []
     },
     {
       "selector": ".addins-badge.error",
-      "sourceLine": 1119,
+      "sourceLine": 1144,
       "atRules": []
     },
     {
       "selector": ".addins-badge.broken",
-      "sourceLine": 1125,
+      "sourceLine": 1150,
       "atRules": []
     },
     {
       "selector": ".addins-status-copy",
-      "sourceLine": 1131,
+      "sourceLine": 1156,
       "atRules": []
     },
     {
       "selector": ".addins-status-copy.disabled",
-      "sourceLine": 1139,
+      "sourceLine": 1164,
       "atRules": []
     },
     {
       "selector": ".addins-status-copy.needs-update",
-      "sourceLine": 1145,
+      "sourceLine": 1170,
       "atRules": []
     },
     {
       "selector": ".addins-status-copy.error",
-      "sourceLine": 1151,
+      "sourceLine": 1176,
       "atRules": []
     },
     {
       "selector": ".addins-status-copy.broken",
-      "sourceLine": 1157,
+      "sourceLine": 1182,
       "atRules": []
     },
     {
       "selector": ".settings-addon-status-note.disabled",
-      "sourceLine": 1163,
+      "sourceLine": 1188,
       "atRules": []
     },
     {
       "selector": ".settings-addon-status-note.needs-update",
-      "sourceLine": 1169,
-      "atRules": []
-    },
-    {
-      "selector": ".settings-addon-status-note.error",
-      "sourceLine": 1175,
-      "atRules": []
-    },
-    {
-      "selector": ".settings-addon-status-note.broken",
-      "sourceLine": 1181,
-      "atRules": []
-    },
-    {
-      "selector": ".addins-panel-status-row",
-      "sourceLine": 1187,
-      "atRules": []
-    },
-    {
-      "selector": ".addins-panel-actions",
       "sourceLine": 1194,
       "atRules": []
     },
     {
+      "selector": ".settings-addon-status-note.error",
+      "sourceLine": 1200,
+      "atRules": []
+    },
+    {
+      "selector": ".settings-addon-status-note.broken",
+      "sourceLine": 1206,
+      "atRules": []
+    },
+    {
+      "selector": ".addins-panel-status-row",
+      "sourceLine": 1212,
+      "atRules": []
+    },
+    {
+      "selector": ".addins-panel-actions",
+      "sourceLine": 1219,
+      "atRules": []
+    },
+    {
       "selector": ".addins-panel-settings",
-      "sourceLine": 1201,
+      "sourceLine": 1226,
       "atRules": []
     },
     {
       "selector": ".addins-setting-row",
-      "sourceLine": 1209,
+      "sourceLine": 1234,
       "atRules": []
     },
     {
       "selector": ".addins-card-actions",
-      "sourceLine": 1213,
+      "sourceLine": 1238,
       "atRules": []
     },
     {
       "selector": ".addins-action-btn",
-      "sourceLine": 1220,
+      "sourceLine": 1245,
       "atRules": []
     },
     {
       "selector": ".addins-action-btn:hover",
-      "sourceLine": 1236,
+      "sourceLine": 1261,
       "atRules": []
     },
     {
       "selector": ".addins-action-btn.secondary",
-      "sourceLine": 1242,
-      "atRules": []
-    },
-    {
-      "selector": ".addins-action-btn.addon-enable-btn",
-      "sourceLine": 1246,
-      "atRules": []
-    },
-    {
-      "selector": ".addins-action-btn.addon-enable-btn:hover",
-      "sourceLine": 1252,
-      "atRules": []
-    },
-    {
-      "selector": ".addins-action-btn.addon-disable-btn",
-      "sourceLine": 1258,
-      "atRules": []
-    },
-    {
-      "selector": ".addins-action-btn:disabled",
-      "sourceLine": 1262,
-      "atRules": []
-    },
-    {
-      "selector": ".addins-action-btn:disabled:hover",
       "sourceLine": 1267,
       "atRules": []
     },
     {
+      "selector": ".addins-action-btn.addon-enable-btn",
+      "sourceLine": 1271,
+      "atRules": []
+    },
+    {
+      "selector": ".addins-action-btn.addon-enable-btn:hover",
+      "sourceLine": 1277,
+      "atRules": []
+    },
+    {
+      "selector": ".addins-action-btn.addon-disable-btn",
+      "sourceLine": 1283,
+      "atRules": []
+    },
+    {
+      "selector": ".addins-action-btn:disabled",
+      "sourceLine": 1287,
+      "atRules": []
+    },
+    {
+      "selector": ".addins-action-btn:disabled:hover",
+      "sourceLine": 1292,
+      "atRules": []
+    },
+    {
       "selector": "#tag-config-modal",
-      "sourceLine": 1274,
+      "sourceLine": 1299,
       "atRules": [
         "@media (max-width: 760px)"
       ]
     },
     {
       "selector": "#tag-config-modal .modal-content",
-      "sourceLine": 1278,
+      "sourceLine": 1303,
       "atRules": [
         "@media (max-width: 760px)"
       ]
     },
     {
       "selector": ".settings-shell",
-      "sourceLine": 1287,
+      "sourceLine": 1312,
       "atRules": [
         "@media (max-width: 760px)"
       ]
     },
     {
       "selector": ".settings-sidebar",
-      "sourceLine": 1293,
+      "sourceLine": 1318,
       "atRules": [
         "@media (max-width: 760px)"
       ]
     },
     {
       "selector": ".settings-sidebar-title",
-      "sourceLine": 1301,
+      "sourceLine": 1326,
       "atRules": [
         "@media (max-width: 760px)"
       ]
     },
     {
       "selector": ".settings-nav",
-      "sourceLine": 1306,
+      "sourceLine": 1331,
       "atRules": [
         "@media (max-width: 760px)"
       ]
     },
     {
       "selector": ".settings-nav-item.settings-nav-addon-item",
-      "sourceLine": 1310,
+      "sourceLine": 1335,
       "atRules": [
         "@media (max-width: 760px)"
       ]
     },
     {
       "selector": ".settings-nav-item.settings-nav-addon-item::after",
-      "sourceLine": 1314,
-      "atRules": [
-        "@media (max-width: 760px)"
-      ]
-    },
-    {
-      "selector": ".settings-panel:not(#settings-panel-color):not(#settings-panel-addins) .config-row label",
-      "sourceLine": 1319,
-      "atRules": [
-        "@media (max-width: 760px)"
-      ]
-    },
-    {
-      "selector": ".settings-main",
-      "sourceLine": 1323,
-      "atRules": [
-        "@media (max-width: 760px)"
-      ]
-    },
-    {
-      "selector": ".settings-shell.mobile-show-panel .settings-sidebar",
-      "sourceLine": 1330,
-      "atRules": [
-        "@media (max-width: 760px)"
-      ]
-    },
-    {
-      "selector": ".settings-shell.mobile-show-panel .settings-main",
-      "sourceLine": 1334,
-      "atRules": [
-        "@media (max-width: 760px)"
-      ]
-    },
-    {
-      "selector": ".settings-shell.mobile-show-panel .settings-mobile-panel-header",
       "sourceLine": 1339,
       "atRules": [
         "@media (max-width: 760px)"
       ]
     },
     {
+      "selector": ".settings-panel:not(#settings-panel-color):not(#settings-panel-addins) .config-row label",
+      "sourceLine": 1344,
+      "atRules": [
+        "@media (max-width: 760px)"
+      ]
+    },
+    {
+      "selector": ".settings-main",
+      "sourceLine": 1348,
+      "atRules": [
+        "@media (max-width: 760px)"
+      ]
+    },
+    {
+      "selector": ".settings-shell.mobile-show-panel .settings-sidebar",
+      "sourceLine": 1355,
+      "atRules": [
+        "@media (max-width: 760px)"
+      ]
+    },
+    {
+      "selector": ".settings-shell.mobile-show-panel .settings-main",
+      "sourceLine": 1359,
+      "atRules": [
+        "@media (max-width: 760px)"
+      ]
+    },
+    {
+      "selector": ".settings-shell.mobile-show-panel .settings-mobile-panel-header",
+      "sourceLine": 1364,
+      "atRules": [
+        "@media (max-width: 760px)"
+      ]
+    },
+    {
       "selector": ".settings-panel",
-      "sourceLine": 1349,
+      "sourceLine": 1374,
       "atRules": [
         "@media (max-width: 760px)"
       ]
     },
     {
       "selector": "#tag-config-modal.show",
-      "sourceLine": 1357,
+      "sourceLine": 1382,
       "atRules": []
     },
     {
       "selector": ".config-header",
-      "sourceLine": 1361,
+      "sourceLine": 1386,
       "atRules": []
     },
     {
       "selector": ".config-dialog-backdrop",
-      "sourceLine": 1379,
+      "sourceLine": 1404,
       "atRules": []
     },
     {
       "selector": ".config-dialog-panel",
-      "sourceLine": 1390,
+      "sourceLine": 1415,
       "atRules": []
     },
     {
       "selector": ".config-dialog-title",
-      "sourceLine": 1399,
+      "sourceLine": 1424,
       "atRules": []
     },
     {
       "selector": ".config-dialog-description",
-      "sourceLine": 1406,
+      "sourceLine": 1431,
       "atRules": []
     },
     {
       "selector": ".config-dialog-settings",
-      "sourceLine": 1413,
+      "sourceLine": 1438,
       "atRules": []
     },
     {
       "selector": ".config-dialog-input",
-      "sourceLine": 1421,
+      "sourceLine": 1446,
       "atRules": []
     },
     {
       "selector": ".config-dialog-input:focus",
-      "sourceLine": 1430,
+      "sourceLine": 1455,
       "atRules": []
     },
     {
       "selector": ".config-dialog-error",
-      "sourceLine": 1435,
+      "sourceLine": 1460,
       "atRules": []
     },
     {
       "selector": ".config-dialog-actions",
-      "sourceLine": 1442,
-      "atRules": []
-    },
-    {
-      "selector": ".config-reorder-list",
-      "sourceLine": 1450,
-      "atRules": []
-    },
-    {
-      "selector": ".config-reorder-item",
-      "sourceLine": 1457,
-      "atRules": []
-    },
-    {
-      "selector": ".config-reorder-label",
       "sourceLine": 1467,
       "atRules": []
     },
     {
+      "selector": ".config-reorder-list",
+      "sourceLine": 1475,
+      "atRules": []
+    },
+    {
+      "selector": ".config-reorder-item",
+      "sourceLine": 1482,
+      "atRules": []
+    },
+    {
+      "selector": ".config-reorder-label",
+      "sourceLine": 1492,
+      "atRules": []
+    },
+    {
       "selector": ".config-reorder-handle",
-      "sourceLine": 1474,
+      "sourceLine": 1499,
       "atRules": []
     },
     {
       "selector": ".config-reorder-btn",
-      "sourceLine": 1478,
+      "sourceLine": 1503,
       "atRules": []
     },
     {
       "selector": ".config-reorder-btn:hover:not(:disabled)",
-      "sourceLine": 1495,
+      "sourceLine": 1520,
       "atRules": []
     },
     {
       "selector": ".config-reorder-btn:disabled",
-      "sourceLine": 1501,
+      "sourceLine": 1526,
       "atRules": []
     },
     {
       "selector": ".config-transfer-dialog-error",
-      "sourceLine": 1506,
+      "sourceLine": 1531,
       "atRules": []
     }
   ],
@@ -3818,15 +3842,28 @@
   "duplicateSelectorBlocks": [],
   "duplicateDeclarationGroups": [
     {
+      "declarations": "box-shadow:0 0 0 2px #65d68d!;animation:f95ue-addon-activity-pulse 1.8s ease-in-out infinite!",
+      "occurrences": [
+        {
+          "selectorText": ".f95ue-page-dock-btn[data-f95ue-activity=\"working\"]",
+          "sourceLine": 139
+        },
+        {
+          "selectorText": ".f95ue-page-dock-btn[data-f95ue-activity=\"working\"]",
+          "sourceLine": 139
+        }
+      ]
+    },
+    {
       "declarations": "background-color:var(--preferred-color)!;color:var(--preferred-text-color)!",
       "occurrences": [
         {
           "selectorText": ".preferred-tag-item",
-          "sourceLine": 251
+          "sourceLine": 276
         },
         {
           "selectorText": ".tag-btn.preferred",
-          "sourceLine": 463
+          "sourceLine": 488
         }
       ]
     },
@@ -3835,11 +3872,11 @@
       "occurrences": [
         {
           "selectorText": ".excluded-tag-item",
-          "sourceLine": 299
+          "sourceLine": 324
         },
         {
           "selectorText": ".tag-btn.excluded",
-          "sourceLine": 467
+          "sourceLine": 492
         }
       ]
     },
@@ -3848,11 +3885,11 @@
       "occurrences": [
         {
           "selectorText": ".marked-tag-item",
-          "sourceLine": 305
+          "sourceLine": 330
         },
         {
           "selectorText": ".tag-btn.marked",
-          "sourceLine": 471
+          "sourceLine": 496
         }
       ]
     },
@@ -3861,11 +3898,11 @@
       "occurrences": [
         {
           "selectorText": ".tag-list-item",
-          "sourceLine": 310
+          "sourceLine": 335
         },
         {
           "selectorText": ".tags-search-input-wrap",
-          "sourceLine": 388
+          "sourceLine": 413
         }
       ]
     },
@@ -3874,11 +3911,11 @@
       "occurrences": [
         {
           "selectorText": ".tag-list-item.drag-over",
-          "sourceLine": 324
+          "sourceLine": 349
         },
         {
           "selectorText": ".tag-list-container.drag-over",
-          "sourceLine": 341
+          "sourceLine": 366
         }
       ]
     },
@@ -3887,15 +3924,15 @@
       "occurrences": [
         {
           "selectorText": "#tags-search:focus",
-          "sourceLine": 437
+          "sourceLine": 462
         },
         {
           "selectorText": "#tag-config-modal input:focus,\n#tag-config-modal textarea:focus,\n#tag-config-modal select:focus",
-          "sourceLine": 528
+          "sourceLine": 553
         },
         {
           "selectorText": ".config-dialog-input:focus",
-          "sourceLine": 1430
+          "sourceLine": 1455
         }
       ]
     },
@@ -3904,11 +3941,11 @@
       "occurrences": [
         {
           "selectorText": "#tag-config-modal .config-color-input::-webkit-color-swatch-wrapper",
-          "sourceLine": 555
+          "sourceLine": 580
         },
         {
           "selectorText": "#tag-config-modal",
-          "sourceLine": 1274
+          "sourceLine": 1299
         }
       ]
     },
@@ -3917,11 +3954,11 @@
       "occurrences": [
         {
           "selectorText": ".modal-btn:hover",
-          "sourceLine": 579
+          "sourceLine": 604
         },
         {
           "selectorText": ".config-button:hover",
-          "sourceLine": 598
+          "sourceLine": 623
         }
       ]
     },
@@ -3930,15 +3967,15 @@
       "occurrences": [
         {
           "selectorText": ".setting-tooltip-badge:hover",
-          "sourceLine": 692
+          "sourceLine": 717
         },
         {
           "selectorText": ".addins-action-btn:hover",
-          "sourceLine": 1236
+          "sourceLine": 1261
         },
         {
           "selectorText": ".config-reorder-btn:hover:not(:disabled)",
-          "sourceLine": 1495
+          "sourceLine": 1520
         }
       ]
     },
@@ -3947,11 +3984,11 @@
       "occurrences": [
         {
           "selectorText": ".config-row select:focus",
-          "sourceLine": 729
+          "sourceLine": 754
         },
         {
           "selectorText": ".config-row input[type=\"number\"]:focus",
-          "sourceLine": 745
+          "sourceLine": 770
         }
       ]
     },
@@ -3960,11 +3997,11 @@
       "occurrences": [
         {
           "selectorText": ".settings-mobile-panel-header",
-          "sourceLine": 795
+          "sourceLine": 820
         },
         {
           "selectorText": ".settings-shell.mobile-show-panel .settings-sidebar",
-          "sourceLine": 1330
+          "sourceLine": 1355
         }
       ]
     },
@@ -3973,11 +4010,11 @@
       "occurrences": [
         {
           "selectorText": ".settings-mobile-nav-btn:hover",
-          "sourceLine": 822
+          "sourceLine": 847
         },
         {
           "selectorText": ".settings-nav-item:hover",
-          "sourceLine": 909
+          "sourceLine": 934
         }
       ]
     },
@@ -3986,11 +4023,11 @@
       "occurrences": [
         {
           "selectorText": ".settings-nav-group",
-          "sourceLine": 866
+          "sourceLine": 891
         },
         {
           "selectorText": ".settings-nav-pinned-items",
-          "sourceLine": 886
+          "sourceLine": 911
         }
       ]
     },
@@ -3999,11 +4036,11 @@
       "occurrences": [
         {
           "selectorText": ".addins-panel-header-row",
-          "sourceLine": 980
+          "sourceLine": 1005
         },
         {
           "selectorText": ".addins-card-head",
-          "sourceLine": 1034
+          "sourceLine": 1059
         }
       ]
     },
@@ -4012,11 +4049,11 @@
       "occurrences": [
         {
           "selectorText": ".addins-empty-state",
-          "sourceLine": 1013
+          "sourceLine": 1038
         },
         {
           "selectorText": ".addins-card",
-          "sourceLine": 1030
+          "sourceLine": 1055
         }
       ]
     },
@@ -4025,11 +4062,11 @@
       "occurrences": [
         {
           "selectorText": ".addins-panel-actions",
-          "sourceLine": 1194
+          "sourceLine": 1219
         },
         {
           "selectorText": ".addins-card-actions",
-          "sourceLine": 1213
+          "sourceLine": 1238
         }
       ]
     },
@@ -4038,11 +4075,11 @@
       "occurrences": [
         {
           "selectorText": ".addins-action-btn.secondary",
-          "sourceLine": 1242
+          "sourceLine": 1267
         },
         {
           "selectorText": ".addins-action-btn.addon-disable-btn",
-          "sourceLine": 1258
+          "sourceLine": 1283
         }
       ]
     },
@@ -4051,11 +4088,11 @@
       "occurrences": [
         {
           "selectorText": "#tag-config-modal.show",
-          "sourceLine": 1357
+          "sourceLine": 1382
         },
         {
           "selectorText": ".config-reorder-handle",
-          "sourceLine": 1474
+          "sourceLine": 1499
         }
       ]
     }
@@ -4078,23 +4115,23 @@
     },
     {
       "selectorText": ".tag-chip",
-      "sourceLine": 206
+      "sourceLine": 231
     },
     {
       "selectorText": ".drag-ghost",
-      "sourceLine": 256
+      "sourceLine": 281
     },
     {
       "selectorText": "#tag-config-modal .config-color-input::-webkit-color-swatch-wrapper",
-      "sourceLine": 555
+      "sourceLine": 580
     },
     {
       "selectorText": "#tag-config-modal .config-color-input::-webkit-color-swatch",
-      "sourceLine": 559
+      "sourceLine": 584
     },
     {
       "selectorText": ".config-row input[type=\"number\"]::-webkit-inner-spin-button,\n.config-row input[type=\"number\"]::-webkit-outer-spin-button",
-      "sourceLine": 750
+      "sourceLine": 775
     }
   ],
   "highSpecificitySelectors": [
@@ -4131,212 +4168,212 @@
     {
       "selector": "#tag-config-button:hover",
       "specificity": 110,
-      "sourceLine": 138
+      "sourceLine": 163
     },
     {
       "selector": "#tag-config-button:active",
       "specificity": 110,
-      "sourceLine": 143
+      "sourceLine": 168
     },
     {
       "selector": "#f95ue-page-dock.is-collapsed #tag-config-button",
       "specificity": 220,
-      "sourceLine": 148
+      "sourceLine": 173
     },
     {
       "selector": "#f95ue-page-dock.is-collapsed .f95ue-page-dock-btn",
       "specificity": 120,
-      "sourceLine": 153
+      "sourceLine": 178
     },
     {
       "selector": "#f95ue-page-dock.is-collapsed #tag-config-button:hover",
       "specificity": 220,
-      "sourceLine": 158
+      "sourceLine": 183
     },
     {
       "selector": "#f95ue-page-dock.is-collapsed #tag-config-button:focus-visible",
       "specificity": 220,
-      "sourceLine": 158
+      "sourceLine": 183
     },
     {
       "selector": "#f95ue-page-dock.is-collapsed .f95ue-page-dock-btn:hover",
       "specificity": 120,
-      "sourceLine": 158
+      "sourceLine": 183
     },
     {
       "selector": "#f95ue-page-dock.is-collapsed .f95ue-page-dock-btn:focus-visible",
       "specificity": 120,
-      "sourceLine": 158
+      "sourceLine": 183
     },
     {
       "selector": "#f95ue-page-dock",
       "specificity": 110,
-      "sourceLine": 167
+      "sourceLine": 192
     },
     {
       "selector": "#tag-config-button",
       "specificity": 110,
-      "sourceLine": 173
+      "sourceLine": 198
     },
     {
       "selector": "#tag-config-modal",
       "specificity": 110,
-      "sourceLine": 229
+      "sourceLine": 254
     },
     {
       "selector": "#search-container",
       "specificity": 110,
-      "sourceLine": 271
+      "sourceLine": 296
     },
     {
       "selector": "#search-results li",
       "specificity": 121,
-      "sourceLine": 353
+      "sourceLine": 378
     },
     {
       "selector": "#search-results li:hover",
       "specificity": 121,
-      "sourceLine": 364
+      "sourceLine": 389
     },
     {
       "selector": "#search-results .tag-search-load-more-row",
       "specificity": 120,
-      "sourceLine": 368
+      "sourceLine": 393
     },
     {
       "selector": "#tags-search",
       "specificity": 110,
-      "sourceLine": 392
+      "sourceLine": 417
     },
     {
       "selector": "#tags-search:focus",
       "specificity": 110,
-      "sourceLine": 437
+      "sourceLine": 462
     },
     {
       "selector": "#search-results",
       "specificity": 110,
-      "sourceLine": 503
+      "sourceLine": 528
     },
     {
       "selector": "#tag-config-modal input",
       "specificity": 121,
-      "sourceLine": 520
+      "sourceLine": 545
     },
     {
       "selector": "#tag-config-modal textarea",
       "specificity": 121,
-      "sourceLine": 520
+      "sourceLine": 545
     },
     {
       "selector": "#tag-config-modal select",
       "specificity": 121,
-      "sourceLine": 520
+      "sourceLine": 545
     },
     {
       "selector": "#tag-config-modal input:focus",
       "specificity": 121,
-      "sourceLine": 528
+      "sourceLine": 553
     },
     {
       "selector": "#tag-config-modal textarea:focus",
       "specificity": 121,
-      "sourceLine": 528
+      "sourceLine": 553
     },
     {
       "selector": "#tag-config-modal select:focus",
       "specificity": 121,
-      "sourceLine": 528
+      "sourceLine": 553
     },
     {
       "selector": "#tag-config-modal input[type=\"checkbox\"]",
       "specificity": 131,
-      "sourceLine": 536
+      "sourceLine": 561
     },
     {
       "selector": "#tag-config-modal input[type=\"radio\"]",
       "specificity": 131,
-      "sourceLine": 536
+      "sourceLine": 561
     },
     {
       "selector": "#tag-config-modal .config-color-input",
       "specificity": 120,
-      "sourceLine": 542
+      "sourceLine": 567
     },
     {
       "selector": "#tag-config-modal .config-color-input::-webkit-color-swatch-wrapper",
       "specificity": 120,
-      "sourceLine": 555
+      "sourceLine": 580
     },
     {
       "selector": "#tag-config-modal .config-color-input::-webkit-color-swatch",
       "specificity": 120,
-      "sourceLine": 559
+      "sourceLine": 584
     },
     {
       "selector": ".config-row input[type=\"checkbox\"]",
       "specificity": 31,
-      "sourceLine": 698
+      "sourceLine": 723
     },
     {
       "selector": ".config-row input:not([type=\"checkbox\"])",
       "specificity": 41,
-      "sourceLine": 707
+      "sourceLine": 732
     },
     {
       "selector": ".config-row input[type=\"number\"]",
       "specificity": 31,
-      "sourceLine": 734
+      "sourceLine": 759
     },
     {
       "selector": ".config-row input[type=\"number\"]:focus",
       "specificity": 41,
-      "sourceLine": 745
+      "sourceLine": 770
     },
     {
       "selector": ".config-row input[type=\"number\"]::-webkit-inner-spin-button",
       "specificity": 41,
-      "sourceLine": 750
+      "sourceLine": 775
     },
     {
       "selector": ".config-row input[type=\"number\"]::-webkit-outer-spin-button",
       "specificity": 41,
-      "sourceLine": 750
+      "sourceLine": 775
     },
     {
       "selector": ".config-row input[type=\"color\"]",
       "specificity": 31,
-      "sourceLine": 756
+      "sourceLine": 781
     },
     {
       "selector": "#tag-config-modal .modal-content",
       "specificity": 120,
-      "sourceLine": 777
+      "sourceLine": 802
     },
     {
       "selector": "#tag-config-modal .modal-content",
       "specificity": 120,
-      "sourceLine": 828
+      "sourceLine": 853
     },
     {
       "selector": "#tag-config-modal",
       "specificity": 110,
-      "sourceLine": 1274
+      "sourceLine": 1299
     },
     {
       "selector": "#tag-config-modal .modal-content",
       "specificity": 120,
-      "sourceLine": 1278
+      "sourceLine": 1303
     },
     {
       "selector": ".settings-panel:not(#settings-panel-color):not(#settings-panel-addins) .config-row label",
       "specificity": 261,
-      "sourceLine": 1319
+      "sourceLine": 1344
     },
     {
       "selector": "#tag-config-modal.show",
       "specificity": 110,
-      "sourceLine": 1357
+      "sourceLine": 1382
     }
   ],
   "identicalMediaQueryBlocks": [],
@@ -4346,21 +4383,21 @@
       "selectorText": "#tag-config-modal .modal-content",
       "atRules": [],
       "authoredBytes": 542,
-      "sourceLine": 777
+      "sourceLine": 802
     },
     {
       "type": "style",
       "selectorText": "#search-results",
       "atRules": [],
       "authoredBytes": 408,
-      "sourceLine": 503
+      "sourceLine": 528
     },
     {
       "type": "style",
       "selectorText": ".tags-search-clear",
       "atRules": [],
       "authoredBytes": 398,
-      "sourceLine": 401
+      "sourceLine": 426
     },
     {
       "type": "style",
@@ -4381,84 +4418,84 @@
       "selectorText": ".preferred-tag-remove,\n.excluded-tag-remove,\n.tag-remove-btn",
       "atRules": [],
       "authoredBytes": 340,
-      "sourceLine": 486
+      "sourceLine": 511
     },
     {
       "type": "style",
       "selectorText": ".setting-tooltip-badge",
       "atRules": [],
       "authoredBytes": 339,
-      "sourceLine": 674
+      "sourceLine": 699
     },
     {
       "type": "style",
       "selectorText": ".addins-badge",
       "atRules": [],
       "authoredBytes": 335,
-      "sourceLine": 1067
+      "sourceLine": 1092
     },
     {
       "type": "style",
       "selectorText": ".settings-nav-item",
       "atRules": [],
       "authoredBytes": 333,
-      "sourceLine": 892
+      "sourceLine": 917
     },
     {
       "type": "style",
       "selectorText": ".config-reorder-btn",
       "atRules": [],
       "authoredBytes": 329,
-      "sourceLine": 1478
+      "sourceLine": 1503
     },
     {
       "type": "style",
       "selectorText": ".tag-chip",
       "atRules": [],
       "authoredBytes": 323,
-      "sourceLine": 206
+      "sourceLine": 231
     },
     {
       "type": "style",
       "selectorText": ".modal-error-notif",
       "atRules": [],
       "authoredBytes": 319,
-      "sourceLine": 179
+      "sourceLine": 204
     },
     {
       "type": "style",
       "selectorText": ".config-header",
       "atRules": [],
       "authoredBytes": 314,
-      "sourceLine": 1361
+      "sourceLine": 1386
     },
     {
       "type": "style",
       "selectorText": ".modal-btn",
       "atRules": [],
       "authoredBytes": 311,
-      "sourceLine": 564
+      "sourceLine": 589
     },
     {
       "type": "style",
       "selectorText": ".addins-action-btn",
       "atRules": [],
       "authoredBytes": 305,
-      "sourceLine": 1220
+      "sourceLine": 1245
     },
     {
       "type": "style",
       "selectorText": ".tag-btn",
       "atRules": [],
       "authoredBytes": 289,
-      "sourceLine": 443
+      "sourceLine": 468
     },
     {
       "type": "style",
       "selectorText": "#f95ue-page-dock.is-collapsed #tag-config-button:hover,\n#f95ue-page-dock.is-collapsed #tag-config-button:focus-visible,\n#f95ue-page-dock.is-collapsed .f95ue-page-dock-btn:hover,\n#f95ue-page-dock.is-collapsed .f95ue-page-dock-btn:focus-visible",
       "atRules": [],
       "authoredBytes": 288,
-      "sourceLine": 158
+      "sourceLine": 183
     },
     {
       "type": "style",
@@ -4472,7 +4509,7 @@
       "selectorText": ".config-transfer-dialog-error",
       "atRules": [],
       "authoredBytes": 268,
-      "sourceLine": 1506
+      "sourceLine": 1531
     },
     {
       "type": "style",
@@ -4481,7 +4518,7 @@
         "@media (max-width: 760px)"
       ],
       "authoredBytes": 267,
-      "sourceLine": 1339
+      "sourceLine": 1364
     }
   ],
   "removedSelectors": [],
@@ -4586,8 +4623,8 @@
   "comparison": {
     "authoredBytes": {
       "before": 33564,
-      "after": 28565,
-      "delta": -4999
+      "after": 29242,
+      "delta": -4322
     },
     "readableBundleContributionBytes": {
       "before": 27394,
@@ -4596,48 +4633,48 @@
     },
     "readableBundleFullBytes": {
       "before": 586580,
-      "after": 676232,
-      "delta": 89652
+      "after": 676813,
+      "delta": 90233
     },
     "readableBundleGzipBytes": {
       "before": 124202,
-      "after": 145329,
-      "delta": 21127
+      "after": 145498,
+      "delta": 21296
     },
     "uglifiedBundleContributionBytes": {
       "before": 27380,
-      "after": 24632,
-      "delta": -2748
+      "after": 25213,
+      "delta": -2167
     },
     "uglifiedBundleFullBytes": {
       "before": 302505,
-      "after": 336304,
-      "delta": 33799
+      "after": 336885,
+      "delta": 34380
     },
     "uglifiedBundleGzipBytes": {
       "before": 88402,
-      "after": 100918,
-      "delta": 12516
+      "after": 101097,
+      "delta": 12695
     },
     "selectorCount": {
       "before": 252,
-      "after": 226,
-      "delta": -26
+      "after": 230,
+      "delta": -22
     },
     "declarationCount": {
       "before": 952,
-      "after": 844,
-      "delta": -108
+      "after": 850,
+      "delta": -102
     },
     "styleRuleCount": {
       "before": 231,
-      "after": 206,
-      "delta": -25
+      "after": 210,
+      "delta": -21
     },
     "mediaQueryCount": {
       "before": 4,
-      "after": 4,
-      "delta": 0
+      "after": 5,
+      "delta": 1
     },
     "duplicateSelectorBlocks": {
       "before": 3,

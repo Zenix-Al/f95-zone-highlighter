@@ -150,6 +150,7 @@ module.exports = function registerLibraryUpdateQueueWorkerGroup(context) {
     return createAutoUpdateQueueWorker(options);
   }
 
+
   runTest("LIBRARY-UPDATE-QUEUE-WORKER-01 completes an uninterrupted cycle in order", async () => {
     const repository = createRepository(["1", "2", "3"]);
     const records = new Map(["1", "2", "3"].map((threadId) => [threadId, {
@@ -161,7 +162,8 @@ module.exports = function registerLibraryUpdateQueueWorkerGroup(context) {
     const worker = createWorker({
       repository,
       getRecord: async (threadId) => records.get(threadId) || null,
-      checkRecords: async ([threadId]) => {
+      checkRecords: async ([threadId], options) => {
+        assert.strictEqual(options.spacingMs, 10000, "internal retries receive the enforced minimum");
         checked.push(threadId);
         return {
           results: [{
@@ -182,7 +184,7 @@ module.exports = function registerLibraryUpdateQueueWorkerGroup(context) {
     });
     const result = await worker.run({
       owner: "tab-one",
-      config,
+      config: { ...config, spacingMs: 5000 },
       stillOwn: async () => true,
       renewOwnership: async () => true,
     });

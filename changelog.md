@@ -1,5 +1,9 @@
 # Changelog
 
+## [5.4.7 - Add-on activity indicators]
+
+- Added core-owned green working, yellow waiting, and red error rings for add-on dock buttons using the activity markup contract. Working rings pulse gently; reduced-motion users receive a steady ring.
+
 ## [5.4.6 - Browsing performance and hover reliability]
 
 - Reduced repeated configuration metadata calculations and whole-config cloning when listing add-ons.

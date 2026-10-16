@@ -1,5 +1,6 @@
 import { getClaimJitter, getLocalDayKey, getNextCycleRunAt, getNextScheduledAt } from "./autoUpdatePolicy.js";
 import { debugLog } from "../../../shared/debugLog.js";
+import { getAutoUpdateActivity } from "./autoUpdateActivity.js";
 
 const DEBUG_OWNER = "library-addon:auto-update";
 
@@ -14,11 +15,12 @@ function owned(value, owner, generation, now) {
   return value?.owner === owner && value?.generation === generation && Number(value.expiresAt) > now;
 }
 
-export function getStartupDelay({ cycle, lease, currentTime, intervalMs }) {
+export function getStartupDelay({ cycle, lease, currentTime, intervalMs, owner, running = false }) {
   const regularDelay = Math.min(Math.max(0, Number(intervalMs) || 0), 60_000);
+  if (running || (lease?.owner && lease.owner === owner)) return regularDelay;
   if (!cycle || !["running", "recovering"].includes(cycle.status)) return regularDelay;
   const leaseExpiry = Number(lease?.expiresAt || 0);
-  return leaseExpiry > currentTime ? leaseExpiry - currentTime + 250 : 0;
+  return lease?.owner && leaseExpiry > currentTime ? leaseExpiry - currentTime + 250 : 0;
 }
 
 function completedCycle(summary, dailyAttempted, timestamp, config, nextRunAt = 0) {
@@ -57,18 +59,24 @@ export function createAutoUpdateScheduler({
   let generation = 0;
   let timer = null;
   let recoveryAt = 0;
+  let latestCycle = null;
+  let lastReason = "";
+  let otherLeaseUntil = 0;
   const listeners = new Set();
 
   function notify(cycle) {
+    latestCycle = cycle;
     listeners.forEach((listener) => {
       try { listener(cycle); } catch { /* UI listeners are isolated. */ }
     });
   }
 
   async function claimLease(config, signal) {
+    otherLeaseUntil = 0;
     const currentTime = now();
     const existing = await repository.getLease();
     if (existing && Number(existing.expiresAt) > currentTime && existing.owner !== owner) {
+      otherLeaseUntil = Number(existing.expiresAt);
       return null;
     }
     const value = {
@@ -80,6 +88,7 @@ export function createAutoUpdateScheduler({
     await repository.putLease(value);
     await wait(getClaimJitter(config.jitterMs, random), signal);
     const verified = await repository.getLease();
+    if (verified?.owner !== owner) otherLeaseUntil = Number(verified?.expiresAt || 0);
     return owned(verified, owner, generation, now()) ? verified : null;
   }
 
@@ -118,8 +127,15 @@ export function createAutoUpdateScheduler({
     controller = ownController;
     const signal = ownController.signal;
     generation += 1;
+    lastReason = "";
+    recoveryAt = 0;
     try {
-      return await runCycle(options, signal);
+      const result = await runCycle(options, signal);
+      if (controller === ownController) {
+        lastReason = result?.reason || "";
+        if (result?.cycle) latestCycle = result.cycle;
+      }
+      return result;
     } catch (error) {
       // A thrown storage/network error must not wedge the scheduler as "already_running".
       debugLog(DEBUG_OWNER, "Automatic-update run failed.", {
@@ -127,9 +143,13 @@ export function createAutoUpdateScheduler({
         data: { reason: String(error?.message || error).slice(0, 120) },
       });
       try { await releaseLease(); } catch { /* lease expiry is the fallback */ }
+      if (controller === ownController) lastReason = "run_failed";
       return { ok: false, reason: "run_failed" };
     } finally {
-      if (controller === ownController) controller = null;
+      if (controller === ownController) {
+        controller = null;
+        notify(latestCycle);
+      }
     }
   }
 
@@ -139,7 +159,10 @@ export function createAutoUpdateScheduler({
       return { ok: false, reason: "paused" };
     }
     if (!(await claimLease(config, signal))) {
-      return { ok: false, reason: "lease_owned" };
+      const cycle = await queueRuntime.getCycle();
+      recoveryAt = ["running", "recovering"].includes(cycle?.status) && otherLeaseUntil > now()
+        ? otherLeaseUntil + 250 : 0;
+      return { ok: false, reason: "lease_owned", cycle };
     }
 
     const migrated = await migrateLegacyMetadata(config);
@@ -181,7 +204,7 @@ export function createAutoUpdateScheduler({
         const carried = await queueRuntime.putCycle({
           ...cycle,
           dailyKey: getLocalDayKey(startedAt),
-          dailyAttempted: migrated.legacy.dailyAttempted,
+          dailyAttempted: Math.max(cycle.dailyAttempted || 0, migrated.legacy.dailyAttempted || 0),
         });
         if (!carried?.ok) {
           await releaseLease();
@@ -260,8 +283,12 @@ export function createAutoUpdateScheduler({
       lease,
       currentTime: now(),
       intervalMs: config.intervalMs,
+      owner,
+      running: Boolean(controller),
     });
-    recoveryAt = ["running", "recovering"].includes(cycle?.status) &&
+    otherLeaseUntil = lease?.owner !== owner ? Number(lease?.expiresAt || 0) : 0;
+    recoveryAt = !controller && lease?.owner && lease.owner !== owner &&
+      ["running", "recovering"].includes(cycle?.status) &&
       Number(lease?.expiresAt || 0) > now()
       ? Number(lease.expiresAt) + 250
       : 0;
@@ -292,7 +319,10 @@ export function createAutoUpdateScheduler({
     timer = null;
     recoveryAt = 0;
     controller?.abort();
+    otherLeaseUntil = 0;
     controller = null;
+    lastReason = "cancelled";
+    notify(latestCycle);
     const lease = await repository.getLease();
     if (lease?.owner === owner) await repository.deleteLease();
   }
@@ -357,8 +387,11 @@ export function createAutoUpdateScheduler({
     subscribe,
     snapshot: () => ({
       running: Boolean(controller),
-      recoveryPending: recoveryAt > now(),
+      recoveryPending: !controller && recoveryAt > now(),
       recoveryAt,
+      activity: getAutoUpdateActivity(latestCycle, {
+        running: Boolean(controller), reason: lastReason, leaseActive: otherLeaseUntil > now(),
+      }),
     }),
   };
 }

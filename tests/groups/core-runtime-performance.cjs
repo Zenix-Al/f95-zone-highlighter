@@ -89,10 +89,13 @@ module.exports = function registerGroup(context) {
     assert.strictEqual(startup.includes("#tag-config-modal"), false);
     assert.ok(modal.includes("#tag-config-modal"));
     assert.strictEqual(modal.includes("#toast-container"), false);
-    const originalSelectors = selectors.filter((selector) => !selector.includes("tag-search-load-more"));
+    const activitySelectors = selectors.filter((selector) => selector.includes("data-f95ue-activity"));
+    assert.strictEqual(activitySelectors.length, 4, "three activity states plus reduced-motion working rule");
+    const originalSelectors = selectors.filter((selector) =>
+      !selector.includes("tag-search-load-more") && !selector.includes("data-f95ue-activity"));
     assert.strictEqual(
       startupRules.styleRuleCount + modalRules.styleRuleCount,
-      baseline.styleRuleCount - retiredColorRuleCount + 3,
+      baseline.styleRuleCount - retiredColorRuleCount + 3 + activitySelectors.length,
     );
     assert.deepStrictEqual(originalSelectors, baselineSelectors);
   });
@@ -163,9 +166,9 @@ module.exports = function registerGroup(context) {
     const css = report.cssLifecycle;
     assert.strictEqual(report.package, "MODAL-CSS-VERIFY-01");
     assert.strictEqual(baseline.startupCssBytes, 31122);
-    assert.strictEqual(css.phases.beforeFirstInteraction.shadowCssBytes, 3483);
+    assert.strictEqual(css.phases.beforeFirstInteraction.shadowCssBytes, 4160);
     assert.strictEqual(baseline.startupCssRules, 215);
-    assert.strictEqual(css.startupStylesheet.styleRuleCount, 24);
+    assert.strictEqual(css.startupStylesheet.styleRuleCount, 28);
     assert.strictEqual(css.phases.firstOpenModal.newShadowStyleElements, 1);
     assert.strictEqual(css.phases.repeatOpenModal.newShadowStyleElements, 0);
     assert.ok(performanceAudit.renderMarkdown(report).includes("synchronously acquires the modal stylesheet"));

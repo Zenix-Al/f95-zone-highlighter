@@ -1,3 +1,4 @@
+import { LIBRARY_MIN_UPDATE_SPACING_MS } from "../constants.js";
 import {
   getDurableRetryDelay,
   getNextCycleRunAt,
@@ -40,18 +41,22 @@ export function createAutoUpdateQueueWorker({
     renewOwnership = async () => true,
     onCycleChange = () => {},
   }) {
+    const spacingMs = Math.max(
+      LIBRARY_MIN_UPDATE_SPACING_MS,
+      Number.isFinite(Number(config.spacingMs)) ? Number(config.spacingMs) : LIBRARY_MIN_UPDATE_SPACING_MS,
+    );
     let cycle = await repository.getCycle();
     if (!cycle) return { ok: false, reason: "cycle_missing" };
     if (cycle.status === "paused") return { ok: false, reason: "paused", cycle };
     if (cycle.status === "completed") return { ok: true, cycle };
     if (cycle.blockedUntil > now()) return { ok: true, cycle, waiting: true, reason: "site_blocked" };
 
-    async function updateCycle(patch) {
+    async function updateCycle(patch, options) {
       const result = await repository.putCycle({
         ...cycle,
         ...patch,
         updatedAt: now(),
-      });
+      }, options);
       if (result?.ok) cycle = result.value;
       if (result?.ok) onCycleChange(cycle);
       return result;
@@ -245,7 +250,7 @@ export function createAutoUpdateQueueWorker({
       const checked = await withHeartbeat(claim.value, () =>
         checkRecords([item.threadId], {
           signal,
-          spacingMs: config.spacingMs,
+          spacingMs,
           jitterMs: config.jitterMs,
           timeoutMs: config.timeoutMs,
           retryLimit: config.retryLimit,
@@ -310,7 +315,7 @@ export function createAutoUpdateQueueWorker({
           blockedUntil,
           blockedReason: check.reason,
           nextRunAt: blockedUntil,
-        });
+        }, { allowDailyRefund: consumesAllowance });
         return blocked?.ok
           ? { ok: true, cycle, waiting: true, reason: "site_blocked" }
           : { ...blocked, cycle };
@@ -370,7 +375,7 @@ export function createAutoUpdateQueueWorker({
         });
       }
       await renewOwnership(item.threadId);
-      await waitFor(config.spacingMs, signal);
+      await waitFor(spacingMs, signal);
     }
   }
 

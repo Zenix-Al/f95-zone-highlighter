@@ -7,6 +7,7 @@ module.exports = function registerLibraryIdbSchemaGroup(context) {
     const stores = {
       "update-cycles": new Map(),
       "update-queue": new Map(),
+      meta: new Map(),
     };
     const calls = [];
     let bulkWrites = 0;
@@ -37,7 +38,7 @@ module.exports = function registerLibraryIdbSchemaGroup(context) {
         if (!store) return { ok: false, reason: "unknown_store" };
         if (action === "idb.get") return { ok: true, value: store.get(payload.key) || null };
         if (action === "idb.put") {
-          store.set(payload.value.id, structuredClone(payload.value));
+          store.set(payload.value.id || payload.value.key, structuredClone(payload.value));
           return { ok: true, value: payload.value };
         }
         if (action === "idb.delete") {
@@ -45,8 +46,8 @@ module.exports = function registerLibraryIdbSchemaGroup(context) {
           return { ok: true };
         }
         if (action === "idb.bulkPut") {
-          bulkWrites += 1;
-          if (failBulkAt && bulkWrites === failBulkAt) {
+          if (payload.storeName === "update-queue") bulkWrites += 1;
+          if (payload.storeName === "update-queue" && failBulkAt && bulkWrites === failBulkAt) {
             return { ok: false, reason: "storage_error" };
           }
           payload.entries.forEach(({ value }) => store.set(value.id, structuredClone(value)));
@@ -142,6 +143,148 @@ module.exports = function registerLibraryIdbSchemaGroup(context) {
       () => normalizeDatabaseSchema({ stores: Array.from({ length: 17 }, (_, i) => ({ name: `s-${i}` })) }),
       /indexeddb_schema_store_limit/,
     );
+  });
+
+  runTest("LIBRARY-DAILY-ALLOWANCE-01 seeds pre-fix usage before deletion and preserves challenge refunds", async () => {
+    const bridge = createQueueBridge();
+    const timestamp = new Date(2026, 9, 17, 12).getTime();
+    const repository = createQueueRepository(bridge, { now: () => timestamp });
+    // Simulate an installed pre-fix version: there is no independent ledger yet.
+    bridge.snapshot().stores["update-cycles"].set("active", {
+      id: "active", cycleId: "pre-fix", status: "completed",
+      dailyKey: "2026-10-17", dailyAttempted: 100, dailyBonusAllowance: 25,
+    });
+    assert.strictEqual((await repository.discardCycle("pre-fix")).ok, true);
+    const prepared = await repository.prepareCycle({ cycle: { cycleId: "new" }, items: [{ threadId: "1" }] });
+    assert.strictEqual(prepared.cycle.dailyAttempted, 100);
+    assert.strictEqual(prepared.cycle.dailyBonusAllowance, 25);
+    // The worker's site-block refund must still be allowed within the same cycle.
+    const stale = await repository.putCycle({ ...prepared.cycle, dailyAttempted: 0, dailyBonusAllowance: 0 });
+    assert.strictEqual(stale.value.dailyAttempted, 100, "ordinary stale writes cannot lower usage");
+    assert.strictEqual(stale.value.dailyBonusAllowance, 25);
+    const refunded = await repository.putCycle({ ...prepared.cycle, dailyAttempted: 99 }, { allowDailyRefund: true });
+    assert.strictEqual(refunded.value.dailyAttempted, 99);
+    await repository.discardCycle("new");
+    const next = await repository.prepareCycle({ cycle: { cycleId: "after-refund" }, items: [] });
+    assert.strictEqual(next.cycle.dailyAttempted, 99);
+    assert.strictEqual(next.cycle.dailyBonusAllowance, 25);
+  });
+
+  runTest("LIBRARY-DAILY-ALLOWANCE-01 fails closed when allowance read or atomic checkpoint fails", async () => {
+    const bridge = createQueueBridge();
+    let failRead = false;
+    let failWrite = false;
+    const guarded = {
+      async invokeCoreAction(action, payload) {
+        if ((failRead && action === "idb.get" && payload.key === "daily-allowance-v1") ||
+            (failWrite && action === "idb.bulkPut" && payload.storeName === "update-cycles")) {
+          return { ok: false, reason: "storage_error" };
+        }
+        return bridge.invokeCoreAction(action, payload);
+      },
+    };
+    const repository = createQueueRepository(guarded, { now: () => new Date(2026, 9, 17, 12).getTime() });
+    const original = await repository.putCycle({ cycleId: "atomic", dailyKey: "2026-10-17", dailyAttempted: 99 });
+    const before = JSON.stringify([...bridge.snapshot().stores["update-cycles"]]);
+    failWrite = true;
+    assert.strictEqual((await repository.putCycle({ ...original.value, dailyAttempted: 100 })).ok, false);
+    assert.strictEqual((await repository.discardCycle("atomic")).ok, false);
+    assert.strictEqual(JSON.stringify([...bridge.snapshot().stores["update-cycles"]]), before);
+    failWrite = false;
+    failRead = true;
+    assert.strictEqual((await repository.putCycle({ ...original.value, dailyAttempted: 100 })).ok, false);
+    assert.strictEqual(JSON.stringify([...bridge.snapshot().stores["update-cycles"]]), before);
+  });
+
+  runTest("LIBRARY-UPDATE-TWO-TAB-01 carries daily usage through completion replacement restart bonus and midnight", async () => {
+    const { createLibraryApiClient } = loadModule("addons/library-addon/src/api/library/client.js");
+    const { createAutoUpdateRepository } = loadModule("addons/library-addon/src/library/autoUpdateRepository.js");
+    const { createAutoUpdateScheduler } = loadModule("addons/library-addon/src/library/autoUpdateScheduler.js");
+    const { createAutoUpdateQueueSnapshotBuilder } = loadModule("addons/library-addon/src/library/autoUpdateQueueSnapshot.js");
+    const { createAutoUpdateQueueWorker } = loadModule("addons/library-addon/src/library/autoUpdateQueueWorker.js");
+    const { getLocalDayKey } = loadModule("addons/library-addon/src/library/autoUpdatePolicy.js");
+    for (const overdue of [false, true]) {
+      let timestamp = new Date(2026, 9, 17, 12, 0).getTime();
+      let snapshots = 0;
+      const requests = [];
+      const bridge = createQueueBridge();
+      const api = createLibraryApiClient(bridge);
+      const repository = createAutoUpdateRepository(api);
+      await repository.putConfig({ jitterMs: 0, spacingMs: 10000, checksPerDay: 100 });
+      const queueA = createQueueRepository(bridge, { now: () => timestamp });
+      await queueA.prepareCycle({
+        cycle: {
+          cycleId: "original-107", dailyKey: getLocalDayKey(timestamp),
+          scheduledFor: new Date(2026, 9, overdue ? 16 : 17, 0, 0).getTime(),
+        },
+        items: Array.from({ length: 107 }, (_, i) => ({ threadId: String(i + 1) })),
+      });
+      for (let i = 1; i <= 100; i += 1) {
+        const item = await queueA.getQueueItem(`original-107:${i}`);
+        await queueA.putQueueItem({ ...item, status: "completed", attempts: 1 });
+      }
+      await queueA.putCycle({ ...await queueA.getCycle(), completed: 100, attempted: 100, current: 100 });
+      const tab = (owner, queue) => {
+        const builder = createAutoUpdateQueueSnapshotBuilder({
+          repository: queue, now: () => timestamp,
+          createCycleId: () => `successor-${++snapshots}`,
+          queryRecordsPage: async () => ({
+            ok: true, hasMore: false,
+            items: Array.from({ length: 110 }, (_, i) => ({ threadId: String(i + 1) })),
+          }),
+        });
+        const worker = createAutoUpdateQueueWorker({
+          repository: queue, now: () => timestamp,
+          getRecord: async (threadId) => ({ threadId, updateCheck: { enabled: true } }),
+          checkRecords: async ([threadId]) => {
+            requests.push({ owner, threadId });
+            return { results: [{ threadId, ok: true, attempts: 1 }] };
+          },
+          commitResults: async () => ({ ok: true, current: 1, changed: 0 }),
+          waitFor: async (ms) => { timestamp += ms; },
+        });
+        return createAutoUpdateScheduler({
+          owner, repository, now: () => timestamp, random: () => 0,
+          queueRuntime: { ...queue, buildSnapshot: builder.build, runWorker: worker.run },
+        });
+      };
+      const first = await tab("tab-A", queueA).run();
+      assert.strictEqual(first.cycle.completed, 107);
+      assert.strictEqual(first.cycle.dailyAttempted, 7);
+      assert.strictEqual(await repository.getLease(), null);
+      timestamp += 60000;
+      const tabB = tab("tab-B", createQueueRepository(bridge, { now: () => timestamp }));
+      const second = await tabB.run();
+      if (!overdue) {
+        assert.strictEqual(second.reason, "not_due");
+        assert.strictEqual(snapshots, 0);
+        assert.strictEqual(requests.length, 7);
+        continue;
+      }
+      assert.strictEqual(second.cycle.total, 110);
+      assert.strictEqual(second.cycle.completed, 93);
+      assert.strictEqual(second.cycle.dailyAttempted, 100);
+      assert.strictEqual(second.cycle.status, "waiting");
+      assert.strictEqual(requests.length, 100, "7 old-cycle + 93 successor requests, not another 100");
+      const afterBonus = await tabB.grantNextBatch();
+      assert.strictEqual(afterBonus.cycle.status, "completed");
+      assert.strictEqual(afterBonus.cycle.dailyAttempted, 117);
+      assert.strictEqual(afterBonus.cycle.dailyBonusAllowance, 100);
+      const checkAgain = await tabB.run({ runNow: true, force: true });
+      assert.strictEqual(checkAgain.cycle.completed, 83);
+      assert.strictEqual(checkAgain.cycle.dailyAttempted, 200);
+      const restarted = await tabB.restartCycle();
+      assert.strictEqual(restarted.cycle.completed, 0);
+      assert.strictEqual(restarted.cycle.dailyAttempted, 200);
+      assert.strictEqual(restarted.cycle.dailyBonusAllowance, 100);
+      assert.strictEqual(requests.length, 200, "Restart must not replenish allowance");
+      timestamp = new Date(2026, 9, 18, 0, 1).getTime();
+      const tomorrow = await tabB.run();
+      assert.strictEqual(tomorrow.cycle.completed, 100);
+      assert.strictEqual(tomorrow.cycle.dailyAttempted, 100);
+      assert.strictEqual(tomorrow.cycle.dailyBonusAllowance, 0);
+      assert.strictEqual(requests.length, 300);
+    }
   });
 
   runTest("LIBRARY-IDB-SCHEMA-02 creates every store and index in one upgrade", () => {
@@ -506,9 +649,9 @@ module.exports = function registerLibraryIdbSchemaGroup(context) {
     assert.strictEqual(await repository.countCycleItems("cycle-complete"), 501);
     assert.strictEqual(bridge.snapshot().bulkWrites, 3);
     const masterWrites = bridge.snapshot().calls.filter(
-      ({ action, payload }) => action === "idb.put" && payload.storeName === "update-cycles",
+      ({ action, payload }) => action === "idb.bulkPut" && payload.storeName === "update-cycles",
     );
-    assert.deepStrictEqual(masterWrites.map(({ payload }) => payload.value.status), [
+    assert.deepStrictEqual(masterWrites.map(({ payload }) => payload.entries[0].value.status), [
       "preparing",
       "preparing",
       "running",
