@@ -2,7 +2,7 @@ import editorCssTemplate from "./editor.css";
 import { EDITOR_STATUSES } from "./editorValidation.js";
 import {
   hasUnacknowledgedUpdate,
-  hasUnplayedCurrentVersion,
+  canMarkCurrentVersionPlayed,
 } from "../../library/versionState.js";
 
 function escapeHtml(value) {
@@ -50,7 +50,7 @@ export function renderEntryEditor(
   const invalid = (path) => (issuePaths.has(path) ? ' aria-invalid="true"' : "");
   const thread = record?.thread || {};
   const unacknowledgedUpdate = hasUnacknowledgedUpdate(record);
-  const unplayedCurrentVersion = hasUnplayedCurrentVersion(record);
+  const unplayedCurrentVersion = canMarkCurrentVersionPlayed(record);
   const statusOptions = EDITOR_STATUSES.map(
     (value) =>
       `<option value="${value}"${value === draft.status ? " selected" : ""}>${value}</option>`,

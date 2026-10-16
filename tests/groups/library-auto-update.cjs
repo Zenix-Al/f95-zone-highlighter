@@ -71,6 +71,10 @@ module.exports = function registerLibraryAutoUpdateGroup(context) {
     assert.strictEqual(config.checksPerDay, 77);
     assert.strictEqual(Object.hasOwn(config, "dailyCap"), false);
     assert.strictEqual(Object.hasOwn(config, "sessionCap"), false);
+    for (const spacingMs of [0, -1, 5000, "5000", "invalid", NaN, Infinity]) {
+      assert.strictEqual(normalizeAutoUpdateConfig({ spacingMs }).spacingMs, 10000);
+    }
+    assert.strictEqual(normalizeAutoUpdateConfig({ spacingMs: 15000 }).spacingMs, 15000);
   });
 
   runTest("LIBRARY-UPDATE-QUEUE-SETTINGS-01 derives and patches primary button state", () => {
@@ -166,10 +170,14 @@ module.exports = function registerLibraryAutoUpdateGroup(context) {
     );
     assert.strictEqual(getStartupDelay({
       cycle: { status: "running" },
-      lease: { expiresAt: 90_000 },
+      lease: { owner: "other-tab", expiresAt: 90_000 },
       currentTime: 10_000,
       intervalMs: 86_400_000,
     }), 80_250);
+    assert.strictEqual(getStartupDelay({
+      cycle: { status: "running" }, lease: { owner: "this-tab", expiresAt: 90_000 },
+      owner: "this-tab", currentTime: 10_000, intervalMs: 86_400_000,
+    }), 60_000, "own lease is not a recovery wait");
     assert.strictEqual(getStartupDelay({
       cycle: { status: "running" },
       lease: { expiresAt: 9_000 },

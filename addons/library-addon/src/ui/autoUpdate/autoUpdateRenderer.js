@@ -1,4 +1,5 @@
 import cssTemplate from "./autoUpdate.css";
+import { LIBRARY_MIN_UPDATE_SPACING_MS } from "../../constants.js";
 
 const count = (value) => Math.max(0, Number(value) || 0);
 const time = (value) => (value ? new Date(value).toLocaleString() : "-");
@@ -32,6 +33,7 @@ export function derivePrimaryUpdateAction(
   cycle,
   { running = false, recoveryPending = false } = {},
 ) {
+  if (running) return { action: "", label: "Updating...", disabled: true };
   if (recoveryPending) {
     return {
       action: "",
@@ -39,7 +41,6 @@ export function derivePrimaryUpdateAction(
       disabled: true,
     };
   }
-  if (running) return { action: "", label: "Updating...", disabled: true };
   if (!cycle)
     return { action: "run-now", label: "Update now", disabled: false };
   if (cycle.status === "preparing")
@@ -111,7 +112,7 @@ export function patchAutoUpdateView(root, cycle, runtime = {}) {
   const siteBlock = getSiteBlockLabel(cycle);
   set(
     "state",
-    runtime.recoveryPending
+    runtime.recoveryPending && !runtime.running
       ? "WAITING FOR PREVIOUS PROCESS"
       : siteBlock
         ? `PAUSED: ${siteBlock.toUpperCase()}`
@@ -127,7 +128,7 @@ export function patchAutoUpdateView(root, cycle, runtime = {}) {
   set("terminalFailed", count(cycle?.failed));
   set(
     "nextWake",
-    time(runtime.recoveryPending ? runtime.recoveryAt : cycle?.nextRunAt),
+    time(runtime.recoveryPending && !runtime.running ? runtime.recoveryAt : cycle?.nextRunAt),
   );
   set("lastActivity", time(cycle?.updatedAt));
   set(
@@ -163,8 +164,10 @@ export function patchAutoUpdateView(root, cycle, runtime = {}) {
 }
 
 function renderAutoUpdateMarkup(config, cycle) {
-  const field = (label, name, value, min, max) =>
-    `<label><span>${label}</span><input name="${name}" type="number" min="${min}" max="${max}" value="${escapeHtml(value)}"></label>`;
+  const field = (label, name, value, min, max) => {
+    if (name === "spacingMs") min = LIBRARY_MIN_UPDATE_SPACING_MS;
+    return `<label><span>${label}</span><input name="${name}" type="number" min="${min}" max="${max}" value="${escapeHtml(value)}"></label>`;
+  };
   const primary = derivePrimaryUpdateAction(cycle);
   return `<form class="f95ue-library-auto-dialog" data-role="auto-update-dialog"><section class="f95ue-library-auto-overview"><div class="f95ue-library-auto-heading"><strong>Update overview</strong><span class="f95ue-library-auto-state" data-role="state">IDLE</span></div><progress data-role="progress" max="1" value="0"></progress><div class="f95ue-library-auto-stats"><span>Cycle <strong data-role="cycleProgress">0 / 0</strong></span><span>Today <strong data-role="dailyProgress">0 / ${config.checksPerDay}</strong></span><span>Completed <strong data-role="completed">0</strong></span><span>Retry pending <strong data-role="retryPending">0</strong></span><span>Terminal <strong data-role="terminalFailed">0</strong></span></div><div class="f95ue-library-auto-meta"><span>Current: <b data-role="currentItem">-</b></span><span>Next: <b data-role="nextWake">-</b></span><span>Last activity: <b data-role="lastActivity">-</b></span></div></section><details><summary>Cycle details &gt;</summary><div class="f95ue-library-auto-details"><div>Cycle ID: <span data-role="cycleId">-</span></div><div data-role="cycleCounts">current 0 · changed 0 · skipped 0 · network retries 0</div><button type="button" data-auto-action="copy-diagnostics">Copy diagnostics</button><button type="button" data-auto-action="restart">Restart cycle...</button></div></details><details><summary>Update settings &gt;</summary><div class="f95ue-library-auto-grid"><label class="f95ue-library-auto-toggle"><input name="enabled" type="checkbox"${config.enabled !== false ? " checked" : ""}><span>Check eligible Library records automatically</span></label>${field("Checks per day", "checksPerDay", config.checksPerDay, 1, 500)}${field("Update hour (local, 0-23)", "runHour", config.runHour, 0, 23)}${field("Spacing (ms)", "spacingMs", config.spacingMs, 5000, 30000)}${field("Timeout (ms)", "timeoutMs", config.timeoutMs, 1000, 30000)}${field("Retries", "retryLimit", config.retryLimit, 0, 5)}<button type="submit" class="primary">Save settings</button></div></details><div class="f95ue-library-auto-actions"><button type="button" class="primary" data-role="primaryAction" data-auto-action="${primary.action}"${primary.disabled ? " disabled" : ""}>${primary.label}</button><button type="button" data-auto-action="pause">Pause</button><button type="button" data-auto-action="cancel">Close</button></div></form>`;
 }

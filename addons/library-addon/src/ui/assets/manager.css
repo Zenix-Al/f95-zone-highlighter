@@ -1,3 +1,27 @@
+__ROOT__ [data-action="open-auto-update"][data-f95ue-activity="working"] {
+  box-shadow: 0 0 0 2px #65d68d;
+  animation: f95ue-library-addon-activity-pulse 1.8s ease-in-out infinite;
+}
+
+__ROOT__ [data-action="open-auto-update"][data-f95ue-activity="waiting"] {
+  box-shadow: 0 0 0 2px #e6bd55;
+}
+
+__ROOT__ [data-action="open-auto-update"][data-f95ue-activity="error"] {
+  box-shadow: 0 0 0 2px #ef7777;
+}
+
+@keyframes f95ue-library-addon-activity-pulse {
+  0%, 100% { box-shadow: 0 0 0 2px #65d68d; }
+  50% { box-shadow: 0 0 0 2px rgb(101 214 141 / 30%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  __ROOT__ [data-action="open-auto-update"][data-f95ue-activity="working"] {
+    animation: none;
+  }
+}
+
 __ROOT__ {
   display: block;
   color-scheme: dark;

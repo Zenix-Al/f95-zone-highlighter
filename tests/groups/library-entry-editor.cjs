@@ -310,6 +310,16 @@ module.exports = function registerLibraryEntryEditorGroup(context) {
       renderEntryEditor(unplayed, createEditorDraft(unplayed)),
       /data-editor-action="played-version"/,
     );
+    for (const updateState of ["acknowledged", "changed", "unchecked"]) {
+      const firstPlay = createRecord({
+        updateState,
+        thread: { currentVersion: "v0.8.0.7" },
+        personal: { status: "playing", lastPlayedVersion: "" },
+      });
+      assert.match(renderEntryEditor(firstPlay, createEditorDraft(firstPlay)), /data-editor-action="played-version"/);
+      const unknownVersion = { ...firstPlay, thread: { ...firstPlay.thread, currentVersion: "" } };
+      assert.doesNotMatch(renderEntryEditor(unknownVersion, createEditorDraft(unknownVersion)), /data-editor-action="played-version"/);
+    }
   });
 
   runTest("LIBRARY-ENTRY-EDITOR-01 played action rereads canonical state and hides its button", async () =>

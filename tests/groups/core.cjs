@@ -98,7 +98,8 @@ runTest("CORE-CSS audit parses and inventories dynamic selectors deterministical
   assert.strictEqual(cssAudit.stableJson(first), cssAudit.stableJson(second));
   assert.ok(first.selectorCount > 0);
   assert.ok(first.declarationCount > 0);
-  assert.strictEqual(first.keyframeCount, 0);
+  assert.strictEqual(first.keyframeCount, 1);
+  assert.ok(first.animationNames.includes("f95ue-addon-activity-pulse"));
   assert.strictEqual(first.duplicateSelectorBlocks.length, 0);
   assert.ok(first.evidenceMap.some((item) => item.selector === ".tag-chip" && item.category === "dynamic-reference"));
   assert.ok(first.evidenceMap.some((item) => item.selector === ".preferred-tag-remove" && item.category === "unresolved"));

@@ -28,15 +28,15 @@
   },
   "authored": {
     "fileCount": 119,
-    "physicalLines": 15964,
-    "meaningfulLines": 13941,
-    "authoredBytes": 486398,
+    "physicalLines": 15989,
+    "meaningfulLines": 13960,
+    "authoredBytes": 487075,
     "bytesByArea": {
       "config": 32550,
       "core": 89037,
       "services": 88548,
       "features": 135327,
-      "ui": 140936
+      "ui": 141613
     },
     "bytesByFile": {
       "src/services/settingsService.js": 36769,
@@ -74,11 +74,11 @@
       "src/services/configChangeApplication.js": 4555,
       "src/features/latest-overlay/style.css": 4406,
       "src/ui/settings/panelNavigation.js": 4183,
+      "src/ui/assets/startup.css": 4160,
       "src/services/storageAdapter.js": 4093,
       "src/ui/components/tag-search/tagMutations.js": 3884,
       "src/ui/renderers/renderSetting.js": 3829,
       "src/services/storageReadiness.js": 3608,
-      "src/ui/assets/startup.css": 3483,
       "src/features/latest-overlay/capture/pageCaptureTransport.js": 3428,
       "src/core/StateManager.js": 3393,
       "src/core/listenerRegistry.js": 3303,
@@ -690,6 +690,11 @@
           "fanOut": 1
         },
         {
+          "path": "src/ui/assets/startup.css",
+          "fanIn": 1,
+          "fanOut": 0
+        },
+        {
           "path": "src/services/storageAdapter.js",
           "fanIn": 3,
           "fanOut": 0
@@ -707,11 +712,6 @@
         {
           "path": "src/services/storageReadiness.js",
           "fanIn": 4,
-          "fanOut": 0
-        },
-        {
-          "path": "src/ui/assets/startup.css",
-          "fanIn": 1,
           "fanOut": 0
         },
         {
@@ -1591,9 +1591,9 @@
   "bundle": {
     "readable": {
       "mode": "regular",
-      "bytes": 676232,
-      "gzipBytes": 145329,
-      "coreBytes": 429409,
+      "bytes": 676813,
+      "gzipBytes": 145498,
+      "coreBytes": 429990,
       "excludedBytes": 239540,
       "contributors": [
         {
@@ -1831,6 +1831,10 @@
           "bytes": 3539
         },
         {
+          "path": "src/ui/assets/startup.css",
+          "bytes": 3529
+        },
+        {
           "path": "src/services/storageReadiness.js",
           "bytes": 3506
         },
@@ -1849,10 +1853,6 @@
         {
           "path": "src/features/latest-overlay/markers.js",
           "bytes": 2968
-        },
-        {
-          "path": "src/ui/assets/startup.css",
-          "bytes": 2948
         },
         {
           "path": "src/features/latest-overlay/tilePatcher.js",
@@ -2236,9 +2236,9 @@
     },
     "uglified": {
       "mode": "release",
-      "bytes": 336304,
-      "gzipBytes": 100918,
-      "coreBytes": 221572,
+      "bytes": 336885,
+      "gzipBytes": 101097,
+      "coreBytes": 222153,
       "excludedBytes": 114720,
       "contributors": [
         {
@@ -2392,12 +2392,12 @@
           "bytes": 3512
         },
         {
-          "path": "src/core/observer.js",
-          "bytes": 3106
+          "path": "src/ui/assets/startup.css",
+          "bytes": 3511
         },
         {
-          "path": "src/ui/assets/startup.css",
-          "bytes": 2930
+          "path": "src/core/observer.js",
+          "bytes": 3106
         },
         {
           "path": "src/services/storageBootstrapService.js",
@@ -3055,39 +3055,39 @@
   },
   "comparison": {
     "authoredBytes": {
-      "current": 486398,
+      "current": 487075,
       "baseline": 476860,
-      "delta": 9538
+      "delta": 10215
     },
     "readableBytes": {
-      "current": 676232,
+      "current": 676813,
       "baseline": 644346,
-      "delta": 31886
+      "delta": 32467
     },
     "readableCoreBytes": {
-      "current": 429409,
+      "current": 429990,
       "baseline": 415202,
-      "delta": 14207
+      "delta": 14788
     },
     "readableGzipBytes": {
-      "current": 145329,
+      "current": 145498,
       "baseline": 137635,
-      "delta": 7694
+      "delta": 7863
     },
     "uglifiedBytes": {
-      "current": 336304,
+      "current": 336885,
       "baseline": 325815,
-      "delta": 10489
+      "delta": 11070
     },
     "uglifiedCoreBytes": {
-      "current": 221572,
+      "current": 222153,
       "baseline": 217419,
-      "delta": 4153
+      "delta": 4734
     },
     "uglifiedGzipBytes": {
-      "current": 100918,
+      "current": 101097,
       "baseline": 96838,
-      "delta": 4080
+      "delta": 4259
     },
     "candidates": {
       "customColorPicker": {

@@ -17,6 +17,7 @@ import { createAutoUpdateController } from "../autoUpdate/autoUpdateController.j
 import { createUpdateInboxController } from "../updateInbox/updateInboxController.js";
 import { reloadRows } from "./reloadRows.js";
 import { createInitialState, createAppContext, resetPagination } from "./state.js";
+import { patchUpdateActivity } from "../../library/autoUpdateActivity.js";
 
 const ROWS_STATUS_ID = "f95ue-library-rows-status";
 
@@ -37,6 +38,14 @@ export function createLibraryManagerApp({
   let unbindEvents = () => {};
   let generation = 0;
   let manualCheckController = null;
+  let unsubscribeActivity = () => {};
+
+  function refreshUpdateActivity() {
+    patchUpdateActivity(
+      getActiveRoot()?.querySelector('[data-action="open-auto-update"]'),
+      autoUpdateScheduler?.snapshot?.().activity || "idle",
+    );
+  }
 
   function cancelManualCheck() {
     manualCheckController?.abort();
@@ -136,6 +145,8 @@ export function createLibraryManagerApp({
   // Create bound version of close for handlers
   async function close(reason = "addon-close") {
     generation += 1;
+    unsubscribeActivity();
+    unsubscribeActivity = () => {};
     if (reason !== "addon-close") cancelManualCheck();
     await entryEditor.close(reason);
     await autoUpdate.close(reason);
@@ -220,6 +231,9 @@ export function createLibraryManagerApp({
     appContext.dialogOpen = Boolean(appContext.dialogRoot);
 
     if (!appContext.dialogRoot) return;
+    unsubscribeActivity();
+    unsubscribeActivity = autoUpdateScheduler?.subscribe?.(refreshUpdateActivity) || (() => {});
+    refreshUpdateActivity();
 
     // Preserve the semantic hidden state even while a page-host stylesheet is
     // being registered or replaced during a rapid close -> reopen sequence.
@@ -261,6 +275,8 @@ export function createLibraryManagerApp({
     if (getActiveRoot()) return;
 
     const closeGeneration = ++generation;
+    unsubscribeActivity();
+    unsubscribeActivity = () => {};
     appContext.dialogOpen = false;
     appContext.dialogRoot = null;
     unbindEvents();

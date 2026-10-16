@@ -26,11 +26,35 @@ export function createLibraryDockController({
   state,
   getLifecycle,
   getLocalPageContext,
+  autoUpdateScheduler,
 }) {
   let currentSnapshot = null;
   let currentSaved = false;
   let clickHandler = null;
   let mountToken = 0;
+  let activityUpdates = Promise.resolve();
+  function watchActivity(options, token) {
+    getLifecycle().releaseResource("library-dock-activity");
+    let shown = options.activity;
+    const update = () => {
+      if (!autoUpdateScheduler) return;
+      const activity = autoUpdateScheduler.snapshot().activity || "idle";
+      if (activity === shown) return;
+      shown = activity;
+      // Only publish on state transitions, not on every checked record. ui.update
+      // cannot recreate a mount that has been torn down.
+      activityUpdates = activityUpdates.catch(() => {}).then(async () => {
+        if (token !== mountToken || !state.enabled) return;
+        await core.invokeCoreAction("ui.update", {
+          mountId: LIBRARY_DOCK_MOUNT_ID,
+          html: renderDockMarkup({ ...options, activity }),
+        });
+      }).catch(() => {});
+    };
+    const unsubscribe = autoUpdateScheduler?.subscribe?.(update);
+    if (unsubscribe) getLifecycle().registerResource("library-dock-activity", unsubscribe, "subscription");
+    update();
+  }
   const opportunisticObserver = createOpportunisticObserver({
     library,
     isEnabled: () => state.enabled,
@@ -104,6 +128,7 @@ export function createLibraryDockController({
       return { ok: false, reason: "stale_mount" };
     }
     const token = ++mountToken;
+    const activity = autoUpdateScheduler?.snapshot?.().activity || "idle";
     debugLog(runtime.addonId, "Dock mount requested.", {
       data: {
         token,
@@ -116,7 +141,7 @@ export function createLibraryDockController({
     const payload = {
       mountId: LIBRARY_DOCK_MOUNT_ID,
       slot: "page.dock",
-      html: renderDockMarkup({ showPrimaryButton, isSaved }),
+      html: renderDockMarkup({ showPrimaryButton, isSaved, activity }),
     };
     let result = null;
     for (let attempt = 1; attempt <= DOCK_MOUNT_MAX_ATTEMPTS; attempt += 1) {
@@ -152,6 +177,7 @@ export function createLibraryDockController({
       }
       if (result?.ok) bindEvents();
       if (result?.ok && result.value?.pending !== true) {
+        watchActivity({ showPrimaryButton, isSaved, activity }, token);
         debugLog(runtime.addonId, "Dock mount confirmed applied by core.", {
           data: { token, attempt, coreResponse: result },
         });
@@ -247,6 +273,7 @@ export function createLibraryDockController({
 
   async function unmountDock() {
     mountToken += 1;
+    getLifecycle().releaseResource("library-dock-activity");
     unbindEvents();
     const result = await unmountUi(core, LIBRARY_DOCK_MOUNT_ID);
     debugLog(runtime.addonId, "Core dock unmount response received.", {

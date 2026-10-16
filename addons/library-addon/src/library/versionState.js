@@ -13,3 +13,10 @@ export function hasUnplayedCurrentVersion(record) {
     currentVersion && lastPlayedVersion && currentVersion !== lastPlayedVersion,
   );
 }
+
+// First-time play recording must not require an earlier played version.
+export function canMarkCurrentVersionPlayed(record) {
+  const current = normalizeVersionIdentity(record?.thread?.currentVersion);
+  const played = normalizeVersionIdentity(record?.personal?.lastPlayedVersion);
+  return Boolean(current && current !== played);
+}

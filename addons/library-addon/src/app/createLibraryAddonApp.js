@@ -165,6 +165,7 @@ export function createLibraryAddonApp({ core, runtime }) {
     state,
     getLifecycle: () => lifecycle,
     getLocalPageContext: getLocalLibraryPageContext,
+    autoUpdateScheduler,
   });
   state.openManager = manager.open;
   state.refreshRuntime = refreshRuntimeState;

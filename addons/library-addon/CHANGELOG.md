@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.3.11 - Update pacing, daily allowance and activity indicators
+
+- Fixed the current updater mistaking its own renewed lease for a previous process. no more "yep, there's lease" check only.
+- Show Played this version when a known current version has no last-played version yet. acknowledgement and personal status remain independent.
+- Fixed daily update allowance resetting when a completed cycle was replaced, including replacement by another tab.
+- Show a gently pulsing green ring on Library's dock button and the Manager's Auto update button while the local updater works. Waiting/paused states use yellow; updater-level errors use red. Completed/idle states return to normal. Reduced-motion users get steady green.
+- I notice the site enforce cloudflare browser checks that might affect the add-on's automatic update checks. To avoid this addon contributing to the problem, the addon min spacing time is 10s between checks, thank you for your understanding.
+
+Note : this update is driven by cloudflare browser checks that being enforced on the site. also core v5.4.7 or above is required for the new pulsing colors on button during automatic update checks.
+
 ## v1.3.10 - Shared core readiness
 
 - Retry core readiness for up to 10 seconds instead of losing startup when the initial ping arrives before core is ready. Ping starts are spaced 750 ms apart, with a 500-ms per-attempt timeout.
