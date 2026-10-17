@@ -3,6 +3,39 @@
 module.exports = function registerLibraryRatingUiGroup(context) {
   const { assert, createFakeClock, loadModule, runTest, Window } = context;
 
+  runTest("LIBRARY-SEARCH-REOPEN-01 restores the active search and clearing it removes the filter", async () => {
+    const { bindManagerEvents } = loadModule("addons/library-addon/src/ui/controllers/bindManagerEvents.js");
+    const window = new Window();
+    const previousWindow = global.window;
+    let pending;
+    global.window = { setTimeout(callback) { pending = callback; return 1; }, clearTimeout() { pending = null; } };
+    const state = { search: 'tag:"male protagonist" title & <name>', ratingGeneration: 0 };
+    let reloads = 0;
+    const deps = { reloadRowsFn: async () => { reloads += 1; } };
+    let unbind = () => {};
+    try {
+      const root = window.document.createElement("div");
+      root.innerHTML = '<input data-field="search">';
+      unbind = bindManagerEvents(root, state, {}, deps);
+      assert.strictEqual(root.querySelector("input").value, state.search);
+      assert.strictEqual(reloads, 0, "restoring text does not synthesize an input event");
+      unbind();
+      const reopened = window.document.createElement("div");
+      reopened.innerHTML = '<input data-field="search">';
+      unbind = bindManagerEvents(reopened, state, {}, deps);
+      const input = reopened.querySelector("input");
+      assert.strictEqual(input.value, state.search);
+      input.value = "";
+      input.dispatchEvent(new window.Event("input"));
+      await pending();
+      assert.strictEqual(state.search, "");
+      assert.strictEqual(reloads, 1);
+      unbind();
+      unbind = bindManagerEvents(reopened, state, {}, deps);
+      assert.strictEqual(input.value, "");
+    } finally { unbind(); global.window = previousWindow; window.happyDOM.abort(); }
+  });
+
   runTest("LIBRARY-RATING-UI-01 normalizes typed pasted arrow and blank ratings", () => {
     const { normalizePersonalRatingInput } = loadModule(
       "addons/library-addon/src/library/recordModel.js",

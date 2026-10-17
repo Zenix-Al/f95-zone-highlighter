@@ -6,7 +6,7 @@ module.exports = function registerThreadUtilityDownloads(context) {
   function fixture() {
     const window = new Window({ url: "https://f95zone.to/threads/daiakuji.308343/" });
     window.document.body.innerHTML = fs.readFileSync(
-      path.join(ROOT, "addons/reference/sample.html"),
+      path.join(ROOT, "tests/fixtures/thread-utility-canonical.html"),
       "utf8",
     );
     return { window, root: window.document.querySelector(".message-body .bbWrapper") };

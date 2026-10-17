@@ -1,5 +1,9 @@
 # Changelog
 
+## [5.4.8 - Cached prefix catalog for add-ons]
+
+- Added opt-in `includePrefixes: true` support to `config.getTagPrefs`, exposing cached prefix IDs, names, classes and category groups for Library's hybrid updater. Existing callers keep the same response; no extra catalog requests are made.
+
 ## [5.4.7 - Add-on activity indicators]
 
 - Added core-owned green working, yellow waiting, and red error rings for add-on dock buttons using the activity markup contract. Working rings pulse gently; reduced-motion users receive a steady ring.

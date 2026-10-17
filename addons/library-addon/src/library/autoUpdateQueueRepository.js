@@ -76,8 +76,8 @@ export function normalizeAutoUpdateCycle(value = {}, options = {}) {
     currentPosition: integer(value.currentPosition),
     dailyKey: text(value.dailyKey, 16),
     dailyAttempted: integer(value.dailyAttempted),
-    dailyBonusAllowance: integer(value.dailyBonusAllowance, 0, 0, 100_000),
-    checksPerDay: integer(value.checksPerDay, 100, 1, 100_000),
+    dailyBonusAllowance: 0, // Retired field: ignore bonuses from older saved cycles.
+    checksPerDay: integer(value.checksPerDay, 100, 1, 150),
     nextRunAt: integer(value.nextRunAt),
     blockedUntil: integer(value.blockedUntil),
     blockedReason: text(value.blockedReason, 40),
@@ -141,7 +141,6 @@ export function createAutoUpdateQueueRepository(api, { now = Date.now } = {}) {
       const used = integer(allowance.dailyAttempted);
       const floor = allowDailyRefund && sameCycle && incomingDay ? Math.max(0, used - 1) : used;
       cycle.dailyAttempted = Math.max(floor, incomingDay ? cycle.dailyAttempted : 0);
-      cycle.dailyBonusAllowance = Math.max(integer(allowance.dailyBonusAllowance, 0, 0, 100_000), incomingDay ? cycle.dailyBonusAllowance : 0);
     } else if (!incomingDay) {
       cycle.dailyAttempted = 0;
       cycle.dailyBonusAllowance = 0;
@@ -318,20 +317,6 @@ export function createAutoUpdateQueueRepository(api, { now = Date.now } = {}) {
       claimedBy: text(owner, 160),
       claimExpiresAt: integer(expiresAt),
       lastAttemptAt: now(),
-    });
-  }
-
-  async function grantDailyBonus(value, amount) {
-    const rolled = await rolloverDailyAllowance(value, getLocalDayKey(now()));
-    if (!rolled?.ok) return rolled;
-    const cycle = rolled.value;
-    return putCycle({
-      ...cycle,
-      dailyBonusAllowance: Math.min(
-        100_000,
-        cycle.dailyBonusAllowance + integer(amount, cycle.checksPerDay, 1, 100_000),
-      ),
-      updatedAt: now(),
     });
   }
 
@@ -563,7 +548,6 @@ export function createAutoUpdateQueueRepository(api, { now = Date.now } = {}) {
     getNextActionableItem,
     rolloverDailyAllowance,
     claimQueueItem,
-    grantDailyBonus,
     ownsQueueItem,
     renewQueueItemClaim,
     settleQueueItem,

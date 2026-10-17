@@ -1,5 +1,6 @@
 import cssTemplate from "./autoUpdate.css";
 import { LIBRARY_MIN_UPDATE_SPACING_MS } from "../../constants.js";
+import { formatRecentUpdateErrors } from "../../library/updateErrorLog.js";
 
 const count = (value) => Math.max(0, Number(value) || 0);
 const time = (value) => (value ? new Date(value).toLocaleString() : "-");
@@ -61,40 +62,71 @@ export function derivePrimaryUpdateAction(
     return { action: "retry-now", label: "Retry now", disabled: false };
   const localDay = localDayKey();
   const staleDay = Boolean(cycle.dailyKey && cycle.dailyKey !== localDay);
-  const limit =
-    count(cycle.checksPerDay) +
-    (staleDay ? 0 : count(cycle.dailyBonusAllowance));
+  const limit = count(cycle.checksPerDay);
   if (
     !staleDay &&
     count(cycle.dailyAttempted) >= limit &&
     count(cycle.completed) + count(cycle.failed) < count(cycle.total)
   ) {
     return {
-      action: "continue-batch",
-      label: "Continue another batch...",
-      disabled: false,
+      action: "",
+      label: "Daily allowance reached",
+      disabled: true,
     };
   }
   return { action: "resume", label: "Resume updates", disabled: false };
 }
 
-export function createAutoUpdateDiagnostics(cycle) {
-  if (!cycle) return "Library auto update\nState: idle\nCycle: none";
+const SOURCE_REASONS = {
+  query_unusable: "no usable search terms",
+  id_not_found: "saved thread ID not found", conflicting_matches: "ambiguous rows",
+  missing_facts: "missing facts", mapping_incomplete: "mapping incomplete",
+  invalid_facts: "invalid facts", invalid_response: "invalid response",
+  catalog_unavailable: "cached catalogs unavailable", api_exhausted: "hourly allowance exhausted",
+  api_suppressed: "API temporarily suppressed", challenge_page: "API browser check",
+  rate_limited: "API rate limit", timeout: "API timeout", network_error: "API network failure",
+  response_too_large: "API response too large", html_retry: "HTML retry", html_only: "HTML-only setting",
+};
+
+export function describeHybridStatus(status, preferLatestApi = false, now = Date.now()) {
+  const value = status?.ok ? status.value : null;
+  const last = status?.lastCheck;
+  const source = !last ? "No check in this tab session"
+    : `${last.source === "latest-api" ? "Latest API: ID match" : `Thread HTML: ${SOURCE_REASONS[last.fallbackReason] || "API failure"}`} (${last.ok ? "fetched" : "failed"})`;
+  const mode = preferLatestApi ? "API-first; thread HTML fallback (search coverage is not guaranteed)" : "Thread HTML only";
+  return {
+    mode,
+    usage: value ? `${count(value.used)} / ${count(value.limit)} updater-accounted requests this UTC clock hour` : "API accounting unavailable",
+    availability: !value ? "Shared budget status unavailable; this is not a server quota reading"
+      : value.siteBlockedUntil > now ? `Both sources paused (${SITE_BLOCK_LABELS[value.siteBlockedReason] || "site block"}) until ${time(value.siteBlockedUntil)}`
+        : value.apiBlockedUntil > now ? `API suppressed (${SITE_BLOCK_LABELS[value.apiBlockedReason] || "API block"}) until ${time(value.apiBlockedUntil)}; HTML remains eligible`
+          : value.remaining === 0 ? `API allowance exhausted; HTML remains eligible. API next eligible: ${time(value.nextApiAt)}`
+            : `API next eligible: ${time(value.nextApiAt)}`,
+    source,
+  };
+}
+
+export function createAutoUpdateDiagnostics(cycle, status, preferLatestApi = false, errors) {
+  const hybrid = describeHybridStatus(status, preferLatestApi);
+  const lines = ["Library auto update", `Mode: ${hybrid.mode}`, hybrid.usage, hybrid.availability,
+    `Last local fetch: ${hybrid.source}`, "Accounting excludes ordinary browsing and other scripts; not F95's remaining quota."];
+  if (!cycle) return [...lines, "State: idle", "Cycle: none", ...formatRecentUpdateErrors(errors)].join("\n");
   return [
-    "Library auto update",
+    ...lines,
     `State: ${cycle.status}`,
     `Cycle: ${cycle.cycleId}`,
     `Progress: ${count(cycle.completed)} / ${count(cycle.total)}`,
-    `Today: ${count(cycle.dailyAttempted)} / ${count(cycle.checksPerDay) + count(cycle.dailyBonusAllowance)}`,
+    `Today: ${count(cycle.dailyAttempted)} / ${count(cycle.checksPerDay)}`,
     `Current: ${count(cycle.current)}; changed: ${count(cycle.changed)}; retry: ${count(cycle.retryPending)}; terminal: ${count(cycle.failed)}; skipped: ${count(cycle.skipped)}`,
     `Network retries: ${count(cycle.networkRetries)}`,
     `Current item: ${cycle.currentThreadId || "-"} @ ${count(cycle.currentPosition) || "-"}`,
     `Next wake: ${cycle.nextRunAt || 0}`,
     `Blocked: ${cycle.blockedReason || "-"} until ${cycle.blockedUntil || 0}`,
     `Updated: ${cycle.updatedAt || 0}`,
+    ...formatRecentUpdateErrors(errors),
   ]
     .join("\n")
-    .slice(0, 2000);
+    .slice(0, 32000);
 }
 
 export function patchAutoUpdateView(root, cycle, runtime = {}) {
@@ -104,11 +136,14 @@ export function patchAutoUpdateView(root, cycle, runtime = {}) {
     if (node) node.textContent = String(value);
   };
   const total = count(cycle?.total);
+  const hybrid = describeHybridStatus(runtime.hybridStatus, runtime.preferLatestApi);
+  set("hybridMode", hybrid.mode);
+  set("apiUsage", hybrid.usage);
+  set("apiAvailability", hybrid.availability);
+  set("lastSource", hybrid.source);
   const completed = count(cycle?.completed);
   const staleDay = Boolean(cycle?.dailyKey && cycle.dailyKey !== localDayKey());
-  const limit =
-    count(cycle?.checksPerDay) +
-    (staleDay ? 0 : count(cycle?.dailyBonusAllowance));
+  const limit = count(cycle?.checksPerDay);
   const siteBlock = getSiteBlockLabel(cycle);
   set(
     "state",
@@ -165,6 +200,7 @@ export function patchAutoUpdateView(root, cycle, runtime = {}) {
 
 function renderAutoUpdateMarkup(config, cycle) {
   const field = (label, name, value, min, max) => {
+    if (name === "checksPerDay") { min = 1; max = 150; }
     if (name === "spacingMs") min = LIBRARY_MIN_UPDATE_SPACING_MS;
     return `<label><span>${label}</span><input name="${name}" type="number" min="${min}" max="${max}" value="${escapeHtml(value)}"></label>`;
   };
@@ -174,6 +210,11 @@ function renderAutoUpdateMarkup(config, cycle) {
 
 export function renderAutoUpdateDialog(config, cycle) {
   return renderAutoUpdateMarkup(config, cycle)
+    .replace(
+      '<label><span>Checks per day</span>',
+      `<label class="f95ue-library-auto-toggle"><input name="preferLatestApi" type="checkbox"${config.preferLatestApi === true ? " checked" : ""}><span>Prefer Latest API while its allowance is available; otherwise use thread HTML. Search coverage is not guaranteed.</span></label><label><span>Checks per day</span>`,
+    )
+    .replace('<details><summary>Cycle details', '<section aria-label="Request sources"><div data-role="hybridMode"></div><div data-role="apiUsage"></div><div data-role="apiAvailability"></div><div data-role="lastSource"></div><div>Updater accounting only; excludes ordinary browsing and other scripts. Not F95\'s remaining server quota.</div></section><details><summary>Cycle details')
     .replace(
       '<form class="f95ue-library-auto-dialog" data-role="auto-update-dialog">',
       '<form class="f95ue-library-auto-dialog" data-role="auto-update-dialog"><div class="f95ue-library-auto-body" data-role="auto-update-scroll" data-preserve-scroll="auto-update">',

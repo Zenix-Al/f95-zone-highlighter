@@ -55,7 +55,7 @@ module.exports = function registerThreadUtilityContent(context) {
   }
 
   runTest("THREAD-UTILITY-CONTENT-01 isolates canonical Overview and Installation", () => {
-    const html = fs.readFileSync(path.join(ROOT, "addons/reference/sample.html"), "utf8");
+    const html = fs.readFileSync(path.join(ROOT, "tests/fixtures/thread-utility-canonical.html"), "utf8");
     const fixture = contentRoot(html);
     try {
       const { parseContentSections } = parser();

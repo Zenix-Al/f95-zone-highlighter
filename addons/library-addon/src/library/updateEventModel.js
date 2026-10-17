@@ -8,11 +8,10 @@ function normalizedText(value) {
 
 export function normalizeVersionIdentity(value) {
   const normalized = normalizedText(value).replace(/^v(?=\d)/, "");
-  // Some threads label the same demo as "Demo - 0.46" in the post and
-  // "Demo v0.46" in the title. Keep the label and numeric suffix, but ignore
-  // only that separator; different version numbers still compare differently.
+  // Ignore the separator/v marker before a labeled numeric version, preserving
+  // trailing edition markers (e.g. Twine v0.41 TF vs Twine 0.41 TF).
   return normalized.replace(
-    /^([a-z][a-z0-9 ]*?)\s*(?:[-–—]\s*|v(?=\d))(\d+(?:[._-]\d+)*(?:[a-z]\d*)?)$/,
+    /^([a-z][a-z0-9 ]*?)\s*(?:[-–—]\s*|v(?=\d))(\d+[a-z0-9._-]*(?:\s+[a-z0-9]+)*)$/,
     "$1 $2",
   );
 }

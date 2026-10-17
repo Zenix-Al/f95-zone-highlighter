@@ -8,23 +8,29 @@ module.exports = ({ assert, loadModule, runTest, sanitizeAddonCss, Window, fs, p
     assert.strictEqual(getAutoUpdateActivity(null), "idle");
     for (const status of ["preparing", "recovering", "running"]) {
       assert.strictEqual(getAutoUpdateActivity({ status }, { running: true }), "working");
-      assert.strictEqual(getAutoUpdateActivity({ status }), "waiting", "stale persisted running is not live work");
+      assert.strictEqual(getAutoUpdateActivity({ status }), "idle", "stale persisted running is not live work");
     }
     for (const status of ["paused", "waiting"]) {
-      assert.strictEqual(getAutoUpdateActivity({ status }, { running: true }), "waiting");
+      assert.strictEqual(getAutoUpdateActivity({ status }, { running: true }), "idle");
     }
-    assert.strictEqual(getAutoUpdateActivity({ status: "waiting", blockedReason: "challenge_page" }), "waiting");
+    for (const blockedReason of ["challenge_page", "rate_limited"]) {
+      assert.strictEqual(getAutoUpdateActivity({ status: "waiting", blockedReason, blockedUntil: 200 }, { currentTime: 100 }), "waiting");
+      assert.strictEqual(getAutoUpdateActivity({ status: "paused", blockedReason, blockedUntil: 200 }, { currentTime: 100, reason: "paused" }), "waiting");
+      assert.strictEqual(getAutoUpdateActivity({ status: "waiting", blockedReason, blockedUntil: 200 }, { currentTime: 201, reason: "site_blocked" }), "idle");
+    }
+    assert.strictEqual(getAutoUpdateActivity({ status: "waiting", blockedReason: "challenge_page" }), "idle", "no active deadline means no warning");
+    assert.strictEqual(getAutoUpdateActivity({ status: "waiting", dailyAttempted: 100, checksPerDay: 100 }, { reason: "daily_allowance_exhausted" }), "idle");
     assert.strictEqual(getAutoUpdateActivity({ status: "running", failed: 20 }, { running: true }), "working");
     assert.strictEqual(getAutoUpdateActivity({ status: "completed", failed: 20 }, { running: true }), "idle");
     assert.strictEqual(getAutoUpdateActivity(null, { reason: "run_failed" }), "error");
     assert.strictEqual(getAutoUpdateActivity({ status: "running" }, { reason: "idb_error" }), "error");
-    assert.strictEqual(getAutoUpdateActivity({ status: "running" }, { reason: "lease_owned" }), "waiting");
+    assert.strictEqual(getAutoUpdateActivity({ status: "running" }, { reason: "lease_owned" }), "idle");
     assert.strictEqual(getAutoUpdateActivity({ status: "running" }, { reason: "lease_owned", leaseActive: true }), "working");
     assert.strictEqual(getAutoUpdateActivity({ status: "recovering" }, { recoveryPending: true, leaseActive: true }), "working");
-    assert.strictEqual(getAutoUpdateActivity({ status: "waiting" }, { leaseActive: true }), "waiting");
+    assert.strictEqual(getAutoUpdateActivity({ status: "waiting" }, { leaseActive: true }), "idle");
     assert.strictEqual(getAutoUpdateActivity({ status: "completed" }, { leaseActive: true }), "idle");
     assert.strictEqual(getAutoUpdateActivity({ status: "completed" }, { reason: "not_due" }), "idle");
-    assert.strictEqual(getAutoUpdateActivity(null, { reason: "paused" }), "waiting");
+    assert.strictEqual(getAutoUpdateActivity(null, { reason: "paused" }), "idle");
   });
 
   runTest("LIBRARY-UPDATE-ACTIVITY-01 patches status without disabling or replacing buttons", () => {
@@ -65,7 +71,7 @@ module.exports = ({ assert, loadModule, runTest, sanitizeAddonCss, Window, fs, p
     assert.strictEqual((await scheduler.run()).reason, "lease_owned");
     assert.strictEqual(scheduler.snapshot().activity, "working");
     timestamp = 1101;
-    assert.strictEqual(scheduler.snapshot().activity, "waiting", "an expired lease is not evidence of ongoing work");
+    assert.strictEqual(scheduler.snapshot().activity, "idle", "an expired lease is not evidence of ongoing work");
     cycle = { ...cycle, status: "completed" };
     await scheduler.start();
     assert.strictEqual(scheduler.snapshot().activity, "idle");

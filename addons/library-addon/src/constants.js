@@ -20,9 +20,10 @@ export const LIBRARY_SETTINGS_DEFAULT = {
   enabled: true,
   showPageButtons: true,
 };
-export const LIBRARY_MIN_UPDATE_SPACING_MS = 10_000;
+export const LIBRARY_MIN_UPDATE_SPACING_MS = 15_000;
 export const LIBRARY_AUTO_UPDATE_DEFAULTS = Object.freeze({
   enabled: true,
+  preferLatestApi: false,
   intervalMs: 24 * 60 * 60 * 1000,
   runHour: 0,
   spacingMs: LIBRARY_MIN_UPDATE_SPACING_MS,

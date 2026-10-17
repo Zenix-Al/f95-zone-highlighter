@@ -3,6 +3,10 @@ export function getClaimJitter(jitterMs, random = Math.random) {
   return Math.min(max, Math.max(0, Math.floor(random() * (max + 1))));
 }
 
+export function getUpdateDelay(spacingMs, jitterMs, random = Math.random) {
+  return Math.max(0, Number(spacingMs) || 0) + getClaimJitter(jitterMs, random);
+}
+
 export function getFailureDelay(intervalMs, consecutiveFailures) {
   const interval = Math.max(60_000, Number(intervalMs || 0));
   const failures = Math.max(1, Number(consecutiveFailures || 1));

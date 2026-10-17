@@ -1,0 +1,31 @@
+{
+  "status": "ok",
+  "msg": {
+    "data": [{
+      "thread_id": 281676,
+      "title": "Chilling Ridge",
+      "creator": "Catmilk Studios",
+      "version": "v0.0.5.6",
+      "views": 320735,
+      "likes": 113,
+      "prefixes": [2],
+      "tags": [30, 45, 130, 162, 173, 181, 191, 225, 278, 290, 360, 382, 392, 394, 449, 535, 550, 1507, 2214, 2229, 2241, 2255, 2257],
+      "rating": 3.71,
+      "cover": "https://preview.f95zone.to/2026/05/6020091_chillingRidge_banner.png",
+      "screens": [
+        "https://preview.f95zone.to/2025/12/5588121_51588.png",
+        "https://preview.f95zone.to/2026/05/6020107_uzjSM1.png",
+        "https://preview.f95zone.to/2025/12/5588117_51577.png",
+        "https://preview.f95zone.to/2026/05/6020109_6uWxv9.png",
+        "https://preview.f95zone.to/2026/05/6020108_gDe1bW.png"
+      ],
+      "date": "56 mins",
+      "watched": false,
+      "ignored": false,
+      "new": false,
+      "ts": 1792192020
+    }],
+    "pagination": { "page": 1, "total": 1 },
+    "count": 1
+  }
+}

@@ -25,6 +25,7 @@ export function normalizeAutoUpdateConfig(value = {}) {
   const defaults = LIBRARY_AUTO_UPDATE_DEFAULTS;
   return {
     enabled: value.enabled !== false,
+    preferLatestApi: value.preferLatestApi === true,
     intervalMs: bounded(value.intervalMs, defaults.intervalMs, 6 * 3600000, 30 * 86400000),
     runHour: bounded(value.runHour, defaults.runHour, 0, 23),
     spacingMs: bounded(
@@ -35,10 +36,11 @@ export function normalizeAutoUpdateConfig(value = {}) {
     timeoutMs: bounded(value.timeoutMs, defaults.timeoutMs, 1000, 30_000),
     retryLimit: bounded(value.retryLimit, defaults.retryLimit, 0, 5),
     checksPerDay: bounded(
-      value.checksPerDay ?? value.dailyCap,
+      Number.isFinite(Number(value.checksPerDay ?? value.dailyCap))
+        ? Math.trunc(Number(value.checksPerDay ?? value.dailyCap)) : defaults.checksPerDay,
       defaults.checksPerDay,
       1,
-      500,
+      150,
     ),
     leaseTtlMs: bounded(value.leaseTtlMs, defaults.leaseTtlMs, 30_000, 300_000),
   };

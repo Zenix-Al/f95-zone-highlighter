@@ -35,6 +35,9 @@ export function createLibraryApiClient(coreBridge, budgetOptions = {}) {
   }
 
   return {
+    getCatalogs() {
+      return bridge.invokeCoreAction("config.getTagPrefs", { includePrefixes: true });
+    },
     async runBulk(callback, throttle = null) {
       const limits = throttle || await this.getCoreThrottleInfo();
       return budget.run(limits, callback);

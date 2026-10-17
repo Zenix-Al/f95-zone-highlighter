@@ -157,17 +157,17 @@ module.exports = function registerLibraryIdbSchemaGroup(context) {
     assert.strictEqual((await repository.discardCycle("pre-fix")).ok, true);
     const prepared = await repository.prepareCycle({ cycle: { cycleId: "new" }, items: [{ threadId: "1" }] });
     assert.strictEqual(prepared.cycle.dailyAttempted, 100);
-    assert.strictEqual(prepared.cycle.dailyBonusAllowance, 25);
+    assert.strictEqual(prepared.cycle.dailyBonusAllowance, 0);
     // The worker's site-block refund must still be allowed within the same cycle.
     const stale = await repository.putCycle({ ...prepared.cycle, dailyAttempted: 0, dailyBonusAllowance: 0 });
     assert.strictEqual(stale.value.dailyAttempted, 100, "ordinary stale writes cannot lower usage");
-    assert.strictEqual(stale.value.dailyBonusAllowance, 25);
+    assert.strictEqual(stale.value.dailyBonusAllowance, 0);
     const refunded = await repository.putCycle({ ...prepared.cycle, dailyAttempted: 99 }, { allowDailyRefund: true });
     assert.strictEqual(refunded.value.dailyAttempted, 99);
     await repository.discardCycle("new");
     const next = await repository.prepareCycle({ cycle: { cycleId: "after-refund" }, items: [] });
     assert.strictEqual(next.cycle.dailyAttempted, 99);
-    assert.strictEqual(next.cycle.dailyBonusAllowance, 25);
+    assert.strictEqual(next.cycle.dailyBonusAllowance, 0);
   });
 
   runTest("LIBRARY-DAILY-ALLOWANCE-01 fails closed when allowance read or atomic checkpoint fails", async () => {
@@ -196,21 +196,60 @@ module.exports = function registerLibraryIdbSchemaGroup(context) {
     assert.strictEqual(JSON.stringify([...bridge.snapshot().stores["update-cycles"]]), before);
   });
 
-  runTest("LIBRARY-UPDATE-TWO-TAB-01 carries daily usage through completion replacement restart bonus and midnight", async () => {
+  runTest("LIBRARY-UPDATE-TWO-TAB-01 carries daily usage through completion replacement restart and midnight without bonuses", async () => {
     const { createLibraryApiClient } = loadModule("addons/library-addon/src/api/library/client.js");
     const { createAutoUpdateRepository } = loadModule("addons/library-addon/src/library/autoUpdateRepository.js");
     const { createAutoUpdateScheduler } = loadModule("addons/library-addon/src/library/autoUpdateScheduler.js");
     const { createAutoUpdateQueueSnapshotBuilder } = loadModule("addons/library-addon/src/library/autoUpdateQueueSnapshot.js");
     const { createAutoUpdateQueueWorker } = loadModule("addons/library-addon/src/library/autoUpdateQueueWorker.js");
     const { getLocalDayKey } = loadModule("addons/library-addon/src/library/autoUpdatePolicy.js");
+    const { createLibraryService } = loadModule("addons/library-addon/src/library/service.js");
+    for (const hybrid of [false, true]) {
     for (const overdue of [false, true]) {
       let timestamp = new Date(2026, 9, 17, 12, 0).getTime();
       let snapshots = 0;
       const requests = [];
-      const bridge = createQueueBridge();
+      const apiRequests = [];
+      const baseBridge = createQueueBridge();
+      const records = new Map(Array.from({ length: 110 }, (_, index) => {
+        const threadId = String(index + 1);
+        return [threadId, { threadId, schemaVersion: 5, personal: { addedAt: 1, note: "keep" }, thread: {
+          title: `Game ${threadId}`, currentVersion: "v1", url: `https://f95zone.to/threads/${threadId}/`,
+        } }];
+      }));
+      const history = new Map();
+      const bridge = !hybrid ? baseBridge : {
+        snapshot: baseBridge.snapshot,
+        async invokeCoreAction(action, payload) {
+          if (action === "config.getTagPrefs") return { ok: true, value: { tags: [], prefixes: { items: [] } } };
+          if (["records", "updates", "activity"].includes(payload.storeName)) {
+            const store = payload.storeName === "records" ? records : history;
+            if (action === "idb.get") return { ok: true, value: structuredClone(store.get(payload.key) || null) };
+            if (action === "idb.put") { store.set(payload.value.id || payload.value.threadId, structuredClone(payload.value)); return { ok: true }; }
+            if (action === "idb.query") return { ok: true, value: [] };
+            throw new Error(`Unexpected ${action}`);
+          }
+          return baseBridge.invokeCoreAction(action, payload);
+        },
+      };
       const api = createLibraryApiClient(bridge);
       const repository = createAutoUpdateRepository(api);
-      await repository.putConfig({ jitterMs: 0, spacingMs: 10000, checksPerDay: 100 });
+      await repository.putConfig({ preferLatestApi: hybrid, jitterMs: 0, spacingMs: 15000, checksPerDay: 100 });
+      let tail = Promise.resolve();
+      const locks = { request(_name, _options, callback) { const pending = tail.then(callback); tail = pending.catch(() => {}); return pending; } };
+      const service = hybrid ? createLibraryService(bridge, {}, {
+        autoUpdateQueueOptions: { now: () => timestamp },
+        hybridBudgetOptions: { locks, now: () => timestamp, waitFor: async (ms) => { timestamp += ms; } },
+        requestLatestApi: async (url) => {
+          const threadId = new URL(url).searchParams.get("search").slice(5);
+          apiRequests.push(threadId);
+          return { ok: true, payload: { status: "ok", msg: { data: [{ thread_id: threadId, title: `Game ${threadId}`, version: "v1" }] } } };
+        },
+        requestThreadHtml: async (url) => {
+          const threadId = url.match(/threads\/(\d+)/)[1];
+          return { ok: true, finalUrl: url, html: `<html><title>Game ${threadId} [v1] [Dev]</title><article class="message-threadStarterPost"><div>Version: v1</div></article></html>` };
+        },
+      }) : null;
       const queueA = createQueueRepository(bridge, { now: () => timestamp });
       await queueA.prepareCycle({
         cycle: {
@@ -236,11 +275,14 @@ module.exports = function registerLibraryIdbSchemaGroup(context) {
         const worker = createAutoUpdateQueueWorker({
           repository: queue, now: () => timestamp,
           getRecord: async (threadId) => ({ threadId, updateCheck: { enabled: true } }),
-          checkRecords: async ([threadId]) => {
+          checkRecords: async ([threadId], options) => {
             requests.push({ owner, threadId });
+            if (service) return service.previewManualUpdateCheck([threadId], options);
             return { results: [{ threadId, ok: true, attempts: 1 }] };
           },
-          commitResults: async () => ({ ok: true, current: 1, changed: 0 }),
+          commitResults: async (preview, options) => service
+            ? service.commitManualUpdateCheck(preview, options)
+            : { ok: true, current: 1, changed: 0 },
           waitFor: async (ms) => { timestamp += ms; },
         });
         return createAutoUpdateScheduler({
@@ -266,24 +308,24 @@ module.exports = function registerLibraryIdbSchemaGroup(context) {
       assert.strictEqual(second.cycle.dailyAttempted, 100);
       assert.strictEqual(second.cycle.status, "waiting");
       assert.strictEqual(requests.length, 100, "7 old-cycle + 93 successor requests, not another 100");
-      const afterBonus = await tabB.grantNextBatch();
-      assert.strictEqual(afterBonus.cycle.status, "completed");
-      assert.strictEqual(afterBonus.cycle.dailyAttempted, 117);
-      assert.strictEqual(afterBonus.cycle.dailyBonusAllowance, 100);
+      if (hybrid) assert.strictEqual(apiRequests.length, 80, "API exhaustion continues through HTML within the same daily budget");
+      assert.strictEqual(tabB.grantNextBatch, undefined);
       const checkAgain = await tabB.run({ runNow: true, force: true });
-      assert.strictEqual(checkAgain.cycle.completed, 83);
-      assert.strictEqual(checkAgain.cycle.dailyAttempted, 200);
+      assert.strictEqual(checkAgain.cycle.completed, 93);
+      assert.strictEqual(checkAgain.cycle.dailyAttempted, 100);
       const restarted = await tabB.restartCycle();
       assert.strictEqual(restarted.cycle.completed, 0);
-      assert.strictEqual(restarted.cycle.dailyAttempted, 200);
-      assert.strictEqual(restarted.cycle.dailyBonusAllowance, 100);
-      assert.strictEqual(requests.length, 200, "Restart must not replenish allowance");
+      assert.strictEqual(restarted.cycle.dailyAttempted, 100);
+      assert.strictEqual(restarted.cycle.dailyBonusAllowance, 0);
+      assert.strictEqual(requests.length, 100, "Restart must not replenish allowance");
+      if (hybrid) assert.strictEqual(apiRequests.length, 80, "Restart does not refill the hourly API budget");
       timestamp = new Date(2026, 9, 18, 0, 1).getTime();
       const tomorrow = await tabB.run();
       assert.strictEqual(tomorrow.cycle.completed, 100);
       assert.strictEqual(tomorrow.cycle.dailyAttempted, 100);
       assert.strictEqual(tomorrow.cycle.dailyBonusAllowance, 0);
-      assert.strictEqual(requests.length, 300);
+      assert.strictEqual(requests.length, 200);
+    }
     }
   });
 
@@ -613,7 +655,7 @@ module.exports = function registerLibraryIdbSchemaGroup(context) {
     assert.strictEqual(cycle.cycleId.length, 128);
     assert.strictEqual(cycle.status, "preparing");
     assert.strictEqual(cycle.total, 0);
-    assert.strictEqual(cycle.checksPerDay, 100000);
+    assert.strictEqual(cycle.checksPerDay, 150);
     assert.strictEqual(cycle.dailyAttempted, 0);
 
     const item = normalizeAutoUpdateQueueItem({
@@ -745,8 +787,7 @@ module.exports = function registerLibraryIdbSchemaGroup(context) {
     assert.strictEqual(rolled.value.dailyAttempted, 0);
     assert.strictEqual(rolled.value.dailyBonusAllowance, 0);
     assert.strictEqual(rolled.value.dailyKey, "2026-08-29");
-    const granted = await repository.grantDailyBonus(rolled.value, 100);
-    assert.strictEqual(granted.value.dailyBonusAllowance, 100);
+    assert.strictEqual(repository.grantDailyBonus, undefined);
 
     const stale = await repository.getQueueItem("cycle-recovery:stale");
     const claimed = await repository.claimQueueItem(stale, {

@@ -87,9 +87,11 @@ export function normalizeThreadTitleText(value) {
   const bracketParts = parseBracketSuffixParts(source);
   const developer = bracketParts[0] || "";
   const gameVersion = bracketParts[1] || "";
+  // Raw thread headings end in [version] [developer]. Strip at most those
+  // two suffixes, never earlier brackets that belong to the game's name.
+  // Do not apply this extractor to an already-canonical/API title.
   const title = source
-    .replace(/\s*\[(v[\d.]+\|?.*?)\]/gi, "")
-    .replace(/\s*\[([^\]]+)\]\s*$/gi, "")
+    .replace(/(?:\s*\[[^[\]]+\]){1,2}\s*$/, "")
     .trim();
   return { source, title, gameVersion, developer };
 }

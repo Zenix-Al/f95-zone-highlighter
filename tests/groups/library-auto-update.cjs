@@ -1,7 +1,112 @@
 "use strict";
 
 module.exports = function registerLibraryAutoUpdateGroup(context) {
-  const { assert, fs, loadModule, path, ROOT, runTest } = context;
+  const { assert, fs, loadModule, path, ROOT, runTest, Window } = context;
+
+  runTest("LIBRARY-HYBRID-UI-01 explains local accounting and bounded fallback reasons", () => {
+    const { describeHybridStatus, createAutoUpdateDiagnostics, renderAutoUpdateDialog } = loadModule(
+      "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
+    );
+    const value = { used: 80, limit: 80, remaining: 0, nextApiAt: Date.now() + 3600000 };
+    const status = { ok: true, value, lastCheck: { source: "thread-html", fallbackReason: "api_exhausted", ok: true } };
+    const view = describeHybridStatus(status, true);
+    assert.match(view.usage, /80 \/ 80 updater-accounted/);
+    assert.match(view.availability, /HTML remains eligible/);
+    assert.match(view.source, /hourly allowance exhausted.*fetched/);
+    for (const [reason, label] of [["id_not_found", "ID not found"], ["conflicting_matches", "ambiguous"], ["missing_facts", "missing facts"], ["mapping_incomplete", "mapping incomplete"], ["http_503", "API failure"]]) {
+      assert.ok(describeHybridStatus({ ...status, lastCheck: { ...status.lastCheck, fallbackReason: reason } }, true).source.includes(label));
+    }
+    assert.match(describeHybridStatus({ ...status, lastCheck: { source: "latest-api", ok: true } }, true).source, /ID match/);
+    const diagnostic = createAutoUpdateDiagnostics(null, status, true);
+    assert.match(diagnostic, /not F95's remaining quota/);
+    assert.match(diagnostic, /State: idle/);
+    assert.doesNotMatch(createAutoUpdateDiagnostics(null, { lastCheck: { source: "evil", fallbackReason: "secret-cookie", ok: false } }), /secret-cookie|evil/);
+    const markup = renderAutoUpdateDialog({ checksPerDay: 100, preferLatestApi: true }, null);
+    assert.match(markup, /Search coverage is not guaranteed/);
+    assert.match(markup, /Not F95's remaining server quota/);
+  });
+
+  runTest("LIBRARY-HYBRID-UI-02 patches sources without changing running state or input focus", () => {
+    const { patchAutoUpdateView, renderAutoUpdateDialog } = loadModule("addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js");
+    const window = new Window();
+    try {
+      const root = window.document.createElement("div");
+      window.document.body.append(root);
+      root.innerHTML = renderAutoUpdateDialog({ checksPerDay: 100, spacingMs: 15000 }, null);
+      const input = root.querySelector('[name="spacingMs"]');
+      input.value = "21000";
+      input.focus();
+      root.querySelector("details").open = true;
+      const value = { used: 80, limit: 80, remaining: 0, nextApiAt: Date.now() + 3600000 };
+      for (const extra of [{}, { apiBlockedUntil: Date.now() + 60000, apiBlockedReason: "challenge_page" }]) {
+        patchAutoUpdateView(root, { status: "running", total: 10, completed: 2 }, { running: true, preferLatestApi: true, hybridStatus: { ok: true, value: { ...value, ...extra } } });
+        assert.strictEqual(root.querySelector('[data-role="state"]').textContent, "RUNNING");
+        assert.strictEqual(window.document.activeElement, input);
+        assert.strictEqual(input.value, "21000");
+        assert.strictEqual(root.querySelector("details").open, true);
+        assert.strictEqual(root.querySelector('[data-auto-action="pause"]').hidden, false);
+      }
+      assert.match(root.querySelector('[data-role="apiAvailability"]').textContent, /API suppressed.*HTML remains eligible/);
+      patchAutoUpdateView(root, null, { hybridStatus: { ok: false } });
+      assert.match(root.querySelector('[data-role="apiUsage"]').textContent, /unavailable/);
+    } finally { window.happyDOM.abort(); }
+  });
+
+  runTest("LIBRARY-HYBRID-UI-03 source reads coalesce notifications and abort on dialog teardown", async () => {
+    const { createAutoUpdateController } = loadModule("addons/library-addon/src/ui/autoUpdate/autoUpdateController.js", { loader: { ".css": "text" } });
+    const window = new Window();
+    const previous = global.document;
+    const clipboardDescriptor = Object.getOwnPropertyDescriptor(global.navigator, "clipboard");
+    let copied = "";
+    Object.defineProperty(global.navigator, "clipboard", { configurable: true, value: { writeText: async (text) => { copied = text; } } });
+    global.document = window.document;
+    let listener;
+    let reads = 0;
+    let signal;
+    let resolveRead;
+    let unsubscribed = false;
+    const core = { async invokeCoreAction(action, payload) {
+      if (action === "ui.dialog.open") {
+        window.document.body.innerHTML = `<div id="hybrid-dialog">${payload.html}</div>`;
+        return { ok: true, value: { contentId: "hybrid-dialog" } };
+      }
+      return { ok: true };
+    } };
+    const scheduler = {
+      getDurableState: async () => null, snapshot: () => ({}),
+      subscribe(callback) { listener = callback; return () => { unsubscribed = true; }; },
+    };
+    const library = {
+      autoUpdate: { getConfig: async () => ({ checksPerDay: 100 }) },
+      getRecentUpdateErrors: async () => ({ ok: true, value: [{ threadId: "123", source: "latest-api", code: "timeout", outcome: "recovered", action: "none", timestamp: 1 }] }),
+      getHybridRequestStatus(options) { reads += 1; signal = options.signal; return new Promise((resolve) => { resolveRead = resolve; }); },
+    };
+    const controller = createAutoUpdateController({ core, addonId: "test", library, scheduler });
+    try {
+      await controller.open();
+      listener(null); listener(null); listener(null);
+      assert.strictEqual(reads, 1);
+      resolveRead({ ok: true, value: { used: 1, limit: 80, remaining: 79 } });
+      await Promise.resolve(); await Promise.resolve();
+      assert.strictEqual(reads, 2, "one trailing read for the notification burst");
+      window.document.querySelector('[data-auto-action="copy-diagnostics"]').click();
+      await Promise.resolve(); await Promise.resolve(); await Promise.resolve();
+      assert.match(copied, /Recent update errors \(1\/20/);
+      assert.match(copied, /latest-api \| timeout \| recovered/);
+      await controller.close();
+      assert.strictEqual(signal.aborted, true);
+      assert.strictEqual(unsubscribed, true);
+      const before = window.document.body.innerHTML;
+      resolveRead({ ok: true, value: { used: 70, limit: 80 } });
+      await Promise.resolve(); await Promise.resolve();
+      assert.strictEqual(window.document.body.innerHTML, before, "late reads cannot patch a closed dialog");
+    } finally {
+      global.document = previous;
+      if (clipboardDescriptor) Object.defineProperty(global.navigator, "clipboard", clipboardDescriptor);
+      else delete global.navigator.clipboard;
+      window.happyDOM.abort();
+    }
+  });
 
   function createRepository(overrides = {}) {
     let lease = null;
@@ -72,9 +177,12 @@ module.exports = function registerLibraryAutoUpdateGroup(context) {
     assert.strictEqual(Object.hasOwn(config, "dailyCap"), false);
     assert.strictEqual(Object.hasOwn(config, "sessionCap"), false);
     for (const spacingMs of [0, -1, 5000, "5000", "invalid", NaN, Infinity]) {
-      assert.strictEqual(normalizeAutoUpdateConfig({ spacingMs }).spacingMs, 10000);
+      assert.strictEqual(normalizeAutoUpdateConfig({ spacingMs }).spacingMs, 15000);
     }
     assert.strictEqual(normalizeAutoUpdateConfig({ spacingMs: 15000 }).spacingMs, 15000);
+    for (const [input, expected] of [[0, 1], [-5, 1], [1, 1], [150, 150], [500, 150], [1.9, 1], ["invalid", 100], [NaN, 100], [Infinity, 100]]) {
+      assert.strictEqual(normalizeAutoUpdateConfig({ checksPerDay: input }).checksPerDay, expected);
+    }
   });
 
   runTest("LIBRARY-UPDATE-QUEUE-SETTINGS-01 derives and patches primary button state", () => {
@@ -84,7 +192,7 @@ module.exports = function registerLibraryAutoUpdateGroup(context) {
     const cycle = { total: 200, completed: 50, failed: 0, checksPerDay: 100 };
     assert.strictEqual(derivePrimaryUpdateAction(null).label, "Update now");
     assert.strictEqual(derivePrimaryUpdateAction({ ...cycle, status: "paused" }).label, "Resume updates");
-    assert.strictEqual(derivePrimaryUpdateAction({ ...cycle, status: "waiting", dailyAttempted: 100 }).label, "Continue another batch...");
+    assert.strictEqual(derivePrimaryUpdateAction({ ...cycle, status: "waiting", dailyAttempted: 100, dailyBonusAllowance: 100 }).label, "Daily allowance reached");
     assert.strictEqual(derivePrimaryUpdateAction({ ...cycle, status: "running" }).disabled, true);
     assert.strictEqual(derivePrimaryUpdateAction({ ...cycle, status: "completed" }).label, "Check again...");
     assert.deepStrictEqual(
@@ -95,7 +203,8 @@ module.exports = function registerLibraryAutoUpdateGroup(context) {
     patchAutoUpdateView({
       querySelector: (selector) => selector === '[data-role="primaryAction"]' ? primary : null,
     }, { ...cycle, status: "waiting", dailyAttempted: 100 });
-    assert.strictEqual(primary.dataset.autoAction, "continue-batch");
+    assert.strictEqual(primary.dataset.autoAction, "");
+    assert.strictEqual(primary.disabled, true);
   });
 
   runTest("LIBRARY-SITE-BLOCK-01 auto-update view shows the block and offers a retry", () => {
@@ -197,10 +306,12 @@ module.exports = function registerLibraryAutoUpdateGroup(context) {
       "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
     );
     const markup = renderAutoUpdateDialog({ enabled: true, checksPerDay: 100 }, null);
+    assert.match(markup, /name="checksPerDay" type="number" min="1" max="150"/);
+    assert.match(markup, /name="spacingMs" type="number" min="15000"/);
     assert.match(markup, /data-role="auto-update-scroll"/);
     assert.match(markup, /data-preserve-scroll="auto-update"/);
     assert.doesNotMatch(markup, /<summary>[^<]*&gt;<\/summary>/);
-    for (const field of ["enabled", "runHour", "spacingMs", "timeoutMs", "retryLimit", "checksPerDay"]) {
+    for (const field of ["enabled", "preferLatestApi", "runHour", "spacingMs", "timeoutMs", "retryLimit", "checksPerDay"]) {
       assert.match(markup, new RegExp(`name="${field}"`));
     }
     const manifest = JSON.parse(fs.readFileSync(path.join(ROOT, "addons/addons.manifest.json"), "utf8"));

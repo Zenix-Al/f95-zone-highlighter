@@ -171,6 +171,8 @@ export function bindManagerEvents(root, state, handlers, deps) {
   // Search input with debounce
   const searchInput = root.querySelector('[data-field="search"]');
   if (searchInput) {
+    // The dialog DOM is recreated on reopen, but its filter state survives.
+    searchInput.value = String(state.search || "");
     searchInput.addEventListener("input", () => {
       const nextSearch = String(searchInput.value || "").trim();
       if (state.searchDebounceTimer) {

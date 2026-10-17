@@ -1,7 +1,8 @@
 import { parseLibraryThreadHtml } from "./threadUpdateParser.js";
 import { normalizeVersionIdentity } from "./updateEventModel.js";
 import { debugLog } from "../../../shared/debugLog.js";
-import { SITE_BLOCK_REASONS } from "./autoUpdatePolicy.js";
+import { getUpdateDelay, SITE_BLOCK_REASONS } from "./autoUpdatePolicy.js";
+import { diffThreadFacts } from "./updateEventModel.js";
 
 const RETRYABLE = new Set(["timeout", "network_error", "http_500", "http_502", "http_503", "http_504"]);
 const DEBUG_OWNER = "library-addon:auto-update";
@@ -26,6 +27,8 @@ export async function checkLibraryRecords(records, requestHtml, options = {}) {
   const list = (Array.isArray(records) ? records : []).slice(0, maxRecords);
   const results = [];
   let blockedReason = "";
+  let deferredReason = "";
+  let retryAt = 0;
   debugLog(DEBUG_OWNER, "Update-check batch started.", {
     data: {
       recordCount: list.length,
@@ -46,7 +49,9 @@ export async function checkLibraryRecords(records, requestHtml, options = {}) {
       debugLog(DEBUG_OWNER, "Checking library record.", {
         data: { threadId: record.threadId, attempt: attempts },
       });
-      outcome = await requestHtml(record.thread?.url || record.url, { signal, timeoutMs });
+      outcome = options.requestRecord
+        ? await options.requestRecord(record, { signal, timeoutMs })
+        : await requestHtml(record.thread?.url || record.url, { signal, timeoutMs });
       debugLog(DEBUG_OWNER, "Library record request settled.", {
         data: {
           threadId: record.threadId,
@@ -56,7 +61,7 @@ export async function checkLibraryRecords(records, requestHtml, options = {}) {
           status: outcome.status || 0,
         },
       });
-      if (signal?.aborted || outcome.reason === "cancelled") break;
+      if (signal?.aborted || outcome.reason === "cancelled" || outcome.deferred) break;
       if (outcome.ok || !RETRYABLE.has(outcome.reason) || attempts > retryLimit) break;
       debugLog(DEBUG_OWNER, "Retrying library record request.", {
         level: "warn",
@@ -65,7 +70,13 @@ export async function checkLibraryRecords(records, requestHtml, options = {}) {
       await wait(spacingMs, signal);
     }
     if (signal?.aborted) break;
-    const parsed = outcome.ok
+    if (outcome.deferred) {
+      deferredReason = outcome.reason;
+      retryAt = outcome.retryAt || 0;
+      blockedReason = outcome.blockReason || "";
+      break;
+    }
+    const parsed = outcome.ok && !outcome.value
       ? parseLibraryThreadHtml(outcome.html, {
           finalUrl: outcome.finalUrl,
           requestedUrl: record.thread?.url || record.url,
@@ -75,17 +86,21 @@ export async function checkLibraryRecords(records, requestHtml, options = {}) {
       threadId: record.threadId,
       record,
       attempts,
+      source: outcome.source || "thread-html",
+      fallbackReason: outcome.fallbackReason || "",
       ok: Boolean(parsed.ok),
       reason: parsed.ok ? "" : parsed.reason,
       observed: parsed.value || null,
       changed:
-        Boolean(parsed.ok) &&
+        Boolean(parsed.ok) && (outcome.source === "latest-api"
+          ? diffThreadFacts(record, { ...record, thread: { ...record.thread, ...parsed.value } }).changed
+          :
         (
           normalizeVersionIdentity(parsed.value.currentVersion) !==
             normalizeVersionIdentity(record.thread?.currentVersion || record.gameVersion) ||
           String(parsed.value.title || "").trim().toLowerCase() !==
             String(record.thread?.title || record.title || "").trim().toLowerCase()
-        ),
+        )),
     });
     debugLog(DEBUG_OWNER, "Library record check completed.", {
       data: {
@@ -103,7 +118,7 @@ export async function checkLibraryRecords(records, requestHtml, options = {}) {
       break;
     }
     if (index < list.length - 1) {
-      await wait(spacingMs + Math.floor(Math.random() * (jitterMs + 1)), signal);
+      await wait(getUpdateDelay(spacingMs, jitterMs), signal);
     }
   }
   debugLog(DEBUG_OWNER, "Update-check batch completed.", {
@@ -116,5 +131,5 @@ export async function checkLibraryRecords(records, requestHtml, options = {}) {
       changed: results.filter((result) => result.changed).length,
     },
   });
-  return { results, cancelled: Boolean(signal?.aborted), blockedReason, total: list.length };
+  return { results, cancelled: Boolean(signal?.aborted) || deferredReason === "cancelled", deferredReason, retryAt, blockedReason, total: list.length };
 }

@@ -4,9 +4,9 @@ module.exports = function registerThreadUtilityBaseline(context) {
   const { ROOT, Window, assert, fs, path, runTest } = context;
   const fixturePath = path.join(
     ROOT,
-    "addons",
-    "reference",
-    "sample.html",
+    "tests",
+    "fixtures",
+    "thread-utility-canonical.html",
   );
 
   function readRequired(filePath, contract) {

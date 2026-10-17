@@ -42,9 +42,10 @@ compatibility requirements. The reference keys `openInNewTab` and
 
 ## Canonical thread fixture
 
-[`addons/reference/sample.html`](../../addons/reference/sample.html) is the
-canonical first implementation fixture. The fixture is intentionally left
-unchanged by this package.
+The canonical fixture now lives at
+[`tests/fixtures/thread-utility-canonical.html`](../../tests/fixtures/thread-utility-canonical.html).
+It was moved out of the temporary add-on reference directory without changing
+its test contract. The header contract below remains applicable.
 
 ### Header contract
 

@@ -1,6 +1,8 @@
 import { LIBRARY_MIN_UPDATE_SPACING_MS } from "../constants.js";
+import { normalizeAutoUpdateConfig } from "./autoUpdateRepository.js";
 import {
   getDurableRetryDelay,
+  getUpdateDelay,
   getNextCycleRunAt,
   getLocalDayKey,
   getNextLocalDayAt,
@@ -29,6 +31,7 @@ export function createAutoUpdateQueueWorker({
   checkRecords,
   commitResults,
   now = Date.now,
+  random = Math.random,
   waitFor = wait,
   setIntervalFn = setInterval,
   clearIntervalFn = clearInterval,
@@ -41,6 +44,7 @@ export function createAutoUpdateQueueWorker({
     renewOwnership = async () => true,
     onCycleChange = () => {},
   }) {
+    config = { ...config, checksPerDay: normalizeAutoUpdateConfig(config).checksPerDay };
     const spacingMs = Math.max(
       LIBRARY_MIN_UPDATE_SPACING_MS,
       Number.isFinite(Number(config.spacingMs)) ? Number(config.spacingMs) : LIBRARY_MIN_UPDATE_SPACING_MS,
@@ -222,7 +226,7 @@ export function createAutoUpdateQueueWorker({
         cycle = daily.value;
       }
       const consumesAllowance = item.attemptedDayKey !== dayKey;
-      const dailyLimit = cycle.checksPerDay + cycle.dailyBonusAllowance;
+      const dailyLimit = cycle.checksPerDay;
       if (consumesAllowance && cycle.dailyAttempted >= dailyLimit) {
         const waiting = await updateCycle({
           status: "waiting",
@@ -247,9 +251,11 @@ export function createAutoUpdateQueueWorker({
       });
       if (!claimedCycle?.ok) return { ...claimedCycle, cycle };
 
-      const checked = await withHeartbeat(claim.value, () =>
+      const checked = await withHeartbeat(claim.value, (getActiveItem) =>
         checkRecords([item.threadId], {
           signal,
+          stillOwn: () => ownsClaim(getActiveItem()),
+          updateConfig: config,
           spacingMs,
           jitterMs: config.jitterMs,
           timeoutMs: config.timeoutMs,
@@ -282,6 +288,20 @@ export function createAutoUpdateQueueWorker({
           currentThreadId: "",
         });
         continue;
+      }
+      if (preview?.deferredReason) {
+        const released = await repository.settleQueueItem({ ...activeClaim, attemptedDayKey: item.attemptedDayKey }, {
+          owner, status: item.status, attempts: item.attempts, nextAttemptAt: item.nextAttemptAt,
+          lastErrorCode: preview.deferredReason,
+        });
+        if (!released?.ok) return { ...released, cycle };
+        const delayed = await updateCycle({
+          status: "waiting", currentThreadId: "",
+          dailyAttempted: Math.max(0, cycle.dailyAttempted - (consumesAllowance ? 1 : 0)),
+          nextRunAt: Math.max(now() + 60000, Number(preview.retryAt) || 0),
+          ...(preview.blockedReason ? { blockedUntil: preview.retryAt, blockedReason: preview.blockedReason } : {}),
+        }, { allowDailyRefund: consumesAllowance });
+        return delayed?.ok ? { ok: false, reason: preview.deferredReason, cycle, waiting: true } : { ...delayed, cycle };
       }
       if (!check) {
         await updateCycle({ status: "paused", currentThreadId: "" });
@@ -322,12 +342,24 @@ export function createAutoUpdateQueueWorker({
       }
       const committed = await commitResults(preview, {
         shouldCancel: () => Boolean(signal?.aborted),
+        stillOwn: () => ownsClaim(activeClaim),
         scheduleIntervalMs: config.intervalMs,
         nextCheckAt: cycle.nextRunAt,
       });
       if (signal?.aborted || committed?.cancelled || !(await owned(item.threadId))) {
         await updateCycle({ status: "paused", currentThreadId: "" });
         return { ok: false, reason: "cancelled", cycle };
+      }
+
+      if (check.ok && (committed?.ok === false || Number(committed?.failed) > 0)) {
+        const released = await repository.settleQueueItem(activeClaim, {
+          owner, status: "retry", attempts: claim.value.attempts,
+          nextAttemptAt: now() + getDurableRetryDelay(claim.value.attempts), lastErrorCode: "commit_failed",
+        });
+        if (!released?.ok) return { ...released, cycle };
+        await updateCycle({ status: "waiting", currentThreadId: "", nextRunAt: now() + 60000,
+          retryPending: cycle.retryPending + (item.status === "retry" ? 0 : 1) });
+        return { ok: false, reason: "commit_failed", cycle, waiting: true };
       }
 
       const requestAttempts = Math.max(1, Number(check.attempts || 1));
@@ -375,7 +407,7 @@ export function createAutoUpdateQueueWorker({
         });
       }
       await renewOwnership(item.threadId);
-      await waitFor(spacingMs, signal);
+      await waitFor(getUpdateDelay(spacingMs, config.jitterMs, random), signal);
     }
   }
 

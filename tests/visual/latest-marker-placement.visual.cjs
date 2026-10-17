@@ -3,7 +3,7 @@ const path = require("node:path");
 const { buildSync } = require("esbuild");
 const { test, expect } = require("@playwright/test");
 const root = path.resolve(__dirname, "../..");
-const html = fs.readFileSync(path.join(root, "addons/reference/card.html"), "utf8");
+const html = fs.readFileSync(path.join(root, "tests/fixtures/latest-marker-card.html"), "utf8");
 const css = fs.readFileSync(path.join(root, "src/features/latest-overlay/style.css"), "utf8");
 const bundle = buildSync({ entryPoints: [path.join(root, "src/features/latest-overlay/markers.js")], bundle: true, format: "iife", globalName: "MarkerRenderer", write: false, define: { __F95UE_DEBUG__: "false" } }).outputFiles[0].text;
 

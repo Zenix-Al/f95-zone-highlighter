@@ -83,6 +83,26 @@ sanitization still apply to forged requests.
 
 ## Bridge and mount contracts
 
+### Cached tag and prefix catalogs
+
+`config.getTagPrefs` requires the `storage` capability. It returns cached
+`tags: [{ id, name }]`, preferred/excluded/marked tag IDs, color preferences,
+and, when requested with `{ includePrefixes: true }`, `prefixes: { items, categories }`.
+The default response stays unchanged to avoid increasing existing callers' payloads.
+Prefix items retain numeric `id`, `name`
+and CSS `class`; category groups retain their prefix entries and `prefixIds`.
+For example, read `result.value.prefixes.items` after a successful call to
+`core.invokeCoreAction("config.getTagPrefs", { includePrefixes: true })`.
+
+The site supplies grouped `window.latestUpdates.prefixes`; core normalizes
+that into its existing cache. This action only exposes the cache: it does not
+fetch, migrate, mutate the site global, or guarantee freshness/completeness.
+Missing catalogs return empty collections. Older cores omit `prefixes`, so
+consumers must tolerate its absence rather than clear saved facts. The whole
+response remains subject to the existing payload limit (`payload_too_large`);
+failed reads return `storage_unavailable`. The example invocation above requests
+the expanded response; existing tag-only examples remain compatible unchanged.
+
 - The add-on bridge uses structured messages (action, payload, requestId, timeout).
 - Each bridge request should include a `requestId` and optional timeout; responses must be correlated and deduplicated.
 - Add-on UI mounts (dialogs, settings panels, page mounts) must be sanitized and owned by the add-on service — mount removal must be guaranteed on disable/uninstall.
