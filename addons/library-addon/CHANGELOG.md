@@ -1,6 +1,6 @@
 # Changelog
 
-## v1.4.0 - Hybrid update checks (2026-10-17)
+## v1.4.0 - Hybrid update checks
 
 - Normal waiting, daily-limit waits, manual pauses and completed updates now leave activity buttons neutral. Yellow is reserved for an active site cooldown; live work stays green and updater failures stay red.
 - Added optional Prefer Latest API for automatic and manual checks, with thread-ID matching and thread HTML fallback. It is off by default.
@@ -10,6 +10,8 @@
 - Increased minimum spacing to 15 seconds and fixed missing automatic jitter (normally 15–17 seconds between records, plus processing).
 - Added API usage, cooldown and fallback details, plus the 20 most recent API/HTML errors in Copy diagnostics. New API errors include the title/developer and actual search terms for troubleshooting.
 - Improved save reliability and restored the search text when reopening Library Manager.
+
+Note : core v5.4.8 or above is required for its new api updater.
 
 ## v1.3.11 - Update pacing, daily allowance and activity indicators
 

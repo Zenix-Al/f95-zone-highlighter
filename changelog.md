@@ -2,7 +2,7 @@
 
 ## [5.4.8 - Cached prefix catalog for add-ons]
 
-- Added opt-in `includePrefixes: true` support to `config.getTagPrefs`, exposing cached prefix IDs, names, classes and category groups for Library's hybrid updater. Existing callers keep the same response; no extra catalog requests are made.
+- Added opt-in `includePrefixes: true` support to `config.getTagPrefs`, exposing cached prefix IDs, names, classes and category groups for Library's hybrid updater. Existing callers keep the same response.
 
 ## [5.4.7 - Add-on activity indicators]
 
