@@ -16,6 +16,7 @@ export function createAutoUpdateController({ core, addonId, library, scheduler, 
   let root = null;
   let cycle = null;
   let config = null;
+  let hybridStatus = null;
   let unbind = () => {};
 
   function invalidate() {
@@ -30,9 +31,10 @@ export function createAutoUpdateController({ core, addonId, library, scheduler, 
     return {
       ...config,
       enabled: Boolean(root?.querySelector('[name="enabled"]')?.checked),
+      preferLatestApi: Boolean(root?.querySelector('[name="preferLatestApi"]')?.checked),
       checksPerDay: numeric("checksPerDay", 100),
       runHour: numeric("runHour", 0),
-      spacingMs: numeric("spacingMs", 10_000),
+      spacingMs: numeric("spacingMs", 15_000),
       timeoutMs: numeric("timeoutMs", 30_000),
       retryLimit: numeric("retryLimit", 2),
     };
@@ -42,6 +44,8 @@ export function createAutoUpdateController({ core, addonId, library, scheduler, 
     cycle = nextCycle;
     patchAutoUpdateView(root, cycle, {
       checksPerDay: config?.checksPerDay,
+      preferLatestApi: config?.preferLatestApi,
+      hybridStatus,
       ...scheduler.snapshot(),
       ...runtime,
     });
@@ -75,15 +79,6 @@ export function createAutoUpdateController({ core, addonId, library, scheduler, 
       result = cleared?.ok ? await scheduler.run({ runNow: true }) : cleared;
     }
     if (action === "pause") result = await scheduler.pause();
-    if (action === "continue-batch") {
-      const accepted = await confirm(
-        "Continue another batch?",
-        `Allow up to ${cycle?.checksPerDay || config.checksPerDay} additional Library checks today. Spacing and retry limits still apply.`,
-        "Continue batch",
-      );
-      if (!accepted) { refresh(); return; }
-      result = await scheduler.grantNextBatch();
-    }
     if (action === "check-again") {
       const accepted = await confirm(
         "Check the Library again?",
@@ -120,7 +115,9 @@ export function createAutoUpdateController({ core, addonId, library, scheduler, 
   }
 
   async function open() {
-    const openGeneration = ++generation;
+    invalidate();
+    hybridStatus = null;
+    const openGeneration = generation;
     [config, cycle] = await Promise.all([
       library.autoUpdate.getConfig(),
       scheduler.getDurableState(),
@@ -141,8 +138,33 @@ export function createAutoUpdateController({ core, addonId, library, scheduler, 
     if (!root) return { ok: false, reason: "dialog_content_missing" };
     refresh(cycle);
     const controller = new AbortController();
-    const unsubscribe = scheduler.subscribe((nextCycle) => refresh(nextCycle));
+    // Coalesce existing scheduler notifications; no polling and no blocking UI on
+    // the request lock, which may currently be held by an in-flight fetch.
+    let reading = false;
+    let pending = false;
+    async function refreshSources() {
+      if (controller.signal.aborted) return;
+      if (reading) { pending = true; return; }
+      reading = true;
+      do {
+        pending = false;
+        try {
+          const status = await library.getHybridRequestStatus?.({ signal: controller.signal });
+          if (controller.signal.aborted || openGeneration !== generation) break;
+          hybridStatus = status || { ok: false };
+          refresh();
+        } catch {
+          if (!controller.signal.aborted && openGeneration === generation) {
+            hybridStatus = { ok: false };
+            refresh();
+          }
+        }
+      } while (pending && !controller.signal.aborted);
+      reading = false;
+    }
+    const unsubscribe = scheduler.subscribe((nextCycle) => { refresh(nextCycle); void refreshSources(); });
     unbind = () => { controller.abort(); unsubscribe(); };
+    void refreshSources();
     root.addEventListener("submit", async (event) => {
       event.preventDefault();
       const saved = await library.autoUpdate.putConfig(values());
@@ -150,6 +172,7 @@ export function createAutoUpdateController({ core, addonId, library, scheduler, 
       config = await library.autoUpdate.getConfig();
       await scheduler.start({ reschedule: true });
       refresh(cycle);
+      void refreshSources();
       onSaved?.();
       await showToast("Auto-update settings saved.", "success");
     }, { signal: controller.signal });
@@ -159,7 +182,15 @@ export function createAutoUpdateController({ core, addonId, library, scheduler, 
       if (!action || button.disabled) return;
       if (action === "cancel") return close("cancel");
       if (action === "copy-diagnostics") {
-        await navigator.clipboard.writeText(createAutoUpdateDiagnostics(cycle));
+        button.disabled = true;
+        try {
+          const errors = await library.getRecentUpdateErrors?.();
+          if (controller.signal.aborted || openGeneration !== generation) return;
+          await navigator.clipboard.writeText(createAutoUpdateDiagnostics(cycle, hybridStatus, config?.preferLatestApi, errors));
+        } catch {
+          if (!controller.signal.aborted) await showToast("Could not copy auto-update diagnostics.", "error");
+          return;
+        } finally { button.disabled = false; }
         return showToast("Auto-update diagnostics copied.", "success");
       }
       await runAction(action);

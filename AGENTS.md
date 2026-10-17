@@ -73,15 +73,27 @@ node -e "require('./scripts/featureManifest.cjs').generateFeatureManifest({ root
 
 ## Validation And Builds
 
-Run checks proportional to the change, normally:
+During development, run focused tests covering the changed behavior, relevant lint, and
+`git diff --check`. Do not run `npm test` or the full CI-equivalent validation after every
+edit or implementation wave. The user runs the final full CI-equivalent validation before
+release unless they explicitly delegate it to the agent.
 
-```powershell
-npm run lint
-npm test
-git diff --check
-```
+- Add regression tests for changed behavior; focused validation is not permission to skip
+  tests. Use the repository's existing test selection mechanism rather than creating a
+  second test runner.
+- Cover affected integration boundaries, not just the edited function. For example, updater
+  changes may require request-gate, queue, lease, daily-accounting, and commit tests together.
+- Expand focused checks when failures or shared-contract changes indicate a wider impact.
+  If no reliable focused check exists, explain the gap and agree on broader validation
+  instead of silently treating the work as verified.
+- Refresh and check only affected audit reports, manifests, or smoke builds when needed.
+  Documentation-only or instruction-only edits normally need only a diff review and
+  `git diff --check`.
+- Report which checks ran and what remains unverified. Do not claim full validation or
+  CI readiness from focused results alone. Do not repeatedly rerun unchanged checks.
 
-For core-only size evidence, use the non-version-bumping audit and smoke commands:
+When core-only size evidence is needed, use the relevant non-version-bumping audit and
+smoke commands:
 
 ```powershell
 npm run audit:core

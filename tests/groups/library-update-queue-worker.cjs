@@ -163,7 +163,7 @@ module.exports = function registerLibraryUpdateQueueWorkerGroup(context) {
       repository,
       getRecord: async (threadId) => records.get(threadId) || null,
       checkRecords: async ([threadId], options) => {
-        assert.strictEqual(options.spacingMs, 10000, "internal retries receive the enforced minimum");
+        assert.strictEqual(options.spacingMs, 15000, "internal retries receive the enforced minimum");
         checked.push(threadId);
         return {
           results: [{
@@ -190,7 +190,7 @@ module.exports = function registerLibraryUpdateQueueWorkerGroup(context) {
     });
     assert.strictEqual(result.ok, true);
     assert.deepStrictEqual(checked, ["1", "2", "3"]);
-    assert.ok(waits.every((value) => value === 10000));
+    assert.ok(waits.every((value) => value === 15000));
     assert.deepStrictEqual(repository.snapshot().items.map(({ status }) => status), [
       "completed",
       "completed",
@@ -209,6 +209,46 @@ module.exports = function registerLibraryUpdateQueueWorkerGroup(context) {
         networkRetries: 1,
       },
     );
+  });
+
+  runTest("LIBRARY-PACING-03 automatic jitter is source-independent and abort stops the next record", async () => {
+    for (const [random, expected] of [[0, 15000], [1, 17000]]) {
+      const repository = createRepository(["a", "b"]);
+      const controller = new AbortController();
+      const checked = [];
+      const waits = [];
+      const worker = createWorker({
+        repository, now: () => 100, random: () => random,
+        getRecord: async (threadId) => ({ threadId, updateCheck: { enabled: true } }),
+        checkRecords: async ([threadId]) => {
+          checked.push(threadId);
+          return { results: [{ threadId, ok: true, attempts: 1 }] };
+        },
+        commitResults: async () => ({ checked: 1, current: 1 }),
+        waitFor: async (ms, signal) => {
+          assert.strictEqual(signal, controller.signal);
+          waits.push(ms);
+          controller.abort();
+        },
+      });
+      await worker.run({ owner: "tab", config: { ...config, preferLatestApi: true, jitterMs: 2000 }, signal: controller.signal });
+      assert.deepStrictEqual(checked, ["a"]);
+      assert.deepStrictEqual(waits, [expected]);
+    }
+  });
+
+  runTest("LIBRARY-PACING-03 clamps an edited zero daily setting at the worker boundary", async () => {
+    const repository = createRepository(["a", "b"]);
+    let checks = 0;
+    const worker = createWorker({
+      repository, now: () => 100, waitFor: async () => {},
+      getRecord: async (threadId) => ({ threadId, updateCheck: { enabled: true } }),
+      checkRecords: async ([threadId]) => { checks += 1; return { results: [{ threadId, ok: true, attempts: 1 }] }; },
+      commitResults: async () => ({ checked: 1, current: 1 }),
+    });
+    await worker.run({ owner: "tab", config: { ...config, checksPerDay: 0 } });
+    assert.strictEqual(checks, 1);
+    assert.strictEqual(repository.snapshot().cycle.checksPerDay, 1);
   });
 
   runTest("LIBRARY-UPDATE-QUEUE-WORKER-01 continues past retryable failure", async () => {

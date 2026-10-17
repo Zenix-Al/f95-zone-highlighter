@@ -35,6 +35,10 @@ import { createAutoUpdateQueueRepository } from "./autoUpdateQueueRepository.js"
 import { createAutoUpdateQueueSnapshotBuilder } from "./autoUpdateQueueSnapshot.js";
 import { createAutoUpdateQueueWorker } from "./autoUpdateQueueWorker.js";
 import { getFailureDelay } from "./autoUpdatePolicy.js";
+import { selectUpdateSource } from "./updateSource.js";
+import { createHybridBudgetRepository, createHybridRequestBudget } from "./hybridRequestBudget.js";
+import { createLatestListingRequest } from "../api/latestListing.js";
+import { createHybridRecordRequest } from "./hybridRecordRequest.js";
 
 const HISTORY_LIMIT_PER_THREAD = 20;
 
@@ -55,13 +59,30 @@ export function createLibraryService(bridge, _storage, dependencies = {}) {
   );
   const requestThreadHtml =
     dependencies.requestThreadHtml || createThreadHtmlRequest(dependencies.fetch);
+  const requestLatestApi = dependencies.requestLatestApi || createLatestListingRequest(dependencies.fetch);
   const autoUpdate = createAutoUpdateRepository(api);
-  const autoUpdateQueue = createAutoUpdateQueueRepository(api);
+  const autoUpdateQueue = createAutoUpdateQueueRepository(api, dependencies.autoUpdateQueueOptions);
+  const hybridRequests = createHybridRequestBudget({
+    repository: createHybridBudgetRepository(api),
+    getSiteBlock: () => autoUpdateQueue.getCycle(),
+    ...dependencies.hybridBudgetOptions,
+  });
+  let updateCatalogCache = null;
+  // Session-local, bounded diagnostics only; never persist responses or personal data.
+  let lastUpdateCheck = null;
+  function readUpdateCatalogs() {
+    if (!updateCatalogCache || updateCatalogCache.expiresAt <= Date.now()) {
+      const promise = api.getCatalogs().catch(() => ({ ok: false, reason: "catalog_unavailable" }));
+      updateCatalogCache = { promise, expiresAt: Date.now() + 5 * 60000 };
+    }
+    return updateCatalogCache.promise;
+  }
   const autoUpdateSnapshot = createAutoUpdateQueueSnapshotBuilder({
     repository: autoUpdateQueue,
     queryRecordsPage: (options) => queryAutoUpdateSnapshotPage(options),
   });
   const autoUpdateWorker = createAutoUpdateQueueWorker({
+    ...dependencies.autoUpdateWorkerOptions,
     repository: autoUpdateQueue,
     getRecord: (threadId) => getEntry(threadId),
     checkRecords: (ids, options) => previewManualUpdateCheck(ids, options),
@@ -512,7 +533,8 @@ export function createLibraryService(bridge, _storage, dependencies = {}) {
     const now = Number(options.now || Date.now());
     const shouldCancel =
       typeof options.shouldCancel === "function" ? options.shouldCancel : () => false;
-    if (shouldCancel()) return { ok: false, reason: "cancelled" };
+    const cancelled = async () => shouldCancel() || (options.stillOwn && !(await options.stillOwn()));
+    if (await cancelled()) return { ok: false, reason: "cancelled" };
     const existing = normalizeRecord(existingRecord, { now });
     const merged = mergeThreadFacts(existing, threadPatch, { now });
     const diff = diffThreadFacts(existing, merged);
@@ -532,12 +554,12 @@ export function createLibraryService(bridge, _storage, dependencies = {}) {
     };
     const event = createUpdateEvent(existing.threadId, diff, now);
     const priorEvent = event ? await updates.get(event.id) : null;
-    if (shouldCancel()) return { ok: false, reason: "cancelled" };
+    if (await cancelled()) return { ok: false, reason: "cancelled" };
     if (event && !priorEvent) {
       const eventResult = await updates.put(event);
       if (!eventResult?.ok) return eventResult;
     }
-    if (shouldCancel()) {
+    if (await cancelled()) {
       if (event && !priorEvent) await updates.remove(event.id);
       return { ok: false, reason: "cancelled" };
     }
@@ -683,6 +705,10 @@ export function createLibraryService(bridge, _storage, dependencies = {}) {
   }
 
   async function previewManualUpdateCheck(threadIds, options = {}) {
+    // Both automatic and manual checks enter here. Snapshot persisted settings
+    // per batch; changing preferences never replaces a cycle or its budgets.
+    const checkConfig = options.updateConfig || await autoUpdate.getConfig();
+    const source = selectUpdateSource(checkConfig);
     const ids = [...new Set((Array.isArray(threadIds) ? threadIds : [threadIds])
       .map((id) => String(id || "").trim()).filter(Boolean))];
     const records = [];
@@ -691,20 +717,45 @@ export function createLibraryService(bridge, _storage, dependencies = {}) {
       const record = await getEntry(id);
       if (record) records.push(record);
     }
-    return checkLibraryRecords(records, requestThreadHtml, options);
+    const requestRecord = source.source === "hybrid" || hybridRequests.isAvailable() ? createHybridRecordRequest({
+      budget: hybridRequests, requestApi: requestLatestApi, requestHtml: requestThreadHtml,
+      getCatalogs: readUpdateCatalogs, spacingMs: checkConfig.spacingMs, stillOwn: options.stillOwn,
+      preferApi: source.source === "hybrid",
+    }) : undefined;
+    const preview = await checkLibraryRecords(records, requestThreadHtml, {
+      ...checkConfig, ...options, requestRecord,
+      onProgress(progress) {
+        const item = progress.result;
+        lastUpdateCheck = {
+          source: item.source === "latest-api" ? "latest-api" : "thread-html",
+          fallbackReason: String(item.fallbackReason || "").slice(0, 80),
+          ok: item.ok === true,
+          checkedAt: Date.now(),
+        };
+        options.onProgress?.(progress);
+      },
+    });
+    return { ...preview, source: source.source, sourceReason: source.reason };
   }
 
   async function commitManualUpdateCheck(preview, options = {}) {
+    const commit = () => commitManualUpdateCheckUnpaced(preview, options);
+    return preview?.results?.length > 1 ? api.runBulk(commit) : commit();
+  }
+
+  async function commitManualUpdateCheckUnpaced(preview, options = {}) {
     const shouldCancel =
       typeof options.shouldCancel === "function" ? options.shouldCancel : () => false;
     const results = Array.isArray(preview?.results) ? preview.results : [];
     const summary = { checked: 0, current: 0, changed: 0, failed: 0, cancelled: false };
     for (const item of results) {
-      if (shouldCancel()) {
+      if (shouldCancel() || (options.stillOwn && !(await options.stillOwn()))) {
         summary.cancelled = true;
         break;
       }
-      const existing = await getEntry(item.threadId);
+      const fresh = await api.getStoreValue("records", item.threadId, "threadId");
+      if (!fresh?.ok) { summary.failed += 1; continue; }
+      const existing = fresh.value ? rememberEntry(fresh.value) : null;
       if (!existing) continue;
       const now = Date.now();
       if (!item.ok) {
@@ -727,7 +778,7 @@ export function createLibraryService(bridge, _storage, dependencies = {}) {
           lastCheckedAt: now,
           recordModifiedAt: existing.recordModifiedAt,
         };
-        if (shouldCancel()) {
+        if (shouldCancel() || (options.stillOwn && !(await options.stillOwn()))) {
           summary.cancelled = true;
           break;
         }
@@ -737,15 +788,26 @@ export function createLibraryService(bridge, _storage, dependencies = {}) {
         continue;
       }
       const observed = item.observed || {};
+      const sourcePage = item.source === "latest-api" ? "latest-api-update-check" : "manual-update-check";
+      const apiFacts = {};
+      if (item.source === "latest-api") {
+        for (const field of ["developer", "tags", "prefixes", "threadRating"]) {
+          if (Object.hasOwn(observed, field)) apiFacts[field] = observed[field];
+        }
+        apiFacts.canonicalTitle = observed.title;
+        apiFacts.titleNormalized = String(observed.title || "").toLowerCase();
+      }
       const observation = await observeThreadFacts(
         existing,
         {
           url: observed.url || existing.thread.url,
           title: observed.title || existing.thread.title,
           gameVersion: observed.currentVersion,
-          sourcePage: "manual-update-check",
+          ...apiFacts,
+          sourcePage,
+          observedAt: now,
         },
-        { now, shouldCancel },
+        { now, shouldCancel, stillOwn: options.stillOwn },
       );
       if (!observation?.ok) {
         if (observation?.reason === "cancelled") summary.cancelled = true;
@@ -761,6 +823,12 @@ export function createLibraryService(bridge, _storage, dependencies = {}) {
         : existing.updateCheck?.nextCheckAt ?? null;
       const checked = {
         ...latest,
+        thread: {
+          ...(item.source === "latest-api" ? mergeThreadFacts(latest, {
+            ...apiFacts, title: observed.title, currentVersion: observed.currentVersion,
+          }, { now }).thread : latest.thread),
+          sourcePage, observedAt: now,
+        },
         updateCheck: {
           ...latest.updateCheck,
           status: "current",
@@ -773,11 +841,12 @@ export function createLibraryService(bridge, _storage, dependencies = {}) {
         lastCheckedAt: now,
         recordModifiedAt: latest.recordModifiedAt,
       };
-      if (shouldCancel()) {
+      if (shouldCancel() || (options.stillOwn && !(await options.stillOwn()))) {
         summary.cancelled = true;
         break;
       }
-      await putEntry(checked);
+      const savedCheck = await putEntry(checked);
+      if (!savedCheck?.ok) { summary.failed += 1; continue; }
       summary[item.changed ? "changed" : "current"] += 1;
       summary.checked += 1;
     }
@@ -1200,12 +1269,20 @@ export function createLibraryService(bridge, _storage, dependencies = {}) {
     queryChangedEntriesPage,
     acknowledgeChangedEntries,
     previewManualUpdateCheck,
+    getUpdateCatalogs: () => api.getCatalogs(),
+    async getHybridRequestStatus(options) {
+      const status = await hybridRequests.getStatus(options);
+      return { ...status, lastCheck: lastUpdateCheck ? { ...lastUpdateCheck } : null };
+    },
+    getRecentUpdateErrors: () => hybridRequests.getRecentErrors(),
+    runHybridRequest: (source, request, options) => hybridRequests.attempt(source, request, options),
     commitManualUpdateCheck,
     setAutoUpdateEnabled,
     queryAutoUpdateSnapshotPage,
     autoUpdate,
     autoUpdateQueue: {
       ...autoUpdateQueue,
+      clearRequestSiteBlock: () => hybridRequests.isAvailable() ? hybridRequests.clearSiteBlock() : Promise.resolve({ ok: true }),
       buildSnapshot: autoUpdateSnapshot.build,
       runWorker: autoUpdateWorker.run,
     },

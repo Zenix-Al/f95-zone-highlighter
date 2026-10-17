@@ -1591,10 +1591,10 @@
   "bundle": {
     "readable": {
       "mode": "regular",
-      "bytes": 676813,
-      "gzipBytes": 145498,
+      "bytes": 677331,
+      "gzipBytes": 145604,
       "coreBytes": 429990,
-      "excludedBytes": 239540,
+      "excludedBytes": 240058,
       "contributors": [
         {
           "path": "src/services/settingsService.js",
@@ -1829,12 +1829,12 @@
           "bytes": 5822
         },
         {
-          "path": "src/ui/components/addons/addonCard.js",
-          "bytes": 4982
+          "path": "src/services/addons/actions/families/storage.js",
+          "bytes": 5300
         },
         {
-          "path": "src/services/addons/actions/families/storage.js",
-          "bytes": 4782
+          "path": "src/ui/components/addons/addonCard.js",
+          "bytes": 4982
         },
         {
           "path": "src/ui/components/addons/addonDialog.js",
@@ -1844,10 +1844,10 @@
     },
     "uglified": {
       "mode": "release",
-      "bytes": 336885,
-      "gzipBytes": 101097,
+      "bytes": 337154,
+      "gzipBytes": 101175,
       "coreBytes": 222153,
-      "excludedBytes": 114720,
+      "excludedBytes": 114989,
       "contributors": [
         {
           "path": "src/ui/assets/css.css",
@@ -2078,6 +2078,10 @@
           "bytes": 2912
         },
         {
+          "path": "src/services/addons/actions/families/storage.js",
+          "bytes": 2498
+        },
+        {
           "path": "src/ui/components/addons/addonCard.js",
           "bytes": 2471
         },
@@ -2088,10 +2092,6 @@
         {
           "path": "src/services/addons/lifecycle.js",
           "bytes": 2413
-        },
-        {
-          "path": "src/services/addons/actions/families/idb.js",
-          "bytes": 2327
         }
       ]
     }

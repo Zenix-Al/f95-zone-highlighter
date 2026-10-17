@@ -87,7 +87,7 @@ export function parseLibraryThreadHtml(html, { finalUrl = "", requestedUrl = "" 
     decodeHtmlText(
       source.match(/<title\b[^>]*>([\s\S]*?)<\/title>/i)?.[1] || "",
     ).trim();
-  const { title } = normalizeThreadTitleText(pageTitle);
+  const { title, gameVersion } = normalizeThreadTitleText(pageTitle);
   const starterHtml =
     source.match(
       /<(?:article|div)\b[^>]*class=["'][^"']*message-threadStarterPost[^"']*["'][^>]*>([\s\S]*?)<\/(?:article|div)>/i,
@@ -96,6 +96,7 @@ export function parseLibraryThreadHtml(html, { finalUrl = "", requestedUrl = "" 
   const bodyText = readableText(source);
   const version =
     field(starterText, "Version") ||
+    gameVersion ||
     bracketVersion(pageTitle) ||
     field(bodyText, "Version") ||
     bracketVersion(bodyText);

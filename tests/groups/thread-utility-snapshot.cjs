@@ -37,7 +37,7 @@ module.exports = function registerThreadUtilitySnapshot(context) {
   }
 
   runTest("THREAD-UTILITY-SNAPSHOT-01 parses the canonical fixture", () => {
-    const html = fs.readFileSync(path.join(ROOT, "addons/reference/sample.html"), "utf8");
+    const html = fs.readFileSync(path.join(ROOT, "tests/fixtures/thread-utility-canonical.html"), "utf8");
     const fixture = fixtureDocument(html);
     try {
       const { captureThreadSnapshot, createSnapshotSourceRegistry } = loadSnapshotModules();

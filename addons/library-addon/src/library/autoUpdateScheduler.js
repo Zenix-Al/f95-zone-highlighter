@@ -344,19 +344,15 @@ export function createAutoUpdateScheduler({
   // browser check in another tab.
   async function clearSiteBlock() {
     const cycle = await getDurableState();
-    if (!cycle?.blockedUntil) return { ok: true, value: cycle };
-    const result = await queueRuntime.putCycle({ ...cycle, blockedUntil: 0, blockedReason: "" });
+    const result = cycle?.blockedUntil
+      ? await queueRuntime.putCycle({ ...cycle, blockedUntil: 0, blockedReason: "" })
+      : { ok: true, value: cycle };
+    if (result?.ok && queueRuntime.clearRequestSiteBlock) {
+      const cleared = await queueRuntime.clearRequestSiteBlock();
+      if (!cleared?.ok) return cleared;
+    }
     if (result?.ok) notify(result.value);
     return result;
-  }
-
-  async function grantNextBatch() {
-    const cycle = await getDurableState();
-    if (!cycle || cycle.status === "completed") return { ok: false, reason: "cycle_inactive" };
-    const granted = await queueRuntime.grantDailyBonus(cycle, cycle.checksPerDay);
-    if (!granted?.ok) return granted;
-    notify(granted.value);
-    return run({ runNow: true });
   }
 
   async function restartCycle() {
@@ -381,7 +377,6 @@ export function createAutoUpdateScheduler({
     stop,
     pause,
     clearSiteBlock,
-    grantNextBatch,
     restartCycle,
     getDurableState,
     subscribe,
@@ -390,7 +385,7 @@ export function createAutoUpdateScheduler({
       recoveryPending: !controller && recoveryAt > now(),
       recoveryAt,
       activity: getAutoUpdateActivity(latestCycle, {
-        running: Boolean(controller), reason: lastReason, leaseActive: otherLeaseUntil > now(),
+        running: Boolean(controller), reason: lastReason, leaseActive: otherLeaseUntil > now(), currentTime: now(),
       }),
     }),
   };

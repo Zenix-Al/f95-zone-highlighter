@@ -1,5 +1,16 @@
 # Changelog
 
+## v1.4.0 - Hybrid update checks (2026-10-17)
+
+- Normal waiting, daily-limit waits, manual pauses and completed updates now leave activity buttons neutral. Yellow is reserved for an active site cooldown; live work stays green and updater failures stay red.
+- Added optional Prefer Latest API for automatic and manual checks, with thread-ID matching and thread HTML fallback. It is off by default.
+- Improved API searches with cleaned title/creator terms, whole-word 30-character limits, `%20` spaces and cache-busting to reduce ignored searches and unnecessary HTML fallbacks.
+- Both check modes share an 80-request clock-hour API allowance across tabs. Failed API attempts count too. API cooldowns allow HTML fallback; HTML browser checks/rate limits pause both sources.
+- Made the automatic daily budget strict: Checks per day stays within 1–150, with no Continue another batch or bonus allowance. Manual checks do not use this daily budget, but still share API limits, spacing and cooldowns.
+- Increased minimum spacing to 15 seconds and fixed missing automatic jitter (normally 15–17 seconds between records, plus processing).
+- Added API usage, cooldown and fallback details, plus the 20 most recent API/HTML errors in Copy diagnostics. New API errors include the title/developer and actual search terms for troubleshooting.
+- Improved save reliability and restored the search text when reopening Library Manager.
+
 ## v1.3.11 - Update pacing, daily allowance and activity indicators
 
 - Fixed the current updater mistaking its own renewed lease for a previous process. no more "yep, there's lease" check only.

@@ -84,11 +84,27 @@ export async function actionConfigGetTagPrefs(
   measurePayloadBytes,
   maxPayloadBytes,
   getConfig = () => config,
+  includePrefixes = false,
 ) {
   try {
     const currentConfig = getConfig?.() || {};
     const value = {
       tags: Array.isArray(currentConfig.tags) ? currentConfig.tags : [],
+      ...(includePrefixes === true
+        ? {
+            prefixes: {
+              items: Array.isArray(currentConfig.prefixes?.items)
+                ? currentConfig.prefixes.items
+                : [],
+              categories:
+                currentConfig.prefixes?.categories &&
+                typeof currentConfig.prefixes.categories === "object" &&
+                !Array.isArray(currentConfig.prefixes.categories)
+                  ? currentConfig.prefixes.categories
+                  : {},
+            },
+          }
+        : {}),
       preferredTags: Array.isArray(currentConfig.preferredTags) ? currentConfig.preferredTags : [],
       excludedTags: Array.isArray(currentConfig.excludedTags) ? currentConfig.excludedTags : [],
       markedTags: Array.isArray(currentConfig.markedTags) ? currentConfig.markedTags : [],
@@ -145,7 +161,12 @@ export const storageActions = Object.freeze([
   defineAction({
     id: "config.getTagPrefs",
     requiredCapabilities: ["storage"],
-    execute: ({ deps, limits }) =>
-      actionConfigGetTagPrefs(deps.measurePayloadBytes, limits.maxAddonStorageValueBytes),
+    execute: ({ deps, limits, payload }) =>
+      actionConfigGetTagPrefs(
+        deps.measurePayloadBytes,
+        limits.maxAddonStorageValueBytes,
+        undefined,
+        payload?.includePrefixes === true,
+      ),
   }),
 ]);

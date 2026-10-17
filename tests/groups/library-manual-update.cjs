@@ -125,6 +125,38 @@ module.exports = function registerLibraryManualUpdateGroup(context) {
     assert.strictEqual(diffThreadFacts(record, { thread: { ...record.thread, currentVersion: "Demo - 0.47" } }).versionChanged, true);
   });
 
+  runTest("Library strips only the two raw heading suffixes and preserves earlier name brackets", () => {
+    const { normalizeThreadTitleText } = loadModule("addons/library-addon/src/thread/title.js");
+    const { parseLibraryThreadHtml } = loadModule("addons/library-addon/src/library/threadUpdateParser.js");
+    const { normalizeVersionIdentity, diffThreadFacts } = loadModule("addons/library-addon/src/library/updateEventModel.js");
+    const name = "this is a game [whaat?] [really?]";
+    const parsed = normalizeThreadTitleText(`${name} [v69.420.ABCD] [I am Yuu]`);
+    assert.deepStrictEqual(parsed, { source: `${name} [v69.420.ABCD] [I am Yuu]`, title: name, gameVersion: "v69.420.ABCD", developer: "I am Yuu" });
+    assert.strictEqual(normalizeThreadTitleText("Game [Dev]").title, "Game");
+    assert.strictEqual(normalizeThreadTitleText("Game without suffix").title, "Game without suffix");
+    assert.strictEqual(normalizeThreadTitleText("Game [Subtitle] continues [v1] [Dev]").title, "Game [Subtitle] continues");
+    // Representative version forms from the user's 2026-10-17 export.
+    for (const [title, version] of [["No Haven", "Twine v0.41 TF"], ["EraTohoK", "2026-06-18"], ["GAL's Naughty Room", "Demo v0.1.0"], ["FOXXX", "Build 222"], ["Honey Select 2", "DX R16"], ["Supremacy", "0.06"], ["Flash Knight Nymphelia", "Steam"], ["My Sexy Fairies", "Final"]]) {
+      const raw = `${title} [${version}] [Developer]`;
+      const extracted = normalizeThreadTitleText(raw);
+      assert.strictEqual(extracted.title, title);
+      assert.strictEqual(extracted.gameVersion, version);
+      const fetched = parseLibraryThreadHtml(`<html><h1 class="p-title-value">${raw}</h1></html>`);
+      assert.strictEqual(fetched.ok, true);
+      assert.strictEqual(fetched.value.title, title);
+      assert.strictEqual(fetched.value.currentVersion, version);
+    }
+    assert.strictEqual(normalizeVersionIdentity("Twine v0.41 TF"), normalizeVersionIdentity("Twine 0.41 TF"));
+    assert.strictEqual(normalizeVersionIdentity("Demo v0.1.0"), normalizeVersionIdentity("Demo 0.1.0"));
+    for (const changed of ["Twine 0.42 TF", "Twine 0.41 TG", "Twine 0.41", "RenPy 0.41 TF"]) {
+      assert.notStrictEqual(normalizeVersionIdentity("Twine v0.41 TF"), normalizeVersionIdentity(changed));
+    }
+    const before = { thread: { title: "No Haven [Twine v0.41 TF]", currentVersion: "Twine v0.41 TF" } };
+    const diff = diffThreadFacts(before, { thread: { title: "No Haven", currentVersion: "Twine 0.41 TF" } });
+    assert.deepStrictEqual(diff.fields, ["title"]);
+    assert.strictEqual(diff.versionChanged, false);
+  });
+
   runTest("LIBRARY-MANUAL-UPDATE-CHECK-01 shares live and fetched title normalization", () => {
     const { decodeHtmlText, normalizeThreadTitleText } = loadModule(
       "addons/library-addon/src/thread/title.js",
@@ -412,7 +444,7 @@ module.exports = function registerLibraryManualUpdateGroup(context) {
       }),
     });
     const ids = Array.from({ length: 47 }, (_, index) => String(index + 1));
-    const preview = await service.previewManualUpdateCheck(ids, { spacingMs: 1 });
+    const preview = await service.previewManualUpdateCheck(ids, { spacingMs: 1, jitterMs: 0 });
     assert.strictEqual(preview.total, 47);
     assert.strictEqual(preview.results.length, 47);
     assert.strictEqual(maxActiveReads, 1);

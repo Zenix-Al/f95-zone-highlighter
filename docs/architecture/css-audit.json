@@ -9,13 +9,13 @@
   "authoredBytes": 29242,
   "bundle": {
     "readable": {
-      "fullBytes": 676813,
-      "gzipBytes": 145498,
+      "fullBytes": 677331,
+      "gzipBytes": 145604,
       "contributionBytes": 21716
     },
     "uglified": {
-      "fullBytes": 336885,
-      "gzipBytes": 101097,
+      "fullBytes": 337154,
+      "gzipBytes": 101175,
       "contributionBytes": 25213
     }
   },
@@ -2692,9 +2692,20 @@
     },
     {
       "selector": ".marked",
-      "category": "unresolved",
-      "callSites": [],
-      "protectedReason": "No repository creation/reference evidence; retain conservatively."
+      "category": "test-only",
+      "callSites": [
+        {
+          "file": "tests/fixtures/thread-utility-canonical.html",
+          "line": 43,
+          "excerpt": "<a href=\"/tags/male-protagonist/\" class=\"tagItem marked\" dir=\"auto\">male protagonist</a>"
+        },
+        {
+          "file": "tests/fixtures/thread-utility-canonical.html",
+          "line": 43,
+          "excerpt": "<a href=\"/tags/male-protagonist/\" class=\"tagItem marked\" dir=\"auto\">male protagonist</a>"
+        }
+      ],
+      "protectedReason": null
     },
     {
       "selector": ".marked-tag-item",
@@ -3507,6 +3518,11 @@
           "file": "src/ui/settings/panelNavigation.js",
           "line": 29,
           "excerpt": "shell.classList.toggle(\"mobile-show-panel\", Boolean(showPanel));"
+        },
+        {
+          "file": "tests/fixtures/thread-utility-canonical.html",
+          "line": 58,
+          "excerpt": "<select name=\"rating\" class=\"br-select input\" data-xf-init=\"rating\" data-initial-rating=\"0\" data-rating-href=\"/threads/daiakuji-v2-18-0-alicesoft.308343/br-rate\" data-readonly=\"false\" data-deselectable=\"false\" data-show-selected=\"true\" data-widget-class=\"bratr-rating\" data-vote-content=\"&lt;div data-href=&quot;/threads/daiakuji-v2-18-0-alicesoft.308343/br-user-rated&quot; data-xf-click=&quot;overlay&quot; data-xf-init=&quot;tooltip&quot; title=&quot;Members who rated this thread&quot;&gt;0 Votes&lt;/div&gt;\" style=\"display: none;\">"
         }
       ],
       "protectedReason": null
@@ -3835,6 +3851,7 @@
     "src/ui/settings/tagsSettings.js",
     "tests/concept/latest.min.js",
     "tests/fixtures/tagSearchBoundHarness.js",
+    "tests/fixtures/thread-utility-canonical.html",
     "tests/groups/core-size-reduction.cjs",
     "tests/visual/core-settings-reference.visual.cjs"
   ],
@@ -4611,7 +4628,6 @@
     ".excluded-tag-item",
     ".excluded-tag-remove",
     ".installed",
-    ".marked",
     ".marked-tag-item",
     ".needs-update",
     ".planned",
@@ -4633,13 +4649,13 @@
     },
     "readableBundleFullBytes": {
       "before": 586580,
-      "after": 676813,
-      "delta": 90233
+      "after": 677331,
+      "delta": 90751
     },
     "readableBundleGzipBytes": {
       "before": 124202,
-      "after": 145498,
-      "delta": 21296
+      "after": 145604,
+      "delta": 21402
     },
     "uglifiedBundleContributionBytes": {
       "before": 27380,
@@ -4648,13 +4664,13 @@
     },
     "uglifiedBundleFullBytes": {
       "before": 302505,
-      "after": 336885,
-      "delta": 34380
+      "after": 337154,
+      "delta": 34649
     },
     "uglifiedBundleGzipBytes": {
       "before": 88402,
-      "after": 101097,
-      "delta": 12695
+      "after": 101175,
+      "delta": 12773
     },
     "selectorCount": {
       "before": 252,

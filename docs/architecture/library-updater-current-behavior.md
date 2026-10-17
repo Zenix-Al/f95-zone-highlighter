@@ -37,8 +37,8 @@ Fetching cannot solve an interactive challenge on the user's behalf.
 | Plain 403/404, thread_not_found or entry_not_found | Terminal failure for this cycle; a future new cycle can include the record again. |
 | Other failure | Durable retry unless total HTTP attempts have reached three. Pending rows have priority over due retry rows. |
 | No actionable row but unfinished rows exist | Waiting for retry/claim recovery; preserves cycle. |
-| Daily allowance reached before a new record | Waiting until local midnight; Continue another batch grants extra allowance for the day, surviving cycle replacement. |
-| Local day changes | Resets allowance count and bonus, not queue progress. |
+| Daily allowance reached before a new record | Waiting until local midnight; no extra-batch override. |
+| Local day changes | Resets allowance count, not queue progress. |
 | User presses Pause | Stops this tab's scheduler and aborts its request; writes paused. Other tabs/reloads can automatically resume it. |
 | Page navigation/close, add-on disable or teardown | Stops this tab and aborts work. Unsettled processing claims may need to expire before recovery. Closing only the updater dialog does not stop the scheduler. |
 | Ownership lost | Stops committing that fetched result; normally writes waiting, with claim expiry used for recovery. |
@@ -55,11 +55,48 @@ not a cross-tab realtime feed.
 
 ## Two retry layers and daily accounting
 
-Automatic checks enforce at least 10 seconds of spacing, both when loading saved
+### Optional API-first checks (Wave 5)
+
+Prefer Latest API defaults off. When enabled, both manual and automatic checks
+search one games page (`rows=15`), accept only the saved thread ID, map optional
+facts using the core's cached catalogs and commit through the existing observation
+pipeline. No match, conflicting duplicates, missing facts/mappings, API failure,
+exhaustion or API-only suppression selects paced HTML. No extra pages or category
+probes. API 429/challenge suppresses API, not HTML; HTML 429/challenge pauses both.
+See the [budget contract](library-hybrid-request-budget.md) for the fixed-hour
+80-attempt ledger, UTC hour alignment caveat, pacing and Retry now semantics.
+
+One API lookup plus HTML fallback is one logical daily check. Each actual API
+attempt spends its own non-refundable hourly token. Internal HTML retries never
+redo that record's API lookup. A malformed/unavailable ledger or lost ownership
+defers without falsely failing the saved thread; persistence failures retain a
+retry rather than settle an uncommitted observation as completed. Manual batches
+still do not consume the automatic daily allowance. Supported secure browsers
+share the gate even with the preference off. Unsupported browsers retain legacy
+HTML-only operation when off, and cannot perform API checks when on.
+
+API refreshes may record developer/rating/tag/prefix thread-fact history, but
+those do not reset acknowledgement. Version flags use existing version identity
+normalization, not listing date/ts. Saved URLs and personal fields are preserved.
+Only present valid API fields are updated; empty arrays intentionally clear lists.
+Core catalog reads are cached for five minutes without HTTP refresh requests.
+The Auto Update dialog displays updater-accounted hourly usage, next API eligibility,
+separate API/global blocks and the last local fetch source/fallback reason. These are
+snapshots refreshed on open and existing scheduler notifications, not server-quota
+telemetry or a new polling loop. Last-fetch details are session-local and do not prove
+a successful commit. No live-site calls occur in tests.
+
+### Existing timing and retry rules
+
+Automatic checks enforce at least 15 seconds of spacing, both when loading saved
 configuration and at the queue worker boundary. Internal HTTP retries receive
-the same minimum. The settings input also requires at least 10000 ms. Old or
-manually edited 5000 ms values cannot lower automatic pacing. Daily allowance
-semantics described below are unchanged.
+the same minimum. The settings input also requires at least 15000 ms. Old or
+manually edited lower values cannot lower automatic pacing. Between queue records,
+the worker adds configured random jitter (default 0–2 seconds); the manual batch
+uses the same delay calculation. Lease-acquisition jitter is separate contention
+handling, not network spacing. Checks per day is an integer from 1 to 150, enforced
+in configuration, durable cycles and the worker. Existing usage is never reset;
+old bonus allowances are ignored; Continue another batch has been removed.
 
 The request checker retries timeout, network_error, and HTTP 500/502/503/504
 inside one check. Configured retryLimit is the number of extra requests (default
@@ -74,16 +111,17 @@ the policy is capped at one hour, but ordinary rows stop at three attempts.
 Daily allowance counts queue rows checked that local day across cycles, not every
 HTTP request. Retrying the same row on the same day consumes no new slot. Fresh
 cycle rows consume the remaining shared budget, rather than replenishing it.
-An independent ledger survives active-cycle replacement, with usage and bonus
+An independent ledger survives active-cycle replacement, with usage
 atomically checkpointed alongside the master. However, pending rows are selected first: a new pending row blocked by
 the daily cap can prevent an otherwise eligible same-day retry being reached.
 
 ## Buttons
 
 Library's dock button and the Manager's Auto update button show local scheduler
-activity: a gently pulsing green ring while working, steady yellow when paused
-or waiting (including site cooldown, allowance and retry waits), and
-steady red for an updater-level failure. Idle/completed returns to normal;
+activity: a gently pulsing green ring while working, steady yellow only during
+an active site cooldown (browser challenge/rate limit), and
+steady red for an updater-level failure. Idle/completed, ordinary waiting and
+manual pauses return to normal;
 individual unavailable threads do not turn a working or completed updater red.
 Reduced-motion users see steady green. These are local scheduler subscriptions,
 not a new cross-tab heartbeat or request poll. The dock publishes markup only
@@ -100,7 +138,7 @@ an active local run precedence over a stale recovery flag.
 - Update now / Resume: run the existing unfinished cycle, or create one if none
   exists/completed. Resume does not clear an active site cooldown.
 - Retry now: clear site cooldown, then run the same cycle.
-- Continue another batch: add the cycle's checksPerDay to its bonus, then run.
+- At the daily limit, the primary action is disabled with Daily allowance reached.
 - Check again: deliberately create a new snapshot after completion.
 - Restart cycle: stop this tab, discard the existing queue, then build anew.
 - Save settings: persist config and re-arm with a new nextRunAt. It does not
@@ -118,7 +156,7 @@ an active local run precedence over a stale recovery flag.
    and reloads resume paused cycles. Disabling automatic updates is the persisted
    setting, but another already-running worker holds its config snapshot.
 3. **Daily cap reset across cycles (fixed 2026-10-17).** Check again, Restart and
-   overdue successor snapshots now inherit same-day usage and bonus from the
+   overdue successor snapshots now inherit same-day usage from the
    independent ledger. Existing available counters are preserved before deleting
    a pre-fix snapshot. Usage already erased by an older version cannot be recovered.
 4. **Overdue successor is intentional but confusing (confirmed).** Compare
@@ -167,7 +205,7 @@ completes 107/107 and releases its lease. Tab B then runs one minute later:
 
 Thus lease release alone does not restart the cycle; completed status plus a
 due scheduling slot does. Library growth changes the successor's total, but
-is not itself a rebuild trigger. The test also covers extra-batch allowance,
+is not itself a rebuild trigger. The test also covers removal of extra-batch allowance,
 Check again, Restart at the cap and next-day rollover. Separate tests cover
 pre-fix counter seeding, explicit refunds, stale writes and failed checkpoints.
 

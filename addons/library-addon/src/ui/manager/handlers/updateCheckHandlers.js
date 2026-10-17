@@ -40,8 +40,10 @@ export function createUpdateCheckHandlers(context) {
     if (cancelButton) cancelButton.hidden = true;
     if (controller.signal.aborted || result.cancelled) return;
     await showToast(
-      `Update check: ${result.changed} changed, ${result.current} current, ${result.failed} failed.`,
-      result.failed ? "error" : "success",
+      preview.deferredReason || preview.blockedReason
+        ? `Update checks stopped: ${preview.deferredReason || preview.blockedReason}. Completed checks were kept.`
+        : `Update check: ${result.changed} changed, ${result.current} current, ${result.failed} failed.`,
+      result.failed ? "error" : preview.deferredReason || preview.blockedReason ? "info" : "success",
     );
     if (result.changed > 0) resetPagination(state);
     await reloadRows();

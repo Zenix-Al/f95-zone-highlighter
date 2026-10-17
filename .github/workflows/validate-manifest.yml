@@ -21,6 +21,8 @@ jobs:
         run: npm run lint
       - name: Lint add-ons
         run: npm run lint:addons
+      - name: Install Chromium for offline cross-tab budget tests
+        run: npx playwright install --with-deps chromium
       - name: Run tests
         run: npm test
       - name: Check core size and CSS reports
