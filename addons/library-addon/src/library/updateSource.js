@@ -2,13 +2,13 @@ import { LATEST_SEARCH_ROWS } from "./latestListingSelector.js";
 import { normalizeVersionIdentity } from "./updateEventModel.js";
 
 const SEARCH_LIMIT = 30;
-const isStopword = (word) => /^(?:a|an|the|of|no|not|on|in|and|to|with|was)$/i.test(word);
+const isStopword = (word) => /^(?:a|an|the|there|this|is|by|of|no|not|on|in|and|to|with|was)$/i.test(word);
 
 // Conservative query heuristics observed on Latest, not a claimed server contract.
 // Never use this lossy search text as the saved title/developer or record identity.
 function limitQuery(text) {
   const words = text.split(/\s+/)
-    .filter((word) => word && !isStopword(word));
+    .filter((word) => (word.length > 1 || /^[0-9]$/.test(word)) && !isStopword(word));
   const result = [];
   for (const word of words) {
     if ([...result, word].join(" ").length > SEARCH_LIMIT) break;
@@ -52,11 +52,12 @@ export function selectUpdateSource(config = {}) {
 
 export function createLatestSearchUrl(title, creator = "", { version = "", now = Date.now } = {}) {
   const search = sanitizeLatestTitleQuery(getLatestSearchTitle(title, version));
-  if (!search) return ""; // Never request the unfiltered default list.
   const developer = sanitizeLatestCreatorQuery(creator);
+  if (!search && !developer) return ""; // Never request the unfiltered default list.
   const url = new URL("https://f95zone.to/sam/latest_alpha/latest_data.php");
   url.search = new URLSearchParams({
-    cmd: "list", cat: "games", page: "1", search,
+    cmd: "list", cat: "games", page: "1",
+    ...(search ? { search } : {}),
     sort: "date", rows: String(LATEST_SEARCH_ROWS),
     ...(developer ? { creator: developer } : {}),
     _: String(now()),

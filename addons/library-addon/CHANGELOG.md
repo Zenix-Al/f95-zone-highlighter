@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.4.1 - API search fixes
+
+- Improved API searches by removing more unreliable search words and single-letter fragments while keeping numbers, including single digits.
+- Omit empty title or creator filters. When both are empty, use thread HTML directly without spending an API request.
+
 ## v1.4.0 - Hybrid update checks
 
 - Normal waiting, daily-limit waits, manual pauses and completed updates now leave activity buttons neutral. Yellow is reserved for an active site cooldown; live work stays green and updater failures stay red.

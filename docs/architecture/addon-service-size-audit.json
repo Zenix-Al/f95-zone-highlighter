@@ -12,7 +12,7 @@
     ],
     "generatedMetadata": [
       "src/generated/trusted-addon-aliases.json",
-      "src/generated/trusted-addon-catalog.8af4359bcfc437a3.json",
+      "src/generated/trusted-addon-catalog.9ce7943d35a720ce.json",
       "src/generated/trusted-addon-catalog.meta.json",
       "src/services/addons/trusted-catalog.json"
     ],
@@ -30,11 +30,11 @@
     },
     "addons": {
       "count": 7,
-      "authoredBytes": 965203,
-      "regularBytes": 1068129,
-      "releaseBytes": 775681,
-      "regularGzipBytes": 230229,
-      "releaseGzipBytes": 193298
+      "authoredBytes": 965298,
+      "regularBytes": 1068218,
+      "releaseBytes": 775758,
+      "regularGzipBytes": 230263,
+      "releaseGzipBytes": 193341
     },
     "sharedRuntime": {
       "authoredBytes": 18561,
@@ -180,29 +180,29 @@
       {
         "addonId": "library-addon",
         "authoredBytes": {
-          "current": 468615,
-          "baseline": 468615,
+          "current": 468710,
+          "baseline": 468710,
           "delta": 0
         },
         "regularBytes": {
-          "current": 481515,
-          "baseline": 481205,
+          "current": 481604,
+          "baseline": 481294,
           "delta": 310
         },
         "releaseBytes": {
-          "current": 355900,
-          "baseline": 436556,
-          "delta": -80656
+          "current": 355977,
+          "baseline": 436657,
+          "delta": -80680
         },
         "regularGzipBytes": {
-          "current": 100818,
-          "baseline": 100731,
+          "current": 100852,
+          "baseline": 100765,
           "delta": 87
         },
         "releaseGzipBytes": {
-          "current": 85984,
-          "baseline": 88627,
-          "delta": -2643
+          "current": 86027,
+          "baseline": 88653,
+          "delta": -2626
         },
         "owningFiles": [
           "addons/library-addon/src/library/service.js",
@@ -7200,9 +7200,9 @@
       },
       "source": {
         "fileCount": 110,
-        "authoredBytes": 468615,
-        "physicalLines": 13858,
-        "nonblankLines": 12560,
+        "authoredBytes": 468710,
+        "physicalLines": 13859,
+        "nonblankLines": 12561,
         "largestFiles": [
           {
             "path": "addons/library-addon/src/library/service.js",
@@ -7670,9 +7670,9 @@
           },
           {
             "path": "addons/library-addon/src/library/updateSource.js",
-            "bytes": 2830,
-            "physicalLines": 65,
-            "nonblankLines": 51
+            "bytes": 2925,
+            "physicalLines": 66,
+            "nonblankLines": 52
           },
           {
             "path": "addons/library-addon/src/library/versionState.js",
@@ -7990,8 +7990,8 @@
       },
       "builds": {
         "regular": {
-          "bytes": 481515,
-          "gzipBytes": 100818,
+          "bytes": 481604,
+          "gzipBytes": 100852,
           "headerBytes": 967,
           "contributors": [
             {
@@ -8194,7 +8194,7 @@
             ]
           },
           "storageIdbDomain": {
-            "bytes": 456284,
+            "bytes": 456373,
             "contributors": [
               {
                 "path": "addons/library-addon/src/library/service.js",
@@ -8280,8 +8280,8 @@
           }
         },
         "release": {
-          "bytes": 355900,
-          "gzipBytes": 85984,
+          "bytes": 355977,
+          "gzipBytes": 86027,
           "headerBytes": 967,
           "contributors": [
             {
@@ -8480,7 +8480,7 @@
             ]
           },
           "storageIdbDomain": {
-            "bytes": 343392,
+            "bytes": 343469,
             "contributors": [
               {
                 "path": "addons/library-addon/src/library/service.js",
@@ -8567,7 +8567,7 @@
         }
       },
       "manifest": {
-        "version": "1.4.0",
+        "version": "1.4.1",
         "pageScopes": [
           "f95zone"
         ],
@@ -8589,29 +8589,29 @@
       "thirdPartyOrVendored": [],
       "baseline": {
         "authoredBytes": {
-          "current": 468615,
-          "baseline": 468615,
+          "current": 468710,
+          "baseline": 468710,
           "delta": 0
         },
         "regularBytes": {
-          "current": 481515,
-          "baseline": 481205,
+          "current": 481604,
+          "baseline": 481294,
           "delta": 310
         },
         "releaseBytes": {
-          "current": 355900,
-          "baseline": 436556,
-          "delta": -80656
+          "current": 355977,
+          "baseline": 436657,
+          "delta": -80680
         },
         "regularGzipBytes": {
-          "current": 100818,
-          "baseline": 100731,
+          "current": 100852,
+          "baseline": 100765,
           "delta": 87
         },
         "releaseGzipBytes": {
-          "current": 85984,
-          "baseline": 88627,
-          "delta": -2643
+          "current": 86027,
+          "baseline": 88653,
+          "delta": -2626
         },
         "owningFiles": [
           "addons/library-addon/src/library/service.js",

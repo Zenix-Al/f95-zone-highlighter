@@ -129,7 +129,7 @@
         "id": "library-addon",
         "name": "F95UE Library Add-on",
         "description": "Quick-add threads to a personal library and manage entries with a dedicated add-on UI.",
-        "version": "1.4.0",
+        "version": "1.4.1",
         "author": "X Death",
         "entry": "addons/library-addon/src/main.js",
         "outfile": "addons/library-addon/dist/library-addon.user.js",
@@ -288,7 +288,7 @@
     ]
   },
   "trustedCatalog": {
-    "source": "src/generated/trusted-addon-catalog.8af4359bcfc437a3.json",
+    "source": "src/generated/trusted-addon-catalog.9ce7943d35a720ce.json",
     "projection": [
       {
         "id": "example-addon",
@@ -339,7 +339,7 @@
         "id": "library-addon",
         "name": "F95UE Library Add-on",
         "description": "Quick-add threads to a personal library and manage entries with a dedicated add-on UI.",
-        "version": "1.4.0",
+        "version": "1.4.1",
         "pageScopes": [
           "f95zone"
         ],
@@ -2401,9 +2401,9 @@
       "id": "library-addon",
       "source": {
         "fileCount": 110,
-        "authoredBytes": 468615,
-        "physicalLines": 13858,
-        "nonblankLines": 12560,
+        "authoredBytes": 468710,
+        "physicalLines": 13859,
+        "nonblankLines": 12561,
         "files": [
           {
             "path": "addons/library-addon/src/api/bridge.js",
@@ -2749,9 +2749,9 @@
           },
           {
             "path": "addons/library-addon/src/library/updateSource.js",
-            "bytes": 2830,
-            "physicalLines": 65,
-            "nonblankLines": 51
+            "bytes": 2925,
+            "physicalLines": 66,
+            "nonblankLines": 52
           },
           {
             "path": "addons/library-addon/src/library/versionState.js",
@@ -3070,8 +3070,8 @@
       "builds": {
         "regular": {
           "mode": "regular",
-          "bytes": 481205,
-          "gzipBytes": 100731,
+          "bytes": 481294,
+          "gzipBytes": 100765,
           "contributors": [
             {
               "path": "addons/library-addon/src/library/service.js",
@@ -3157,8 +3157,8 @@
         },
         "release": {
           "mode": "release",
-          "bytes": 436556,
-          "gzipBytes": 88627,
+          "bytes": 436657,
+          "gzipBytes": 88653,
           "contributors": [
             {
               "path": "addons/library-addon/src/library/service.js",
