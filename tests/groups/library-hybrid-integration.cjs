@@ -149,14 +149,25 @@ module.exports = ({ assert, fs, path, ROOT, loadModule, runTest }) => {
     assert.strictEqual((await h.service.getRecentUpdateErrors()).reason, "invalid_error_log");
   });
 
-  runTest("LIBRARY-HYBRID-SEARCH-02 unusable cleaned titles skip API instead of fetching default listings", async () => {
+  runTest("LIBRARY-HYBRID-SEARCH-02 both unusable filters skip API instead of fetching default listings", async () => {
     const h = harness();
     h.record().thread.title = "the of a no on";
+    h.record().thread.developer = "X Y";
     const preview = await h.preview();
     assert.strictEqual(preview.results[0].source, "thread-html");
     assert.strictEqual(preview.results[0].fallbackReason, "query_unusable");
     assert.deepStrictEqual(h.starts.map(([source]) => source), ["html"]);
     assert.strictEqual((await h.service.getHybridRequestStatus()).value.used, 0);
+  });
+
+  runTest("LIBRARY-HYBRID-SEARCH-03 unusable title permits a creator-only API check", async () => {
+    const h = harness();
+    h.record().thread.title = "a b";
+    const preview = await h.preview();
+    assert.strictEqual(preview.results[0].source, "latest-api");
+    assert.deepStrictEqual(h.starts.map(([source]) => source), ["api"]);
+    assert.strictEqual((await h.service.getHybridRequestStatus()).value.used, 1);
+    assert.strictEqual((await h.service.commitManualUpdateCheck(preview)).ok, true);
   });
 
   runTest("LIBRARY-HYBRID-VERSION-02 numeric API versions commit through the canonical path without HTML", async () => {

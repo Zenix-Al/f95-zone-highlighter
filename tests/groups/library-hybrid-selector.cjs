@@ -59,10 +59,19 @@ module.exports = ({ assert, fs, path, ROOT, loadModule, runTest }) => {
     assert.strictEqual(sanitizeLatestCreatorQuery("M-Gentlemen After-party"), "Gentlemen After");
     assert.strictEqual(sanitizeLatestCreatorQuery("cat/dog"), "cat");
     assert.strictEqual(sanitizeLatestQuery("Zombie's Retreat 2: Gridlocked"), "Zombie Retreat 2 Gridlocked");
+    assert.strictEqual(sanitizeLatestQuery("Loser Got Isekai’d – Sex, Side Jobs, and Odd Tasks"), "Loser Got Isekai Sex Side Jobs");
+    assert.strictEqual(sanitizeLatestQuery("X 2 78 500 Games"), "2 78 500 Games");
+    assert.strictEqual(sanitizeLatestCreatorQuery("X 2 Studio 78"), "2 Studio 78");
     assert.strictEqual(sanitizeLatestQuery("Game with Friends"), "Game Friends");
     assert.strictEqual(sanitizeLatestQuery("She Was a Woman Not Just an Auntie"), "She Woman Just Auntie");
     assert.strictEqual(sanitizeLatestCreatorQuery("An Artist Was Not Alone"), "Artist Alone");
     assert.strictEqual(sanitizeLatestQuery("Another Notable Swan"), "Another Notable Swan");
+    assert.strictEqual(sanitizeLatestQuery("There Is Treasure THERE"), "Treasure");
+    assert.strictEqual(sanitizeLatestCreatorQuery("There Studio"), "Studio");
+    assert.strictEqual(sanitizeLatestQuery("Therefore Wherever"), "Therefore Wherever");
+    assert.strictEqual(sanitizeLatestQuery("THIS Island IS Built BY Robots"), "Island Built Robots");
+    assert.strictEqual(sanitizeLatestCreatorQuery("This Studio Is By Artists"), "Studio Artists");
+    assert.strictEqual(sanitizeLatestQuery("Island Abyss Thistle"), "Island Abyss Thistle");
     assert.strictEqual(sanitizeLatestQuery("Corruption of champion"), "Corruption champion");
     assert.strictEqual(sanitizeLatestQuery("No Haven"), "Haven");
     assert.strictEqual(sanitizeLatestQuery("IN the Princess Inn"), "Princess Inn");
@@ -82,6 +91,13 @@ module.exports = ({ assert, fs, path, ROOT, loadModule, runTest }) => {
     assert.strictEqual(sanitizeLatestQuery("123456789012345678901234567 of the a on no"), "123456789012345678901234567");
     assert.strictEqual(sanitizeLatestQuery("1234567890123456789012345678901"), "");
     assert.strictEqual(createLatestSearchUrl("the of no on a"), "");
+    assert.strictEqual(createLatestSearchUrl("a b", "X Y"), "");
+    assert.strictEqual(new URL(createLatestSearchUrl("2", "3")).searchParams.get("search"), "2");
+    assert.strictEqual(new URL(createLatestSearchUrl("2", "3")).searchParams.get("creator"), "3");
+    const creatorOnly = new URL(createLatestSearchUrl("a b", "Studio"));
+    assert.strictEqual(creatorOnly.searchParams.has("search"), false);
+    assert.strictEqual(creatorOnly.searchParams.get("creator"), "Studio");
+    assert.strictEqual(new URL(createLatestSearchUrl("Game", "X Y")).searchParams.has("creator"), false);
     const missingCreator = new URL(createLatestSearchUrl("Game", "the / of"));
     assert.strictEqual(missingCreator.searchParams.has("creator"), false);
     const { getLatestSearchTitle } = loadModule("addons/library-addon/src/library/updateSource.js");
@@ -90,7 +106,7 @@ module.exports = ({ assert, fs, path, ROOT, loadModule, runTest }) => {
     for (const value of [raw, "a of on " + raw, "Savin/Salamander Studios", "A B C D E F G H I J K L M N O P Q R"]) {
       const cleaned = sanitizeLatestQuery(value);
       assert.ok(cleaned.length <= 30);
-      assert.doesNotMatch(cleaned, /\b(?:a|an|the|of|no|not|on|in|and|to|with|was)\b/i);
+      assert.doesNotMatch(cleaned, /\b(?:a|an|the|there|this|is|by|of|no|not|on|in|and|to|with|was)\b/i);
       assert.match(cleaned, /^[a-z0-9 ]*$/i);
     }
   });

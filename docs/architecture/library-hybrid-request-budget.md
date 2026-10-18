@@ -14,7 +14,7 @@ remain invalid; identity checks and duplicate-conflict detection are unchanged.
 Live diagnostic observations showed ignored title filters returning default listings,
 while cleaned title/creator queries could find the saved ID. Production queries now
 use separate title and creator parsers. Both remove the observed whole-word
-problem terms `a`, `an`, `the`, `of`, `no`, `not`, `on`, `in`, `and`, `to`, `with`, `was`.
+problem terms `a`, `an`, `the`, `there`, `this`, `is`, `by`, `of`, `no`, `not`, `on`, `in`, `and`, `to`, `with`, `was`.
 Title queries remove possessive apostrophe-s and replace punctuation/non-ASCII
 characters with spaces, preserving all remaining word fragments and digits.
 Creator queries split on every character other than ASCII letters, digits,
@@ -31,8 +31,9 @@ not a verified server stopword list or a universal server length specification.
 A trailing stored version bracket is removed from search input only when it
 matches the record's known version. This does not run raw-heading extraction
 again on canonical/API titles. Saved title/developer facts are never rewritten
-with lossy query text. Empty title queries skip API and use normal gated HTML;
-an empty/absent creator is omitted rather than guessed. Requests use `%20` for
+with lossy query text. Single-character words are removed from both queries, except
+single digits, which are retained. Empty title or creator filters are omitted; if both are empty, skip
+API without spending an API token and use normal gated HTML. Requests use `%20` for
 spaces and a fresh `_` timestamp, while page 1, games and 15 rows remain fixed.
 There is still one API lookup per check, not a series of query variations.
 Only the saved thread ID can authorize a match; budgets, cooldowns, mapping and
