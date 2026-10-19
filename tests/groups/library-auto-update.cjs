@@ -155,6 +155,55 @@ module.exports = function registerLibraryAutoUpdateGroup(context) {
     };
   }
 
+  runTest("LIBRARY-BUDGET-SLEEP-01 waits before lease access and resumes at the configured hour", async () => {
+    const { createAutoUpdateScheduler, getDailyBudgetWake } = loadModule("addons/library-addon/src/library/autoUpdateScheduler.js");
+    const usedAt = new Date(2026, 9, 18, 20).getTime();
+    const wake = new Date(2026, 9, 19, 8).getTime();
+    let clock = usedAt;
+    let leaseReads = 0;
+    let timer;
+    const repository = createRepository();
+    repository.snapshot().config.runHour = 8;
+    const originalGetLease = repository.getLease;
+    repository.getLease = async () => { leaseReads += 1; return originalGetLease(); };
+    const cycle = { cycleId: "sleep", status: "waiting", dailyKey: "2026-10-18", dailyAttempted: 100, checksPerDay: 100 };
+    const queue = createQueue(cycle);
+    const scheduler = createAutoUpdateScheduler({ repository, queueRuntime: queue, now: () => clock,
+      random: () => 0, setTimeoutFn: (callback, delay) => { timer = { callback, delay }; return timer; }, clearTimeoutFn: () => {} });
+    await scheduler.start();
+    assert.strictEqual(timer.delay, wake - clock);
+    assert.strictEqual(leaseReads, 0);
+    assert.strictEqual((await scheduler.run({ force: true })).reason, "daily_allowance_exhausted");
+    assert.strictEqual(leaseReads, 0);
+    assert.strictEqual(queue.snapshot().workerRuns, 0);
+    assert.strictEqual(scheduler.snapshot().activity, "idle");
+    clock = new Date(2026, 9, 19, 1).getTime();
+    await scheduler.start({ reschedule: true });
+    assert.strictEqual(timer.delay, wake - clock, "reload/settings before the hour must still wait after midnight");
+    assert.strictEqual(queue.snapshot().cycle.dailyKey, "2026-10-18", "preflight never resets the ledger");
+    repository.snapshot().config.runHour = 9;
+    await scheduler.start({ reschedule: true });
+    assert.strictEqual(timer.delay, new Date(2026, 9, 19, 9).getTime() - clock);
+    repository.snapshot().config.checksPerDay = 150;
+    assert.strictEqual(getDailyBudgetWake(cycle, repository.snapshot().config, clock), 0, "raising the limit makes remaining budget usable");
+    repository.snapshot().config.checksPerDay = 100;
+    clock = new Date(2026, 9, 19, 9).getTime();
+    await timer.callback();
+    assert.strictEqual(queue.snapshot().workerRuns, 1);
+    assert.ok(leaseReads > 0);
+    await scheduler.stop();
+  });
+
+  runTest("LIBRARY-BUDGET-SLEEP-02 retained daily ledger gates a missing cycle without touching leases", async () => {
+    const { createAutoUpdateScheduler } = loadModule("addons/library-addon/src/library/autoUpdateScheduler.js");
+    const repository = createRepository({ getLease: async () => { throw new Error("unexpected lease read"); } });
+    const queue = createQueue();
+    queue.getDailyAllowance = async () => ({ dailyKey: "2026-10-18", dailyAttempted: 100 });
+    const scheduler = createAutoUpdateScheduler({ repository, queueRuntime: queue, now: () => new Date(2026, 9, 18, 20).getTime() });
+    assert.strictEqual((await scheduler.run()).reason, "daily_allowance_exhausted");
+    assert.strictEqual(queue.snapshot().snapshots, 0);
+  });
+
   runTest("LIBRARY-AUTO-UPDATE-01 defaults legacy records to eligible without rewriting", () => {
     const { normalizeRecord } = loadModule("addons/library-addon/src/library/recordModel.js");
     const normalized = normalizeRecord({ threadId: "1", title: "Game", updatedAt: 1 }, { now: 2 });

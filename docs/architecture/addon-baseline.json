@@ -129,7 +129,7 @@
         "id": "library-addon",
         "name": "F95UE Library Add-on",
         "description": "Quick-add threads to a personal library and manage entries with a dedicated add-on UI.",
-        "version": "1.4.1",
+        "version": "1.4.2",
         "author": "X Death",
         "entry": "addons/library-addon/src/main.js",
         "outfile": "addons/library-addon/dist/library-addon.user.js",
@@ -288,7 +288,7 @@
     ]
   },
   "trustedCatalog": {
-    "source": "src/generated/trusted-addon-catalog.9ce7943d35a720ce.json",
+    "source": "src/generated/trusted-addon-catalog.5dab5eed2a07bd81.json",
     "projection": [
       {
         "id": "example-addon",
@@ -339,7 +339,7 @@
         "id": "library-addon",
         "name": "F95UE Library Add-on",
         "description": "Quick-add threads to a personal library and manage entries with a dedicated add-on UI.",
-        "version": "1.4.1",
+        "version": "1.4.2",
         "pageScopes": [
           "f95zone"
         ],
@@ -2401,9 +2401,9 @@
       "id": "library-addon",
       "source": {
         "fileCount": 110,
-        "authoredBytes": 468710,
-        "physicalLines": 13859,
-        "nonblankLines": 12561,
+        "authoredBytes": 470371,
+        "physicalLines": 13890,
+        "nonblankLines": 12588,
         "files": [
           {
             "path": "addons/library-addon/src/api/bridge.js",
@@ -2617,15 +2617,15 @@
           },
           {
             "path": "addons/library-addon/src/library/autoUpdatePolicy.js",
-            "bytes": 2651,
+            "bytes": 2726,
             "physicalLines": 64,
             "nonblankLines": 52
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-            "bytes": 20236,
-            "physicalLines": 564,
-            "nonblankLines": 524
+            "bytes": 20493,
+            "physicalLines": 570,
+            "nonblankLines": 530
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueSnapshot.js",
@@ -2635,7 +2635,7 @@
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-            "bytes": 16392,
+            "bytes": 16408,
             "physicalLines": 415,
             "nonblankLines": 392
           },
@@ -2647,9 +2647,9 @@
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-            "bytes": 13652,
-            "physicalLines": 392,
-            "nonblankLines": 365
+            "bytes": 14965,
+            "physicalLines": 417,
+            "nonblankLines": 386
           },
           {
             "path": "addons/library-addon/src/library/hybridRecordRequest.js",
@@ -3070,8 +3070,8 @@
       "builds": {
         "regular": {
           "mode": "regular",
-          "bytes": 481294,
-          "gzipBytes": 100765,
+          "bytes": 482836,
+          "gzipBytes": 101123,
           "contributors": [
             {
               "path": "addons/library-addon/src/library/service.js",
@@ -3083,15 +3083,15 @@
             },
             {
               "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-              "bytes": 20511
+              "bytes": 20780
             },
             {
               "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-              "bytes": 16451
+              "bytes": 16467
             },
             {
               "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-              "bytes": 13813
+              "bytes": 14995
             },
             {
               "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
@@ -3157,8 +3157,8 @@
         },
         "release": {
           "mode": "release",
-          "bytes": 436657,
-          "gzipBytes": 88653,
+          "bytes": 437956,
+          "gzipBytes": 89009,
           "contributors": [
             {
               "path": "addons/library-addon/src/library/service.js",
@@ -3170,7 +3170,7 @@
             },
             {
               "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-              "bytes": 15086
+              "bytes": 15306
             },
             {
               "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
@@ -3178,7 +3178,7 @@
             },
             {
               "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-              "bytes": 11131
+              "bytes": 11146
             },
             {
               "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
@@ -3186,7 +3186,7 @@
             },
             {
               "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-              "bytes": 9197
+              "bytes": 10137
             },
             {
               "path": "addons/library-addon/src/library/recordModel.js",

@@ -4,6 +4,15 @@ import { getAutoUpdateActivity } from "./autoUpdateActivity.js";
 
 const DEBUG_OWNER = "library-addon:auto-update";
 
+// Budget rollover remains midnight; exhausted work resumes at the next day's
+// configured hour. Derive from the recorded day so reloads before that hour wait.
+export function getDailyBudgetWake(cycle, config, currentTime) {
+  if (!cycle?.dailyKey || Number(cycle.dailyAttempted) < Number(config.checksPerDay)) return 0;
+  const [year, month, day] = cycle.dailyKey.split("-").map(Number);
+  const wake = new Date(year, month - 1, day + 1, Number(config.runHour) || 0).getTime();
+  return wake > currentTime ? wake : 0;
+}
+
 function wait(ms, signal) {
   return new Promise((resolve) => {
     const timer = setTimeout(resolve, Math.max(0, ms));
@@ -54,6 +63,8 @@ export function createAutoUpdateScheduler({
   now = Date.now,
   random = Math.random,
   owner = `tab:${Math.random().toString(36).slice(2)}`,
+  setTimeoutFn = (...args) => setTimeout(...args),
+  clearTimeoutFn = (...args) => clearTimeout(...args),
 }) {
   let controller = null;
   let generation = 0;
@@ -62,7 +73,18 @@ export function createAutoUpdateScheduler({
   let latestCycle = null;
   let lastReason = "";
   let otherLeaseUntil = 0;
+  let budgetWake = 0;
   const listeners = new Set();
+
+  async function checkBudget(config) {
+    const cycle = await queueRuntime.getCycle();
+    const allowance = await queueRuntime.getDailyAllowance?.();
+    budgetWake = Math.max(
+      getDailyBudgetWake(cycle, config, now()),
+      getDailyBudgetWake(allowance, config, now()),
+    );
+    return cycle;
+  }
 
   function notify(cycle) {
     latestCycle = cycle;
@@ -157,6 +179,11 @@ export function createAutoUpdateScheduler({
     const config = await repository.getConfig();
     if (!config.enabled && !options.force) {
       return { ok: false, reason: "paused" };
+    }
+    const pendingCycle = await checkBudget(config);
+    if (budgetWake) {
+      otherLeaseUntil = 0;
+      return { ok: true, reason: "daily_allowance_exhausted", cycle: pendingCycle, nextRunAt: budgetWake };
     }
     if (!(await claimLease(config, signal))) {
       const cycle = await queueRuntime.getCycle();
@@ -259,26 +286,24 @@ export function createAutoUpdateScheduler({
       await start();
     } catch {
       if (!timer) return;
-      clearTimeout(timer);
-      timer = setTimeout(() => { if (timer) void rearm(); }, 60_000);
+      clearTimeoutFn(timer);
+      timer = setTimeoutFn(() => { if (timer) void rearm(); }, 60_000);
       timer?.unref?.();
     }
   }
 
   async function start(options = {}) {
     const config = await repository.getConfig();
-    if (options.reschedule) {
-      const cycle = await queueRuntime.getCycle();
+    let cycle = await checkBudget(config);
+    if (options.reschedule && !budgetWake) {
       const nextRunAt = getNextScheduledAt(now(), config.intervalMs, config.runHour);
       await queueRuntime.putCycle(
         cycle ? { ...cycle, nextRunAt } : completedCycle(null, 0, now(), config, nextRunAt),
       );
+      cycle = await checkBudget(config);
     }
-    const [cycle, lease] = await Promise.all([
-      queueRuntime.getCycle(),
-      repository.getLease(),
-    ]);
-    const delayMs = getStartupDelay({
+    const lease = budgetWake ? null : await repository.getLease();
+    const delayMs = budgetWake ? budgetWake - now() : getStartupDelay({
       cycle,
       lease,
       currentTime: now(),
@@ -292,12 +317,12 @@ export function createAutoUpdateScheduler({
       Number(lease?.expiresAt || 0) > now()
       ? Number(lease.expiresAt) + 250
       : 0;
-    notify(cycle);
-    clearTimeout(timer);
-    timer = setTimeout(async () => {
+    if (budgetWake) lastReason = "daily_allowance_exhausted";
+    notify(budgetWake && cycle ? { ...cycle, status: "waiting", nextRunAt: budgetWake } : cycle);
+    clearTimeoutFn(timer);
+    timer = setTimeoutFn(async () => {
       recoveryAt = 0;
       try {
-        notify(await queueRuntime.getCycle());
         await run();
       } catch (error) {
         debugLog(DEBUG_OWNER, "Scheduled run threw.", {
@@ -315,7 +340,7 @@ export function createAutoUpdateScheduler({
   }
 
   async function stop() {
-    clearTimeout(timer);
+    clearTimeoutFn(timer);
     timer = null;
     recoveryAt = 0;
     controller?.abort();

@@ -42,7 +42,11 @@ The existing scheduler lease remains the worker-ownership mechanism; the atomic
 checkpoint is not a new cross-tab lock or UI synchronization service.
 
 Removed and newly disabled records settle without consuming network allowance.
-At the limit, the master becomes `waiting` until local midnight. The same cycle
-then resumes, preserving deterministic queue positions. Coverage runs a
+At the limit, the master becomes `waiting` until the next local day's configured
+update hour. The scheduler checks the cycle and retained allowance before lease
+access and sleeps until that deadline, including reloads after midnight but before
+the hour. Accounting still rolls over by local day; the worker retains its own
+allowance check under the lease. The same cycle then resumes, preserving
+deterministic queue positions. Coverage runs a
 1,000-row cycle at 100 checks per day for ten days and verifies positions 1
 through 1,000 are each visited once and in order.
