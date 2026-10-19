@@ -117,6 +117,11 @@ export function normalizeAutoUpdateQueueItem(value = {}) {
 }
 
 export function createAutoUpdateQueueRepository(api, { now = Date.now } = {}) {
+  async function getDailyAllowance() {
+    const result = await api.getStoreValue(AUTO_UPDATE_CYCLE_STORE, DAILY_ALLOWANCE_ID);
+    if (!result?.ok) throw new Error("daily_allowance_read_failed");
+    return result.value || null;
+  }
   async function getCycle(id = ACTIVE_AUTO_UPDATE_CYCLE_ID) {
     const result = await api.getStoreValue(AUTO_UPDATE_CYCLE_STORE, text(id, 80));
     return result?.ok && result.value ? normalizeAutoUpdateCycle(result.value) : null;
@@ -537,6 +542,7 @@ export function createAutoUpdateQueueRepository(api, { now = Date.now } = {}) {
   }
 
   return {
+    getDailyAllowance,
     getCycle,
     putCycle,
     getQueueItem,

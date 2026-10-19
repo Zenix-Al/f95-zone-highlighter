@@ -231,7 +231,7 @@ export function createAutoUpdateQueueWorker({
         const waiting = await updateCycle({
           status: "waiting",
           currentThreadId: "",
-          nextRunAt: getNextLocalDayAt(now()),
+          nextRunAt: getNextLocalDayAt(now(), config.runHour),
         });
         return waiting?.ok
           ? { ok: true, cycle, waiting: true, reason: "daily_allowance_exhausted" }

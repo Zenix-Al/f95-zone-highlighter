@@ -39,10 +39,10 @@ export function getLocalDayKey(timestamp = Date.now()) {
   return `${year}-${month}-${day}`;
 }
 
-export function getNextLocalDayAt(timestamp = Date.now()) {
+export function getNextLocalDayAt(timestamp = Date.now(), runHour = 0) {
   const date = new Date(Number(timestamp));
   if (Number.isNaN(date.getTime())) return 0;
-  date.setHours(24, 0, 0, 0);
+  date.setHours(24 + Math.min(23, Math.max(0, Math.trunc(Number(runHour) || 0))), 0, 0, 0);
   return date.getTime();
 }
 

@@ -37,7 +37,7 @@ Fetching cannot solve an interactive challenge on the user's behalf.
 | Plain 403/404, thread_not_found or entry_not_found | Terminal failure for this cycle; a future new cycle can include the record again. |
 | Other failure | Durable retry unless total HTTP attempts have reached three. Pending rows have priority over due retry rows. |
 | No actionable row but unfinished rows exist | Waiting for retry/claim recovery; preserves cycle. |
-| Daily allowance reached before a new record | Waiting until local midnight; no extra-batch override. |
+| Daily allowance reached before a new record | Sleeps until the following local day's configured update hour, before acquiring a lease; no extra-batch override. |
 | Local day changes | Resets allowance count, not queue progress. |
 | User presses Pause | Stops this tab's scheduler and aborts its request; writes paused. Other tabs/reloads can automatically resume it. |
 | Page navigation/close, add-on disable or teardown | Stops this tab and aborts work. Unsettled processing claims may need to expire before recovery. Closing only the updater dialog does not stop the scheduler. |
@@ -47,8 +47,13 @@ Fetching cannot solve an interactive challenge on the user's behalf.
 | All rows completed or terminal failed | Cycle completes. Next cycle is scheduled from its original slot, not completion time. |
 | Completed cycle whose next slot has passed | Next poll builds a fresh cycle. This can look like immediately starting over after a long cycle. |
 
-The scheduler normally polls every minute rather than sleeping exactly until
-the displayed Next time. Browser throttling/suspension can delay polls further.
+The scheduler normally polls every minute, except exhausted daily allowance:
+it reads the cycle and retained allowance before lease access and sleeps until
+the following local day's configured update hour. Midnight still resets the
+accounting day, not the resume hour. Reloads before that hour keep waiting;
+saving settings re-evaluates the deadline and current daily limit. The worker
+still rechecks accounting under its lease for cross-tab safety.
+Browser throttling/suspension can delay wakeups further.
 Automatic progress requires an enabled add-on in an open, executing page; this
 is not a background server job. The dialog subscribes to its own tab's scheduler,
 not a cross-tab realtime feed.

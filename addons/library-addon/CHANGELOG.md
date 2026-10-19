@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.4.2 - Update check optimizations
+
+- Optimized update check to pause if daily allowance is reached, and resume when allowance is reset.
+
 ## v1.4.1 - API search fixes
 
 - Improved API searches by removing more unreliable search words and single-letter fragments while keeping numbers, including single digits.

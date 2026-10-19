@@ -3904,18 +3904,13 @@
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-            "line": 9,
+            "line": 18,
             "text": "const timer = setTimeout(resolve, Math.max(0, ms));"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-            "line": 263,
-            "text": "timer = setTimeout(() => { if (timer) void rearm(); }, 60_000);"
-          },
-          {
-            "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-            "line": 297,
-            "text": "timer = setTimeout(async () => {"
+            "line": 66,
+            "text": "setTimeoutFn = (...args) => setTimeout(...args),"
           },
           {
             "path": "addons/library-addon/src/library/hybridRequestBudget.js",
@@ -4806,42 +4801,42 @@
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-            "line": 255,
+            "line": 260,
             "text": "[normalizedCycleId, \"retry\", 0],"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-            "line": 256,
+            "line": 261,
             "text": "[normalizedCycleId, \"retry\", integer(currentTime)],"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-            "line": 264,
+            "line": 269,
             "text": "[normalizedCycleId, \"retry\", 0],"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-            "line": 265,
+            "line": 270,
             "text": "[normalizedCycleId, \"retry\", MAX_COUNT],"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-            "line": 309,
+            "line": 314,
             "text": "if (![\"pending\", \"retry\"].includes(item.status)) {"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-            "line": 359,
+            "line": 364,
             "text": "const nextStatus = status(settlement.status, QUEUE_STATUSES, \"retry\");"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-            "line": 360,
+            "line": 365,
             "text": "if (![\"pending\", \"retry\", \"completed\", \"failed\"].includes(nextStatus)) {"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-            "line": 393,
+            "line": 398,
             "text": "status: item.attempts > 0 ? \"retry\" : \"pending\","
           },
           {
@@ -4906,72 +4901,62 @@
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-            "line": 10,
+            "line": 19,
             "text": "signal?.addEventListener(\"abort\", () => { clearTimeout(timer); resolve(); }, { once: true });"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-            "line": 14,
+            "line": 23,
             "text": "function owned(value, owner, generation, now) {"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-            "line": 15,
+            "line": 24,
             "text": "return value?.owner === owner && value?.generation === generation && Number(value.expiresAt) > now;"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-            "line": 59,
+            "line": 67,
+            "text": "clearTimeoutFn = (...args) => clearTimeout(...args),"
+          },
+          {
+            "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
+            "line": 70,
             "text": "let generation = 0;"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-            "line": 84,
+            "line": 106,
             "text": "generation,"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-            "line": 92,
+            "line": 114,
             "text": "return owned(verified, owner, generation, now()) ? verified : null;"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-            "line": 96,
+            "line": 118,
             "text": "return owned(await repository.getLease(), owner, generation, now());"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-            "line": 126,
+            "line": 148,
             "text": "const ownController = new AbortController();"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-            "line": 129,
+            "line": 151,
             "text": "generation += 1;"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-            "line": 238,
+            "line": 265,
             "text": "await repository.putLease({ owner, generation, expiresAt: now() + config.leaseTtlMs });"
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-            "line": 262,
-            "text": "clearTimeout(timer);"
-          },
-          {
-            "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-            "line": 296,
-            "text": "clearTimeout(timer);"
-          },
-          {
-            "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-            "line": 318,
-            "text": "clearTimeout(timer);"
-          },
-          {
-            "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-            "line": 343,
+            "line": 368,
             "text": "// Lets the user retry before blockedUntil, for example after passing the"
           },
           {
@@ -11436,18 +11421,13 @@
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-          "line": 9,
+          "line": 18,
           "text": "const timer = setTimeout(resolve, Math.max(0, ms));"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-          "line": 263,
-          "text": "timer = setTimeout(() => { if (timer) void rearm(); }, 60_000);"
-        },
-        {
-          "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-          "line": 297,
-          "text": "timer = setTimeout(async () => {"
+          "line": 66,
+          "text": "setTimeoutFn = (...args) => setTimeout(...args),"
         },
         {
           "path": "addons/library-addon/src/library/hybridRequestBudget.js",
@@ -13818,42 +13798,42 @@
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-          "line": 255,
+          "line": 260,
           "text": "[normalizedCycleId, \"retry\", 0],"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-          "line": 256,
+          "line": 261,
           "text": "[normalizedCycleId, \"retry\", integer(currentTime)],"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-          "line": 264,
+          "line": 269,
           "text": "[normalizedCycleId, \"retry\", 0],"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-          "line": 265,
+          "line": 270,
           "text": "[normalizedCycleId, \"retry\", MAX_COUNT],"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-          "line": 309,
+          "line": 314,
           "text": "if (![\"pending\", \"retry\"].includes(item.status)) {"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-          "line": 359,
+          "line": 364,
           "text": "const nextStatus = status(settlement.status, QUEUE_STATUSES, \"retry\");"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-          "line": 360,
+          "line": 365,
           "text": "if (![\"pending\", \"retry\", \"completed\", \"failed\"].includes(nextStatus)) {"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-          "line": 393,
+          "line": 398,
           "text": "status: item.attempts > 0 ? \"retry\" : \"pending\","
         },
         {
@@ -13918,67 +13898,62 @@
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-          "line": 9,
+          "line": 18,
           "text": "const timer = setTimeout(resolve, Math.max(0, ms));"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-          "line": 14,
+          "line": 23,
           "text": "function owned(value, owner, generation, now) {"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-          "line": 15,
+          "line": 24,
           "text": "return value?.owner === owner && value?.generation === generation && Number(value.expiresAt) > now;"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-          "line": 59,
+          "line": 66,
+          "text": "setTimeoutFn = (...args) => setTimeout(...args),"
+        },
+        {
+          "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
+          "line": 70,
           "text": "let generation = 0;"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-          "line": 84,
+          "line": 106,
           "text": "generation,"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-          "line": 92,
+          "line": 114,
           "text": "return owned(verified, owner, generation, now()) ? verified : null;"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-          "line": 96,
+          "line": 118,
           "text": "return owned(await repository.getLease(), owner, generation, now());"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-          "line": 126,
+          "line": 148,
           "text": "const ownController = new AbortController();"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-          "line": 129,
+          "line": 151,
           "text": "generation += 1;"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-          "line": 238,
+          "line": 265,
           "text": "await repository.putLease({ owner, generation, expiresAt: now() + config.leaseTtlMs });"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-          "line": 263,
-          "text": "timer = setTimeout(() => { if (timer) void rearm(); }, 60_000);"
-        },
-        {
-          "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-          "line": 297,
-          "text": "timer = setTimeout(async () => {"
-        },
-        {
-          "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
-          "line": 343,
+          "line": 368,
           "text": "// Lets the user retry before blockedUntil, for example after passing the"
         },
         {

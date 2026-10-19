@@ -314,9 +314,8 @@ module.exports = function registerLibraryIdbSchemaGroup(context) {
       assert.strictEqual(checkAgain.cycle.completed, 93);
       assert.strictEqual(checkAgain.cycle.dailyAttempted, 100);
       const restarted = await tabB.restartCycle();
-      assert.strictEqual(restarted.cycle.completed, 0);
-      assert.strictEqual(restarted.cycle.dailyAttempted, 100);
-      assert.strictEqual(restarted.cycle.dailyBonusAllowance, 0);
+      assert.strictEqual(restarted.reason, "daily_allowance_exhausted");
+      assert.strictEqual(restarted.cycle, null, "exhausted restart waits before building a replacement snapshot");
       assert.strictEqual(requests.length, 100, "Restart must not replenish allowance");
       if (hybrid) assert.strictEqual(apiRequests.length, 80, "Restart does not refill the hourly API budget");
       timestamp = new Date(2026, 9, 18, 0, 1).getTime();
