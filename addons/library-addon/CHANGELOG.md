@@ -2,7 +2,7 @@
 
 ## v1.4.2 - Update check optimizations
 
-- Optimized update check to pause if daily allowance is reached, and resume when allowance is reset.
+- Optimized update check to pause if daily allowance is reached, only resume when allowance is reset and exceeded the configured Update hour.
 
 ## v1.4.1 - API search fixes
 

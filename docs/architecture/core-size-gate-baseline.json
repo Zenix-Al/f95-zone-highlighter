@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "sourceReport": "docs/architecture/core-size-baseline.json",
-  "sourceReportSha256": "7c45b3cdca85d326813ab59a946e8c629a3dd72b3550e33b0f51c986da82521f",
+  "sourceReportSha256": "9e5105e4df5932468fd31726f372e83436d583e8717fc178ae8e20f2b182587a",
   "thresholds": {
     "authoredArea": {
       "absoluteBytes": 1024,
@@ -21,8 +21,7 @@
     }
   },
   "rationale": {
-    "type": "file",
-    "path": "docs/services/addon-runtime.md",
-    "sha256": "53f910423b178cefea02ef0de4a8171c3a0ad9faa4b2c2a7ecd940f617fb2991"
+    "type": "commit-note",
+    "text": "5.4.9: shared-observer discovery for delayed signatures and hide only after controls are installed."
   }
 }

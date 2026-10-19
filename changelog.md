@@ -1,5 +1,9 @@
 # Changelog
 
+## [5.4.9 - Delayed signature controls]
+
+- Fixed hidden signatures missing their Show signature button when thread content arrives after feature startup. Somehow this fat userscript faster than the site rendering, funny how that works.
+
 ## [5.4.8 - Cached prefix catalog for add-ons]
 
 - Added opt-in `includePrefixes: true` support to `config.getTagPrefs`, exposing cached prefix IDs, names, classes and category groups for Library's hybrid updater. Existing callers keep the same response.

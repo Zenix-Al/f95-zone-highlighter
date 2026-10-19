@@ -1,4 +1,4 @@
-html.latest-signature-collapsed aside.message-signature {
+html.latest-signature-collapsed aside.message-signature[data-latest-processed="true"] {
   max-height: 0 !important;
   overflow: hidden !important;
   padding-top: 0 !important;

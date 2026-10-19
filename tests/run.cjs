@@ -2,6 +2,7 @@ const harness = require("./harness.cjs");
  
 for (const group of [
   "core",
+  "signature-collapse",
   "core-load-trace",
   "config",
   "core-runtime-performance",

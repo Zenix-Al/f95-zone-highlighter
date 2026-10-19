@@ -28,14 +28,14 @@
   },
   "authored": {
     "fileCount": 119,
-    "physicalLines": 15989,
-    "meaningfulLines": 13960,
-    "authoredBytes": 487075,
+    "physicalLines": 16004,
+    "meaningfulLines": 13976,
+    "authoredBytes": 487936,
     "bytesByArea": {
       "config": 32550,
       "core": 89037,
       "services": 88548,
-      "features": 135327,
+      "features": 136188,
       "ui": 141613
     },
     "bytesByFile": {
@@ -78,6 +78,7 @@
       "src/services/storageAdapter.js": 4093,
       "src/ui/components/tag-search/tagMutations.js": 3884,
       "src/ui/renderers/renderSetting.js": 3829,
+      "src/features/signature-collapse/index.js": 3639,
       "src/services/storageReadiness.js": 3608,
       "src/features/latest-overlay/capture/pageCaptureTransport.js": 3428,
       "src/core/StateManager.js": 3393,
@@ -90,7 +91,6 @@
       "src/ui/components/configButton.js": 2970,
       "src/config/latestOverlayScoring.js": 2935,
       "src/ui/components/toast.js": 2822,
-      "src/features/signature-collapse/index.js": 2808,
       "src/core/styleRegistry.js": 2641,
       "src/features/wide-latest/index.js": 2625,
       "src/config/defaults.js": 2615,
@@ -125,7 +125,7 @@
       "src/ui/settings/globalSettings.js": 1387,
       "src/ui/settings/index.js": 1360,
       "src/core/createStyledFeature.js": 1301,
-      "src/features/signature-collapse/style.css": 1249,
+      "src/features/signature-collapse/style.css": 1279,
       "src/features/latest-overlay/index.js": 1235,
       "src/ui/renderers/coerceSettingValue.js": 1197,
       "src/core/logger.js": 1186,
@@ -380,7 +380,7 @@
         "bytes": 9254,
         "physicalLines": 314,
         "meaningfulLines": 271,
-        "fanIn": 5,
+        "fanIn": 6,
         "fanOut": 3,
         "exports": [
           "getObserverProfileSnapshot",
@@ -581,7 +581,7 @@
         },
         {
           "path": "src/core/observer.js",
-          "fanIn": 5,
+          "fanIn": 6,
           "fanOut": 3
         },
         {
@@ -710,6 +710,11 @@
           "fanOut": 5
         },
         {
+          "path": "src/features/signature-collapse/index.js",
+          "fanIn": 0,
+          "fanOut": 7
+        },
+        {
           "path": "src/services/storageReadiness.js",
           "fanIn": 4,
           "fanOut": 0
@@ -768,11 +773,6 @@
           "path": "src/ui/components/toast.js",
           "fanIn": 10,
           "fanOut": 1
-        },
-        {
-          "path": "src/features/signature-collapse/index.js",
-          "fanIn": 0,
-          "fanOut": 6
         },
         {
           "path": "src/core/styleRegistry.js",
@@ -1192,7 +1192,7 @@
         {
           "from": "features",
           "to": "core",
-          "count": 28,
+          "count": 29,
           "examples": [
             {
               "from": "src/features/dismiss-notification/handler.js",
@@ -1591,9 +1591,9 @@
   "bundle": {
     "readable": {
       "mode": "regular",
-      "bytes": 677331,
-      "gzipBytes": 145604,
-      "coreBytes": 429990,
+      "bytes": 678133,
+      "gzipBytes": 145771,
+      "coreBytes": 430792,
       "excludedBytes": 240058,
       "contributors": [
         {
@@ -1844,9 +1844,9 @@
     },
     "uglified": {
       "mode": "release",
-      "bytes": 337154,
-      "gzipBytes": 101175,
-      "coreBytes": 222153,
+      "bytes": 337562,
+      "gzipBytes": 101288,
+      "coreBytes": 222561,
       "excludedBytes": 114989,
       "contributors": [
         {
