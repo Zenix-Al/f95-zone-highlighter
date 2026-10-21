@@ -91,5 +91,5 @@ export async function processDelafilDownload({
     await notifyMainFailure(HOST_LABEL, "Unable to trigger download button.");
     return;
   }
-  reportAddonHealthy();
+  reportAddonHealthy({ downloadTriggered: true });
 }

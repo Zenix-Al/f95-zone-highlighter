@@ -1,5 +1,9 @@
 # Masked Direct standalone automation baseline
 
+> Historical characterization of the pre-rework architecture, not current runtime
+> behavior. See [the standalone contract](masked-direct-reliability.md) and the
+> [archived implementation](../../addons/masked-direct-addon/archive/README.md).
+
 This records `MASKED-DIRECT-STANDALONE-BASELINE-01`. It is characterization
 only; no production source, persisted format, manifest, version, or generated
 distribution changes in this package.

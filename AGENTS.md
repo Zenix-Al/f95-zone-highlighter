@@ -81,6 +81,10 @@ release unless they explicitly delegate it to the agent.
 - Add regression tests for changed behavior; focused validation is not permission to skip
   tests. Use the repository's existing test selection mechanism rather than creating a
   second test runner.
+  List groups with `npm test -- --list`; select exact groups or trailing prefixes with
+  repeated `--group`. Example:
+  `npm test -- --group "masked-direct-*" --group addon-matrix --group integration`.
+  See `docs/testing.md` for boundary selection and timing.
 - Cover affected integration boundaries, not just the edited function. For example, updater
   changes may require request-gate, queue, lease, daily-accounting, and commit tests together.
 - Expand focused checks when failures or shared-contract changes indicate a wider impact.

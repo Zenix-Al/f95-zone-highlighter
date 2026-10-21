@@ -1,5 +1,9 @@
 # Masked Direct `/masked/` standalone baseline
 
+> Historical characterization of the pre-rework architecture, not current runtime
+> behavior. See [the standalone contract](masked-direct-reliability.md) and the
+> [archived implementation](../../addons/masked-direct-addon/archive/README.md).
+
 This records `MASKED-DIRECT-MASKED-STANDALONE-BASELINE-01`. It changes no
 production source, persisted value, manifest, version, or distribution.
 

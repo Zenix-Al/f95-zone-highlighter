@@ -134,6 +134,7 @@ export function createCloudflareChallengeMonitor({
   }
 
   async function waitUntilClear() {
+    if (disposed) return false;
     start();
     if (!check()) return true;
     if (waitPromise) return waitPromise;

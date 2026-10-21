@@ -1,3 +1,4 @@
+const { timing } = require("./timing.cjs");
 const path = require("path");
 const fs = require("fs");
 const assert = require("assert");
@@ -43,56 +44,89 @@ if (!fs.existsSync(TMP_DIR)) {
 }
 
 function loadModule(relativePath, options = {}) {
-  const entry = path.join(ROOT, relativePath);
-  const outFile = path.join(
-    TMP_DIR,
-    relativePath.replace(/[\\/]/g, "_") + ".cjs",
-  );
+  const startedAt = timing.start();
+  try {
+    const entry = path.join(ROOT, relativePath);
+    const outFile = path.join(TMP_DIR, relativePath.replace(/[\\/]/g, "_") + ".cjs");
 
-  const source = options.sourceReplacements
-    ? Object.entries(options.sourceReplacements).reduce(
-        (current, [search, replacement]) => current.replace(search, replacement),
-        fs.readFileSync(entry, "utf8"),
-      )
-    : null;
+    const source = options.sourceReplacements
+      ? Object.entries(options.sourceReplacements).reduce(
+          (current, [search, replacement]) => current.replace(search, replacement),
+          fs.readFileSync(entry, "utf8"),
+        )
+      : null;
 
-  esbuild.buildSync({
-    entryPoints: source === null ? [entry] : undefined,
-    stdin: source === null ? undefined : {
-      contents: source,
-      resolveDir: path.dirname(entry),
-      sourcefile: entry,
-      loader: "js",
-    },
-    bundle: true,
-    format: "cjs",
-    platform: "node",
-    loader: options.loader,
-    define: {
-      __F95UE_DEBUG__: "false",
-    },
-    outfile: outFile,
-    logLevel: "silent",
-  });
+    esbuild.buildSync({
+      entryPoints: source === null ? [entry] : undefined,
+      stdin:
+        source === null
+          ? undefined
+          : {
+              contents: source,
+              resolveDir: path.dirname(entry),
+              sourcefile: entry,
+              loader: "js",
+            },
+      bundle: true,
+      format: "cjs",
+      platform: "node",
+      loader: options.loader,
+      define: {
+        __F95UE_DEBUG__: "false",
+      },
+      outfile: outFile,
+      logLevel: "silent",
+    });
 
-  delete require.cache[require.resolve(outFile)];
-  return require(outFile);
+    delete require.cache[require.resolve(outFile)];
+    return require(outFile);
+  } finally {
+    timing.record("module-load", relativePath, startedAt, {
+      group: currentGroup,
+      test: currentTest,
+    });
+  }
 }
 
 let passed = 0;
 let failed = 0;
+let registered = 0;
 let testChain = Promise.resolve();
+let currentGroup = "harness-startup";
+let currentTest = null;
+
+function registerGroup(group, register) {
+  const previous = currentGroup;
+  currentGroup = group;
+  const startedAt = timing.start();
+  try { register(); }
+  finally {
+    timing.record("registration", group, startedAt);
+    currentGroup = previous;
+  }
+}
 
 function runTest(name, testFn) {
+  registered += 1;
+  const group = currentGroup;
   testChain = testChain.then(async () => {
+    const startedAt = timing.start();
+    let status = "passed";
+    currentGroup = group;
+    currentTest = name;
     try {
       await testFn();
       passed += 1;
       console.log(`PASS ${name}`);
     } catch (err) {
+      status = "failed";
       failed += 1;
       console.error(`FAIL ${name}`);
       console.error(err);
+    } finally {
+      timing.record("test", name, startedAt, { group, status });
+      currentTest = null;
+      currentGroup = "between-tests";
     }
   });
 }
@@ -383,10 +417,19 @@ process.on("exit", () => {
 
 function finish() {
   return testChain.then(() => {
+    if (registered === 0) throw new Error("No tests registered; refusing an empty pass");
+    if (process.env.F95UE_TEST_TIMINGS) {
+      const output = path.resolve(process.env.F95UE_TEST_TIMINGS);
+      fs.mkdirSync(path.dirname(output), { recursive: true });
+      fs.writeFileSync(output, `${JSON.stringify(timing.snapshot(), null, 2)}\n`);
+      console.log(`Test timing evidence: ${output}`);
+    }
     finished = true;
     console.log("\nTest results: " + passed + " passed, " + failed + " failed");
     if (failed > 0) process.exitCode = 1;
   });
 }
+
+runTest.registerGroup = registerGroup;
 
 module.exports = { path, fs, assert, childProcess, esbuild, Window, createAddonBridgeTransport, createDomSandbox, createFakeClock, createFakeGM, dispatchPageTransition, generateFeatureManifest, checkFeatureManifest, renderFeatureManifest, validateFeatureManifestEntries, coreAudit, coreSizeGate, cssAudit, addonBaseline, addonApiAudit, addonCatalog, addonBuildTools, addonBuilder, ROOT, TMP_DIR, ADDON_MANIFEST, TRUSTED_ADDON_CATALOG_META, TRUSTED_ADDON_CATALOG, loadModule, runTest, collectJavaScriptFiles, seedReadyConfig, createStateManager, pageDefinitions, featureMatchesPageScopes, beginRoute, getRouteContext, normalizeRouteUrl, resetRouteStateForTests, setRoutePageFlags, runBootstrapPipeline, CONFIG_SCHEMA, getConfigPathMetadata, getDefaultConfig, getExportableConfigKeys, getPersistedConfigPaths, getSchemaPathIndex, mergeWithDefaults, sanitizeConfig, validateConfig, validateConfigSection, registerFeature, resetFeatureCatalogForTests, validateFeatureDescriptor, createFeature, normalizeFeatureBootstrapMode, createResourceOwner, releaseOwner, getResourceSnapshot, createTaskQueue, clearHealthEventsForTests, getHealthDiagnostics, getHealthEvents, getAllFeatureStatuses, getRuntimeErrors, recordHealthEvent, registerDiagnosticsProvider, reportFeatureFailure, reportFeatureWarning, reportRuntimeError, queryFirstBySelectors, OVERLAY_COLOR_ORDER_KEYS, normalizeOverlayColorOrder, buildOrderedOverlayMatches, enqueueFastCaptureProcessing, getFastCaptureData, getFastCaptureDiagnostics, getFastCaptureSnapshot, hasFastCaptureData, matchesFastCaptureUrl, processCompletedFastCapture, refreshFastCaptureFeatures, registerFastCaptureFeatures, resetFastCaptureAdapterForTests, resetFastCaptureStoreForTests, subscribeFastCapture, normalizeFastCaptureConfig, FAST_CAPTURE_LIMITS, executeActionDescriptor, getActionSnapshot, registerAction, getRegisteredAddonActionSnapshot, invokeRegisteredAddonCoreAction, isAddonActionAllowed, coerceSettingValue, getMetadataByConfigPath, getSettingsMetadataById, getSettingsMetadataByOwner, getSettingsMetadataBySection, getSettingsMetadataSnapshot, registerSettingsMetadata, resetSettingsMetadataForTests, renderSetting, createInput, setByPath, flushQueuedToasts, showToast, isAddonOwnedObserverNode, normalizeObserverWaitSelector, unwatchAddonObserver, waitForAddonObserver, ADDON_UI_SLOT_POLICY, normalizeAddonMountSlot, sanitizeAddonCss, sanitizeAddonHtml, createAddonDockGroup, invokeOptionalCoreAction, normalizePrefixesFromLatestUpdates, buildLatestRecordMap, calculateRecordAgeDays, normalizeLatestRecord, buildPrefixStatusMap, getRecordHighlightClasses, matchesPageDefinition, normalizeLatestAjaxErrorPayload, shouldRetryLatestAjaxError, classifyMaskedDirectContext, createFakeElement, createFakeDocument, resetFastCaptureHarness , finish };

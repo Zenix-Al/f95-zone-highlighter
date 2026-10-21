@@ -114,5 +114,5 @@ export async function processMixdropDownload({
     return;
   }
   await sleep(Math.max(0, Number(postClickGraceMs) || 0));
-  reportAddonHealthy();
+  reportAddonHealthy({ downloadTriggered: true });
 }

@@ -3840,7 +3840,7 @@ module.exports = function registerGroup(context) {
   );
 
   runTest(
-    "ADDON-MASKED-DIRECT-01 classifies core, standalone, and unsupported contexts",
+    "ADDON-MASKED-DIRECT-02 classifies core, standalone, and unsupported contexts",
     () => {
       const externalHosts = new Set([
         "buzzheavier.com",
@@ -3879,13 +3879,13 @@ module.exports = function registerGroup(context) {
         usesCore: true,
       });
       assert.deepStrictEqual(classify("https://f95zone.to/masked/abc"), {
-        kind: "f95-optional-core",
-        route: "masked",
-        usesCore: true,
+        kind: "unsupported",
+        route: "unsupported",
+        usesCore: false,
       });
       assert.strictEqual(
         classify("https://f95zone.to/forums/games.2/").kind,
-        "unsupported",
+        "f95-core",
       );
       assert.strictEqual(
         classify("https://gofile.io/d/abc").kind,
@@ -3899,7 +3899,7 @@ module.exports = function registerGroup(context) {
   );
 
   runTest(
-    "ADDON-MASKED-DIRECT-01 preserves hybrid headers and canonical boundaries",
+    "ADDON-MASKED-DIRECT-03 preserves identity and standalone/F95 boundaries",
     () => {
       const manifestEntry = ADDON_MANIFEST.addons.find(
         (entry) => entry.id === "masked-direct-addon",
@@ -3908,7 +3908,6 @@ module.exports = function registerGroup(context) {
       assert.deepStrictEqual(manifestEntry.pageScopes, ["f95zone"]);
       assert.strictEqual(manifestEntry.runAt, "document-idle");
       assert.deepStrictEqual(manifestEntry.grants, [
-        "GM_openInTab",
         "GM.getValue",
         "GM.setValue",
         "GM_addValueChangeListener",
@@ -3919,9 +3918,9 @@ module.exports = function registerGroup(context) {
         "app/context.js",
         "app/createMaskedDirectApp.js",
         "core/adaptor.js",
-        "ports/routeContextRepository.js",
-        "ports/processingDownloadRepository.js",
-        "ports/downloadSettingsRepository.js",
+        "ports/standaloneAutomationPolicyRepository.js",
+        "ports/standaloneContinuation.js",
+        "domain/directDownload/feedback.js",
       ]) {
         assert.ok(
           fs.existsSync(
@@ -3930,11 +3929,6 @@ module.exports = function registerGroup(context) {
           relativePath,
         );
       }
-      const mainSource = fs.readFileSync(
-        path.join(ROOT, "addons/masked-direct-addon/src/main.js"),
-        "utf8",
-      );
-      assert.ok(mainSource.split(/\r?\n/).length < 20);
       for (const hostFile of fs
         .readdirSync(path.join(ROOT, "addons/masked-direct-addon/src/hosts"), {
           withFileTypes: true,
@@ -3956,59 +3950,6 @@ module.exports = function registerGroup(context) {
     },
   );
 
-  runTest(
-    "ADDON-MASKED-DIRECT-01 expires and rejects mismatched route handoffs",
-    () => {
-      const sandbox = createDomSandbox("https://datanodes.to/download/example");
-      const previousSessionStorage = global.sessionStorage;
-      try {
-        global.sessionStorage = sandbox.window.sessionStorage;
-        const repository = loadModule(
-          "addons/masked-direct-addon/src/ports/routeContextRepository.js",
-        );
-        repository.writeRouteContext({
-          ownerTabId: "origin-1",
-          requestId: "request-1",
-          createdAt: Date.now(),
-          host: "datanodes.to",
-          sourceUrl: "https://datanodes.to/file/a",
-        });
-        assert.strictEqual(
-          repository.readRouteContext("f95ue_tab", {
-            expectedRequestId: "request-1",
-            expectedHost: "datanodes.to",
-          }).requestId,
-          "request-1",
-        );
-        assert.strictEqual(
-          repository.readRouteContext("f95ue_tab", {
-            expectedRequestId: "request-2",
-          }),
-          null,
-        );
-        assert.strictEqual(
-          repository.readRouteContext("f95ue_tab", {
-            expectedHost: "gofile.io",
-          }),
-          null,
-        );
-        repository.writeRouteContext({
-          ownerTabId: "origin-1",
-          requestId: "expired",
-          createdAt: Date.now() - 2 * 60 * 1000 - 1,
-          host: "datanodes.to",
-        });
-        assert.strictEqual(repository.readRouteContext(), null);
-        assert.strictEqual(
-          sessionStorage.getItem("f95ue.addon.maskedDirect.routeContext"),
-          null,
-        );
-      } finally {
-        global.sessionStorage = previousSessionStorage;
-        sandbox.restore();
-      }
-    },
-  );
 
   runTest(
     "SITE-REPAIR-01 preserves published namespace while changing canonical identity",

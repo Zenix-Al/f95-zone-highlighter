@@ -13,7 +13,7 @@ export function createMaskedDirectRuntime() {
     addonDescription:
       typeof __ADDON_DESCRIPTION__ === "string"
         ? __ADDON_DESCRIPTION__
-        : "Combines masked-link skipper with direct-download routing and host handlers.",
+        : "Standalone download automation for supported hosts with F95UE settings integration.",
     capabilities: Array.isArray(__ADDON_CAPABILITIES__)
       ? __ADDON_CAPABILITIES__
       : [],
@@ -28,10 +28,7 @@ export function createMaskedDirectRuntime() {
     matches: Array.isArray(__ADDON_MATCHES__)
       ? __ADDON_MATCHES__
       : [
-          "*://f95zone.to/threads/*",
-          "*://f95zone.to/masked/*",
-          "https://www.google.com/recaptcha/*",
-          "https://www.recaptcha.net/recaptcha/*",
+          "*://f95zone.to/*",
         ],
   });
 }

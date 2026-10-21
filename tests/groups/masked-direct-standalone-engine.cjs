@@ -1,4 +1,5 @@
 "use strict";
+const approvedRoutes = require("../fixtures/masked-direct-approved-routes.cjs");
 
 module.exports = function registerMaskedDirectStandaloneEngine(context) {
   const { assert, createDomSandbox, loadModule, runTest } = context;
@@ -52,50 +53,14 @@ module.exports = function registerMaskedDirectStandaloneEngine(context) {
     }
   }
 
-  async function addManagedRequest(gm, sourceUrl) {
-    const { setProcessingDownloadTrigger } = loadModule(
-      "addons/masked-direct-addon/src/domain/directDownload/processingTrigger.js",
-    );
-    await setProcessingDownloadTrigger(gm, {
-      requestId: "request-a",
-      ownerTabId: "tab-a",
-      host: "krakenfiles.com",
-      sourceUrl,
-    });
-  }
 
-  runTest(
-    "MASKED-DIRECT-STANDALONE-ENGINE-01 managed identity wins with policy off or on",
-    async () => {
-      for (const policy of [false, true]) {
-        const now = Date.now();
-        const href =
-          "https://krakenfiles.com/view/example/file.html" +
-          `?f95ue_dd=1&f95ue_tab=tab-a&f95ue_dd_req=request-a&f95ue_dd_ts=${now}`;
-        await withController({
-          href,
-          policy,
-          setup: (gm) => addManagedRequest(gm, href),
-          run: async ({ controller }) => {
-            const decision = await controller.decideHostAutomation(
-              "krakenfiles.com",
-            );
-            assert.strictEqual(decision.mode, "managed");
-            assert.strictEqual(decision.request.requestId, "request-a");
-          },
-        });
-      }
-    },
-  );
 
   runTest(
     "MASKED-DIRECT-STANDALONE-ENGINE-01 authorizes only approved standalone routes",
     async () => {
       const cases = [
-        ["krakenfiles.com", "https://krakenfiles.com/view/a/file.html", "standalone"],
-        ["delafil.se", "https://delafil.se/0123456789abcdef/file.zip", "standalone"],
+        ...approvedRoutes.map(([host, href]) => [host, href, "standalone"]),
         ["download.gg", "https://download.gg/file-example", "standalone"],
-        ["uploadhaven.com", "https://uploadhaven.com/download/example", "standalone"],
         ["krakenfiles.com", "https://krakenfiles.com/view/a", "blocked"],
         ["mediafire.com", "https://mediafire.com/file/a/file", "blocked"],
       ];
@@ -120,7 +85,7 @@ module.exports = function registerMaskedDirectStandaloneEngine(context) {
   );
 
   runTest(
-    "MASKED-DIRECT-STANDALONE-ENGINE-01 blocks requestless safe routes when policy is off",
+    "MASKED-DIRECT-STANDALONE-ENGINE-02 blocks requestless safe routes when policy is off",
     async () => {
       await withController({
         href: "https://download.gg/file-example",
@@ -135,7 +100,7 @@ module.exports = function registerMaskedDirectStandaloneEngine(context) {
   );
 
   runTest(
-    "MASKED-DIRECT-STANDALONE-ENGINE-01 may fall through from stale identity only by independent policy",
+    "MASKED-DIRECT-STANDALONE-ENGINE-03 may fall through from stale identity only by independent policy",
     async () => {
       const stale = Date.now() - 60 * 60 * 1000;
       const href =
@@ -154,7 +119,7 @@ module.exports = function registerMaskedDirectStandaloneEngine(context) {
   );
 
   runTest(
-    "MASKED-DIRECT-STANDALONE-ENGINE-01 keeps unapproved ambiguous recovery blocked",
+    "MASKED-DIRECT-STANDALONE-ENGINE-04 keeps unapproved ambiguous recovery blocked",
     async () => {
       await withController({
         href: "https://datanodes.to/file/example",

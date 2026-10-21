@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "identifier": "5dab5eed2a07bd81100a7a217bfbdf01141a7c3a2018b194ffc9af3bdaab0e44",
+  "identifier": "60bb1dcc347baf77415f4f9b5ff2df0a935a098d5db2bee48e92ea276406f125",
   "catalog": [
     {
       "id": "example-addon",
@@ -128,17 +128,14 @@
     {
       "id": "masked-direct-addon",
       "name": "F95UE Masked + Direct Download Add-on",
-      "description": "Combines masked-link skipper and direct-download flows into one trusted add-on.",
-      "version": "1.2.4",
+      "description": "Standalone download automation for supported hosts with F95UE settings integration.",
+      "version": "1.3.0",
       "pageScopes": [
         "f95zone"
       ],
       "runtimeMode": "hybrid",
       "matches": [
-        "*://f95zone.to/threads/*",
-        "*://f95zone.to/masked/*",
-        "https://www.google.com/recaptcha/*",
-        "https://www.recaptcha.net/recaptcha/*",
+        "*://f95zone.to/*",
         "*://buzzheavier.com/*",
         "*://*.buzzheavier.com/*",
         "*://bzzhr.to/*",
@@ -178,7 +175,6 @@
         "*://*.workupload.com/start/*"
       ],
       "grants": [
-        "GM_openInTab",
         "GM.getValue",
         "GM.setValue",
         "GM_addValueChangeListener",
@@ -190,10 +186,7 @@
         "toast",
         "feature",
         "storage",
-        "page",
-        "observer",
-        "ui",
-        "ui.style"
+        "ui"
       ],
       "downloadUrl": "https://greasyfork.org/en/scripts/572503-f95ue-masked-direct-download-add-on",
       "trusted": true

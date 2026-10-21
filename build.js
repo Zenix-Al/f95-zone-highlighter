@@ -269,6 +269,7 @@ async function main() {
     }
   }
 
+  if (!isSmoke) require("./scripts/refresh-build-reports.cjs").refreshBuildReports();
   if (isSmoke) console.log("\nSmoke build completed without changing tracked build outputs.");
   else console.log(`\n🎉 ALL BUILDS COMPLETE! Version ${versionString} ready in /dist`);
   } finally {

@@ -3,7 +3,6 @@ import {
   createDirectDownloadPackageDefaults,
   createDirectDownloadPanelSettings,
 } from "../hosts/metadata.js";
-import { getDownloadPageCloseDelay } from "../ports/downloadSettingsRepository.js";
 import {
   DEFAULT_DOWNLOAD_CLOSE_DELAY_MS,
   MIN_DOWNLOAD_CLOSE_DELAY_MS,
@@ -12,61 +11,65 @@ import {
 
 export const ADDON_SETTINGS_KEY = "settings";
 export const ADDON_SETTINGS_DEFAULT = Object.freeze({
-  skipMaskedLink: true,
-  directDownloadLinks: true,
-  automateRegardless: false,
+  automateRegardless: true,
+  skipMaskedPage: true,
+  autoCloseTabs: true,
   downloadPageCloseDelayMs: DEFAULT_DOWNLOAD_CLOSE_DELAY_MS,
   directDownloadPackages: createDirectDownloadPackageDefaults(),
 });
 export const ADDON_PANEL_SETTINGS = Object.freeze([
   {
-    id: "skipMaskedLink",
-    path: "skipMaskedLink",
-    text: "Resolve button on masked links",
-    tooltip:
-      "Show a Resolve button next to masked links. Native clicks stay unchanged; Resolve performs masked-link resolution and direct-download routing.",
-  },
-  {
-    id: "directDownloadLinks",
-    path: "directDownloadLinks",
-    text: "Direct Download Links",
-    tooltip:
-      "Enable direct download links for supported file hosts. Works independently outside of masked links.",
+    id: "skipMaskedPage",
+    path: "skipMaskedPage",
+    text: "Skip the F95 download countdown",
+    tooltip: "Click Continue 250ms after its button is ready. Turn off to leave the native countdown alone. Never closes this intermediate page.",
   },
   {
     id: "automateRegardless",
     path: "automateRegardless",
-    text: "Automate supported hosts regardless of F95 request",
+    text: "Automate supported host pages",
     tooltip:
-      "Automatically trigger downloads on approved direct host file pages even when they were opened manually. Manually opened tabs remain open. This saved preference stays off by default; a confirmed missing core may temporarily force the effective behavior without changing it.",
+      "Automate approved host routes regardless of where the tab came from. Enabled by default for new installs; saved choices and host switches are respected.",
+  },
+  {
+    id: "autoCloseTabs",
+    path: "autoCloseTabs",
+    text: "Close download tabs after the final download action",
+    tooltip:
+      "Enabled by default, including manually opened tabs. Waits the configured delay after a validated final action; the browser may refuse to close a tab. This does not detect when the file finishes saving.",
   },
   {
     id: "downloadPageCloseDelayMs",
     path: "downloadPageCloseDelayMs",
-    text: "Managed download tab close delay (ms)",
+    text: "Download tab close delay (ms)",
     tooltip:
-      "Wait this long after a host triggers its final download action, then close the managed tab. This does not limit host automation. Minimum: 3000ms.",
+      "Wait after a validated final download action before trying to close this tab. Minimum: 3000ms. Disabled when automatic closing is off.",
     type: "number",
     min: MIN_DOWNLOAD_CLOSE_DELAY_MS,
   },
   ...createDirectDownloadPanelSettings(),
 ]);
 
-export function createMaskedDirectSettings({ bridge, GMApi, onSettingsRead }) {
+export function createMaskedDirectSettings({ bridge, onSettingsRead, onEnabledChanged }) {
   let cache = null;
   let cacheTimestamp = 0;
+  let lastReadSucceeded = false;
 
   async function storageGet(key, defaultValue) {
+    lastReadSucceeded = false;
     const result = await bridge.invokeCoreAction("storage.get", {
       key,
       defaultValue,
     });
     if (!result?.ok) return defaultValue;
+    lastReadSucceeded = true;
     return typeof result.value === "undefined" ? defaultValue : result.value;
   }
 
-  function storageSet(key, value) {
-    return bridge.invokeCoreAction("storage.set", { key, value });
+  async function storageSet(key, value) {
+    const result = await bridge.invokeCoreAction("storage.set", { key, value });
+    if (result?.ok && key === "enabled") await onEnabledChanged?.(value !== false);
+    return result;
   }
 
   async function read(force = false) {
@@ -74,33 +77,20 @@ export function createMaskedDirectSettings({ bridge, GMApi, onSettingsRead }) {
     if (!force && cache && now - cacheTimestamp < 1500) return cache;
 
     const result = await storageGet(ADDON_SETTINGS_KEY, ADDON_SETTINGS_DEFAULT);
-    const parsed =
-      result && typeof result === "object" ? result : ADDON_SETTINGS_DEFAULT;
+    const parsed = result && typeof result === "object" ? result : ADDON_SETTINGS_DEFAULT;
     cache = {
-      skipMaskedLink: parsed.skipMaskedLink !== false,
-      directDownloadLinks: parsed.directDownloadLinks !== false,
-      automateRegardless: parsed.automateRegardless === true,
+      automateRegardless: parsed.automateRegardless !== false,
+      skipMaskedPage: parsed.skipMaskedPage !== false,
+      autoCloseTabs: parsed.autoCloseTabs !== false,
       downloadPageCloseDelayMs: normalizeDownloadCloseDelay(
         parsed.downloadPageCloseDelayMs,
         ADDON_SETTINGS_DEFAULT.downloadPageCloseDelayMs,
       ),
-      directDownloadPackages: coerceDirectDownloadPackages(
-        parsed.directDownloadPackages,
-      ),
+      directDownloadPackages: coerceDirectDownloadPackages(parsed.directDownloadPackages),
     };
     cacheTimestamp = now;
-    if (typeof onSettingsRead === "function") await onSettingsRead(cache);
+    if (lastReadSucceeded && typeof onSettingsRead === "function") await onSettingsRead(cache);
     return cache;
-  }
-
-  async function getDownloadCloseDelay() {
-    if (cache?.downloadPageCloseDelayMs) {
-      return cache.downloadPageCloseDelayMs;
-    }
-    return getDownloadPageCloseDelay(
-      GMApi,
-      ADDON_SETTINGS_DEFAULT.downloadPageCloseDelayMs,
-    );
   }
 
   return {
@@ -110,7 +100,6 @@ export function createMaskedDirectSettings({ bridge, GMApi, onSettingsRead }) {
       cacheTimestamp = 0;
     },
     getSnapshot: () => cache,
-    getDownloadCloseDelay,
     storageGet,
     storageSet,
   };

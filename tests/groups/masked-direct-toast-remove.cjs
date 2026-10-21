@@ -29,17 +29,9 @@ module.exports = function registerMaskedDirectToastRemoval(context) {
     const entry = manifest.addons.find(({ id }) => id === "masked-direct-addon");
     assert.ok(entry);
     assert.ok(entry.capabilities.includes("toast"));
-    assert.deepStrictEqual(entry.grants, [
-      "GM_openInTab",
-      "GM.getValue",
-      "GM.setValue",
-      "GM_addValueChangeListener",
-      "GM_removeValueChangeListener",
-    ]);
-    assert.strictEqual(entry.runAt, "document-idle");
   });
 
-  runTest("MASKED-DIRECT-TOAST-REMOVE-01 diagnostics are bounded and redacted", () => {
+  runTest("MASKED-DIRECT-TOAST-REMOVE-02 diagnostics are bounded and redacted", () => {
     const { createMaskedDirectDiagnostics } = loadModule(
       "addons/masked-direct-addon/src/shared/diagnostics.js",
     );

@@ -1,7 +1,7 @@
 import {
   DEFAULT_DOWNLOAD_CLOSE_DELAY_MS,
   normalizeDownloadCloseDelay,
-} from "../shared/downloadCloseDelay.js";
+} from "../../src/shared/downloadCloseDelay.js";
 
 /**
  * GM Storage Helper

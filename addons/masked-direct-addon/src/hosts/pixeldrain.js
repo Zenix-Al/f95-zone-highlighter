@@ -106,7 +106,7 @@ export async function processPixeldrainDownload({
     });
     if (challengeGate && !(await challengeGate.waitUntilClear())) return;
     location.href = directUrl;
-    reportAddonHealthy();
+    reportAddonHealthy({ downloadTriggered: true });
     return;
   }
 
@@ -129,5 +129,5 @@ export async function processPixeldrainDownload({
     );
     return;
   }
-  reportAddonHealthy();
+  reportAddonHealthy({ downloadTriggered: true });
 }

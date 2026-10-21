@@ -68,5 +68,5 @@ export async function processKrakenFilesDownload({
 
   // KrakenFiles enters a short loading state before starting the download.
   await sleep(Math.max(0, Number(postClickGraceMs) || 0));
-  reportAddonHealthy();
+  reportAddonHealthy({ downloadTriggered: true });
 }

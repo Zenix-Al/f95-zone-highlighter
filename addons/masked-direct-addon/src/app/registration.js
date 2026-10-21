@@ -21,10 +21,10 @@ export function createMaskedDirectRegistration({
         statusMessage: getStatusMessage(),
         panelTitle: runtime.addonName,
         panelBody:
-          "This add-on provides masked-link Resolve buttons and direct-download page handling for supported hosts.",
+          "Standalone download-page handling for supported hosts. F95 Resolve and Direct DL buttons are retired.",
         panelSettingsTitle: "Direct Download Settings",
         panelSettingsDescription:
-          "Configure direct download toggle and supported host packages. Some toggles control grouped domains needed for one flow.",
+          "Configure standalone automation, host packages and optional local closing. Manually opened host tabs follow the same settings.",
         panelSettingsStorageKey: ADDON_SETTINGS_KEY,
         panelSettingsDefaults: ADDON_SETTINGS_DEFAULT,
         panelSettings: ADDON_PANEL_SETTINGS,

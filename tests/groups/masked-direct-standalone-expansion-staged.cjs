@@ -95,7 +95,7 @@ module.exports = function registerMaskedDirectStandaloneExpansionStaged(context)
   );
 
   runTest(
-    "MASKED-DIRECT-STANDALONE-EXPANSION-STAGED-01 blocks direct continuation visits",
+    "MASKED-DIRECT-STANDALONE-EXPANSION-STAGED-02 blocks direct continuation visits",
     async () => {
       for (const [host, url] of [
         ["workupload.com", "https://workupload.com/start/JVuuyQMKU3p"],
@@ -122,7 +122,7 @@ module.exports = function registerMaskedDirectStandaloneExpansionStaged(context)
   );
 
   runTest(
-    "MASKED-DIRECT-STANDALONE-EXPANSION-STAGED-01 consumes same-tab stages once",
+    "MASKED-DIRECT-STANDALONE-EXPANSION-STAGED-03 consumes same-tab stages once",
     async () => {
       const cases = [
         ["workupload.com", "JVuuyQMKU3p", "workupload-start", "https://workupload.com/start/JVuuyQMKU3p"],
@@ -167,7 +167,7 @@ module.exports = function registerMaskedDirectStandaloneExpansionStaged(context)
   );
 
   runTest(
-    "MASKED-DIRECT-STANDALONE-EXPANSION-STAGED-01 rejects sibling mismatch expiry and malformed state",
+    "MASKED-DIRECT-STANDALONE-EXPANSION-STAGED-04 rejects sibling mismatch expiry and malformed state",
     () => {
       let timestamp = 1000;
       const storage = createStorage();
@@ -229,7 +229,7 @@ module.exports = function registerMaskedDirectStandaloneExpansionStaged(context)
   );
 
   runTest(
-    "MASKED-DIRECT-STANDALONE-EXPANSION-STAGED-01 carries a claim across origins in one tab",
+    "MASKED-DIRECT-STANDALONE-EXPANSION-STAGED-05 carries a claim across origins in one tab",
     () => {
       let envelope = null;
       const nameTransport = {
@@ -274,7 +274,7 @@ module.exports = function registerMaskedDirectStandaloneExpansionStaged(context)
   );
 
   runTest(
-    "MASKED-DIRECT-STANDALONE-EXPANSION-STAGED-01 preserves ownership across a challenge reload",
+    "MASKED-DIRECT-STANDALONE-EXPANSION-STAGED-06 preserves ownership across a challenge reload",
     async () => {
       const sandbox = createDomSandbox("https://workupload.com/start/JVuuyQMKU3p");
       const previousSessionStorage = global.sessionStorage;
@@ -348,7 +348,7 @@ module.exports = function registerMaskedDirectStandaloneExpansionStaged(context)
   );
 
   runTest(
-    "MASKED-DIRECT-STANDALONE-EXPANSION-STAGED-01 refuses ambiguous Datanodes actions",
+    "MASKED-DIRECT-STANDALONE-EXPANSION-STAGED-07 refuses ambiguous Datanodes actions",
     async () => {
       const sandbox = createDomSandbox(
         "https://datanodes.to/82wqqwwmstb7/Dating_Sim-0.2-pc.zip",
@@ -376,7 +376,7 @@ module.exports = function registerMaskedDirectStandaloneExpansionStaged(context)
   );
 
   runTest(
-    "MASKED-DIRECT-STANDALONE-EXPANSION-STAGED-01 bounds Viking standalone stages",
+    "MASKED-DIRECT-STANDALONE-EXPANSION-STAGED-08 bounds Viking standalone stages",
     async () => {
       for (const [url, decision] of [
         ["https://vikingfile.com/f/swBmSwbeK2", { mode: "standalone", standaloneEntry: {} }],

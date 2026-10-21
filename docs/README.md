@@ -7,6 +7,23 @@ Welcome to the documentation for the Latest Highlighter userscript. This directo
 2. **Consistency**: Provide guidelines (`agent.md`, `features/creating-features.md`) for adding new features using the framework's APIs (e.g., `createFeature`, `createStyledFeature`).
 3. **Agentic Context**: Ensure AI coding assistants can quickly orient themselves and avoid generating code that conflicts with established patterns (e.g. adding vanilla DOM mutations instead of using `observer.js`, or standalone styling instead of using `ui/renderers/`).
 
+Active plan: [Masked + Direct standalone rework](architecture/TODO_MASKED_DIRECT_STANDALONE_REWORK.md).
+
+Test maintenance plan: [Test precision and efficiency](architecture/TODO_TEST_PRECISION_AND_EFFICIENCY.md).
+Developer commands and selection: [Test workflow](testing.md).
+Measurement and coverage evidence: [Wave 1 ledger](architecture/test-efficiency-wave1-ledger.md).
+Retirement decisions and validation: [Wave 2 ledger](architecture/test-efficiency-wave2-ledger.md).
+Coverage consolidation and setup candidates: [Wave 3 ledger](architecture/test-efficiency-wave3-ledger.md).
+Measured infrastructure decisions: [Wave 4 ledger](architecture/test-efficiency-wave4-ledger.md).
+Full-suite results and closure: [Wave 5 verification](architecture/test-efficiency-wave5-ledger.md).
+
+Normal core and add-on builds (regular, release, and `--no-bump`) refresh current
+CI audit snapshots automatically, including add-on cache hits. Commit the resulting
+report changes along with the build. Smoke/check commands remain read-only.
+Use `npm run audit:build` to refresh those snapshots without rebuilding distributions
+or bumping versions. Historical comparison baselines and core size-gate thresholds
+are not automatically changed; real budget violations still require review.
+
 ## Table of Contents
 
 - [Maintenance Policy](maintenance-policy.md) - Standing rules for triage, release health, and new proposals.

@@ -425,6 +425,7 @@ async function main() {
 
   if (changedTargets.length === 0) {
     console.log(`\nNo add-on source changes detected (${isRelease ? "release" : "regular"} mode).`);
+    require("../scripts/refresh-build-reports.cjs").refreshBuildReports();
     return;
   }
 
@@ -470,7 +471,7 @@ async function main() {
   }
   writeBuildCache(cache);
 
-  if (isRelease) await refreshAddonBaseline();
+  require("../scripts/refresh-build-reports.cjs").refreshBuildReports();
 
   console.log(
     `\nAdd-on build complete (${isRelease ? "release" : "regular"} mode). Built ${changedTargets.length}/${targets.length}.`,

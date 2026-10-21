@@ -50,7 +50,7 @@ module.exports = function registerMaskedDirectStandaloneExpansionDirect(context)
   );
 
   runTest(
-    "MASKED-DIRECT-STANDALONE-EXPANSION-DIRECT-01 keeps Drive navigation clean and local",
+    "MASKED-DIRECT-STANDALONE-EXPANSION-DIRECT-02 keeps Drive navigation clean and local",
     async () => {
       const href = "https://drive.google.com/file/d/file_ABC-123/view";
       const sandbox = createDomSandbox(href);
@@ -90,7 +90,7 @@ module.exports = function registerMaskedDirectStandaloneExpansionDirect(context)
   );
 
   runTest(
-    "MASKED-DIRECT-STANDALONE-EXPANSION-DIRECT-01 classifies only exact MixDrop aliases",
+    "MASKED-DIRECT-STANDALONE-EXPANSION-DIRECT-03 classifies only exact MixDrop aliases",
     () => {
       const { isMixdropFilePage, MIXDROP_HOST_ALIASES } = loadModule(
         "addons/masked-direct-addon/src/hosts/mixdrop.js",
@@ -114,7 +114,7 @@ module.exports = function registerMaskedDirectStandaloneExpansionDirect(context)
   );
 
   runTest(
-    "MASKED-DIRECT-STANDALONE-EXPANSION-DIRECT-01 bounds MixDrop to two clicks",
+    "MASKED-DIRECT-STANDALONE-EXPANSION-DIRECT-04 bounds MixDrop to two clicks",
     async () => {
       const sandbox = createDomSandbox("https://miixdrop.com/f/file-id");
       const previousAnchor = global.HTMLAnchorElement;
@@ -155,7 +155,7 @@ module.exports = function registerMaskedDirectStandaloneExpansionDirect(context)
   );
 
   runTest(
-    "MASKED-DIRECT-STANDALONE-EXPANSION-DIRECT-01 guards UploadNow locale shares",
+    "MASKED-DIRECT-STANDALONE-EXPANSION-DIRECT-05 guards UploadNow locale shares",
     async () => {
       const sandbox = createDomSandbox("https://uploadnow.io/en/share");
       const previousButton = global.HTMLButtonElement;
@@ -204,7 +204,7 @@ module.exports = function registerMaskedDirectStandaloneExpansionDirect(context)
   );
 
   runTest(
-    "MASKED-DIRECT-STANDALONE-EXPANSION-DIRECT-01 registers exact entries only",
+    "MASKED-DIRECT-STANDALONE-EXPANSION-DIRECT-06 registers exact entries only",
     () => {
       const { classifyStandaloneHostRoute } = loadModule(
         "addons/masked-direct-addon/src/hosts/standaloneEligibility.js",
@@ -222,52 +222,4 @@ module.exports = function registerMaskedDirectStandaloneExpansionDirect(context)
     },
   );
 
-  runTest(
-    "MASKED-DIRECT-STANDALONE-EXPANSION-DIRECT-01 keeps managed ownership authoritative",
-    async () => {
-      for (const [host, baseUrl] of [
-        ["drive.google.com", "https://drive.google.com/open?id=file-id"],
-        ["miiiixdrop.net", "https://miixdrop.com/f/file-id"],
-        ["uploadnow.io", "https://uploadnow.io/en/share"],
-      ]) {
-        const now = Date.now();
-        const href = `${baseUrl}${baseUrl.includes("?") ? "&" : "?"}` +
-          `f95ue_dd=1&f95ue_tab=tab-a&f95ue_dd_req=request-a&f95ue_dd_ts=${now}`;
-        const sandbox = createDomSandbox(href);
-        const previousSessionStorage = global.sessionStorage;
-        global.sessionStorage = sandbox.window.sessionStorage;
-        try {
-          const gm = createGM();
-          const { setProcessingDownloadTrigger } = loadModule(
-            "addons/masked-direct-addon/src/domain/directDownload/processingTrigger.js",
-          );
-          await setProcessingDownloadTrigger(gm, {
-            requestId: "request-a",
-            ownerTabId: "tab-a",
-            host,
-            sourceUrl: href,
-          });
-          const { createDownloadPageController } = loadModule(
-            "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          );
-          const controller = createDownloadPageController({
-            addonId: "masked-direct-addon",
-            debugLog() {},
-            GMApi: gm,
-            getIsBlockedByCore: () => false,
-            getIsEnabled: () => true,
-            handlers: {},
-            originTabQueryKey: "f95ue_tab",
-            getStandalonePolicy: async () => ({ effectiveAutomateRegardless: true }),
-          });
-          const decision = await controller.decideHostAutomation(host);
-          assert.strictEqual(decision.mode, "managed", host);
-          assert.strictEqual(decision.request.requestId, "request-a", host);
-        } finally {
-          global.sessionStorage = previousSessionStorage;
-          sandbox.restore();
-        }
-      }
-    },
-  );
 };

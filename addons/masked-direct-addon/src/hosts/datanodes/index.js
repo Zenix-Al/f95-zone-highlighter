@@ -187,6 +187,7 @@ export async function processDatanodesDownload({
   let observer = null;
   let pollTimer = null;
   let timeoutTimer = null;
+  let initialTimer = null;
 
   const cleanup = () => {
     done = true;
@@ -194,6 +195,8 @@ export async function processDatanodesDownload({
     observer = null;
     clearInterval(pollTimer);
     clearTimeout(timeoutTimer);
+    clearTimeout(initialTimer);
+    window.removeEventListener("pagehide", cleanup);
   };
 
   const isDone = () => done;
@@ -217,7 +220,7 @@ export async function processDatanodesDownload({
     }
 
     cleanup();
-    reportAddonHealthy();
+    reportAddonHealthy({ downloadTriggered: true });
   }
 
   async function runScan() {
@@ -290,6 +293,7 @@ export async function processDatanodesDownload({
     Math.max(100, timing.pollInterval || SCAN_POLL_INTERVAL_MS),
   );
 
-  setTimeout(scheduleScan, 500);
+  window.addEventListener("pagehide", cleanup, { once: true });
+  initialTimer = setTimeout(scheduleScan, 500);
   scheduleScan();
 }

@@ -8,31 +8,19 @@ export function classifyMaskedDirectContext(
   const pathname = String(locationLike?.pathname || "");
 
   if (F95_HOSTS.has(hostname)) {
-    const route = pathname.startsWith("/threads/")
-      ? "thread"
-      : pathname.startsWith("/masked/")
-        ? "masked"
-        : "unsupported";
+    if (/^\/dl\/\d+\/?$/.test(pathname)) {
+      return { kind: "f95-continue", route: "download-intermediate", usesCore: false };
+    }
+    const route =
+      /^\/(?:masked|dl)(?:\/|$)/.test(pathname)
+        ? "unsupported"
+        : pathname.startsWith("/threads/")
+          ? "thread"
+          : "site";
     return {
-      kind:
-        route === "unsupported"
-          ? "unsupported"
-          : route === "masked"
-            ? "f95-optional-core"
-            : "f95-core",
+      kind: route === "unsupported" ? "unsupported" : "f95-core",
       route,
       usesCore: route !== "unsupported",
-    };
-  }
-
-  if (
-    (hostname === "www.google.com" || hostname === "www.recaptcha.net") &&
-    pathname.startsWith("/recaptcha/")
-  ) {
-    return {
-      kind: "external-standalone",
-      route: "recaptcha-frame",
-      usesCore: false,
     };
   }
 

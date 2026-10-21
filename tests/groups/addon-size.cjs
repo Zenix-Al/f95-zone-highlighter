@@ -21,7 +21,7 @@ module.exports = function registerAddonSizeTests(context) {
     fs.rmSync(secondPath, { force: true });
   });
 
-  runTest("ADDON-SERVICE-SIZE-AUDIT-01 covers production boundaries and public contracts", () => {
+  runTest("ADDON-SERVICE-SIZE-AUDIT-02 covers production boundaries and public contracts", () => {
     const report = JSON.parse(fs.readFileSync(reportPath, "utf8"));
     const manifest = JSON.parse(fs.readFileSync(path.join(ROOT, "addons/addons.manifest.json"), "utf8")).addons;
     assert.strictEqual(report.addons.length, manifest.length);
@@ -36,7 +36,7 @@ module.exports = function registerAddonSizeTests(context) {
     assert.ok(productionPaths.every((file) => !file.includes("/tests/") && !file.includes("/dist/")));
   });
 
-  runTest("ADDON-SERVICE-SIZE-AUDIT-01 preserves the deferred handshake decision and names owners", () => {
+  runTest("ADDON-SERVICE-SIZE-AUDIT-03 preserves the deferred handshake decision and names owners", () => {
     const report = JSON.parse(fs.readFileSync(reportPath, "utf8"));
     assert.deepStrictEqual(report.security.registrationHandshake.status, "deferred");
     assert.strictEqual(report.security.registrationHandshake.changed, false);

@@ -1,5 +1,9 @@
 # Masked Direct standalone expansion baseline
 
+> Historical characterization of the pre-rework architecture, not current runtime
+> behavior. See [the standalone contract](masked-direct-reliability.md) and the
+> [archived implementation](../../addons/masked-direct-addon/archive/README.md).
+
 This records `MASKED-DIRECT-STANDALONE-EXPANSION-BASELINE-01`. It is
 characterization only and does not authorize another host or change source,
 manifest metadata, versions, catalogs, or distributions.

@@ -1,5 +1,3 @@
-import { AUTOMATION_MARKER_KEY } from "../constants.js";
-import { isSupportedDirectDownloadHost } from "../hosts/metadata.js";
 
 export function createDebugLog(addonId) {
   return function debugLog(scope, message, extra = null) {
@@ -21,43 +19,6 @@ export function normalizeUrl(url, fallback = "") {
     return parsed.protocol === "http:" || parsed.protocol === "https:" ? parsed.href : fallback;
   } catch {
     return fallback;
-  }
-}
-
-export function withAutomationMarker(url) {
-  const safe = normalizeUrl(url, "");
-  if (!safe) return "";
-  try {
-    const parsed = new URL(safe);
-    parsed.searchParams.set(AUTOMATION_MARKER_KEY, "1");
-    return parsed.href;
-  } catch {
-    return safe;
-  }
-}
-
-export function isLikelyDirectDownloadAnchor(link) {
-  if (!(link instanceof HTMLAnchorElement)) return false;
-  const rawHref = String(link.getAttribute("href") || "")
-    .trim()
-    .toLowerCase();
-  if (!rawHref) return false;
-  if (rawHref.startsWith("#")) return false;
-  if (rawHref.startsWith("javascript:")) return false;
-  if (rawHref.startsWith("mailto:")) return false;
-  if (rawHref.startsWith("tel:")) return false;
-  if (rawHref.startsWith("/")) return false;
-  if (rawHref.startsWith("./") || rawHref.startsWith("../")) return false;
-  if (rawHref.includes("f95zone.to")) return false;
-
-  const normalized = normalizeUrl(rawHref, "");
-  if (!normalized) return false;
-
-  try {
-    const host = new URL(normalized).hostname.toLowerCase();
-    return isSupportedDirectDownloadHost(host);
-  } catch {
-    return false;
   }
 }
 

@@ -1,24 +1,42 @@
 "use strict";
 
 module.exports = function registerMaskedDirectReliability(context) {
-  const { ROOT, assert, createDomSandbox, fs, loadModule, path, runTest } =
+  const { assert, createDomSandbox, createFakeClock, loadModule, runTest } =
     context;
 
-  function createGM() {
-    const values = new Map();
-    return {
-      values,
-      async getValue(key, fallback) {
-        return values.has(key) ? structuredClone(values.get(key)) : fallback;
-      },
-      async setValue(key, value) {
-        values.set(key, structuredClone(value));
-      },
-      async deleteValue(key) {
-        values.delete(key);
-      },
-    };
-  }
+  runTest("MASKED-DIRECT-DOWNLOADGG-FAILURE-01 missing controls fail without final-action success", async () => {
+    const sandbox = createDomSandbox("https://download.gg/file-example");
+    const original = { now: Date.now, setTimeout: global.setTimeout, clearTimeout: global.clearTimeout };
+    const clock = createFakeClock();
+    try {
+      const { processDownloadGg } = loadModule("addons/masked-direct-addon/src/hosts/downloadgg.js");
+      Date.now = clock.now;
+      global.setTimeout = clock.setTimeout;
+      global.clearTimeout = clock.clearTimeout;
+      const failures = [];
+      let healthy = 0, settled = false;
+      const operation = processDownloadGg({
+        challengeGate: { waitUntilClear: async () => true },
+        notifyMainFailure: async (...args) => { failures.push(args); },
+        reportAddonHealthy: () => { healthy += 1; },
+      }).then(() => { settled = true; });
+      for (let step = 0; step < 50 && !settled; step += 1) {
+        await Promise.resolve();
+        await clock.tick(500);
+      }
+      assert.strictEqual(settled, true, "missing control must settle within its virtual timeout");
+      await operation;
+      assert.deepStrictEqual(failures, [["download.gg", "Download button not found."]]);
+      assert.strictEqual(healthy, 0, "no initiation/auto-close success may be reported");
+      assert.strictEqual(clock.pending(), 0);
+    } finally {
+      Date.now = original.now;
+      global.setTimeout = original.setTimeout;
+      global.clearTimeout = original.clearTimeout;
+      sandbox.restore();
+    }
+  });
+
 
   runTest("MASKED-DIRECT-DATANODES-01 flow does not patch window.setInterval", async () => {
     const sandbox = createDomSandbox("https://datanodes.to/download");
@@ -46,81 +64,6 @@ module.exports = function registerMaskedDirectReliability(context) {
     }
   });
 
-  runTest(
-    "MASKED-DIRECT-RELIABILITY-VERIFY-01 covers every runtime context",
-    () => {
-      const { classifyMaskedDirectContext } = loadModule(
-        "addons/masked-direct-addon/src/app/context.js",
-      );
-      const external = (hostname) =>
-        ["gofile.io", "pixeldrain.com"].includes(hostname);
-      const cases = [
-        [
-          "f95-core",
-          "https://f95zone.to/threads/example.1/",
-          "f95-core",
-          "thread",
-        ],
-        [
-          "/masked/",
-          "https://f95zone.to/masked/abc",
-          "f95-optional-core",
-          "masked",
-        ],
-        [
-          "external standalone",
-          "https://gofile.io/d/a",
-          "external-standalone",
-          "download-host",
-        ],
-        [
-          "Google reCAPTCHA frame",
-          "https://www.google.com/recaptcha/api2/anchor?k=fixture",
-          "external-standalone",
-          "recaptcha-frame",
-        ],
-        [
-          "recaptcha.net frame",
-          "https://www.recaptcha.net/recaptcha/api2/anchor?k=fixture",
-          "external-standalone",
-          "recaptcha-frame",
-        ],
-        [
-          "unsupported F95",
-          "https://f95zone.to/forums/games.2/",
-          "unsupported",
-          "unsupported",
-        ],
-        [
-          "unsupported host",
-          "https://example.com/file",
-          "unsupported",
-          "unsupported",
-        ],
-      ];
-      for (const [label, href, kind, route] of cases) {
-        const result = classifyMaskedDirectContext(new URL(href), {
-          isSupportedExternalHost: external,
-        });
-        assert.deepStrictEqual(
-          [result.kind, result.route],
-          [kind, route],
-          label,
-        );
-      }
-
-      const manifest = JSON.parse(
-        fs.readFileSync(path.join(ROOT, "addons/addons.manifest.json"), "utf8"),
-      );
-      const addon = manifest.addons.find(
-        (entry) => entry.id === "masked-direct-addon",
-      );
-      assert.ok(addon.matches.includes("https://www.google.com/recaptcha/*"));
-      assert.ok(
-        addon.matches.includes("https://www.recaptcha.net/recaptcha/*"),
-      );
-    },
-  );
 
   runTest(
     "Masked Direct indexes supported hosts without partial-domain matches",
@@ -165,22 +108,6 @@ module.exports = function registerMaskedDirectReliability(context) {
     },
   );
 
-  runTest(
-    "Masked Direct delegates F95 thread observation to the core observer API",
-    () => {
-      const controller = fs.readFileSync(
-        path.join(
-          ROOT,
-          "addons/masked-direct-addon/src/app/contexts/threadPageController.js",
-        ),
-        "utf8",
-      );
-      assert.doesNotMatch(controller, /new MutationObserver/);
-      assert.match(controller, /watchElements\(THREAD_LINK_OBSERVER_ID\)/);
-      assert.match(controller, /unwatchElements\(THREAD_LINK_OBSERVER_ID\)/);
-      assert.match(controller, /const flags = await readThreadFlags\(false\)/);
-    },
-  );
 
   runTest(
     "Masked Direct clicks only DelaFil token links on recognized file pages",
@@ -845,67 +772,6 @@ module.exports = function registerMaskedDirectReliability(context) {
     },
   );
 
-  runTest(
-    "MASKED-DIRECT-RELIABILITY-VERIFY-01 dispatches every current host only when managed",
-    async () => {
-      const { DIRECT_DOWNLOAD_HOSTS } = loadModule(
-        "addons/masked-direct-addon/src/hosts/metadata.js",
-      );
-      const { setProcessingDownloadTrigger } = loadModule(
-        "addons/masked-direct-addon/src/domain/directDownload/processingTrigger.js",
-      );
-      const { createDownloadPageController } = loadModule(
-        "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-      );
-      for (const [index, host] of DIRECT_DOWNLOAD_HOSTS.entries()) {
-        const requestId = `host-${host.id}`;
-        const ownerTabId = `tab-${index}`;
-        const href =
-          `https://${host.canonicalHost}/file/example?` +
-          `f95ue_dd=1&f95ue_tab=${ownerTabId}&f95ue_dd_req=${requestId}` +
-          `&f95ue_dd_ts=${Date.now()}`;
-        const sandbox = createDomSandbox(href);
-        const previousSessionStorage = global.sessionStorage;
-        try {
-          global.sessionStorage = sandbox.window.sessionStorage;
-          const gm = createGM();
-          await setProcessingDownloadTrigger(gm, {
-            requestId,
-            ownerTabId,
-            host: host.canonicalHost,
-            sourceUrl: href,
-          });
-          const calls = [];
-          const controller = createDownloadPageController({
-            addonId: "masked-direct-addon",
-            debugLog() {},
-            GMApi: gm,
-            getIsBlockedByCore: () => false,
-            getIsEnabled: () => true,
-            handlers: {
-              [host.canonicalHost]: async () => {
-                calls.push(host.id);
-              },
-            },
-            originTabQueryKey: "f95ue_tab",
-          });
-          await controller.runDownloadPageHooks();
-          assert.deepStrictEqual(calls, [host.id], `${host.id}: managed`);
-          sandbox.window.sessionStorage.clear();
-          sandbox.window.history.replaceState(
-            {},
-            "",
-            `https://${host.canonicalHost}/file/unmanaged`,
-          );
-          await controller.runDownloadPageHooks();
-          assert.deepStrictEqual(calls, [host.id], `${host.id}: standalone`);
-        } finally {
-          global.sessionStorage = previousSessionStorage;
-          sandbox.restore();
-        }
-      }
-    },
-  );
 
   runTest(
     "MASKED-DIRECT-RELIABILITY-VERIFY-01 acknowledges terminal teardown once",
@@ -990,77 +856,6 @@ module.exports = function registerMaskedDirectReliability(context) {
     },
   );
 
-  runTest(
-    "MASKED-DIRECT-RELIABILITY-VERIFY-01 owns one listener and dedupes missed cleanup",
-    () => {
-      const sandbox = createDomSandbox("https://f95zone.to/threads/example.1/");
-      const previousSessionStorage = global.sessionStorage;
-      try {
-        global.sessionStorage = sandbox.window.sessionStorage;
-        const { createDirectDownloadAttentionController } = loadModule(
-          "addons/masked-direct-addon/src/domain/directDownload/attention.js",
-        );
-        const teardowns = [];
-        const errors = [];
-        const toasts = [];
-        let callback;
-        let registrations = 0;
-        let removals = 0;
-        const controller = createDirectDownloadAttentionController({
-          addTeardown: (teardown) => teardowns.push(teardown),
-          diagnostics: {
-            error: (_code, details) => errors.push(details.requestId),
-          },
-          showCoreToast: (message, type) => toasts.push([message, type]),
-          GMApi: null,
-          addValueChangeListener: (_key, nextCallback) => {
-            registrations += 1;
-            callback = nextCallback;
-            return 17;
-          },
-          removeValueChangeListener: (id) => {
-            assert.strictEqual(id, 17);
-            removals += 1;
-          },
-          closeManagedTab() {},
-        });
-        controller.enableDirectDownloadAttentionListener({
-          shouldListen: () => true,
-        });
-        controller.enableDirectDownloadAttentionListener({
-          shouldListen: () => true,
-        });
-        const payload = {
-          id: "event-one",
-          ts: Date.now(),
-          type: "failure",
-          targetTabId: controller.localAttentionTabId,
-          requestId: "request-one",
-        };
-        callback("key", null, payload, true);
-        callback("key", null, payload, true);
-        teardowns[0]();
-        teardowns[0]();
-        assert.deepStrictEqual(
-          { registrations, removals, errors, toasts },
-          {
-            registrations: 1,
-            removals: 1,
-            errors: ["request-one"],
-            toasts: [
-              [
-                "Direct Download (unknown): Direct download needs manual action.",
-                "error",
-              ],
-            ],
-          },
-        );
-      } finally {
-        global.sessionStorage = previousSessionStorage;
-        sandbox.restore();
-      }
-    },
-  );
 
   runTest(
     "Masked Direct pauses for a Cloudflare challenge and resumes after it clears",
@@ -1168,176 +963,6 @@ module.exports = function registerMaskedDirectReliability(context) {
     },
   );
 
-  runTest(
-    "Masked Direct renders challenge attention through the core toast only",
-    () => {
-      const sandbox = createDomSandbox("https://f95zone.to/threads/example.1/");
-      const previousSessionStorage = global.sessionStorage;
-      try {
-        global.sessionStorage = sandbox.window.sessionStorage;
-        const { createDirectDownloadAttentionController } = loadModule(
-          "addons/masked-direct-addon/src/domain/directDownload/attention.js",
-        );
-        const toasts = [];
-        let callback;
-        const controller = createDirectDownloadAttentionController({
-          addTeardown() {},
-          diagnostics: {
-            error: () => assert.fail("challenge is not an error"),
-          },
-          showCoreToast: (message, type) => toasts.push([message, type]),
-          GMApi: null,
-          addValueChangeListener: (_key, nextCallback) => {
-            callback = nextCallback;
-            return 1;
-          },
-          removeValueChangeListener() {},
-          closeManagedTab() {},
-        });
-        controller.enableDirectDownloadAttentionListener({
-          shouldListen: () => true,
-        });
-        callback(
-          "key",
-          null,
-          {
-            id: "challenge-one",
-            ts: Date.now(),
-            type: "challenge",
-            host: "datanodes.to",
-            message: "Complete verification.",
-            targetTabId: controller.localAttentionTabId,
-            requestId: "request-one",
-          },
-          true,
-        );
-        assert.deepStrictEqual(toasts, [
-          ["Direct Download (datanodes.to): Complete verification.", "warning"],
-        ]);
-      } finally {
-        global.sessionStorage = previousSessionStorage;
-        sandbox.restore();
-      }
-    },
-  );
 
-  runTest(
-    "MASKED-DIRECT-RELIABILITY-VERIFY-01 isolates overlapping outcomes and abandoned tabs",
-    async () => {
-      const {
-        __processingDownloadTestInternals,
-        clearProcessingDownloadTrigger,
-        readProcessingDownloadTrigger,
-        setProcessingDownloadTrigger,
-        updateProcessingDownloadTrigger,
-      } = loadModule(
-        "addons/masked-direct-addon/src/domain/directDownload/processingTrigger.js",
-      );
-      const scenarios = [
-        ["two successes", "completed", "completed", ["a", "b"]],
-        ["success and failure", "completed", "failed", ["b", "a"]],
-        ["timeout and success", "timed-out", "completed", ["b", "a"]],
-      ];
-      for (const [label, statusA, statusB, order] of scenarios) {
-        const gm = createGM();
-        await setProcessingDownloadTrigger(gm, {
-          requestId: "a",
-          ownerTabId: "tab-a",
-          host: "gofile.io",
-          sourceUrl: "https://gofile.io/d/a",
-        });
-        await setProcessingDownloadTrigger(gm, {
-          requestId: "b",
-          ownerTabId: "tab-b",
-          host: "gofile.io",
-          sourceUrl: "https://gofile.io/d/b",
-        });
-        const statuses = { a: statusA, b: statusB };
-        for (const id of order) {
-          await updateProcessingDownloadTrigger(gm, id, {
-            status: statuses[id],
-          });
-        }
-        assert.strictEqual(
-          (await readProcessingDownloadTrigger(gm, { requestId: "a" })).status,
-          statusA,
-          `${label}: A`,
-        );
-        assert.strictEqual(
-          (await readProcessingDownloadTrigger(gm, { requestId: "b" })).status,
-          statusB,
-          `${label}: B`,
-        );
-        await clearProcessingDownloadTrigger(gm, { requestId: order[0] });
-        assert.strictEqual(
-          (await readProcessingDownloadTrigger(gm, { requestId: order[1] }))
-            .status,
-          statuses[order[1]],
-          `${label}: sibling`,
-        );
-      }
-      const gm = createGM();
-      await setProcessingDownloadTrigger(gm, {
-        requestId: "abandoned",
-        ownerTabId: "closed-tab",
-        host: "gofile.io",
-        sourceUrl: "https://gofile.io/d/left-open",
-      });
-      await setProcessingDownloadTrigger(gm, {
-        requestId: "live",
-        ownerTabId: "live-tab",
-        host: "gofile.io",
-        sourceUrl: "https://gofile.io/d/live",
-      });
-      await updateProcessingDownloadTrigger(gm, "live", {
-        status: "completed",
-      });
-      assert.strictEqual(
-        (await readProcessingDownloadTrigger(gm, { requestId: "abandoned" }))
-          .active,
-        true,
-      );
-      assert.strictEqual(
-        (await readProcessingDownloadTrigger(gm, { requestId: "live" })).status,
-        "completed",
-      );
-      assert.ok(
-        gm.values.has(
-          `${__processingDownloadTestInternals.requestKeyPrefix}abandoned`,
-        ),
-      );
-    },
-  );
 
-  runTest(
-    "MASKED-DIRECT-RELIABILITY-VERIFY-01 documents compatibility and contains no toast surface",
-    () => {
-      const docs = fs.readFileSync(
-        path.join(ROOT, "docs/architecture/masked-direct-reliability.md"),
-        "utf8",
-      );
-      for (const key of [
-        "f95ue.addon.maskedDirect.request.",
-        "f95ue.addon.maskedDirect.processingDownload",
-        "f95ue.addon.maskedDirect.directDownloadEvent",
-        "f95ue.addon.directDownload.tabId",
-        "f95ue.addon.maskedDirect.routeContext",
-        "f95ue.addon.maskedDirect.source.<normalized-file-identifier>",
-        "redirect to `/download` before the userscript executes",
-        "must never select",
-      ]) {
-        assert.ok(docs.includes(key), `missing compatibility note for ${key}`);
-      }
-      const sourceRoot = path.join(ROOT, "addons/masked-direct-addon/src");
-      const source = fs
-        .readdirSync(sourceRoot, { recursive: true, withFileTypes: true })
-        .filter((entry) => entry.isFile() && entry.name.endsWith(".js"))
-        .map((entry) =>
-          fs.readFileSync(path.join(entry.parentPath, entry.name), "utf8"),
-        )
-        .join("\n");
-      assert.doesNotMatch(source, /f95ue-addon-toast|toastEl/);
-      assert.match(source, /toast\.show/);
-    },
-  );
 };
