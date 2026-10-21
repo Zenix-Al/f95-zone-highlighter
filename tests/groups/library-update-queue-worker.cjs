@@ -1,7 +1,7 @@
 "use strict";
 
 module.exports = function registerLibraryUpdateQueueWorkerGroup(context) {
-  const { assert, loadModule, runTest } = context;
+  const { assert, loadModule, runTest, createFakeClock } = context;
 
   function createRepository(threadIds) {
     let cycle = {
@@ -588,28 +588,88 @@ module.exports = function registerLibraryUpdateQueueWorkerGroup(context) {
   });
 
   runTest("LIBRARY-UPDATE-QUEUE-WORKER-02 removes abort listeners after each wait", async () => {
-    const repository = createRepository(["a", "b", "c"]);
-    const controller = new AbortController();
-    let added = 0;
-    let removed = 0;
-    const signal = controller.signal;
-    const add = signal.addEventListener.bind(signal);
-    const remove = signal.removeEventListener.bind(signal);
-    signal.addEventListener = (...args) => { if (args[0] === "abort") added += 1; return add(...args); };
-    signal.removeEventListener = (...args) => { if (args[0] === "abort") removed += 1; return remove(...args); };
-    const worker = createWorker({
-      repository,
-      getRecord: async (threadId) => ({ threadId, updateCheck: { enabled: true } }),
-      checkRecords: async ([threadId]) => ({ results: [{ threadId, ok: true, attempts: 1 }] }),
-      commitResults: async () => ({ checked: 1, current: 1 }),
-      now: () => 100,
-    });
-    await worker.run({
-      owner: "tab-one", config: { ...config, spacingMs: 1 }, signal,
-      stillOwn: async () => true, renewOwnership: async () => true,
-    });
-    assert.ok(added >= 3);
-    assert.strictEqual(removed, added);
+    for (const abortDuringWait of [false, true]) {
+      const clock = createFakeClock();
+      const originalSetTimeout = global.setTimeout;
+      const originalClearTimeout = global.clearTimeout;
+      const delays = [];
+      try {
+        global.setTimeout = (callback, delay) => {
+          delays.push(delay);
+          return clock.setTimeout(callback, delay);
+        };
+        global.clearTimeout = clock.clearTimeout;
+        const repository = createRepository(["a", "b", "c"]);
+        const controller = new AbortController();
+        let added = 0;
+        let removed = 0;
+        const checked = [];
+        const signal = controller.signal;
+        const add = signal.addEventListener.bind(signal);
+        const remove = signal.removeEventListener.bind(signal);
+        signal.addEventListener = (...args) => {
+          if (args[0] === "abort") added += 1;
+          return add(...args);
+        };
+        signal.removeEventListener = (...args) => {
+          if (args[0] === "abort") removed += 1;
+          return remove(...args);
+        };
+        const worker = createWorker({
+          repository,
+          getRecord: async (threadId) => ({ threadId, updateCheck: { enabled: true } }),
+          checkRecords: async ([threadId]) => {
+            checked.push(threadId);
+            return { results: [{ threadId, ok: true, attempts: 1 }] };
+          },
+          commitResults: async () => ({ checked: 1, current: 1 }),
+          now: () => 100,
+        });
+        let settled = false;
+        const operation = worker
+          .run({
+            owner: "tab-one",
+            config: { ...config, spacingMs: 1 },
+            signal,
+            stillOwn: async () => true,
+            renewOwnership: async () => true,
+          })
+          .then((result) => {
+            settled = true;
+            return result;
+          });
+        for (let turn = 0; turn < 2000 && !settled; turn += 1) {
+          await Promise.resolve();
+          if (clock.pending()) {
+            if (abortDuringWait) controller.abort();
+            else await clock.tick(15000);
+          }
+        }
+        assert.strictEqual(settled, true, "worker must settle without real wall-clock waits");
+        const outcome = await operation;
+        if (abortDuringWait) assert.strictEqual(outcome.reason, "cancelled");
+        else assert.strictEqual(outcome.ok, true);
+        assert.deepStrictEqual(checked, abortDuringWait ? ["a"] : ["a", "b", "c"]);
+        assert.ok(delays.length >= (abortDuringWait ? 1 : 3));
+        assert.ok(
+          delays.every((delay) => delay === 15000),
+          "real wait retains enforced minimum spacing",
+        );
+        if (!abortDuringWait) {
+          assert.ok(added >= 3);
+          assert.strictEqual(removed, added);
+        }
+        assert.strictEqual(require("events").getEventListeners(signal, "abort").length, 0);
+        assert.strictEqual(
+          clock.pending(),
+          0,
+          "abort and normal completion clear every wait timer",
+        );
+      } finally {
+        global.setTimeout = originalSetTimeout;
+        global.clearTimeout = originalClearTimeout;
+      }
+    }
   });
 
   runTest("LIBRARY-UPDATE-QUEUE-RECOVERY-01 preserves one cycle across ten daily allowances", async () => {

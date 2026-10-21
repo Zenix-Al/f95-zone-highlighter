@@ -17,6 +17,7 @@
     "build:addons:release:force": "node addons/build-addon.js --all --release --force",
     "lint:addons": "eslint \"addons/*/src/**/*.js\" \"addons/shared/**/*.js\" --ext .js",
     "audit:addons": "node scripts/addon-baseline.cjs --output docs/architecture/addon-baseline.json",
+    "audit:build": "node scripts/refresh-build-reports.cjs",
     "check:addons:baseline": "node scripts/addon-baseline.cjs --check docs/architecture/addon-baseline.json",
     "audit:addons:api": "node scripts/addon-api-audit.cjs",
     "check:addons:api": "node scripts/addon-api-audit.cjs --check",

@@ -106,5 +106,5 @@ export async function processUploadNowDownload({
     await notifyMainFailure(HOST_LABEL, "Unable to trigger the download.");
     return;
   }
-  reportAddonHealthy();
+  reportAddonHealthy({ downloadTriggered: true });
 }

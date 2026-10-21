@@ -109,5 +109,5 @@ export async function processVik1ngfileDownload({
     automationDecision?.mode === "standalone" &&
     automationDecision.standaloneEntry
   ) return;
-  reportAddonHealthy();
+  reportAddonHealthy({ downloadTriggered: true });
 }

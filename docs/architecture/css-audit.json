@@ -2374,6 +2374,11 @@
           "file": "tests/concept/latest.min.js",
           "line": 33,
           "excerpt": "l)})},error:function(c){K(U(c,\"Unable to fetch data, please try again\"),403!==c.status&&429!==c.status)}})},aa=!1,na=function(a){!q.hasClass(\"sticky\")||!a&&aa||480>=u.outerWidth()||(aa=!0,q.css({top:b(\".p-body-main\").offset().top}),setTimeout(function(){aa=!1},200))},oa=function(a,c){return a.selectize({closeAfterSelect:!0,placeholder:\"Select a tag to \"+(\"tags\"===c?\"filter\":\"exclude\")+\"...\",render:{option:function(e,f){return'<div class=\"option'+(e.hasOwnProperty(\"disabled\")&&e.disabled?\" disabled\":"
+        },
+        {
+          "file": "tests/groups/masked-direct-current-contract.cjs",
+          "line": 63,
+          "excerpt": "document.body.innerHTML = '<div class=\"f95dl-go\"><button type=\"submit\" class=\"js-f95dlContinue\" disabled>Continue</button></div>';"
         }
       ],
       "protectedReason": null
@@ -3853,6 +3858,7 @@
     "tests/fixtures/tagSearchBoundHarness.js",
     "tests/fixtures/thread-utility-canonical.html",
     "tests/groups/core-size-reduction.cjs",
+    "tests/groups/masked-direct-current-contract.cjs",
     "tests/visual/core-settings-reference.visual.cjs"
   ],
   "externalPageSelectors": [],

@@ -12,6 +12,14 @@ module.exports = function registerLibraryPersonalGroup(context) {
   } = context;
   const baselineTool = require("../../scripts/library-personal-baseline.cjs");
   const fixtures = require("../fixtures/libraryPersonalBaselineFixtures.cjs");
+  const { createReportFixture, snapshotTrees } = require("../reportFixture.cjs");
+  const getReport = createReportFixture({
+    create: () => baselineTool.createLibraryPersonalBaseline(),
+    getSignature: () => snapshotTrees([
+      ...["src", "addons", "scripts", "build", "build.js", "package.json", "package-lock.json", "version.json", "header.txt",
+        "tests/fixtures/libraryPersonalBaselineFixtures.cjs"].map((file) => path.join(ROOT, file)),
+    ]),
+  });
   const reportPath = path.join(
     ROOT,
     "docs/architecture/library-personal-baseline.json",
@@ -21,7 +29,7 @@ module.exports = function registerLibraryPersonalGroup(context) {
     "LIBRARY-PERSONAL-BASELINE-01 produces a deterministic non-mutating report",
     async () => {
       const before = addonBaseline.snapshotWorkingTree();
-      const first = await baselineTool.createLibraryPersonalBaseline();
+      const first = await getReport();
       const second = await baselineTool.createLibraryPersonalBaseline();
       assert.deepStrictEqual(second, first);
       assert.deepStrictEqual(addonBaseline.snapshotWorkingTree(), before);
@@ -42,9 +50,9 @@ module.exports = function registerLibraryPersonalGroup(context) {
   );
 
   runTest(
-    "LIBRARY-PERSONAL-BASELINE-01 records the current IDB and record contracts",
+    "LIBRARY-PERSONAL-BASELINE-02 records the current IDB and record contracts",
     async () => {
-      const report = await baselineTool.createLibraryPersonalBaseline();
+      const report = await getReport();
       assert.strictEqual(
         report.source.database.physicalName,
         "f95ue-addon:library-addon:library",
@@ -70,7 +78,7 @@ module.exports = function registerLibraryPersonalGroup(context) {
   );
 
   runTest(
-    "LIBRARY-PERSONAL-BASELINE-01 characterizes fixtures without changing normalization",
+    "LIBRARY-PERSONAL-BASELINE-03 characterizes fixtures without changing normalization",
     () => {
       const { normalizeRecord } = loadModule(
         "addons/library-addon/src/library/recordModel.js",
@@ -93,9 +101,9 @@ module.exports = function registerLibraryPersonalGroup(context) {
   );
 
   runTest(
-    "LIBRARY-PERSONAL-BASELINE-01 snapshots table actions and current rating behavior",
+    "LIBRARY-PERSONAL-BASELINE-04 snapshots table actions and current rating behavior",
     async () => {
-      const report = await baselineTool.createLibraryPersonalBaseline();
+      const report = await getReport();
       const behavior = report.source.behavior;
       assert.deepStrictEqual(behavior.tableHeadings, [
         "",
@@ -279,7 +287,7 @@ module.exports = function registerLibraryPersonalGroup(context) {
   });
 
   runTest(
-    "LIBRARY-PERSONAL-BASELINE-01 characterizes sorting filtering and thread patches",
+    "LIBRARY-PERSONAL-BASELINE-05 characterizes sorting filtering and thread patches",
     () => {
       const { getSortConfig, matchesLibraryFilters } = loadModule(
         "addons/library-addon/src/library/querying.js",
@@ -319,9 +327,9 @@ module.exports = function registerLibraryPersonalGroup(context) {
   );
 
   runTest(
-    "LIBRARY-PERSONAL-BASELINE-01 measures deterministic record scales",
+    "LIBRARY-PERSONAL-BASELINE-06 measures deterministic record scales",
     async () => {
-      const report = await baselineTool.createLibraryPersonalBaseline();
+      const report = await getReport();
       assert.deepStrictEqual(
         report.scaleMeasurements.map((entry) => entry.count),
         [10, 1000, 10000],

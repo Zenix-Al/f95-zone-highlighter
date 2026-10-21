@@ -5,7 +5,6 @@ export function createMaskedDirectLifecycle({
   runtime,
   state,
   settings,
-  styles,
   registration,
   pageBehavior,
   clearOwnedResources,
@@ -19,24 +18,23 @@ export function createMaskedDirectLifecycle({
     if (state.blockedByCore) {
       state.enabled = false;
       clearOwnedResources();
-      await styles.unregister();
       registration.publishStatus();
       return;
     }
 
     const shouldEnable = Boolean(nextEnabled);
     if (shouldEnable && !state.enabled) {
-      await styles.register();
       state.enabled = true;
     } else if (!shouldEnable && state.enabled) {
       state.enabled = false;
       clearOwnedResources();
-      await styles.unregister();
     } else {
       state.enabled = shouldEnable;
     }
 
     await settings.storageSet("enabled", state.enabled);
+    // A previously disabled upgrade may not have read/mirrored its host settings.
+    if (state.enabled) await settings.read?.(true);
     registration.publishStatus();
     void pageBehavior.apply();
   }
@@ -47,7 +45,6 @@ export function createMaskedDirectLifecycle({
     console.info(`[${runtime.addonId}] Teardown requested: ${reason}`);
     state.enabled = false;
     clearOwnedResources();
-    await styles.unregister();
     unbindCommands();
     registration.publishStatus();
     try {
@@ -128,7 +125,6 @@ export function createMaskedDirectLifecycle({
     const storedEnabled = await settings.storageGet("enabled", true);
     state.enabled = storedEnabled !== false && storedEnabled !== "false";
     installConsoleHelper();
-    if (state.enabled) await styles.register();
     void pageBehavior.apply();
     registration.publishStatus();
   }

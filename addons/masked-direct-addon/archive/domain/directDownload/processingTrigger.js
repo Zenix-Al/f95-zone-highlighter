@@ -1,4 +1,4 @@
-import { normalizeDownloadCloseDelay } from "../../shared/downloadCloseDelay.js";
+import { normalizeDownloadCloseDelay } from "../../../src/shared/downloadCloseDelay.js";
 
 const LEGACY_TRIGGER_KEY = "f95ue.addon.maskedDirect.processingDownload";
 const REQUEST_KEY_PREFIX = "f95ue.addon.maskedDirect.request.";

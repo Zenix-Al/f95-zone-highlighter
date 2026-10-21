@@ -94,5 +94,5 @@ export async function processGofileDownload({
     return;
   }
 
-  reportAddonHealthy();
+  reportAddonHealthy({ downloadTriggered: true });
 }

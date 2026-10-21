@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.3.0 - The fall of managed downloads and the new F95 download page
+
+- Adapt to F95's new download page: optionally skip its countdown with one native Continue click after a 250ms delay. This intermediate page never self-closes.
+- Managed f95zone downlaoads are now deprecated. Now the addon exist only on standalone mode the core role is just to change addon configuration and skip the new masked page.
+- Retire old masked-link resolving, CAPTCHA fallback, Resolve/Direct DL buttons and origin-controlled download tabs. Keep the existing script name and storage identity.
+- Show best-effort generic host feedback in a focused F95 tab with core. Download initiation is not proof that a file finished saving.
+- Existing policy upgrades need one ordinary F95 page visit with core to refresh saved settings. Unsupported host routes, including Pixeldrain lists, remain manual.
+
+Note : The addon will no longer support managed downloads for f95zone. If some day i figure it out simplest way to do it, i will add it back. For now, the addon will only support standalone mode for direct downloads. Hey, at least now the addon is half of its original size and complexity, so it should be easier to maintain and less likely to break with future F95 changes.
+
 ## v1.2.4 - Shared core readiness
 
 - Retry core readiness for up to 10 seconds instead of losing startup when the initial ping arrives before core is ready. Ping starts are spaced 750 ms apart, with a 500-ms per-attempt timeout.

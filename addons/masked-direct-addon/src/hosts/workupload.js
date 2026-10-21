@@ -7,7 +7,6 @@ import {
   isElementVisible,
   waitForCandidate,
 } from "./shared/dom.js";
-import { preserveManagedRouteMarkers } from "./shared/managedNavigation.js";
 import { matchesDirectDownloadHostPath } from "./shared/filePage.js";
 
 const HOST_LABEL = "workupload.com";
@@ -126,5 +125,5 @@ export async function processWorkuploadDownload({
   }
 
   if (challengeGate && !(await challengeGate.waitUntilClear())) return;
-  location.assign(preserveManagedRouteMarkers(startHref));
+  location.assign(startHref);
 }

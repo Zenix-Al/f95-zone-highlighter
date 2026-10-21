@@ -68,7 +68,7 @@ runTest("ADDON-BUILD-TOOLS-01 validates manifest paths and metadata rules", () =
     .some((error) => error.startsWith("addons[1].legacyIds:")));
 });
 
-runTest("ADDON-BUILD-TOOLS-01 accepts canonical and documented tiny layouts", () => {
+runTest("ADDON-BUILD-TOOLS-02 accepts canonical and documented tiny layouts", () => {
   assert.deepStrictEqual(addonBuildTools.validateStructure(ADDON_MANIFEST.addons), []);
   const tempRoot = fs.mkdtempSync(path.join(TMP_DIR, "addon-structure-"));
   try {
@@ -90,7 +90,7 @@ runTest("ADDON-BUILD-TOOLS-01 accepts canonical and documented tiny layouts", ()
   }
 });
 
-runTest("ADDON-BUILD-TOOLS-01 smoke builds every add-on in regular and release modes", async () => {
+runTest("ADDON-BUILD-TOOLS-03 smoke builds every add-on in regular and release modes", async () => {
   const before = addonBaseline.snapshotWorkingTree();
   const report = await addonBuildTools.runSmokeBuild();
   assert.strictEqual(report.selectedAddons.length, ADDON_MANIFEST.addons.length);
@@ -103,7 +103,7 @@ runTest("ADDON-BUILD-TOOLS-01 smoke builds every add-on in regular and release m
   assert.deepStrictEqual(addonBaseline.snapshotWorkingTree(), before);
 });
 
-runTest("ADDON-BUILD-TOOLS-01 preserves current release stripping behavior", async () => {
+runTest("ADDON-BUILD-TOOLS-04 preserves current release stripping behavior", async () => {
   const addon = ADDON_MANIFEST.addons.find((entry) => entry.id === "example-addon");
   const tempRoot = fs.mkdtempSync(path.join(TMP_DIR, "addon-release-strip-"));
   try {
@@ -125,7 +125,7 @@ runTest("ADDON-BUILD-TOOLS-01 preserves current release stripping behavior", asy
   }
 });
 
-runTest("ADDON-BUILD-TOOLS-01 normalizes Windows and POSIX metafile paths", () => {
+runTest("ADDON-BUILD-TOOLS-05 normalizes Windows and POSIX metafile paths", () => {
   const normalized = addonBuildTools.normalizeMetafile({
     inputs: {
       "D:\\programming\\js\\userscript\\latest highlighter\\addons\\tiny\\src\\main.js": { bytesInOutput: 1 },
@@ -141,7 +141,24 @@ runTest("ADDON-BUILD-TOOLS-01 normalizes Windows and POSIX metafile paths", () =
   assert.deepStrictEqual(Object.keys(normalized.outputs), ["<external>"]);
 });
 
-runTest("ADDON-BUILD-TOOLS-01 refreshes accepted evidence during release builds", async () => {
+runTest("ADDON-BUILD-REPORTS-01 refreshes ordered snapshots without changing safety thresholds", () => {
+  const { refreshBuildReports, REPORT_COMMANDS } = require("../../scripts/refresh-build-reports.cjs");
+  const calls = [];
+  refreshBuildReports({ rootDir: ROOT, run: (...args) => calls.push(args) });
+  assert.strictEqual(calls.length, REPORT_COMMANDS.length);
+  assert.ok(calls.every(([exe, , options]) => exe === process.execPath && options.cwd === ROOT));
+  const scripts = calls.map(([, args]) => path.basename(args[0]));
+  assert.ok(scripts.indexOf("addon-baseline.cjs") < scripts.indexOf("addon-service-size-audit.cjs"));
+  assert.ok(scripts.includes("css-audit.cjs"));
+  assert.ok(!scripts.includes("core-size-gate.cjs"));
+  assert.throws(() => refreshBuildReports({ run: () => { throw new Error("audit failed"); } }), /audit failed/);
+  const coreBuild = fs.readFileSync(path.join(ROOT, "build.js"), "utf8");
+  const addonBuild = fs.readFileSync(path.join(ROOT, "addons/build-addon.js"), "utf8");
+  assert.match(coreBuild, /if \(!isSmoke\).*refreshBuildReports/);
+  assert.strictEqual((addonBuild.match(/\.refreshBuildReports\(\)/g) || []).length, 2, "both built and cache-hit paths refresh reports");
+});
+
+runTest("ADDON-BUILD-TOOLS-06 refreshes accepted evidence during release builds", async () => {
   const tempRoot = fs.mkdtempSync(
     path.join(require("os").tmpdir(), "addon-release-baseline-"),
   );
@@ -237,23 +254,17 @@ runTest("ADDON-MASKED-DIRECT-01 keeps hybrid modules out of the source root", ()
     .sort();
   assert.deepStrictEqual(rootFiles, ["constants.js", "main.js"]);
   for (const relativePath of [
-    "app/contexts/threadPageController.js",
-    "app/contexts/maskedPageController.js",
     "app/contexts/downloadPageController.js",
     "app/lifecycle.js",
-    "app/managedTabs.js",
     "app/pageBehavior.js",
     "app/registration.js",
     "app/runtime.js",
     "app/settings.js",
-    "app/styleController.js",
-    "domain/directDownload/attention.js",
+    "domain/directDownload/feedback.js",
     "domain/directDownload/flowController.js",
-    "domain/directDownload/managedClose.js",
-    "domain/directDownload/processingTrigger.js",
-    "infrastructure/gmStorageAdapter.js",
     "shared/utils.js",
-    "ui/controller.js",
+    "ports/standaloneAutomationPolicyRepository.js",
+    "ports/standaloneContinuation.js",
   ]) {
     assert.ok(fs.existsSync(path.join(addonRoot, relativePath)), relativePath);
   }
@@ -261,11 +272,19 @@ runTest("ADDON-MASKED-DIRECT-01 keeps hybrid modules out of the source root", ()
     path.join(addonRoot, "app", "createMaskedDirectApp.js"),
     "utf8",
   );
-  assert.ok(
-    compositionSource.split(/\r?\n/).length < 350,
-    "Masked Direct composition root must remain below 350 lines",
-  );
-  assert.doesNotMatch(compositionSource, /ADDON_PANEL_SETTINGS|ADDON_COMMAND_EVENT/);
+  const composition = require("espree").parse(compositionSource, { ecmaVersion: "latest", sourceType: "module" });
+  const importedNames = composition.body.filter((node) => node.type === "ImportDeclaration")
+    .flatMap((node) => node.specifiers.map((specifier) => specifier.imported?.name));
+  for (const ownedElsewhere of ["ADDON_PANEL_SETTINGS", "ADDON_COMMAND_EVENT"]) {
+    assert.ok(!importedNames.includes(ownedElsewhere), `${ownedElsewhere} must stay in its owning settings/lifecycle module`);
+  }
+  const entry = require("espree").parse(fs.readFileSync(path.join(addonRoot, "main.js"), "utf8"), {
+    ecmaVersion: "latest", sourceType: "module",
+  });
+  assert.deepStrictEqual(entry.body.filter((node) => node.type === "ImportDeclaration").map((node) => node.source.value),
+    ["./app/createMaskedDirectApp.js"], "entry delegates to the composition root");
+  assert.ok(entry.body.every((node) => ["ImportDeclaration", "ExpressionStatement"].includes(node.type)),
+    "entry must not own feature declarations");
 });
 
 runTest("ADDON-RUNTIME-KIT-01 characterizes equivalent normalized runtime wrappers", () => {

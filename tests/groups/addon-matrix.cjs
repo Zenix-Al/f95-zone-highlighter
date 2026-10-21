@@ -138,8 +138,6 @@ module.exports = function registerAddonMatrixTests(context) {
               ? route.id === "latest"
               : entry.id === "thread-utility-addon"
                 ? route.id === "thread"
-              : entry.id === "masked-direct-addon"
-                ? ["thread", "masked"].includes(route.id)
                 : true;
           matrixAssert(matches === expected, {
             addon: entry.id,
@@ -180,7 +178,7 @@ module.exports = function registerAddonMatrixTests(context) {
   );
 
   runTest(
-    "TEST-ADDONS-01 covers trust, missing-catalog, disabled, and management/runtime policy",
+    "TEST-ADDONS-02 covers trust, missing-catalog, disabled, and management/runtime policy",
     () => {
       const base = {
         id: "fixture-addon",
@@ -322,7 +320,7 @@ module.exports = function registerAddonMatrixTests(context) {
   );
 
   runTest(
-    "TEST-ADDONS-01 repeats lifecycle transitions without duplicate resources or late commits",
+    "TEST-ADDONS-03 repeats lifecycle transitions without duplicate resources or late commits",
     async () => {
       for (const entry of ADDON_MANIFEST.addons.filter(
         (item) => item.runtimeMode !== "standalone",
@@ -428,7 +426,7 @@ module.exports = function registerAddonMatrixTests(context) {
   );
 
   runTest(
-    "TEST-ADDONS-01 core absence is quiet for core-required add-ons",
+    "TEST-ADDONS-04 core absence is quiet for core-required add-ons",
     async () => {
       const sandbox = createDomSandbox("https://f95zone.to/threads/example.1/");
       try {
@@ -453,7 +451,7 @@ module.exports = function registerAddonMatrixTests(context) {
   );
 
   runTest(
-    "TEST-ADDONS-01 covers every Masked Direct external host and route handoff policy",
+    "TEST-ADDONS-05 covers current Masked Direct contexts and rejects unsupported origins",
     () => {
       const externalHosts = [
         "buzzheavier.com",
@@ -506,9 +504,12 @@ module.exports = function registerAddonMatrixTests(context) {
       }
       for (const [url, route, kind, usesCore] of [
         ["https://f95zone.to/threads/example.1/", "thread", "f95-core", true],
-        ["https://f95zone.to/masked/example/", "masked", "f95-optional-core", true],
-        ["https://f95zone.to/", "unsupported", "unsupported", false],
+        ["https://f95zone.to/dl/123/", "download-intermediate", "f95-continue", false],
+        ["https://f95zone.to/dl/not-an-id/", "unsupported", "unsupported", false],
+        ["https://f95zone.to/masked/example/", "unsupported", "unsupported", false],
+        ["https://f95zone.to/", "site", "f95-core", true],
         ["https://example.com/file/example", "unsupported", "unsupported", false],
+        ["https://f95zone.to.evil.example/dl/123/", "unsupported", "unsupported", false],
       ]) {
         const result = classifyMaskedDirectContext(new URL(url), {
           isSupportedExternalHost: isExternalHost,
@@ -528,55 +529,17 @@ module.exports = function registerAddonMatrixTests(context) {
             isSupportedExternalHost: isExternalHost,
           }),
           {
-            kind: "external-standalone",
-            route: "recaptcha-frame",
+            kind: "unsupported",
+            route: "unsupported",
             usesCore: false,
           },
         );
-      }
-      const sandbox = createDomSandbox("https://datanodes.to/file/example");
-      const previousSessionStorage = global.sessionStorage;
-      try {
-        global.sessionStorage = sandbox.window.sessionStorage;
-        const repository = loadModule(
-          "addons/masked-direct-addon/src/ports/routeContextRepository.js",
-        );
-        const now = Date.now();
-        repository.writeRouteContext({
-          ownerTabId: "tab-1",
-          requestId: "req-1",
-          host: "datanodes.to",
-          createdAt: now,
-        });
-        assert.strictEqual(
-          repository.readRouteContext("f95ue_tab", {
-            expectedRequestId: "req-1",
-            expectedHost: "datanodes.to",
-          }).requestId,
-          "req-1",
-        );
-        assert.strictEqual(
-          repository.readRouteContext("f95ue_tab", {
-            expectedRequestId: "wrong",
-          }),
-          null,
-        );
-        repository.writeRouteContext({
-          ownerTabId: "tab-1",
-          requestId: "expired",
-          host: "datanodes.to",
-          createdAt: now - 5 * 60 * 1000,
-        });
-        assert.strictEqual(repository.readRouteContext(), null);
-      } finally {
-        global.sessionStorage = previousSessionStorage;
-        sandbox.restore();
       }
     },
   );
 
   runTest(
-    "TEST-ADDONS-01 aliases, storage compatibility, Site Repair ownership, and API fallbacks stay bounded",
+    "TEST-ADDONS-06 aliases, storage compatibility, Site Repair ownership, and API fallbacks stay bounded",
     async () => {
       const catalog = loadModule("src/services/addons/catalog.js");
       assert.strictEqual(
@@ -658,7 +621,7 @@ module.exports = function registerAddonMatrixTests(context) {
   );
 
   runTest(
-    "TEST-ADDONS-01 smoke-builds every manifest entry without repository mutation",
+    "TEST-ADDONS-07 smoke-builds every manifest entry without repository mutation",
     async () => {
       const result = await addonBuildTools.runSmokeBuild({
         modes: ["regular", "release"],

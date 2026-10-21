@@ -1,5 +1,9 @@
 # Masked + Direct parallel-download baseline
 
+> Historical characterization of the pre-rework architecture, not current runtime
+> behavior. See [the standalone contract](masked-direct-reliability.md) and the
+> [archived implementation](../../addons/masked-direct-addon/archive/README.md).
+
 This report records `MASKED-DIRECT-PARALLEL-BASELINE-01`. It is a
 characterization only: production source, manifest/catalog metadata, versions,
 build cache, and distributions are unchanged.

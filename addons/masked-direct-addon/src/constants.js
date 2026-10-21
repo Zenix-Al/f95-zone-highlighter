@@ -1,19 +1,7 @@
 export const ADDON_COMMAND_EVENT = "f95ue:addon-command";
-export const RESOLVE_BTN_CLASS = "f95ue-addon-resolve-btn";
-export const MASKED_LINK_SELECTOR =
-  'a[href^="/masked/"], a[href^="https://f95zone.to/masked/"]';
-export const F95_CAPTCHA_SITEKEY = "6LcwQ5kUAAAAAAI-_CXQtlnhdMjmFDt-MruZ2gov";
-export const AUTOMATION_MARKER_KEY = "f95ue_dd";
-export const DIRECT_DOWNLOAD_ROUTE_TS_KEY = "f95ue_dd_ts";
-export const DIRECT_DOWNLOAD_ROUTE_REQUEST_ID_KEY = "f95ue_dd_req";
-export const DIRECT_DOWNLOAD_ROUTE_TTL_MS = 2 * 60 * 1000;
-export const DIRECT_DOWNLOAD_ROUTE_CONTEXT_KEY =
-  "f95ue.addon.maskedDirect.routeContext";
-
 export const TIMINGS = Object.freeze({
   GOFILE_POST_READY_WAIT: 600,
   POLL_INTERVAL: 400,
-  RECAPTCHA_CLICK_INTERVAL: 1000,
   DATANODES_POLL_INTERVAL: 250,
   DATANODES_TOTAL_FLOW_TIMEOUT: 90000,
   DATANODES_PAGE_READY_WAIT_TIMEOUT: 30000,
@@ -85,24 +73,5 @@ export const SELECTORS = Object.freeze({
       "a.btn-prio[href]",
       'a[href^="/start/"]',
     ],
-  },
-  MASKED_PAGE: {
-    CONTINUE_BTN_CANDIDATES: [
-      ".host_link",
-      "a.host_link",
-      ".leaving a[href]",
-      "#leaving a[href]",
-    ],
-    LEAVING_CANDIDATES: [".leaving", "#leaving", ".leaving-page"],
-    LEAVING_TEXT_CANDIDATES: [
-      ".leaving-text",
-      ".leaving .leaving-text",
-      ".leaving p",
-    ],
-    IDS: {
-      LOADING: "loading",
-      CAPTCHA: "captcha",
-      ERROR: "error",
-    },
   },
 });

@@ -2,34 +2,34 @@
   "addons": {
     "library-addon": {
       "regular": "90961b9fef82de8b262f1fb1e98476136f95906d5e1cfa6f8072cba33b4ce8a9",
-      "release": "257ffbc4252174092d8325afbe21f5b023dd2bac90f0558c0f6739ad390b02cc"
+      "release": "1153def5c63c0cd906f5e3527682ed292cbedf433e37cc3394394784a8710914"
     },
     "image-repair-addon": {
       "release": "599180b41d1edaf69497c5acbf83bdcee2b3417604595341691dd6eac64a4450",
       "regular": "caacd5214f6f63a95e6bed0cbe8ab2e21cce9758edd76f9a13d8df5f85d82f2b"
     },
     "masked-direct-addon": {
-      "release": "3c3d2169d3cd013aef85d41789713ba95c96af90d88cd00c13759c99163ddb44",
+      "release": "2a434e9c9be89860d7799bd044dfb09aa8572f058f7f5a153ad8e05e2f8ad32a",
       "regular": "53924e059392f694cd84aa8984039e5e0ee0aaa98737d930d141f6f83ec6a21e"
     },
     "latest-filters-addon": {
-      "release": "8485531f419bb4322650ec2322d9064ed3ed719f529598928bd822617cbfd8fa",
+      "release": "c71f38218aa24deb190390b76e0228ef10d1f9b0f51af72fe6d5160a8b850b00",
       "regular": "65f7b2124e6a8e449a461a2728885235e37a70f5c98692d0256c27a325c51e9e"
     },
     "halloween-theme-addon": {
-      "release": "4059c24d7760e6d8a9571582d8083d55857630f21bf3d3cfb438e7bde4c449a7",
+      "release": "d817130640895ac174bc08e35d93d5d53b4eff74aec6ca2d02d17aa30fa31b82",
       "regular": "e83c8df4dcb1c9f9631b332cae3188151ce857e1ec38569a9cf5dee358f369bc"
     },
     "example-addon": {
       "regular": "023974dbb154734872bc4c259d512bbb063ebd49a1d0b3d1ec81e133463078a3",
-      "release": "9fcbf01b53d7f43c30304502e801c1d3f7b02ffd9ecb74e57cd4823f0ada9bea"
+      "release": "c75d300a0c732ea80b4316004fb5ec4e1ee00635778a98dd628d7d2389e9835c"
     },
     "site-repair-addon": {
       "regular": "e6704cd4a3bb12c394fd1133d91e30c3949483beaa2ea0fe4061bc18b1230786",
-      "release": "5e43746a788fa21bfe09918979f25a26e26476dee48e54f5e80d4b1b9ad96610"
+      "release": "edad06945fd2e5113a74c803bc22ce30f68aba98a2c074c394e03586f2bd3dde"
     },
     "thread-utility-addon": {
-      "release": "d15eb51a85cc90ac6995fe150298da6bf6dc1b6e6fef007b45c1bd692fd51848",
+      "release": "04a6e1c65633213a7486d7f88dd0d91d69f788f3854e5aa3d84d73f1819b68fa",
       "regular": "9f07ebf314622e3d1b4e0774cf7cb934ca9be9d77d0d312c2f76b7cbbe00b86a"
     }
   }

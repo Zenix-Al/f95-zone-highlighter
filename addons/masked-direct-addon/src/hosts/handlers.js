@@ -17,7 +17,6 @@ export function createDirectDownloadHostHandlers({
   debugLog,
   createHostExecutionContext,
   getSettings,
-  getDownloadCloseDelay,
 }) {
   const run = (processor, challengeGate, decision, execution, extra = {}) => {
     const context = execution || createHostExecutionContext(decision);
@@ -25,7 +24,6 @@ export function createDirectDownloadHostHandlers({
       challengeGate,
       notifyMainFailure: context.notifyMainFailure,
       reportAddonHealthy: context.reportAddonHealthy,
-      getDownloadCloseDelay,
       automationDecision: decision,
       ...extra,
     });
@@ -44,12 +42,11 @@ export function createDirectDownloadHostHandlers({
       run(processKrakenFilesDownload, gate, decision, execution),
     "datanodes.to": (gate, decision, execution) =>
       run(processDatanodesDownload, gate, decision, execution, {
-        settings: typeof getSettings === "function" ? getSettings() : {},
+        settings: decision?.policy || (typeof getSettings === "function" ? getSettings() : {}),
       }),
     "delafil.se": (gate, decision, execution) =>
       run(processDelafilDownload, gate, decision, execution),
-    "download.gg": (gate, decision, execution) =>
-      run(processDownloadGg, gate, decision, execution),
+    "download.gg": (gate, decision, execution) => run(processDownloadGg, gate, decision, execution),
     "vik1ngfile.site": (gate, decision, execution) =>
       run(processVik1ngfileDownload, gate, decision, execution),
     "mediafire.com": (gate, decision, execution) =>

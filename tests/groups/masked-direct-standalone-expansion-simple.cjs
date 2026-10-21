@@ -3,20 +3,6 @@
 module.exports = function registerMaskedDirectStandaloneExpansionSimple(context) {
   const { assert, createDomSandbox, loadModule, runTest } = context;
 
-  function createGM() {
-    const values = new Map();
-    return {
-      async getValue(key, fallback) {
-        return values.has(key) ? structuredClone(values.get(key)) : fallback;
-      },
-      async setValue(key, value) {
-        values.set(key, structuredClone(value));
-      },
-      async deleteValue(key) {
-        values.delete(key);
-      },
-    };
-  }
 
   runTest(
     "MASKED-DIRECT-STANDALONE-EXPANSION-SIMPLE-01 classifies exact entry routes",
@@ -49,7 +35,7 @@ module.exports = function registerMaskedDirectStandaloneExpansionSimple(context)
   );
 
   runTest(
-    "MASKED-DIRECT-STANDALONE-EXPANSION-SIMPLE-01 rejects broad and continuation routes",
+    "MASKED-DIRECT-STANDALONE-EXPANSION-SIMPLE-02 rejects broad and continuation routes",
     () => {
       const modules = {
         buzz: loadModule("addons/masked-direct-addon/src/hosts/buzzheavier.js"),
@@ -79,7 +65,7 @@ module.exports = function registerMaskedDirectStandaloneExpansionSimple(context)
   );
 
   runTest(
-    "MASKED-DIRECT-STANDALONE-EXPANSION-SIMPLE-01 authorizes only registered entry routes",
+    "MASKED-DIRECT-STANDALONE-EXPANSION-SIMPLE-03 authorizes only registered entry routes",
     () => {
       const { classifyStandaloneHostRoute } = loadModule(
         "addons/masked-direct-addon/src/hosts/standaloneEligibility.js",
@@ -113,60 +99,9 @@ module.exports = function registerMaskedDirectStandaloneExpansionSimple(context)
     },
   );
 
-  runTest(
-    "MASKED-DIRECT-STANDALONE-EXPANSION-SIMPLE-01 managed requests remain authoritative",
-    async () => {
-      for (const [host, baseUrl] of [
-        ["buzzheavier.com", "https://buzzheavier.com/s3xk3ngyzkx6"],
-        ["gofile.io", "https://gofile.io/d/r6RPqz"],
-        ["mediafire.com", "https://mediafire.com/file/abc123/file.zip/file"],
-        ["workupload.com", "https://workupload.com/file/JVuuyQMKU3p"],
-      ]) {
-        const now = Date.now();
-        const separator = baseUrl.includes("?") ? "&" : "?";
-        const href =
-          baseUrl + separator +
-          `f95ue_dd=1&f95ue_tab=tab-a&f95ue_dd_req=request-a&f95ue_dd_ts=${now}`;
-        const sandbox = createDomSandbox(href);
-        const previousSessionStorage = global.sessionStorage;
-        global.sessionStorage = sandbox.window.sessionStorage;
-        try {
-          const gm = createGM();
-          const { setProcessingDownloadTrigger } = loadModule(
-            "addons/masked-direct-addon/src/domain/directDownload/processingTrigger.js",
-          );
-          await setProcessingDownloadTrigger(gm, {
-            requestId: "request-a",
-            ownerTabId: "tab-a",
-            host,
-            sourceUrl: href,
-          });
-          const { createDownloadPageController } = loadModule(
-            "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
-          );
-          const controller = createDownloadPageController({
-            addonId: "masked-direct-addon",
-            debugLog() {},
-            GMApi: gm,
-            getIsBlockedByCore: () => false,
-            getIsEnabled: () => true,
-            handlers: {},
-            originTabQueryKey: "f95ue_tab",
-            getStandalonePolicy: async () => ({ effectiveAutomateRegardless: true }),
-          });
-          const decision = await controller.decideHostAutomation(host);
-          assert.strictEqual(decision.mode, "managed", host);
-          assert.strictEqual(decision.request.requestId, "request-a", host);
-        } finally {
-          global.sessionStorage = previousSessionStorage;
-          sandbox.restore();
-        }
-      }
-    },
-  );
 
   runTest(
-    "MASKED-DIRECT-STANDALONE-EXPANSION-SIMPLE-01 Gofile triggers the single-file page action",
+    "MASKED-DIRECT-STANDALONE-EXPANSION-SIMPLE-04 Gofile triggers the single-file page action",
     async () => {
       const sandbox = createDomSandbox("https://gofile.io/d/5krbciLL");
       try {
@@ -194,7 +129,7 @@ module.exports = function registerMaskedDirectStandaloneExpansionSimple(context)
   );
 
   runTest(
-    "MASKED-DIRECT-STANDALONE-EXPANSION-SIMPLE-01 Gofile triggers one file inside a folder",
+    "MASKED-DIRECT-STANDALONE-EXPANSION-SIMPLE-05 Gofile triggers one file inside a folder",
     async () => {
       const sandbox = createDomSandbox("https://gofile.io/d/5krbciLL");
       try {
@@ -220,7 +155,7 @@ module.exports = function registerMaskedDirectStandaloneExpansionSimple(context)
   );
 
   runTest(
-    "MASKED-DIRECT-STANDALONE-EXPANSION-SIMPLE-01 Gofile refuses multiple items",
+    "MASKED-DIRECT-STANDALONE-EXPANSION-SIMPLE-06 Gofile refuses multiple items",
     async () => {
       const sandbox = createDomSandbox("https://gofile.io/d/r6RPqz");
       try {
@@ -246,7 +181,7 @@ module.exports = function registerMaskedDirectStandaloneExpansionSimple(context)
   );
 
   runTest(
-    "MASKED-DIRECT-STANDALONE-EXPANSION-SIMPLE-01 Gofile refuses an empty page",
+    "MASKED-DIRECT-STANDALONE-EXPANSION-SIMPLE-07 Gofile refuses an empty page",
     async () => {
       const sandbox = createDomSandbox("https://gofile.io/d/r6RPqz");
       try {
@@ -273,7 +208,7 @@ module.exports = function registerMaskedDirectStandaloneExpansionSimple(context)
   );
 
   runTest(
-    "MASKED-DIRECT-STANDALONE-EXPANSION-SIMPLE-01 MediaFire rejects non-HTTP final links",
+    "MASKED-DIRECT-STANDALONE-EXPANSION-SIMPLE-08 MediaFire rejects non-HTTP final links",
     async () => {
       const sandbox = createDomSandbox(
         "https://mediafire.com/file/abc123/file.zip/file",

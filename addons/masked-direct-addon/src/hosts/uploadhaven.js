@@ -100,5 +100,5 @@ export async function processUploadHavenDownload({
 
   // UploadHaven starts its download asynchronously after the click.
   await sleep(Math.max(0, Number(postClickGraceMs) || 0));
-  reportAddonHealthy();
+  reportAddonHealthy({ downloadTriggered: true });
 }

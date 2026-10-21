@@ -73,5 +73,5 @@ export async function processDownloadGg({
     return;
   }
   await sleep(Math.max(0, Number(postClickGraceMs) || 0));
-  reportAddonHealthy();
+  reportAddonHealthy({ downloadTriggered: true });
 }

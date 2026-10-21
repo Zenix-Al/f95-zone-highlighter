@@ -1,4 +1,5 @@
 "use strict";
+const approvedRoutes = require("../fixtures/masked-direct-approved-routes.cjs");
 
 module.exports = function registerMaskedDirectStandaloneHostGuards(context) {
   const { assert, createDomSandbox, loadModule, runTest } = context;
@@ -10,13 +11,6 @@ module.exports = function registerMaskedDirectStandaloneHostGuards(context) {
         loadModule(
           "addons/masked-direct-addon/src/hosts/standaloneEligibility.js",
         );
-      const cases = [
-        ["krakenfiles.com", "https://krakenfiles.com/view/a/file.html"],
-        ["delafil.se", "https://delafil.se/0123456789abcdef/file.zip"],
-        ["download.gg", "https://download.gg/en-us/file-example"],
-        ["uploadhaven.com", "https://uploadhaven.com/download/example"],
-        ["pixeldrain.com", "https://pixeldrain.com/u/K3kVDJSJ"],
-      ];
       assert.deepStrictEqual(getStandaloneApprovedHosts(), [
         "krakenfiles.com",
         "delafil.se",
@@ -33,7 +27,7 @@ module.exports = function registerMaskedDirectStandaloneHostGuards(context) {
         "datanodes.to",
         "vik1ngfile.site",
       ]);
-      for (const [host, url] of cases) {
+      for (const [host, url] of approvedRoutes) {
         const sandbox = createDomSandbox(url);
         try {
           assert.strictEqual(
@@ -75,7 +69,7 @@ module.exports = function registerMaskedDirectStandaloneHostGuards(context) {
   );
 
   runTest(
-    "MASKED-DIRECT-STANDALONE-HOST-GUARDS-01 claims a route once and permits retry after failure",
+    "MASKED-DIRECT-STANDALONE-HOST-GUARDS-02 claims a route once and permits retry after failure",
     () => {
       const sandbox = createDomSandbox("https://download.gg/file-example");
       try {
@@ -101,7 +95,7 @@ module.exports = function registerMaskedDirectStandaloneHostGuards(context) {
   );
 
   runTest(
-    "MASKED-DIRECT-STANDALONE-HOST-GUARDS-01 normalizes aliases and ignores query churn",
+    "MASKED-DIRECT-STANDALONE-HOST-GUARDS-03 normalizes aliases and ignores query churn",
     () => {
       const { getStandaloneRunGuardKey } = loadModule(
         "addons/masked-direct-addon/src/ports/standaloneRunGuard.js",

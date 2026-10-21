@@ -1,0 +1,80 @@
+{
+  "historical": true,
+  "addons": [
+    {
+      "id": "masked-direct-addon",
+      "name": "F95UE Masked + Direct Download Add-on",
+      "description": "Combines masked-link skipper and direct-download flows into one trusted add-on.",
+      "version": "1.2.4",
+      "author": "X Death",
+      "entry": "addons/masked-direct-addon/src/main.js",
+      "outfile": "addons/masked-direct-addon/dist/masked-direct-addon.user.js",
+      "matches": [
+        "*://f95zone.to/threads/*",
+        "*://f95zone.to/masked/*",
+        "https://www.google.com/recaptcha/*",
+        "https://www.recaptcha.net/recaptcha/*",
+        "*://buzzheavier.com/*",
+        "*://*.buzzheavier.com/*",
+        "*://bzzhr.to/*",
+        "*://*.bzzhr.to/*",
+        "*://gofile.io/*",
+        "https://drive.google.com/file/d/*",
+        "https://drive.google.com/open*",
+        "https://drive.google.com/uc*",
+        "https://drive.usercontent.google.com/download*",
+        "https://krakenfiles.com/view/*/file.html*",
+        "https://www.krakenfiles.com/view/*/file.html*",
+        "https://mixdrop.ag/f/*",
+        "https://miixdrop.com/f/*",
+        "https://miiixdrop.net/f/*",
+        "https://miiiixdrop.net/f/*",
+        "https://uploadhaven.com/download/*",
+        "https://www.uploadhaven.com/download/*",
+        "https://uploadnow.io/*/share*",
+        "https://www.uploadnow.io/*/share*",
+        "*://pixeldrain.com/*",
+        "*://datanodes.to/*",
+        "*://delafil.se/*",
+        "*://*.delafil.se/*",
+        "*://download.gg/*",
+        "*://www.download.gg/*",
+        "*://vik1ngfile.site/f/*",
+        "*://*.vik1ngfile.site/f/*",
+        "*://vikingfile.com/f/*",
+        "*://*.vikingfile.com/f/*",
+        "*://www.mediafire.com/file/*",
+        "*://mediafire.com/file/*",
+        "*://www.mediafire.com/file_premium/*",
+        "*://mediafire.com/file_premium/*",
+        "*://workupload.com/file/*",
+        "*://workupload.com/start/*",
+        "*://*.workupload.com/file/*",
+        "*://*.workupload.com/start/*"
+      ],
+      "grants": [
+        "GM_openInTab",
+        "GM.getValue",
+        "GM.setValue",
+        "GM_addValueChangeListener",
+        "GM_removeValueChangeListener"
+      ],
+      "runAt": "document-idle",
+      "requiresCore": true,
+      "runtimeMode": "hybrid",
+      "pageScopes": [
+        "f95zone"
+      ],
+      "downloadUrl": "https://greasyfork.org/en/scripts/572503-f95ue-masked-direct-download-add-on",
+      "capabilities": [
+        "toast",
+        "feature",
+        "storage",
+        "page",
+        "observer",
+        "ui",
+        "ui.style"
+      ]
+    }
+  ]
+}

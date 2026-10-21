@@ -13,7 +13,7 @@ module.exports = function registerMaskedDirectStandaloneSettings(context) {
   }
 
   runTest(
-    "MASKED-DIRECT-STANDALONE-SETTINGS-01 exposes a default-off user-intent toggle",
+    "MASKED-DIRECT-STANDALONE-SETTINGS-01 exposes default-on automation and independent local closing",
     () => {
       const { ADDON_PANEL_SETTINGS, ADDON_SETTINGS_DEFAULT } = loadModule(
         "addons/masked-direct-addon/src/app/settings.js",
@@ -24,16 +24,18 @@ module.exports = function registerMaskedDirectStandaloneSettings(context) {
       assert.ok(setting);
       assert.strictEqual(
         setting.text,
-        "Automate supported hosts regardless of F95 request",
+        "Automate supported host pages",
       );
-      assert.match(setting.tooltip, /manually opened tabs remain open/i);
-      assert.match(setting.tooltip, /saved preference stays off by default/i);
-      assert.strictEqual(ADDON_SETTINGS_DEFAULT.automateRegardless, false);
+      assert.match(setting.tooltip, /regardless of where the tab came from/i);
+      assert.strictEqual(ADDON_SETTINGS_DEFAULT.automateRegardless, true);
+      assert.strictEqual(ADDON_SETTINGS_DEFAULT.autoCloseTabs, true);
+      assert.ok(ADDON_PANEL_SETTINGS.some((entry) => entry.path === "autoCloseTabs"));
+      assert.ok(!ADDON_PANEL_SETTINGS.some((entry) => ["skipMaskedLink", "directDownloadLinks"].includes(entry.id)));
     },
   );
 
   runTest(
-    "MASKED-DIRECT-STANDALONE-SETTINGS-01 sanitizes old settings without enabling standalone",
+    "MASKED-DIRECT-STANDALONE-SETTINGS-02 uses defaults only when no automation choice exists",
     async () => {
       const mirrored = [];
       const { createMaskedDirectSettings } = loadModule(
@@ -48,13 +50,13 @@ module.exports = function registerMaskedDirectStandaloneSettings(context) {
         onSettingsRead: async (value) => mirrored.push(value.automateRegardless),
       });
       const value = await settings.read(true);
-      assert.strictEqual(value.automateRegardless, false);
-      assert.deepStrictEqual(mirrored, [false]);
+      assert.strictEqual(value.automateRegardless, true);
+      assert.deepStrictEqual(mirrored, [true]);
     },
   );
 
   runTest(
-    "MASKED-DIRECT-STANDALONE-SETTINGS-01 mirrors explicit intent without effective override",
+    "MASKED-DIRECT-STANDALONE-SETTINGS-03 mirrors explicit intent without effective override",
     async () => {
       const { createMaskedDirectSettings } = loadModule(
         "addons/masked-direct-addon/src/app/settings.js",
@@ -75,7 +77,7 @@ module.exports = function registerMaskedDirectStandaloneSettings(context) {
   );
 
   runTest(
-    "MASKED-DIRECT-STANDALONE-SETTINGS-01 refresh rereads and mirrors saved intent",
+    "MASKED-DIRECT-STANDALONE-SETTINGS-04 refresh rereads and mirrors saved intent",
     async () => {
       const sandbox = createDomSandbox("https://f95zone.to/threads/example.1/");
       const events = [];

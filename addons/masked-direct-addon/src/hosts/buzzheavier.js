@@ -68,5 +68,5 @@ export async function processBuzzheavierDownload({
     await notifyMainFailure(hostLabel, "Unable to trigger download button.");
     return;
   }
-  reportAddonHealthy();
+  reportAddonHealthy({ downloadTriggered: true });
 }

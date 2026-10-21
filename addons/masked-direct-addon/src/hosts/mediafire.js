@@ -66,7 +66,7 @@ export async function processMediafireDownload({
   if (href) {
     if (challengeGate && !(await challengeGate.waitUntilClear())) return;
     window.location.assign(href);
-    reportAddonHealthy();
+    reportAddonHealthy({ downloadTriggered: true });
     return;
   }
 
@@ -79,7 +79,7 @@ export async function processMediafireDownload({
       );
       return;
     }
-    reportAddonHealthy();
+    reportAddonHealthy({ downloadTriggered: true });
   } catch {
     await notifyMainFailure(
       "mediafire.com",

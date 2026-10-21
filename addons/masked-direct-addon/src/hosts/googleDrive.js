@@ -166,5 +166,5 @@ export async function processGoogleDriveDownload({
     await notifyMainFailure(HOST_LABEL, "Unable to confirm Google Drive download.");
     return;
   }
-  reportAddonHealthy();
+  reportAddonHealthy({ downloadTriggered: true });
 }
