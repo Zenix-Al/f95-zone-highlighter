@@ -1962,7 +1962,10 @@
           "addons/library-addon/src/app/commands.js",
           "addons/library-addon/src/app/createLibraryAddonApp.js",
           "addons/library-addon/src/app/dockController.js",
+          "addons/library-addon/src/app/latestCollectionController.js",
           "addons/library-addon/src/app/latestMarkerProvider.js",
+          "addons/library-addon/src/app/latestNativeTransport.js",
+          "addons/library-addon/src/app/latestNativeView.js",
           "addons/library-addon/src/app/legacyUpgradeGuard.js",
           "addons/library-addon/src/app/lifecycle.js",
           "addons/library-addon/src/app/managerController.js",
@@ -1985,8 +1988,10 @@
           "addons/library-addon/src/library/hybridRecordRequest.js",
           "addons/library-addon/src/library/hybridRequestBudget.js",
           "addons/library-addon/src/library/importWorkflow.js",
+          "addons/library-addon/src/library/latestCollection.js",
           "addons/library-addon/src/library/latestListingFacts.js",
           "addons/library-addon/src/library/latestListingSelector.js",
+          "addons/library-addon/src/library/latestPresentation.js",
           "addons/library-addon/src/library/libraryDocument.js",
           "addons/library-addon/src/library/manualUpdateChecker.js",
           "addons/library-addon/src/library/querying.js",
@@ -2090,6 +2095,11 @@
                 "path": "addons/library-addon/src/api/ui/manager.js",
                 "line": 9,
                 "text": "return await bridge.invokeCoreAction(\"config.getTagPrefs\", {});"
+              },
+              {
+                "path": "addons/library-addon/src/app/latestCollectionController.js",
+                "line": 59,
+                "text": "const result = await core.invokeCoreAction(\"config.getTagPrefs\", { includePrefixes: true });"
               }
             ]
           },
@@ -2385,6 +2395,11 @@
                 "path": "addons/library-addon/src/api/toast.js",
                 "line": 2,
                 "text": "core.invokeCoreAction(\"toast.show\", { message: String(message || \"\"), type });"
+              },
+              {
+                "path": "addons/library-addon/src/app/latestCollectionController.js",
+                "line": 22,
+                "text": "reportError: (message) => { void core.invokeCoreAction(\"toast.show\", { message, type: \"warning\" }); } });"
               }
             ]
           },
@@ -2507,7 +2522,7 @@
         "globalEventListeners": [
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 210,
+            "line": 209,
             "text": "window.addEventListener(\"pagehide\", onPageHide);"
           },
           {
@@ -2687,6 +2702,26 @@
             "text": "return new Promise((resolve) => window.setTimeout(resolve, milliseconds));"
           },
           {
+            "path": "addons/library-addon/src/app/latestCollectionController.js",
+            "line": 14,
+            "text": "const timer = setTimeout(() => { timers.delete(timer); resolve(); }, 0);"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestCollectionController.js",
+            "line": 25,
+            "text": "retryTimer = setTimeout(() => { retryTimer = null; void start(); }, 500);"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestNativeView.js",
+            "line": 33,
+            "text": "if (!disposed && before === generation) redrawTimer = setTimeout(() => {"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestNativeView.js",
+            "line": 86,
+            "text": "const timeout = setTimeout(() => {"
+          },
+          {
             "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
             "line": 20,
             "text": "const timer = setTimeout(() => {"
@@ -2834,6 +2869,121 @@
             "text": "path: target.pathname,"
           },
           {
+            "path": "addons/library-addon/src/app/latestCollectionController.js",
+            "line": 4,
+            "text": "export function createLibraryLatestCollectionController({ core, library, getEnabled, getUrl = () => location.href, getWindow = () => window, createView = createLibraryLatestView }) {"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestCollectionController.js",
+            "line": 9,
+            "text": "try { return /\\/sam\\/latest_alpha\\/?$/.test(new URL(getUrl()).pathname); } catch { return false; }"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestCollectionController.js",
+            "line": 46,
+            "text": "if (context?.url && !/\\/sam\\/latest_alpha\\/?$/.test(new URL(context.url).pathname)) void stop({ redraw: false });"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestCollectionController.js",
+            "line": 55,
+            "text": "const url = new URL(detail.url);"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestCollectionController.js",
+            "line": 56,
+            "text": "if (url.origin !== new URL(getUrl()).origin || url.pathname !== \"/sam/latest_alpha/latest_data.php\" || url.searchParams.get(\"cmd\") !== \"list\" || url.searchParams.get(\"cat\") !== \"games\") throw new Error(\"Unsupported Library query\");"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestCollectionController.js",
+            "line": 73,
+            "text": "const options = Object.fromEntries(url.searchParams);"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestCollectionController.js",
+            "line": 75,
+            "text": "options[name] = [...url.searchParams.getAll(name), ...url.searchParams.getAll(`${name}[]`)].flatMap((value) => value.split(\",\"));"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestNativeTransport.js",
+            "line": 3,
+            "text": "const url = new URL(typeof input === \"string\" ? input : input?.url, base);"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestNativeTransport.js",
+            "line": 4,
+            "text": "return url.origin === origin && url.pathname === \"/sam/latest_alpha/latest_data.php\" &&"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestNativeTransport.js",
+            "line": 5,
+            "text": "url.searchParams.get(\"cmd\") === \"list\" && url.searchParams.get(\"cat\") === \"games\" ? url : null;"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestNativeView.js",
+            "line": 12,
+            "text": "const games = () => /\\/sam\\/latest_alpha\\/?$/.test(location.pathname) &&"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestNativeView.js",
+            "line": 13,
+            "text": "(!location.hash.match(/\\/cat=([^/]+)/) || location.hash.match(/\\/cat=([^/]+)/)[1] === \"games\");"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestNativeView.js",
+            "line": 36,
+            "text": "if (enabled) { mode(false); history.replaceState(null, \"\", `${location.pathname}${location.search}${normalHash}`); }"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestNativeView.js",
+            "line": 46,
+            "text": "session++; normalHash = location.hash;"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestNativeView.js",
+            "line": 47,
+            "text": "history.replaceState(null, \"\", `${location.pathname}${location.search}${location.hash.replace(/\\/page=\\d+/, \"\") || \"#/cat=games\"}/page=1`);"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestNativeView.js",
+            "line": 48,
+            "text": "} else history.replaceState(null, \"\", `${location.pathname}${location.search}${normalHash}`);"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestNativeView.js",
+            "line": 73,
+            "text": "try { target = new URL(options.url, location.href); } catch { return originalAjax.apply(this, arguments); }"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestNativeView.js",
+            "line": 74,
+            "text": "if (target.origin !== location.origin || target.pathname !== \"/sam/latest_alpha/latest_data.php\" || target.searchParams.get(\"cmd\") !== \"list\" || String(options.method || options.type || \"GET\").toUpperCase() !== \"GET\") return originalAjax.apply(this, arguments);"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestNativeView.js",
+            "line": 77,
+            "text": "if (!games() || target.searchParams.get(\"cat\") !== \"games\") mode(false);"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestNativeView.js",
+            "line": 115,
+            "text": "if (String(page) !== target.searchParams.get(\"page\")) history.replaceState(null, \"\", `${location.pathname}${location.search}${location.hash.replace(/\\/page=\\d+/, \"\")}/page=${page}`);"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestNativeView.js",
+            "line": 130,
+            "text": "if (!disposed && enabled && prepared && isLatestRecoveryFetch(input, init, location.origin, location.href)) {"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestNativeView.js",
+            "line": 141,
+            "text": "if (enabled) { mode(false); frozen = event.persisted; history.replaceState(null, \"\", `${location.pathname}${location.search}${normalHash}`); paint(\"Normal Latest\"); }"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestNativeView.js",
+            "line": 153,
+            "text": "if (restore) { history.replaceState(null, \"\", `${location.pathname}${location.search}${normalHash}`); if (shouldRedraw) redraw(); }"
+          },
+          {
             "path": "addons/library-addon/src/app/pageContext.js",
             "line": 4,
             "text": "const isF95 = location.hostname.includes(\"f95zone.to\");"
@@ -2847,6 +2997,11 @@
             "path": "addons/library-addon/src/library/hybridRecordRequest.js",
             "line": 44,
             "text": "const sent = new URL(requestedUrl).searchParams;"
+          },
+          {
+            "path": "addons/library-addon/src/library/latestPresentation.js",
+            "line": 8,
+            "text": "const url = new URL(value);"
           },
           {
             "path": "addons/library-addon/src/library/threadIdentity.js",
@@ -2905,6 +3060,16 @@
           }
         ],
         "coreDomAssumptions": [
+          {
+            "path": "addons/library-addon/src/app/latestNativeView.js",
+            "line": 6,
+            "text": "if (!$?.ajax || !$?.Deferred || !doc.querySelector(\"#controls_auto-refresh\")) return null;"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestNativeView.js",
+            "line": 55,
+            "text": "const refresh = doc.querySelector(\"#controls_auto-refresh\");"
+          },
           {
             "path": "addons/library-addon/src/thread/detector.js",
             "line": 22,
@@ -3355,72 +3520,62 @@
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 58,
-            "text": "function isCurrent(context) {"
+            "line": 10,
+            "text": "import { createLibraryLifecycle, isLibraryLifecycleCurrent as isCurrent } from \"./lifecycle.js\";"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 61,
-            "text": "typeof context.isCurrent !== \"function\" ||"
-          },
-          {
-            "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 62,
-            "text": "context.isCurrent()"
-          },
-          {
-            "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 80,
+            "line": 75,
             "text": "if (!isCurrent(context)) {"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 90,
+            "line": 85,
             "text": "if (!isCurrent(context)) {"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 98,
+            "line": 95,
             "text": "if (!isCurrent(context)) {"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 103,
+            "line": 100,
             "text": "if (!isCurrent(context)) {"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 114,
+            "line": 111,
             "text": "return context.isCurrent()"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 120,
+            "line": 117,
             "text": "return context.isCurrent()"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 126,
+            "line": 123,
             "text": "return context.isCurrent()"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 177,
+            "line": 175,
             "text": "else if (command === \"disable\") void lifecycle.disable(detail);"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 180,
+            "line": 178,
             "text": "markerProvider.cancel();"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 198,
+            "line": 197,
             "text": "} else if (command === \"teardown\") {"
           },
           {
             "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-            "line": 199,
+            "line": 198,
             "text": "void lifecycle.teardown(detail);"
           },
           {
@@ -3479,6 +3634,51 @@
             "text": "if (!state.enabled || !isCurrent(context)) {"
           },
           {
+            "path": "addons/library-addon/src/app/latestCollectionController.js",
+            "line": 5,
+            "text": "let view = null, generation = 0, session = null, cache = null, loading = null;"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestCollectionController.js",
+            "line": 12,
+            "text": "const cancelData = () => { generation++; session = null; cache = null; loading = null; };"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestCollectionController.js",
+            "line": 29,
+            "text": "cancelData(); clearTimeout(retryTimer); retryTimer = null; attempts = 0;"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestCollectionController.js",
+            "line": 30,
+            "text": "for (const [timer, resolve] of timers) { clearTimeout(timer); resolve(); }"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestCollectionController.js",
+            "line": 36,
+            "text": "generation++; cache = null; loading = null;"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestCollectionController.js",
+            "line": 52,
+            "text": "const token = generation;"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestCollectionController.js",
+            "line": 53,
+            "text": "const current = () => token === generation && active() && detail.isCurrent?.() !== false;"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestCollectionController.js",
+            "line": 63,
+            "text": "lookup: createLatestCatalogLookup(result.value), yieldWork, isCurrent: current,"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestCollectionController.js",
+            "line": 82,
+            "text": "if (active() && session === detail.session && detail.isCurrent?.() !== false && retries < 2) return query(detail, retries + 1);"
+          },
+          {
             "path": "addons/library-addon/src/app/latestMarkerProvider.js",
             "line": 9,
             "text": "let generation = 0;"
@@ -3527,6 +3727,121 @@
             "path": "addons/library-addon/src/app/latestMarkerProvider.js",
             "line": 56,
             "text": "return { start, stop, cancel, changed, query };"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestNativeTransport.js",
+            "line": 34,
+            "text": "export function decorateLatestXhr(xhr, text, isCurrent) {"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestNativeTransport.js",
+            "line": 41,
+            "text": "if (isCurrent() && xhr.readyState === 4 && xhr.status >= 200 && xhr.status < 300) {"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestNativeView.js",
+            "line": 8,
+            "text": "let enabled = false, disposed = false, frozen = false, normalHash = \"\", generation = 0, session = 0;"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestNativeView.js",
+            "line": 23,
+            "text": "function cancel() {"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestNativeView.js",
+            "line": 24,
+            "text": "generation++; clearTimeout(redrawTimer); redrawTimer = null;"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestNativeView.js",
+            "line": 25,
+            "text": "pending?.cancel(); pending = null; prepared = null;"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestNativeView.js",
+            "line": 30,
+            "text": "clearTimeout(redrawTimer);"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestNativeView.js",
+            "line": 31,
+            "text": "const before = generation;"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestNativeView.js",
+            "line": 33,
+            "text": "if (!disposed && before === generation) redrawTimer = setTimeout(() => {"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestNativeView.js",
+            "line": 35,
+            "text": "if (disposed || before !== generation) return;"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestNativeView.js",
+            "line": 42,
+            "text": "// An initial request launched before installation cannot be generation-guarded."
+          },
+          {
+            "path": "addons/library-addon/src/app/latestNativeView.js",
+            "line": 44,
+            "text": "cancel(); mode(!enabled);"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestNativeView.js",
+            "line": 75,
+            "text": "cancel(); mount();"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestNativeView.js",
+            "line": 78,
+            "text": "const token = generation, current = () => !disposed && token === generation;"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestNativeView.js",
+            "line": 85,
+            "text": "const proxy = deferred.promise({ abort() { if (current()) cancel(); return proxy; } });"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestNativeView.js",
+            "line": 92,
+            "text": "generation++;"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestNativeView.js",
+            "line": 94,
+            "text": "pending = { cancel() { clearTimeout(timeout); deferred.reject(proxy, \"abort\"); } };"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestNativeView.js",
+            "line": 95,
+            "text": "const task = Promise.resolve().then(() => query({ id: `${session}:${token}`, session, url: target.href, isCurrent: current }));"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestNativeView.js",
+            "line": 99,
+            "text": "clearTimeout(timeout); pending = null;"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestNativeView.js",
+            "line": 121,
+            "text": "clearTimeout(timeout);"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestNativeView.js",
+            "line": 140,
+            "text": "cancel();"
+          },
+          {
+            "path": "addons/library-addon/src/app/latestNativeView.js",
+            "line": 147,
+            "text": "mode(false); disposed = true; cancel();"
+          },
+          {
+            "path": "addons/library-addon/src/app/lifecycle.js",
+            "line": 8,
+            "text": "return !context || typeof context.isCurrent !== \"function\" || context.isCurrent();"
           },
           {
             "path": "addons/library-addon/src/app/opportunisticObserver.js",
@@ -3757,6 +4072,31 @@
             "path": "addons/library-addon/src/library/importWorkflow.js",
             "line": 300,
             "text": "// Count work that was actually written, even when a cancel arrived while it ran."
+          },
+          {
+            "path": "addons/library-addon/src/library/latestCollection.js",
+            "line": 7,
+            "text": "// Build once per supplied catalog generation, never once per card. Collisions"
+          },
+          {
+            "path": "addons/library-addon/src/library/latestCollection.js",
+            "line": 90,
+            "text": "// Each invocation owns its cache; caller publishes it only while isCurrent()."
+          },
+          {
+            "path": "addons/library-addon/src/library/latestCollection.js",
+            "line": 91,
+            "text": "export async function loadLatestCollection({ readPage, lookup, yieldWork, isCurrent = () => true, limit = LATEST_COLLECTION_LIMIT }) {"
+          },
+          {
+            "path": "addons/library-addon/src/library/latestCollection.js",
+            "line": 97,
+            "text": "if (!isCurrent()) return { ok: false, reason: \"cancelled\" };"
+          },
+          {
+            "path": "addons/library-addon/src/library/latestCollection.js",
+            "line": 99,
+            "text": "if (!isCurrent()) return { ok: false, reason: \"cancelled\" };"
           },
           {
             "path": "addons/library-addon/src/library/manualUpdateChecker.js",
@@ -4349,7 +4689,7 @@
             "text": "generation,"
           }
         ],
-        "rawActionCount": 62
+        "rawActionCount": 64
       },
       {
         "id": "example-addon",
@@ -7156,6 +7496,11 @@
           "text": "return await bridge.invokeCoreAction(\"config.getTagPrefs\", {});"
         },
         {
+          "path": "addons/library-addon/src/app/latestCollectionController.js",
+          "line": 59,
+          "text": "const result = await core.invokeCoreAction(\"config.getTagPrefs\", { includePrefixes: true });"
+        },
+        {
           "path": "addons/example-addon/src/api/storage.js",
           "line": 20,
           "text": "return core.invokeCoreAction(\"config.getTagPrefs\", {});"
@@ -7923,6 +8268,11 @@
           "path": "addons/library-addon/src/api/toast.js",
           "line": 2,
           "text": "core.invokeCoreAction(\"toast.show\", { message: String(message || \"\"), type });"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestCollectionController.js",
+          "line": 22,
+          "text": "reportError: (message) => { void core.invokeCoreAction(\"toast.show\", { message, type: \"warning\" }); } });"
         },
         {
           "path": "addons/example-addon/src/api/toast.js",
@@ -9242,6 +9592,121 @@
           "text": "path: target.pathname,"
         },
         {
+          "path": "addons/library-addon/src/app/latestCollectionController.js",
+          "line": 4,
+          "text": "export function createLibraryLatestCollectionController({ core, library, getEnabled, getUrl = () => location.href, getWindow = () => window, createView = createLibraryLatestView }) {"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestCollectionController.js",
+          "line": 9,
+          "text": "try { return /\\/sam\\/latest_alpha\\/?$/.test(new URL(getUrl()).pathname); } catch { return false; }"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestCollectionController.js",
+          "line": 46,
+          "text": "if (context?.url && !/\\/sam\\/latest_alpha\\/?$/.test(new URL(context.url).pathname)) void stop({ redraw: false });"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestCollectionController.js",
+          "line": 55,
+          "text": "const url = new URL(detail.url);"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestCollectionController.js",
+          "line": 56,
+          "text": "if (url.origin !== new URL(getUrl()).origin || url.pathname !== \"/sam/latest_alpha/latest_data.php\" || url.searchParams.get(\"cmd\") !== \"list\" || url.searchParams.get(\"cat\") !== \"games\") throw new Error(\"Unsupported Library query\");"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestCollectionController.js",
+          "line": 73,
+          "text": "const options = Object.fromEntries(url.searchParams);"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestCollectionController.js",
+          "line": 75,
+          "text": "options[name] = [...url.searchParams.getAll(name), ...url.searchParams.getAll(`${name}[]`)].flatMap((value) => value.split(\",\"));"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestNativeTransport.js",
+          "line": 3,
+          "text": "const url = new URL(typeof input === \"string\" ? input : input?.url, base);"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestNativeTransport.js",
+          "line": 4,
+          "text": "return url.origin === origin && url.pathname === \"/sam/latest_alpha/latest_data.php\" &&"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestNativeTransport.js",
+          "line": 5,
+          "text": "url.searchParams.get(\"cmd\") === \"list\" && url.searchParams.get(\"cat\") === \"games\" ? url : null;"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestNativeView.js",
+          "line": 12,
+          "text": "const games = () => /\\/sam\\/latest_alpha\\/?$/.test(location.pathname) &&"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestNativeView.js",
+          "line": 13,
+          "text": "(!location.hash.match(/\\/cat=([^/]+)/) || location.hash.match(/\\/cat=([^/]+)/)[1] === \"games\");"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestNativeView.js",
+          "line": 36,
+          "text": "if (enabled) { mode(false); history.replaceState(null, \"\", `${location.pathname}${location.search}${normalHash}`); }"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestNativeView.js",
+          "line": 46,
+          "text": "session++; normalHash = location.hash;"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestNativeView.js",
+          "line": 47,
+          "text": "history.replaceState(null, \"\", `${location.pathname}${location.search}${location.hash.replace(/\\/page=\\d+/, \"\") || \"#/cat=games\"}/page=1`);"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestNativeView.js",
+          "line": 48,
+          "text": "} else history.replaceState(null, \"\", `${location.pathname}${location.search}${normalHash}`);"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestNativeView.js",
+          "line": 73,
+          "text": "try { target = new URL(options.url, location.href); } catch { return originalAjax.apply(this, arguments); }"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestNativeView.js",
+          "line": 74,
+          "text": "if (target.origin !== location.origin || target.pathname !== \"/sam/latest_alpha/latest_data.php\" || target.searchParams.get(\"cmd\") !== \"list\" || String(options.method || options.type || \"GET\").toUpperCase() !== \"GET\") return originalAjax.apply(this, arguments);"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestNativeView.js",
+          "line": 77,
+          "text": "if (!games() || target.searchParams.get(\"cat\") !== \"games\") mode(false);"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestNativeView.js",
+          "line": 115,
+          "text": "if (String(page) !== target.searchParams.get(\"page\")) history.replaceState(null, \"\", `${location.pathname}${location.search}${location.hash.replace(/\\/page=\\d+/, \"\")}/page=${page}`);"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestNativeView.js",
+          "line": 130,
+          "text": "if (!disposed && enabled && prepared && isLatestRecoveryFetch(input, init, location.origin, location.href)) {"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestNativeView.js",
+          "line": 141,
+          "text": "if (enabled) { mode(false); frozen = event.persisted; history.replaceState(null, \"\", `${location.pathname}${location.search}${normalHash}`); paint(\"Normal Latest\"); }"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestNativeView.js",
+          "line": 153,
+          "text": "if (restore) { history.replaceState(null, \"\", `${location.pathname}${location.search}${normalHash}`); if (shouldRedraw) redraw(); }"
+        },
+        {
           "path": "addons/library-addon/src/app/pageContext.js",
           "line": 4,
           "text": "const isF95 = location.hostname.includes(\"f95zone.to\");"
@@ -9255,6 +9720,11 @@
           "path": "addons/library-addon/src/library/hybridRecordRequest.js",
           "line": 44,
           "text": "const sent = new URL(requestedUrl).searchParams;"
+        },
+        {
+          "path": "addons/library-addon/src/library/latestPresentation.js",
+          "line": 8,
+          "text": "const url = new URL(value);"
         },
         {
           "path": "addons/library-addon/src/library/threadIdentity.js",
@@ -9680,6 +10150,26 @@
           "path": "addons/library-addon/src/app/dockController.js",
           "line": 19,
           "text": "return new Promise((resolve) => window.setTimeout(resolve, milliseconds));"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestCollectionController.js",
+          "line": 14,
+          "text": "const timer = setTimeout(() => { timers.delete(timer); resolve(); }, 0);"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestCollectionController.js",
+          "line": 25,
+          "text": "retryTimer = setTimeout(() => { retryTimer = null; void start(); }, 500);"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestNativeView.js",
+          "line": 33,
+          "text": "if (!disposed && before === generation) redrawTimer = setTimeout(() => {"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestNativeView.js",
+          "line": 86,
+          "text": "const timeout = setTimeout(() => {"
         },
         {
           "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
@@ -10240,7 +10730,7 @@
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 215,
+          "line": 214,
           "text": "const access = await getAddonAccess(core);"
         },
         {
@@ -10421,12 +10911,12 @@
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 22,
+          "line": 23,
           "text": "configureImportProgress(core);"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 190,
+          "line": 189,
           "text": "handleImportProgressDialogClosed(detail);"
         },
         {
@@ -10471,7 +10961,7 @@
         },
         {
           "path": "addons/library-addon/src/library/recordModel.js",
-          "line": 126,
+          "line": 129,
           "text": "progressNote: text(source.progressNote ?? record?.progressNote),"
         },
         {
@@ -10491,72 +10981,72 @@
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 727,
+          "line": 734,
           "text": "onProgress(progress) {"
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 728,
+          "line": 735,
           "text": "const item = progress.result;"
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 735,
+          "line": 742,
           "text": "options.onProgress?.(progress);"
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 856,
+          "line": 863,
           "text": "function reportBulkProgress(options, progress) {"
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 857,
+          "line": 864,
           "text": "options?.onProgress?.({ ...progress, processed: progress.updated + progress.removed + progress.skipped });"
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 864,
+          "line": 871,
           "text": "reportBulkProgress(options, { total: ids.length, updated, removed: 0, skipped });"
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 870,
+          "line": 877,
           "text": "reportBulkProgress(options, { total: ids.length, updated, removed: 0, skipped });"
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 885,
+          "line": 892,
           "text": "reportBulkProgress(options, { total: ids.length, updated, removed: 0, skipped });"
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 1155,
+          "line": 1162,
           "text": "reportBulkProgress(options, { total: ids.length, updated, removed: 0, skipped });"
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 1166,
+          "line": 1173,
           "text": "reportBulkProgress(options, { total: ids.length, updated, removed: 0, skipped });"
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 1181,
+          "line": 1188,
           "text": "reportBulkProgress(options, { total: ids.length, updated, removed: 0, skipped });"
         },
         {
           "path": "addons/library-addon/src/library/service.js",
-          "line": 1187,
+          "line": 1194,
           "text": "reportBulkProgress(options, { total: ids.length, updated, removed: 0, skipped });"
-        },
-        {
-          "path": "addons/library-addon/src/library/service.js",
-          "line": 1203,
-          "text": "reportBulkProgress(options, { total: ids.length, updated: 0, removed, skipped });"
         },
         {
           "path": "addons/library-addon/src/library/service.js",
           "line": 1210,
+          "text": "reportBulkProgress(options, { total: ids.length, updated: 0, removed, skipped });"
+        },
+        {
+          "path": "addons/library-addon/src/library/service.js",
+          "line": 1217,
           "text": "reportBulkProgress(options, { total: ids.length, updated: 0, removed, skipped });"
         },
         {
@@ -11785,67 +12275,57 @@
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 58,
-          "text": "function isCurrent(context) {"
+          "line": 10,
+          "text": "import { createLibraryLifecycle, isLibraryLifecycleCurrent as isCurrent } from \"./lifecycle.js\";"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 61,
-          "text": "typeof context.isCurrent !== \"function\" ||"
-        },
-        {
-          "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 62,
-          "text": "context.isCurrent()"
-        },
-        {
-          "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 80,
+          "line": 75,
           "text": "if (!isCurrent(context)) {"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 90,
+          "line": 85,
           "text": "if (!isCurrent(context)) {"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 98,
+          "line": 95,
           "text": "if (!isCurrent(context)) {"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 103,
+          "line": 100,
           "text": "if (!isCurrent(context)) {"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 114,
+          "line": 111,
           "text": "return context.isCurrent()"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 120,
+          "line": 117,
           "text": "return context.isCurrent()"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 126,
+          "line": 123,
           "text": "return context.isCurrent()"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 180,
+          "line": 178,
           "text": "markerProvider.cancel();"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 198,
+          "line": 197,
           "text": "} else if (command === \"teardown\") {"
         },
         {
           "path": "addons/library-addon/src/app/createLibraryAddonApp.js",
-          "line": 199,
+          "line": 198,
           "text": "void lifecycle.teardown(detail);"
         },
         {
@@ -11909,6 +12389,51 @@
           "text": "if (!state.enabled || !isCurrent(context)) {"
         },
         {
+          "path": "addons/library-addon/src/app/latestCollectionController.js",
+          "line": 5,
+          "text": "let view = null, generation = 0, session = null, cache = null, loading = null;"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestCollectionController.js",
+          "line": 12,
+          "text": "const cancelData = () => { generation++; session = null; cache = null; loading = null; };"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestCollectionController.js",
+          "line": 14,
+          "text": "const timer = setTimeout(() => { timers.delete(timer); resolve(); }, 0);"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestCollectionController.js",
+          "line": 25,
+          "text": "retryTimer = setTimeout(() => { retryTimer = null; void start(); }, 500);"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestCollectionController.js",
+          "line": 36,
+          "text": "generation++; cache = null; loading = null;"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestCollectionController.js",
+          "line": 52,
+          "text": "const token = generation;"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestCollectionController.js",
+          "line": 53,
+          "text": "const current = () => token === generation && active() && detail.isCurrent?.() !== false;"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestCollectionController.js",
+          "line": 63,
+          "text": "lookup: createLatestCatalogLookup(result.value), yieldWork, isCurrent: current,"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestCollectionController.js",
+          "line": 82,
+          "text": "if (active() && session === detail.session && detail.isCurrent?.() !== false && retries < 2) return query(detail, retries + 1);"
+        },
+        {
           "path": "addons/library-addon/src/app/latestMarkerProvider.js",
           "line": 9,
           "text": "let generation = 0;"
@@ -11957,6 +12482,111 @@
           "path": "addons/library-addon/src/app/latestMarkerProvider.js",
           "line": 56,
           "text": "return { start, stop, cancel, changed, query };"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestNativeTransport.js",
+          "line": 34,
+          "text": "export function decorateLatestXhr(xhr, text, isCurrent) {"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestNativeTransport.js",
+          "line": 41,
+          "text": "if (isCurrent() && xhr.readyState === 4 && xhr.status >= 200 && xhr.status < 300) {"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestNativeView.js",
+          "line": 8,
+          "text": "let enabled = false, disposed = false, frozen = false, normalHash = \"\", generation = 0, session = 0;"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestNativeView.js",
+          "line": 23,
+          "text": "function cancel() {"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestNativeView.js",
+          "line": 24,
+          "text": "generation++; clearTimeout(redrawTimer); redrawTimer = null;"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestNativeView.js",
+          "line": 25,
+          "text": "pending?.cancel(); pending = null; prepared = null;"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestNativeView.js",
+          "line": 31,
+          "text": "const before = generation;"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestNativeView.js",
+          "line": 33,
+          "text": "if (!disposed && before === generation) redrawTimer = setTimeout(() => {"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestNativeView.js",
+          "line": 35,
+          "text": "if (disposed || before !== generation) return;"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestNativeView.js",
+          "line": 42,
+          "text": "// An initial request launched before installation cannot be generation-guarded."
+        },
+        {
+          "path": "addons/library-addon/src/app/latestNativeView.js",
+          "line": 44,
+          "text": "cancel(); mode(!enabled);"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestNativeView.js",
+          "line": 75,
+          "text": "cancel(); mount();"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestNativeView.js",
+          "line": 78,
+          "text": "const token = generation, current = () => !disposed && token === generation;"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestNativeView.js",
+          "line": 85,
+          "text": "const proxy = deferred.promise({ abort() { if (current()) cancel(); return proxy; } });"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestNativeView.js",
+          "line": 86,
+          "text": "const timeout = setTimeout(() => {"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestNativeView.js",
+          "line": 92,
+          "text": "generation++;"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestNativeView.js",
+          "line": 94,
+          "text": "pending = { cancel() { clearTimeout(timeout); deferred.reject(proxy, \"abort\"); } };"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestNativeView.js",
+          "line": 95,
+          "text": "const task = Promise.resolve().then(() => query({ id: `${session}:${token}`, session, url: target.href, isCurrent: current }));"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestNativeView.js",
+          "line": 140,
+          "text": "cancel();"
+        },
+        {
+          "path": "addons/library-addon/src/app/latestNativeView.js",
+          "line": 147,
+          "text": "mode(false); disposed = true; cancel();"
+        },
+        {
+          "path": "addons/library-addon/src/app/lifecycle.js",
+          "line": 8,
+          "text": "return !context || typeof context.isCurrent !== \"function\" || context.isCurrent();"
         },
         {
           "path": "addons/library-addon/src/app/opportunisticObserver.js",
@@ -12192,6 +12822,31 @@
           "path": "addons/library-addon/src/library/importWorkflow.js",
           "line": 300,
           "text": "// Count work that was actually written, even when a cancel arrived while it ran."
+        },
+        {
+          "path": "addons/library-addon/src/library/latestCollection.js",
+          "line": 7,
+          "text": "// Build once per supplied catalog generation, never once per card. Collisions"
+        },
+        {
+          "path": "addons/library-addon/src/library/latestCollection.js",
+          "line": 90,
+          "text": "// Each invocation owns its cache; caller publishes it only while isCurrent()."
+        },
+        {
+          "path": "addons/library-addon/src/library/latestCollection.js",
+          "line": 91,
+          "text": "export async function loadLatestCollection({ readPage, lookup, yieldWork, isCurrent = () => true, limit = LATEST_COLLECTION_LIMIT }) {"
+        },
+        {
+          "path": "addons/library-addon/src/library/latestCollection.js",
+          "line": 97,
+          "text": "if (!isCurrent()) return { ok: false, reason: \"cancelled\" };"
+        },
+        {
+          "path": "addons/library-addon/src/library/latestCollection.js",
+          "line": 99,
+          "text": "if (!isCurrent()) return { ok: false, reason: \"cancelled\" };"
         },
         {
           "path": "addons/library-addon/src/library/manualUpdateChecker.js",

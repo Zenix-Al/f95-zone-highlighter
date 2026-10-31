@@ -7,7 +7,7 @@ import { handleLibraryManagerDialogClosed } from "../ui/manager/managerLauncher.
 import { configureToast, showToast } from "../ui/utils/showToast.js";
 import { createLibraryCommandBinding } from "./commands.js";
 import { createLibraryDockController } from "./dockController.js";
-import { createLibraryLifecycle } from "./lifecycle.js";
+import { createLibraryLifecycle, isLibraryLifecycleCurrent as isCurrent } from "./lifecycle.js";
 import { createLibraryManagerController } from "./managerController.js";
 import { getLocalLibraryPageContext } from "./pageContext.js";
 import { createLibraryRegistration } from "./registration.js";
@@ -16,6 +16,7 @@ import { createLibraryLatestMarkerProvider } from "./latestMarkerProvider.js";
 import { createAutoUpdateScheduler } from "../library/autoUpdateScheduler.js";
 import { createUpdateNotificationCoordinator } from "../library/updateNotificationCoordinator.js";
 import { getLegacyUpgradeMessage, prepareLibraryStorage } from "./legacyUpgradeGuard.js";
+import { createLibraryLatestCollectionController } from "./latestCollectionController.js";
 
 export function createLibraryAddonApp({ core, runtime }) {
   configureToast(core);
@@ -32,12 +33,13 @@ export function createLibraryAddonApp({ core, runtime }) {
     notify: showToast,
     isActive: () => state.enabled,
   });
-  let markerProvider;
+  let markerProvider, latestCollection;
   const library = createLibraryService(core, settings.storage, {
     notifyFirstChanged: updateNotifications.notifyFirstChanged,
-    onRecordsChanged: () => markerProvider?.changed(),
+    onRecordsChanged: () => { markerProvider?.changed(); latestCollection?.changed(); },
   });
   markerProvider = createLibraryLatestMarkerProvider({ core, getEntry: library.getEntry, isActive: () => state.enabled && !state.upgradeRequired });
+  latestCollection = createLibraryLatestCollectionController({ core, library, getEnabled: () => state.enabled && !state.upgradeRequired });
   const autoUpdateScheduler = createAutoUpdateScheduler({
     repository: library.autoUpdate,
     queueRuntime: library.autoUpdateQueue,
@@ -52,25 +54,18 @@ export function createLibraryAddonApp({ core, runtime }) {
   let manager;
   let commandHandler = null;
   let pagehideBound = false;
-  const onPageHide = () => {
-    void autoUpdateScheduler.stop();
-  };
-  function isCurrent(context) {
-    return (
-      !context ||
-      typeof context.isCurrent !== "function" ||
-      context.isCurrent()
-    );
-  }
+  const onPageHide = () => void autoUpdateScheduler.stop();
   async function setEnabled(nextEnabled, context = null) {
     if (state.upgradeRequired) return { ok: false, reason: "upgrade_required" };
     state.enabled = Boolean(nextEnabled);
     await settings.save({ enabled: state.enabled });
     if (state.enabled) {
+      await latestCollection.start();
       await markerProvider.start();
       await dock.refresh(context);
       await autoUpdateScheduler.start();
     } else {
+      await latestCollection.stop();
       await markerProvider.stop();
       await autoUpdateScheduler.stop();
       await cancelActiveImport("disabled");
@@ -92,6 +87,8 @@ export function createLibraryAddonApp({ core, runtime }) {
     }
     state.enabled = loaded.enabled !== false;
     state.showPageButtons = loaded.showPageButtons !== false;
+    if (state.enabled) await latestCollection.start();
+    else await latestCollection.stop();
     if (state.enabled) await markerProvider.start();
     else await markerProvider.stop();
     await dock.unmount();
@@ -128,6 +125,7 @@ export function createLibraryAddonApp({ core, runtime }) {
         : { ok: false, reason: "refresh_superseded" };
     },
     onTeardown: async ({ reason }) => {
+      await latestCollection.stop({ redraw: !String(reason).includes("pagehide") });
       state.enabled = false;
       await markerProvider.stop();
       await autoUpdateScheduler.stop();
@@ -178,6 +176,7 @@ export function createLibraryAddonApp({ core, runtime }) {
     else if (command === "refresh") void lifecycle.refresh(detail);
     else if (command === "before-page-change") {
       markerProvider.cancel();
+      latestCollection.routeChanged(detail.routeContext);
       void autoUpdateScheduler.stop();
       lifecycle.invalidate(
         String(detail.reason || "page-change"),

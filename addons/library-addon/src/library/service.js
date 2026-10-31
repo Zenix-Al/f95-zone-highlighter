@@ -538,7 +538,14 @@ export function createLibraryService(bridge, _storage, dependencies = {}) {
     const existing = normalizeRecord(existingRecord, { now });
     const merged = mergeThreadFacts(existing, threadPatch, { now });
     const diff = diffThreadFacts(existing, merged);
-    if (!diff.changed) return { ok: true, value: existing, unchanged: true };
+    if (!diff.changed) {
+      const metadataChanged = JSON.stringify(existing.thread.tags) !== JSON.stringify(merged.thread.tags) ||
+        JSON.stringify(existing.thread.latest) !== JSON.stringify(merged.thread.latest);
+      if (!metadataChanged) return { ok: true, value: existing, unchanged: true };
+      if (await cancelled()) return { ok: false, reason: "cancelled" };
+      const saved = await putEntry(merged);
+      return saved?.ok ? { ...saved, value: merged, unchanged: true } : saved;
+    }
 
     const next = {
       ...merged,
@@ -791,7 +798,7 @@ export function createLibraryService(bridge, _storage, dependencies = {}) {
       const sourcePage = item.source === "latest-api" ? "latest-api-update-check" : "manual-update-check";
       const apiFacts = {};
       if (item.source === "latest-api") {
-        for (const field of ["developer", "tags", "prefixes", "threadRating"]) {
+        for (const field of ["developer", "tags", "prefixes", "threadRating", "latest"]) {
           if (Object.hasOwn(observed, field)) apiFacts[field] = observed[field];
         }
         apiFacts.canonicalTitle = observed.title;

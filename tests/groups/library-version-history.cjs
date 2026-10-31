@@ -119,6 +119,26 @@ module.exports = function registerLibraryVersionHistoryGroup(context) {
     assert.strictEqual(snapshot.record.personal.lastPlayedVersion, "0.7");
   });
 
+  runTest("LIBRARY-VERSION-HISTORY-09 tag and presentation-only observations persist without history", async () => {
+    const { createLibraryService } = loadModule("addons/library-addon/src/library/service.js");
+    const memory = createMemoryBridge();
+    const library = createLibraryService(memory.bridge, {});
+    const initial = await library.getEntry("42");
+    await library.observeThreadFacts(initial, threadPatch("0.7", { tags: ["new"], latest: { views: 2, ts: 100, cover: "https://preview.f95zone.to/a.jpg" } }), { now: 50 });
+    const saved = memory.snapshot();
+    assert.deepStrictEqual(saved.record.thread.tags, ["new"]);
+    assert.strictEqual(saved.record.thread.latest.views, 2);
+    assert.strictEqual(saved.record.lastThreadChangeAt, initial.lastThreadChangeAt);
+    assert.strictEqual(saved.record.updateState, initial.updateState);
+    assert.strictEqual(saved.eventWrites, 0);
+    await library.observeThreadFacts(saved.record, threadPatch("0.8", { tags: ["another"] }), { now: 60 });
+    const event = memory.snapshot().events[0];
+    assert.deepStrictEqual(event.fields, ["version"]);
+    assert.ok(!Object.hasOwn(event.before, "tags") && !Object.hasOwn(event.after, "tags"));
+    assert.ok(!Object.hasOwn(event.after, "latest"));
+    assert.strictEqual(memory.snapshot().record.thread.latest.views, 2);
+  });
+
   runTest("LIBRARY-VERSION-HISTORY-01 repeated and equivalent versions are write-free", async () => {
     const { createLibraryService } = loadModule("addons/library-addon/src/library/service.js");
     const memory = createMemoryBridge();

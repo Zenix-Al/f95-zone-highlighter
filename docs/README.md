@@ -46,6 +46,7 @@ are not automatically changed; real budget violations still require review.
 - [Latest Marker Provider Contract](architecture/latest-marker-provider-contract.md) - Data-only trusted add-on marker broker, wire actions, limits, preferences, and teardown boundaries.
 - [Latest Marker Overlay Lifecycle](architecture/latest-marker-overlay-lifecycle.md) - Non-blocking provider reconciliation, card replacement, frame-budgeted slots, and teardown.
 - [Library Latest Marker Provider](architecture/library-latest-marker-provider.md) - Library status mapping, cache reads, record invalidation, and lifecycle ownership.
+- [Library-only Latest](architecture/library-latest-only-baseline.md) - Add-on-owned native-card collection mode, capture compatibility, release verification, and known limitations.
 - [Library Legacy Upgrade Guard](architecture/library-legacy-upgrade-guard.md) - Retired schema-v1 conversion, the v1.2.2 bridge, and fail-closed direct-upgrade handling.
 - [Thread Utility Baseline](architecture/thread-utility-baseline.md) - Reference quick-search behavior and the canonical opening-post fixture contract.
 - [Thread Utility Golden Contract](architecture/thread-utility-golden-contract.md) - Bounded Example Add-on bootstrap, API, lifecycle, UI ownership, and teardown requirements.

@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.5.0 - Library-only Latest
+
+- Added a Library-only book toggle beside Latest's Auto Refresh control, using the site's cards and the existing overlay, hover highlights, and Library status markers.
+- Search, filter, sort, and page through saved records locally. Each redraw keeps the normal site list request; there is no feed crawler or new core API requirement.
+- Keep covers, screenshots, and other card metadata supplied by normal API checks. Older entries use placeholders until enriched, with no extra backfill requests or image-change history.
+- New update history no longer records tag changes or stores historical tag lists. Current tags and existing history are preserved.
+- Reload collection data on entry and show a changed hint after local edits or updater commits. Cards refresh on the next native redraw or toggle, without forcing extra requests after every write.
+
 ## v1.4.2 - Update check optimizations
 
 - Optimized update check to pause if daily allowance is reached, only resume when allowance is reset and exceeded the configured Update hour.

@@ -1,3 +1,5 @@
+import { normalizeLatestPresentation } from "./latestPresentation.js";
+
 const PERSONAL_STATUSES = new Set([
   "saved",
   "backlog",
@@ -97,6 +99,7 @@ function normalizeThread(record, now) {
       text(source.currentVersion ?? record?.currentVersion ?? record?.gameVersion) ||
       derived.currentVersion,
     threadRating: finiteRating(source.threadRating ?? record?.threadRating),
+    latest: normalizeLatestPresentation(source.latest),
     sourcePage: text(source.sourcePage ?? record?.sourcePage, "thread") || "thread",
     observedAt,
     versionObservedAt: finiteDate(
@@ -190,6 +193,9 @@ export function mergeThreadFacts(record, threadPatch, options = {}) {
   copy("tags", "tags");
   copy("currentVersion", "currentVersion", "gameVersion");
   copy("threadRating", "threadRating");
+  if (source.latest && typeof source.latest === "object") {
+    patchSource.latest = { ...current.thread.latest, ...normalizeLatestPresentation(source.latest) };
+  }
   copy("sourcePage", "sourcePage");
   copy("observedAt", "observedAt", "updatedAt");
   copy("versionObservedAt", "versionObservedAt");

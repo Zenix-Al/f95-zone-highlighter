@@ -95,6 +95,10 @@ module.exports = ({ assert, fs, path, ROOT, loadModule, runTest }) => {
     assert.deepStrictEqual(h.record().thread.prefixes, [{ label: "Synthetic prefix", color: "blue" }]);
     assert.strictEqual(h.record().thread.threadRating, 3.71);
     assert.strictEqual(h.record().thread.sourcePage, "latest-api-update-check");
+    assert.strictEqual(h.record().thread.latest.cover, row.cover);
+    assert.deepStrictEqual(h.record().thread.latest.screens, row.screens);
+    assert.strictEqual(h.record().thread.latest.ts, row.ts);
+    assert.strictEqual(h.record().thread.latest.views, row.views);
     assert.deepStrictEqual(h.record().personal, { ...before, note: "newer edit from another tab" });
     assert.strictEqual(h.record().updateState, "changed");
     assert.notStrictEqual(h.record().thread.observedAt, row.ts * 1000);
@@ -213,6 +217,31 @@ module.exports = ({ assert, fs, path, ROOT, loadModule, runTest }) => {
     assert.strictEqual(initial.record().thread.currentVersion, row.version);
     assert.strictEqual(initial.record().updateState, "acknowledged");
     assert.strictEqual(initial.stores.get("updates").size, 0);
+  });
+
+  runTest("LIBRARY-LATEST-METADATA-01 real manual and auto commits retain presentation without new history", async () => {
+    for (const automatic of [false, true]) {
+      const h = harness();
+      const { normalizeRecord } = loadModule("addons/library-addon/src/library/recordModel.js");
+      const { mapLatestListingFacts } = loadModule("addons/library-addon/src/library/latestListingFacts.js");
+      const facts = mapLatestListingFacts(row, { thread: { url } }, catalogs).value;
+      const initial = normalizeRecord({ ...h.original, thread: { ...h.original.thread, ...facts, latest: {} }, lastThreadChangeAt: 42 });
+      h.stores.get("records").set(initial.threadId, initial);
+      if (automatic) {
+        const queue = h.service.autoUpdateQueue;
+        await queue.prepareCycle({ cycle: { cycleId: "metadata" }, items: [{ threadId: initial.threadId }] });
+        const result = await queue.runWorker({ owner: "tab", config: await h.service.autoUpdate.getConfig() });
+        assert.strictEqual(result.ok, true);
+      } else {
+        await h.service.commitManualUpdateCheck(await h.preview());
+      }
+      assert.deepStrictEqual(h.record().thread.latest.screens, row.screens);
+      assert.strictEqual(h.record().thread.latest.ts, row.ts);
+      assert.strictEqual(h.record().lastThreadChangeAt, 42);
+      assert.strictEqual(h.record().updateState, "acknowledged");
+      assert.strictEqual(h.stores.get("updates").size, 0);
+      assert.strictEqual(h.stores.get("activity").size, 0);
+    }
   });
 
   runTest("LIBRARY-HYBRID-05 production worker uses one daily slot and refunds HTML blocks without API refunds", async () => {

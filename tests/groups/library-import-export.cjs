@@ -89,6 +89,7 @@ module.exports = function registerLibraryImportExportGroup(context) {
       conflictPolicy: "replace",
     });
     const canonical = sourceMemory.snapshot().records[0];
+    canonical.thread.latest = { cover: "https://preview.f95zone.to/a.jpg", screens: [], views: 0, likes: 4, ts: 100, watched: false };
     sourceMemory.snapshot;
     const update = {
       id: "update:42:x",
@@ -97,9 +98,9 @@ module.exports = function registerLibraryImportExportGroup(context) {
       observedAt: 250,
       version: "0.7",
       previousVersion: "0.6",
-      fields: ["version"],
-      before: {},
-      after: {},
+      fields: ["version", "tags"],
+      before: { tags: ["legacy old tag"] },
+      after: { tags: ["legacy new tag"] },
     };
     const activity = {
       id: "activity:42:cmd:rating-change",
