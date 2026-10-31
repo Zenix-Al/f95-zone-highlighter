@@ -7,9 +7,9 @@ Welcome to the documentation for the Latest Highlighter userscript. This directo
 2. **Consistency**: Provide guidelines (`agent.md`, `features/creating-features.md`) for adding new features using the framework's APIs (e.g., `createFeature`, `createStyledFeature`).
 3. **Agentic Context**: Ensure AI coding assistants can quickly orient themselves and avoid generating code that conflicts with established patterns (e.g. adding vanilla DOM mutations instead of using `observer.js`, or standalone styling instead of using `ui/renderers/`).
 
-Active plan: [Masked + Direct standalone rework](architecture/TODO_MASKED_DIRECT_STANDALONE_REWORK.md).
+Rework evidence: [Masked + Direct standalone rework ledger](architecture/masked-direct-standalone-rework-ledger.md).
 
-Test maintenance plan: [Test precision and efficiency](architecture/TODO_TEST_PRECISION_AND_EFFICIENCY.md).
+Completed test maintenance: [Test efficiency verification](architecture/test-efficiency-wave5-ledger.md).
 Developer commands and selection: [Test workflow](testing.md).
 Measurement and coverage evidence: [Wave 1 ledger](architecture/test-efficiency-wave1-ledger.md).
 Retirement decisions and validation: [Wave 2 ledger](architecture/test-efficiency-wave2-ledger.md).

@@ -6,7 +6,7 @@ and generic F95 feedback, not origin-owned downloads. Resolve/Direct DL buttons,
 masked resolving and its CAPTCHA fallback are retired.
 
 See the [runtime contract and host matrix](../../docs/architecture/masked-direct-reliability.md)
-and [execution plan](../../docs/architecture/TODO_MASKED_DIRECT_STANDALONE_REWORK.md).
+and [rework ledger](../../docs/architecture/masked-direct-standalone-rework-ledger.md).
 
 ## User behavior
 
