@@ -62,5 +62,5 @@ Normal builds refresh current audit reports; they do not validate correctness or
 automatically approve size-limit changes. Test cleanup alone does not require a
 release build, version bump or distribution regeneration.
 
-See the [efficiency plan](architecture/TODO_TEST_PRECISION_AND_EFFICIENCY.md) and
-its evidence ledgers for removed-contract ownership and measured costs.
+See the [completed efficiency verification](architecture/test-efficiency-wave5-ledger.md)
+and its evidence ledgers for removed-contract ownership and measured costs.

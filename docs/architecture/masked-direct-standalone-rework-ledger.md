@@ -1,8 +1,8 @@
 # Standalone rework: Wave 1 ledger
 
 Investigated 2026-10-20. Wave 1 below characterizes the pre-rework implementation;
-Wave 2 progress is recorded at the end. Companion to
-[the execution plan](TODO_MASKED_DIRECT_STANDALONE_REWORK.md).
+Wave 2 progress is recorded at the end. The execution TODO has been retired;
+see the [current runtime contract](masked-direct-reliability.md).
 
 ## Findings that constrain implementation
 

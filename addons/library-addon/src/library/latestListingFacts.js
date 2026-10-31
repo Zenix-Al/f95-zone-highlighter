@@ -1,4 +1,5 @@
 import { decodeHtmlText } from "../thread/title.js";
+import { normalizeLatestPresentation } from "./latestPresentation.js";
 
 const text = (value) => decodeHtmlText(value).replace(/\s+/g, " ").trim();
 const id = (value) => (typeof value === "string" || Number.isSafeInteger(value)) && /^[1-9]\d*$/.test(String(value)) ? String(value) : "";
@@ -25,6 +26,7 @@ function mapIds(ids, catalog, prefix) {
 
 export function mapLatestListingFacts(row, record, catalogs) {
   const value = { title: text(row.title), currentVersion: text(row.version), url: record.thread.url };
+  value.latest = normalizeLatestPresentation(row);
   if (Object.hasOwn(row, "creator")) {
     if (typeof row.creator !== "string" || row.creator.length > 1000) return { ok: false, reason: "invalid_facts" };
     value.developer = text(row.creator);

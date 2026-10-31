@@ -85,8 +85,7 @@ No browser Notification permission, idle polling, or new ownership service exist
 
 ## Evidence
 
-See the [ledger](masked-direct-standalone-rework-ledger.md) and
-[plan](TODO_MASKED_DIRECT_STANDALONE_REWORK.md).
+See the [rework ledger](masked-direct-standalone-rework-ledger.md) for implementation evidence.
 Current coverage includes retirement, pipeline, feedback, settings and retained
 host/staged fixtures. Archive-only tests have been retired; historical baseline
 documents remain reference evidence, not current feature promises.

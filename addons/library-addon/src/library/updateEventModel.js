@@ -22,13 +22,6 @@ function normalizePrefixes(value) {
     .filter(Boolean);
 }
 
-function normalizeTags(value) {
-  return (Array.isArray(value) ? value : [])
-    .map(normalizedText)
-    .filter(Boolean)
-    .sort();
-}
-
 export function createThreadFactsSnapshot(record) {
   const thread = record?.thread || {};
   return {
@@ -42,7 +35,6 @@ export function createThreadFactsSnapshot(record) {
         : Number(thread.threadRating),
     url: text(thread.url),
     prefixes: normalizePrefixes(thread.prefixes),
-    tags: normalizeTags(thread.tags),
   };
 }
 
@@ -54,7 +46,7 @@ export function diffThreadFacts(previousRecord, nextRecord) {
   const before = createThreadFactsSnapshot(previousRecord);
   const after = createThreadFactsSnapshot(nextRecord);
   const fields = [];
-  for (const field of ["title", "developer", "rating", "url", "prefixes", "tags"]) {
+  for (const field of ["title", "developer", "rating", "url", "prefixes"]) {
     if (!equal(before[field], after[field])) fields.push(field);
   }
   const versionChanged =

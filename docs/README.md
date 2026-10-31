@@ -7,9 +7,9 @@ Welcome to the documentation for the Latest Highlighter userscript. This directo
 2. **Consistency**: Provide guidelines (`agent.md`, `features/creating-features.md`) for adding new features using the framework's APIs (e.g., `createFeature`, `createStyledFeature`).
 3. **Agentic Context**: Ensure AI coding assistants can quickly orient themselves and avoid generating code that conflicts with established patterns (e.g. adding vanilla DOM mutations instead of using `observer.js`, or standalone styling instead of using `ui/renderers/`).
 
-Active plan: [Masked + Direct standalone rework](architecture/TODO_MASKED_DIRECT_STANDALONE_REWORK.md).
+Rework evidence: [Masked + Direct standalone rework ledger](architecture/masked-direct-standalone-rework-ledger.md).
 
-Test maintenance plan: [Test precision and efficiency](architecture/TODO_TEST_PRECISION_AND_EFFICIENCY.md).
+Completed test maintenance: [Test efficiency verification](architecture/test-efficiency-wave5-ledger.md).
 Developer commands and selection: [Test workflow](testing.md).
 Measurement and coverage evidence: [Wave 1 ledger](architecture/test-efficiency-wave1-ledger.md).
 Retirement decisions and validation: [Wave 2 ledger](architecture/test-efficiency-wave2-ledger.md).
@@ -46,6 +46,7 @@ are not automatically changed; real budget violations still require review.
 - [Latest Marker Provider Contract](architecture/latest-marker-provider-contract.md) - Data-only trusted add-on marker broker, wire actions, limits, preferences, and teardown boundaries.
 - [Latest Marker Overlay Lifecycle](architecture/latest-marker-overlay-lifecycle.md) - Non-blocking provider reconciliation, card replacement, frame-budgeted slots, and teardown.
 - [Library Latest Marker Provider](architecture/library-latest-marker-provider.md) - Library status mapping, cache reads, record invalidation, and lifecycle ownership.
+- [Library-only Latest](architecture/library-latest-only-baseline.md) - Add-on-owned native-card collection mode, capture compatibility, release verification, and known limitations.
 - [Library Legacy Upgrade Guard](architecture/library-legacy-upgrade-guard.md) - Retired schema-v1 conversion, the v1.2.2 bridge, and fail-closed direct-upgrade handling.
 - [Thread Utility Baseline](architecture/thread-utility-baseline.md) - Reference quick-search behavior and the canonical opening-post fixture contract.
 - [Thread Utility Golden Contract](architecture/thread-utility-golden-contract.md) - Bounded Example Add-on bootstrap, API, lifecycle, UI ownership, and teardown requirements.
