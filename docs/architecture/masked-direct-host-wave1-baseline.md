@@ -1,7 +1,8 @@
 # Download hosts: Wave 1 baseline
 
 Measured 2026-11-01 on Windows x64, Node v24.16.0. Runtime source unchanged.
-Companion to the [simplification plan](TODO_MASKED_DIRECT_HOST_SIMPLIFICATION.md).
+The implementation TODO has been retired. This ledger retains the measurements
+and follow-up implementation evidence; see the [current runtime contract](masked-direct-reliability.md).
 
 ## Method and reproduction
 

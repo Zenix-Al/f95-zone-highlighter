@@ -9,8 +9,7 @@ Welcome to the documentation for the Latest Highlighter userscript. This directo
 
 Rework evidence: [Masked + Direct standalone rework ledger](architecture/masked-direct-standalone-rework-ledger.md).
 
-Active investigation plan: [Download host and engine simplification](architecture/TODO_MASKED_DIRECT_HOST_SIMPLIFICATION.md).
-Offline measurements and characterization: [Host Wave 1 baseline](architecture/masked-direct-host-wave1-baseline.md).
+Completed host and engine simplification: [Measurements and implementation ledger](architecture/masked-direct-host-wave1-baseline.md).
 
 Completed test maintenance: [Test efficiency verification](architecture/test-efficiency-wave5-ledger.md).
 Developer commands and selection: [Test workflow](testing.md).
