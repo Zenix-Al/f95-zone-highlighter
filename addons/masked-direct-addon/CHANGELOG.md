@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.4.0 - New host support and automation engine improvements
+
+- Add qu.ax and Akirabox support.
+- Simplify and optimize the automation engine: consolidate host metadata and shared tools, reduce redundant scanning, and improve cancellation and cleanup.
+
 ## v1.3.0 - The fall of managed downloads and the new F95 download page
 
 - Adapt to F95's new download page: optionally skip its countdown with one native Continue click after a 250ms delay. This intermediate page never self-closes.

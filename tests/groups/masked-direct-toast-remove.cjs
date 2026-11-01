@@ -20,7 +20,7 @@ module.exports = function registerMaskedDirectToastRemoval(context) {
     const source = readSources();
     assert.doesNotMatch(source, /f95ue-addon-toast|toastEl/);
     assert.match(
-      fs.readFileSync(path.join(sourceRoot, "api", "toast.js"), "utf8"),
+      fs.readFileSync(path.join(sourceRoot, "app", "coreIntegration.js"), "utf8"),
       /toast\.show/,
     );
     const manifest = JSON.parse(
@@ -53,6 +53,7 @@ module.exports = function registerMaskedDirectToastRemoval(context) {
     const serialized = JSON.stringify(calls[0]);
     assert.ok(serialized.length < 320);
     assert.doesNotMatch(serialized, /token=|signature=|<script>|alert\(1\)/);
+    assert.doesNotMatch(serialized, /requestId/);
     assert.match(serialized, /masked-direct-addon/);
   });
 };

@@ -16,9 +16,7 @@ export function isElementVisible(element) {
 export function isElementDisabled(element) {
   if (!element) return true;
   if (element.disabled) return true;
-  const ariaDisabled = String(
-    element.getAttribute("aria-disabled") || "",
-  ).toLowerCase();
+  const ariaDisabled = String(element.getAttribute("aria-disabled") || "").toLowerCase();
   return ariaDisabled === "true";
 }
 
@@ -27,23 +25,15 @@ export function isElementReadyForClick(element) {
 }
 
 export function getElementText(element) {
-  return normalizeText(
-    element?.textContent || element?.value || element?.getAttribute?.("title"),
-  );
+  return normalizeText(element?.textContent || element?.value || element?.getAttribute?.("title"));
 }
 
 export function isCountdownText(text) {
   return /\b\d+\s*s\b/.test(normalizeText(text));
 }
 
-export function getElementAttributeUrl(
-  element,
-  attributeNames,
-  baseUrl = location.href,
-) {
-  const names = Array.isArray(attributeNames)
-    ? attributeNames
-    : [attributeNames];
+export function getElementAttributeUrl(element, attributeNames, baseUrl = location.href) {
+  const names = Array.isArray(attributeNames) ? attributeNames : [attributeNames];
   for (const name of names) {
     const value = String(element?.getAttribute?.(name) || "").trim();
     if (!value || value === "#") continue;
@@ -62,7 +52,7 @@ export function getAnchorHref(anchor, baseUrl = location.href) {
 }
 
 export function clickElement(element) {
-  if (!element || !element.isConnected) return false;
+  if (!element || !element.isConnected || isElementDisabled(element)) return false;
   try {
     if (typeof element.click === "function") {
       element.click();
@@ -81,16 +71,13 @@ export function clickElement(element) {
   }
 }
 
-export async function waitForCandidate({
-  getCandidate,
-  timeoutMs,
-  intervalMs = 250,
-}) {
+export async function waitForCandidate({ getCandidate, timeoutMs, intervalMs = 250, signal }) {
   const startedAt = Date.now();
   while (Date.now() - startedAt < timeoutMs) {
+    signal?.throwIfAborted();
     const candidate = getCandidate();
     if (candidate) return candidate;
-    await sleep(intervalMs);
+    await sleep(intervalMs, signal);
   }
   return null;
 }

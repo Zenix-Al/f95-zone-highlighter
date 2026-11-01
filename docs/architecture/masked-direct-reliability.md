@@ -17,12 +17,17 @@ readiness. Saved automation and skip preferences apply; no self-close or host-su
 feedback is attached to that intermediate action. Old `/masked` routes stay inert.
 No origin-owned tab or per-file result protocol remains.
 
-The GM key f95ue.addon.maskedDirect.standaloneAutomationPolicy now holds policy v2:
-enabled, automation, host switches, local-close choice/delay and upgrade state.
-Fresh defaults are on; saved false choices remain false. Read/API failure or
-malformed/newer policy blocks rather than authorizes automation. Legacy v1 did
-not mirror all enabled/host choices, so one successful F95 settings read is needed;
-partial enabled updates cannot remove that safeguard. No forcing/probing TTL remains.
+The automation-settings repository retains the GM key
+f95ue.addon.maskedDirect.standaloneAutomationPolicy and v2 storage shape for
+compatibility, but no longer exposes a standalone/effective policy. Runtime
+settings contain enabled, automateRegardless, host switches, countdown skipping
+and local-close preferences; legacy userPreference is decoded only at storage.
+Unused observedAt timestamps and derived effective-policy objects are removed.
+Fresh defaults are on; saved false choices remain false. Failed/unavailable reads
+and malformed/newer records block automation. Legacy v1 did not mirror all
+enabled/host choices: a full successful F95 settings read is still required, and
+partial enabled/preference updates cannot remove that safeguard. The closing
+deadline rereads actual settings. No core-forcing/probing/TTL mechanism remains.
 
 Existing one-shot and continuation records stay tab-local and bounded. A stage
 cannot authorize itself from a generic button. Retired request/source/route
@@ -41,7 +46,7 @@ Manual host tabs follow the same rules. Browser file-write completion is not obs
 
 ## Current host matrix
 
-Exact aliases live in src/hosts/metadata.js. Metadata normalization does not
+Exact aliases live in each host definition, collected by src/hosts/metadata.js. Metadata normalization does not
 authorize arbitrary subdomains.
 
 | Package | Retained route/action boundary |
@@ -60,10 +65,31 @@ authorize arbitrary subdomains.
 | UploadHaven | Download route/recent-trigger guard; no fresh completion on reload |
 | UploadNow | Locale share and exactly one stable actionable file |
 | Workupload | File and owned same-host start stage; start health alone does not close |
+| qu.ax | Five-alphanumeric-character file page; validated native /x/ download link clicked once without changing its attributes or opening another tab |
+| Akirabox | Observed twelve-alphanumeric-character /file route on akirabox.to; manual verification then ready native link to https://akirabox.com/download/; no folder support |
 
 Shared challenge checks precede meaningful actions; disposed gates refuse later
 waits. Datanodes clears scan resources on pagehide. Unsupported routes require
 manual use, not relaxed guards or guessed ownership.
+
+Each destination run now owns cancellation through the existing page controller.
+Pagehide, teardown/dispose and observed route changes cancel readiness/grace
+timers, in-flight requests and pending scan frames without failure feedback or
+closing. Disposed in-flight challenge waits return false. Candidate validity is
+checked again after waits. Navigation stages and Datanodes' asynchronous scanner
+retain ownership until their terminal outcome or disposal; handler return alone
+does not mean a download finished. See the [Wave 2 evidence](masked-direct-host-wave1-baseline.md#wave-2-run-owned-cancellation-and-cleanup).
+
+## Metadata execution
+
+Twelve hosts now use shared sequence/repeat tools; Google Drive and Pixeldrain
+retain explicitly justified unique methods under the same run/flow contract.
+Datanodes metadata caps repetition at 90 seconds, keeps unique-priority selection
+and cooldowns, and never retries uncertain final dispatch. UploadNow requires
+stable candidate identity before its deadline; Workupload validates an exact
+HTTPS start target. The unused core observer wrapper/command path is removed.
+See the [host maintenance guide](../../addons/masked-direct-addon/README.md) for
+metadata fields and lifetime semantics. This does not add a remote cache/service.
 
 ## Generic focused-F95 feedback
 

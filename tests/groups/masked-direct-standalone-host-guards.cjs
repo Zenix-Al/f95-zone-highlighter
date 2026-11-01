@@ -4,14 +4,13 @@ const approvedRoutes = require("../fixtures/masked-direct-approved-routes.cjs");
 module.exports = function registerMaskedDirectStandaloneHostGuards(context) {
   const { assert, createDomSandbox, loadModule, runTest } = context;
 
-  runTest(
-    "MASKED-DIRECT-STANDALONE-HOST-GUARDS-01 classifies only approved exact routes",
-    () => {
-      const { classifyStandaloneHostRoute, getStandaloneApprovedHosts } =
-        loadModule(
-          "addons/masked-direct-addon/src/hosts/standaloneEligibility.js",
-        );
-      assert.deepStrictEqual(getStandaloneApprovedHosts(), [
+  runTest("MASKED-DIRECT-STANDALONE-HOST-GUARDS-01 classifies only approved exact routes", () => {
+    const { classifyHostRoute, getApprovedHosts } = loadModule(
+      "addons/masked-direct-addon/src/hosts/hostRoutes.js",
+    );
+    assert.deepStrictEqual(
+      [...getApprovedHosts()].sort(),
+      [
         "krakenfiles.com",
         "delafil.se",
         "download.gg",
@@ -26,47 +25,40 @@ module.exports = function registerMaskedDirectStandaloneHostGuards(context) {
         "uploadnow.io",
         "datanodes.to",
         "vik1ngfile.site",
-      ]);
-      for (const [host, url] of approvedRoutes) {
-        const sandbox = createDomSandbox(url);
-        try {
-          assert.strictEqual(
-            classifyStandaloneHostRoute(host, url).eligible,
-            true,
-            `${host} representative file route`,
-          );
-        } finally {
-          sandbox.restore();
-        }
-      }
-      const sandbox = createDomSandbox("https://krakenfiles.com/view/a");
+        "qu.ax",
+          "akirabox.to",
+      ].sort(),
+    );
+    for (const [host, url] of approvedRoutes) {
+      const sandbox = createDomSandbox(url);
       try {
         assert.strictEqual(
-          classifyStandaloneHostRoute(
-            "krakenfiles.com",
-            "https://krakenfiles.com/view/a",
-          ).eligible,
-          false,
-        );
-        assert.strictEqual(
-          classifyStandaloneHostRoute(
-            "uploadnow.io",
-            "https://uploadnow.io/a/share",
-          ).eligible,
-          false,
-        );
-        assert.strictEqual(
-          classifyStandaloneHostRoute(
-            "pixeldrain.com",
-            "https://pixeldrain.com/collection/example",
-          ).eligible,
-          false,
+          classifyHostRoute(host, url).eligible,
+          true,
+          `${host} representative file route`,
         );
       } finally {
         sandbox.restore();
       }
-    },
-  );
+    }
+    const sandbox = createDomSandbox("https://krakenfiles.com/view/a");
+    try {
+      assert.strictEqual(
+        classifyHostRoute("krakenfiles.com", "https://krakenfiles.com/view/a").eligible,
+        false,
+      );
+      assert.strictEqual(
+        classifyHostRoute("uploadnow.io", "https://uploadnow.io/a/share").eligible,
+        false,
+      );
+      assert.strictEqual(
+        classifyHostRoute("pixeldrain.com", "https://pixeldrain.com/collection/example").eligible,
+        false,
+      );
+    } finally {
+      sandbox.restore();
+    }
+  });
 
   runTest(
     "MASKED-DIRECT-STANDALONE-HOST-GUARDS-02 claims a route once and permits retry after failure",
@@ -101,24 +93,12 @@ module.exports = function registerMaskedDirectStandaloneHostGuards(context) {
         "addons/masked-direct-addon/src/ports/standaloneRunGuard.js",
       );
       assert.strictEqual(
-        getStandaloneRunGuardKey(
-          "vikingfile.com",
-          "https://vikingfile.com/f/Example?token=one",
-        ),
-        getStandaloneRunGuardKey(
-          "vik1ngfile.site",
-          "https://vik1ngfile.site/f/Example?token=two",
-        ),
+        getStandaloneRunGuardKey("vikingfile.com", "https://vikingfile.com/f/Example?token=one"),
+        getStandaloneRunGuardKey("vik1ngfile.site", "https://vik1ngfile.site/f/Example?token=two"),
       );
       assert.strictEqual(
-        getStandaloneRunGuardKey(
-          "download.gg",
-          "https://download.gg/file-example?first=1",
-        ),
-        getStandaloneRunGuardKey(
-          "download.gg",
-          "https://download.gg/file-example?second=2",
-        ),
+        getStandaloneRunGuardKey("download.gg", "https://download.gg/file-example?first=1"),
+        getStandaloneRunGuardKey("download.gg", "https://download.gg/file-example?second=2"),
       );
     },
   );

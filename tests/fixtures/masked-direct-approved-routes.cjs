@@ -8,4 +8,6 @@ module.exports = Object.freeze([
   ["download.gg", "https://download.gg/en-us/file-example"],
   ["uploadhaven.com", "https://uploadhaven.com/download/example"],
   ["pixeldrain.com", "https://pixeldrain.com/u/K3kVDJSJ"],
+  ["qu.ax", "https://qu.ax/rB4pT"],
+  ["akirabox.to", "https://akirabox.to/0PdzyXNW43eA/file"],
 ].map((entry) => Object.freeze(entry)));

@@ -1,3 +1,5 @@
+import { sleep } from "../../shared/utils.js";
+
 const CHALLENGE_SELECTORS = [
   "#challenge-running",
   "#challenge-stage",
@@ -9,7 +11,10 @@ const DEFAULT_POLL_MS = 2000;
 const DEFAULT_TIMEOUT_MS = 10 * 60 * 1000;
 const MUTATION_DEBOUNCE_MS = 100;
 
-export function isCloudflareChallengePage(root = document) {
+export function isCloudflareChallengePage(
+  root = document,
+  readText = () => root.body?.textContent,
+) {
   try {
     const turnstileResponse = root.querySelector?.(
       'input[name="cf-turnstile-response"], textarea[name="cf-turnstile-response"]',
@@ -30,7 +35,7 @@ export function isCloudflareChallengePage(root = document) {
     if (title === "just a moment..." || title === "attention required!") {
       return true;
     }
-    const text = String(root.body?.textContent || "")
+    const text = String(readText() || "")
       .replace(/\s+/g, " ")
       .trim()
       .toLowerCase();
@@ -44,47 +49,10 @@ export function isCloudflareChallengePage(root = document) {
   }
 }
 
-export async function waitForCloudflareChallenge({
-  debugLog,
-  host,
-  notifyChallenge,
-  preserveRequest,
-  pollMs = DEFAULT_POLL_MS,
-  timeoutMs = DEFAULT_TIMEOUT_MS,
-} = {}) {
-  if (!isCloudflareChallengePage()) return { detected: false, cleared: true };
-
-  debugLog?.("DownloadHooks", "Cloudflare challenge detected.", { host });
-  await notifyChallenge?.(
-    host,
-    "Cloudflare verification needs your attention in the download tab.",
-  );
-
-  const startedAt = Date.now();
-  let lastPreservedAt = 0;
-  while (Date.now() - startedAt < timeoutMs) {
-    if (Date.now() - lastPreservedAt >= 30 * 1000) {
-      await preserveRequest?.();
-      lastPreservedAt = Date.now();
-    }
-    await new Promise((resolve) => setTimeout(resolve, pollMs));
-    if (!isCloudflareChallengePage()) {
-      debugLog?.("DownloadHooks", "Cloudflare challenge cleared.", { host });
-      return { detected: true, cleared: true };
-    }
-  }
-
-  debugLog?.("DownloadHooks", "Cloudflare challenge wait timed out.", {
-    host,
-  });
-  return { detected: true, cleared: false };
-}
-
 export function createCloudflareChallengeMonitor({
   debugLog,
   host,
   notifyChallenge,
-  preserveRequest,
   pollMs = DEFAULT_POLL_MS,
   timeoutMs = DEFAULT_TIMEOUT_MS,
 } = {}) {
@@ -95,10 +63,29 @@ export function createCloudflareChallengeMonitor({
   let pollTimer = null;
   let observer = null;
   let waitPromise = null;
+  const cancellation = new AbortController();
+  let textDirty = true,
+    textBody = null,
+    textValue = "",
+    textReadAt = -Infinity;
+  const invalidateText = (records) => {
+    if (records.some((record) => record.type === "childList" || record.type === "characterData"))
+      textDirty = true;
+  };
+  const readText = () => {
+    if (textDirty || textBody !== document.body || Date.now() - textReadAt >= pollMs) {
+      textBody = document.body;
+      textValue = textBody?.textContent || "";
+      textReadAt = Date.now();
+      textDirty = false;
+    }
+    return textValue;
+  };
 
   const check = () => {
     if (disposed) return false;
-    const next = isCloudflareChallengePage();
+    if (observer) invalidateText(observer.takeRecords());
+    const next = isCloudflareChallengePage(document, readText);
     if (next && !active) {
       active = true;
       episodeNotified = false;
@@ -111,7 +98,8 @@ export function createCloudflareChallengeMonitor({
     return active;
   };
 
-  const scheduleCheck = () => {
+  const scheduleCheck = (records) => {
+    invalidateText(records);
     if (disposed || mutationTimer !== null) return;
     mutationTimer = setTimeout(() => {
       mutationTimer = null;
@@ -126,6 +114,7 @@ export function createCloudflareChallengeMonitor({
     observer.observe(document.documentElement || document, {
       childList: true,
       subtree: true,
+      characterData: true,
       attributes: true,
       attributeFilter: ["class", "id", "src", "style", "hidden"],
     });
@@ -148,13 +137,13 @@ export function createCloudflareChallengeMonitor({
         );
       }
       const startedAt = Date.now();
-      let lastPreservedAt = 0;
       while (!disposed && Date.now() - startedAt < timeoutMs) {
-        if (Date.now() - lastPreservedAt >= 30 * 1000) {
-          await preserveRequest?.();
-          lastPreservedAt = Date.now();
+        try {
+          await sleep(500, cancellation.signal);
+        } catch {
+          return false;
         }
-        await new Promise((resolve) => setTimeout(resolve, 500));
+        if (disposed) return false;
         if (!check()) return true;
       }
       return false;
@@ -165,13 +154,17 @@ export function createCloudflareChallengeMonitor({
   }
 
   function dispose() {
+    if (disposed) return;
     disposed = true;
+    cancellation.abort();
     observer?.disconnect?.();
     observer = null;
     clearInterval(pollTimer);
     clearTimeout(mutationTimer);
     pollTimer = null;
     mutationTimer = null;
+    textBody = null;
+    textValue = "";
   }
 
   return {

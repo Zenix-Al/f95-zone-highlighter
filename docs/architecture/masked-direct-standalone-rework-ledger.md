@@ -4,6 +4,11 @@ Investigated 2026-10-20. Wave 1 below characterizes the pre-rework implementatio
 Wave 2 progress is recorded at the end. The execution TODO has been retired;
 see the [current runtime contract](masked-direct-reliability.md).
 
+Maintenance note (2026-11-01): the historical standaloneEligibility.js table below
+has since been replaced by per-host route metadata and hosts/hostRoutes.js, with
+pure matching in hosts/shared/routes.js. The original findings remain historical;
+the destination controller still owns continuation authorization.
+
 ## Findings that constrain implementation
 
 1. `hosts/standaloneEligibility.js` now has rules for all 14 canonical host

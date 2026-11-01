@@ -3863,6 +3863,8 @@ module.exports = function registerGroup(context) {
         "www.download.gg",
         "www.mediafire.com",
         "workupload.com",
+        "qu.ax",
+        "akirabox.to",
         "vik1ngfile.site",
         "vikingfile.com",
       ]);
@@ -3917,8 +3919,9 @@ module.exports = function registerGroup(context) {
         "main.js",
         "app/context.js",
         "app/createMaskedDirectApp.js",
-        "core/adaptor.js",
-        "ports/standaloneAutomationPolicyRepository.js",
+        "app/coreIntegration.js",
+        "hosts/constants.js",
+        "ports/automationSettingsRepository.js",
         "ports/standaloneContinuation.js",
         "domain/directDownload/feedback.js",
       ]) {

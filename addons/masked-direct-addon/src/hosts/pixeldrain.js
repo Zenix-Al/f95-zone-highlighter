@@ -1,23 +1,11 @@
-import { clickElement } from "./shared/dom.js";
-
-export function isPixeldrainFilePage(url = location.href) {
-  try {
-    const parsed = new URL(url, location.href);
-    return /^\/(?:u|d|f)\/[A-Za-z0-9_-]+\/?$/.test(parsed.pathname);
-  } catch {
-    return false;
-  }
-}
-
 export async function processPixeldrainDownload({
   challengeGate,
+  signal = challengeGate?.signal,
   debugLog,
   notifyMainFailure,
   reportAddonHealthy,
 }) {
-  const fileIdMatch = window.location.pathname.match(
-    /^\/(?:u|d|f)\/([A-Za-z0-9_-]+)\/?$/,
-  );
+  const fileIdMatch = window.location.pathname.match(/^\/(?:u|d|f)\/([A-Za-z0-9_-]+)\/?$/);
   const fileId = fileIdMatch?.[1] || "";
 
   if (fileId) {
@@ -32,10 +20,13 @@ export async function processPixeldrainDownload({
     // Probe the URL with a HEAD request to check if it's a valid download
     try {
       if (challengeGate && !(await challengeGate.waitUntilClear())) return;
-      const headResponse = await fetch(directUrl, { method: "HEAD" });
+      const headResponse = await fetch(directUrl, {
+        method: "HEAD",
+        ...(signal ? { signal } : {}),
+      });
+      signal?.throwIfAborted();
       const contentType = headResponse.headers?.get?.("content-type") || "";
-      const disposition =
-        headResponse.headers?.get?.("content-disposition") || "";
+      const disposition = headResponse.headers?.get?.("content-disposition") || "";
 
       console.info(
         "[Pixeldrain] HEAD response - status:",
@@ -46,33 +37,21 @@ export async function processPixeldrainDownload({
 
       // If it's JSON, it's an error response
       if (contentType.includes("application/json")) {
-        console.error(
-          "[Pixeldrain] API returned JSON (error), attempting to read error message",
-        );
+        console.error("[Pixeldrain] API returned JSON (error), attempting to read error message");
 
         // Try to get full response with error message
         try {
           if (challengeGate && !(await challengeGate.waitUntilClear())) return;
-          const fullResponse = await fetch(directUrl);
+          const fullResponse = await fetch(directUrl, signal ? { signal } : undefined);
+          signal?.throwIfAborted();
           const jsonData = await fullResponse.json();
-          const errorMsg =
-            jsonData?.message || jsonData?.error || "Unknown error";
-          console.error(
-            "[Pixeldrain] Host returned a file-unavailable response.",
-          );
-          await notifyMainFailure(
-            "pixeldrain.com",
-            "File unavailable: " + String(errorMsg),
-          );
+          const errorMsg = jsonData?.message || jsonData?.error || "Unknown error";
+          console.error("[Pixeldrain] Host returned a file-unavailable response.");
+          await notifyMainFailure("pixeldrain.com", "File unavailable: " + String(errorMsg));
         } catch (parseErr) {
-          console.error(
-            "[Pixeldrain] Could not parse error response:",
-            parseErr,
-          );
-          await notifyMainFailure(
-            "pixeldrain.com",
-            "Server returned error instead of file",
-          );
+          if (signal?.aborted) throw parseErr;
+          console.error("[Pixeldrain] Could not parse error response:", parseErr);
+          await notifyMainFailure("pixeldrain.com", "Server returned error instead of file");
         }
         return;
       }
@@ -82,9 +61,7 @@ export async function processPixeldrainDownload({
         !disposition.includes("attachment") &&
         !contentType.includes("application/octet-stream")
       ) {
-        console.warn(
-          "[Pixeldrain] Response missing attachment header or wrong content-type",
-        );
+        console.warn("[Pixeldrain] Response missing attachment header or wrong content-type");
         await notifyMainFailure(
           "pixeldrain.com",
           "File is not available for direct download (server rejected)",
@@ -92,10 +69,9 @@ export async function processPixeldrainDownload({
         return;
       }
 
-      console.info(
-        "[Pixeldrain] File appears valid, proceeding with location.href",
-      );
+      console.info("[Pixeldrain] File appears valid, proceeding with location.href");
     } catch (probeErr) {
+      if (signal?.aborted) throw probeErr;
       console.error("[Pixeldrain] Error probing URL:", probeErr);
       // Continue anyway, might be a timeout
     }
@@ -110,24 +86,18 @@ export async function processPixeldrainDownload({
     return;
   }
 
-  console.info(
-    "[Pixeldrain] No file ID in URL, attempting fallback button click",
-  );
-  const fallbackButton = document.querySelector("button.button_highlight");
-  if (!fallbackButton) {
-    console.error("[Pixeldrain] Fallback button not found");
-    await notifyMainFailure("pixeldrain.com", "No download button found.");
-    return;
-  }
-
-  console.info("[Pixeldrain] Clicking fallback download button");
-  if (challengeGate && !(await challengeGate.waitUntilClear())) return;
-  if (!clickElement(fallbackButton)) {
-    await notifyMainFailure(
-      "pixeldrain.com",
-      "Unable to trigger download button.",
-    );
-    return;
-  }
-  reportAddonHealthy({ downloadTriggered: true });
+  await notifyMainFailure("pixeldrain.com", "Unsupported Pixeldrain file page.");
 }
+
+processPixeldrainDownload.definition = {
+  id: "pixeldrain",
+  canonicalHost: "pixeldrain.com",
+  hostIncludes: ["pixeldrain.com"],
+  text: "Pixeldrain",
+  tooltip: "Enable direct download automation for pixeldrain.com",
+  routes: [{ path: /^\/(?:u|d|f)\/[A-Za-z0-9_-]+\/?$/ }],
+
+  mode: "custom",
+  reason:
+    "File-ID HEAD validation, optional JSON error-body request, and native download navigation with host-specific response semantics.",
+};

@@ -2,6 +2,12 @@
 
 module.exports = function registerMaskedDirectStandaloneExpansionDirect(context) {
   const { assert, createDomSandbox, loadModule, runTest } = context;
+  const routeOf = (processor, url, role) =>
+    loadModule("addons/masked-direct-addon/src/hosts/shared/routes.js").findHostRoute(
+      processor.definition,
+      url,
+      role,
+    );
 
   function createGM() {
     const values = new Map();
@@ -24,30 +30,31 @@ module.exports = function registerMaskedDirectStandaloneExpansionDirect(context)
     };
   }
 
-  runTest(
-    "MASKED-DIRECT-STANDALONE-EXPANSION-DIRECT-01 classifies exact Drive entries",
-    () => {
-      const { isGoogleDriveStandaloneEntryPage } = loadModule(
-        "addons/masked-direct-addon/src/hosts/googleDrive.js",
-      );
-      for (const url of [
-        "https://drive.google.com/file/d/file_ABC-123/view",
-        "https://drive.google.com/file/d/file_ABC-123",
-        "https://drive.google.com/open?id=file_ABC-123",
-        "https://drive.google.com/uc?export=download&id=file_ABC-123",
-        "https://drive.usercontent.google.com/download?id=file_ABC-123&confirm=token",
-      ]) assert.strictEqual(isGoogleDriveStandaloneEntryPage(url), true, url);
-      for (const url of [
-        "https://drive.google.com/file/d/",
-        "https://drive.google.com/open",
-        "https://drive.google.com/uc?export=download",
-        "https://drive.google.com/drive/u/0/folders/folder-id",
-        "https://drive.google.com/",
-        "https://drive.usercontent.google.com/download?confirm=token",
-        "https://example.com/open?id=file_ABC-123",
-      ]) assert.strictEqual(isGoogleDriveStandaloneEntryPage(url), false, url);
-    },
-  );
+  runTest("MASKED-DIRECT-STANDALONE-EXPANSION-DIRECT-01 classifies exact Drive entries", () => {
+    const { processGoogleDriveDownload } = loadModule(
+      "addons/masked-direct-addon/src/hosts/googleDrive.js",
+    );
+    const isGoogleDriveStandaloneEntryPage = (url) =>
+      Boolean(routeOf(processGoogleDriveDownload, url, "entry")?.stage);
+    for (const url of [
+      "https://drive.google.com/file/d/file_ABC-123/view",
+      "https://drive.google.com/file/d/file_ABC-123",
+      "https://drive.google.com/open?id=file_ABC-123",
+      "https://drive.google.com/uc?export=download&id=file_ABC-123",
+      "https://drive.usercontent.google.com/download?id=file_ABC-123&confirm=token",
+    ])
+      assert.strictEqual(isGoogleDriveStandaloneEntryPage(url), true, url);
+    for (const url of [
+      "https://drive.google.com/file/d/",
+      "https://drive.google.com/open",
+      "https://drive.google.com/uc?export=download",
+      "https://drive.google.com/drive/u/0/folders/folder-id",
+      "https://drive.google.com/",
+      "https://drive.usercontent.google.com/download?confirm=token",
+      "https://example.com/open?id=file_ABC-123",
+    ])
+      assert.strictEqual(isGoogleDriveStandaloneEntryPage(url), false, url);
+  });
 
   runTest(
     "MASKED-DIRECT-STANDALONE-EXPANSION-DIRECT-02 keeps Drive navigation clean and local",
@@ -77,7 +84,7 @@ module.exports = function registerMaskedDirectStandaloneExpansionDirect(context)
           getIsEnabled: () => true,
           handlers: {},
           originTabQueryKey: "f95ue_tab",
-          getStandalonePolicy: async () => ({ effectiveAutomateRegardless: true }),
+          getAutomationSettings: async () => ({ enabled: true, automateRegardless: true }),
         });
         const decision = await controller.decideHostAutomation("drive.google.com");
         assert.strictEqual(decision.mode, "standalone");
@@ -92,9 +99,10 @@ module.exports = function registerMaskedDirectStandaloneExpansionDirect(context)
   runTest(
     "MASKED-DIRECT-STANDALONE-EXPANSION-DIRECT-03 classifies only exact MixDrop aliases",
     () => {
-      const { isMixdropFilePage, MIXDROP_HOST_ALIASES } = loadModule(
+      const { processMixdropDownload, MIXDROP_HOST_ALIASES } = loadModule(
         "addons/masked-direct-addon/src/hosts/mixdrop.js",
       );
+      const isMixdropFilePage = (url) => routeOf(processMixdropDownload, url)?.kind === "file";
       assert.deepStrictEqual(MIXDROP_HOST_ALIASES, [
         "mixdrop.ag",
         "miixdrop.com",
@@ -109,50 +117,50 @@ module.exports = function registerMaskedDirectStandaloneExpansionDirect(context)
         "https://mixdrop.com/f/file-id",
         "https://miiiiixdrop.net/f/file-id",
         "https://example.com/f/file-id",
-      ]) assert.strictEqual(isMixdropFilePage(url), false, url);
+      ])
+        assert.strictEqual(isMixdropFilePage(url), false, url);
     },
   );
 
-  runTest(
-    "MASKED-DIRECT-STANDALONE-EXPANSION-DIRECT-04 bounds MixDrop to two clicks",
-    async () => {
-      const sandbox = createDomSandbox("https://miixdrop.com/f/file-id");
-      const previousAnchor = global.HTMLAnchorElement;
-      const previousGetComputedStyle = global.getComputedStyle;
-      try {
-        global.HTMLAnchorElement = sandbox.window.HTMLAnchorElement;
-        global.getComputedStyle = sandbox.window.getComputedStyle.bind(sandbox.window);
-        const button = sandbox.document.createElement("a");
-        button.href = "#";
-        button.className = "download-btn";
-        button.textContent = "Download";
-        sandbox.document.body.append(button);
-        let clicks = 0;
-        button.addEventListener("click", (event) => {
-          event.preventDefault();
-          clicks += 1;
-          button.href = "https://cdn.example/file.zip";
-        });
-        let healthy = 0;
-        const { processMixdropDownload } = loadModule(
-          "addons/masked-direct-addon/src/hosts/mixdrop.js",
-        );
-        await processMixdropDownload({
-          challengeGate: { waitUntilClear: async () => true },
-          notifyMainFailure: async (_host, message) => assert.fail(message),
-          reportAddonHealthy: () => { healthy += 1; },
-          secondStageDelayMs: 0,
-          postClickGraceMs: 0,
-        });
-        assert.strictEqual(clicks, 2);
-        assert.strictEqual(healthy, 1);
-      } finally {
-        global.HTMLAnchorElement = previousAnchor;
-        global.getComputedStyle = previousGetComputedStyle;
-        sandbox.restore();
-      }
-    },
-  );
+  runTest("MASKED-DIRECT-STANDALONE-EXPANSION-DIRECT-04 bounds MixDrop to two clicks", async () => {
+    const sandbox = createDomSandbox("https://miixdrop.com/f/file-id");
+    const previousAnchor = global.HTMLAnchorElement;
+    const previousGetComputedStyle = global.getComputedStyle;
+    try {
+      global.HTMLAnchorElement = sandbox.window.HTMLAnchorElement;
+      global.getComputedStyle = sandbox.window.getComputedStyle.bind(sandbox.window);
+      const button = sandbox.document.createElement("a");
+      button.href = "#";
+      button.className = "download-btn";
+      button.textContent = "Download";
+      sandbox.document.body.append(button);
+      let clicks = 0;
+      button.addEventListener("click", (event) => {
+        event.preventDefault();
+        clicks += 1;
+        button.href = "https://cdn.example/file.zip";
+      });
+      let healthy = 0;
+      const { processMixdropDownload } = loadModule(
+        "addons/masked-direct-addon/src/hosts/mixdrop.js",
+      );
+      await processMixdropDownload({
+        challengeGate: { waitUntilClear: async () => true },
+        notifyMainFailure: async (_host, message) => assert.fail(message),
+        reportAddonHealthy: () => {
+          healthy += 1;
+        },
+        secondStageDelayMs: 0,
+        postClickGraceMs: 0,
+      });
+      assert.strictEqual(clicks, 2);
+      assert.strictEqual(healthy, 1);
+    } finally {
+      global.HTMLAnchorElement = previousAnchor;
+      global.getComputedStyle = previousGetComputedStyle;
+      sandbox.restore();
+    }
+  });
 
   runTest(
     "MASKED-DIRECT-STANDALONE-EXPANSION-DIRECT-05 guards UploadNow locale shares",
@@ -163,18 +171,19 @@ module.exports = function registerMaskedDirectStandaloneExpansionDirect(context)
       try {
         global.HTMLButtonElement = sandbox.window.HTMLButtonElement;
         global.getComputedStyle = sandbox.window.getComputedStyle.bind(sandbox.window);
-        const { isUploadNowSharePage, processUploadNowDownload } = loadModule(
+        const { processUploadNowDownload } = loadModule(
           "addons/masked-direct-addon/src/hosts/uploadnow.js",
         );
-        for (const url of [
-          "https://uploadnow.io/en/share",
-          "https://www.uploadnow.io/en-us/share",
-        ]) assert.strictEqual(isUploadNowSharePage(url), true, url);
+        const isUploadNowSharePage = (url) =>
+          routeOf(processUploadNowDownload, url)?.kind === "file";
+        for (const url of ["https://uploadnow.io/en/share", "https://www.uploadnow.io/en-us/share"])
+          assert.strictEqual(isUploadNowSharePage(url), true, url);
         for (const url of [
           "https://uploadnow.io/share",
           "https://uploadnow.io/en/",
           "https://example.com/en/share",
-        ]) assert.strictEqual(isUploadNowSharePage(url), false, url);
+        ])
+          assert.strictEqual(isUploadNowSharePage(url), false, url);
 
         const failures = [];
         const options = {
@@ -203,23 +212,19 @@ module.exports = function registerMaskedDirectStandaloneExpansionDirect(context)
     },
   );
 
-  runTest(
-    "MASKED-DIRECT-STANDALONE-EXPANSION-DIRECT-06 registers exact entries only",
-    () => {
-      const { classifyStandaloneHostRoute } = loadModule(
-        "addons/masked-direct-addon/src/hosts/standaloneEligibility.js",
-      );
-      for (const [host, url] of [
-        ["drive.google.com", "https://drive.google.com/open?id=file-id"],
-        ["miiiixdrop.net", "https://miixdrop.com/f/file-id"],
-        ["uploadnow.io", "https://uploadnow.io/en/share"],
-      ]) assert.strictEqual(classifyStandaloneHostRoute(host, url).eligible, true, url);
-      for (const [host, url] of [
-        ["drive.google.com", "https://drive.usercontent.google.com/download"],
-        ["miiiixdrop.net", "https://mixdrop.ag/e/file-id"],
-        ["uploadnow.io", "https://uploadnow.io/share"],
-      ]) assert.strictEqual(classifyStandaloneHostRoute(host, url).eligible, false, url);
-    },
-  );
-
+  runTest("MASKED-DIRECT-STANDALONE-EXPANSION-DIRECT-06 registers exact entries only", () => {
+    const { classifyHostRoute } = loadModule("addons/masked-direct-addon/src/hosts/hostRoutes.js");
+    for (const [host, url] of [
+      ["drive.google.com", "https://drive.google.com/open?id=file-id"],
+      ["miiiixdrop.net", "https://miixdrop.com/f/file-id"],
+      ["uploadnow.io", "https://uploadnow.io/en/share"],
+    ])
+      assert.strictEqual(classifyHostRoute(host, url).eligible, true, url);
+    for (const [host, url] of [
+      ["drive.google.com", "https://drive.usercontent.google.com/download"],
+      ["miiiixdrop.net", "https://mixdrop.ag/e/file-id"],
+      ["uploadnow.io", "https://uploadnow.io/share"],
+    ])
+      assert.strictEqual(classifyHostRoute(host, url).eligible, false, url);
+  });
 };

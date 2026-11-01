@@ -2,6 +2,12 @@
 
 module.exports = function registerMaskedDirectStandaloneExpansionStaged(context) {
   const { assert, createDomSandbox, loadModule, runTest } = context;
+  const routeOf = (processor, url, role) =>
+    loadModule("addons/masked-direct-addon/src/hosts/shared/routes.js").findHostRoute(
+      processor.definition,
+      url,
+      role,
+    );
 
   function createStorage() {
     const values = new Map();
@@ -25,74 +31,70 @@ module.exports = function registerMaskedDirectStandaloneExpansionStaged(context)
       getIsEnabled: () => enabled,
       handlers: {},
       originTabQueryKey: "f95ue_tab",
-      getStandalonePolicy: async () => ({ effectiveAutomateRegardless: true }),
+      getAutomationSettings: async () => ({ enabled: true, automateRegardless: true }),
       createContinuationStore: () => store,
     });
   }
 
-  runTest(
-    "MASKED-DIRECT-STANDALONE-EXPANSION-STAGED-01 classifies exact staged entries",
-    () => {
-      const { classifyDatanodesStandaloneEntry } = loadModule(
-        "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-      );
-      const { classifyVikingStandaloneEntry, classifyVikingStandaloneContinuation } =
-        loadModule("addons/masked-direct-addon/src/hosts/vik1ngfile.js");
-      const { getWorkuploadStandaloneEntry, getWorkuploadStandaloneContinuation } =
-        loadModule("addons/masked-direct-addon/src/hosts/workupload.js");
-      assert.deepStrictEqual(
-        classifyDatanodesStandaloneEntry(
-          "https://datanodes.to/82wqqwwmstb7/Dating_Sim-0.2-pc.zip",
-        ),
-        { identity: "82wqqwwmstb7:Dating_Sim-0.2-pc.zip", nextStage: "datanodes-download" },
-      );
-      assert.strictEqual(
-        classifyDatanodesStandaloneEntry("https://datanodes.to/82wqqwwmstb7"),
-        null,
-      );
-      assert.deepStrictEqual(
-        classifyVikingStandaloneEntry("https://vikingfile.com/f/swBmSwbeK2"),
-        { identity: "swBmSwbeK2", nextStage: "vik1ngfile-page" },
-      );
-      assert.strictEqual(
-        classifyVikingStandaloneEntry("https://vik1ngfile.site/f/swBmSwbeK2")?.identity,
-        "swBmSwbeK2",
-      );
-      assert.deepStrictEqual(
-        classifyVikingStandaloneContinuation("https://vik1ngfile.site/f/swBmSwbeK2"),
-        { identity: "swBmSwbeK2", nextStage: "vik1ngfile-page" },
-      );
-      assert.strictEqual(
-        classifyVikingStandaloneContinuation("https://example.com/f/swBmSwbeK2"),
-        null,
-      );
-      assert.deepStrictEqual(
-        getWorkuploadStandaloneEntry("https://workupload.com/file/JVuuyQMKU3p"),
-        { identity: "JVuuyQMKU3p", nextStage: "workupload-start" },
-      );
-      assert.deepStrictEqual(
-        getWorkuploadStandaloneContinuation("https://workupload.com/start/JVuuyQMKU3p"),
-        { identity: "JVuuyQMKU3p", nextStage: "workupload-start" },
-      );
-      const { classifyStandaloneHostRoute } = loadModule(
-        "addons/masked-direct-addon/src/hosts/standaloneEligibility.js",
-      );
-      assert.strictEqual(
-        classifyStandaloneHostRoute(
-          "datanodes.to",
-          "https://datanodes.to/download",
-        ).eligible,
-        true,
-      );
-      assert.strictEqual(
-        classifyStandaloneHostRoute(
-          "vik1ngfile.site",
-          "https://vik1ngfile.site/f/swBmSwbeK2",
-        ).eligible,
-        true,
-      );
-    },
-  );
+  runTest("MASKED-DIRECT-STANDALONE-EXPANSION-STAGED-01 classifies exact staged entries", () => {
+    const { processDatanodesDownload } = loadModule(
+      "addons/masked-direct-addon/src/hosts/datanodes/index.js",
+    );
+    const classifyDatanodesStandaloneEntry = (url) =>
+      routeOf(processDatanodesDownload, url, "entry")?.stage || null;
+    const { processVik1ngfileDownload } = loadModule(
+      "addons/masked-direct-addon/src/hosts/vik1ngfile.js",
+    );
+    const classifyVikingStandaloneEntry = (url) =>
+      routeOf(processVik1ngfileDownload, url, "entry")?.stage || null;
+    const classifyVikingStandaloneContinuation = (url) =>
+      routeOf(processVik1ngfileDownload, url, "continuation")?.stage || null;
+    const { processWorkuploadDownload } = loadModule(
+      "addons/masked-direct-addon/src/hosts/workupload.js",
+    );
+    const getWorkuploadStandaloneEntry = (url) =>
+      routeOf(processWorkuploadDownload, url, "entry")?.stage || null;
+    const getWorkuploadStandaloneContinuation = (url) =>
+      routeOf(processWorkuploadDownload, url, "continuation")?.stage || null;
+    assert.deepStrictEqual(
+      classifyDatanodesStandaloneEntry("https://datanodes.to/82wqqwwmstb7/Dating_Sim-0.2-pc.zip"),
+      { identity: "82wqqwwmstb7:Dating_Sim-0.2-pc.zip", nextStage: "datanodes-download" },
+    );
+    assert.strictEqual(classifyDatanodesStandaloneEntry("https://datanodes.to/82wqqwwmstb7"), null);
+    assert.deepStrictEqual(classifyVikingStandaloneEntry("https://vikingfile.com/f/swBmSwbeK2"), {
+      identity: "swBmSwbeK2",
+      nextStage: "vik1ngfile-page",
+    });
+    assert.strictEqual(
+      classifyVikingStandaloneEntry("https://vik1ngfile.site/f/swBmSwbeK2")?.identity,
+      "swBmSwbeK2",
+    );
+    assert.deepStrictEqual(
+      classifyVikingStandaloneContinuation("https://vik1ngfile.site/f/swBmSwbeK2"),
+      { identity: "swBmSwbeK2", nextStage: "vik1ngfile-page" },
+    );
+    assert.strictEqual(
+      classifyVikingStandaloneContinuation("https://example.com/f/swBmSwbeK2"),
+      null,
+    );
+    assert.deepStrictEqual(
+      getWorkuploadStandaloneEntry("https://workupload.com/file/JVuuyQMKU3p"),
+      { identity: "JVuuyQMKU3p", nextStage: "workupload-start" },
+    );
+    assert.deepStrictEqual(
+      getWorkuploadStandaloneContinuation("https://workupload.com/start/JVuuyQMKU3p"),
+      { identity: "JVuuyQMKU3p", nextStage: "workupload-start" },
+    );
+    const { classifyHostRoute } = loadModule("addons/masked-direct-addon/src/hosts/hostRoutes.js");
+    assert.strictEqual(
+      classifyHostRoute("datanodes.to", "https://datanodes.to/download").eligible,
+      true,
+    );
+    assert.strictEqual(
+      classifyHostRoute("vik1ngfile.site", "https://vik1ngfile.site/f/swBmSwbeK2").eligible,
+      true,
+    );
+  });
 
   runTest(
     "MASKED-DIRECT-STANDALONE-EXPANSION-STAGED-02 blocks direct continuation visits",
@@ -125,8 +127,18 @@ module.exports = function registerMaskedDirectStandaloneExpansionStaged(context)
     "MASKED-DIRECT-STANDALONE-EXPANSION-STAGED-03 consumes same-tab stages once",
     async () => {
       const cases = [
-        ["workupload.com", "JVuuyQMKU3p", "workupload-start", "https://workupload.com/start/JVuuyQMKU3p"],
-        ["drive.google.com", "file-id", "drive-confirmation", "https://drive.usercontent.google.com/download?confirm=token"],
+        [
+          "workupload.com",
+          "JVuuyQMKU3p",
+          "workupload-start",
+          "https://workupload.com/start/JVuuyQMKU3p",
+        ],
+        [
+          "drive.google.com",
+          "file-id",
+          "drive-confirmation",
+          "https://drive.usercontent.google.com/download?confirm=token",
+        ],
       ];
       for (const [host, identity, nextStage, url] of cases) {
         const storage = createStorage();
@@ -172,8 +184,9 @@ module.exports = function registerMaskedDirectStandaloneExpansionStaged(context)
       let timestamp = 1000;
       const storage = createStorage();
       const siblingStorage = createStorage();
-      const { createStandaloneContinuationStore, STANDALONE_CONTINUATION_PREFIX } =
-        loadModule("addons/masked-direct-addon/src/ports/standaloneContinuation.js");
+      const { createStandaloneContinuationStore, STANDALONE_CONTINUATION_PREFIX } = loadModule(
+        "addons/masked-direct-addon/src/ports/standaloneContinuation.js",
+      );
       const store = createStandaloneContinuationStore({
         storage,
         now: () => timestamp,
@@ -251,11 +264,13 @@ module.exports = function registerMaskedDirectStandaloneExpansionStaged(context)
         now: () => 1000,
         createNonce: () => "cross-origin-a",
       });
-      assert.ok(source.claim({
-        host: "vik1ngfile.site",
-        identity: "swBmSwbeK2",
-        nextStage: "vik1ngfile-page",
-      }));
+      assert.ok(
+        source.claim({
+          host: "vik1ngfile.site",
+          identity: "swBmSwbeK2",
+          nextStage: "vik1ngfile-page",
+        }),
+      );
       const destination = createStandaloneContinuationStore({
         storage: createStorage(),
         nameTransport,
@@ -307,10 +322,12 @@ module.exports = function registerMaskedDirectStandaloneExpansionStaged(context)
             getIsBlockedByCore: () => false,
             getIsEnabled: () => true,
             handlers: {
-              "workupload.com": async () => { handlerRuns += 1; },
+              "workupload.com": async () => {
+                handlerRuns += 1;
+              },
             },
             originTabQueryKey: "f95ue_tab",
-            getStandalonePolicy: async () => ({ effectiveAutomateRegardless: true }),
+            getAutomationSettings: async () => ({ enabled: true, automateRegardless: true }),
             createContinuationStore: () => store,
             createChallengeMonitor: () => ({
               dispose() {},
@@ -350,9 +367,7 @@ module.exports = function registerMaskedDirectStandaloneExpansionStaged(context)
   runTest(
     "MASKED-DIRECT-STANDALONE-EXPANSION-STAGED-07 refuses ambiguous Datanodes actions",
     async () => {
-      const sandbox = createDomSandbox(
-        "https://datanodes.to/82wqqwwmstb7/Dating_Sim-0.2-pc.zip",
-      );
+      const sandbox = createDomSandbox("https://datanodes.to/82wqqwwmstb7/Dating_Sim-0.2-pc.zip");
       const previousGetComputedStyle = global.getComputedStyle;
       try {
         global.getComputedStyle = sandbox.window.getComputedStyle.bind(sandbox.window);
@@ -380,7 +395,10 @@ module.exports = function registerMaskedDirectStandaloneExpansionStaged(context)
     async () => {
       for (const [url, decision] of [
         ["https://vikingfile.com/f/swBmSwbeK2", { mode: "standalone", standaloneEntry: {} }],
-        ["https://vik1ngfile.site/f/swBmSwbeK2", { mode: "standalone", standaloneContinuation: {} }],
+        [
+          "https://vik1ngfile.site/f/swBmSwbeK2",
+          { mode: "standalone", standaloneContinuation: {} },
+        ],
       ]) {
         const sandbox = createDomSandbox(url);
         const previousAnchor = global.HTMLAnchorElement;
@@ -393,7 +411,10 @@ module.exports = function registerMaskedDirectStandaloneExpansionStaged(context)
           button.textContent = "Download";
           sandbox.document.body.append(button);
           let clicks = 0;
-          button.addEventListener("click", (event) => { event.preventDefault(); clicks += 1; });
+          button.addEventListener("click", (event) => {
+            event.preventDefault();
+            clicks += 1;
+          });
           let healthy = 0;
           const { processVik1ngfileDownload } = loadModule(
             "addons/masked-direct-addon/src/hosts/vik1ngfile.js",
@@ -401,7 +422,9 @@ module.exports = function registerMaskedDirectStandaloneExpansionStaged(context)
           await processVik1ngfileDownload({
             challengeGate: { waitUntilClear: async () => true },
             notifyMainFailure: async (_host, message) => assert.fail(message),
-            reportAddonHealthy: () => { healthy += 1; },
+            reportAddonHealthy: () => {
+              healthy += 1;
+            },
             automationDecision: decision,
             stepDelayMs: 0,
           });
