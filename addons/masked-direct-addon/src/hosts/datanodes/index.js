@@ -1,69 +1,7 @@
-import { TIMINGS } from "../../constants.js";
-import { clickElement, isElementReadyForClick } from "../shared/dom.js";
-
-const HOST_LABEL = "datanodes.to";
-const CLICK_MARKER = "data-f95ue-datanodes-clicked";
-const CLICK_COOLDOWN_MS = 900;
-const SCAN_FRAME_BUDGET_MS = 5;
-const SCAN_POLL_INTERVAL_MS = 500;
+import { TIMINGS } from "../constants.js";
+import { createHostAutomation } from "../shared/automation.js";
+import { findBestAction } from "../shared/repeat.js";
 const DATANODES_ENTRY_PATH = /^\/([a-z0-9_-]{8,64})\/([^/]+)\/?$/i;
-
-export function classifyDatanodesStandaloneEntry(url = location.href) {
-  try {
-    const parsed = new URL(url, "https://datanodes.to/");
-    if (parsed.hostname !== HOST_LABEL) return null;
-    const match = parsed.pathname.match(DATANODES_ENTRY_PATH);
-    if (
-      !match ||
-      ["download", "downloads"].includes(match[1].toLowerCase()) ||
-      !decodeURIComponent(match[2]).trim()
-    ) return null;
-    return {
-      identity: `${match[1]}:${decodeURIComponent(match[2]).trim()}`,
-      nextStage: "datanodes-download",
-    };
-  } catch {
-    return null;
-  }
-}
-
-export function isDatanodesStandaloneDownloadPage(url = location.href) {
-  try {
-    const parsed = new URL(url, "https://datanodes.to/");
-    return parsed.hostname === HOST_LABEL && parsed.pathname === "/download";
-  } catch {
-    return false;
-  }
-}
-
-function getDatanodesTiming(settings = {}) {
-  const datanodes =
-    settings?.directDownload?.datanodes || settings?.datanodes || {};
-
-  function numberValue(key, fallback) {
-    const value = Number(datanodes[key]);
-    return Number.isFinite(value) && value >= 0 ? value : fallback;
-  }
-
-  return {
-    pollInterval: numberValue(
-      "pollInterval",
-      TIMINGS.DATANODES_POLL_INTERVAL || SCAN_POLL_INTERVAL_MS,
-    ),
-    totalFlowTimeout: numberValue(
-      "totalFlowTimeout",
-      TIMINGS.DATANODES_TOTAL_FLOW_TIMEOUT || 90000,
-    ),
-    scanFrameBudgetMs: numberValue("scanFrameBudgetMs", SCAN_FRAME_BUDGET_MS),
-  };
-}
-
-function getControlText(element) {
-  return String(element?.textContent || element?.value || "")
-    .replace(/\s+/g, " ")
-    .trim()
-    .toLowerCase();
-}
 
 function isControlVisible(element) {
   if (!element || !element.isConnected) return false;
@@ -80,220 +18,67 @@ function isControlVisible(element) {
   return true;
 }
 
-function hasWaitText(text) {
-  return (
-    text.includes("wait") ||
-    text.includes("preparing") ||
-    text.includes("processing") ||
-    /\b\d+\s*s\b/.test(text)
-  );
-}
-
-function classifyDatanodesControl(element) {
-  if (!isElementReadyForClick(element) || !isControlVisible(element)) {
-    return null;
-  }
-
-  const text = getControlText(element);
-  if (!text || text.includes("premium")) return null;
-
-  if (text.includes("continue to download") || text === "continue") {
-    return {
-      element,
-      kind: "continue",
+export const datanodesAutomation = {
+  id: "datanodes",
+  canonicalHost: "datanodes.to",
+  hostIncludes: ["datanodes.to"],
+  text: "Datanodes",
+  tooltip: "Enable direct download automation for datanodes.to",
+  routes: [
+    {
+      path: DATANODES_ENTRY_PATH,
+      entry: {
+        nextStage: "datanodes-download",
+        identity: (_url, match) => {
+          if (["download", "downloads"].includes(match[1].toLowerCase())) return null;
+          const title = decodeURIComponent(match[2]).trim();
+          return title ? match[1] + ":" + title : null;
+        },
+      },
+    },
+    { path: /^\/download$/, kind: "file" },
+    {
+      path: /^\/download/,
+      allow: false,
+      continuation: { identity: "", nextStage: "datanodes-download" },
+    },
+  ],
+  mode: "repeat",
+  settingsKey: "datanodes",
+  selector: "a, button, input",
+  timeoutMs: TIMINGS.DATANODES_TOTAL_FLOW_TIMEOUT,
+  intervalMs: TIMINGS.DATANODES_POLL_INTERVAL,
+  frameBudgetMs: 5,
+  cooldownMs: 900,
+  finalMarker: "data-f95ue-datanodes-clicked",
+  timeoutMessage: "Datanodes automation timed out. Please continue manually.",
+  visible: isControlVisible,
+  exclude: (text) => !text || text.includes("premium"),
+  actions: [
+    {
+      id: "continue",
+      tool: "click",
       priority: 1,
-      final: false,
-      text,
-    };
-  }
-
-  if (text.includes("free download")) {
-    return {
-      element,
-      kind: "free_download",
+      match: (text) => text.includes("continue to download") || text === "continue",
+    },
+    {
+      id: "free_download",
+      tool: "click",
       priority: 2,
-      final: false,
-      text,
-    };
-  }
-
-  if (
-    text.includes("start download") ||
-    text.includes("download now") ||
-    (text.includes("download") && !text.includes("free"))
-  ) {
-    if (hasWaitText(text)) return null;
-    return {
-      element,
-      kind: "final_download",
+      match: (text) => text.includes("free download"),
+    },
+    {
+      id: "final_download",
+      tool: "click",
       priority: 3,
       final: true,
-      text,
-    };
-  }
-
-  return null;
-}
-
-function nextFrame() {
-  return new Promise((resolve) => {
-    if (typeof requestAnimationFrame === "function") {
-      requestAnimationFrame(() => resolve());
-      return;
-    }
-    setTimeout(resolve, 16);
-  });
-}
-
-export async function findBestDatanodesAction({ frameBudgetMs, isDone }) {
-  const controls = Array.from(document.querySelectorAll("a, button, input"));
-  let best = null;
-  let bestCount = 0;
-  let frameStartedAt = performance.now();
-
-  for (const control of controls) {
-    if (isDone()) return null;
-
-    const action = classifyDatanodesControl(control);
-    if (action && (!best || action.priority < best.priority)) {
-      best = action;
-      bestCount = 1;
-    } else if (action && action.priority === best?.priority) {
-      bestCount += 1;
-    }
-
-    if (performance.now() - frameStartedAt >= frameBudgetMs) {
-      await nextFrame();
-      frameStartedAt = performance.now();
-    }
-  }
-
-  return bestCount === 1 ? best : null;
-}
-
-export async function processDatanodesDownload({
-  challengeGate,
-  notifyMainFailure,
-  reportAddonHealthy,
-  settings = {},
-}) {
-  console.info("Starting datanodes.to opportunistic download flow...");
-
-  const timing = getDatanodesTiming(settings);
-  const clickedAt = new WeakMap();
-  let done = false;
-  let running = false;
-  let queued = false;
-  let observer = null;
-  let pollTimer = null;
-  let timeoutTimer = null;
-  let initialTimer = null;
-
-  const cleanup = () => {
-    done = true;
-    observer?.disconnect?.();
-    observer = null;
-    clearInterval(pollTimer);
-    clearTimeout(timeoutTimer);
-    clearTimeout(initialTimer);
-    window.removeEventListener("pagehide", cleanup);
-  };
-
-  const isDone = () => done;
-
-  async function clickAction(action) {
-    const now = Date.now();
-    const lastClickAt = clickedAt.get(action.element) || 0;
-    if (now - lastClickAt < CLICK_COOLDOWN_MS) return;
-
-    clickedAt.set(action.element, now);
-    if (action.final) {
-      action.element.setAttribute?.(CLICK_MARKER, "true");
-    }
-
-    if (!clickElement(action.element)) return;
-
-    console.info("[Datanodes] Clicked action:", action.kind, action.text);
-
-    if (!action.final) {
-      return;
-    }
-
-    cleanup();
-    reportAddonHealthy({ downloadTriggered: true });
-  }
-
-  async function runScan() {
-    if (done) return;
-    if (running) {
-      queued = true;
-      return;
-    }
-
-    running = true;
-    try {
-      do {
-        queued = false;
-        if (challengeGate && !(await challengeGate.waitUntilClear())) {
-          cleanup();
-          return;
-        }
-        const action = await findBestDatanodesAction({
-          frameBudgetMs: timing.scanFrameBudgetMs,
-          isDone,
-        });
-        if (action) {
-          await clickAction(action);
-        }
-      } while (queued && !done);
-    } catch (error) {
-      cleanup();
-      await notifyMainFailure(
-        HOST_LABEL,
-        error?.message || "Datanodes automation failed.",
-      );
-    } finally {
-      running = false;
-    }
-  }
-
-  function scheduleScan() {
-    if (done) return;
-    if (challengeGate?.isBlocked?.()) {
-      void challengeGate.waitUntilClear().then((cleared) => {
-        if (cleared) scheduleScan();
-      });
-      return;
-    }
-    void runScan();
-  }
-
-  timeoutTimer = setTimeout(() => {
-    if (done) return;
-    cleanup();
-    void notifyMainFailure(
-      HOST_LABEL,
-      "Datanodes automation timed out. Please continue manually.",
-      "timeout",
-    );
-  }, timing.totalFlowTimeout);
-
-  observer = new MutationObserver(scheduleScan);
-  if (document.body) {
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ["disabled", "style", "class", "hidden", "value"],
-    });
-  }
-
-  pollTimer = setInterval(
-    scheduleScan,
-    Math.max(100, timing.pollInterval || SCAN_POLL_INTERVAL_MS),
-  );
-
-  window.addEventListener("pagehide", cleanup, { once: true });
-  initialTimer = setTimeout(scheduleScan, 500);
-  scheduleScan();
-}
+      match: (text) =>
+        (text.includes("start download") ||
+          text.includes("download now") ||
+          (text.includes("download") && !text.includes("free"))) &&
+        !/wait|preparing|processing|\b\d+\s*s\b/.test(text),
+    },
+  ],
+};
+export const findBestDatanodesAction = (options) => findBestAction(datanodesAutomation, options);
+export const processDatanodesDownload = createHostAutomation(datanodesAutomation);

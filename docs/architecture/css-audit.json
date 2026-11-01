@@ -2377,8 +2377,13 @@
         },
         {
           "file": "tests/groups/masked-direct-current-contract.cjs",
-          "line": 63,
-          "excerpt": "document.body.innerHTML = '<div class=\"f95dl-go\"><button type=\"submit\" class=\"js-f95dlContinue\" disabled>Continue</button></div>';"
+          "line": 100,
+          "excerpt": "'<div class=\"f95dl-go\"><button type=\"submit\" class=\"js-f95dlContinue\" disabled>Continue</button></div>';"
+        },
+        {
+          "file": "tests/groups/masked-direct-host-baseline.cjs",
+          "line": 90,
+          "excerpt": "'<div id=\"download-button\" class=\"download-file-link\"><a id=\"download\" class=\"download-ready\" aria-disabled=\"false\" href=\"https://akirabox.com/download/signed-token/game.zip\">Download</a></div>';"
         }
       ],
       "protectedReason": null
@@ -3859,6 +3864,7 @@
     "tests/fixtures/thread-utility-canonical.html",
     "tests/groups/core-size-reduction.cjs",
     "tests/groups/masked-direct-current-contract.cjs",
+    "tests/groups/masked-direct-host-baseline.cjs",
     "tests/visual/core-settings-reference.visual.cjs"
   ],
   "externalPageSelectors": [],

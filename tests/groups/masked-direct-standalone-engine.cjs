@@ -24,7 +24,7 @@ module.exports = function registerMaskedDirectStandaloneEngine(context) {
     };
   }
 
-  async function withController({ href, policy, setup, run }) {
+  async function withController({ href, automationSettings, setup, run }) {
     const sandbox = createDomSandbox(href);
     const previousSessionStorage = global.sessionStorage;
     global.sessionStorage = sandbox.window.sessionStorage;
@@ -42,8 +42,9 @@ module.exports = function registerMaskedDirectStandaloneEngine(context) {
         getIsEnabled: () => true,
         handlers: {},
         originTabQueryKey: "f95ue_tab",
-        getStandalonePolicy: async () => ({
-          effectiveAutomateRegardless: policy,
+        getAutomationSettings: async () => ({
+          enabled: true,
+          automateRegardless: automationSettings,
         }),
       });
       await run({ controller, gm });
@@ -52,8 +53,6 @@ module.exports = function registerMaskedDirectStandaloneEngine(context) {
       sandbox.restore();
     }
   }
-
-
 
   runTest(
     "MASKED-DIRECT-STANDALONE-ENGINE-01 authorizes only approved standalone routes",
@@ -67,7 +66,7 @@ module.exports = function registerMaskedDirectStandaloneEngine(context) {
       for (const [host, href, expected] of cases) {
         await withController({
           href,
-          policy: true,
+          automationSettings: true,
           run: async ({ controller, gm }) => {
             const before = [...gm.writes];
             const decision = await controller.decideHostAutomation(host);
@@ -85,22 +84,22 @@ module.exports = function registerMaskedDirectStandaloneEngine(context) {
   );
 
   runTest(
-    "MASKED-DIRECT-STANDALONE-ENGINE-02 blocks requestless safe routes when policy is off",
+    "MASKED-DIRECT-STANDALONE-ENGINE-02 blocks requestless safe routes when automationSettings is off",
     async () => {
       await withController({
         href: "https://download.gg/file-example",
-        policy: false,
+        automationSettings: false,
         run: async ({ controller }) => {
           const decision = await controller.decideHostAutomation("download.gg");
           assert.strictEqual(decision.mode, "blocked");
-          assert.strictEqual(decision.reason, "standalone_policy_disabled");
+          assert.strictEqual(decision.reason, "automation_disabled");
         },
       });
     },
   );
 
   runTest(
-    "MASKED-DIRECT-STANDALONE-ENGINE-03 may fall through from stale identity only by independent policy",
+    "MASKED-DIRECT-STANDALONE-ENGINE-03 may fall through from stale identity only by independent automationSettings",
     async () => {
       const stale = Date.now() - 60 * 60 * 1000;
       const href =
@@ -108,7 +107,7 @@ module.exports = function registerMaskedDirectStandaloneEngine(context) {
         `?f95ue_dd=1&f95ue_tab=old&f95ue_dd_req=missing&f95ue_dd_ts=${stale}`;
       await withController({
         href,
-        policy: true,
+        automationSettings: true,
         run: async ({ controller }) => {
           const decision = await controller.decideHostAutomation("download.gg");
           assert.strictEqual(decision.mode, "standalone");
@@ -123,7 +122,7 @@ module.exports = function registerMaskedDirectStandaloneEngine(context) {
     async () => {
       await withController({
         href: "https://datanodes.to/file/example",
-        policy: true,
+        automationSettings: true,
         run: async ({ controller }) => {
           const decision = await controller.decideHostAutomation("datanodes.to");
           assert.strictEqual(decision.mode, "blocked");

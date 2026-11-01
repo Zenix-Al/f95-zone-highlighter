@@ -1,4 +1,5 @@
-import { TIMINGS } from "../constants.js";
+import { findHostRoute } from "./shared/routes.js";
+import { TIMINGS } from "./constants.js";
 import { queryAllBySelectors, queryFirstBySelectors } from "../shared/utils.js";
 import {
   clickElement,
@@ -29,50 +30,8 @@ export function getGoogleDriveFileId(url = location.href) {
   }
 }
 
-export function isGoogleDriveStandaloneEntryPage(url = location.href) {
-  try {
-    const parsed = new URL(url, "https://drive.google.com/");
-    if (
-      parsed.hostname === "drive.usercontent.google.com" &&
-      parsed.pathname === "/download"
-    ) {
-      return DRIVE_FILE_ID_PATTERN.test(parsed.searchParams.get("id") || "");
-    }
-    if (parsed.hostname !== "drive.google.com") return false;
-    const pathMatch = parsed.pathname.match(
-      /^\/file\/d\/([^/]+)(?:\/(?:view|preview))?\/?$/i,
-    );
-    if (pathMatch) return DRIVE_FILE_ID_PATTERN.test(pathMatch[1]);
-    if (!["/open", "/uc"].includes(parsed.pathname)) return false;
-    const fileId = parsed.searchParams.get("id") || "";
-    return DRIVE_FILE_ID_PATTERN.test(fileId);
-  } catch {
-    return false;
-  }
-}
-
 export function classifyGoogleDrivePage(url = location.href) {
-  try {
-    const parsed = new URL(url, location.href);
-    const fileId = getGoogleDriveFileId(parsed.href);
-    if (
-      parsed.hostname === "drive.google.com" &&
-      fileId &&
-      (parsed.pathname.startsWith("/file/d/") || parsed.pathname === "/open")
-    ) {
-      return "preview";
-    }
-    if (
-      (parsed.hostname === "drive.google.com" && parsed.pathname === "/uc") ||
-      (parsed.hostname === "drive.usercontent.google.com" &&
-        parsed.pathname.startsWith("/download"))
-    ) {
-      return "confirmation";
-    }
-    return "unsupported";
-  } catch {
-    return "unsupported";
-  }
+  return findHostRoute(processGoogleDriveDownload.definition, url)?.kind || "unsupported";
 }
 
 export function buildGoogleDriveDownloadUrl(url = location.href) {
@@ -95,10 +54,7 @@ function isDriveConfirmationLink(anchor) {
       parsed.hostname === "drive.usercontent.google.com" ||
       (parsed.hostname === "drive.google.com" && parsed.pathname === "/uc");
     const text = getElementText(anchor);
-    return (
-      driveTarget &&
-      (parsed.searchParams.has("confirm") || text.includes("download"))
-    );
+    return driveTarget && (parsed.searchParams.has("confirm") || text.includes("download"));
   } catch {
     return false;
   }
@@ -107,9 +63,7 @@ function isDriveConfirmationLink(anchor) {
 function findDriveConfirmationAction() {
   const form = queryFirstBySelectors(CONFIRMATION_FORM_SELECTORS);
   if (form instanceof HTMLFormElement) return { kind: "form", element: form };
-  const link = queryAllBySelectors(CONFIRMATION_LINK_SELECTORS).find(
-    isDriveConfirmationLink,
-  );
+  const link = queryAllBySelectors(CONFIRMATION_LINK_SELECTORS).find(isDriveConfirmationLink);
   return link ? { kind: "link", element: link } : null;
 }
 
@@ -127,6 +81,7 @@ function submitDriveForm(form) {
 
 export async function processGoogleDriveDownload({
   challengeGate,
+  signal = challengeGate?.signal,
   notifyMainFailure,
   reportAddonHealthy,
 }) {
@@ -148,6 +103,7 @@ export async function processGoogleDriveDownload({
 
   if (challengeGate && !(await challengeGate.waitUntilClear())) return;
   const action = await waitForCandidate({
+    signal,
     timeoutMs: 20000,
     intervalMs: Math.max(250, TIMINGS.POLL_INTERVAL),
     getCandidate: findDriveConfirmationAction,
@@ -159,12 +115,61 @@ export async function processGoogleDriveDownload({
 
   if (challengeGate && !(await challengeGate.waitUntilClear())) return;
   const triggered =
-    action.kind === "form"
-      ? submitDriveForm(action.element)
-      : clickElement(action.element);
+    action.element.isConnected &&
+    findDriveConfirmationAction()?.element === action.element &&
+    (action.kind === "form" ? submitDriveForm(action.element) : clickElement(action.element));
   if (!triggered) {
     await notifyMainFailure(HOST_LABEL, "Unable to confirm Google Drive download.");
     return;
   }
   reportAddonHealthy({ downloadTriggered: true });
 }
+
+processGoogleDriveDownload.definition = {
+  id: "googleDrive",
+  canonicalHost: "drive.google.com",
+  hostIncludes: ["drive.google.com", "drive.usercontent.google.com"],
+  text: "Google Drive",
+  tooltip: "Enable direct download automation for Google Drive",
+  routes: [
+    {
+      path: /^\/file\/d\/([a-z0-9_-]+)(?:\/(?:view|preview))?\/?$/i,
+      hosts: ["drive.google.com"],
+      kind: "preview",
+      entry: { identity: 1, nextStage: "drive-confirmation", consumeExisting: false },
+    },
+    {
+      path: /^\/open$/,
+      hosts: ["drive.google.com"],
+      query: { id: DRIVE_FILE_ID_PATTERN },
+      kind: "preview",
+      entry: { identity: { query: "id" }, nextStage: "drive-confirmation", consumeExisting: false },
+    },
+    {
+      path: /^\/uc$/,
+      hosts: ["drive.google.com"],
+      query: { id: DRIVE_FILE_ID_PATTERN },
+      kind: "confirmation",
+      entry: { identity: { query: "id" }, nextStage: "drive-confirmation", consumeExisting: true },
+    },
+    {
+      path: /^\/download$/,
+      hosts: ["drive.usercontent.google.com"],
+      query: { id: DRIVE_FILE_ID_PATTERN },
+      kind: "confirmation",
+      entry: { identity: { query: "id" }, nextStage: "drive-confirmation", consumeExisting: true },
+    },
+    {
+      path: /^\/download$/,
+      hosts: ["drive.usercontent.google.com"],
+      emptyQuery: ["id"],
+      kind: "confirmation",
+      allow: false,
+      continuation: { identity: "", nextStage: "drive-confirmation" },
+    },
+  ],
+
+  mode: "custom",
+  reason:
+    "File-ID preview redirect and confirmation form/requestSubmit fallback across owned Google origins.",
+};

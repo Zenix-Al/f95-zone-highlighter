@@ -14,17 +14,17 @@ module.exports = ({ assert, fs, path, ROOT, loadModule, runTest, createDomSandbo
       const graph = Object.keys(result.metafile.inputs).join("\n").replaceAll("\\", "/");
       assert.doesNotMatch(graph, /\/archive\//);
       assert.doesNotMatch(graph, /maskedPageController|maskedResolutionTransport|maskedDestinationDelivery|threadPageController|managedTabs|managedClose|processingTrigger|processingDownloadRepository|routeContextRepository|directDownload\/attention|shared\/managedNavigation|ui\/controller|styleController/);
-      assert.doesNotMatch(result.outputFiles[0].text, /GM_openInTab|f95ue\.addon\.maskedDirect\.request\./);
+      assert.doesNotMatch(result.outputFiles[0].text, /GM(?:_|\.)openInTab|f95ue\.addon\.maskedDirect\.request\./);
     }
     const manifest = JSON.parse(fs.readFileSync(path.join(ROOT, "addons/addons.manifest.json"), "utf8")).addons.find((a) => a.id === "masked-direct-addon");
     assert.strictEqual(manifest.name, "F95UE Masked + Direct Download Add-on");
-    assert.ok(!manifest.grants.includes("GM_openInTab"));
+    assert.ok(!manifest.grants.some((grant) => /^GM(?:_|\.)openInTab$/.test(grant)));
     assert.ok(!manifest.matches.some((match) => /masked|recaptcha/.test(match)));
     assert.ok(fs.existsSync(path.join(ROOT, base, "archive/app/contexts/maskedPageController.js")));
   });
 
 
-  runTest("MASKED-DIRECT-RETIRE-03 old markers do not bypass standalone policy or create ownership", async () => {
+  runTest("MASKED-DIRECT-RETIRE-03 old markers do not bypass standalone automationSettings or create ownership", async () => {
     const sandbox = createDomSandbox("https://krakenfiles.com/view/fixture/file.html?f95ue_dd=1&f95ue_dd_req=old&f95ue_tab=origin");
     try {
       const { createDownloadPageController } = loadModule(base + "src/app/contexts/downloadPageController.js");
@@ -33,7 +33,7 @@ module.exports = ({ assert, fs, path, ROOT, loadModule, runTest, createDomSandbo
         addonId: "masked-direct-addon", debugLog() {}, handlers: {},
         getIsEnabled: () => true, getIsBlockedByCore: () => false,
         GMApi: { getValue: () => { throw new Error("retired ownership must not be read"); } },
-        getStandalonePolicy: async () => ({ effectiveAutomateRegardless: allowed }),
+        getAutomationSettings: async () => ({ enabled: true, automateRegardless: allowed }),
       });
       assert.strictEqual((await controller.decideHostAutomation("krakenfiles.com")).mode, "blocked");
       allowed = true;

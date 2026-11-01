@@ -10,6 +10,5 @@ export function createMaskedDirectPageBehavior({
       clearOwnedResources();
       if (getIsEnabled() && !getIsBlocked()) feedback?.start();
     },
-    handleObservedNodes() {},
   };
 }

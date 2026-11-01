@@ -1,115 +1,43 @@
-export const DIRECT_DOWNLOAD_HOSTS = Object.freeze([
-  {
-    id: "buzzheavier",
-    canonicalHost: "buzzheavier.com",
-    hostIncludes: ["buzzheavier.com", "bzzhr.to"],
-    text: "Buzzheavier",
-    tooltip:
-      "Enable direct download automation for buzzheavier.com and bzzhr.to",
-  },
-  {
-    id: "gofile",
-    canonicalHost: "gofile.io",
-    hostIncludes: ["gofile.io"],
-    text: "Gofile package",
-    tooltip: "Enable direct download automation for gofile.io",
-  },
-  {
-    id: "googleDrive",
-    canonicalHost: "drive.google.com",
-    hostIncludes: ["drive.google.com", "drive.usercontent.google.com"],
-    text: "Google Drive",
-    tooltip: "Enable direct download automation for Google Drive",
-  },
-  {
-    id: "pixeldrain",
-    canonicalHost: "pixeldrain.com",
-    hostIncludes: ["pixeldrain.com"],
-    text: "Pixeldrain",
-    tooltip: "Enable direct download automation for pixeldrain.com",
-  },
-  {
-    id: "krakenfiles",
-    canonicalHost: "krakenfiles.com",
-    hostIncludes: ["krakenfiles.com", "www.krakenfiles.com"],
-    text: "KrakenFiles",
-    tooltip: "Enable direct download automation for krakenfiles.com",
-  },
-  {
-    id: "datanodes",
-    canonicalHost: "datanodes.to",
-    hostIncludes: ["datanodes.to"],
-    text: "Datanodes",
-    tooltip: "Enable direct download automation for datanodes.to",
-  },
-  {
-    id: "delafil",
-    canonicalHost: "delafil.se",
-    hostIncludes: ["delafil.se"],
-    text: "DelaFil",
-    tooltip: "Enable direct download automation for delafil.se",
-  },
-  {
-    id: "downloadgg",
-    canonicalHost: "download.gg",
-    hostIncludes: ["download.gg", "www.download.gg"],
-    text: "download.gg",
-    tooltip: "Enable direct download automation for download.gg",
-  },
-  {
-    id: "vik1ngfile",
-    canonicalHost: "vik1ngfile.site",
-    hostIncludes: ["vik1ngfile.site", "vikingfile.com"],
-    text: "Vik1ngFile",
-    tooltip:
-      "Enable direct download automation for vik1ngfile.site and vikingfile.com",
-  },
-  {
-    id: "mediafire",
-    canonicalHost: "mediafire.com",
-    hostIncludes: ["mediafire.com", "www.mediafire.com"],
-    text: "MediaFire",
-    tooltip: "Enable direct download automation for mediafire.com",
-  },
-  {
-    id: "mixdrop",
-    canonicalHost: "miiiixdrop.net",
-    hostIncludes: [
-      "mixdrop.ag",
-      "miixdrop.com",
-      "miiixdrop.net",
-      "miiiixdrop.net",
-    ],
-    text: "MixDrop",
-    tooltip: "Enable two-stage direct download automation for MixDrop",
-  },
-  {
-    id: "uploadhaven",
-    canonicalHost: "uploadhaven.com",
-    hostIncludes: ["uploadhaven.com", "www.uploadhaven.com"],
-    text: "UploadHaven",
-    tooltip: "Enable direct download automation for uploadhaven.com",
-  },
-  {
-    id: "uploadnow",
-    canonicalHost: "uploadnow.io",
-    hostIncludes: ["uploadnow.io", "www.uploadnow.io"],
-    text: "UploadNow",
-    tooltip: "Enable single-file direct download automation for uploadnow.io",
-  },
-  {
-    id: "workupload",
-    canonicalHost: "workupload.com",
-    hostIncludes: ["workupload.com"],
-    text: "Workupload",
-    tooltip: "Enable direct download automation for workupload.com",
-  },
-]);
+import { processBuzzheavierDownload } from "./buzzheavier.js";
+import { processGofileDownload } from "./gofile.js";
+import { processGoogleDriveDownload } from "./googleDrive.js";
+import { processPixeldrainDownload } from "./pixeldrain.js";
+import { processKrakenFilesDownload } from "./krakenfiles.js";
+import { processDatanodesDownload } from "./datanodes/index.js";
+import { processDelafilDownload } from "./delafil.js";
+import { processDownloadGg } from "./downloadgg.js";
+import { processVik1ngfileDownload } from "./vik1ngfile.js";
+import { processMediafireDownload } from "./mediafire.js";
+import { processMixdropDownload } from "./mixdrop.js";
+import { processUploadHavenDownload } from "./uploadhaven.js";
+import { processUploadNowDownload } from "./uploadnow.js";
+import { processWorkuploadDownload } from "./workupload.js";
+import { processQuaxDownload } from "./quax.js";
+import { processAkiraboxDownload } from "./akirabox.js";
+export const HOST_PROCESSORS = [
+  processBuzzheavierDownload,
+  processGofileDownload,
+  processGoogleDriveDownload,
+  processPixeldrainDownload,
+  processKrakenFilesDownload,
+  processDatanodesDownload,
+  processDelafilDownload,
+  processDownloadGg,
+  processVik1ngfileDownload,
+  processMediafireDownload,
+  processMixdropDownload,
+  processUploadHavenDownload,
+  processUploadNowDownload,
+  processWorkuploadDownload,
+  processQuaxDownload,
+  processAkiraboxDownload,
+];
+export const DIRECT_DOWNLOAD_HOSTS = Object.freeze(
+  HOST_PROCESSORS.map((processor) => processor.definition),
+);
 
 const DIRECT_DOWNLOAD_HOST_INDEX = new Map(
-  DIRECT_DOWNLOAD_HOSTS.flatMap((host) =>
-    host.hostIncludes.map((hostname) => [hostname, host]),
-  ),
+  DIRECT_DOWNLOAD_HOSTS.flatMap((host) => host.hostIncludes.map((hostname) => [hostname, host])),
 );
 
 function normalizeHostname(hostname) {
@@ -134,10 +62,7 @@ export function normalizeDirectDownloadHost(hostname) {
 }
 
 export function getDirectDownloadHostAliases(id) {
-  return (
-    DIRECT_DOWNLOAD_HOSTS.find((host) => host.id === String(id || ""))
-      ?.hostIncludes || []
-  );
+  return DIRECT_DOWNLOAD_HOSTS.find((host) => host.id === String(id || ""))?.hostIncludes || [];
 }
 
 export function isExactDirectDownloadHost(id, hostname) {
@@ -149,9 +74,7 @@ export function isSupportedDirectDownloadHost(hostname) {
 }
 
 export function createDirectDownloadPackageDefaults() {
-  return Object.fromEntries(
-    DIRECT_DOWNLOAD_HOSTS.map((host) => [host.id, true]),
-  );
+  return Object.fromEntries(DIRECT_DOWNLOAD_HOSTS.map((host) => [host.id, true]));
 }
 
 export function coerceDirectDownloadPackages(packages = {}) {

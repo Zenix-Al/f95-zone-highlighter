@@ -1,30 +1,12 @@
-import { TIMINGS } from "../constants.js";
-import { queryAllBySelectors } from "../shared/utils.js";
 import {
-  clickElement,
   getAnchorHref,
   getElementText,
   isElementDisabled,
   isElementVisible,
-  waitForCandidate,
 } from "./shared/dom.js";
-import { classifyFilePageUrl } from "./shared/filePage.js";
-
-const HOST_LABEL = "delafil.se";
+import { createHostAutomation } from "./shared/automation.js";
 const FILE_PATH_PATTERN = /^\/[a-f0-9]{16,}\/[^/]+$/i;
-const DOWNLOAD_LINK_SELECTORS = [
-  "center a.btn[href]",
-  "a.btn.btn-default[href]",
-  "a[href]",
-];
-
-export function classifyDelafilPage(url = location.href) {
-  const kind = classifyFilePageUrl(url, {
-    pathPattern: FILE_PATH_PATTERN,
-    terminalQueryKeys: ["pt", "download_token"],
-  });
-  return kind === "terminal" ? "tokenized" : kind;
-}
+const DOWNLOAD_LINK_SELECTORS = ["center a.btn[href]", "a.btn.btn-default[href]", "a[href]"];
 
 function isDelafilDownloadAnchor(anchor) {
   if (!(anchor instanceof HTMLAnchorElement)) return false;
@@ -35,11 +17,8 @@ function isDelafilDownloadAnchor(anchor) {
   try {
     const current = new URL(location.href);
     const target = new URL(href);
-    const isSameFile =
-      target.origin === current.origin && target.pathname === current.pathname;
-    const hasToken =
-      target.searchParams.has("pt") ||
-      target.searchParams.has("download_token");
+    const isSameFile = target.origin === current.origin && target.pathname === current.pathname;
+    const hasToken = target.searchParams.has("pt") || target.searchParams.has("download_token");
     const text = getElementText(anchor);
     const looksActionable =
       anchor.matches(".btn, .btn-default") ||
@@ -51,45 +30,30 @@ function isDelafilDownloadAnchor(anchor) {
   }
 }
 
-function findDelafilDownloadAnchor() {
-  return (
-    queryAllBySelectors(DOWNLOAD_LINK_SELECTORS).find(
-      isDelafilDownloadAnchor,
-    ) || null
-  );
-}
-
-export async function processDelafilDownload({
-  challengeGate,
-  notifyMainFailure,
-  reportAddonHealthy,
-}) {
-  const pageKind = classifyDelafilPage();
-  if (pageKind === "tokenized") {
-    reportAddonHealthy();
-    return;
-  }
-  if (pageKind !== "file") {
-    await notifyMainFailure(HOST_LABEL, "Unsupported DelaFil page.");
-    return;
-  }
-
-  if (challengeGate && !(await challengeGate.waitUntilClear())) return;
-  const anchor = await waitForCandidate({
-    timeoutMs: 20000,
-    intervalMs: Math.max(250, TIMINGS.POLL_INTERVAL),
-    getCandidate: findDelafilDownloadAnchor,
-  });
-  if (!anchor) {
-    await notifyMainFailure(HOST_LABEL, "Download button not found.");
-    return;
-  }
-
-  if (challengeGate && !(await challengeGate.waitUntilClear())) return;
-  anchor.target = "_self";
-  if (!clickElement(anchor)) {
-    await notifyMainFailure(HOST_LABEL, "Unable to trigger download button.");
-    return;
-  }
-  reportAddonHealthy({ downloadTriggered: true });
-}
+export const processDelafilDownload = createHostAutomation({
+  id: "delafil",
+  canonicalHost: "delafil.se",
+  hostIncludes: ["delafil.se"],
+  text: "DelaFil",
+  tooltip: "Enable direct download automation for delafil.se",
+  routes: [
+    { path: FILE_PATH_PATTERN, terminalKeys: ["pt", "download_token"], terminalKind: "tokenized" },
+  ],
+  routeError: "Unsupported DelaFil page.",
+  actions: [
+    { tool: "healthy", whenRoute: "tokenized" },
+    {
+      tool: "click",
+      selectors: DOWNLOAD_LINK_SELECTORS,
+      validate: isDelafilDownloadAnchor,
+      timeoutMs: 20000,
+      prepare: ["self"],
+      final: true,
+      errors: {
+        missing: "Download button not found.",
+        changed: "Download link changed before dispatch.",
+        click: "Unable to trigger download button.",
+      },
+    },
+  ],
+});

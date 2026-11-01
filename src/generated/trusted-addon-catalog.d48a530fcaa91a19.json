@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "identifier": "77022e1eb3d41768e6791ac0dbc67054558085c266d943e89adbc1ae04335aac",
+  "identifier": "d48a530fcaa91a196e0664326fdfa9b5d52a341fab8850eacf5e039397406705",
   "catalog": [
     {
       "id": "example-addon",
@@ -129,7 +129,7 @@
       "id": "masked-direct-addon",
       "name": "F95UE Masked + Direct Download Add-on",
       "description": "Standalone download automation for supported hosts with F95UE settings integration.",
-      "version": "1.3.0",
+      "version": "1.4.0",
       "pageScopes": [
         "f95zone"
       ],
@@ -172,7 +172,9 @@
         "*://workupload.com/file/*",
         "*://workupload.com/start/*",
         "*://*.workupload.com/file/*",
-        "*://*.workupload.com/start/*"
+        "*://*.workupload.com/start/*",
+        "https://qu.ax/*",
+        "https://akirabox.to/*/file*"
       ],
       "grants": [
         "GM.getValue",

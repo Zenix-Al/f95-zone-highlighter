@@ -70,6 +70,7 @@ const GROUPS = Object.freeze([
   "masked-direct-standalone-expansion-staged",
   "masked-direct-toast-remove",
   "masked-direct-reliability",
+  "masked-direct-host-baseline",
   "integration",
 ]);
 

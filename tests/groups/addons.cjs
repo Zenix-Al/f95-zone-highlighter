@@ -252,7 +252,7 @@ runTest("ADDON-MASKED-DIRECT-01 keeps hybrid modules out of the source root", ()
     .filter((entry) => entry.isFile())
     .map((entry) => entry.name)
     .sort();
-  assert.deepStrictEqual(rootFiles, ["constants.js", "main.js"]);
+  assert.deepStrictEqual(rootFiles, ["main.js"]);
   for (const relativePath of [
     "app/contexts/downloadPageController.js",
     "app/lifecycle.js",
@@ -260,10 +260,12 @@ runTest("ADDON-MASKED-DIRECT-01 keeps hybrid modules out of the source root", ()
     "app/registration.js",
     "app/runtime.js",
     "app/settings.js",
+    "app/coreIntegration.js",
+    "hosts/constants.js",
     "domain/directDownload/feedback.js",
     "domain/directDownload/flowController.js",
     "shared/utils.js",
-    "ports/standaloneAutomationPolicyRepository.js",
+    "ports/automationSettingsRepository.js",
     "ports/standaloneContinuation.js",
   ]) {
     assert.ok(fs.existsSync(path.join(addonRoot, relativePath)), relativePath);

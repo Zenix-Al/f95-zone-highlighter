@@ -1,3 +1,4 @@
+import { isAutomationEnabled } from "../../shared/utils.js";
 import { normalizeDownloadCloseDelay } from "../../shared/downloadCloseDelay.js";
 import { isDirectDownloadHostEnabled } from "../../hosts/metadata.js";
 
@@ -5,7 +6,7 @@ import { isDirectDownloadHostEnabled } from "../../hosts/metadata.js";
 export function createDirectDownloadFlowController({
   addonId,
   diagnostics,
-  getPolicy = async () => null,
+  getAutomationSettings = async () => null,
   closeTab = () => window.close(),
   setTimeoutFn = setTimeout,
   clearTimeoutFn = clearTimeout,
@@ -57,28 +58,28 @@ export function createDirectDownloadFlowController({
         feedback("initiated");
         // Healthy/no-op branches never authorize closing. Only explicit final-action
         // evidence does, and settings/challenge state are checked again at the deadline.
-        if (decision?.policy?.autoCloseTabs !== true) {
+        if (decision?.automationSettings?.autoCloseTabs !== true) {
           hooks.onSettled?.();
           return;
         }
         timer = setTimeoutFn(async () => {
           timer = null;
           try {
-            const policy = await getPolicy();
+            const automationSettings = await getAutomationSettings();
             if (
               !disposed &&
-              policy?.effectiveAutomateRegardless &&
-              policy.autoCloseTabs === true &&
-              isDirectDownloadHostEnabled(host, policy.directDownloadPackages) &&
+              isAutomationEnabled(automationSettings) &&
+              automationSettings.autoCloseTabs === true &&
+              isDirectDownloadHostEnabled(host, automationSettings.directDownloadPackages) &&
               hooks.canClose?.() !== false
             )
               closeTab();
           } catch {
-            /* A refused close or unavailable policy leaves the tab open. */
+            /* A refused close or unavailable settings leaves the tab open. */
           } finally {
             hooks.onSettled?.();
           }
-        }, normalizeDownloadCloseDelay(decision.policy.downloadPageCloseDelayMs));
+        }, normalizeDownloadCloseDelay(decision.automationSettings.downloadPageCloseDelayMs));
       },
     };
   }

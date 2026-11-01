@@ -114,14 +114,14 @@ module.exports = ({ assert, loadModule, runTest }) => {
 
   runTest("MASKED-DIRECT-FEEDBACK-07 failed feedback cannot prevent close or publish false success", async () => {
     const { createDirectDownloadFlowController } = loadModule(base + "domain/directDownload/flowController.js");
-    const events = [], policy = { effectiveAutomateRegardless: true, autoCloseTabs: true };
+    const events = [], automationSettings = { enabled: true, automateRegardless: true, autoCloseTabs: true };
     let closes = 0, callback;
     const flow = createDirectDownloadFlowController({ addonId: "test", diagnostics: { warn() {} },
-      getPolicy: async () => policy, closeTab: () => { closes += 1; },
+      getAutomationSettings: async () => automationSettings, closeTab: () => { closes += 1; },
       setTimeoutFn: (fn) => { callback = fn; return 1; },
       publishFeedback: (event) => { events.push(event); throw new Error("failed feedback"); },
     });
-    const decision = { host: "pixeldrain.com", policy };
+    const decision = { host: "pixeldrain.com", automationSettings };
     flow.createHostExecutionContext(decision).reportAddonHealthy();
     await Promise.resolve(); assert.strictEqual(events.length, 0);
     flow.createHostExecutionContext(decision).reportAddonHealthy({ downloadTriggered: true });

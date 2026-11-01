@@ -1,4 +1,4 @@
-import { ADDON_COMMAND_EVENT } from "../constants.js";
+export const ADDON_COMMAND_EVENT = "f95ue:addon-command";
 
 export function createMaskedDirectLifecycle({
   bridge,
@@ -57,8 +57,7 @@ export function createMaskedDirectLifecycle({
   function refresh() {
     if (terminal) return;
     settings.invalidate();
-    const reread =
-      typeof settings.read === "function" ? settings.read(true) : Promise.resolve();
+    const reread = typeof settings.read === "function" ? settings.read(true) : Promise.resolve();
     void Promise.resolve(reread).finally(() => pageBehavior.apply());
   }
 
@@ -71,9 +70,6 @@ export function createMaskedDirectLifecycle({
       if (command === "enable") void setEnabled(true);
       else if (command === "disable") void setEnabled(false);
       else if (command === "refresh") refresh();
-      else if (command === "observer.nodes") {
-        pageBehavior.handleObservedNodes(detail.observerId, detail.nodes || []);
-      }
       else if (command === "teardown") {
         void teardown(String(detail.reason || "requested by core"));
       }

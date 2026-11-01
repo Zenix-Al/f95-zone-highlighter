@@ -18,19 +18,28 @@ module.exports = function registerMaskedDirectStandaloneSettings(context) {
       const { ADDON_PANEL_SETTINGS, ADDON_SETTINGS_DEFAULT } = loadModule(
         "addons/masked-direct-addon/src/app/settings.js",
       );
-      const setting = ADDON_PANEL_SETTINGS.find(
-        (entry) => entry.path === "automateRegardless",
-      );
+      const setting = ADDON_PANEL_SETTINGS.find((entry) => entry.path === "automateRegardless");
       assert.ok(setting);
-      assert.strictEqual(
-        setting.text,
-        "Automate supported host pages",
-      );
+      assert.strictEqual(setting.text, "Automate supported host pages");
       assert.match(setting.tooltip, /regardless of where the tab came from/i);
       assert.strictEqual(ADDON_SETTINGS_DEFAULT.automateRegardless, true);
       assert.strictEqual(ADDON_SETTINGS_DEFAULT.autoCloseTabs, true);
+      const { TIMINGS } = loadModule("addons/masked-direct-addon/src/hosts/constants.js");
+      const { DEFAULT_DOWNLOAD_CLOSE_DELAY_MS, MIN_DOWNLOAD_CLOSE_DELAY_MS } = loadModule(
+        "addons/masked-direct-addon/src/shared/downloadCloseDelay.js",
+      );
+      assert.strictEqual(DEFAULT_DOWNLOAD_CLOSE_DELAY_MS, TIMINGS.DOWNLOAD_PAGE_CLOSE_DELAY);
+      assert.strictEqual(MIN_DOWNLOAD_CLOSE_DELAY_MS, TIMINGS.MIN_DOWNLOAD_PAGE_CLOSE_DELAY);
+      assert.strictEqual(
+        ADDON_SETTINGS_DEFAULT.downloadPageCloseDelayMs,
+        TIMINGS.DOWNLOAD_PAGE_CLOSE_DELAY,
+      );
       assert.ok(ADDON_PANEL_SETTINGS.some((entry) => entry.path === "autoCloseTabs"));
-      assert.ok(!ADDON_PANEL_SETTINGS.some((entry) => ["skipMaskedLink", "directDownloadLinks"].includes(entry.id)));
+      assert.ok(
+        !ADDON_PANEL_SETTINGS.some((entry) =>
+          ["skipMaskedLink", "directDownloadLinks"].includes(entry.id),
+        ),
+      );
     },
   );
 
@@ -66,8 +75,7 @@ module.exports = function registerMaskedDirectStandaloneSettings(context) {
         const settings = createMaskedDirectSettings({
           bridge: createBridge({ automateRegardless: userPreference }),
           GMApi: null,
-          onSettingsRead: async (value) =>
-            mirrored.push(value.automateRegardless),
+          onSettingsRead: async (value) => mirrored.push(value.automateRegardless),
         });
         const value = await settings.read(true);
         assert.strictEqual(value.automateRegardless, userPreference);
@@ -83,7 +91,7 @@ module.exports = function registerMaskedDirectStandaloneSettings(context) {
       const events = [];
       try {
         const { ADDON_COMMAND_EVENT } = loadModule(
-          "addons/masked-direct-addon/src/constants.js",
+          "addons/masked-direct-addon/src/app/lifecycle.js",
         );
         const { createMaskedDirectLifecycle } = loadModule(
           "addons/masked-direct-addon/src/app/lifecycle.js",

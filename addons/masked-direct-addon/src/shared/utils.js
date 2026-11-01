@@ -1,3 +1,10 @@
+export function isAutomationEnabled(settings) {
+  return (
+    settings?.enabled === true &&
+    settings.automateRegardless === true &&
+    settings.needsSettingsRefresh !== true
+  );
+}
 
 export function createDebugLog(addonId) {
   return function debugLog(scope, message, extra = null) {
@@ -7,19 +14,6 @@ export function createDebugLog(addonId) {
       console.debug(`[${addonId}:${scope}] ${message}`);
     }
   };
-}
-
-export function normalizeUrl(url, fallback = "") {
-  const raw = String(url || "")
-    .trim()
-    .replace(/&amp;/gi, "&");
-  if (!raw) return fallback;
-  try {
-    const parsed = new URL(raw, location.href);
-    return parsed.protocol === "http:" || parsed.protocol === "https:" ? parsed.href : fallback;
-  } catch {
-    return fallback;
-  }
 }
 
 export function queryAllBySelectors(selectors, root = document) {
@@ -48,6 +42,18 @@ export function queryFirstBySelectors(selectors, root = document) {
   return null;
 }
 
-export function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+export function sleep(ms, signal) {
+  signal?.throwIfAborted();
+  return new Promise((resolve, reject) => {
+    const abort = () => {
+      clearTimeout(timer);
+      signal.removeEventListener("abort", abort);
+      reject(signal.reason);
+    };
+    const timer = setTimeout(() => {
+      signal?.removeEventListener("abort", abort);
+      resolve();
+    }, ms);
+    signal?.addEventListener("abort", abort, { once: true });
+  });
 }

@@ -1,5 +1,9 @@
 /* global GM, GM_addValueChangeListener, GM_removeValueChangeListener */
-import { createMaskedDirectCoreAdaptor } from "../core/adaptor.js";
+import {
+  createMaskedDirectCoreAdaptor,
+  probeMaskedDirectCore,
+  showCoreToast,
+} from "./coreIntegration.js";
 import { classifyMaskedDirectContext } from "./context.js";
 import { createDebugLog, sleep } from "../shared/utils.js";
 import { createDirectDownloadHostHandlers } from "../hosts/handlers.js";
@@ -12,17 +16,15 @@ import { createMaskedDirectSettings } from "./settings.js";
 import { createMaskedDirectPageBehavior } from "./pageBehavior.js";
 import { createMaskedDirectLifecycle } from "./lifecycle.js";
 import { createMaskedDirectDiagnostics } from "../shared/diagnostics.js";
-import { createStandaloneAutomationPolicyRepository } from "../ports/standaloneAutomationPolicyRepository.js";
-import { probeMaskedDirectCore } from "./coreAvailability.js";
+import { createAutomationSettingsRepository } from "../ports/automationSettingsRepository.js";
 import { createHostFeedback } from "../domain/directDownload/feedback.js";
-import { showCoreToast } from "../api/toast.js";
 import { createContinuePageController } from "./contexts/continuePageController.js";
 
 const runtime = createMaskedDirectRuntime();
 const bridge = createMaskedDirectCoreAdaptor(runtime.addonId);
 const debugLog = createDebugLog(runtime.addonId);
 const diagnostics = createMaskedDirectDiagnostics(runtime.addonId);
-const standaloneAutomationPolicy = createStandaloneAutomationPolicyRepository({ GMApi: GM });
+const automationSettingsRepository = createAutomationSettingsRepository({ GMApi: GM });
 const state = { enabled: true, blockedByCore: false };
 const feedback = createHostFeedback({
   GMApi: GM,
@@ -36,13 +38,13 @@ const feedback = createHostFeedback({
 const settings = createMaskedDirectSettings({
   bridge,
   onSettingsRead: (flags) =>
-    standaloneAutomationPolicy.updateSettings({ ...flags, enabled: state.enabled }),
-  onEnabledChanged: (enabled) => standaloneAutomationPolicy.updateSettings({ enabled }),
+    automationSettingsRepository.updateSettings({ ...flags, enabled: state.enabled }),
+  onEnabledChanged: (enabled) => automationSettingsRepository.updateSettings({ enabled }),
 });
 const directDownloadFlowController = createDirectDownloadFlowController({
   addonId: runtime.addonId,
   diagnostics,
-  getPolicy: () => standaloneAutomationPolicy.getEffectivePolicy(),
+  getAutomationSettings: () => automationSettingsRepository.read(),
   publishFeedback: feedback.publish,
 });
 const createHostExecutionContext = directDownloadFlowController.createHostExecutionContext;
@@ -50,7 +52,7 @@ const downloadPageController = createDownloadPageController({
   addonId: runtime.addonId,
   debugLog,
   getIsEnabled: () => state.enabled,
-  getStandalonePolicy: () => standaloneAutomationPolicy.getEffectivePolicy(),
+  getAutomationSettings: () => automationSettingsRepository.read(),
   createHostExecutionContext,
   handlers: createDirectDownloadHostHandlers({
     debugLog,
@@ -69,7 +71,7 @@ const registration = createMaskedDirectRegistration({
   getStatusMessage: statusMessage,
 });
 const pageBehavior = createMaskedDirectPageBehavior({
-  clearOwnedResources: feedback.stop,
+  clearOwnedResources,
   feedback,
   getIsEnabled: () => state.enabled,
   getIsBlocked: () => state.blockedByCore,
@@ -82,8 +84,13 @@ const lifecycle = createMaskedDirectLifecycle({
   registration,
   pageBehavior,
   diagnostics,
-  clearOwnedResources: feedback.stop,
+  clearOwnedResources,
 });
+
+function clearOwnedResources() {
+  downloadPageController.dispose();
+  feedback.stop();
+}
 
 export async function bootstrapMaskedDirectAddon() {
   const context = classifyMaskedDirectContext(location, {
@@ -92,7 +99,7 @@ export async function bootstrapMaskedDirectAddon() {
   if (context.kind === "unsupported") return;
   if (context.kind === "f95-continue") {
     await createContinuePageController({
-      getPolicy: () => standaloneAutomationPolicy.getEffectivePolicy(),
+      getAutomationSettings: () => automationSettingsRepository.read(),
     }).run();
     return;
   }
@@ -106,7 +113,7 @@ export async function bootstrapMaskedDirectAddon() {
   lifecycle.bindCommands();
   try {
     if (!(await lifecycle.refreshAccess())) {
-      await standaloneAutomationPolicy.updateSettings({ enabled: false });
+      await automationSettingsRepository.updateSettings({ enabled: false });
       return;
     }
     await lifecycle.initializeEnabledState();

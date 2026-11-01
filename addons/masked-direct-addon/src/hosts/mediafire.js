@@ -1,18 +1,8 @@
-import { SELECTORS, TIMINGS } from "../constants.js";
+import { SELECTORS, TIMINGS } from "./constants.js";
 import { queryFirstBySelectors } from "../shared/utils.js";
-import { clickElement, getAnchorHref, waitForCandidate } from "./shared/dom.js";
-import { matchesDirectDownloadHostPath } from "./shared/filePage.js";
-
-const MEDIAFIRE_FILE_PATH =
-  /^\/(?:file|file_premium)\/[a-z0-9]{5,}(?:\/[^/]+(?:\/file)?)?\/?$/i;
-
-export function isMediafireFilePage(url = location.href) {
-  return matchesDirectDownloadHostPath(url, {
-    hostId: "mediafire",
-    pathPattern: MEDIAFIRE_FILE_PATH,
-    baseUrl: "https://mediafire.com/",
-  });
-}
+import { getAnchorHref } from "./shared/dom.js";
+import { createHostAutomation } from "./shared/automation.js";
+const MEDIAFIRE_FILE_PATH = /^\/(?:file|file_premium)\/[a-z0-9]{5,}(?:\/[^/]+(?:\/file)?)?\/?$/i;
 
 function isHttpDownloadHref(href) {
   try {
@@ -22,68 +12,29 @@ function isHttpDownloadHref(href) {
   }
 }
 
-async function waitForDownloadAnchor(timeoutMs = 12000, intervalMs = TIMINGS.POLL_INTERVAL) {
-  const found = await waitForCandidate({
-    timeoutMs,
-    intervalMs: Math.max(1, intervalMs),
-    getCandidate: () => {
-      const button = queryFirstBySelectors(
-        SELECTORS.MEDIAFIRE.DOWNLOAD_BUTTON_CANDIDATES,
-      );
-      if (button instanceof HTMLAnchorElement) {
-        const href = getAnchorHref(button, window.location.href);
-        if (href && isHttpDownloadHref(href)) return { button, href };
-        // If href is still placeholder, trigger site init to progress state.
-        try {
-          if (typeof window.initDownload === "function") window.initDownload();
-        } catch {
-          // best effort
-        }
-      }
-      return null;
+export const processMediafireDownload = createHostAutomation({
+  id: "mediafire",
+  canonicalHost: "mediafire.com",
+  hostIncludes: ["mediafire.com", "www.mediafire.com"],
+  text: "MediaFire",
+  tooltip: "Enable direct download automation for mediafire.com",
+  routes: [{ path: MEDIAFIRE_FILE_PATH }],
+  actions: [
+    {
+      tool: "navigate",
+      select: () => queryFirstBySelectors(SELECTORS.MEDIAFIRE.DOWNLOAD_BUTTON_CANDIDATES),
+      ready: (element) =>
+        element instanceof HTMLAnchorElement && isHttpDownloadHref(getAnchorHref(element)),
+      initialize: "initDownload",
+      timeoutMs: (o) => o.downloadAnchorTimeoutMs ?? 12000,
+      intervalMs: (o) => o.pollIntervalMs ?? TIMINGS.POLL_INTERVAL,
+      read: getAnchorHref,
+      url: (element) => getAnchorHref(element),
+      final: true,
+      errors: {
+        missing: "Download button not found.",
+        changed: "Download link changed before dispatch.",
+      },
     },
-  });
-  return found || { button: null, href: "" };
-}
-
-export async function processMediafireDownload({
-  challengeGate,
-  notifyMainFailure,
-  reportAddonHealthy,
-  downloadAnchorTimeoutMs = 12000,
-  pollIntervalMs = TIMINGS.POLL_INTERVAL,
-}) {
-  if (challengeGate && !(await challengeGate.waitUntilClear())) return;
-  const { button, href } = await waitForDownloadAnchor(
-    downloadAnchorTimeoutMs,
-    pollIntervalMs,
-  );
-  if (!button) {
-    await notifyMainFailure("mediafire.com", "Download button not found.");
-    return;
-  }
-
-  if (href) {
-    if (challengeGate && !(await challengeGate.waitUntilClear())) return;
-    window.location.assign(href);
-    reportAddonHealthy({ downloadTriggered: true });
-    return;
-  }
-
-  try {
-    if (challengeGate && !(await challengeGate.waitUntilClear())) return;
-    if (!clickElement(button)) {
-      await notifyMainFailure(
-        "mediafire.com",
-        "Unable to trigger download button.",
-      );
-      return;
-    }
-    reportAddonHealthy({ downloadTriggered: true });
-  } catch {
-    await notifyMainFailure(
-      "mediafire.com",
-      "Unable to trigger download button.",
-    );
-  }
-}
+  ],
+});
