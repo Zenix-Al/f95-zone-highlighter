@@ -1351,7 +1351,7 @@
         "coreDomAssumptions": [
           {
             "path": "addons/masked-direct-addon/src/app/contexts/continuePageController.js",
-            "line": 34,
+            "line": 54,
             "text": "const button = documentRef.querySelector("
           },
           {
@@ -1515,7 +1515,7 @@
         "cancellationAndTeardown": [
           {
             "path": "addons/masked-direct-addon/src/app/contexts/continuePageController.js",
-            "line": 9,
+            "line": 28,
             "text": "clearTimeoutFn = clearTimeout,"
           },
           {
@@ -11565,7 +11565,7 @@
         },
         {
           "path": "addons/masked-direct-addon/src/app/contexts/continuePageController.js",
-          "line": 8,
+          "line": 27,
           "text": "setTimeoutFn = setTimeout,"
         },
         {

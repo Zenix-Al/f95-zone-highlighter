@@ -1592,7 +1592,7 @@
     "readable": {
       "mode": "regular",
       "bytes": 678133,
-      "gzipBytes": 145771,
+      "gzipBytes": 146055,
       "coreBytes": 430792,
       "excludedBytes": 240058,
       "contributors": [
@@ -1845,7 +1845,7 @@
     "uglified": {
       "mode": "release",
       "bytes": 337562,
-      "gzipBytes": 101288,
+      "gzipBytes": 102056,
       "coreBytes": 222561,
       "excludedBytes": 114989,
       "contributors": [

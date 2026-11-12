@@ -10,12 +10,12 @@
   "bundle": {
     "readable": {
       "fullBytes": 678133,
-      "gzipBytes": 145771,
+      "gzipBytes": 146055,
       "contributionBytes": 21716
     },
     "uglified": {
       "fullBytes": 337562,
-      "gzipBytes": 101288,
+      "gzipBytes": 102056,
       "contributionBytes": 25213
     }
   },
@@ -4666,8 +4666,8 @@
     },
     "readableBundleGzipBytes": {
       "before": 124202,
-      "after": 145771,
-      "delta": 21569
+      "after": 146055,
+      "delta": 21853
     },
     "uglifiedBundleContributionBytes": {
       "before": 27380,
@@ -4681,8 +4681,8 @@
     },
     "uglifiedBundleGzipBytes": {
       "before": 88402,
-      "after": 101288,
-      "delta": 12886
+      "after": 102056,
+      "delta": 13654
     },
     "selectorCount": {
       "before": 252,

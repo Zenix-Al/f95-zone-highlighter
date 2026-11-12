@@ -131,6 +131,53 @@ module.exports = ({ assert, fs, path, ROOT, loadModule, runTest, createDomSandbo
     },
   );
   runTest(
+    "MASKED-DIRECT-CURRENT-07 active hcaptcha challenge never clicks the continue button",
+    async () => {
+      const sandbox = createDomSandbox("https://f95zone.to/dl/100/");
+      try {
+        const { createContinuePageController, isHcaptchaActive } = loadModule(
+          base + "app/contexts/continuePageController.js",
+        );
+        let clicks = 0;
+        let pending = null;
+        document.body.innerHTML = `
+          <form class="f95dl-box">
+            <input type="hidden" name="had_check" value="1">
+            <div class="f95dl-check-box">
+              <div data-xf-init="h-captcha"></div>
+            </div>
+            <div class="f95dl-go">
+              <button type="submit" class="js-f95dlContinue">Continue</button>
+            </div>
+          </form>
+        `;
+        document.querySelector("button").addEventListener("click", () => {
+          clicks += 1;
+        });
+        assert.strictEqual(isHcaptchaActive(document), true);
+        const controller = createContinuePageController({
+          getAutomationSettings: async () => ({
+            enabled: true,
+            automateRegardless: true,
+            skipMaskedPage: true,
+          }),
+          setTimeoutFn: (fn) => {
+            pending = fn;
+            return 1;
+          },
+          clearTimeoutFn: () => {
+            pending = null;
+          },
+        });
+        await controller.run();
+        assert.strictEqual(pending, null, "active hcaptcha must not schedule button click");
+        assert.strictEqual(clicks, 0, "active hcaptcha must not click continue button");
+      } finally {
+        sandbox.restore();
+      }
+    },
+  );
+  runTest(
     "MASKED-DIRECT-CURRENT-01 delayed and hidden native download links are never discovered or rewritten",
     async () => {
       const sandbox = createDomSandbox("https://f95zone.to/threads/fixture.100/");

@@ -25,16 +25,16 @@
       "authoredBytes": 242696,
       "readableBytes": 678133,
       "uglifiedBytes": 337562,
-      "readableGzipBytes": 145771,
-      "uglifiedGzipBytes": 101288
+      "readableGzipBytes": 146055,
+      "uglifiedGzipBytes": 102056
     },
     "addons": {
       "count": 7,
-      "authoredBytes": 912607,
-      "regularBytes": 1018949,
-      "releaseBytes": 740022,
-      "regularGzipBytes": 224015,
-      "releaseGzipBytes": 188697
+      "authoredBytes": 913292,
+      "regularBytes": 1019642,
+      "releaseBytes": 740522,
+      "regularGzipBytes": 224472,
+      "releaseGzipBytes": 189851
     },
     "sharedRuntime": {
       "authoredBytes": 18561,
@@ -87,14 +87,14 @@
           "delta": -14496
         },
         "regularGzipBytes": {
-          "current": 20776,
+          "current": 20780,
           "baseline": 20685,
-          "delta": 91
+          "delta": 95
         },
         "releaseGzipBytes": {
-          "current": 16491,
-          "baseline": 17049,
-          "delta": -558
+          "current": 16569,
+          "baseline": 17027,
+          "delta": -458
         },
         "owningFiles": [
           "addons/example-addon/src/app/createExampleAddonApp.js",
@@ -123,14 +123,14 @@
           "delta": -5535
         },
         "regularGzipBytes": {
-          "current": 7110,
-          "baseline": 7033,
-          "delta": 77
+          "current": 7113,
+          "baseline": 7034,
+          "delta": 79
         },
         "releaseGzipBytes": {
-          "current": 5731,
-          "baseline": 5929,
-          "delta": -198
+          "current": 5756,
+          "baseline": 5913,
+          "delta": -157
         },
         "owningFiles": [
           "addons/halloween-theme-addon/src/app/createHalloweenThemeApp.js",
@@ -159,14 +159,14 @@
           "delta": -13161
         },
         "regularGzipBytes": {
-          "current": 20987,
-          "baseline": 20896,
-          "delta": 91
+          "current": 21059,
+          "baseline": 20965,
+          "delta": 94
         },
         "releaseGzipBytes": {
-          "current": 17678,
-          "baseline": 17899,
-          "delta": -221
+          "current": 17779,
+          "baseline": 17866,
+          "delta": -87
         },
         "owningFiles": [
           "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
@@ -195,14 +195,14 @@
           "delta": -85433
         },
         "regularGzipBytes": {
-          "current": 108529,
-          "baseline": 108442,
-          "delta": 87
+          "current": 108661,
+          "baseline": 108576,
+          "delta": 85
         },
         "releaseGzipBytes": {
-          "current": 92616,
-          "baseline": 95245,
-          "delta": -2629
+          "current": 93075,
+          "baseline": 95129,
+          "delta": -2054
         },
         "owningFiles": [
           "addons/library-addon/src/library/service.js",
@@ -216,29 +216,29 @@
       {
         "addonId": "masked-direct-addon",
         "authoredBytes": {
-          "current": 118661,
-          "baseline": 118661,
+          "current": 119346,
+          "baseline": 119346,
           "delta": 0
         },
         "regularBytes": {
-          "current": 124773,
-          "baseline": 123315,
+          "current": 125466,
+          "baseline": 124008,
           "delta": 1458
         },
         "releaseBytes": {
-          "current": 89244,
-          "baseline": 108529,
-          "delta": -19285
+          "current": 89744,
+          "baseline": 109058,
+          "delta": -19314
         },
         "regularGzipBytes": {
-          "current": 27700,
-          "baseline": 27463,
-          "delta": 237
+          "current": 27932,
+          "baseline": 27676,
+          "delta": 256
         },
         "releaseGzipBytes": {
-          "current": 23421,
-          "baseline": 23677,
-          "delta": -256
+          "current": 23762,
+          "baseline": 23849,
+          "delta": -87
         },
         "owningFiles": [
           "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
@@ -267,14 +267,14 @@
           "delta": -8692
         },
         "regularGzipBytes": {
-          "current": 12987,
-          "baseline": 12892,
+          "current": 13008,
+          "baseline": 12913,
           "delta": 95
         },
         "releaseGzipBytes": {
-          "current": 10482,
-          "baseline": 10723,
-          "delta": -241
+          "current": 10540,
+          "baseline": 10718,
+          "delta": -178
         },
         "owningFiles": [
           "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
@@ -303,14 +303,14 @@
           "delta": -16924
         },
         "regularGzipBytes": {
-          "current": 25926,
-          "baseline": 25836,
-          "delta": 90
+          "current": 25919,
+          "baseline": 25832,
+          "delta": 87
         },
         "releaseGzipBytes": {
-          "current": 22278,
-          "baseline": 22680,
-          "delta": -402
+          "current": 22370,
+          "baseline": 22689,
+          "delta": -319
         },
         "owningFiles": [
           "addons/thread-utility-addon/src/app/createThreadUtilityApp.js",
@@ -2652,7 +2652,7 @@
     "bundle": {
       "readable": {
         "bytes": 678133,
-        "gzipBytes": 145771,
+        "gzipBytes": 146055,
         "contributionBytes": 97886,
         "contributors": [
           {
@@ -2691,7 +2691,7 @@
       },
       "uglified": {
         "bytes": 337562,
-        "gzipBytes": 101288,
+        "gzipBytes": 102056,
         "contributionBytes": 46507,
         "contributors": [
           {
@@ -5604,7 +5604,7 @@
       "builds": {
         "regular": {
           "bytes": 92135,
-          "gzipBytes": 20776,
+          "gzipBytes": 20780,
           "headerBytes": 969,
           "contributors": [
             {
@@ -5790,7 +5790,7 @@
         },
         "release": {
           "bytes": 62920,
-          "gzipBytes": 16491,
+          "gzipBytes": 16569,
           "headerBytes": 969,
           "contributors": [
             {
@@ -6009,14 +6009,14 @@
           "delta": -14496
         },
         "regularGzipBytes": {
-          "current": 20776,
+          "current": 20780,
           "baseline": 20685,
-          "delta": 91
+          "delta": 95
         },
         "releaseGzipBytes": {
-          "current": 16491,
-          "baseline": 17049,
-          "delta": -558
+          "current": 16569,
+          "baseline": 17027,
+          "delta": -458
         },
         "owningFiles": [
           "addons/example-addon/src/app/createExampleAddonApp.js",
@@ -6161,7 +6161,7 @@
       "builds": {
         "regular": {
           "bytes": 28804,
-          "gzipBytes": 7110,
+          "gzipBytes": 7113,
           "headerBytes": 977,
           "contributors": [
             {
@@ -6274,7 +6274,7 @@
         },
         "release": {
           "bytes": 19500,
-          "gzipBytes": 5731,
+          "gzipBytes": 5756,
           "headerBytes": 977,
           "contributors": [
             {
@@ -6420,14 +6420,14 @@
           "delta": -5535
         },
         "regularGzipBytes": {
-          "current": 7110,
-          "baseline": 7033,
-          "delta": 77
+          "current": 7113,
+          "baseline": 7034,
+          "delta": 79
         },
         "releaseGzipBytes": {
-          "current": 5731,
-          "baseline": 5929,
-          "delta": -198
+          "current": 5756,
+          "baseline": 5913,
+          "delta": -157
         },
         "owningFiles": [
           "addons/halloween-theme-addon/src/app/createHalloweenThemeApp.js",
@@ -6764,7 +6764,7 @@
       "builds": {
         "regular": {
           "bytes": 92093,
-          "gzipBytes": 20987,
+          "gzipBytes": 21059,
           "headerBytes": 1053,
           "contributors": [
             {
@@ -6934,7 +6934,7 @@
         },
         "release": {
           "bytes": 66915,
-          "gzipBytes": 17678,
+          "gzipBytes": 17779,
           "headerBytes": 1053,
           "contributors": [
             {
@@ -7138,14 +7138,14 @@
           "delta": -13161
         },
         "regularGzipBytes": {
-          "current": 20987,
-          "baseline": 20896,
-          "delta": 91
+          "current": 21059,
+          "baseline": 20965,
+          "delta": 94
         },
         "releaseGzipBytes": {
-          "current": 17678,
-          "baseline": 17899,
-          "delta": -221
+          "current": 17779,
+          "baseline": 17866,
+          "delta": -87
         },
         "owningFiles": [
           "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
@@ -7992,7 +7992,7 @@
       "builds": {
         "regular": {
           "bytes": 510684,
-          "gzipBytes": 108529,
+          "gzipBytes": 108661,
           "headerBytes": 967,
           "contributors": [
             {
@@ -8282,7 +8282,7 @@
         },
         "release": {
           "bytes": 377221,
-          "gzipBytes": 92616,
+          "gzipBytes": 93075,
           "headerBytes": 967,
           "contributors": [
             {
@@ -8605,14 +8605,14 @@
           "delta": -85433
         },
         "regularGzipBytes": {
-          "current": 108529,
-          "baseline": 108442,
-          "delta": 87
+          "current": 108661,
+          "baseline": 108576,
+          "delta": 85
         },
         "releaseGzipBytes": {
-          "current": 92616,
-          "baseline": 95245,
-          "delta": -2629
+          "current": 93075,
+          "baseline": 95129,
+          "delta": -2054
         },
         "owningFiles": [
           "addons/library-addon/src/library/service.js",
@@ -8638,9 +8638,9 @@
       },
       "source": {
         "fileCount": 46,
-        "authoredBytes": 118661,
-        "physicalLines": 3601,
-        "nonblankLines": 3344,
+        "authoredBytes": 119346,
+        "physicalLines": 3622,
+        "nonblankLines": 3363,
         "largestFiles": [
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
@@ -8727,6 +8727,12 @@
             "nonblankLines": 82
           },
           {
+            "path": "addons/masked-direct-addon/src/app/contexts/continuePageController.js",
+            "bytes": 3063,
+            "physicalLines": 96,
+            "nonblankLines": 89
+          },
+          {
             "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
             "bytes": 2684,
             "physicalLines": 84,
@@ -8755,12 +8761,6 @@
             "bytes": 2407,
             "physicalLines": 73,
             "nonblankLines": 70
-          },
-          {
-            "path": "addons/masked-direct-addon/src/app/contexts/continuePageController.js",
-            "bytes": 2378,
-            "physicalLines": 75,
-            "nonblankLines": 70
           }
         ],
         "files": [
@@ -8772,9 +8772,9 @@
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/continuePageController.js",
-            "bytes": 2378,
-            "physicalLines": 75,
-            "nonblankLines": 70
+            "bytes": 3063,
+            "physicalLines": 96,
+            "nonblankLines": 89
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
@@ -9044,8 +9044,8 @@
       },
       "builds": {
         "regular": {
-          "bytes": 124773,
-          "gzipBytes": 27700,
+          "bytes": 125466,
+          "gzipBytes": 27932,
           "headerBytes": 2829,
           "contributors": [
             {
@@ -9101,6 +9101,10 @@
               "bytes": 3335
             },
             {
+              "path": "addons/masked-direct-addon/src/app/contexts/continuePageController.js",
+              "bytes": 2700
+            },
+            {
               "path": "addons/masked-direct-addon/src/domain/directDownload/flowController.js",
               "bytes": 2657
             },
@@ -9123,10 +9127,6 @@
             {
               "path": "addons/masked-direct-addon/src/hosts/mixdrop.js",
               "bytes": 2423
-            },
-            {
-              "path": "addons/masked-direct-addon/src/hosts/workupload.js",
-              "bytes": 2252
             }
           ],
           "sharedRuntime": {
@@ -9165,8 +9165,8 @@
           }
         },
         "release": {
-          "bytes": 89244,
-          "gzipBytes": 23421,
+          "bytes": 89744,
+          "gzipBytes": 23762,
           "headerBytes": 2829,
           "contributors": [
             {
@@ -9234,6 +9234,10 @@
               "bytes": 1832
             },
             {
+              "path": "addons/masked-direct-addon/src/app/contexts/continuePageController.js",
+              "bytes": 1811
+            },
+            {
               "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
               "bytes": 1799
             },
@@ -9244,10 +9248,6 @@
             {
               "path": "addons/masked-direct-addon/src/ports/standaloneRunGuard.js",
               "bytes": 1745
-            },
-            {
-              "path": "addons/masked-direct-addon/src/hosts/workupload.js",
-              "bytes": 1708
             }
           ],
           "sharedRuntime": {
@@ -9347,29 +9347,29 @@
       "thirdPartyOrVendored": [],
       "baseline": {
         "authoredBytes": {
-          "current": 118661,
-          "baseline": 118661,
+          "current": 119346,
+          "baseline": 119346,
           "delta": 0
         },
         "regularBytes": {
-          "current": 124773,
-          "baseline": 123315,
+          "current": 125466,
+          "baseline": 124008,
           "delta": 1458
         },
         "releaseBytes": {
-          "current": 89244,
-          "baseline": 108529,
-          "delta": -19285
+          "current": 89744,
+          "baseline": 109058,
+          "delta": -19314
         },
         "regularGzipBytes": {
-          "current": 27700,
-          "baseline": 27463,
-          "delta": 237
+          "current": 27932,
+          "baseline": 27676,
+          "delta": 256
         },
         "releaseGzipBytes": {
-          "current": 23421,
-          "baseline": 23677,
-          "delta": -256
+          "current": 23762,
+          "baseline": 23849,
+          "delta": -87
         },
         "owningFiles": [
           "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
@@ -9622,7 +9622,7 @@
       "builds": {
         "regular": {
           "bytes": 53842,
-          "gzipBytes": 12987,
+          "gzipBytes": 13008,
           "headerBytes": 952,
           "contributors": [
             {
@@ -9752,7 +9752,7 @@
         },
         "release": {
           "bytes": 37272,
-          "gzipBytes": 10482,
+          "gzipBytes": 10540,
           "headerBytes": 952,
           "contributors": [
             {
@@ -9917,14 +9917,14 @@
           "delta": -8692
         },
         "regularGzipBytes": {
-          "current": 12987,
-          "baseline": 12892,
+          "current": 13008,
+          "baseline": 12913,
           "delta": 95
         },
         "releaseGzipBytes": {
-          "current": 10482,
-          "baseline": 10723,
-          "delta": -241
+          "current": 10540,
+          "baseline": 10718,
+          "delta": -178
         },
         "owningFiles": [
           "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
@@ -10309,7 +10309,7 @@
       "builds": {
         "regular": {
           "bytes": 116618,
-          "gzipBytes": 25926,
+          "gzipBytes": 25919,
           "headerBytes": 971,
           "contributors": [
             {
@@ -10455,7 +10455,7 @@
         },
         "release": {
           "bytes": 86950,
-          "gzipBytes": 22278,
+          "gzipBytes": 22370,
           "headerBytes": 971,
           "contributors": [
             {
@@ -10634,14 +10634,14 @@
           "delta": -16924
         },
         "regularGzipBytes": {
-          "current": 25926,
-          "baseline": 25836,
-          "delta": 90
+          "current": 25919,
+          "baseline": 25832,
+          "delta": 87
         },
         "releaseGzipBytes": {
-          "current": 22278,
-          "baseline": 22680,
-          "delta": -402
+          "current": 22370,
+          "baseline": 22689,
+          "delta": -319
         },
         "owningFiles": [
           "addons/thread-utility-addon/src/app/createThreadUtilityApp.js",
@@ -15158,6 +15158,7 @@
           "fanIn": 1,
           "fanOut": 1,
           "exports": [
+            "isHcaptchaActive",
             "createContinuePageController"
           ]
         },
@@ -16206,6 +16207,7 @@
         "addons/library-addon/src/ui/manager/reloadRows.js#setupLoadingUI",
         "addons/library-addon/src/ui/threadTitle/titleChips.js#getThreadTitleChips",
         "addons/library-addon/src/ui/utils/threadDiff.js#getThreadDiffSummary",
+        "addons/masked-direct-addon/src/app/contexts/continuePageController.js#isHcaptchaActive",
         "addons/masked-direct-addon/src/app/lifecycle.js#ADDON_COMMAND_EVENT",
         "addons/masked-direct-addon/src/domain/directDownload/feedback.js#HOST_FEEDBACK_KEY",
         "addons/masked-direct-addon/src/hosts/datanodes/index.js#datanodesAutomation",

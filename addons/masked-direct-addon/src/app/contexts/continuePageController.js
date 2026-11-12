@@ -1,6 +1,25 @@
 import { isAutomationEnabled } from "../../shared/utils.js";
 // Follow the site's native form behavior. This is not a final download action:
 // never invoke the host success/feedback/auto-close pipeline here.
+
+export function isHcaptchaActive(documentRef = document) {
+  try {
+    const responseEl = documentRef.querySelector?.(
+      'textarea[name="h-captcha-response"], input[name="h-captcha-response"]',
+    );
+    if (String(responseEl?.value || "").trim()) {
+      return false;
+    }
+    return Boolean(
+      documentRef.querySelector?.(
+        "input[name='had_check'][value='1'], [data-xf-init~='h-captcha'], [data-xf-init='h-captcha'], .f95dl-check-box, .f95dl-check-explain, .h-captcha, iframe[src*='hcaptcha.com']",
+      ),
+    );
+  } catch {
+    return false;
+  }
+}
+
 export function createContinuePageController({
   getAutomationSettings,
   documentRef = document,
@@ -31,6 +50,7 @@ export function createContinuePageController({
         if (stopped) return;
         if (!isAutomationEnabled(automationSettings) || automationSettings.skipMaskedPage === false)
           return dispose();
+        if (isHcaptchaActive(documentRef)) return dispose();
         const button = documentRef.querySelector(
           ".f95dl-go button.js-f95dlContinue[type='submit']",
         );
@@ -48,6 +68,7 @@ export function createContinuePageController({
               if (
                 isAutomationEnabled(latest) &&
                 latest.skipMaskedPage !== false &&
+                !isHcaptchaActive(documentRef) &&
                 button.isConnected &&
                 !button.disabled &&
                 !button.closest("[hidden], .u-hidden") &&
