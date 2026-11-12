@@ -3207,9 +3207,9 @@
       "id": "masked-direct-addon",
       "source": {
         "fileCount": 46,
-        "authoredBytes": 118661,
-        "physicalLines": 3601,
-        "nonblankLines": 3344,
+        "authoredBytes": 119631,
+        "physicalLines": 3629,
+        "nonblankLines": 3370,
         "files": [
           {
             "path": "addons/masked-direct-addon/src/app/context.js",
@@ -3219,9 +3219,9 @@
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/continuePageController.js",
-            "bytes": 2378,
-            "physicalLines": 75,
-            "nonblankLines": 70
+            "bytes": 3348,
+            "physicalLines": 103,
+            "nonblankLines": 96
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
@@ -3492,8 +3492,8 @@
       "builds": {
         "regular": {
           "mode": "regular",
-          "bytes": 123315,
-          "gzipBytes": 27463,
+          "bytes": 124222,
+          "gzipBytes": 27744,
           "contributors": [
             {
               "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
@@ -3548,6 +3548,10 @@
               "bytes": 3335
             },
             {
+              "path": "addons/masked-direct-addon/src/app/contexts/continuePageController.js",
+              "bytes": 2914
+            },
+            {
               "path": "addons/masked-direct-addon/src/domain/directDownload/flowController.js",
               "bytes": 2657
             },
@@ -3570,17 +3574,13 @@
             {
               "path": "addons/masked-direct-addon/src/hosts/mixdrop.js",
               "bytes": 2423
-            },
-            {
-              "path": "addons/masked-direct-addon/src/hosts/workupload.js",
-              "bytes": 2252
             }
           ]
         },
         "release": {
           "mode": "release",
-          "bytes": 108529,
-          "gzipBytes": 23677,
+          "bytes": 109181,
+          "gzipBytes": 23899,
           "contributors": [
             {
               "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
@@ -3639,6 +3639,10 @@
               "bytes": 2030
             },
             {
+              "path": "addons/masked-direct-addon/src/app/contexts/continuePageController.js",
+              "bytes": 1956
+            },
+            {
               "path": "addons/masked-direct-addon/src/hosts/mixdrop.js",
               "bytes": 1865
             },
@@ -3657,10 +3661,6 @@
             {
               "path": "addons/masked-direct-addon/src/ports/standaloneRunGuard.js",
               "bytes": 1745
-            },
-            {
-              "path": "addons/masked-direct-addon/src/hosts/workupload.js",
-              "bytes": 1708
             }
           ]
         }

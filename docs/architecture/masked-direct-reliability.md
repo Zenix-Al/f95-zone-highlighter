@@ -15,6 +15,11 @@ routes no longer use the old resolver. Numeric `/dl/<id>/` pages optionally clic
 the native Continue button once after a 250ms delay, waiting up to 10 seconds for
 readiness. Saved automation and skip preferences apply; no self-close or host-success
 feedback is attached to that intermediate action. Old `/masked` routes stay inert.
+If the download form requires hCaptcha and has no completed response, automation
+stops and releases its timer/pagehide listener. Solve verification and press
+Continue manually; it does not retry or resume automatically. Verification is
+checked again immediately before the delayed click. Tokens in other forms cannot
+authorize this form; unreadable verification state also leaves it manual.
 No origin-owned tab or per-file result protocol remains.
 
 The automation-settings repository retains the GM key

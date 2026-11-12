@@ -3,6 +3,12 @@
 Use the existing Node runner for both focused development and full validation.
 Selection does not replace integration coverage or the default full suite.
 
+Use the exact Node.js version in `.node-version` when refreshing audit snapshots.
+CI reads the same file and installs the lockfile with `npm ci`. Gzip measurements
+can change with Node/zlib versions even when source and uncompressed bundle sizes
+are identical; do not refresh reports using a different toolchain or relax the
+snapshot checks to hide that drift.
+
 ## Commands
 
 ```powershell

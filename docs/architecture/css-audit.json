@@ -2377,7 +2377,7 @@
         },
         {
           "file": "tests/groups/masked-direct-current-contract.cjs",
-          "line": 100,
+          "line": 101,
           "excerpt": "'<div class=\"f95dl-go\"><button type=\"submit\" class=\"js-f95dlContinue\" disabled>Continue</button></div>';"
         },
         {

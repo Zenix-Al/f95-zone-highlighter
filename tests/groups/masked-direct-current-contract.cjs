@@ -19,7 +19,8 @@ module.exports = ({ assert, fs, path, ROOT, loadModule, runTest, createDomSandbo
         const make = () =>
           createContinuePageController({
             getAutomationSettings: async () => ({
-              enabled: true, automateRegardless: allowed,
+              enabled: true,
+              automateRegardless: allowed,
               skipMaskedPage: skip,
               autoCloseTabs: true,
             }),
@@ -131,6 +132,190 @@ module.exports = ({ assert, fs, path, ROOT, loadModule, runTest, createDomSandbo
     },
   );
   runTest(
+    "MASKED-DIRECT-CURRENT-07 active hcaptcha challenge never clicks the continue button",
+    async () => {
+      const sandbox = createDomSandbox("https://f95zone.to/dl/100/");
+      try {
+        const { createContinuePageController, isHcaptchaActive } = loadModule(
+          base + "app/contexts/continuePageController.js",
+        );
+        let clicks = 0;
+        let pending = null;
+        document.body.innerHTML = `
+          <form class="f95dl-box">
+            <input type="hidden" name="had_check" value="1">
+            <div class="f95dl-check-box">
+              <div data-xf-init="h-captcha"></div>
+            </div>
+            <div class="f95dl-go">
+              <button type="submit" class="js-f95dlContinue">Continue</button>
+            </div>
+          </form>
+        `;
+        document.querySelector("button").addEventListener("click", () => {
+          clicks += 1;
+        });
+        assert.strictEqual(isHcaptchaActive(document), true);
+        const controller = createContinuePageController({
+          getAutomationSettings: async () => ({
+            enabled: true,
+            automateRegardless: true,
+            skipMaskedPage: true,
+          }),
+          setTimeoutFn: (fn) => {
+            pending = fn;
+            return 1;
+          },
+          clearTimeoutFn: () => {
+            pending = null;
+          },
+        });
+        await controller.run();
+        assert.strictEqual(pending, null, "active hcaptcha must not schedule button click");
+        assert.strictEqual(clicks, 0, "active hcaptcha must not click continue button");
+      } finally {
+        sandbox.restore();
+      }
+    },
+  );
+  runTest(
+    "MASKED-DIRECT-CURRENT-08 CAPTCHA tokens outside the download form never authorize Continue",
+    () => {
+      const sandbox = createDomSandbox("https://f95zone.to/dl/100/");
+      try {
+        const { isHcaptchaActive } = loadModule(base + "app/contexts/continuePageController.js");
+        for (const marker of [
+          '<input name="had_check" value="1">',
+          '<div data-xf-init="other h-captcha"></div>',
+          '<div class="f95dl-check-box"></div>',
+          '<div class="f95dl-check-explain"></div>',
+          '<div class="h-captcha"></div>',
+          '<iframe src="https://newassets.hcaptcha.com/captcha/v1/widget"></iframe>',
+        ]) {
+          document.body.innerHTML = `<form><textarea name="h-captcha-response">unrelated-solved-token</textarea></form>
+            <form id="download-form">${marker}<textarea name="h-captcha-response"> </textarea>
+              <div class="f95dl-go"><button type="submit" class="js-f95dlContinue">Continue</button></div></form>`;
+          assert.strictEqual(isHcaptchaActive(document), true, marker);
+          document.querySelector("#download-form textarea").value = "solved-token";
+          assert.strictEqual(isHcaptchaActive(document), false, marker);
+        }
+        const duplicate = document.createElement("input");
+        duplicate.name = "h-captcha-response";
+        document.querySelector("#download-form").appendChild(duplicate);
+        assert.strictEqual(
+          isHcaptchaActive(document),
+          true,
+          "another empty response cannot be authorized by the first token",
+        );
+        assert.strictEqual(
+          isHcaptchaActive({
+            querySelector() {
+              throw new Error("DOM unavailable");
+            },
+          }),
+          true,
+          "an unreadable CAPTCHA state must leave Continue manual",
+        );
+      } finally {
+        sandbox.restore();
+      }
+    },
+  );
+  runTest(
+    "MASKED-DIRECT-CURRENT-09 a CAPTCHA appearing during the click delay stops and cleans up automation",
+    async () => {
+      const sandbox = createDomSandbox("https://f95zone.to/dl/100/");
+      try {
+        const { createContinuePageController } = loadModule(
+          base + "app/contexts/continuePageController.js",
+        );
+        document.body.innerHTML =
+          '<form><div class="f95dl-go"><button type="submit" class="js-f95dlContinue">Continue</button></div></form>';
+        let pending = null,
+          clicks = 0;
+        const listeners = new Map();
+        document.querySelector("button").addEventListener("click", (event) => {
+          event.preventDefault();
+          clicks += 1;
+        });
+        const controller = createContinuePageController({
+          getAutomationSettings: async () => ({ enabled: true, automateRegardless: true }),
+          windowRef: {
+            addEventListener: (key, fn) => listeners.set(key, fn),
+            removeEventListener: (key) => listeners.delete(key),
+          },
+          setTimeoutFn: (fn) => {
+            pending = fn;
+            return 1;
+          },
+          clearTimeoutFn: () => {
+            pending = null;
+          },
+        });
+        await controller.run();
+        assert.strictEqual(typeof pending, "function");
+        document
+          .querySelector("form")
+          .insertAdjacentHTML("afterbegin", '<input name="had_check" value="1">');
+        const delayed = pending;
+        pending = null;
+        await delayed();
+        assert.strictEqual(clicks, 0);
+        assert.strictEqual(pending, null);
+        assert.strictEqual(listeners.size, 0);
+        document
+          .querySelector("form")
+          .insertAdjacentHTML(
+            "afterbegin",
+            '<textarea name="h-captcha-response">solved-later</textarea>',
+          );
+        await controller.run();
+        assert.strictEqual(clicks, 0, "once handed to the user, automation must not restart");
+      } finally {
+        sandbox.restore();
+      }
+    },
+  );
+  runTest(
+    "MASKED-DIRECT-CURRENT-10 solved CAPTCHA permits one click unless its response expires during the delay",
+    async () => {
+      for (const expired of [false, true]) {
+        const sandbox = createDomSandbox("https://f95zone.to/dl/100/");
+        try {
+          const { createContinuePageController } = loadModule(
+            base + "app/contexts/continuePageController.js",
+          );
+          document.body.innerHTML =
+            '<form><input name="had_check" value="1"><textarea name="h-captcha-response">solved</textarea><div class="f95dl-go"><button type="submit" class="js-f95dlContinue">Continue</button></div></form>';
+          let pending = null,
+            clicks = 0;
+          document.querySelector("button").addEventListener("click", (event) => {
+            event.preventDefault();
+            clicks += 1;
+          });
+          const controller = createContinuePageController({
+            getAutomationSettings: async () => ({ enabled: true, automateRegardless: true }),
+            setTimeoutFn: (fn) => {
+              pending = fn;
+              return 1;
+            },
+            clearTimeoutFn: () => {
+              pending = null;
+            },
+          });
+          await controller.run();
+          assert.strictEqual(typeof pending, "function");
+          if (expired) document.querySelector("textarea").value = "";
+          await pending();
+          await controller.run();
+          assert.strictEqual(clicks, expired ? 0 : 1);
+        } finally {
+          sandbox.restore();
+        }
+      }
+    },
+  );
+  runTest(
     "MASKED-DIRECT-CURRENT-01 delayed and hidden native download links are never discovered or rewritten",
     async () => {
       const sandbox = createDomSandbox("https://f95zone.to/threads/fixture.100/");
@@ -190,7 +375,8 @@ module.exports = ({ assert, fs, path, ROOT, loadModule, runTest, createDomSandbo
           removeItem: (key) => map.delete(key),
         };
         const automationSettings = {
-          enabled: true, automateRegardless: true,
+          enabled: true,
+          automateRegardless: true,
           autoCloseTabs: true,
           downloadPageCloseDelayMs: 30000,
         };
@@ -212,7 +398,10 @@ module.exports = ({ assert, fs, path, ROOT, loadModule, runTest, createDomSandbo
         return {
           guard: createStandaloneRunGuard({ storage }),
           state,
-          execution: flow.createHostExecutionContext({ host: "pixeldrain.com", automationSettings }),
+          execution: flow.createHostExecutionContext({
+            host: "pixeldrain.com",
+            automationSettings,
+          }),
         };
       });
       const url = "https://pixeldrain.com/u/fixture";
