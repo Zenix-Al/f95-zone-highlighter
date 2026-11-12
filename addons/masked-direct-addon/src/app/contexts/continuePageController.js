@@ -4,19 +4,26 @@ import { isAutomationEnabled } from "../../shared/utils.js";
 
 export function isHcaptchaActive(documentRef = document) {
   try {
-    const responseEl = documentRef.querySelector?.(
-      'textarea[name="h-captcha-response"], input[name="h-captcha-response"]',
+    const form = documentRef
+      .querySelector?.(".f95dl-go button.js-f95dlContinue[type='submit']")
+      ?.closest("form");
+    const root = form || documentRef;
+    const responses = Array.from(
+      root.querySelectorAll(
+        'textarea[name="h-captcha-response"], input[name="h-captcha-response"]',
+      ),
     );
-    if (String(responseEl?.value || "").trim()) {
+    if (responses.length > 0 && responses.every((element) => String(element.value || "").trim())) {
       return false;
     }
     return Boolean(
-      documentRef.querySelector?.(
-        "input[name='had_check'][value='1'], [data-xf-init~='h-captcha'], [data-xf-init='h-captcha'], .f95dl-check-box, .f95dl-check-explain, .h-captcha, iframe[src*='hcaptcha.com']",
+      responses.length ||
+      root.querySelector(
+        "input[name='had_check'][value='1'], [data-xf-init~='h-captcha'], .f95dl-check-box, .f95dl-check-explain, .h-captcha, iframe[src*='hcaptcha.com']",
       ),
     );
   } catch {
-    return false;
+    return true; // Unknown verification state must leave Continue manual.
   }
 }
 

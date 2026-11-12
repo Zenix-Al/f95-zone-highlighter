@@ -10,12 +10,12 @@
   "bundle": {
     "readable": {
       "fullBytes": 678133,
-      "gzipBytes": 146055,
+      "gzipBytes": 145771,
       "contributionBytes": 21716
     },
     "uglified": {
       "fullBytes": 337562,
-      "gzipBytes": 102056,
+      "gzipBytes": 101288,
       "contributionBytes": 25213
     }
   },
@@ -2377,7 +2377,7 @@
         },
         {
           "file": "tests/groups/masked-direct-current-contract.cjs",
-          "line": 100,
+          "line": 101,
           "excerpt": "'<div class=\"f95dl-go\"><button type=\"submit\" class=\"js-f95dlContinue\" disabled>Continue</button></div>';"
         },
         {
@@ -4666,8 +4666,8 @@
     },
     "readableBundleGzipBytes": {
       "before": 124202,
-      "after": 146055,
-      "delta": 21853
+      "after": 145771,
+      "delta": 21569
     },
     "uglifiedBundleContributionBytes": {
       "before": 27380,
@@ -4681,8 +4681,8 @@
     },
     "uglifiedBundleGzipBytes": {
       "before": 88402,
-      "after": 102056,
-      "delta": 13654
+      "after": 101288,
+      "delta": 12886
     },
     "selectorCount": {
       "before": 252,

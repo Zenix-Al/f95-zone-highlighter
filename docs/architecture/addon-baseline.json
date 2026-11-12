@@ -1676,7 +1676,7 @@
         "release": {
           "mode": "release",
           "bytes": 77416,
-          "gzipBytes": 17027,
+          "gzipBytes": 17049,
           "contributors": [
             {
               "path": "addons/example-addon/src/app/createExampleAddonApp.js",
@@ -1830,7 +1830,7 @@
         "regular": {
           "mode": "regular",
           "bytes": 28494,
-          "gzipBytes": 7034,
+          "gzipBytes": 7033,
           "contributors": [
             {
               "path": "addons/shared/runtimeLifecycle.js",
@@ -1897,7 +1897,7 @@
         "release": {
           "mode": "release",
           "bytes": 25035,
-          "gzipBytes": 5913,
+          "gzipBytes": 5929,
           "contributors": [
             {
               "path": "addons/shared/runtimeLifecycle.js",
@@ -2153,7 +2153,7 @@
         "regular": {
           "mode": "regular",
           "bytes": 91767,
-          "gzipBytes": 20965,
+          "gzipBytes": 20896,
           "contributors": [
             {
               "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
@@ -2240,7 +2240,7 @@
         "release": {
           "mode": "release",
           "bytes": 80076,
-          "gzipBytes": 17866,
+          "gzipBytes": 17899,
           "contributors": [
             {
               "path": "addons/latest-filters-addon/src/app/createLatestFiltersApp.js",
@@ -3030,7 +3030,7 @@
         "regular": {
           "mode": "regular",
           "bytes": 510374,
-          "gzipBytes": 108576,
+          "gzipBytes": 108442,
           "contributors": [
             {
               "path": "addons/library-addon/src/library/service.js",
@@ -3117,7 +3117,7 @@
         "release": {
           "mode": "release",
           "bytes": 462654,
-          "gzipBytes": 95129,
+          "gzipBytes": 95245,
           "contributors": [
             {
               "path": "addons/library-addon/src/library/service.js",
@@ -3207,9 +3207,9 @@
       "id": "masked-direct-addon",
       "source": {
         "fileCount": 46,
-        "authoredBytes": 119346,
-        "physicalLines": 3622,
-        "nonblankLines": 3363,
+        "authoredBytes": 119631,
+        "physicalLines": 3629,
+        "nonblankLines": 3370,
         "files": [
           {
             "path": "addons/masked-direct-addon/src/app/context.js",
@@ -3219,9 +3219,9 @@
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/continuePageController.js",
-            "bytes": 3063,
-            "physicalLines": 96,
-            "nonblankLines": 89
+            "bytes": 3348,
+            "physicalLines": 103,
+            "nonblankLines": 96
           },
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
@@ -3492,8 +3492,8 @@
       "builds": {
         "regular": {
           "mode": "regular",
-          "bytes": 124008,
-          "gzipBytes": 27676,
+          "bytes": 124222,
+          "gzipBytes": 27744,
           "contributors": [
             {
               "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
@@ -3549,7 +3549,7 @@
             },
             {
               "path": "addons/masked-direct-addon/src/app/contexts/continuePageController.js",
-              "bytes": 2700
+              "bytes": 2914
             },
             {
               "path": "addons/masked-direct-addon/src/domain/directDownload/flowController.js",
@@ -3579,8 +3579,8 @@
         },
         "release": {
           "mode": "release",
-          "bytes": 109058,
-          "gzipBytes": 23849,
+          "bytes": 109181,
+          "gzipBytes": 23899,
           "contributors": [
             {
               "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
@@ -3639,16 +3639,16 @@
               "bytes": 2030
             },
             {
+              "path": "addons/masked-direct-addon/src/app/contexts/continuePageController.js",
+              "bytes": 1956
+            },
+            {
               "path": "addons/masked-direct-addon/src/hosts/mixdrop.js",
               "bytes": 1865
             },
             {
               "path": "addons/masked-direct-addon/src/hosts/shared/dom.js",
               "bytes": 1832
-            },
-            {
-              "path": "addons/masked-direct-addon/src/app/contexts/continuePageController.js",
-              "bytes": 1811
             },
             {
               "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
@@ -3788,7 +3788,7 @@
         "regular": {
           "mode": "regular",
           "bytes": 53531,
-          "gzipBytes": 12913,
+          "gzipBytes": 12892,
           "contributors": [
             {
               "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
@@ -3875,7 +3875,7 @@
         "release": {
           "mode": "release",
           "bytes": 45964,
-          "gzipBytes": 10718,
+          "gzipBytes": 10723,
           "contributors": [
             {
               "path": "addons/site-repair-addon/src/repairs/latestAjax/jqueryAdapter.js",
@@ -4203,7 +4203,7 @@
         "regular": {
           "mode": "regular",
           "bytes": 116301,
-          "gzipBytes": 25832,
+          "gzipBytes": 25836,
           "contributors": [
             {
               "path": "addons/thread-utility-addon/src/ui/threadUtility.css",
@@ -4290,7 +4290,7 @@
         "release": {
           "mode": "release",
           "bytes": 103874,
-          "gzipBytes": 22689,
+          "gzipBytes": 22680,
           "contributors": [
             {
               "path": "addons/thread-utility-addon/src/ui/threadUtility.css",
