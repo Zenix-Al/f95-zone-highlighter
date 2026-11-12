@@ -4,6 +4,7 @@ const GROUPS = Object.freeze([
   "test-runner",
   "core",
   "signature-collapse",
+  "thread-settings",
   "core-load-trace",
   "config",
   "core-runtime-performance",

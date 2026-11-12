@@ -11,8 +11,6 @@ import { threadOverlayFeature } from "../features/thread-overlay/index.js";
 
 import { wideLatestPageFeature, denseLatestGridFeature } from "../features/wide-latest/index.js";
 
-import { wideForumFeature } from "../features/wideForum/index.js";
-
 export const generatedFeatures = [
   dismissNotificationFeature,
   latestControlFeature,
@@ -21,5 +19,4 @@ export const generatedFeatures = [
   threadOverlayFeature,
   wideLatestPageFeature,
   denseLatestGridFeature,
-  wideForumFeature,
 ];

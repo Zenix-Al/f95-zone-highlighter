@@ -1,5 +1,10 @@
 # Changelog
 
+## [5.4.10 - Obsolete wide-thread feature]
+
+- Retire the obsolete wide-thread layout feature.
+- Show Thread Overlay settings directly under a header in the Thread settings panel instead of a separate dialog.
+
 ## [5.4.9 - Delayed signature controls]
 
 - Fixed hidden signatures missing their Show signature button when thread content arrives after feature startup. Somehow this fat userscript faster than the site rendering, funny how that works.

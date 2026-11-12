@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.4.1 - hCaptcha verification
+
+- Prevent premature Continue clicks on F95 download pages requiring hCaptcha; leave verification and continuation to the user. Thanks to EndzE for the fix.
+
 ## v1.4.0 - New host support and automation engine improvements
 
 - Add qu.ax and Akirabox support.

@@ -4,16 +4,11 @@ import { debugLog } from "../../core/logger.js";
 import { isValidTag } from "../../utils/validators.js";
 import featureCss from "./style.css";
 import { resolveTagStatus } from "../../utils/resolveTagStatus.js";
-import { openSettingsDialog } from "../../ui/components/dialog.js";
 import {
   buildSettingsMap,
   createEnabledDisabledToast,
   createToggleSetting,
 } from "../../ui/settings/metaFactory.js";
-import {
-  getSettingsMetadataByOwner,
-  registerSettingsMetadata,
-} from "../../ui/settings/metaRegistry.js";
 import { checkOverlaySettings } from "../../services/safetyService.js";
 import { refreshThreadOverlayAfterSettingsChange } from "../../ui/settingsRuntime/effectTasks.js";
 
@@ -124,26 +119,6 @@ export const threadOverlaySettingsMeta = {
   threadOverlayToggle: threadOverlayToggleSetting,
   ...threadOverlayToggleMeta,
 };
-if (getSettingsMetadataByOwner("feature:thread-overlay-dialog").length === 0) {
-  registerSettingsMetadata(
-    "thread-overlay-dialog",
-    Object.fromEntries(
-      Object.entries(threadOverlaySettingsMeta).map(([key, meta]) => [
-        `threadOverlay.${key}`,
-        meta,
-      ]),
-    ),
-    "feature:thread-overlay-dialog",
-  );
-}
-
-function openThreadOverlaySettingsDialog() {
-  openSettingsDialog({
-    title: "Thread Overlay Settings",
-    description: "Configure thread overlay visibility and styles.",
-    metaMap: threadOverlaySettingsMeta,
-  });
-}
 export const threadOverlayFeature = createStyledFeature("Thread Overlay", {
   configPath: "threadSettings.threadOverlayToggle",
   pageScopes: ["isThread"],
@@ -156,15 +131,11 @@ export const threadOverlayFeature = createStyledFeature("Thread Overlay", {
     sectionId: "thread",
     metaMaps: [
       {
-        threadOverlaySettings: {
-          type: "button",
-          text: "Thread overlay settings",
-          buttonText: "Open",
-          tooltip: "Open thread-page overlay configuration",
-          effects: {
-            custom: openThreadOverlaySettingsDialog,
-          },
+        _threadOverlayHeader: {
+          type: "header",
+          text: "Thread Overlay",
         },
+        ...threadOverlaySettingsMeta,
       },
     ],
   },

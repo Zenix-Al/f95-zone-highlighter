@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "identifier": "d48a530fcaa91a196e0664326fdfa9b5d52a341fab8850eacf5e039397406705",
+  "identifier": "c3a8c7b41c3e3b466045a2dd134f6e43990c2b4f9d60b97dd92d25eed628908a",
   "catalog": [
     {
       "id": "example-addon",
@@ -129,7 +129,7 @@
       "id": "masked-direct-addon",
       "name": "F95UE Masked + Direct Download Add-on",
       "description": "Standalone download automation for supported hosts with F95UE settings integration.",
-      "version": "1.4.0",
+      "version": "1.4.1",
       "pageScopes": [
         "f95zone"
       ],

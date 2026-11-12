@@ -24,9 +24,6 @@ export const SELECTORS = {
     DISMISS_SELECTOR: ".js-noticeDismiss",
     DISMISS_BTN_SELECTOR: ".js-notice-dismiss-btn",
   },
-  WIDE_FORUM: {
-    P_BODY_INNER: ".p-body-inner",
-  },
   SIGNATURE: {
     TOGGLE_SELECTOR: ".latest-signature-toggle",
     ASIDE_SELECTOR: "aside.message-signature",

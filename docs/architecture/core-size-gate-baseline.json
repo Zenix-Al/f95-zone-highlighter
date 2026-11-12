@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "sourceReport": "docs/architecture/core-size-baseline.json",
-  "sourceReportSha256": "9e5105e4df5932468fd31726f372e83436d583e8717fc178ae8e20f2b182587a",
+  "sourceReportSha256": "ed3882fa16f224ccdc422113bf618505425b6b351e53f57a9ad9ff728dfffe3a",
   "thresholds": {
     "authoredArea": {
       "absoluteBytes": 1024,
@@ -22,6 +22,6 @@
   },
   "rationale": {
     "type": "commit-note",
-    "text": "5.4.9: shared-observer discovery for delayed signatures and hide only after controls are installed."
+    "text": "5.4.10: retire obsolete wide-thread code, CSS and scroll handling; inline Thread Overlay settings. Authored source shrinks; retain all existing gate thresholds."
   }
 }

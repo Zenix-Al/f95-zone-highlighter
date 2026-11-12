@@ -60,6 +60,7 @@ runTest("generated feature manifest contains current feature exports", () => {
   assert.ok(result.featureNames.includes("wideLatestPageFeature"));
   assert.ok(result.featureNames.includes("denseLatestGridFeature"));
   assert.ok(result.featureNames.includes("threadOverlayFeature"));
+  assert.strictEqual(result.featureNames.includes("wideForumFeature"), false);
   assert.ok(generated.includes("export const generatedFeatures"));
   assert.ok(generated.includes("../features/latest-overlay/index.js"));
 });

@@ -25,7 +25,7 @@ Tag add/remove/reorder/move operations await this result before rendering or sho
 
 ## Effect ownership
 
-Tag list paths are registered once by `settings/tagsSettings.js`; array descendant paths resolve to the registered root metadata, so tile and thread refreshes use the shared application pipeline. Latest Overlay and Thread Overlay dialog maps are registered by their feature modules under namespaced metadata IDs. The observer resource cleanup callback is non-recursive, so lifecycle teardown does not report cleanup failures.
+Tag list paths are registered once by `settings/tagsSettings.js`; array descendant paths resolve to the registered root metadata, so tile and thread refreshes use the shared application pipeline. Latest Overlay dialog maps use namespaced metadata IDs. Thread Overlay controls contribute directly to the Thread settings section under a header, without a separate dialog registration. The observer resource cleanup callback is non-recursive, so lifecycle teardown does not report cleanup failures.
 
 ## Storage activity and measurements
 
