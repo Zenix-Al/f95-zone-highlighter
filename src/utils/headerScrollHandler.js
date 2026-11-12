@@ -48,8 +48,3 @@ export const latestPageScroll = createHeaderScrollHandler({
   threshold: 80,
   hiddenClassName: "header-hidden",
 });
-
-export const threadPageScroll = createHeaderScrollHandler({
-  threshold: 120,
-  hiddenClassName: "thread-header-hidden",
-});

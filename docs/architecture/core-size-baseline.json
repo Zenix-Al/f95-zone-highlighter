@@ -27,15 +27,15 @@
     ]
   },
   "authored": {
-    "fileCount": 119,
-    "physicalLines": 16004,
-    "meaningfulLines": 13976,
-    "authoredBytes": 487936,
+    "fileCount": 117,
+    "physicalLines": 15901,
+    "meaningfulLines": 13881,
+    "authoredBytes": 484800,
     "bytesByArea": {
-      "config": 32550,
+      "config": 32477,
       "core": 89037,
       "services": 88548,
-      "features": 136188,
+      "features": 133125,
       "ui": 141613
     },
     "bytesByFile": {
@@ -66,9 +66,9 @@
       "src/services/prefixService.js": 5673,
       "src/core/resourceManager.js": 5582,
       "src/services/storageBootstrapService.js": 5579,
-      "src/features/thread-overlay/index.js": 5526,
       "src/core/featureCatalog.js": 4763,
       "src/features/latest-control/index.js": 4756,
+      "src/features/thread-overlay/index.js": 4635,
       "src/features/latest-overlay/overlayEvaluator.js": 4587,
       "src/features/latest-overlay/hoverTagHandler.js": 4576,
       "src/services/configChangeApplication.js": 4555,
@@ -93,8 +93,8 @@
       "src/ui/components/toast.js": 2822,
       "src/core/styleRegistry.js": 2641,
       "src/features/wide-latest/index.js": 2625,
-      "src/config/defaults.js": 2615,
       "src/features/latest-overlay/markerLifecycle.js": 2605,
+      "src/config/defaults.js": 2598,
       "src/core/routeState.js": 2573,
       "src/core/pageDetection.js": 2522,
       "src/ui/configTransfer/index.js": 2519,
@@ -114,7 +114,6 @@
       "src/services/safetyService.js": 1848,
       "src/ui/helpers/updateColorStyle.js": 1766,
       "src/core/frameBudget.js": 1764,
-      "src/features/wideForum/index.js": 1744,
       "src/ui/configTransfer/dialogError.js": 1620,
       "src/ui/settingsRuntime/effectTasks.js": 1580,
       "src/ui/components/modal.js": 1573,
@@ -134,7 +133,7 @@
       "src/features/dismiss-notification/style.css": 1029,
       "src/ui/components/listeners.js": 1004,
       "src/core/pageLifecycle.js": 995,
-      "src/config/selectors.js": 955,
+      "src/config/selectors.js": 899,
       "src/services/configWriteLock.js": 886,
       "src/ui/components/settingsActions.js": 870,
       "src/ui/index.js": 840,
@@ -152,7 +151,6 @@
       "src/features/thread-overlay/style.css": 466,
       "src/features/latest-overlay/capture/index.js": 440,
       "src/config/timings.js": 430,
-      "src/features/wideForum/style.css": 428,
       "src/core/featureScope.js": 417,
       "src/config/pageDefinitions.js": 273,
       "src/ui/configTransfer/constants.js": 179,
@@ -318,7 +316,7 @@
         "bytes": 11317,
         "physicalLines": 410,
         "meaningfulLines": 344,
-        "fanIn": 3,
+        "fanIn": 2,
         "fanOut": 4,
         "exports": [
           "openConfirmDialog",
@@ -561,7 +559,7 @@
         },
         {
           "path": "src/ui/components/dialog.js",
-          "fanIn": 3,
+          "fanIn": 2,
           "fanOut": 4
         },
         {
@@ -621,7 +619,7 @@
         },
         {
           "path": "src/ui/settings/metaRegistry.js",
-          "fanIn": 5,
+          "fanIn": 4,
           "fanOut": 0
         },
         {
@@ -650,11 +648,6 @@
           "fanOut": 5
         },
         {
-          "path": "src/features/thread-overlay/index.js",
-          "fanIn": 1,
-          "fanOut": 8
-        },
-        {
           "path": "src/core/featureCatalog.js",
           "fanIn": 1,
           "fanOut": 2
@@ -662,6 +655,11 @@
         {
           "path": "src/features/latest-control/index.js",
           "fanIn": 0,
+          "fanOut": 6
+        },
+        {
+          "path": "src/features/thread-overlay/index.js",
+          "fanIn": 1,
           "fanOut": 6
         },
         {
@@ -785,13 +783,13 @@
           "fanOut": 3
         },
         {
-          "path": "src/config/defaults.js",
-          "fanIn": 3,
+          "path": "src/features/latest-overlay/markerLifecycle.js",
+          "fanIn": 1,
           "fanOut": 0
         },
         {
-          "path": "src/features/latest-overlay/markerLifecycle.js",
-          "fanIn": 1,
+          "path": "src/config/defaults.js",
+          "fanIn": 3,
           "fanOut": 0
         },
         {
@@ -890,11 +888,6 @@
           "fanOut": 0
         },
         {
-          "path": "src/features/wideForum/index.js",
-          "fanIn": 0,
-          "fanOut": 4
-        },
-        {
           "path": "src/ui/configTransfer/dialogError.js",
           "fanIn": 1,
           "fanOut": 2
@@ -941,7 +934,7 @@
         },
         {
           "path": "src/core/createStyledFeature.js",
-          "fanIn": 6,
+          "fanIn": 5,
           "fanOut": 2
         },
         {
@@ -966,7 +959,7 @@
         },
         {
           "path": "src/ui/settings/metaFactory.js",
-          "fanIn": 9,
+          "fanIn": 8,
           "fanOut": 0
         },
         {
@@ -991,7 +984,7 @@
         },
         {
           "path": "src/config/selectors.js",
-          "fanIn": 8,
+          "fanIn": 7,
           "fanOut": 0
         },
         {
@@ -1080,11 +1073,6 @@
           "fanOut": 0
         },
         {
-          "path": "src/features/wideForum/style.css",
-          "fanIn": 1,
-          "fanOut": 0
-        },
-        {
           "path": "src/core/featureScope.js",
           "fanIn": 0,
           "fanOut": 0
@@ -1165,7 +1153,7 @@
         {
           "from": "features",
           "to": "config",
-          "count": 13,
+          "count": 12,
           "examples": [
             {
               "from": "src/features/dismiss-notification/handler.js",
@@ -1192,7 +1180,7 @@
         {
           "from": "features",
           "to": "core",
-          "count": 29,
+          "count": 28,
           "examples": [
             {
               "from": "src/features/dismiss-notification/handler.js",
@@ -1242,7 +1230,7 @@
         {
           "from": "features",
           "to": "ui",
-          "count": 14,
+          "count": 11,
           "examples": [
             {
               "from": "src/features/dismiss-notification/index.js",
@@ -1440,7 +1428,6 @@
         "src/features/latest-control/index.js",
         "src/features/signature-collapse/index.js",
         "src/features/wide-latest/index.js",
-        "src/features/wideForum/index.js",
         "src/services/notificationService.js",
         "src/ui/index.js",
         "src/ui/storageUpgradeNotice.js"
@@ -1534,7 +1521,6 @@
         "src/features/thread-overlay/index.js#threadOverlaySettingsMeta",
         "src/features/wide-latest/index.js#denseLatestGridFeature",
         "src/features/wide-latest/index.js#wideLatestPageFeature",
-        "src/features/wideForum/index.js#wideForumFeature",
         "src/services/configTransfer/index.js#CONFIG_TRANSFER_FORMAT_VERSION",
         "src/services/configTransfer/index.js#previewConfigImport",
         "src/services/notificationService.js#notify",
@@ -1591,10 +1577,10 @@
   "bundle": {
     "readable": {
       "mode": "regular",
-      "bytes": 678133,
-      "gzipBytes": 145771,
-      "coreBytes": 430792,
-      "excludedBytes": 240058,
+      "bytes": 675179,
+      "gzipBytes": 145317,
+      "coreBytes": 428060,
+      "excludedBytes": 239913,
       "contributors": [
         {
           "path": "src/services/settingsService.js",
@@ -1844,10 +1830,10 @@
     },
     "uglified": {
       "mode": "release",
-      "bytes": 337562,
-      "gzipBytes": 101288,
-      "coreBytes": 222561,
-      "excludedBytes": 114989,
+      "bytes": 335701,
+      "gzipBytes": 100908,
+      "coreBytes": 220765,
+      "excludedBytes": 114924,
       "contributors": [
         {
           "path": "src/ui/assets/css.css",

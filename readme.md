@@ -26,7 +26,7 @@ name the host and the failing step.
 ## Core features
 
 - Latest Updates overlays, scoring, layouts, refresh controls, and recovery
-- Thread overlays, wide layout, and collapsible signatures
+- Thread overlays and collapsible signatures
 - Preferred, excluded, and marked tag management with custom colors
 - Isolated settings UI, configuration transfer, and Feature Health diagnostics
 - Capability-gated add-on runtime with owned storage, UI, lifecycle, and cleanup

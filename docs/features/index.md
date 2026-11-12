@@ -20,7 +20,6 @@ Current features (automatically discovered):
 - `threadOverlayFeature` — `src/features/thread-overlay/index.js`
 - `wideLatestPageFeature` — `src/features/wide-latest/index.js`
 - `denseLatestGridFeature` — `src/features/wide-latest/index.js`
-- `wideForumFeature` — `src/features/wideForum/index.js`
 <!-- GENERATED:FEATURE-INVENTORY:END -->
 
 Latest Overlay's private early-response capture implementation lives under
@@ -33,7 +32,6 @@ Latest Overlay's private early-response capture implementation lives under
 - `threadOverlayFeature` — thread-specific overlay and highlighting.
 - `wideLatestPageFeature` — layout adjustments for wide Latest pages.
 - `denseLatestGridFeature` — alternative dense grid for Latest.
-- `wideForumFeature` — layout adjustments for forum pages.
 
 For an up-to-date list, refresh the manifest without a version bump with `node -e "require('./scripts/featureManifest.cjs').generateFeatureManifest({ rootDir: process.cwd() })"` or inspect `src/generated/features.generated.js`. Do not edit the generated file manually.
 

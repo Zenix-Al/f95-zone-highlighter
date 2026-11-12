@@ -25,7 +25,6 @@ The core script now provides a solid foundation + **modular add-on system**. Som
 
 **Thread page**
 
-- Wide thread layout
 - Collapsible signatures
 - Thread tag overlay (preferred / excluded / marked)
 

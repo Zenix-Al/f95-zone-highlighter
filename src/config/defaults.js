@@ -33,7 +33,6 @@ export const defaultThreadSetting = {
   preferredShadow: true,
   excluded: true,
   excludedShadow: true,
-  isWide: false,
   collapseSignature: false,
   threadOverlayToggle: true,
 };

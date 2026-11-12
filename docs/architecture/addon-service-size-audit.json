@@ -12,7 +12,7 @@
     ],
     "generatedMetadata": [
       "src/generated/trusted-addon-aliases.json",
-      "src/generated/trusted-addon-catalog.d48a530fcaa91a19.json",
+      "src/generated/trusted-addon-catalog.c3a8c7b41c3e3b46.json",
       "src/generated/trusted-addon-catalog.meta.json",
       "src/services/addons/trusted-catalog.json"
     ],
@@ -23,10 +23,10 @@
   "summary": {
     "coreService": {
       "authoredBytes": 242696,
-      "readableBytes": 678133,
-      "uglifiedBytes": 337562,
-      "readableGzipBytes": 145771,
-      "uglifiedGzipBytes": 101288
+      "readableBytes": 675179,
+      "uglifiedBytes": 335701,
+      "readableGzipBytes": 145317,
+      "uglifiedGzipBytes": 100908
     },
     "addons": {
       "count": 7,
@@ -2651,8 +2651,8 @@
     },
     "bundle": {
       "readable": {
-        "bytes": 678133,
-        "gzipBytes": 145771,
+        "bytes": 675179,
+        "gzipBytes": 145317,
         "contributionBytes": 97886,
         "contributors": [
           {
@@ -2690,8 +2690,8 @@
         ]
       },
       "uglified": {
-        "bytes": 337562,
-        "gzipBytes": 101288,
+        "bytes": 335701,
+        "gzipBytes": 100908,
         "contributionBytes": 46507,
         "contributors": [
           {
@@ -9283,7 +9283,7 @@
         }
       },
       "manifest": {
-        "version": "1.4.0",
+        "version": "1.4.1",
         "pageScopes": [
           "f95zone"
         ],

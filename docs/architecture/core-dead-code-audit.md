@@ -38,8 +38,8 @@ Evidence:
   imports `notify`. Its current-core fan-in is zero, but the repository-wide caller
   fails the deletion gate.
 - `src/features/latest-control/index.js`, `src/features/dismiss-notification/index.js`,
-  `src/features/signature-collapse/index.js`, `src/features/wide-latest/index.js`, and
-  `src/features/wideForum/index.js` remain because the generated feature manifest
+  `src/features/signature-collapse/index.js` and `src/features/wide-latest/index.js`
+  remain because the generated feature manifest
   imports their feature exports.
 - `src/core/pageDetection.js`, `src/core/pageLifecycle.js`, `src/core/teardown.js`,
   `src/core/featureScope.js`, and `src/ui/index.js` remain because bootstrap, loader, or
