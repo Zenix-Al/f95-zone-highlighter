@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "identifier": "c3a8c7b41c3e3b466045a2dd134f6e43990c2b4f9d60b97dd92d25eed628908a",
+  "identifier": "72219f656c89ca10189b065e727a63db13cbdac12b9b6df60af3e1238c052bac",
   "catalog": [
     {
       "id": "example-addon",
@@ -129,7 +129,7 @@
       "id": "masked-direct-addon",
       "name": "F95UE Masked + Direct Download Add-on",
       "description": "Standalone download automation for supported hosts with F95UE settings integration.",
-      "version": "1.4.1",
+      "version": "1.5.0",
       "pageScopes": [
         "f95zone"
       ],
@@ -179,6 +179,7 @@
       "grants": [
         "GM.getValue",
         "GM.setValue",
+        "GM.openInTab",
         "GM_addValueChangeListener",
         "GM_removeValueChangeListener"
       ],

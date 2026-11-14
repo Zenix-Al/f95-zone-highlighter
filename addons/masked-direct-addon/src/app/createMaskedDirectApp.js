@@ -19,6 +19,7 @@ import { createMaskedDirectDiagnostics } from "../shared/diagnostics.js";
 import { createAutomationSettingsRepository } from "../ports/automationSettingsRepository.js";
 import { createHostFeedback } from "../domain/directDownload/feedback.js";
 import { createContinuePageController } from "./contexts/continuePageController.js";
+import { createQuickResolveController } from "./contexts/quickResolveController.js";
 
 const runtime = createMaskedDirectRuntime();
 const bridge = createMaskedDirectCoreAdaptor(runtime.addonId);
@@ -26,6 +27,11 @@ const debugLog = createDebugLog(runtime.addonId);
 const diagnostics = createMaskedDirectDiagnostics(runtime.addonId);
 const automationSettingsRepository = createAutomationSettingsRepository({ GMApi: GM });
 const state = { enabled: true, blockedByCore: false };
+const quickResolver = createQuickResolveController({
+  getAutomationSettings: () => automationSettingsRepository.read(),
+  isAllowed: () => state.enabled && !state.blockedByCore,
+  openTab: (url) => GM.openInTab(url, { active: true, insert: true }),
+});
 const feedback = createHostFeedback({
   GMApi: GM,
   addValueChangeListener:
@@ -62,7 +68,7 @@ const downloadPageController = createDownloadPageController({
 });
 const statusMessage = () =>
   state.enabled
-    ? "Standalone host download automation is active; F95 download controls are retired."
+    ? "Standalone host automation and optional quick Resolve are available."
     : "Download automation add-on is disabled.";
 const registration = createMaskedDirectRegistration({
   bridge,
@@ -73,6 +79,7 @@ const registration = createMaskedDirectRegistration({
 const pageBehavior = createMaskedDirectPageBehavior({
   clearOwnedResources,
   feedback,
+  quickResolver,
   getIsEnabled: () => state.enabled,
   getIsBlocked: () => state.blockedByCore,
 });
@@ -89,6 +96,7 @@ const lifecycle = createMaskedDirectLifecycle({
 
 function clearOwnedResources() {
   downloadPageController.dispose();
+  quickResolver.stop();
   feedback.stop();
 }
 
@@ -106,6 +114,9 @@ export async function bootstrapMaskedDirectAddon() {
   if (context.kind === "external-standalone") {
     await downloadPageController.runDownloadPageHooks();
     return;
+  }
+  if (context.route === "thread") {
+    await quickResolver.start(); // Does not depend on core readiness or registration.
   }
   const ping = await probeMaskedDirectCore({ bridge, sleep });
   if (!ping.ok) return; // Core readiness belongs only to F95 settings integration.

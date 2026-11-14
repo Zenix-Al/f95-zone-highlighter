@@ -14,11 +14,12 @@ module.exports = ({ assert, fs, path, ROOT, loadModule, runTest, createDomSandbo
       const graph = Object.keys(result.metafile.inputs).join("\n").replaceAll("\\", "/");
       assert.doesNotMatch(graph, /\/archive\//);
       assert.doesNotMatch(graph, /maskedPageController|maskedResolutionTransport|maskedDestinationDelivery|threadPageController|managedTabs|managedClose|processingTrigger|processingDownloadRepository|routeContextRepository|directDownload\/attention|shared\/managedNavigation|ui\/controller|styleController/);
-      assert.doesNotMatch(result.outputFiles[0].text, /GM(?:_|\.)openInTab|f95ue\.addon\.maskedDirect\.request\./);
+      assert.doesNotMatch(result.outputFiles[0].text, /f95ue\.addon\.maskedDirect\.request\./);
     }
     const manifest = JSON.parse(fs.readFileSync(path.join(ROOT, "addons/addons.manifest.json"), "utf8")).addons.find((a) => a.id === "masked-direct-addon");
     assert.strictEqual(manifest.name, "F95UE Masked + Direct Download Add-on");
-    assert.ok(!manifest.grants.some((grant) => /^GM(?:_|\.)openInTab$/.test(grant)));
+    assert.ok(!manifest.grants.includes("GM_openInTab"), "legacy managed-tab API remains retired");
+    assert.ok(manifest.grants.includes("GM.openInTab"), "quick Resolve uses the modern tab API without managed ownership");
     assert.ok(!manifest.matches.some((match) => /masked|recaptcha/.test(match)));
     assert.ok(fs.existsSync(path.join(ROOT, base, "archive/app/contexts/maskedPageController.js")));
   });

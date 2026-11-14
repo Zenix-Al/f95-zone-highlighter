@@ -4,6 +4,8 @@ Automates supported download-host pages and can skip the countdown on F95's new 
 
 ### Features and settings
 
+- **Quick Resolve:** enabled by default; configure **Quick Resolve buttons** in the core add-on settings. Red buttons resolve native F95 download links with a GET and POST and open the destination in a new tab, keeping the thread open. Execution works without core. Verification and errors leave the original link for manual use. Normal link clicks are unchanged.
+
 - **Skip the F95 download countdown:** enabled by default. Turn it off to leave the site's countdown alone. The intermediate F95 page never self-closes.
 - **Automate supported host pages:** works regardless of where you opened the tab, including manually opened tabs. Saved automation and per-host choices apply.
 - **Optional automatic closing:** attempts to close the host tab after a final download action and your configured delay. Default delay: 3.5 seconds; minimum: 3 seconds. Closing has its own off switch.

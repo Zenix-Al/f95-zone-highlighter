@@ -8,6 +8,7 @@ const defaults = () => ({
   enabled: true,
   automateRegardless: true,
   skipMaskedPage: true,
+  quickResolveEnabled: true,
   autoCloseTabs: true,
   downloadPageCloseDelayMs: normalizeDownloadCloseDelay(),
   directDownloadPackages: coerceDirectDownloadPackages(),
@@ -36,6 +37,7 @@ export function createAutomationSettingsRepository({ GMApi } = {}) {
         enabled: raw.enabled !== false,
         automateRegardless: raw.userPreference,
         skipMaskedPage: raw.skipMaskedPage !== false,
+        quickResolveEnabled: raw.quickResolveEnabled !== false,
         autoCloseTabs: raw.autoCloseTabs !== false,
         downloadPageCloseDelayMs: normalizeDownloadCloseDelay(raw.downloadPageCloseDelayMs),
         directDownloadPackages: coerceDirectDownloadPackages(raw.directDownloadPackages),
@@ -50,7 +52,13 @@ export function createAutomationSettingsRepository({ GMApi } = {}) {
   async function updateSettings(changes = {}) {
     const current = await read();
     const next = { ...current };
-    for (const key of ["enabled", "automateRegardless", "skipMaskedPage", "autoCloseTabs"]) {
+    for (const key of [
+      "enabled",
+      "automateRegardless",
+      "skipMaskedPage",
+      "quickResolveEnabled",
+      "autoCloseTabs",
+    ]) {
       if (typeof changes[key] === "boolean") next[key] = changes[key];
     }
     if (changes.downloadPageCloseDelayMs !== undefined)
@@ -76,6 +84,7 @@ export function createAutomationSettingsRepository({ GMApi } = {}) {
         enabled: next.enabled,
         userPreference: next.automateRegardless,
         skipMaskedPage: next.skipMaskedPage,
+        quickResolveEnabled: next.quickResolveEnabled,
         autoCloseTabs: next.autoCloseTabs,
         downloadPageCloseDelayMs: next.downloadPageCloseDelayMs,
         directDownloadPackages: next.directDownloadPackages,

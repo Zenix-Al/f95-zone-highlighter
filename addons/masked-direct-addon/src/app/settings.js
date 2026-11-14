@@ -13,16 +13,25 @@ export const ADDON_SETTINGS_KEY = "settings";
 export const ADDON_SETTINGS_DEFAULT = Object.freeze({
   automateRegardless: true,
   skipMaskedPage: true,
+  quickResolveEnabled: true,
   autoCloseTabs: true,
   downloadPageCloseDelayMs: DEFAULT_DOWNLOAD_CLOSE_DELAY_MS,
   directDownloadPackages: createDirectDownloadPackageDefaults(),
 });
 export const ADDON_PANEL_SETTINGS = Object.freeze([
   {
+    id: "quickResolveEnabled",
+    path: "quickResolveEnabled",
+    text: "Quick Resolve buttons",
+    tooltip:
+      "Show red Resolve buttons beside thread download links. Resolve with GET/POST and open the destination in a new tab. Normal links are unchanged; verification stays manual.",
+  },
+  {
     id: "skipMaskedPage",
     path: "skipMaskedPage",
     text: "Skip the F95 download countdown",
-    tooltip: "Click Continue 250ms after its button is ready. Turn off to leave the native countdown alone. Never closes this intermediate page.",
+    tooltip:
+      "Click Continue 250ms after its button is ready. Turn off to leave the native countdown alone. Never closes this intermediate page.",
   },
   {
     id: "automateRegardless",
@@ -81,6 +90,7 @@ export function createMaskedDirectSettings({ bridge, onSettingsRead, onEnabledCh
     cache = {
       automateRegardless: parsed.automateRegardless !== false,
       skipMaskedPage: parsed.skipMaskedPage !== false,
+      quickResolveEnabled: parsed.quickResolveEnabled !== false,
       autoCloseTabs: parsed.autoCloseTabs !== false,
       downloadPageCloseDelayMs: normalizeDownloadCloseDelay(
         parsed.downloadPageCloseDelayMs,
