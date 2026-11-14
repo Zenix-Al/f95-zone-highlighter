@@ -126,7 +126,7 @@
     "id": "masked-direct-addon",
     "name": "F95UE Masked + Direct Download Add-on",
     "description": "Standalone download automation for supported hosts with F95UE settings integration.",
-    "version": "1.4.1",
+    "version": "1.5.0",
     "pageScopes": [
       "f95zone"
     ],
@@ -176,6 +176,7 @@
     "grants": [
       "GM.getValue",
       "GM.setValue",
+      "GM.openInTab",
       "GM_addValueChangeListener",
       "GM_removeValueChangeListener"
     ],

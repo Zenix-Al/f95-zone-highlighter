@@ -11,7 +11,17 @@ One pipeline checks enabled/automation preferences, exact declared aliases, host
 switches, approved routes, one-shot guards and owned continuation stages.
 External hosts never ping core or require F95 provenance. Native F95 links are
 not intercepted/prefetched; favicons are not download identity. Masked and /dl/
-routes no longer use the old resolver. Numeric `/dl/<id>/` pages optionally click
+routes no longer use the old resolver. The configurable thread-page red Resolve button
+uses a separate core-independent GET/form POST path only after an explicit click.
+The core add-on panel's Quick Resolve buttons setting defaults on and is mirrored
+locally for core-independent execution. There is no userscript menu toggle.
+Normal links are not changed or intercepted; resolved destinations open through
+GM.openInTab without navigating or closing the original thread.
+Resolve serializes attempts per tab, preserves signed source queries, validates the
+same-origin form action, waits 2.2 seconds, and follows only the known response
+wrapper's absolute HTTP(S) data-url. Verification or an unexpected response stops
+without automatic retries/fallback requests. Pagehide/disable abort pending work.
+No managed tabs or origin identities are restored. Numeric `/dl/<id>/` pages optionally click
 the native Continue button once after a 250ms delay, waiting up to 10 seconds for
 readiness. Saved automation and skip preferences apply; no self-close or host-success
 feedback is attached to that intermediate action. Old `/masked` routes stay inert.

@@ -619,6 +619,7 @@
           "grants": [
             "GM.getValue",
             "GM.setValue",
+            "GM.openInTab",
             "GM_addValueChangeListener",
             "GM_removeValueChangeListener"
           ],
@@ -638,6 +639,7 @@
           "addons/masked-direct-addon/src/app/context.js",
           "addons/masked-direct-addon/src/app/contexts/continuePageController.js",
           "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
+          "addons/masked-direct-addon/src/app/contexts/quickResolveController.js",
           "addons/masked-direct-addon/src/app/coreIntegration.js",
           "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
           "addons/masked-direct-addon/src/app/lifecycle.js",
@@ -647,6 +649,7 @@
           "addons/masked-direct-addon/src/app/settings.js",
           "addons/masked-direct-addon/src/domain/directDownload/feedback.js",
           "addons/masked-direct-addon/src/domain/directDownload/flowController.js",
+          "addons/masked-direct-addon/src/domain/quickResolve.js",
           "addons/masked-direct-addon/src/hosts/akirabox.js",
           "addons/masked-direct-addon/src/hosts/buzzheavier.js",
           "addons/masked-direct-addon/src/hosts/constants.js",
@@ -688,7 +691,7 @@
             "callSites": [
               {
                 "path": "addons/masked-direct-addon/src/app/settings.js",
-                "line": 60,
+                "line": 69,
                 "text": "const result = await bridge.invokeCoreAction(\"storage.get\", {"
               }
             ]
@@ -698,7 +701,7 @@
             "callSites": [
               {
                 "path": "addons/masked-direct-addon/src/app/settings.js",
-                "line": 70,
+                "line": 79,
                 "text": "const result = await bridge.invokeCoreAction(\"storage.set\", { key, value });"
               }
             ]
@@ -800,6 +803,11 @@
           }
         ],
         "pollingAndTimers": [
+          {
+            "path": "addons/masked-direct-addon/src/domain/quickResolve.js",
+            "line": 46,
+            "text": "const timer = setTimeout(cancel, 20000);"
+          },
           {
             "path": "addons/masked-direct-addon/src/hosts/shared/cloudflareChallenge.js",
             "line": 104,
@@ -924,7 +932,7 @@
           },
           {
             "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
-            "line": 97,
+            "line": 105,
             "text": "isSupportedExternalHost: (hostname) => Boolean(normalizeDirectDownloadHost(hostname)),"
           },
           {
@@ -936,6 +944,61 @@
             "path": "addons/masked-direct-addon/src/domain/directDownload/feedback.js",
             "line": 122,
             "text": "![\"f95zone.to\", \"www.f95zone.to\"].includes(locationLike.hostname) ||"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/domain/quickResolve.js",
+            "line": 5,
+            "text": "export function getQuickResolveUrl(value, base = location.href) {"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/domain/quickResolve.js",
+            "line": 7,
+            "text": "const origin = new URL(base);"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/domain/quickResolve.js",
+            "line": 8,
+            "text": "const url = new URL(value, base);"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/domain/quickResolve.js",
+            "line": 10,
+            "text": "[\"f95zone.to\", \"www.f95zone.to\"].includes(origin.hostname) &&"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/domain/quickResolve.js",
+            "line": 15,
+            "text": "/^\\/dl\\/\\d+\\/?$/.test(url.pathname)"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/domain/quickResolve.js",
+            "line": 36,
+            "text": "{ baseUrl = location.href, fetchFn = fetch, signal, wait = sleep } = {},"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/domain/quickResolve.js",
+            "line": 73,
+            "text": "const action = new URL(form.getAttribute(\"action\") || source.href, source.href);"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/domain/quickResolve.js",
+            "line": 79,
+            "text": "!/^\\/dl\\/\\d+\\/?$/.test(action.pathname) ||"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/domain/quickResolve.js",
+            "line": 80,
+            "text": "action.pathname.replace(/\\/$/, \"\") !== source.pathname.replace(/\\/$/, \"\")"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/domain/quickResolve.js",
+            "line": 108,
+            "text": "body: new URLSearchParams(data),"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/domain/quickResolve.js",
+            "line": 117,
+            "text": "destination = new URL(raw || \"\");"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/akirabox.js",
@@ -1365,9 +1428,54 @@
             "text": "const button = documentRef.querySelector("
           },
           {
+            "path": "addons/masked-direct-addon/src/app/contexts/quickResolveController.js",
+            "line": 140,
+            "text": "for (const link of documentRef.querySelectorAll('a[href*=\"/dl/\"]')) attach(link);"
+          },
+          {
             "path": "addons/masked-direct-addon/src/domain/directDownload/flowController.js",
             "line": 10,
             "text": "closeTab = () => window.close(),"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/domain/quickResolve.js",
+            "line": 27,
+            "text": "doc.querySelector("
+          },
+          {
+            "path": "addons/masked-direct-addon/src/domain/quickResolve.js",
+            "line": 68,
+            "text": "const page = doc.querySelector('[data-xf-init~=\"f95dl-page\"]');"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/domain/quickResolve.js",
+            "line": 69,
+            "text": "const button = page?.querySelector(\".js-f95dlContinue\");"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/domain/quickResolve.js",
+            "line": 70,
+            "text": "const form = button?.form || page?.querySelector(\"form.f95dl-box\");"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/domain/quickResolve.js",
+            "line": 84,
+            "text": "const code = page.querySelector(\".js-f95dlCode\");"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/domain/quickResolve.js",
+            "line": 93,
+            "text": "const csrf = form.querySelector('input[name=\"_xfToken\"]');"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/domain/quickResolve.js",
+            "line": 97,
+            "text": "const hadCheck = form.querySelector('input[name=\"had_check\"]');"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/domain/quickResolve.js",
+            "line": 114,
+            "text": "const raw = result.querySelector('[data-xf-init~=\"f95dl-go\"]')?.getAttribute(\"data-url\");"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/downloadgg.js",
@@ -1463,22 +1571,27 @@
           },
           {
             "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
-            "line": 27,
+            "line": 28,
             "text": "const automationSettingsRepository = createAutomationSettingsRepository({ GMApi: GM });"
           },
           {
             "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
-            "line": 30,
+            "line": 33,
+            "text": "openTab: (url) => GM.openInTab(url, { active: true, insert: true }),"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
+            "line": 36,
             "text": "GMApi: GM,"
           },
           {
             "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
-            "line": 32,
+            "line": 38,
             "text": "typeof GM_addValueChangeListener === \"function\" ? GM_addValueChangeListener : null,"
           },
           {
             "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
-            "line": 34,
+            "line": 40,
             "text": "typeof GM_removeValueChangeListener === \"function\" ? GM_removeValueChangeListener : null,"
           },
           {
@@ -1498,27 +1611,27 @@
           },
           {
             "path": "addons/masked-direct-addon/src/ports/automationSettingsRepository.js",
-            "line": 18,
+            "line": 19,
             "text": "export function createAutomationSettingsRepository({ GMApi } = {}) {"
           },
           {
             "path": "addons/masked-direct-addon/src/ports/automationSettingsRepository.js",
-            "line": 20,
+            "line": 21,
             "text": "if (typeof GMApi?.getValue !== \"function\") return blocked();"
           },
           {
             "path": "addons/masked-direct-addon/src/ports/automationSettingsRepository.js",
-            "line": 22,
+            "line": 23,
             "text": "const raw = await GMApi.getValue(AUTOMATION_SETTINGS_KEY, null);"
           },
           {
             "path": "addons/masked-direct-addon/src/ports/automationSettingsRepository.js",
-            "line": 72,
+            "line": 80,
             "text": "if (typeof GMApi?.setValue !== \"function\") return current;"
           },
           {
             "path": "addons/masked-direct-addon/src/ports/automationSettingsRepository.js",
-            "line": 74,
+            "line": 82,
             "text": "await GMApi.setValue(AUTOMATION_SETTINGS_KEY, {"
           }
         ],
@@ -1527,6 +1640,31 @@
             "path": "addons/masked-direct-addon/src/app/contexts/continuePageController.js",
             "line": 35,
             "text": "clearTimeoutFn = clearTimeout,"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/contexts/quickResolveController.js",
+            "line": 15,
+            "text": "generation = 0,"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/contexts/quickResolveController.js",
+            "line": 40,
+            "text": "const controller = new AbortController();"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/contexts/quickResolveController.js",
+            "line": 111,
+            "text": "generation += 1;"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/contexts/quickResolveController.js",
+            "line": 121,
+            "text": "const current = ++generation;"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/app/contexts/quickResolveController.js",
+            "line": 123,
+            "text": "if (current !== generation) return;"
           },
           {
             "path": "addons/masked-direct-addon/src/app/lifecycle.js",
@@ -1565,7 +1703,7 @@
           },
           {
             "path": "addons/masked-direct-addon/src/app/registration.js",
-            "line": 61,
+            "line": 57,
             "text": "bridge.dispatchCoreCommand(\"teardown-complete\", {"
           },
           {
@@ -1592,6 +1730,36 @@
             "path": "addons/masked-direct-addon/src/domain/directDownload/flowController.js",
             "line": 12,
             "text": "clearTimeoutFn = clearTimeout,"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/domain/quickResolve.js",
+            "line": 43,
+            "text": "const timeout = new AbortController();"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/domain/quickResolve.js",
+            "line": 44,
+            "text": "const cancel = () => timeout.abort();"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/domain/quickResolve.js",
+            "line": 45,
+            "text": "signal?.addEventListener(\"abort\", cancel, { once: true });"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/domain/quickResolve.js",
+            "line": 46,
+            "text": "const timer = setTimeout(cancel, 20000);"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/domain/quickResolve.js",
+            "line": 63,
+            "text": "clearTimeout(timer);"
+          },
+          {
+            "path": "addons/masked-direct-addon/src/domain/quickResolve.js",
+            "line": 64,
+            "text": "signal?.removeEventListener(\"abort\", cancel);"
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/shared/cloudflareChallenge.js",
@@ -7879,7 +8047,7 @@
         },
         {
           "path": "addons/masked-direct-addon/src/app/settings.js",
-          "line": 60,
+          "line": 69,
           "text": "const result = await bridge.invokeCoreAction(\"storage.get\", {"
         },
         {
@@ -7947,7 +8115,7 @@
         },
         {
           "path": "addons/masked-direct-addon/src/app/settings.js",
-          "line": 70,
+          "line": 79,
           "text": "const result = await bridge.invokeCoreAction(\"storage.set\", { key, value });"
         },
         {
@@ -8558,7 +8726,7 @@
         },
         {
           "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
-          "line": 97,
+          "line": 105,
           "text": "isSupportedExternalHost: (hostname) => Boolean(normalizeDirectDownloadHost(hostname)),"
         },
         {
@@ -8570,6 +8738,61 @@
           "path": "addons/masked-direct-addon/src/domain/directDownload/feedback.js",
           "line": 122,
           "text": "![\"f95zone.to\", \"www.f95zone.to\"].includes(locationLike.hostname) ||"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/domain/quickResolve.js",
+          "line": 5,
+          "text": "export function getQuickResolveUrl(value, base = location.href) {"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/domain/quickResolve.js",
+          "line": 7,
+          "text": "const origin = new URL(base);"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/domain/quickResolve.js",
+          "line": 8,
+          "text": "const url = new URL(value, base);"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/domain/quickResolve.js",
+          "line": 10,
+          "text": "[\"f95zone.to\", \"www.f95zone.to\"].includes(origin.hostname) &&"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/domain/quickResolve.js",
+          "line": 15,
+          "text": "/^\\/dl\\/\\d+\\/?$/.test(url.pathname)"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/domain/quickResolve.js",
+          "line": 36,
+          "text": "{ baseUrl = location.href, fetchFn = fetch, signal, wait = sleep } = {},"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/domain/quickResolve.js",
+          "line": 73,
+          "text": "const action = new URL(form.getAttribute(\"action\") || source.href, source.href);"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/domain/quickResolve.js",
+          "line": 79,
+          "text": "!/^\\/dl\\/\\d+\\/?$/.test(action.pathname) ||"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/domain/quickResolve.js",
+          "line": 80,
+          "text": "action.pathname.replace(/\\/$/, \"\") !== source.pathname.replace(/\\/$/, \"\")"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/domain/quickResolve.js",
+          "line": 108,
+          "text": "body: new URLSearchParams(data),"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/domain/quickResolve.js",
+          "line": 117,
+          "text": "destination = new URL(raw || \"\");"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/akirabox.js",
@@ -9517,6 +9740,11 @@
           "text": "state.pollTimer = 0;"
         },
         {
+          "path": "addons/masked-direct-addon/src/domain/quickResolve.js",
+          "line": 46,
+          "text": "const timer = setTimeout(cancel, 20000);"
+        },
+        {
           "path": "addons/masked-direct-addon/src/hosts/shared/cloudflareChallenge.js",
           "line": 63,
           "text": "let pollTimer = null;"
@@ -10050,12 +10278,12 @@
         },
         {
           "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
-          "line": 32,
+          "line": 38,
           "text": "typeof GM_addValueChangeListener === \"function\" ? GM_addValueChangeListener : null,"
         },
         {
           "path": "addons/masked-direct-addon/src/app/createMaskedDirectApp.js",
-          "line": 34,
+          "line": 40,
           "text": "typeof GM_removeValueChangeListener === \"function\" ? GM_removeValueChangeListener : null,"
         },
         {
@@ -10065,12 +10293,12 @@
         },
         {
           "path": "addons/masked-direct-addon/src/app/settings.js",
-          "line": 58,
+          "line": 67,
           "text": "async function storageGet(key, defaultValue) {"
         },
         {
           "path": "addons/masked-direct-addon/src/app/settings.js",
-          "line": 79,
+          "line": 88,
           "text": "const result = await storageGet(ADDON_SETTINGS_KEY, ADDON_SETTINGS_DEFAULT);"
         }
       ],
@@ -11579,6 +11807,31 @@
           "text": "setTimeoutFn = setTimeout,"
         },
         {
+          "path": "addons/masked-direct-addon/src/app/contexts/quickResolveController.js",
+          "line": 15,
+          "text": "generation = 0,"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/app/contexts/quickResolveController.js",
+          "line": 40,
+          "text": "const controller = new AbortController();"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/app/contexts/quickResolveController.js",
+          "line": 111,
+          "text": "generation += 1;"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/app/contexts/quickResolveController.js",
+          "line": 121,
+          "text": "const current = ++generation;"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/app/contexts/quickResolveController.js",
+          "line": 123,
+          "text": "if (current !== generation) return;"
+        },
+        {
           "path": "addons/masked-direct-addon/src/app/lifecycle.js",
           "line": 42,
           "text": "async function teardown(reason) {"
@@ -11605,7 +11858,7 @@
         },
         {
           "path": "addons/masked-direct-addon/src/app/registration.js",
-          "line": 61,
+          "line": 57,
           "text": "bridge.dispatchCoreCommand(\"teardown-complete\", {"
         },
         {
@@ -11632,6 +11885,31 @@
           "path": "addons/masked-direct-addon/src/domain/directDownload/flowController.js",
           "line": 11,
           "text": "setTimeoutFn = setTimeout,"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/domain/quickResolve.js",
+          "line": 43,
+          "text": "const timeout = new AbortController();"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/domain/quickResolve.js",
+          "line": 44,
+          "text": "const cancel = () => timeout.abort();"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/domain/quickResolve.js",
+          "line": 45,
+          "text": "signal?.addEventListener(\"abort\", cancel, { once: true });"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/domain/quickResolve.js",
+          "line": 46,
+          "text": "const timer = setTimeout(cancel, 20000);"
+        },
+        {
+          "path": "addons/masked-direct-addon/src/domain/quickResolve.js",
+          "line": 64,
+          "text": "signal?.removeEventListener(\"abort\", cancel);"
         },
         {
           "path": "addons/masked-direct-addon/src/hosts/shared/cloudflareChallenge.js",

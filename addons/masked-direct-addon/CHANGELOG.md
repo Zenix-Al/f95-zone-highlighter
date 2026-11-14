@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.5.0 - Quick Resolve returns
+
+- Restore red Resolve buttons with a core-independent GET/POST flow, enabled by default and configurable in the core add-on panel.
+- Open destinations in a new tab and turn successful controls into green Resolved links. Normal links remain unchanged and verification stays manual.
+
+Approve the new GM.openInTab permission when updating.
+
 ## v1.4.1 - hCaptcha verification
 
 - Prevent premature Continue clicks on F95 download pages requiring hCaptcha; leave verification and continuation to the user. Thanks to EndzE for the fix.

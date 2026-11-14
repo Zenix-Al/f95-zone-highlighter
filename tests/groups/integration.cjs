@@ -3912,6 +3912,7 @@ module.exports = function registerGroup(context) {
       assert.deepStrictEqual(manifestEntry.grants, [
         "GM.getValue",
         "GM.setValue",
+        "GM.openInTab",
         "GM_addValueChangeListener",
         "GM_removeValueChangeListener",
       ]);

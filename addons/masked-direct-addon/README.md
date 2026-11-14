@@ -1,9 +1,10 @@
 # F95UE Masked + Direct Download Add-on
 
 The name, namespace, add-on ID and storage identity are retained for updates.
-The unreleased rework uses one standalone host pipeline. Core supplies settings
-and generic F95 feedback, not origin-owned downloads. Resolve/Direct DL buttons,
-masked resolving and its CAPTCHA fallback are retired.
+Host automation uses one standalone pipeline. Core optionally supplies host
+settings and generic F95 feedback, not origin-owned downloads. A configurable quick
+Resolve button works independently of core. The old resolver, CAPTCHA fallback,
+Direct DL controls and managed-tab machinery remain archived and excluded.
 
 See the [runtime contract and host matrix](../../docs/architecture/masked-direct-reliability.md)
 and [rework ledger](../../docs/architecture/masked-direct-standalone-rework-ledger.md).
@@ -18,8 +19,22 @@ and [rework ledger](../../docs/architecture/masked-direct-standalone-rework-ledg
   close; the add-on does not detect when a file finishes saving to disk.
 - Legacy policy v1 needs one ordinary F95 page visit with core available to
   mirror saved enabled/host choices into v2. External pages never probe core.
-- Native links, including signed F95 /dl/ links, are untouched and not prefetched.
+- Native links, including signed F95 /dl/ links, are untouched and not automatically prefetched.
   Favicons are not authorization. Unsupported routes need manual handling.
+- **Quick Resolve (on by default):** use **Quick Resolve buttons** in the core's
+  add-on settings to turn it off/on. Saved preferences are mirrored locally;
+  execution works without core. Approve `GM.openInTab` when installing/updating.
+  A red Resolve button appears beside visible native `/dl/<id>/` links. Click it
+  to GET the form, wait 2.2 seconds, POST its prepared fields once, read the native
+  `data-url`, and open the host in a new tab without rendering the intermediate
+  response page. The original thread stays open. Normal link clicks retain the existing behavior.
+  After success, the red button becomes a green **Resolved** link containing the
+  processed URL; use it again without repeating the GET/POST flow.
+  Verification, blocked requests, malformed forms and unknown responses stop the
+  attempt; use the original link manually. There is one in-flight Resolve per tab,
+  no queue, no automatic retry, no CAPTCHA solving and no origin tracking. Failed
+  Resolve controls stay disabled until refreshed; the original link remains usable.
+  Lazy links are discovered on pointer/focus; leaving the page aborts pending work.
 - On numeric `/dl/<id>/` intermediate pages, automation clicks the native Continue
   submit button once after a 250ms delay when ready (up to 10 seconds to find it).
   Disable **Skip the F95 download countdown** to leave the native countdown alone.
@@ -46,6 +61,7 @@ and [rework ledger](../../docs/architecture/masked-direct-standalone-rework-ledg
 | Host aliases/package switches/routes/actions | Each host definition; hosts/metadata.js collects them |
 | Shared route matching and stage descriptions | hosts/shared/routes.js, hosts/hostRoutes.js |
 | Settings/route/continuation checks | app/contexts/downloadPageController.js |
+| Optional thread-page Resolve UI and GET/POST protocol | app/contexts/quickResolveController.js, domain/quickResolve.js |
 | Final-action validation and dispatch | hosts/, hosts/handlers.js |
 | Shared sequence/repeat execution | hosts/shared/automation.js, hosts/shared/repeat.js |
 | Host timing/selector constants, including close-delay defaults | hosts/constants.js |

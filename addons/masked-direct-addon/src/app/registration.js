@@ -1,8 +1,4 @@
-import {
-  ADDON_PANEL_SETTINGS,
-  ADDON_SETTINGS_DEFAULT,
-  ADDON_SETTINGS_KEY,
-} from "./settings.js";
+import { ADDON_PANEL_SETTINGS, ADDON_SETTINGS_DEFAULT, ADDON_SETTINGS_KEY } from "./settings.js";
 
 export function createMaskedDirectRegistration({
   bridge,
@@ -21,10 +17,10 @@ export function createMaskedDirectRegistration({
         statusMessage: getStatusMessage(),
         panelTitle: runtime.addonName,
         panelBody:
-          "Standalone download-page handling for supported hosts. F95 Resolve and Direct DL buttons are retired.",
+          "Standalone host automation and quick Resolve buttons for thread download links. Normal links retain the native flow.",
         panelSettingsTitle: "Direct Download Settings",
         panelSettingsDescription:
-          "Configure standalone automation, host packages and optional local closing. Manually opened host tabs follow the same settings.",
+          "Configure quick Resolve buttons, standalone host automation and optional local closing. Resolve works without core; settings saved here are mirrored locally.",
         panelSettingsStorageKey: ADDON_SETTINGS_KEY,
         panelSettingsDefaults: ADDON_SETTINGS_DEFAULT,
         panelSettings: ADDON_PANEL_SETTINGS,

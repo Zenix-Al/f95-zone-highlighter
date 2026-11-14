@@ -63,6 +63,7 @@ const GROUPS = Object.freeze([
   "masked-direct-single-pipeline",
   "masked-direct-feedback",
   "masked-direct-current-contract",
+  "masked-direct-quick-resolve",
   "masked-direct-standalone-engine",
   "masked-direct-standalone-host-guards",
   "masked-direct-standalone-settings",
