@@ -12,7 +12,7 @@
     ],
     "generatedMetadata": [
       "src/generated/trusted-addon-aliases.json",
-      "src/generated/trusted-addon-catalog.72219f656c89ca10.json",
+      "src/generated/trusted-addon-catalog.c21be33c1b08760d.json",
       "src/generated/trusted-addon-catalog.meta.json",
       "src/services/addons/trusted-catalog.json"
     ],
@@ -30,11 +30,11 @@
     },
     "addons": {
       "count": 7,
-      "authoredBytes": 925070,
-      "regularBytes": 1031005,
-      "releaseBytes": 749066,
-      "regularGzipBytes": 227035,
-      "releaseGzipBytes": 191375
+      "authoredBytes": 927303,
+      "regularBytes": 1033176,
+      "releaseBytes": 750728,
+      "regularGzipBytes": 227583,
+      "releaseGzipBytes": 191797
     },
     "sharedRuntime": {
       "authoredBytes": 18561,
@@ -180,28 +180,28 @@
       {
         "addonId": "library-addon",
         "authoredBytes": {
-          "current": 496806,
-          "baseline": 496806,
+          "current": 499039,
+          "baseline": 499039,
           "delta": 0
         },
         "regularBytes": {
-          "current": 510684,
-          "baseline": 510374,
+          "current": 512855,
+          "baseline": 512545,
           "delta": 310
         },
         "releaseBytes": {
-          "current": 377221,
-          "baseline": 462654,
-          "delta": -85433
+          "current": 378883,
+          "baseline": 464449,
+          "delta": -85566
         },
         "regularGzipBytes": {
-          "current": 108529,
-          "baseline": 108442,
-          "delta": 87
+          "current": 109077,
+          "baseline": 108983,
+          "delta": 94
         },
         "releaseGzipBytes": {
-          "current": 92616,
-          "baseline": 95245,
+          "current": 93038,
+          "baseline": 95667,
           "delta": -2629
         },
         "owningFiles": [
@@ -7170,10 +7170,10 @@
         }
       },
       "source": {
-        "fileCount": 115,
-        "authoredBytes": 496806,
-        "physicalLines": 14345,
-        "nonblankLines": 13017,
+        "fileCount": 116,
+        "authoredBytes": 499039,
+        "physicalLines": 14385,
+        "nonblankLines": 13056,
         "largestFiles": [
           {
             "path": "addons/library-addon/src/library/service.js",
@@ -7189,13 +7189,13 @@
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-            "bytes": 20493,
+            "bytes": 20499,
             "physicalLines": 570,
             "nonblankLines": 530
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-            "bytes": 16408,
+            "bytes": 16427,
             "physicalLines": 415,
             "nonblankLines": 392
           },
@@ -7212,16 +7212,16 @@
             "nonblankLines": 263
           },
           {
+            "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
+            "bytes": 13427,
+            "physicalLines": 236,
+            "nonblankLines": 225
+          },
+          {
             "path": "addons/library-addon/src/app/dockController.js",
             "bytes": 12856,
             "physicalLines": 377,
             "nonblankLines": 353
-          },
-          {
-            "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
-            "bytes": 12764,
-            "physicalLines": 227,
-            "nonblankLines": 216
           },
           {
             "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
@@ -7285,9 +7285,9 @@
           },
           {
             "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
-            "bytes": 7973,
-            "physicalLines": 209,
-            "nonblankLines": 197
+            "bytes": 8285,
+            "physicalLines": 216,
+            "nonblankLines": 204
           },
           {
             "path": "addons/library-addon/src/ui/assets/manager.html",
@@ -7533,33 +7533,39 @@
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-            "bytes": 20493,
+            "bytes": 20499,
             "physicalLines": 570,
             "nonblankLines": 530
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueSnapshot.js",
-            "bytes": 4190,
+            "bytes": 4206,
             "physicalLines": 143,
             "nonblankLines": 133
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-            "bytes": 16408,
+            "bytes": 16427,
             "physicalLines": 415,
             "nonblankLines": 392
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateRepository.js",
-            "bytes": 3329,
-            "physicalLines": 91,
-            "nonblankLines": 86
+            "bytes": 4185,
+            "physicalLines": 108,
+            "nonblankLines": 103
           },
           {
             "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
             "bytes": 14965,
             "physicalLines": 417,
             "nonblankLines": 386
+          },
+          {
+            "path": "addons/library-addon/src/library/dailyCheckLimit.js",
+            "bytes": 356,
+            "physicalLines": 7,
+            "nonblankLines": 6
           },
           {
             "path": "addons/library-addon/src/library/hybridRecordRequest.js",
@@ -7671,7 +7677,7 @@
           },
           {
             "path": "addons/library-addon/src/library/updateSource.js",
-            "bytes": 2925,
+            "bytes": 2930,
             "physicalLines": 66,
             "nonblankLines": 52
           },
@@ -7749,15 +7755,15 @@
           },
           {
             "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
-            "bytes": 7973,
-            "physicalLines": 209,
-            "nonblankLines": 197
+            "bytes": 8285,
+            "physicalLines": 216,
+            "nonblankLines": 204
           },
           {
             "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
-            "bytes": 12764,
-            "physicalLines": 227,
-            "nonblankLines": 216
+            "bytes": 13427,
+            "physicalLines": 236,
+            "nonblankLines": 225
           },
           {
             "path": "addons/library-addon/src/ui/components/dock/dockRenderer.js",
@@ -7991,8 +7997,8 @@
       },
       "builds": {
         "regular": {
-          "bytes": 510684,
-          "gzipBytes": 108529,
+          "bytes": 512855,
+          "gzipBytes": 109077,
           "headerBytes": 967,
           "contributors": [
             {
@@ -8005,11 +8011,11 @@
             },
             {
               "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-              "bytes": 20780
+              "bytes": 20786
             },
             {
               "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-              "bytes": 16467
+              "bytes": 16486
             },
             {
               "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
@@ -8021,7 +8027,7 @@
             },
             {
               "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
-              "bytes": 12791
+              "bytes": 13402
             },
             {
               "path": "addons/library-addon/src/app/dockController.js",
@@ -8073,7 +8079,7 @@
             },
             {
               "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
-              "bytes": 7965
+              "bytes": 8290
             }
           ],
           "sharedRuntime": {
@@ -8110,7 +8116,7 @@
             ]
           },
           "uiCss": {
-            "bytes": 207183,
+            "bytes": 208119,
             "contributors": [
               {
                 "path": "addons/library-addon/src/ui/assets/manager.css",
@@ -8122,7 +8128,7 @@
               },
               {
                 "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
-                "bytes": 12791
+                "bytes": 13402
               },
               {
                 "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
@@ -8142,7 +8148,7 @@
               },
               {
                 "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
-                "bytes": 7965
+                "bytes": 8290
               },
               {
                 "path": "addons/library-addon/src/ui/entryEditor/editor.css",
@@ -8195,7 +8201,7 @@
             ]
           },
           "storageIdbDomain": {
-            "bytes": 485153,
+            "bytes": 487266,
             "contributors": [
               {
                 "path": "addons/library-addon/src/library/service.js",
@@ -8207,11 +8213,11 @@
               },
               {
                 "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-                "bytes": 20780
+                "bytes": 20786
               },
               {
                 "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-                "bytes": 16467
+                "bytes": 16486
               },
               {
                 "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
@@ -8223,7 +8229,7 @@
               },
               {
                 "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
-                "bytes": 12791
+                "bytes": 13402
               },
               {
                 "path": "addons/library-addon/src/app/dockController.js",
@@ -8271,7 +8277,7 @@
               },
               {
                 "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
-                "bytes": 7965
+                "bytes": 8290
               },
               {
                 "path": "addons/library-addon/src/ui/entryEditor/editor.css",
@@ -8281,8 +8287,8 @@
           }
         },
         "release": {
-          "bytes": 377221,
-          "gzipBytes": 92616,
+          "bytes": 378883,
+          "gzipBytes": 93038,
           "headerBytes": 967,
           "contributors": [
             {
@@ -8295,19 +8301,19 @@
             },
             {
               "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-              "bytes": 15306
+              "bytes": 15312
             },
             {
               "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
               "bytes": 11822
             },
             {
-              "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-              "bytes": 11146
+              "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
+              "bytes": 11429
             },
             {
-              "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
-              "bytes": 10915
+              "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
+              "bytes": 11164
             },
             {
               "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
@@ -8396,7 +8402,7 @@
             ]
           },
           "uiCss": {
-            "bytes": 170237,
+            "bytes": 170980,
             "contributors": [
               {
                 "path": "addons/library-addon/src/ui/assets/manager.css",
@@ -8408,7 +8414,7 @@
               },
               {
                 "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
-                "bytes": 10915
+                "bytes": 11429
               },
               {
                 "path": "addons/library-addon/src/ui/entryEditor/editorController.js",
@@ -8436,7 +8442,7 @@
               },
               {
                 "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateController.js",
-                "bytes": 5582
+                "bytes": 5811
               },
               {
                 "path": "addons/library-addon/src/ui/entryEditor/editorRenderer.js",
@@ -8481,7 +8487,7 @@
             ]
           },
           "storageIdbDomain": {
-            "bytes": 364713,
+            "bytes": 366375,
             "contributors": [
               {
                 "path": "addons/library-addon/src/library/service.js",
@@ -8493,19 +8499,19 @@
               },
               {
                 "path": "addons/library-addon/src/library/autoUpdateQueueRepository.js",
-                "bytes": 15306
+                "bytes": 15312
               },
               {
                 "path": "addons/library-addon/src/ui/components/manager/tableRenderer.js",
                 "bytes": 11822
               },
               {
-                "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
-                "bytes": 11146
+                "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
+                "bytes": 11429
               },
               {
-                "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
-                "bytes": 10915
+                "path": "addons/library-addon/src/library/autoUpdateQueueWorker.js",
+                "bytes": 11164
               },
               {
                 "path": "addons/library-addon/src/library/autoUpdateScheduler.js",
@@ -8568,7 +8574,7 @@
         }
       },
       "manifest": {
-        "version": "1.5.0",
+        "version": "1.5.1",
         "pageScopes": [
           "f95zone"
         ],
@@ -8590,28 +8596,28 @@
       "thirdPartyOrVendored": [],
       "baseline": {
         "authoredBytes": {
-          "current": 496806,
-          "baseline": 496806,
+          "current": 499039,
+          "baseline": 499039,
           "delta": 0
         },
         "regularBytes": {
-          "current": 510684,
-          "baseline": 510374,
+          "current": 512855,
+          "baseline": 512545,
           "delta": 310
         },
         "releaseBytes": {
-          "current": 377221,
-          "baseline": 462654,
-          "delta": -85433
+          "current": 378883,
+          "baseline": 464449,
+          "delta": -85566
         },
         "regularGzipBytes": {
-          "current": 108529,
-          "baseline": 108442,
-          "delta": 87
+          "current": 109077,
+          "baseline": 108983,
+          "delta": 94
         },
         "releaseGzipBytes": {
-          "current": 92616,
-          "baseline": 95245,
+          "current": 93038,
+          "baseline": 95667,
           "delta": -2629
         },
         "owningFiles": [
@@ -14504,7 +14510,7 @@
         {
           "path": "addons/library-addon/src/library/autoUpdateRepository.js",
           "fanIn": 2,
-          "fanOut": 1,
+          "fanOut": 2,
           "exports": [
             "normalizeAutoUpdateConfig",
             "createAutoUpdateRepository"
@@ -14518,6 +14524,14 @@
             "getDailyBudgetWake",
             "getStartupDelay",
             "createAutoUpdateScheduler"
+          ]
+        },
+        {
+          "path": "addons/library-addon/src/library/dailyCheckLimit.js",
+          "fanIn": 2,
+          "fanOut": 0,
+          "exports": [
+            "getDailyCheckLimit"
           ]
         },
         {
@@ -14821,7 +14835,7 @@
         {
           "path": "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",
           "fanIn": 1,
-          "fanOut": 3,
+          "fanOut": 4,
           "exports": [
             "getSiteBlockLabel",
             "getAutoUpdateStyleText",

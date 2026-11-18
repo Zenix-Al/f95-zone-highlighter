@@ -150,6 +150,32 @@ module.exports = function registerLibraryUpdateQueueWorkerGroup(context) {
     return createAutoUpdateQueueWorker(options);
   }
 
+  runTest("LIBRARY-DAILY-LIMIT-03 worker and durable cycle accept a size-based allowance without resetting consumed checks", async () => {
+    const { normalizeAutoUpdateCycle } = loadModule("addons/library-addon/src/library/autoUpdateQueueRepository.js");
+    assert.strictEqual(normalizeAutoUpdateCycle({ checksPerDay: 200 }).checksPerDay, 200);
+    const repository = createRepository(["1", "2", "3"]);
+    const now = new Date(2026, 10, 18, 12).getTime();
+    await repository.putCycle({ ...repository.snapshot().cycle, dailyKey: "2026-11-18", dailyAttempted: 198 });
+    const checked = [];
+    const worker = createWorker({ repository, now: () => now, waitFor: async () => {},
+      getRecord: async (threadId) => ({ threadId, updateCheck: { enabled: true } }),
+      checkRecords: async ([threadId]) => { checked.push(threadId); return { results: [{ threadId, ok: true, attempts: 1 }] }; },
+      commitResults: async () => ({ checked: 1, current: 1 }),
+    });
+    const first = await worker.run({ owner: "tab", config: { ...config, entryCount: 600, checksPerDay: 9999 } });
+    assert.strictEqual(first.reason, "daily_allowance_exhausted");
+    assert.strictEqual(first.cycle.checksPerDay, 200);
+    assert.strictEqual(first.cycle.dailyAttempted, 200);
+    assert.deepStrictEqual(checked, ["1", "2"]);
+    const repeated = await worker.run({ owner: "tab", config: { ...config, entryCount: 600, checksPerDay: 200 } });
+    assert.strictEqual(repeated.cycle.dailyAttempted, 200);
+    assert.strictEqual(checked.length, 2);
+    const second = await worker.run({ owner: "tab", config: { ...config, entryCount: 601, checksPerDay: 201 } });
+    assert.strictEqual(second.cycle.dailyAttempted, 201);
+    assert.strictEqual(second.cycle.status, "completed");
+    assert.deepStrictEqual(checked, ["1", "2", "3"]);
+  });
+
 
   runTest("LIBRARY-UPDATE-QUEUE-WORKER-01 completes an uninterrupted cycle in order", async () => {
     const repository = createRepository(["1", "2", "3"]);

@@ -2,7 +2,7 @@ import { LATEST_SEARCH_ROWS } from "./latestListingSelector.js";
 import { normalizeVersionIdentity } from "./updateEventModel.js";
 
 const SEARCH_LIMIT = 30;
-const isStopword = (word) => /^(?:a|an|the|there|this|is|by|of|no|not|on|in|and|to|with|was)$/i.test(word);
+const isStopword = (word) => /^(?:a|an|the|there|this|that|is|by|of|no|not|on|in|and|to|with|was)$/i.test(word);
 
 // Conservative query heuristics observed on Latest, not a claimed server contract.
 // Never use this lossy search text as the saved title/developer or record identity.

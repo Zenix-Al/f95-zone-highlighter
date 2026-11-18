@@ -4,8 +4,16 @@ This document records `LIBRARY-UPDATE-QUEUE-SETTINGS-01`.
 
 The legacy `Session cap` is no longer persisted. `Daily cap` is read once as a
 compatibility alias and normalized to `Checks per day`; stored output contains
-only `checksPerDay`. The supported range is 1 through 500, defaults to 100, and
-does not include an Unlimited mode because request traffic must remain bounded.
+only `checksPerDay`. The default is 100 and the minimum is 1. The maximum uses
+the total saved Library record count N: `max(1, min(N, max(150, ceil(N / 3))))`.
+Thus 100 records allow 100, 450 allow 150, 451 allow 151, and 600 allow 200.
+It is a selectable ceiling, not an automatically increased user allowance. The
+input label and HTML max share the same calculation and refresh with Library size.
+Unsaved input text is preserved during live refresh; saving reconciles it with
+the normalized value. The count/derived maximum are runtime metadata, not stored
+settings or schema changes. If counting is unavailable, reads conservatively use
+the former ceiling of 150 and saves fail rather than overwrite user settings.
+There is no Unlimited mode; hourly API accounting and request pacing are unchanged.
 
 The modal keeps one mounted DOM tree with an overview, collapsed cycle details,
 and collapsed settings. Queue transitions patch dedicated text, progress, and

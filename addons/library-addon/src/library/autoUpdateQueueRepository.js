@@ -77,7 +77,7 @@ export function normalizeAutoUpdateCycle(value = {}, options = {}) {
     dailyKey: text(value.dailyKey, 16),
     dailyAttempted: integer(value.dailyAttempted),
     dailyBonusAllowance: 0, // Retired field: ignore bonuses from older saved cycles.
-    checksPerDay: integer(value.checksPerDay, 100, 1, 150),
+    checksPerDay: integer(value.checksPerDay, 100, 1, MAX_COUNT),
     nextRunAt: integer(value.nextRunAt),
     blockedUntil: integer(value.blockedUntil),
     blockedReason: text(value.blockedReason, 40),

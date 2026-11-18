@@ -44,7 +44,7 @@ export function createAutoUpdateQueueWorker({
     renewOwnership = async () => true,
     onCycleChange = () => {},
   }) {
-    config = { ...config, checksPerDay: normalizeAutoUpdateConfig(config).checksPerDay };
+    config = { ...config, checksPerDay: normalizeAutoUpdateConfig(config, config.entryCount).checksPerDay };
     const spacingMs = Math.max(
       LIBRARY_MIN_UPDATE_SPACING_MS,
       Number.isFinite(Number(config.spacingMs)) ? Number(config.spacingMs) : LIBRARY_MIN_UPDATE_SPACING_MS,
