@@ -34,9 +34,9 @@ export async function findBestAction(
     if (
       isElementReadyForClick(element) &&
       definition.visible(element) &&
-      !definition.exclude(text)
+      !definition.exclude(text, element)
     ) {
-      const action = definition.actions.find((item) => item.match(text));
+      const action = definition.actions.find((item) => item.match(text, element));
       if (action && (!best || action.priority < best.priority)) {
         best = { ...action, element, kind: action.id, text };
         count = 1;
@@ -111,8 +111,8 @@ export function startRepeat(definition, context, dispatch) {
             return (
               isElementReadyForClick(element) &&
               definition.visible(element) &&
-              !definition.exclude(text) &&
-              definition.actions.find((item) => item.match(text))?.id === action.id
+              !definition.exclude(text, element) &&
+              definition.actions.find((item) => item.match(text, element))?.id === action.id
             );
           },
         },

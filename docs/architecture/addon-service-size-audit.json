@@ -12,7 +12,7 @@
     ],
     "generatedMetadata": [
       "src/generated/trusted-addon-aliases.json",
-      "src/generated/trusted-addon-catalog.c21be33c1b08760d.json",
+      "src/generated/trusted-addon-catalog.79d2feb2939a8fa6.json",
       "src/generated/trusted-addon-catalog.meta.json",
       "src/services/addons/trusted-catalog.json"
     ],
@@ -30,11 +30,11 @@
     },
     "addons": {
       "count": 7,
-      "authoredBytes": 927303,
-      "regularBytes": 1033176,
-      "releaseBytes": 750728,
-      "regularGzipBytes": 227583,
-      "releaseGzipBytes": 191797
+      "authoredBytes": 927610,
+      "regularBytes": 1033493,
+      "releaseBytes": 750961,
+      "regularGzipBytes": 227654,
+      "releaseGzipBytes": 191873
     },
     "sharedRuntime": {
       "authoredBytes": 18561,
@@ -216,29 +216,29 @@
       {
         "addonId": "masked-direct-addon",
         "authoredBytes": {
-          "current": 131124,
-          "baseline": 131124,
+          "current": 131431,
+          "baseline": 131431,
           "delta": 0
         },
         "regularBytes": {
-          "current": 136829,
-          "baseline": 135371,
+          "current": 137146,
+          "baseline": 135688,
           "delta": 1458
         },
         "releaseBytes": {
-          "current": 98288,
-          "baseline": 118778,
-          "delta": -20490
+          "current": 98521,
+          "baseline": 119063,
+          "delta": -20542
         },
         "regularGzipBytes": {
-          "current": 30720,
-          "baseline": 30490,
+          "current": 30791,
+          "baseline": 30561,
           "delta": 230
         },
         "releaseGzipBytes": {
-          "current": 26099,
-          "baseline": 26362,
-          "delta": -263
+          "current": 26175,
+          "baseline": 26439,
+          "delta": -264
         },
         "owningFiles": [
           "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
@@ -8644,9 +8644,9 @@
       },
       "source": {
         "fileCount": 48,
-        "authoredBytes": 131124,
-        "physicalLines": 3941,
-        "nonblankLines": 3675,
+        "authoredBytes": 131431,
+        "physicalLines": 3950,
+        "nonblankLines": 3684,
         "largestFiles": [
           {
             "path": "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",
@@ -8662,7 +8662,7 @@
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/shared/repeat.js",
-            "bytes": 6021,
+            "bytes": 6057,
             "physicalLines": 175,
             "nonblankLines": 168
           },
@@ -8752,9 +8752,9 @@
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-            "bytes": 2684,
-            "physicalLines": 84,
-            "nonblankLines": 81
+            "bytes": 2955,
+            "physicalLines": 93,
+            "nonblankLines": 90
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/mixdrop.js",
@@ -8874,9 +8874,9 @@
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-            "bytes": 2684,
-            "physicalLines": 84,
-            "nonblankLines": 81
+            "bytes": 2955,
+            "physicalLines": 93,
+            "nonblankLines": 90
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/delafil.js",
@@ -8970,7 +8970,7 @@
           },
           {
             "path": "addons/masked-direct-addon/src/hosts/shared/repeat.js",
-            "bytes": 6021,
+            "bytes": 6057,
             "physicalLines": 175,
             "nonblankLines": 168
           },
@@ -9062,8 +9062,8 @@
       },
       "builds": {
         "regular": {
-          "bytes": 136829,
-          "gzipBytes": 30720,
+          "bytes": 137146,
+          "gzipBytes": 30791,
           "headerBytes": 2859,
           "contributors": [
             {
@@ -9080,7 +9080,7 @@
             },
             {
               "path": "addons/masked-direct-addon/src/hosts/shared/repeat.js",
-              "bytes": 5527
+              "bytes": 5563
             },
             {
               "path": "addons/masked-direct-addon/src/app/contexts/quickResolveController.js",
@@ -9131,16 +9131,16 @@
               "bytes": 2914
             },
             {
+              "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
+              "bytes": 2748
+            },
+            {
               "path": "addons/masked-direct-addon/src/domain/directDownload/flowController.js",
               "bytes": 2657
             },
             {
               "path": "addons/masked-direct-addon/src/hosts/metadata.js",
               "bytes": 2528
-            },
-            {
-              "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-              "bytes": 2467
             },
             {
               "path": "addons/masked-direct-addon/src/ports/standaloneRunGuard.js",
@@ -9183,8 +9183,8 @@
           }
         },
         "release": {
-          "bytes": 98288,
-          "gzipBytes": 26099,
+          "bytes": 98521,
+          "gzipBytes": 26175,
           "headerBytes": 2859,
           "contributors": [
             {
@@ -9201,7 +9201,7 @@
             },
             {
               "path": "addons/masked-direct-addon/src/hosts/shared/repeat.js",
-              "bytes": 4004
+              "bytes": 4036
             },
             {
               "path": "addons/masked-direct-addon/src/app/contexts/quickResolveController.js",
@@ -9252,6 +9252,10 @@
               "bytes": 2030
             },
             {
+              "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
+              "bytes": 2000
+            },
+            {
               "path": "addons/masked-direct-addon/src/app/contexts/continuePageController.js",
               "bytes": 1956
             },
@@ -9262,10 +9266,6 @@
             {
               "path": "addons/masked-direct-addon/src/hosts/shared/dom.js",
               "bytes": 1832
-            },
-            {
-              "path": "addons/masked-direct-addon/src/hosts/datanodes/index.js",
-              "bytes": 1799
             }
           ],
           "sharedRuntime": {
@@ -9301,7 +9301,7 @@
         }
       },
       "manifest": {
-        "version": "1.5.0",
+        "version": "1.5.2",
         "pageScopes": [
           "f95zone"
         ],
@@ -9366,29 +9366,29 @@
       "thirdPartyOrVendored": [],
       "baseline": {
         "authoredBytes": {
-          "current": 131124,
-          "baseline": 131124,
+          "current": 131431,
+          "baseline": 131431,
           "delta": 0
         },
         "regularBytes": {
-          "current": 136829,
-          "baseline": 135371,
+          "current": 137146,
+          "baseline": 135688,
           "delta": 1458
         },
         "releaseBytes": {
-          "current": 98288,
-          "baseline": 118778,
-          "delta": -20490
+          "current": 98521,
+          "baseline": 119063,
+          "delta": -20542
         },
         "regularGzipBytes": {
-          "current": 30720,
-          "baseline": 30490,
+          "current": 30791,
+          "baseline": 30561,
           "delta": 230
         },
         "releaseGzipBytes": {
-          "current": 26099,
-          "baseline": 26362,
-          "delta": -263
+          "current": 26175,
+          "baseline": 26439,
+          "delta": -264
         },
         "owningFiles": [
           "addons/masked-direct-addon/src/app/contexts/downloadPageController.js",

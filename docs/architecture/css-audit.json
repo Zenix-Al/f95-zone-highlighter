@@ -2382,7 +2382,7 @@
         },
         {
           "file": "tests/groups/masked-direct-host-baseline.cjs",
-          "line": 90,
+          "line": 143,
           "excerpt": "'<div id=\"download-button\" class=\"download-file-link\"><a id=\"download\" class=\"download-ready\" aria-disabled=\"false\" href=\"https://akirabox.com/download/signed-token/game.zip\">Download</a></div>';"
         }
       ],
