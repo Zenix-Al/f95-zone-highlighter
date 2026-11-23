@@ -218,12 +218,13 @@ module.exports = function registerLibraryIdbSchemaGroup(context) {
         } }];
       }));
       const history = new Map();
-      const bridge = !hybrid ? baseBridge : {
+      const bridge = {
         snapshot: baseBridge.snapshot,
         async invokeCoreAction(action, payload) {
           if (action === "config.getTagPrefs") return { ok: true, value: { tags: [], prefixes: { items: [] } } };
           if (["records", "updates", "activity"].includes(payload.storeName)) {
             const store = payload.storeName === "records" ? records : history;
+            if (action === "idb.count") return { ok: true, value: store.size };
             if (action === "idb.get") return { ok: true, value: structuredClone(store.get(payload.key) || null) };
             if (action === "idb.put") { store.set(payload.value.id || payload.value.threadId, structuredClone(payload.value)); return { ok: true }; }
             if (action === "idb.query") return { ok: true, value: [] };
@@ -234,7 +235,8 @@ module.exports = function registerLibraryIdbSchemaGroup(context) {
       };
       const api = createLibraryApiClient(bridge);
       const repository = createAutoUpdateRepository(api);
-      await repository.putConfig({ preferLatestApi: hybrid, jitterMs: 0, spacingMs: 15000, checksPerDay: 100 });
+      const savedConfig = await repository.putConfig({ preferLatestApi: hybrid, jitterMs: 0, spacingMs: 15000, checksPerDay: 100 });
+      assert.strictEqual(savedConfig.ok, true);
       let tail = Promise.resolve();
       const locks = { request(_name, _options, callback) { const pending = tail.then(callback); tail = pending.catch(() => {}); return pending; } };
       const service = hybrid ? createLibraryService(bridge, {}, {
@@ -654,7 +656,14 @@ module.exports = function registerLibraryIdbSchemaGroup(context) {
     assert.strictEqual(cycle.cycleId.length, 128);
     assert.strictEqual(cycle.status, "preparing");
     assert.strictEqual(cycle.total, 0);
-    assert.strictEqual(cycle.checksPerDay, 150);
+    // Persistence bounds the number; config/worker enforce the size-based ceiling.
+    assert.strictEqual(cycle.checksPerDay, 999999);
+    assert.strictEqual(normalizeAutoUpdateCycle({ checksPerDay: 200 }).checksPerDay, 200);
+    assert.strictEqual(
+      normalizeAutoUpdateCycle({ checksPerDay: Number.MAX_VALUE }).checksPerDay,
+      Number.MAX_SAFE_INTEGER,
+    );
+    assert.strictEqual(normalizeAutoUpdateCycle({ checksPerDay: -1 }).checksPerDay, 1);
     assert.strictEqual(cycle.dailyAttempted, 0);
 
     const item = normalizeAutoUpdateQueueItem({
