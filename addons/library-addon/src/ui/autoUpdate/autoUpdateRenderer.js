@@ -1,5 +1,6 @@
 import cssTemplate from "./autoUpdate.css";
 import { LIBRARY_MIN_UPDATE_SPACING_MS } from "../../constants.js";
+import { getDailyCheckLimit } from "../../library/dailyCheckLimit.js";
 import { formatRecentUpdateErrors } from "../../library/updateErrorLog.js";
 
 const count = (value) => Math.max(0, Number(value) || 0);
@@ -32,7 +33,7 @@ export function getAutoUpdateStyleText(root = ".f95ue-library-auto-dialog") {
 
 export function derivePrimaryUpdateAction(
   cycle,
-  { running = false, recoveryPending = false } = {},
+  { running = false, recoveryPending = false, checksPerDay } = {},
 ) {
   if (running) return { action: "", label: "Updating...", disabled: true };
   if (recoveryPending) {
@@ -62,7 +63,7 @@ export function derivePrimaryUpdateAction(
     return { action: "retry-now", label: "Retry now", disabled: false };
   const localDay = localDayKey();
   const staleDay = Boolean(cycle.dailyKey && cycle.dailyKey !== localDay);
-  const limit = count(cycle.checksPerDay);
+  const limit = count(checksPerDay ?? cycle.checksPerDay);
   if (
     !staleDay &&
     count(cycle.dailyAttempted) >= limit &&
@@ -131,6 +132,13 @@ export function createAutoUpdateDiagnostics(cycle, status, preferLatestApi = fal
 
 export function patchAutoUpdateView(root, cycle, runtime = {}) {
   if (!root) return;
+  if (Object.hasOwn(runtime, "entryCount")) {
+    const maximum = getDailyCheckLimit(runtime.entryCount);
+    const input = root.querySelector('[name="checksPerDay"]');
+    if (input) input.max = String(maximum);
+    const label = root.querySelector('[data-role="dailyLimitLabel"]');
+    if (label) label.textContent = `Checks per day (max ${maximum})`;
+  }
   const set = (role, value) => {
     const node = root.querySelector(`[data-role="${role}"]`);
     if (node) node.textContent = String(value);
@@ -143,7 +151,7 @@ export function patchAutoUpdateView(root, cycle, runtime = {}) {
   set("lastSource", hybrid.source);
   const completed = count(cycle?.completed);
   const staleDay = Boolean(cycle?.dailyKey && cycle.dailyKey !== localDayKey());
-  const limit = count(cycle?.checksPerDay);
+  const limit = count(runtime.checksPerDay ?? cycle?.checksPerDay);
   const siteBlock = getSiteBlockLabel(cycle);
   set(
     "state",
@@ -199,20 +207,21 @@ export function patchAutoUpdateView(root, cycle, runtime = {}) {
 }
 
 function renderAutoUpdateMarkup(config, cycle) {
+  const dailyMaximum = getDailyCheckLimit(config.entryCount);
   const field = (label, name, value, min, max) => {
-    if (name === "checksPerDay") { min = 1; max = 150; }
+    if (name === "checksPerDay") { min = 1; max = dailyMaximum; }
     if (name === "spacingMs") min = LIBRARY_MIN_UPDATE_SPACING_MS;
-    return `<label><span>${label}</span><input name="${name}" type="number" min="${min}" max="${max}" value="${escapeHtml(value)}"></label>`;
+    return `<label><span${name === "checksPerDay" ? ' data-role="dailyLimitLabel"' : ""}>${label}</span><input name="${name}" type="number" min="${min}" max="${max}" value="${escapeHtml(value)}"></label>`;
   };
   const primary = derivePrimaryUpdateAction(cycle);
-  return `<form class="f95ue-library-auto-dialog" data-role="auto-update-dialog"><section class="f95ue-library-auto-overview"><div class="f95ue-library-auto-heading"><strong>Update overview</strong><span class="f95ue-library-auto-state" data-role="state">IDLE</span></div><progress data-role="progress" max="1" value="0"></progress><div class="f95ue-library-auto-stats"><span>Cycle <strong data-role="cycleProgress">0 / 0</strong></span><span>Today <strong data-role="dailyProgress">0 / ${config.checksPerDay}</strong></span><span>Completed <strong data-role="completed">0</strong></span><span>Retry pending <strong data-role="retryPending">0</strong></span><span>Terminal <strong data-role="terminalFailed">0</strong></span></div><div class="f95ue-library-auto-meta"><span>Current: <b data-role="currentItem">-</b></span><span>Next: <b data-role="nextWake">-</b></span><span>Last activity: <b data-role="lastActivity">-</b></span></div></section><details><summary>Cycle details &gt;</summary><div class="f95ue-library-auto-details"><div>Cycle ID: <span data-role="cycleId">-</span></div><div data-role="cycleCounts">current 0 · changed 0 · skipped 0 · network retries 0</div><button type="button" data-auto-action="copy-diagnostics">Copy diagnostics</button><button type="button" data-auto-action="restart">Restart cycle...</button></div></details><details><summary>Update settings &gt;</summary><div class="f95ue-library-auto-grid"><label class="f95ue-library-auto-toggle"><input name="enabled" type="checkbox"${config.enabled !== false ? " checked" : ""}><span>Check eligible Library records automatically</span></label>${field("Checks per day", "checksPerDay", config.checksPerDay, 1, 500)}${field("Update hour (local, 0-23)", "runHour", config.runHour, 0, 23)}${field("Spacing (ms)", "spacingMs", config.spacingMs, 5000, 30000)}${field("Timeout (ms)", "timeoutMs", config.timeoutMs, 1000, 30000)}${field("Retries", "retryLimit", config.retryLimit, 0, 5)}<button type="submit" class="primary">Save settings</button></div></details><div class="f95ue-library-auto-actions"><button type="button" class="primary" data-role="primaryAction" data-auto-action="${primary.action}"${primary.disabled ? " disabled" : ""}>${primary.label}</button><button type="button" data-auto-action="pause">Pause</button><button type="button" data-auto-action="cancel">Close</button></div></form>`;
+  return `<form class="f95ue-library-auto-dialog" data-role="auto-update-dialog"><section class="f95ue-library-auto-overview"><div class="f95ue-library-auto-heading"><strong>Update overview</strong><span class="f95ue-library-auto-state" data-role="state">IDLE</span></div><progress data-role="progress" max="1" value="0"></progress><div class="f95ue-library-auto-stats"><span>Cycle <strong data-role="cycleProgress">0 / 0</strong></span><span>Today <strong data-role="dailyProgress">0 / ${config.checksPerDay}</strong></span><span>Completed <strong data-role="completed">0</strong></span><span>Retry pending <strong data-role="retryPending">0</strong></span><span>Terminal <strong data-role="terminalFailed">0</strong></span></div><div class="f95ue-library-auto-meta"><span>Current: <b data-role="currentItem">-</b></span><span>Next: <b data-role="nextWake">-</b></span><span>Last activity: <b data-role="lastActivity">-</b></span></div></section><details><summary>Cycle details &gt;</summary><div class="f95ue-library-auto-details"><div>Cycle ID: <span data-role="cycleId">-</span></div><div data-role="cycleCounts">current 0 · changed 0 · skipped 0 · network retries 0</div><button type="button" data-auto-action="copy-diagnostics">Copy diagnostics</button><button type="button" data-auto-action="restart">Restart cycle...</button></div></details><details><summary>Update settings &gt;</summary><div class="f95ue-library-auto-grid"><label class="f95ue-library-auto-toggle"><input name="enabled" type="checkbox"${config.enabled !== false ? " checked" : ""}><span>Check eligible Library records automatically</span></label>${field(`Checks per day (max ${dailyMaximum})`, "checksPerDay", config.checksPerDay, 1, dailyMaximum)}${field("Update hour (local, 0-23)", "runHour", config.runHour, 0, 23)}${field("Spacing (ms)", "spacingMs", config.spacingMs, 5000, 30000)}${field("Timeout (ms)", "timeoutMs", config.timeoutMs, 1000, 30000)}${field("Retries", "retryLimit", config.retryLimit, 0, 5)}<button type="submit" class="primary">Save settings</button></div></details><div class="f95ue-library-auto-actions"><button type="button" class="primary" data-role="primaryAction" data-auto-action="${primary.action}"${primary.disabled ? " disabled" : ""}>${primary.label}</button><button type="button" data-auto-action="pause">Pause</button><button type="button" data-auto-action="cancel">Close</button></div></form>`;
 }
 
 export function renderAutoUpdateDialog(config, cycle) {
   return renderAutoUpdateMarkup(config, cycle)
     .replace(
-      '<label><span>Checks per day</span>',
-      `<label class="f95ue-library-auto-toggle"><input name="preferLatestApi" type="checkbox"${config.preferLatestApi === true ? " checked" : ""}><span>Prefer Latest API while its allowance is available; otherwise use thread HTML. Search coverage is not guaranteed.</span></label><label><span>Checks per day</span>`,
+      '<label><span data-role="dailyLimitLabel">',
+      `<label class="f95ue-library-auto-toggle"><input name="preferLatestApi" type="checkbox"${config.preferLatestApi === true ? " checked" : ""}><span>Prefer Latest API while its allowance is available; otherwise use thread HTML. Search coverage is not guaranteed.</span></label><label><span data-role="dailyLimitLabel">`,
     )
     .replace('<details><summary>Cycle details', '<section aria-label="Request sources"><div data-role="hybridMode"></div><div data-role="apiUsage"></div><div data-role="apiAvailability"></div><div data-role="lastSource"></div><div>Updater accounting only; excludes ordinary browsing and other scripts. Not F95\'s remaining server quota.</div></section><details><summary>Cycle details')
     .replace(

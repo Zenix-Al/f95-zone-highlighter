@@ -3,6 +3,59 @@
 module.exports = function registerLibraryAutoUpdateGroup(context) {
   const { assert, fs, loadModule, path, ROOT, runTest, Window } = context;
 
+  runTest("LIBRARY-DAILY-LIMIT-01 shares the rounded-up size ceiling across normalization and UI", () => {
+    const { getDailyCheckLimit } = loadModule("addons/library-addon/src/library/dailyCheckLimit.js");
+    const { normalizeAutoUpdateConfig } = loadModule("addons/library-addon/src/library/autoUpdateRepository.js");
+    const { renderAutoUpdateDialog, patchAutoUpdateView, derivePrimaryUpdateAction } = loadModule("addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js");
+    for (const [size, maximum] of [[0, 1], [1, 1], [100, 100], [149, 149], [150, 150], [151, 150], [450, 150], [451, 151], [452, 151], [600, 200], [601, 201], [900, 300]]) {
+      assert.strictEqual(getDailyCheckLimit(size), maximum);
+      assert.strictEqual(normalizeAutoUpdateConfig({ checksPerDay: 9999 }, size).checksPerDay, maximum);
+      const markup = renderAutoUpdateDialog(normalizeAutoUpdateConfig({ checksPerDay: 100 }, size), null);
+      assert.ok(markup.includes(`Checks per day (max ${maximum})`));
+      assert.ok(markup.includes(`name="checksPerDay" type="number" min="1" max="${maximum}"`));
+      assert.match(markup, /name="preferLatestApi"/);
+    }
+    assert.strictEqual(getDailyCheckLimit(null), 150);
+    assert.strictEqual(getDailyCheckLimit(Infinity), 150);
+    const window = new Window();
+    try {
+      const root = window.document.createElement("div");
+      root.innerHTML = renderAutoUpdateDialog({ checksPerDay: 100, entryCount: 100 }, null);
+      const input = root.querySelector('[name="checksPerDay"]');
+      input.value = "77";
+      patchAutoUpdateView(root, { status: "waiting", total: 600, dailyAttempted: 160, checksPerDay: 150 }, { entryCount: 601, checksPerDay: 200 });
+      assert.strictEqual(input.max, "201");
+      assert.strictEqual(input.value, "77", "live ceiling changes must not erase an unsaved input");
+      assert.strictEqual(root.querySelector('[data-role="dailyLimitLabel"]').textContent, "Checks per day (max 201)");
+      assert.strictEqual(root.querySelector('[data-role="dailyProgress"]').textContent, "160 / 200");
+      assert.strictEqual(derivePrimaryUpdateAction({ status: "waiting", total: 600, dailyAttempted: 160, checksPerDay: 150 }, { checksPerDay: 200 }).disabled, false);
+    } finally { window.close(); }
+  });
+
+  runTest("LIBRARY-DAILY-LIMIT-02 trusts the database count, not saved or submitted ceiling metadata", async () => {
+    const { createAutoUpdateRepository } = loadModule("addons/library-addon/src/library/autoUpdateRepository.js");
+    let size = 600, available = true, stored = { checksPerDay: 500, entryCount: 999999, maxChecksPerDay: 999999 }, writes = 0;
+    const repository = createAutoUpdateRepository({
+      getMeta: async () => structuredClone(stored),
+      countEntries: async () => available ? { ok: true, value: size } : { ok: false },
+      putMeta: async (value) => { stored = structuredClone(value); writes += 1; return { ok: true }; },
+    });
+    assert.strictEqual((await repository.getConfig()).checksPerDay, 200);
+    await repository.putConfig({ checksPerDay: 100, entryCount: 999999 });
+    size = 601;
+    assert.strictEqual((await repository.getConfig()).maxChecksPerDay, 201);
+    assert.strictEqual((await repository.getConfig()).checksPerDay, 100, "a larger library does not raise the configured allowance");
+    size = 100;
+    await repository.putConfig({ checksPerDay: 200, maxChecksPerDay: 999999 });
+    assert.strictEqual(stored.checksPerDay, 100);
+    assert.strictEqual(Object.hasOwn(stored, "entryCount"), false);
+    assert.strictEqual(Object.hasOwn(stored, "maxChecksPerDay"), false);
+    available = false;
+    assert.strictEqual((await repository.getConfig()).maxChecksPerDay, 150);
+    assert.strictEqual((await repository.putConfig({ checksPerDay: 200 })).ok, false);
+    assert.strictEqual(writes, 2, "failed counting must not overwrite saved settings");
+  });
+
   runTest("LIBRARY-HYBRID-UI-01 explains local accounting and bounded fallback reasons", () => {
     const { describeHybridStatus, createAutoUpdateDiagnostics, renderAutoUpdateDialog } = loadModule(
       "addons/library-addon/src/ui/autoUpdate/autoUpdateRenderer.js",

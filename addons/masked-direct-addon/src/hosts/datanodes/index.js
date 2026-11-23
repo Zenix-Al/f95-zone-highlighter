@@ -53,8 +53,17 @@ export const datanodesAutomation = {
   finalMarker: "data-f95ue-datanodes-clicked",
   timeoutMessage: "Datanodes automation timed out. Please continue manually.",
   visible: isControlVisible,
-  exclude: (text) => !text || text.includes("premium"),
+  exclude: (text, element) =>
+    !text || text.includes("premium") || !!element.closest('.dl-lane-prem, a[href^="/premium"]'),
   actions: [
+    {
+      id: "free_lane_download",
+      tool: "click",
+      priority: 0,
+      final: true,
+      graceMs: 5000,
+      match: (_text, element) => element.matches("button[data-dl-free]"),
+    },
     {
       id: "continue",
       tool: "click",

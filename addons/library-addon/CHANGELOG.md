@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.5.1 - Update check and search fixes
+
+- Scale the daily-check ceiling with Library size and show the maximum beside Checks per day, without resetting consumed checks or raising the saved allowance automatically.
+- Exclude “that” from Latest API search terms.
+
 ## v1.5.0 - Library new feature
 
 - Added a Library-only book toggle beside Latest's Auto Refresh control, using the site's cards and the existing overlay, hover highlights, and Library status markers.

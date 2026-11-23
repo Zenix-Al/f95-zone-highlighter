@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.5.2 - Datanodes free-download update
+
+- Target Datanodes' free-download button instead of the premium lane, and wait five seconds after clicking before download feedback or optional self-close.
+
 ## v1.5.0 - Quick Resolve returns
 
 - Restore red Resolve buttons with a core-independent GET/POST flow, enabled by default and configurable in the core add-on panel.

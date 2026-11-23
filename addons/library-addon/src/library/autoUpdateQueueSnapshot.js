@@ -54,7 +54,7 @@ export function createAutoUpdateQueueSnapshotBuilder({
       scheduledFor: Math.max(0, Number(scheduledFor) || 0),
       createdAt,
       updatedAt: createdAt,
-      checksPerDay: bounded(checksPerDay, 100, 1, 100_000),
+      checksPerDay: bounded(checksPerDay, 100, 1, Number.MAX_SAFE_INTEGER),
     };
     const begun = await repository.beginCyclePreparation(cycle);
     if (!begun?.ok) return begun;

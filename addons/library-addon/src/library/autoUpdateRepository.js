@@ -1,4 +1,5 @@
 import { LIBRARY_AUTO_UPDATE_DEFAULTS, LIBRARY_MIN_UPDATE_SPACING_MS } from "../constants.js";
+import { getDailyCheckLimit } from "./dailyCheckLimit.js";
 
 const CONFIG_KEY = "auto-update:config";
 const SUMMARY_KEY = "auto-update:last-run";
@@ -20,10 +21,13 @@ function bounded(value, fallback, min, max) {
   return Math.min(max, Math.max(min, Number(value ?? fallback)));
 }
 
-export function normalizeAutoUpdateConfig(value = {}) {
+export function normalizeAutoUpdateConfig(value = {}, entryCount = null) {
   value = value || {};
   const defaults = LIBRARY_AUTO_UPDATE_DEFAULTS;
+  const maxChecksPerDay = getDailyCheckLimit(entryCount);
   return {
+    entryCount,
+    maxChecksPerDay,
     enabled: value.enabled !== false,
     preferLatestApi: value.preferLatestApi === true,
     intervalMs: bounded(value.intervalMs, defaults.intervalMs, 6 * 3600000, 30 * 86400000),
@@ -40,19 +44,32 @@ export function normalizeAutoUpdateConfig(value = {}) {
         ? Math.trunc(Number(value.checksPerDay ?? value.dailyCap)) : defaults.checksPerDay,
       defaults.checksPerDay,
       1,
-      150,
+      maxChecksPerDay,
     ),
     leaseTtlMs: bounded(value.leaseTtlMs, defaults.leaseTtlMs, 30_000, 300_000),
   };
 }
 
 export function createAutoUpdateRepository(api) {
+  async function getEntryCount() {
+    if (typeof api.countEntries !== "function") return null;
+    try {
+      const result = await api.countEntries();
+      return result?.ok && Number.isSafeInteger(result.value) && result.value >= 0 ? result.value : null;
+    } catch { return null; }
+  }
   return {
     async getConfig() {
-      return normalizeAutoUpdateConfig(await api.getMeta(CONFIG_KEY));
+      const [value, entryCount] = await Promise.all([api.getMeta(CONFIG_KEY), getEntryCount()]);
+      return normalizeAutoUpdateConfig(value, entryCount);
     },
-    putConfig(config) {
-      return api.putMeta({ key: CONFIG_KEY, ...normalizeAutoUpdateConfig(config) });
+    async putConfig(config) {
+      const entryCount = await getEntryCount();
+      if (entryCount === null && typeof api.countEntries === "function") return { ok: false, reason: "entry_count_unavailable" };
+      const stored = normalizeAutoUpdateConfig(config, entryCount);
+      delete stored.entryCount;
+      delete stored.maxChecksPerDay;
+      return api.putMeta({ key: CONFIG_KEY, ...stored });
     },
     async getLegacyQueueMetadata(timestamp = Date.now()) {
       const marker = await api.getMeta(QUEUE_COMPAT_KEY);

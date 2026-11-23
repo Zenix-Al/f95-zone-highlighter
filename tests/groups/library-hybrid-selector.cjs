@@ -68,6 +68,9 @@ module.exports = ({ assert, fs, path, ROOT, loadModule, runTest }) => {
     assert.strictEqual(sanitizeLatestQuery("Another Notable Swan"), "Another Notable Swan");
     assert.strictEqual(sanitizeLatestQuery("There Is Treasure THERE"), "Treasure");
     assert.strictEqual(sanitizeLatestCreatorQuery("There Studio"), "Studio");
+    assert.strictEqual(sanitizeLatestQuery("That Game THAT"), "Game");
+    assert.strictEqual(sanitizeLatestCreatorQuery("That Studio"), "Studio");
+    assert.strictEqual(sanitizeLatestQuery("Thatcher Games"), "Thatcher Games");
     assert.strictEqual(sanitizeLatestQuery("Therefore Wherever"), "Therefore Wherever");
     assert.strictEqual(sanitizeLatestQuery("THIS Island IS Built BY Robots"), "Island Built Robots");
     assert.strictEqual(sanitizeLatestCreatorQuery("This Studio Is By Artists"), "Studio Artists");

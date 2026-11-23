@@ -15,6 +15,59 @@ module.exports = ({
   ROOT,
 }) => {
   const base = "addons/masked-direct-addon/src/";
+  runTest(
+    "MASKED-DATANODES-FREE-01 selects only the free lane and waits five seconds",
+    async () => {
+      for (const cancel of [false, true]) {
+        await scenario(
+          "https://datanodes.to/download",
+          '<div class="dl-lane-prem"><a href="/premium?plan=365">Download now</a></div>' +
+            '<a href="/premium?plan=365">Download now</a>' +
+            "<button data-dl-free disabled>Free download <small>5 second wait, standard speed</small></button>",
+          async ({ advance, flush, clock, window }) => {
+            const { processDatanodesDownload } = loadModule(base + "hosts/datanodes/index.js");
+            let clicks = 0,
+              premium = 0,
+              reports = 0;
+            const button = document.querySelector("button");
+            for (const element of document.querySelectorAll("a, button")) {
+              element.getBoundingClientRect = () => ({ width: 10, height: 10 });
+              element.click = () => {
+                premium += 1;
+              };
+            }
+            button.click = () => {
+              clicks += 1;
+            };
+            await processDatanodesDownload({
+              notifyMainFailure: (host, message) => {
+                throw new Error(message);
+              },
+              reportAddonHealthy: () => {
+                reports += 1;
+              },
+            });
+            await advance(1000);
+            assert.strictEqual(clicks, 0);
+            assert.strictEqual(premium, 0);
+            button.disabled = false;
+            await advance(1000);
+            await flush();
+            assert.strictEqual(clicks, 1);
+            assert.strictEqual(reports, 0);
+            if (cancel) window.dispatchEvent(new window.Event("pagehide"));
+            await advance(3900);
+            assert.strictEqual(reports, 0);
+            await advance(1200);
+            assert.strictEqual(reports, cancel ? 0 : 1);
+            assert.strictEqual(clicks, 1);
+            assert.strictEqual(premium, 0);
+            assert.strictEqual(clock.pending(), 0);
+          },
+        );
+      }
+    },
+  );
   async function scenario(url, body, run) {
     const sandbox = createDomSandbox(url);
     const keys = [

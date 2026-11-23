@@ -94,7 +94,7 @@
     "id": "library-addon",
     "name": "F95UE Library Add-on",
     "description": "Quick-add threads to a personal library and manage entries with a dedicated add-on UI.",
-    "version": "1.5.0",
+    "version": "1.5.1",
     "pageScopes": [
       "f95zone"
     ],
@@ -126,7 +126,7 @@
     "id": "masked-direct-addon",
     "name": "F95UE Masked + Direct Download Add-on",
     "description": "Standalone download automation for supported hosts with F95UE settings integration.",
-    "version": "1.5.0",
+    "version": "1.5.2",
     "pageScopes": [
       "f95zone"
     ],

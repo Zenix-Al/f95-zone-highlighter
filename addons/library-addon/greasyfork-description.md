@@ -58,7 +58,7 @@ site request. Personal notes, ratings, and activity history are not uploaded.
 
 ### Update limits and site protection
 
-- **Automatic daily limit:** defaults to 100 checks, configurable from **1 to 150**. There is no extra-batch bonus. Daily usage survives reloads and cycle restarts, and resets at local midnight.
+- **Automatic daily limit:** defaults to 100 checks. The maximum is your Library size below 150, otherwise at least 150 or one-third of your entries rounded up, whichever is larger (600 entries → max 200). The current maximum is shown beside Checks per day. There is no extra-batch bonus. Daily usage survives reloads and cycle restarts, and resets at local midnight.
 - **Manual checks:** do not consume the automatic daily allowance, but still obey shared request pacing, API limits, and site cooldowns.
 - **API allowance:** both check modes share **80 API attempts per clock hour** across tabs on the same origin/profile. Failed attempts count too. This is Library's own accounting, not a reading of F95's remaining server quota. When the allowance is exhausted, eligible checks use thread HTML instead.
 - **Pacing:** at least **15 seconds** between requests, with optional jitter between records. An API lookup followed by HTML fallback counts as one automatic daily check, not two.

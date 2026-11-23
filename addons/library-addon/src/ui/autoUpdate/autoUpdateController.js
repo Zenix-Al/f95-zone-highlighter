@@ -44,6 +44,7 @@ export function createAutoUpdateController({ core, addonId, library, scheduler, 
     cycle = nextCycle;
     patchAutoUpdateView(root, cycle, {
       checksPerDay: config?.checksPerDay,
+      entryCount: config?.entryCount,
       preferLatestApi: config?.preferLatestApi,
       hybridStatus,
       ...scheduler.snapshot(),
@@ -149,9 +150,13 @@ export function createAutoUpdateController({ core, addonId, library, scheduler, 
       do {
         pending = false;
         try {
-          const status = await library.getHybridRequestStatus?.({ signal: controller.signal });
+          const [status, latestConfig] = await Promise.all([
+            library.getHybridRequestStatus?.({ signal: controller.signal }),
+            library.autoUpdate.getConfig(),
+          ]);
           if (controller.signal.aborted || openGeneration !== generation) break;
           hybridStatus = status || { ok: false };
+          config = latestConfig;
           refresh();
         } catch {
           if (!controller.signal.aborted && openGeneration === generation) {
@@ -170,6 +175,8 @@ export function createAutoUpdateController({ core, addonId, library, scheduler, 
       const saved = await library.autoUpdate.putConfig(values());
       if (!saved?.ok) return showToast(`Auto-update settings failed: ${saved?.reason || "unknown"}`, "error");
       config = await library.autoUpdate.getConfig();
+      const dailyInput = root?.querySelector('[name="checksPerDay"]');
+      if (dailyInput) dailyInput.value = String(config.checksPerDay);
       await scheduler.start({ reschedule: true });
       refresh(cycle);
       void refreshSources();
